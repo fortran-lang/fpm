@@ -6,7 +6,7 @@ rust-latest:
   image: rust:latest
   script:
     - cargo build --verbose
-    - cargo run
+    - cargo run -- s 5
     - cargo test --verbose
 
 rust-nightly:
