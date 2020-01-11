@@ -7,8 +7,8 @@ rust-latest:
   script:
     - cargo build --verbose
     - cargo test --verbose
-    - cargo run -- -h
-    - cargo run -- s 5
+    - touch a.f90 b.f90 c.f90
+    - cargo run -- build
 
 rust-nightly:
   stage: build
