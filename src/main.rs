@@ -30,6 +30,51 @@ fn build() {
         println!("File: {}", file.to_str().unwrap());
     }
     println!("Files: {:?}", files);
+    let s = "\
+cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
+
+enable_language(Fortran)
+
+project(p1)
+
+set(SRC
+    a.f90
+    b.f90
+)
+
+add_executable(p1 main.f90 ${SRC})
+";
+    std::fs::write("CMakeLists.txt", s).unwrap();
+    let output = std::process::Command::new("cmake")
+                           .args(&["-B", "build", "."])
+                           .output().unwrap();
+    println!("status: {}", output.status);
+    println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+    if !output.status.success() {
+        panic!("Command failed.")
+    }
+
+    let output = std::process::Command::new("cmake")
+                           .args(&["--build", "build"])
+                           .output().unwrap();
+    println!("status: {}", output.status);
+    println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+    if !output.status.success() {
+        panic!("Command failed.")
+    }
+}
+
+fn run() {
+    let output = std::process::Command::new("build/p1")
+                                        .output().unwrap();
+    println!("status: {}", output.status);
+    println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+    if !output.status.success() {
+        panic!("Command failed.")
+    }
 }
 
 fn main() {
@@ -38,6 +83,10 @@ fn main() {
     if args.command == "build" {
         println!("Command: build");
         build();
+    } else if args.command == "run" {
+        println!("Command: run");
+        build();
+        run();
     } else {
         panic!("Unknown command");
     }
