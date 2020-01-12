@@ -9,6 +9,7 @@ rust-latest:
     - cargo test --verbose
     - touch a.f90 b.f90 c.f90
     - cargo run -- build
+    - ./run_tests.sh
 
 rust-nightly:
   stage: build
