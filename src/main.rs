@@ -26,24 +26,25 @@ fn collect_source_files() -> Vec<std::path::PathBuf> {
 
 fn build() {
     let files = collect_source_files();
+    let mut files2: String = String::new();
     for file in &files {
         println!("File: {}", file.to_str().unwrap());
+        if !file.to_str().unwrap().ends_with("main.f90") {
+            let s1:String = files2.to_string();
+            let s2:String = file.to_str().unwrap().to_string();
+            files2 = s1 + " " + &s2;
+        }
     }
     println!("Files: {:?}", files);
-    let s = "\
+    let s = format!("\
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
 enable_language(Fortran)
 
 project(p1)
 
-set(SRC
-    a.f90
-    b.f90
-)
-
-add_executable(p1 main.f90 ${SRC})
-";
+add_executable(p1 main.f90 {})
+", files2);
     std::fs::write("CMakeLists.txt", s).unwrap();
     let output = std::process::Command::new("cmake")
                            .args(&["-B", "build", "."])
