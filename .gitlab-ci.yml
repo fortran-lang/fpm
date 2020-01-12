@@ -5,10 +5,11 @@ rust-latest:
   stage: build
   image: rust:latest
   script:
+    - apt-get update
+    - apt-get -yq --no-install-recommends install cmake make gfortran
     - cargo build --verbose
     - cargo test --verbose
-    - touch a.f90 b.f90 c.f90
-    - cargo run -- build
+    - cargo run -- --help
     - ./run_tests.sh
 
 rust-nightly:
