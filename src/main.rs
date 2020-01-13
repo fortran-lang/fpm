@@ -6,8 +6,8 @@ struct Cli {
     command: String,
 }
 
-fn collect_source_files() -> Vec<std::path::PathBuf> {
-    let mut files: Vec<std::path::PathBuf> = Vec::new();
+fn collect_source_files() -> Vec<String> {
+    let mut files: Vec<String> = Vec::new();
     for entry in std::fs::read_dir(".").unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
@@ -17,7 +17,7 @@ fn collect_source_files() -> Vec<std::path::PathBuf> {
                 Some(ext) => ext.to_str().unwrap(),
             };
             if ext == "f90" {
-                files.push(path);
+                files.push(path.to_str().unwrap().to_string());
             }
         }
     }
@@ -28,9 +28,9 @@ fn build() {
     let files = collect_source_files();
     let mut files2: String = String::new();
     for file in &files {
-        println!("File: {}", file.to_str().unwrap());
-        if !file.to_str().unwrap().ends_with("main.f90") {
-            files2 = files2 + " " + file.to_str().unwrap();
+        println!("File: {}", file);
+        if !file.ends_with("main.f90") {
+            files2 = files2 + " " + file;
         }
     }
     println!("Files: {:?}", files);
