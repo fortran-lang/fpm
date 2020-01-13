@@ -30,9 +30,7 @@ fn build() {
     for file in &files {
         println!("File: {}", file.to_str().unwrap());
         if !file.to_str().unwrap().ends_with("main.f90") {
-            let s1:String = files2.to_string();
-            let s2:String = file.to_str().unwrap().to_string();
-            files2 = s1 + " " + &s2;
+            files2 = files2 + " " + file.to_str().unwrap();
         }
     }
     println!("Files: {:?}", files);
