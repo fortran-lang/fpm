@@ -44,8 +44,15 @@ project(p1)
 add_executable(p1 main.f90 {})
 ", files2);
     std::fs::write("CMakeLists.txt", s).unwrap();
+
+    let args: Vec<&str> = if cfg!(windows) {
+        vec!["-G", "MinGW Makefiles", "-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"", "-B", "build", "."]
+    } else {
+        vec!["-B", "build", "."]
+    };
+    println!("[+] cmake {:?}", args);
     let output = std::process::Command::new("cmake")
-                           .args(&["-B", "build", "."])
+                           .args(&args)
                            .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
@@ -54,11 +61,9 @@ add_executable(p1 main.f90 {})
         panic!("Command failed.")
     }
 
-    let args: Vec<&str> = if cfg!(windows) {
-        vec!["-G", "MinGW Makefiles", "-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"", "--build", "build"]
-    } else {
-        vec!["--build", "build"]
-    };
+    println!("");
+    let args = vec!["--build", "build"];
+    println!("[+] cmake {:?}", args);
     let output = std::process::Command::new("cmake")
                            .args(&args)
                            .output().unwrap();
