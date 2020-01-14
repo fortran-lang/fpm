@@ -63,4 +63,4 @@ jobs:
 
     - name: Run tests
       run: |
-        cargo test --verbose
+        RUST_BACKTRACE=1 cargo test --verbose
