@@ -56,19 +56,20 @@ jobs:
       run: |
         curl https://sh.rustup.rs -sSf | sh -s -- -y
 
+    - name: Setting Rust path
+      if: contains(matrix.os, 'macos')
+      run: echo "::add-path::${HOME}/.cargo/bin"
+
     - name: Build
       run: |
-        export PATH="$HOME/.cargo/bin:$PATH"
         cargo build --verbose
 
     - name: Run tests
       run: |
-        export PATH="$HOME/.cargo/bin:$PATH"
         cargo test --verbose
 
     # TODO: integrate these with `cargo test` above
     - name: Run manual tests
       run: |
-        export PATH="$HOME/.cargo/bin:$PATH"
         cargo run -- --help
         ./run_tests.sh
