@@ -19,8 +19,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         gcc_v: [9] # Version of GFortran we want to use.
+        rust: [stable]
     env:
       FC: gfortran-${{ matrix.gcc_v }}
       GCC_V: ${{ matrix.gcc_v }}
@@ -38,7 +39,7 @@ jobs:
       run: pip install --upgrade cmake
 
     - name: Install GFortran Linux
-      if: contains( matrix.os, 'ubuntu')
+      if: contains(matrix.os, 'ubuntu')
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt-get update
@@ -47,28 +48,26 @@ jobs:
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
         --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
 
-    - name: Install Rust macOS
-      if: contains( matrix.os, 'macos')
-      run: |
-        curl https://sh.rustup.rs -sSf | sh -s -- -y
-
     - name: Install GFortran macOS
       if: contains( matrix.os, 'macos')
       run: brew install gcc@${GCC_V} || brew upgrade gcc@${GCC_V} || true
 
+    - name: Install Rust
+      uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+
     - name: Build
       run: |
-        export PATH="$HOME/.cargo/bin:$PATH"
         cargo build --verbose
 
     - name: Run tests
       run: |
-        export PATH="$HOME/.cargo/bin:$PATH"
         cargo test --verbose
 
     # TODO: integrate these with `cargo test` above
     - name: Run manual tests
+      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
       run: |
-        export PATH="$HOME/.cargo/bin:$PATH"
         cargo run -- --help
         ./run_tests.sh
