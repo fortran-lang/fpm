@@ -67,47 +67,47 @@ jobs:
         cargo test --verbose -j1
 
     - name: Run tests 2
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
     - name: Run tests 3
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
     - name: Run tests 4
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
     - name: Run tests 5
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
     - name: Run tests 6
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
     - name: Run tests 7
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
     - name: Run tests 8
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
     - name: Run tests 9
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
     - name: Run tests 10
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         cargo test --verbose -j1
 
