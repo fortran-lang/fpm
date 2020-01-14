@@ -4,5 +4,5 @@ implicit none
 
 call f()
 
-print *, "OK"
+print *, "TEST1 OK"
 end

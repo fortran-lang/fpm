@@ -30,7 +30,7 @@ fn build() {
     for file in &files {
         println!("File: {}", file);
         if !file.ends_with("main.f90") {
-            files2 = files2 + " " + file;
+            files2 = files2 + " " + &file.replace("\\", "/");
         }
     }
     println!("Files: {:?}", files);
@@ -44,8 +44,17 @@ project(p1)
 add_executable(p1 main.f90 {})
 ", files2);
     std::fs::write("CMakeLists.txt", s).unwrap();
+
+    let mut args: Vec<&str> = vec![];
+    if cfg!(windows) {
+        args.extend(vec!["-G", "MinGW Makefiles",
+                    "-DCMAKE_SH=CMAKE_SH-NOTFOUND"])
+    };
+    args.extend(vec!["-B", "build", "."]);
+    println!("[+] cmake {:?}", args);
     let output = std::process::Command::new("cmake")
-                           .args(&["-B", "build", "."])
+                           .args(&args)
+                           .env("FC", "gfortran")
                            .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
@@ -54,8 +63,11 @@ add_executable(p1 main.f90 {})
         panic!("Command failed.")
     }
 
+    println!("");
+    let args = vec!["--build", "build"];
+    println!("[+] cmake {:?}", args);
     let output = std::process::Command::new("cmake")
-                           .args(&["--build", "build"])
+                           .args(&args)
                            .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
