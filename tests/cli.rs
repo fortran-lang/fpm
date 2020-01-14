@@ -1,5 +1,8 @@
+#[cfg(not(target_os="macos"))]
 use std::process::Command;  // Run programs
+#[cfg(not(target_os="macos"))]
 use assert_cmd::prelude::*; // Add methods on commands
+#[cfg(not(target_os="macos"))]
 use predicates::prelude::*; // Used for writing assertions
 
 #[cfg(not(target_os="macos"))]
