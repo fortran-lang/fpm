@@ -1,5 +1,5 @@
 program test2
 implicit none
 
-print *, "OK"
+print *, "TEST2 OK"
 end
