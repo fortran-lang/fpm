@@ -12,6 +12,7 @@ env:
   HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
   HOMEBREW_NO_GITHUB_API: "ON"
   HOMEBREW_NO_INSTALL_CLEANUP: "ON"
+  RUST_BACKTRACE: "1" # Make Rust print full backtrace on error
 
 jobs:
   Build:
@@ -63,4 +64,4 @@ jobs:
 
     - name: Run tests
       run: |
-        RUST_BACKTRACE=1 cargo test --verbose
+        cargo test --verbose
