@@ -30,7 +30,7 @@ fn build() {
     for file in &files {
         println!("File: {}", file);
         if !file.ends_with("main.f90") {
-            files2 = files2 + " " + file;
+            files2 = files2 + " " + &file.replace("\\", "/");
         }
     }
     println!("Files: {:?}", files);
