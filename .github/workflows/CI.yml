@@ -67,7 +67,7 @@ jobs:
 
     # TODO: integrate these with `cargo test` above
     - name: Run manual tests
-      if: ! contains(matrix.os, 'windows')
+      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
       run: |
         cargo run -- --help
         ./run_tests.sh
