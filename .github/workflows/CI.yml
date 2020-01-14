@@ -64,7 +64,7 @@ jobs:
 
     - name: Run tests
       run: |
-        cargo test --verbose
+        cargo test --verbose -j1
 
     # TODO: integrate these with `cargo test` above
     - name: Run manual tests
