@@ -48,7 +48,7 @@ add_executable(p1 main.f90 {})
     let mut args: Vec<&str> = vec![];
     if cfg!(windows) {
         args.extend(vec!["-G", "MinGW Makefiles",
-                    "-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\""])
+                    "-DCMAKE_SH=CMAKE_SH-NOTFOUND"])
     };
     args.extend(vec!["-B", "build", "."]);
     println!("[+] cmake {:?}", args);
