@@ -54,6 +54,7 @@ add_executable(p1 main.f90 {})
     println!("[+] cmake {:?}", args);
     let output = std::process::Command::new("cmake")
                            .args(&args)
+                           .env("FC", "gfortran")
                            .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
