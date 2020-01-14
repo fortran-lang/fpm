@@ -55,7 +55,7 @@ add_executable(p1 main.f90 {})
     }
 
     let output = std::process::Command::new("cmake")
-                           .args(&["--build", "build"])
+                           .args(&["-G", "MinGW Makefiles", "-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"", "--build", "build"])
                            .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
