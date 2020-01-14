@@ -52,7 +52,7 @@ jobs:
       run: brew install gcc@${GCC_V} || brew upgrade gcc@${GCC_V} || true
 
     - name: Install Rust macOS
-      if: contains(matrix.os, 'macos')
+      if: contains(matrix.os, 'macos') || contains(matrix.os, 'windows')
       run: |
         curl https://sh.rustup.rs -sSf | sh -s -- -y
 
