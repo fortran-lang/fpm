@@ -54,8 +54,13 @@ add_executable(p1 main.f90 {})
         panic!("Command failed.")
     }
 
+    let args: Vec<&str> = if cfg!(windows) {
+        vec!["-G", "MinGW Makefiles", "-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"", "--build", "build"]
+    } else {
+        vec!["--build", "build"]
+    };
     let output = std::process::Command::new("cmake")
-                           .args(&["-G", "MinGW Makefiles", "-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"", "--build", "build"])
+                           .args(&args)
                            .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
