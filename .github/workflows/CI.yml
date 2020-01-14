@@ -49,7 +49,11 @@ jobs:
 
     - name: Install Rust macOS
       if: contains( matrix.os, 'macos')
-      run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      run: |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
+        export PATH="$HOME/.cargo/bin:$PATH"
+        which cargo
+        cargo
 
     - name: Install GFortran macOS
       if: contains( matrix.os, 'macos')
