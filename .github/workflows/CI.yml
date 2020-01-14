@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         gcc_v: [9] # Version of GFortran we want to use.
     env:
       FC: gfortran-${{ matrix.gcc_v }}
