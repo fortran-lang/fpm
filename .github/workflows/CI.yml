@@ -47,6 +47,10 @@ jobs:
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
         --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
 
+    - name: Install Rust macOS
+      if: contains( matrix.os, 'macos')
+      run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+
     - name: Install GFortran macOS
       if: contains( matrix.os, 'macos')
       run: brew install gcc@${GCC_V} || brew upgrade gcc@${GCC_V} || true
