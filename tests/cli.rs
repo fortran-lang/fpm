@@ -2,6 +2,7 @@ use std::process::Command;  // Run programs
 use assert_cmd::prelude::*; // Add methods on commands
 use predicates::prelude::*; // Used for writing assertions
 
+#[cfg(not(target_os="macos"))]
 #[test]
 fn test_help() {
     let mut cmd = Command::cargo_bin("fpm").unwrap();
@@ -12,6 +13,7 @@ fn test_help() {
             predicate::str::contains("--help       Prints help information"));
 }
 
+#[cfg(not(target_os="macos"))]
 #[test]
 fn test_1() {
     let mut build = Command::cargo_bin("fpm").unwrap();
@@ -30,6 +32,7 @@ fn test_1() {
         .stdout(predicate::str::contains("TEST1 OK"));
 }
 
+#[cfg(not(target_os="macos"))]
 #[test]
 fn test_2() {
     let mut build = Command::cargo_bin("fpm").unwrap();
