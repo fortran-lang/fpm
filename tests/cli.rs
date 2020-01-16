@@ -2,13 +2,17 @@ use std::process::Command;  // Run programs
 use assert_cmd::prelude::*; // Add methods on commands
 use predicates::prelude::*; // Used for writing assertions
 use assert_cmd::assert::Assert;
+use std::os::unix::process::ExitStatusExt;
 
 // Our own function, so that we can better debug the failure
 fn success(self0: Assert) -> Assert {
     if !self0.get_output().status.success() {
-        let actual_code = self0.get_output().status.code().unwrap_or_else(|| {
-            panic!("INTERRUPTED")
-        });
+        let code = self0.get_output().status.code();
+        if code.is_none() {
+            let signal = self0.get_output().status.signal().unwrap();
+            panic!("INTERRUPTED with signal: {}", signal);
+        }
+        let actual_code = code.unwrap();
         panic!("Non zero exit code: {}", actual_code);
     }
     self0
