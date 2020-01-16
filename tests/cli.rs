@@ -4,10 +4,21 @@ use predicates::prelude::*; // Used for writing assertions
 use assert_cmd::assert::Assert;
 #[cfg(unix)]
 use std::os::unix::process::ExitStatusExt;
+use std::process::ExitStatus;
 
 pub trait Success2 {
     // Our own function with better reporting of errors
     fn success2(self) -> Self;
+}
+
+#[cfg(unix)]
+fn get_signal(status: ExitStatus) -> Option<i32> {
+    status.signal()
+}
+
+#[cfg(not(unix))]
+fn get_signal(status: ExitStatus) -> Option<i32> {
+    None
 }
 
 impl Success2 for Assert {
@@ -16,7 +27,7 @@ impl Success2 for Assert {
             let code = self.get_output().status.code();
             if cfg!(unix) {
                 if code.is_none() {
-                    let signal = self.get_output().status.signal().unwrap();
+                    let signal = get_signal(self.get_output().status).unwrap();
                     panic!("INTERRUPTED with signal: {}", signal);
                 }
             }
