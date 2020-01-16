@@ -17,7 +17,7 @@ fn get_signal(status: ExitStatus) -> Option<i32> {
 }
 
 #[cfg(not(unix))]
-fn get_signal(status: ExitStatus) -> Option<i32> {
+fn get_signal(_status: ExitStatus) -> Option<i32> {
     None
 }
 
