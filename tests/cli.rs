@@ -2,6 +2,7 @@ use std::process::Command;  // Run programs
 use assert_cmd::prelude::*; // Add methods on commands
 use predicates::prelude::*; // Used for writing assertions
 use assert_cmd::assert::Assert;
+#[cfg(unix)]
 use std::os::unix::process::ExitStatusExt;
 
 pub trait Success2 {
@@ -13,9 +14,11 @@ impl Success2 for Assert {
     fn success2(self) -> Self {
         if !self.get_output().status.success() {
             let code = self.get_output().status.code();
-            if code.is_none() {
-                let signal = self.get_output().status.signal().unwrap();
-                panic!("INTERRUPTED with signal: {}", signal);
+            if cfg!(unix) {
+                if code.is_none() {
+                    let signal = self.get_output().status.signal().unwrap();
+                    panic!("INTERRUPTED with signal: {}", signal);
+                }
             }
             let actual_code = code.unwrap();
             panic!("Non zero exit code: {}", actual_code);
