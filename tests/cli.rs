@@ -24,15 +24,20 @@ fn get_signal(_status: ExitStatus) -> Option<i32> {
 impl Success2 for Assert {
     fn success2(self) -> Self {
         if !self.get_output().status.success() {
-            let code = self.get_output().status.code();
+            let output = self.get_output();
+            let code = output.status.code();
+            println!("status: {}", output.status);
+            println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+            println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
             if cfg!(unix) {
                 if code.is_none() {
-                    let signal = get_signal(self.get_output().status).unwrap();
+                    let signal = get_signal(output.status).unwrap();
                     panic!("INTERRUPTED with signal: {}", signal);
                 }
             }
             let actual_code = code.unwrap();
-            panic!("Non zero exit code: {}", actual_code);
+            println!("code: {}", actual_code);
+            panic!("Non zero exit code");
         }
         self
     }
