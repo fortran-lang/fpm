@@ -67,6 +67,7 @@ jobs:
       run: |
         cargo test
 
+    # Workaround for https://github.com/fortran-lang/fpm/issues/16
     - name: Run tests (macOS)
       if: contains(matrix.os, 'macos')
       run: |
