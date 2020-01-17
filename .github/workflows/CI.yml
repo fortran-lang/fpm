@@ -50,7 +50,7 @@ jobs:
         --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
 
     - name: Install GFortran macOS
-      if: contains( matrix.os, 'macos')
+      if: contains(matrix.os, 'macos')
       run: brew install gcc@${GCC_V} || brew upgrade gcc@${GCC_V} || true
 
     - name: Install Rust
@@ -60,8 +60,15 @@ jobs:
 
     - name: Build
       run: |
-        cargo build --verbose
+        cargo test --verbose --no-run
 
-    - name: Run tests
+    - name: Run tests (Linux, Windows)
+      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'windows')
       run: |
-        cargo test --verbose -j1
+        cargo test
+
+    # Workaround for https://github.com/fortran-lang/fpm/issues/16
+    - name: Run tests (macOS)
+      if: contains(matrix.os, 'macos')
+      run: |
+        cargo test || cargo test || cargo test
