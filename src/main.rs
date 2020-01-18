@@ -1,10 +1,15 @@
 use structopt::StructOpt;
 use toml::Value;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, StructOpt)]
 struct Cli {
     /// fpm command
     command: String,
+
+    /// Directory for all generated artifacts
+    #[structopt(long, name="DIRECTORY", default_value = "target")]
+    target_dir : PathBuf,
 }
 
 fn collect_source_files() -> Vec<String> {
@@ -25,7 +30,8 @@ fn collect_source_files() -> Vec<String> {
     files
 }
 
-fn build() {
+fn build(target_dir: &Path) {
+    println!("TARGET_DIR: {}", target_dir.to_str().unwrap());
     let value = std::fs::read_to_string("fpm.toml")
         .unwrap()
         .parse::<Value>().unwrap();
@@ -98,10 +104,10 @@ fn main() {
     println!("{:?}", args);
     if args.command == "build" {
         println!("Command: build");
-        build();
+        build(args.target_dir.as_path());
     } else if args.command == "run" {
         println!("Command: run");
-        build();
+        build(args.target_dir.as_path());
         run();
     } else {
         panic!("Unknown command");

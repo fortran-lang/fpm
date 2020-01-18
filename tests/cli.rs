@@ -58,6 +58,8 @@ fn test_help() {
 fn test_1() {
     let mut build = Command::cargo_bin("fpm").unwrap();
     build.arg("build")
+        .arg("--target-dir")
+        .arg("build-test")
         .current_dir("tests/1");
     build.assert()
         .success2()
@@ -76,6 +78,8 @@ fn test_1() {
 fn test_2() {
     let mut build = Command::cargo_bin("fpm").unwrap();
     build.arg("build")
+        .arg("--target-dir")
+        .arg("build-test")
         .current_dir("tests/2");
     build.assert()
         .success2()
