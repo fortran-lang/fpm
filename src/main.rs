@@ -1,4 +1,5 @@
 use structopt::StructOpt;
+use toml::Value;
 
 #[derive(Debug, StructOpt)]
 struct Cli {
@@ -25,6 +26,10 @@ fn collect_source_files() -> Vec<String> {
 }
 
 fn build() {
+    let value = std::fs::read_to_string("fpm.toml")
+        .unwrap()
+        .parse::<Value>().unwrap();
+    println!("TOML: {:?}", value);
     let files = collect_source_files();
     let mut files2: String = String::new();
     for file in &files {
