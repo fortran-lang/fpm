@@ -31,6 +31,7 @@ fn collect_source_files() -> Vec<String> {
 }
 
 fn build(target_dir: &Path) {
+    let target = PathBuf::from(target_dir);
     println!("TARGET_DIR: {}", target_dir.to_str().unwrap());
     let value = std::fs::read_to_string("fpm.toml")
         .unwrap()
@@ -41,7 +42,7 @@ fn build(target_dir: &Path) {
     for file in &files {
         println!("File: {}", file);
         if !file.ends_with("main.f90") {
-            files2 = files2 + " " + &file.replace("\\", "/");
+            files2 = files2 + " ../" + &file.replace("\\", "/");
         }
     }
     println!("Files: {:?}", files);
@@ -52,9 +53,12 @@ enable_language(Fortran)
 
 project(p1)
 
-add_executable(p1 main.f90 {})
+add_executable(p1 ../main.f90 {})
 ", files2);
-    std::fs::write("CMakeLists.txt", s).unwrap();
+    let mut cmakelists = target;
+    cmakelists.push("CMakeLists.txt");
+    std::fs::create_dir_all(target_dir).unwrap();
+    std::fs::write(cmakelists.to_str().unwrap(), s).unwrap();
 
     let mut args: Vec<&str> = vec![];
     if cfg!(windows) {
@@ -65,6 +69,7 @@ add_executable(p1 main.f90 {})
     println!("[+] cmake {:?}", args);
     let output = std::process::Command::new("cmake")
                            .args(&args)
+                           .current_dir(target_dir)
                            .env("FC", "gfortran")
                            .output().unwrap();
     println!("status: {}", output.status);
@@ -79,6 +84,7 @@ add_executable(p1 main.f90 {})
     println!("[+] cmake {:?}", args);
     let output = std::process::Command::new("cmake")
                            .args(&args)
+                           .current_dir(target_dir)
                            .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
@@ -88,8 +94,9 @@ add_executable(p1 main.f90 {})
     }
 }
 
-fn run() {
+fn run(target_dir: &Path) {
     let output = std::process::Command::new("build/p1")
+                                        .current_dir(target_dir)
                                         .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
@@ -108,7 +115,7 @@ fn main() {
     } else if args.command == "run" {
         println!("Command: run");
         build(args.target_dir.as_path());
-        run();
+        run(args.target_dir.as_path());
     } else {
         panic!("Unknown command");
     }
