@@ -31,11 +31,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v1
 
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v1 # Use pip to install latest CMake, & FORD/Jin2For, etc.
-      with:
-        python-version: 3.x
-
     - name: Install GFortran and CMake Linux
       if: contains(matrix.os, 'ubuntu')
       run: |
