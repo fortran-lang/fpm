@@ -36,15 +36,12 @@ jobs:
       with:
         python-version: 3.x
 
-    - name: Set up common
-      run: pip install --upgrade cmake
-
-    - name: Install GFortran Linux
+    - name: Install GFortran and CMake Linux
       if: contains(matrix.os, 'ubuntu')
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt-get update
-        sudo apt-get install -y gcc-${GCC_V} gfortran-${GCC_V}
+        sudo apt-get install -y gcc-${GCC_V} gfortran-${GCC_V} cmake
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
         --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
