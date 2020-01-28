@@ -45,7 +45,7 @@ impl Success2 for Assert {
 
 #[test]
 fn test_help() {
-    let mut cmd = Command::cargo_bin("fpm").unwrap();
+    let mut cmd = Command::new("./target/debug/fpm");
     cmd.arg("--help");
     cmd.assert()
         .success2()
@@ -56,7 +56,7 @@ fn test_help() {
 
 #[test]
 fn test_1() {
-    let mut build = Command::cargo_bin("fpm").unwrap();
+    let mut build = Command::new("./target/debug/fpm");
     build.arg("build")
         .arg("--target-dir")
         .arg("build-test")
@@ -66,7 +66,7 @@ fn test_1() {
         .stdout(predicate::str::contains("Built target p1")
                 .and(predicate::str::contains("TEST1 OK").not()));
 
-    let mut run = Command::cargo_bin("fpm").unwrap();
+    let mut run = Command::new("./target/debug/fpm");
     run.arg("run")
         .current_dir("tests/1");
     run.assert()
@@ -76,7 +76,7 @@ fn test_1() {
 
 #[test]
 fn test_2() {
-    let mut build = Command::cargo_bin("fpm").unwrap();
+    let mut build = Command::new("./target/debug/fpm");
     build.arg("build")
         .arg("--target-dir")
         .arg("build-test")
@@ -86,7 +86,7 @@ fn test_2() {
         .stdout(predicate::str::contains("Built target p1")
                 .and(predicate::str::contains("TEST2 OK").not()));
 
-    let mut run = Command::cargo_bin("fpm").unwrap();
+    let mut run = Command::new("./target/debug/fpm");
     run.arg("run")
         .current_dir("tests/2");
     run.assert()
