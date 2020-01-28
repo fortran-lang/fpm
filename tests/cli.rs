@@ -72,6 +72,8 @@ fn test_1() {
 
     let mut run = fpm_bin();
     run.arg("run")
+        .arg("--target-dir")
+        .arg("build-test")
         .current_dir("tests/1");
     run.assert()
         .success2()
@@ -92,6 +94,8 @@ fn test_2() {
 
     let mut run = fpm_bin();
     run.arg("run")
+        .arg("--target-dir")
+        .arg("build-test")
         .current_dir("tests/2");
     run.assert()
         .success2()
