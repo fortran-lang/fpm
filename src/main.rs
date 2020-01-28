@@ -94,8 +94,17 @@ add_executable(p1 ../main.f90 {})
     }
 }
 
+fn p1_bin(target_dir: &Path) -> std::process::Command {
+    let mut fpm_bin_relative: std::path::PathBuf = target_dir.to_path_buf();
+    fpm_bin_relative.push("build");
+    fpm_bin_relative.push("p1");
+    fpm_bin_relative.set_extension(std::env::consts::EXE_EXTENSION);
+    let fpm_bin_absolute = std::fs::canonicalize(fpm_bin_relative).unwrap();
+    std::process::Command::new(fpm_bin_absolute.to_str().unwrap())
+}
+
 fn run(target_dir: &Path) {
-    let output = std::process::Command::new("build/p1")
+    let output = p1_bin(target_dir)
                                         .current_dir(target_dir)
                                         .output().unwrap();
     println!("status: {}", output.status);
