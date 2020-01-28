@@ -1,10 +1,7 @@
-use std::process::Command;  // Run programs
-use assert_cmd::prelude::*; // Add methods on commands
-use predicates::prelude::*; // Used for writing assertions
-use assert_cmd::assert::Assert;
+use assert_cmd::prelude::OutputAssertExt; // Add methods on commands
+use predicates::prelude::{predicate, PredicateBooleanExt}; // Used for writing assertions
 #[cfg(unix)]
 use std::os::unix::process::ExitStatusExt;
-use std::process::ExitStatus;
 
 pub trait Success2 {
     // Our own function with better reporting of errors
@@ -12,16 +9,16 @@ pub trait Success2 {
 }
 
 #[cfg(unix)]
-fn get_signal(status: ExitStatus) -> Option<i32> {
+fn get_signal(status: std::process::ExitStatus) -> Option<i32> {
     status.signal()
 }
 
 #[cfg(not(unix))]
-fn get_signal(_status: ExitStatus) -> Option<i32> {
+fn get_signal(_status: std::process::ExitStatus) -> Option<i32> {
     None
 }
 
-impl Success2 for Assert {
+impl Success2 for assert_cmd::assert::Assert {
     fn success2(self) -> Self {
         if !self.get_output().status.success() {
             let output = self.get_output();
@@ -43,11 +40,11 @@ impl Success2 for Assert {
     }
 }
 
-fn fpm_bin() -> Command {
+fn fpm_bin() -> std::process::Command {
     let mut fpm_bin_relative: std::path::PathBuf = ["target", "debug", "fpm"].iter().collect();
     fpm_bin_relative.set_extension(std::env::consts::EXE_EXTENSION);
     let fpm_bin_absolute = std::fs::canonicalize(fpm_bin_relative).unwrap();
-    Command::new(fpm_bin_absolute.to_str().unwrap())
+    std::process::Command::new(fpm_bin_absolute.to_str().unwrap())
 }
 
 #[test]
