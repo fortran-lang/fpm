@@ -43,9 +43,16 @@ impl Success2 for Assert {
     }
 }
 
+fn fpm_bin() -> Command {
+    let mut fpm_bin_relative: std::path::PathBuf = ["target", "debug", "fpm"].iter().collect();
+    fpm_bin_relative.set_extension(std::env::consts::EXE_EXTENSION);
+    let fpm_bin_absolute = std::fs::canonicalize(fpm_bin_relative).unwrap();
+    Command::new(fpm_bin_absolute.to_str().unwrap())
+}
+
 #[test]
 fn test_help() {
-    let mut cmd = Command::new("./target/debug/fpm");
+    let mut cmd = fpm_bin();
     cmd.arg("--help");
     cmd.assert()
         .success2()
@@ -56,7 +63,7 @@ fn test_help() {
 
 #[test]
 fn test_1() {
-    let mut build = Command::new("./target/debug/fpm");
+    let mut build = fpm_bin();
     build.arg("build")
         .arg("--target-dir")
         .arg("build-test")
@@ -66,7 +73,7 @@ fn test_1() {
         .stdout(predicate::str::contains("Built target p1")
                 .and(predicate::str::contains("TEST1 OK").not()));
 
-    let mut run = Command::new("./target/debug/fpm");
+    let mut run = fpm_bin();
     run.arg("run")
         .current_dir("tests/1");
     run.assert()
@@ -76,7 +83,7 @@ fn test_1() {
 
 #[test]
 fn test_2() {
-    let mut build = Command::new("./target/debug/fpm");
+    let mut build = fpm_bin();
     build.arg("build")
         .arg("--target-dir")
         .arg("build-test")
@@ -86,7 +93,7 @@ fn test_2() {
         .stdout(predicate::str::contains("Built target p1")
                 .and(predicate::str::contains("TEST2 OK").not()));
 
-    let mut run = Command::new("./target/debug/fpm");
+    let mut run = fpm_bin();
     run.arg("run")
         .current_dir("tests/2");
     run.assert()
