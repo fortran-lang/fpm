@@ -68,11 +68,9 @@ add_executable(p1 ../main.f90 {})
     };
     args.extend(vec!["-B", "build", "."]);
     println!("[+] cmake {:?}", args);
-    let env_fc = env::var("FC");
-    let fc : String = if env_fc.is_err() {
-        "gfortran".to_string()
-    } else {
-        env_fc.unwrap()
+    let fc : String = match env::var("FC") {
+        Ok(val) => val,
+        Err(_) => "gfortran".to_string(),
     };
     let output = std::process::Command::new("cmake")
                            .args(&args)
