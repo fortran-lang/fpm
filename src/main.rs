@@ -1,6 +1,7 @@
 use structopt::StructOpt;
 use toml::Value;
 use std::path::{Path, PathBuf};
+use std::env;
 
 #[derive(Debug, StructOpt)]
 struct Cli {
@@ -67,10 +68,14 @@ add_executable(p1 ../main.f90 {})
     };
     args.extend(vec!["-B", "build", "."]);
     println!("[+] cmake {:?}", args);
+    let fc : String = match env::var("FC") {
+        Ok(val) => val,
+        Err(_) => "gfortran".to_string(),
+    };
     let output = std::process::Command::new("cmake")
                            .args(&args)
                            .current_dir(target_dir)
-                           .env("FC", "gfortran")
+                           .env("FC", fc)
                            .output().unwrap();
     println!("status: {}", output.status);
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
