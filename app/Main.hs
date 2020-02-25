@@ -1,6 +1,16 @@
 module Main where
 
-import           Options.Applicative
+import           Options.Applicative            ( Parser
+                                                , (<**>)
+                                                , command
+                                                , execParser
+                                                , fullDesc
+                                                , info
+                                                , header
+                                                , helper
+                                                , progDesc
+                                                , subparser
+                                                )
 
 newtype Arguments = Arguments { command' :: Command }
 
