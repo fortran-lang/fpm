@@ -30,7 +30,6 @@ dependencies:
 - shake
 - split
 
-
 library:
   source-dirs: src
 
