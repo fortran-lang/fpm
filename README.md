@@ -4,29 +4,26 @@ A prototype version.
 
 ## How to try it out
 
-Install Rust, then:
+### Install Haskell
+
+Install Haskell Stack from (https://haskellstack.org/). E.g., to install on
+Linux without root access, follow the [manual download](https://docs.haskellstack.org/en/stable/install_and_upgrade/#manual-download_2):
 ```
-cargo build
+wget https://get.haskellstack.org/stable/linux-x86_64-static.tar.gz
+tar xaf linux-x86_64-static.tar.gz
 ```
-Go to a test directory and execute:
+and put the `stack` binary in your path, for example by:
 ```
-cd tests/1
-../../target/debug/fpm build
-../../target/debug/fpm run
-```
-And the same in the other test directory (one can also call `run` directly):
-```
-cd tests/2
-../../target/debug/fpm run
+export PATH="$PATH:`pwd`/stack-2.1.3-linux-x86_64-static/"
 ```
 
-## Development Details
+### Build and Test FPM
 
-The command line interface (CLI) program `fpm` is build according to the
-following Rust CLI tutorial:
-
-https://rust-cli.github.io/book/index.html
-
-and the user API is inspired by Cargo. Here is Cargo project layout:
-
-https://doc.rust-lang.org/cargo/guide/project-layout.html
+Build using:
+```
+stack build
+```
+To test:
+```
+stack test
+```
