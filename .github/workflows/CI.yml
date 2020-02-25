@@ -4,9 +4,6 @@ on: [push, pull_request]
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
-  CMAKE_BUILD_PARALLEL_LEVEL: "2" # 2 cores on each GHA VM, enable parallel builds
-  CTEST_OUTPUT_ON_FAILURE: "ON" # This way we don't need a flag to ctest
-  CTEST_PARALLEL_LEVEL: "2"
   HOMEBREW_NO_ANALYTICS: "ON" # Make Homebrew installation a little quicker
   HOMEBREW_NO_AUTO_UPDATE: "ON"
   HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
@@ -22,7 +19,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         gcc_v: [9] # Version of GFortran we want to use.
-        rust: [stable]
     env:
       FC: gfortran
       GCC_V: ${{ matrix.gcc_v }}
@@ -31,9 +27,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v1
 
-    - name: Install CMake Linux
-      if: contains(matrix.os, 'ubuntu')
-      run: ci/install_cmake.sh
+    - name: Install Haskell
+      uses: mstksg/setup-stack@v1
 
     - name: Install GFortran Linux
       if: contains(matrix.os, 'ubuntu')
@@ -42,16 +37,10 @@ jobs:
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
         --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
 
-
-    - name: Install Rust
-      uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ matrix.rust }}
-
     - name: Build
       run: |
-        cargo test --verbose --no-run
+        stack build
 
     - name: Run tests
       run: |
-        cargo test
+        stack test
