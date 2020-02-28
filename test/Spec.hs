@@ -1,4 +1,6 @@
-import Lib (someFunc)
+import Lib (someFunc, someFunc2)
 
 main :: IO ()
-main = someFunc
+main = do
+    someFunc
+    someFunc2
