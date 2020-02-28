@@ -105,7 +105,7 @@ buildPrograms programDirectory libraryDirectories sourceExtensions buildDirector
                           flags
                           ["-o", objectFile, sourceFile]
                   (`elem` executables) ?> \exe -> do
-                      let objectFile = exe -<.> "o"
+                      let objectFile = map toLower exe -<.> "o"
                       need [objectFile]
                       need archives
                       cmd compiler objectFile archives ["-o", exe] flags
@@ -216,8 +216,11 @@ createSourceToObjectMap buildDirectory libraryDirectory sourceFile =
 sourceFileToObjectFile :: FilePath -> FilePath -> FilePath -> FilePath
 sourceFileToObjectFile buildDirectory libraryDirectory sourceFile =
     buildDirectory
-        </>  pathSeparatorsToUnderscores
-                 (makeRelative libraryDirectory sourceFile)
+        </>  map
+                 toLower
+                 (pathSeparatorsToUnderscores
+                     (makeRelative libraryDirectory sourceFile)
+                 )
         -<.> "o"
 
 sourceFileToExecutable :: FilePath -> FilePath -> FilePath -> FilePath

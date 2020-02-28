@@ -1,4 +1,4 @@
-module hello_m
+module Hello_m
     implicit none
     private
 
@@ -9,4 +9,4 @@ contains
 
         print *, "Hello, " // name // "!"
     end subroutine sayHello
-end module hello_m
+end module Hello_m
