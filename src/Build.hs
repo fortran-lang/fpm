@@ -1,5 +1,6 @@
 module Build
     ( buildLibrary
+    , buildPrograms
     )
 where
 
@@ -31,8 +32,10 @@ import           Development.Shake              ( FilePattern
                                                 , (<//>)
                                                 , (&%>)
                                                 , (%>)
+                                                , (?>)
                                                 )
 import           Development.Shake.FilePath     ( dropExtension
+                                                , exe
                                                 , makeRelative
                                                 , (</>)
                                                 , (<.>)
@@ -54,6 +57,59 @@ import           Text.ParserCombinators.ReadP   ( ReadP
 type ModuleName = String
 
 data LineContents = ModuleUsed ModuleName | Other
+
+buildPrograms
+    :: FilePath
+    -> [FilePath]
+    -> [FilePattern]
+    -> FilePath
+    -> FilePath
+    -> [String]
+    -> IO ()
+buildPrograms programDirectory libraryDirectories sourceExtensions buildDirectory compiler flags
+    = do
+        sourceFiles <- getDirectoriesFiles [programDirectory] sourceExtensions
+        let sourceFileLookupMap = createSourceFileLookupMap
+                buildDirectory
+                programDirectory
+                sourceFiles
+        libraryModuleMaps <- mapM getLibraryModuleMap libraryDirectories
+        let libraryModuleMap = foldl Map.union Map.empty libraryModuleMaps
+        let includeFlags     = map ("-I" ++) libraryDirectories
+        archives <- getDirectoriesFiles libraryDirectories [".a"]
+        let executables = map
+                (sourceFileToExecutable buildDirectory programDirectory)
+                sourceFiles
+        shake shakeOptions { shakeFiles    = buildDirectory
+                           , shakeChange   = ChangeModtimeAndDigest
+                           , shakeColor    = True
+                           , shakeThreads  = 0
+                           , shakeProgress = progressSimple
+                           }
+            $ do
+                  buildDirectory </> "*" <.> "o" %> \objectFile -> do
+                      let
+                          sourceFile = fromMaybe
+                              undefined
+                              (Map.lookup objectFile sourceFileLookupMap)
+                      need [sourceFile]
+                      modulesUsed <- liftIO $ getModulesUsed sourceFile
+                      let
+                          moduleFilesNeeded = mapMaybe
+                              (`Map.lookup` libraryModuleMap)
+                              modulesUsed
+                      need moduleFilesNeeded
+                      cmd compiler
+                          ["-c"]
+                          includeFlags
+                          flags
+                          ["-o", objectFile, sourceFile]
+                  (`elem` executables) ?> \exe -> do
+                      let objectFile = exe -<.> "o"
+                      need [objectFile]
+                      need archives
+                      cmd compiler objectFile archives ["-o", exe] flags
+                  want executables
 
 buildLibrary
     :: FilePath
@@ -112,6 +168,18 @@ getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
     newPatterns = concatMap appendExts dirs
     appendExts dir = map ((dir <//> "*") ++) exts
 
+getLibraryModuleMap :: FilePath -> IO (Map.Map ModuleName FilePath)
+getLibraryModuleMap libraryDirectory = do
+    moduleFiles <- getDirectoriesFiles [libraryDirectory] ["*.mod"]
+    let moduleMap = foldl
+            Map.union
+            Map.empty
+            (map (\m -> Map.singleton (moduleFileToModuleName m) m) moduleFiles)
+    return moduleMap
+  where
+    moduleFileToModuleName moduleFile =
+        map toLower $ dropExtension (makeRelative libraryDirectory moduleFile)
+
 createSourceFileLookupMap
     :: FilePath -> FilePath -> [FilePath] -> Map.Map FilePath FilePath
 createSourceFileLookupMap buildDirectory libraryDirectory sourceFiles = foldl
@@ -151,6 +219,12 @@ sourceFileToObjectFile buildDirectory libraryDirectory sourceFile =
         </>  pathSeparatorsToUnderscores
                  (makeRelative libraryDirectory sourceFile)
         -<.> "o"
+
+sourceFileToExecutable :: FilePath -> FilePath -> FilePath -> FilePath
+sourceFileToExecutable buildDirectory appDirectory sourceFile =
+    buildDirectory
+        </>  pathSeparatorsToUnderscores (makeRelative appDirectory sourceFile)
+        -<.> exe
 
 sourceFileToModFile :: FilePath -> FilePath -> FilePath -> FilePath
 sourceFileToModFile buildDirectory libraryDirectory sourceFile =

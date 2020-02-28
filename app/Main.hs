@@ -1,10 +1,13 @@
 module Main where
 
-import           Build                          ( buildLibrary )
+import           Build                          ( buildLibrary
+                                                , buildPrograms
+                                                )
 import           Development.Shake              ( FilePattern
                                                 , (<//>)
                                                 , getDirectoryFilesIO
                                                 )
+import           Development.Shake.FilePath     ( (</>) )
 import           Options.Applicative            ( Parser
                                                 , (<**>)
                                                 , command
@@ -37,10 +40,16 @@ build = do
     putStrLn "Building"
     buildLibrary "src"
                  [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                 "build"
+                 ("build" </> "library")
                  "gfortran"
                  ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
                  "library"
+    buildPrograms "app"
+                  ["build" </> "library"]
+                  [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                  ("build" </> "app")
+                  "gfortran"
+                  ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
 
 getArguments :: IO Arguments
 getArguments = execParser
