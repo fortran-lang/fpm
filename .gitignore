@@ -1,3 +1,4 @@
 .stack-work/
 fpm.cabal
 *~
+example_project/build/*

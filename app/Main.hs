@@ -1,6 +1,24 @@
 module Main where
 
-import           Options.Applicative
+import           Build                          ( buildLibrary
+                                                , buildPrograms
+                                                )
+import           Development.Shake              ( FilePattern
+                                                , (<//>)
+                                                , getDirectoryFilesIO
+                                                )
+import           Development.Shake.FilePath     ( (</>) )
+import           Options.Applicative            ( Parser
+                                                , (<**>)
+                                                , command
+                                                , execParser
+                                                , fullDesc
+                                                , info
+                                                , header
+                                                , helper
+                                                , progDesc
+                                                , subparser
+                                                )
 
 newtype Arguments = Arguments { command' :: Command }
 
@@ -9,13 +27,29 @@ data Command = Run | Test | Build
 main :: IO ()
 main = do
     args <- getArguments
-    run args
+    app args
 
-run :: Arguments -> IO ()
-run args = case command' args of
+app :: Arguments -> IO ()
+app args = case command' args of
     Run   -> putStrLn "Run"
     Test  -> putStrLn "Test"
-    Build -> putStrLn "Build"
+    Build -> build
+
+build :: IO ()
+build = do
+    putStrLn "Building"
+    buildLibrary "src"
+                 [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                 ("build" </> "library")
+                 "gfortran"
+                 ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
+                 "library"
+    buildPrograms "app"
+                  ["build" </> "library"]
+                  [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                  ("build" </> "app")
+                  "gfortran"
+                  ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
 
 getArguments :: IO Arguments
 getArguments = execParser
@@ -41,3 +75,9 @@ testArguments = pure $ Arguments Test
 
 buildArguments :: Parser Arguments
 buildArguments = pure $ Arguments Build
+
+getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
+getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
+  where
+    newPatterns = concatMap appendExts dirs
+    appendExts dir = map ((dir <//> "*") ++) exts
