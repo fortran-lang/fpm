@@ -88,10 +88,11 @@ buildPrograms programDirectory libraryDirectories sourceExtensions buildDirector
                            }
             $ do
                   buildDirectory </> "*" <.> "o" %> \objectFile -> do
-                      let
-                          sourceFile = fromMaybe
+                      let realObjectFile = foldl (</>) "" $ splitDirectories objectFile
+                      let sourceFile = fromMaybe
                               undefined
-                              (Map.lookup objectFile sourceFileLookupMap)
+                              (Map.lookup realObjectFile sourceFileLookupMap
+                              )
                       need [sourceFile]
                       modulesUsed <- liftIO $ getModulesUsed sourceFile
                       let
@@ -139,10 +140,10 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags lib
             $ do
                   map (\ext -> buildDirectory </> "*" <.> ext) ["o", "mod"]
                       &%> \[objectFile, moduleFile] -> do
-                              let
-                                  sourceFile = fromMaybe
+                              let realObjectFile = foldl (</>) "" $ splitDirectories objectFile
+                              let sourceFile = fromMaybe
                                       undefined
-                                      (Map.lookup objectFile sourceFileLookupMap
+                                      (Map.lookup realObjectFile sourceFileLookupMap
                                       )
                               need [sourceFile]
                               modulesUsed <- liftIO $ getModulesUsed sourceFile
