@@ -88,11 +88,11 @@ buildPrograms programDirectory libraryDirectories sourceExtensions buildDirector
                            }
             $ do
                   buildDirectory </> "*" <.> "o" %> \objectFile -> do
-                      let realObjectFile = foldl (</>) "" $ splitDirectories objectFile
+                      let realObjectFile =
+                              foldl (</>) "" $ splitDirectories objectFile
                       let sourceFile = fromMaybe
                               undefined
-                              (Map.lookup realObjectFile sourceFileLookupMap
-                              )
+                              (Map.lookup realObjectFile sourceFileLookupMap)
                       need [sourceFile]
                       modulesUsed <- liftIO $ getModulesUsed sourceFile
                       let
@@ -105,11 +105,14 @@ buildPrograms programDirectory libraryDirectories sourceExtensions buildDirector
                           includeFlags
                           flags
                           ["-o", objectFile, sourceFile]
-                  (`elem` executables) ?> \exe -> do
-                      let objectFile = map toLower exe -<.> "o"
-                      need [objectFile]
-                      need archives
-                      cmd compiler objectFile archives ["-o", exe] flags
+                  (\file ->
+                          foldl (</>) "" (splitDirectories file) `elem` executables
+                      )
+                      ?> \exe -> do
+                             let objectFile = map toLower exe -<.> "o"
+                             need [objectFile]
+                             need archives
+                             cmd compiler objectFile archives ["-o", exe] flags
                   want executables
 
 buildLibrary
@@ -140,10 +143,13 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags lib
             $ do
                   map (\ext -> buildDirectory </> "*" <.> ext) ["o", "mod"]
                       &%> \[objectFile, moduleFile] -> do
-                              let realObjectFile = foldl (</>) "" $ splitDirectories objectFile
+                              let
+                                  realObjectFile = foldl (</>) ""
+                                      $ splitDirectories objectFile
                               let sourceFile = fromMaybe
                                       undefined
-                                      (Map.lookup realObjectFile sourceFileLookupMap
+                                      (Map.lookup realObjectFile
+                                                  sourceFileLookupMap
                                       )
                               need [sourceFile]
                               modulesUsed <- liftIO $ getModulesUsed sourceFile
