@@ -44,6 +44,7 @@ build = do
                  "gfortran"
                  ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
                  "library"
+                 []
     buildPrograms "app"
                   ["build" </> "library"]
                   [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
