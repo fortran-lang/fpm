@@ -122,8 +122,9 @@ buildLibrary
     -> FilePath
     -> [String]
     -> String
+    -> [FilePath]
     -> IO ()
-buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags libraryName
+buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags libraryName otherLibraryDirectories
     = do
         sourceFiles <- getDirectoriesFiles [libraryDirectory] sourceExtensions
         let sourceFileLookupMap = createSourceFileLookupMap
@@ -133,6 +134,10 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags lib
         let moduleLookupMap = createModuleLookupMap buildDirectory
                                                     libraryDirectory
                                                     sourceFiles
+        otherModuleMaps <- mapM getLibraryModuleMap otherLibraryDirectories
+        let allModuleMaps =
+                moduleLookupMap
+                    `Map.union` foldl Map.union Map.empty otherModuleMaps
         let archiveFile = buildDirectory </> libraryName <.> "a"
         shake shakeOptions { shakeFiles    = buildDirectory
                            , shakeChange   = ChangeModtimeAndDigest
@@ -155,11 +160,14 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags lib
                               modulesUsed <- liftIO $ getModulesUsed sourceFile
                               let
                                   moduleFilesNeeded = mapMaybe
-                                      (`Map.lookup` moduleLookupMap)
+                                      (`Map.lookup` allModuleMaps)
                                       modulesUsed
+                              let includeFlags =
+                                      map ("-I" ++) otherLibraryDirectories
                               need moduleFilesNeeded
                               cmd compiler
                                   ["-c", "-J" ++ buildDirectory]
+                                  includeFlags
                                   flags
                                   ["-o", objectFile, sourceFile]
                   archiveFile %> \a -> do
