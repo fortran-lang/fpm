@@ -1,0 +1,42 @@
+name:                package-name
+version:             0.1.0
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2020 Author name here"
+
+dependencies: # These are treated as dependencies for library, executables and tests
+- ../std-lib.tar.gz # dependencies that end in .tar.gz are treated as path or url to extract package from
+
+compiler: gfortran
+
+devel-options: # These options will be passed to all compile commands for the development versions of the libraries and executables and to the tests
+- -g
+- -Wall
+- -Wextra
+- -Werror
+- -pedantic
+
+release-options: # These options will be passed to all compile commands for the release versions of the libraries and executables
+- -O3
+
+library:
+  source-dirs: src
+
+executables:
+  executable-name:
+    main:                Main.f90
+    source-dirs:         app
+    linker-options: # These options will passed to the link command for this executable
+    - -O3
+    dependencies: # These additional dependencies are specific to this executable
+    - iso_varying_string # named dependencies are retrieved from the registry
+
+tests:
+  test-name:
+    main:                Spec.f90
+    source-dirs:         test
+    linker-options: # These options will passed to the link command for these tests
+    - -Og
+    dependencies: # These additional dependencies are specific to these tests
+    - vegetables >= 1.0 && < 2.0 # named dependencies can include version specifications
