@@ -1,8 +1,14 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import           Build                          ( buildLibrary
                                                 , buildPrograms
                                                 )
+import           Data.Text                      ( Text
+                                                , unpack
+                                                )
+import qualified Data.Text.IO                  as TIO
 import           Development.Shake              ( FilePattern
                                                 , (<//>)
                                                 , getDirectoryFilesIO
@@ -19,29 +25,39 @@ import           Options.Applicative            ( Parser
                                                 , progDesc
                                                 , subparser
                                                 )
+import           Toml                           ( TomlCodec
+                                                , (.=)
+                                                )
+import qualified Toml
 
 newtype Arguments = Arguments { command' :: Command }
+
+data Settings = Settings { compiler :: !Text }
 
 data Command = Run | Test | Build
 
 main :: IO ()
 main = do
-  args <- getArguments
-  app args
+  args        <- getArguments
+  fpmContents <- TIO.readFile "fpm.toml"
+  let settings = Toml.decode settingsCodec fpmContents
+  case settings of
+    Left  err      -> print err
+    Right settings -> app args settings
 
-app :: Arguments -> IO ()
-app args = case command' args of
+app :: Arguments -> Settings -> IO ()
+app args settings = case command' args of
   Run   -> putStrLn "Run"
   Test  -> putStrLn "Test"
-  Build -> build
+  Build -> build settings
 
-build :: IO ()
-build = do
+build :: Settings -> IO ()
+build settings = do
   putStrLn "Building"
   buildLibrary "src"
                [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
                ("build" </> "library")
-               "gfortran"
+               (unpack $ compiler settings)
                ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
                "library"
                []
@@ -49,7 +65,7 @@ build = do
                 ["build" </> "library"]
                 [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
                 ("build" </> "app")
-                "gfortran"
+                (unpack $ compiler settings)
                 ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
 
 getArguments :: IO Arguments
@@ -82,3 +98,6 @@ getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
  where
   newPatterns = concatMap appendExts dirs
   appendExts dir = map ((dir <//> "*") ++) exts
+
+settingsCodec :: TomlCodec Settings
+settingsCodec = Settings <$> Toml.text "compiler" .= compiler

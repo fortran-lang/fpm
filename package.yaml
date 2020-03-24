@@ -28,6 +28,7 @@ dependencies:
 - process
 - shake
 - split
+- text
 - tomland >= 1.0
 
 
