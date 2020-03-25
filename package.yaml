@@ -24,11 +24,12 @@ dependencies:
 - containers
 - directory
 - filepath
-- MissingH
 - optparse-applicative
 - process
 - shake
 - split
+- text
+- tomland >= 1.0
 
 
 library:
