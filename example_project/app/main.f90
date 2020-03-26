@@ -1,7 +1,7 @@
-program Hello_world
+program example_project
     use Hello_m, only: sayHello
 
     implicit none
 
     call sayHello("World")
-end program Hello_world
+end program example_project
