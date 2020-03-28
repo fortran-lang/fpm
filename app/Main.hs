@@ -3,7 +3,7 @@
 module Main where
 
 import           Build                          ( buildLibrary
-                                                , buildPrograms
+                                                , buildProgram
                                                 )
 import           Data.Text                      ( Text
                                                 , unpack
@@ -61,12 +61,14 @@ build settings = do
                ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
                "library"
                []
-  buildPrograms "app"
-                ["build" </> "library"]
-                [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                ("build" </> "app")
-                (unpack $ compiler settings)
-                ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
+  buildProgram "app"
+               ["build" </> "library"]
+               [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+               ("build" </> "app")
+               (unpack $ compiler settings)
+               ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
+               "example_project"
+               "main.f90"
 
 getArguments :: IO Arguments
 getArguments = execParser
