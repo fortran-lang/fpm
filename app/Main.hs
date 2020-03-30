@@ -32,11 +32,17 @@ import qualified Toml
 
 newtype Arguments = Arguments { command' :: Command }
 
-data Settings = Settings {
-      settingsCompiler :: !Text
-    , settingsProjectName :: !Text
-    , settingsDebugOptions :: ![Text]
-    , settingsLibrary :: !Library }
+data TomlSettings = TomlSettings {
+      tomlSettingsCompiler :: !Text
+    , tomlSettingsProjectName :: !Text
+    , tomlSettingsDebugOptions :: ![Text]
+    , tomlSettingsLibrary :: !Library }
+
+data AppSettings = AppSettings {
+      appSettingsCompiler :: !Text
+    , appSettingsProjectName :: !Text
+    , appSettingsDebugOptions :: ![Text]
+    , appSettingsLibrary :: !Library }
 
 data Library = Library { librarySourceDir :: !Text }
 
@@ -46,25 +52,26 @@ main :: IO ()
 main = do
   args        <- getArguments
   fpmContents <- TIO.readFile "fpm.toml"
-  let settings = Toml.decode settingsCodec fpmContents
-  case settings of
-    Left  err      -> print err
-    Right settings -> do
-      app args settings
+  let tomlSettings = Toml.decode settingsCodec fpmContents
+  case tomlSettings of
+    Left  err           -> print err
+    Right tomlSettings' -> do
+      appSettings <- toml2AppSettings tomlSettings'
+      app args appSettings
 
-app :: Arguments -> Settings -> IO ()
+app :: Arguments -> AppSettings -> IO ()
 app args settings = case command' args of
   Run   -> putStrLn "Run"
   Test  -> putStrLn "Test"
   Build -> build settings
 
-build :: Settings -> IO ()
+build :: AppSettings -> IO ()
 build settings = do
   putStrLn "Building"
-  let compiler          = unpack $ settingsCompiler settings
-  let projectName       = unpack $ settingsProjectName settings
-  let flags             = map unpack $ settingsDebugOptions settings
-  let librarySettings   = settingsLibrary settings
+  let compiler          = unpack $ appSettingsCompiler settings
+  let projectName       = unpack $ appSettingsProjectName settings
+  let flags             = map unpack $ appSettingsDebugOptions settings
+  let librarySettings   = appSettingsLibrary settings
   let librarySourceDir' = unpack $ librarySourceDir librarySettings
   buildLibrary librarySourceDir'
                [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
@@ -113,17 +120,26 @@ getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
   newPatterns = concatMap appendExts dirs
   appendExts dir = map ((dir <//> "*") ++) exts
 
-settingsCodec :: TomlCodec Settings
+settingsCodec :: TomlCodec TomlSettings
 settingsCodec =
-  Settings
+  TomlSettings
     <$> Toml.text "compiler"
-    .=  settingsCompiler
+    .=  tomlSettingsCompiler
     <*> Toml.text "name"
-    .=  settingsProjectName
+    .=  tomlSettingsProjectName
     <*> Toml.arrayOf Toml._Text "debug-options"
-    .=  settingsDebugOptions
+    .=  tomlSettingsDebugOptions
     <*> Toml.table libraryCodec "library"
-    .=  settingsLibrary
+    .=  tomlSettingsLibrary
 
 libraryCodec :: TomlCodec Library
 libraryCodec = Library <$> Toml.text "source-dir" .= librarySourceDir
+
+toml2AppSettings :: TomlSettings -> IO AppSettings
+toml2AppSettings tomlSettings = do
+  return AppSettings
+    { appSettingsCompiler     = tomlSettingsCompiler tomlSettings
+    , appSettingsProjectName  = tomlSettingsProjectName tomlSettings
+    , appSettingsDebugOptions = tomlSettingsDebugOptions tomlSettings
+    , appSettingsLibrary      = tomlSettingsLibrary tomlSettings
+    }
