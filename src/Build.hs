@@ -1,6 +1,6 @@
 module Build
   ( buildLibrary
-  , buildPrograms
+  , buildProgram
   )
 where
 
@@ -58,26 +58,35 @@ type ModuleName = String
 
 data LineContents = ModuleUsed ModuleName | Other
 
-buildPrograms
+buildProgram
   :: FilePath
   -> [FilePath]
   -> [FilePattern]
   -> FilePath
   -> FilePath
   -> [String]
+  -> String
+  -> FilePath
   -> IO ()
-buildPrograms programDirectory libraryDirectories sourceExtensions buildDirectory compiler flags
+buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory compiler flags programName programSource
   = do
     sourceFiles <- getDirectoriesFiles [programDirectory] sourceExtensions
-    let sourceFileLookupMap =
-          createSourceFileLookupMap buildDirectory programDirectory sourceFiles
-    libraryModuleMaps <- mapM getLibraryModuleMap libraryDirectories
-    let libraryModuleMap = foldl Map.union Map.empty libraryModuleMaps
-    let includeFlags     = map ("-I" ++) libraryDirectories
+    let moduleSourceFiles =
+          filter (/= programDirectory </> programSource) sourceFiles
+    let moduleObjectFiles = map
+          (sourceFileToObjectFile buildDirectory programDirectory)
+          moduleSourceFiles
+    let sourceFileLookupMap = createSourceFileLookupMap buildDirectory
+                                                        programDirectory
+                                                        moduleSourceFiles
+    let moduleLookupMap = createModuleLookupMap buildDirectory
+                                                programDirectory
+                                                moduleSourceFiles
+    otherModuleMaps <- mapM getLibraryModuleMap libraryDirectories
+    let allModuleMaps =
+          moduleLookupMap `Map.union` foldl Map.union Map.empty otherModuleMaps
+    let includeFlags = map ("-I" ++) libraryDirectories
     archives <- getDirectoriesFiles libraryDirectories [".a"]
-    let executables = map
-          (sourceFileToExecutable buildDirectory programDirectory)
-          sourceFiles
     shake shakeOptions { shakeFiles    = buildDirectory
                        , shakeChange   = ChangeModtimeAndDigest
                        , shakeColor    = True
@@ -85,28 +94,47 @@ buildPrograms programDirectory libraryDirectories sourceExtensions buildDirector
                        , shakeProgress = progressSimple
                        }
       $ do
-          buildDirectory </> "*" <.> "o" %> \objectFile -> do
+          want [buildDirectory </> programName <.> exe]
+          buildDirectory </> programName <.> exe %> \executable -> do
+            let objectFile = sourceFileToObjectFile buildDirectory
+                                                    programDirectory
+                                                    programSource
+            let allObjectFiles = objectFile : moduleObjectFiles
+            need allObjectFiles
+            need archives
+            cmd compiler allObjectFiles archives ["-o", executable] flags
+          buildDirectory </> programSource -<.> "o" %> \objectFile -> do
             let realObjectFile = foldl (</>) "" $ splitDirectories objectFile
-            let sourceFile = fromMaybe
-                  undefined
-                  (Map.lookup realObjectFile sourceFileLookupMap)
+            let sourceFile     = programDirectory </> programSource
             need [sourceFile]
             modulesUsed <- liftIO $ getModulesUsed sourceFile
             let moduleFilesNeeded =
-                  mapMaybe (`Map.lookup` libraryModuleMap) modulesUsed
+                  mapMaybe (`Map.lookup` allModuleMaps) modulesUsed
+            let includeFlags = map ("-I" ++) libraryDirectories
             need moduleFilesNeeded
             cmd compiler
-                ["-c"]
+                ["-c", "-J" ++ buildDirectory]
                 includeFlags
                 flags
                 ["-o", objectFile, sourceFile]
-          (\file -> foldl (</>) "" (splitDirectories file) `elem` executables)
-            ?> \exe -> do
-                 let objectFile = map toLower exe -<.> "o"
-                 need [objectFile]
-                 need archives
-                 cmd compiler objectFile archives ["-o", exe] flags
-          want executables
+          map (\ext -> buildDirectory </> "*" <.> ext) ["o", "mod"]
+            &%> \[objectFile, moduleFile] -> do
+                  let realObjectFile =
+                        foldl (</>) "" $ splitDirectories objectFile
+                  let sourceFile = fromMaybe
+                        undefined
+                        (Map.lookup realObjectFile sourceFileLookupMap)
+                  need [sourceFile]
+                  modulesUsed <- liftIO $ getModulesUsed sourceFile
+                  let moduleFilesNeeded =
+                        mapMaybe (`Map.lookup` allModuleMaps) modulesUsed
+                  let includeFlags = map ("-I" ++) libraryDirectories
+                  need moduleFilesNeeded
+                  cmd compiler
+                      ["-c", "-J" ++ buildDirectory]
+                      includeFlags
+                      flags
+                      ["-o", objectFile, sourceFile]
 
 buildLibrary
   :: FilePath

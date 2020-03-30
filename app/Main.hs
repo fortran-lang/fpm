@@ -3,7 +3,7 @@
 module Main where
 
 import           Build                          ( buildLibrary
-                                                , buildPrograms
+                                                , buildProgram
                                                 )
 import           Data.Text                      ( Text
                                                 , unpack
@@ -32,7 +32,13 @@ import qualified Toml
 
 newtype Arguments = Arguments { command' :: Command }
 
-data Settings = Settings { compiler :: !Text }
+data Settings = Settings {
+      settingsCompiler :: !Text
+    , settingsProjectName :: !Text
+    , settingsDebugOptions :: ![Text]
+    , settingsLibrary :: !Library }
+
+data Library = Library { librarySourceDir :: !Text }
 
 data Command = Run | Test | Build
 
@@ -43,7 +49,8 @@ main = do
   let settings = Toml.decode settingsCodec fpmContents
   case settings of
     Left  err      -> print err
-    Right settings -> app args settings
+    Right settings -> do
+      app args settings
 
 app :: Arguments -> Settings -> IO ()
 app args settings = case command' args of
@@ -54,19 +61,26 @@ app args settings = case command' args of
 build :: Settings -> IO ()
 build settings = do
   putStrLn "Building"
-  buildLibrary "src"
+  let compiler          = unpack $ settingsCompiler settings
+  let projectName       = unpack $ settingsProjectName settings
+  let flags             = map unpack $ settingsDebugOptions settings
+  let librarySettings   = settingsLibrary settings
+  let librarySourceDir' = unpack $ librarySourceDir librarySettings
+  buildLibrary librarySourceDir'
                [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
                ("build" </> "library")
-               (unpack $ compiler settings)
-               ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
-               "library"
+               compiler
+               flags
+               projectName
                []
-  buildPrograms "app"
-                ["build" </> "library"]
-                [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                ("build" </> "app")
-                (unpack $ compiler settings)
-                ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
+  buildProgram "app"
+               ["build" </> "library"]
+               [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+               ("build" </> "app")
+               compiler
+               flags
+               projectName
+               "main.f90"
 
 getArguments :: IO Arguments
 getArguments = execParser
@@ -100,4 +114,16 @@ getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
   appendExts dir = map ((dir <//> "*") ++) exts
 
 settingsCodec :: TomlCodec Settings
-settingsCodec = Settings <$> Toml.text "compiler" .= compiler
+settingsCodec =
+  Settings
+    <$> Toml.text "compiler"
+    .=  settingsCompiler
+    <*> Toml.text "name"
+    .=  settingsProjectName
+    <*> Toml.arrayOf Toml._Text "debug-options"
+    .=  settingsDebugOptions
+    <*> Toml.table libraryCodec "library"
+    .=  settingsLibrary
+
+libraryCodec :: TomlCodec Library
+libraryCodec = Library <$> Toml.text "source-dir" .= librarySourceDir

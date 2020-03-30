@@ -6,14 +6,13 @@ maintainer = "example@example.com"
 copyright = "2020 Author"
 dependencies = []
 compiler = "gfortran"
-devel-options = ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
+debug-options = ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
 release-options = ["-O3"]
 
 [library]
-source-dirs = "src"
+    source-dir = "src"
 
-[executables.Hello_world]
-main = "Hello_world.f90"
-source-dirs = "app"
-linker-options = ["-O3"]
+[executables.example_project]
+main = "main.f90"
+source-dir = "app"
 dependencies = []
