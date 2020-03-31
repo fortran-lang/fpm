@@ -36,13 +36,13 @@ data TomlSettings = TomlSettings {
       tomlSettingsCompiler :: !Text
     , tomlSettingsProjectName :: !Text
     , tomlSettingsDebugOptions :: ![Text]
-    , tomlSettingsLibrary :: !Library }
+    , tomlSettingsLibrary :: !(Maybe Library) }
 
 data AppSettings = AppSettings {
       appSettingsCompiler :: !Text
     , appSettingsProjectName :: !Text
     , appSettingsDebugOptions :: ![Text]
-    , appSettingsLibrary :: !Library }
+    , appSettingsLibrary :: !(Maybe Library) }
 
 data Library = Library { librarySourceDir :: !Text }
 
@@ -68,26 +68,36 @@ app args settings = case command' args of
 build :: AppSettings -> IO ()
 build settings = do
   putStrLn "Building"
-  let compiler          = unpack $ appSettingsCompiler settings
-  let projectName       = unpack $ appSettingsProjectName settings
-  let flags             = map unpack $ appSettingsDebugOptions settings
-  let librarySettings   = appSettingsLibrary settings
-  let librarySourceDir' = unpack $ librarySourceDir librarySettings
-  buildLibrary librarySourceDir'
-               [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-               ("build" </> "library")
-               compiler
-               flags
-               projectName
-               []
-  buildProgram "app"
-               ["build" </> "library"]
-               [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-               ("build" </> "app")
-               compiler
-               flags
-               projectName
-               "main.f90"
+  let compiler    = unpack $ appSettingsCompiler settings
+  let projectName = unpack $ appSettingsProjectName settings
+  let flags       = map unpack $ appSettingsDebugOptions settings
+  case appSettingsLibrary settings of
+    Just librarySettings -> do
+      let librarySourceDir' = unpack $ librarySourceDir librarySettings
+      buildLibrary librarySourceDir'
+                   [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                   ("build" </> "library")
+                   compiler
+                   flags
+                   projectName
+                   []
+      buildProgram "app"
+                   ["build" </> "library"]
+                   [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                   ("build" </> "app")
+                   compiler
+                   flags
+                   projectName
+                   "main.f90"
+    Nothing -> do
+      buildProgram "app"
+                   []
+                   [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                   ("build" </> "app")
+                   compiler
+                   flags
+                   projectName
+                   "main.f90"
 
 getArguments :: IO Arguments
 getArguments = execParser
@@ -129,7 +139,7 @@ settingsCodec =
     .=  tomlSettingsProjectName
     <*> Toml.arrayOf Toml._Text "debug-options"
     .=  tomlSettingsDebugOptions
-    <*> Toml.table libraryCodec "library"
+    <*> Toml.dioptional (Toml.table libraryCodec "library")
     .=  tomlSettingsLibrary
 
 libraryCodec :: TomlCodec Library
