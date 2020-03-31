@@ -36,13 +36,12 @@ newtype Arguments = Arguments { command' :: Command }
 data TomlSettings = TomlSettings {
       tomlSettingsCompiler :: !Text
     , tomlSettingsProjectName :: !Text
-    , tomlSettingsDebugOptions :: ![Text]
     , tomlSettingsLibrary :: !(Maybe Library) }
 
 data AppSettings = AppSettings {
       appSettingsCompiler :: !Text
     , appSettingsProjectName :: !Text
-    , appSettingsDebugOptions :: ![Text]
+    , appSettingsFlags :: ![Text]
     , appSettingsLibrary :: !(Maybe Library) }
 
 data Library = Library { librarySourceDir :: !Text }
@@ -71,7 +70,7 @@ build settings = do
   putStrLn "Building"
   let compiler    = unpack $ appSettingsCompiler settings
   let projectName = unpack $ appSettingsProjectName settings
-  let flags       = map unpack $ appSettingsDebugOptions settings
+  let flags       = map unpack $ appSettingsFlags settings
   case appSettingsLibrary settings of
     Just librarySettings -> do
       let librarySourceDir' = unpack $ librarySourceDir librarySettings
@@ -138,8 +137,6 @@ settingsCodec =
     .=  tomlSettingsCompiler
     <*> Toml.text "name"
     .=  tomlSettingsProjectName
-    <*> Toml.arrayOf Toml._Text "debug-options"
-    .=  tomlSettingsDebugOptions
     <*> Toml.dioptional (Toml.table libraryCodec "library")
     .=  tomlSettingsLibrary
 
@@ -150,10 +147,20 @@ toml2AppSettings :: TomlSettings -> IO AppSettings
 toml2AppSettings tomlSettings = do
   librarySettings <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   return AppSettings
-    { appSettingsCompiler     = tomlSettingsCompiler tomlSettings
-    , appSettingsProjectName  = tomlSettingsProjectName tomlSettings
-    , appSettingsDebugOptions = tomlSettingsDebugOptions tomlSettings
-    , appSettingsLibrary      = librarySettings
+    { appSettingsCompiler    = tomlSettingsCompiler tomlSettings
+    , appSettingsProjectName = tomlSettingsProjectName tomlSettings
+    , appSettingsFlags       = [ "-Wall"
+                               , "-Wextra"
+                               , "-Wimplicit-interface"
+                               , "-Werror"
+                               , "-fPIC"
+                               , "-fmax-errors=1"
+                               , "-g"
+                               , "-fbounds-check"
+                               , "-fcheck-array-temporaries"
+                               , "-fbacktrace"
+                               ]
+    , appSettingsLibrary     = librarySettings
     }
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)

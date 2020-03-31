@@ -6,8 +6,6 @@ maintainer = "example@example.com"
 copyright = "2020 Author"
 dependencies = []
 compiler = "gfortran"
-debug-options = ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
-release-options = ["-O3"]
 
 [executables.example_project]
 main = "main.f90"
