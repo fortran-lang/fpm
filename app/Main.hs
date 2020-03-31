@@ -25,6 +25,7 @@ import           Options.Applicative            ( Parser
                                                 , progDesc
                                                 , subparser
                                                 )
+import           System.Directory               ( doesDirectoryExist )
 import           Toml                           ( TomlCodec
                                                 , (.=)
                                                 )
@@ -147,9 +148,19 @@ libraryCodec = Library <$> Toml.text "source-dir" .= librarySourceDir
 
 toml2AppSettings :: TomlSettings -> IO AppSettings
 toml2AppSettings tomlSettings = do
+  librarySettings <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   return AppSettings
     { appSettingsCompiler     = tomlSettingsCompiler tomlSettings
     , appSettingsProjectName  = tomlSettingsProjectName tomlSettings
     , appSettingsDebugOptions = tomlSettingsDebugOptions tomlSettings
-    , appSettingsLibrary      = tomlSettingsLibrary tomlSettings
+    , appSettingsLibrary      = librarySettings
     }
+
+getLibrarySettings :: Maybe Library -> IO (Maybe Library)
+getLibrarySettings maybeSettings = case maybeSettings of
+  Just settings -> return maybeSettings
+  Nothing       -> do
+    defaultExists <- doesDirectoryExist "src"
+    if defaultExists
+      then return (Just (Library { librarySourceDir = "src" }))
+      else return Nothing

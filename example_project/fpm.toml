@@ -9,9 +9,6 @@ compiler = "gfortran"
 debug-options = ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
 release-options = ["-O3"]
 
-[library]
-    source-dir = "src"
-
 [executables.example_project]
 main = "main.f90"
 source-dir = "app"
