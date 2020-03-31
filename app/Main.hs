@@ -19,11 +19,14 @@ import           Options.Applicative            ( Parser
                                                 , command
                                                 , execParser
                                                 , fullDesc
-                                                , info
                                                 , header
+                                                , help
                                                 , helper
+                                                , info
+                                                , long
                                                 , progDesc
                                                 , subparser
+                                                , switch
                                                 )
 import           System.Directory               ( doesDirectoryExist )
 import           Toml                           ( TomlCodec
@@ -31,7 +34,7 @@ import           Toml                           ( TomlCodec
                                                 )
 import qualified Toml
 
-newtype Arguments = Arguments { command' :: Command }
+data Arguments = Arguments { command' :: Command, release :: Bool }
 
 data TomlSettings = TomlSettings {
       tomlSettingsCompiler :: !Text
@@ -56,7 +59,7 @@ main = do
   case tomlSettings of
     Left  err           -> print err
     Right tomlSettings' -> do
-      appSettings <- toml2AppSettings tomlSettings'
+      appSettings <- toml2AppSettings tomlSettings' (release args)
       app args appSettings
 
 app :: Arguments -> AppSettings -> IO ()
@@ -109,20 +112,24 @@ getArguments = execParser
   )
 
 arguments :: Parser Arguments
-arguments = subparser
-  (  command "run"   (info runArguments (progDesc "Run the executable"))
-  <> command "test"  (info testArguments (progDesc "Run the tests"))
-  <> command "build" (info buildArguments (progDesc "Build the executable"))
-  )
+arguments =
+  Arguments
+    <$> subparser
+          (  command "run"  (info runArguments (progDesc "Run the executable"))
+          <> command "test" (info testArguments (progDesc "Run the tests"))
+          <> command "build"
+                     (info buildArguments (progDesc "Build the executable"))
+          )
+    <*> switch (long "release" <> help "Build in release mode")
 
-runArguments :: Parser Arguments
-runArguments = pure $ Arguments Run
+runArguments :: Parser Command
+runArguments = pure Run
 
-testArguments :: Parser Arguments
-testArguments = pure $ Arguments Test
+testArguments :: Parser Command
+testArguments = pure Test
 
-buildArguments :: Parser Arguments
-buildArguments = pure $ Arguments Build
+buildArguments :: Parser Command
+buildArguments = pure Build
 
 getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
 getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
@@ -143,23 +150,37 @@ settingsCodec =
 libraryCodec :: TomlCodec Library
 libraryCodec = Library <$> Toml.text "source-dir" .= librarySourceDir
 
-toml2AppSettings :: TomlSettings -> IO AppSettings
-toml2AppSettings tomlSettings = do
+toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
+toml2AppSettings tomlSettings release = do
   librarySettings <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   return AppSettings
     { appSettingsCompiler    = tomlSettingsCompiler tomlSettings
     , appSettingsProjectName = tomlSettingsProjectName tomlSettings
-    , appSettingsFlags       = [ "-Wall"
-                               , "-Wextra"
-                               , "-Wimplicit-interface"
-                               , "-Werror"
-                               , "-fPIC"
-                               , "-fmax-errors=1"
-                               , "-g"
-                               , "-fbounds-check"
-                               , "-fcheck-array-temporaries"
-                               , "-fbacktrace"
-                               ]
+    , appSettingsFlags       = if release
+                                 then
+                                   [ "-Wall"
+                                   , "-Wextra"
+                                   , "-Wimplicit-interface"
+                                   , "-Werror"
+                                   , "-fPIC"
+                                   , "-fmax-errors=1"
+                                   , "-O3"
+                                   , "-march=native"
+                                   , "-ffast-math"
+                                   , "-funroll-loops"
+                                   ]
+                                 else
+                                   [ "-Wall"
+                                   , "-Wextra"
+                                   , "-Wimplicit-interface"
+                                   , "-Werror"
+                                   , "-fPIC"
+                                   , "-fmax-errors=1"
+                                   , "-g"
+                                   , "-fbounds-check"
+                                   , "-fcheck-array-temporaries"
+                                   , "-fbacktrace"
+                                   ]
     , appSettingsLibrary     = librarySettings
     }
 
