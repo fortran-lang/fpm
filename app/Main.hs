@@ -28,7 +28,9 @@ import           Options.Applicative            ( Parser
                                                 , subparser
                                                 , switch
                                                 )
-import           System.Directory               ( doesDirectoryExist )
+import           System.Directory               ( doesDirectoryExist
+                                                , doesFileExist
+                                                )
 import           Toml                           ( TomlCodec
                                                 , (.=)
                                                 )
@@ -177,12 +179,14 @@ executableCodec =
 
 toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
 toml2AppSettings tomlSettings release = do
+  let projectName = tomlSettingsProjectName tomlSettings
   librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   executableSettings <- getExecutableSettings
-    $ tomlSettingsExecutables tomlSettings
+    (tomlSettingsExecutables tomlSettings)
+    projectName
   return AppSettings
     { appSettingsCompiler    = tomlSettingsCompiler tomlSettings
-    , appSettingsProjectName = tomlSettingsProjectName tomlSettings
+    , appSettingsProjectName = projectName
     , appSettingsFlags       = if release
                                  then
                                    [ "-Wall"
@@ -221,6 +225,19 @@ getLibrarySettings maybeSettings = case maybeSettings of
       then return (Just (Library { librarySourceDir = "src" }))
       else return Nothing
 
-getExecutableSettings :: [Executable] -> IO [Executable]
-getExecutableSettings []          = undefined
-getExecutableSettings executables = return executables
+getExecutableSettings :: [Executable] -> Text -> IO [Executable]
+getExecutableSettings [] projectName = do
+  defaultDirectoryExists <- doesDirectoryExist "app"
+  if defaultDirectoryExists
+    then do
+      defaultMainExists <- doesFileExist ("app" </> "main.f90")
+      if defaultMainExists
+        then return
+          [ Executable { executableSourceDir = "app"
+                       , executableMainFile  = "main.f90"
+                       , executableName      = projectName
+                       }
+          ]
+        else return []
+    else return []
+getExecutableSettings executables _ = return executables
