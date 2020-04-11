@@ -45,9 +45,15 @@ data AppSettings = AppSettings {
       appSettingsCompiler :: !Text
     , appSettingsProjectName :: !Text
     , appSettingsFlags :: ![Text]
-    , appSettingsLibrary :: !(Maybe Library) }
+    , appSettingsLibrary :: !(Maybe Library)
+    , appSettingsExecutables :: ![Executable] }
 
 data Library = Library { librarySourceDir :: !Text }
+
+data Executable = Executable {
+      executableSourceDir :: !Text
+    , executableMainFile :: !Text
+    , executableName :: !Text }
 
 data Command = Run | Test | Build
 
@@ -74,7 +80,8 @@ build settings = do
   let compiler    = unpack $ appSettingsCompiler settings
   let projectName = unpack $ appSettingsProjectName settings
   let flags       = map unpack $ appSettingsFlags settings
-  case appSettingsLibrary settings of
+  let executables = appSettingsExecutables settings
+  executableDepends <- case appSettingsLibrary settings of
     Just librarySettings -> do
       let librarySourceDir' = unpack $ librarySourceDir librarySettings
       buildLibrary librarySourceDir'
@@ -84,23 +91,25 @@ build settings = do
                    flags
                    projectName
                    []
-      buildProgram "app"
-                   ["build" </> "library"]
-                   [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                   ("build" </> "app")
-                   compiler
-                   flags
-                   projectName
-                   "main.f90"
+      return ["build" </> "library"]
     Nothing -> do
-      buildProgram "app"
-                   []
-                   [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                   ("build" </> "app")
-                   compiler
-                   flags
-                   projectName
-                   "main.f90"
+      return []
+  mapM_
+    (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+      do
+        let sourceDir' = unpack sourceDir
+        let name'      = unpack name
+        let mainFile'  = unpack mainFile
+        buildProgram sourceDir'
+                     executableDepends
+                     [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                     ("build" </> sourceDir')
+                     compiler
+                     flags
+                     name'
+                     mainFile'
+    )
+    executables
 
 getArguments :: IO Arguments
 getArguments = execParser
@@ -182,6 +191,11 @@ toml2AppSettings tomlSettings release = do
                                    , "-fbacktrace"
                                    ]
     , appSettingsLibrary     = librarySettings
+    , appSettingsExecutables = [ Executable { executableSourceDir = "app"
+                                            , executableName = "example_project"
+                                            , executableMainFile = "main.f90"
+                                            }
+                               ]
     }
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
