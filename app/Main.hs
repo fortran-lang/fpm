@@ -28,6 +28,7 @@ import           Options.Applicative            ( Parser
 import           System.Directory               ( doesDirectoryExist
                                                 , doesFileExist
                                                 )
+import           System.Process                 ( runCommand )
 import           Toml                           ( TomlCodec
                                                 , (.=)
                                                 )
@@ -74,13 +75,22 @@ main = do
 
 app :: Arguments -> AppSettings -> IO ()
 app args settings = case command' args of
-  Run   -> putStrLn "Run"
-  Test  -> putStrLn "Test"
   Build -> build settings
+  Run   -> do
+    build settings
+    let buildPrefix = appSettingsBuildPrefix settings
+    let
+      executableNames = map
+        (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+          sourceDir </> name
+        )
+        (appSettingsExecutables settings)
+    let executables = map (buildPrefix </>) executableNames
+    mapM_ runCommand executables
+  Test -> putStrLn "Test"
 
 build :: AppSettings -> IO ()
 build settings = do
-  putStrLn "Building"
   let compiler    = appSettingsCompiler settings
   let projectName = appSettingsProjectName settings
   let buildPrefix = appSettingsBuildPrefix settings
