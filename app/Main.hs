@@ -41,6 +41,7 @@ data TomlSettings = TomlSettings {
     , tomlSettingsProjectName :: String
     , tomlSettingsLibrary :: (Maybe Library)
     , tomlSettingsExecutables :: [Executable]
+    , tomlSettingsTests :: [Executable]
 }
 
 data AppSettings = AppSettings {
@@ -50,6 +51,7 @@ data AppSettings = AppSettings {
     , appSettingsFlags :: [String]
     , appSettingsLibrary :: (Maybe Library)
     , appSettingsExecutables :: [Executable]
+    , appSettingsTests :: [Executable]
 }
 
 data Library = Library { librarySourceDir :: String }
@@ -87,7 +89,17 @@ app args settings = case command' args of
         (appSettingsExecutables settings)
     let executables = map (buildPrefix </>) executableNames
     mapM_ runCommand executables
-  Test -> putStrLn "Test"
+  Test -> do
+    build settings
+    let buildPrefix = appSettingsBuildPrefix settings
+    let
+      executableNames = map
+        (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+          sourceDir </> name
+        )
+        (appSettingsTests settings)
+    let executables = map (buildPrefix </>) executableNames
+    mapM_ runCommand executables
 
 build :: AppSettings -> IO ()
 build settings = do
@@ -96,6 +108,7 @@ build settings = do
   let buildPrefix = appSettingsBuildPrefix settings
   let flags       = appSettingsFlags settings
   let executables = appSettingsExecutables settings
+  let tests       = appSettingsTests settings
   executableDepends <- case appSettingsLibrary settings of
     Just librarySettings -> do
       let librarySourceDir' = librarySourceDir librarySettings
@@ -122,6 +135,19 @@ build settings = do
                      mainFile
     )
     executables
+  mapM_
+    (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+      do
+        buildProgram sourceDir
+                     executableDepends
+                     [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                     (buildPrefix </> sourceDir)
+                     compiler
+                     flags
+                     name
+                     mainFile
+    )
+    tests
 
 getArguments :: IO Arguments
 getArguments = execParser
@@ -169,6 +195,8 @@ settingsCodec =
     .=  tomlSettingsLibrary
     <*> Toml.list executableCodec "executable"
     .=  tomlSettingsExecutables
+    <*> Toml.list executableCodec "test"
+    .=  tomlSettingsTests
 
 libraryCodec :: TomlCodec Library
 libraryCodec = Library <$> Toml.string "source-dir" .= librarySourceDir
@@ -190,6 +218,7 @@ toml2AppSettings tomlSettings release = do
   executableSettings <- getExecutableSettings
     (tomlSettingsExecutables tomlSettings)
     projectName
+  testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
   return AppSettings
     { appSettingsCompiler    = tomlSettingsCompiler tomlSettings
     , appSettingsProjectName = projectName
@@ -222,6 +251,7 @@ toml2AppSettings tomlSettings release = do
                                    ]
     , appSettingsLibrary     = librarySettings
     , appSettingsExecutables = executableSettings
+    , appSettingsTests       = testSettings
     }
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
@@ -249,3 +279,20 @@ getExecutableSettings [] projectName = do
         else return []
     else return []
 getExecutableSettings executables _ = return executables
+
+getTestSettings :: [Executable] -> IO [Executable]
+getTestSettings [] = do
+  defaultDirectoryExists <- doesDirectoryExist "test"
+  if defaultDirectoryExists
+    then do
+      defaultMainExists <- doesFileExist ("test" </> "main.f90")
+      if defaultMainExists
+        then return
+          [ Executable { executableSourceDir = "test"
+                       , executableMainFile  = "main.f90"
+                       , executableName      = "runTests"
+                       }
+          ]
+        else return []
+    else return []
+getTestSettings tests = return tests
