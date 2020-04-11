@@ -45,6 +45,7 @@ data TomlSettings = TomlSettings {
 data AppSettings = AppSettings {
       appSettingsCompiler :: String
     , appSettingsProjectName :: String
+    , appSettingsBuildPrefix :: String
     , appSettingsFlags :: [String]
     , appSettingsLibrary :: (Maybe Library)
     , appSettingsExecutables :: [Executable]
@@ -82,6 +83,7 @@ build settings = do
   putStrLn "Building"
   let compiler    = appSettingsCompiler settings
   let projectName = appSettingsProjectName settings
+  let buildPrefix = appSettingsBuildPrefix settings
   let flags       = appSettingsFlags settings
   let executables = appSettingsExecutables settings
   executableDepends <- case appSettingsLibrary settings of
@@ -89,12 +91,12 @@ build settings = do
       let librarySourceDir' = librarySourceDir librarySettings
       buildLibrary librarySourceDir'
                    [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                   ("build" </> "library")
+                   (buildPrefix </> "library")
                    compiler
                    flags
                    projectName
                    []
-      return ["build" </> "library"]
+      return [buildPrefix </> "library"]
     Nothing -> do
       return []
   mapM_
@@ -103,7 +105,7 @@ build settings = do
         buildProgram sourceDir
                      executableDepends
                      [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                     ("build" </> sourceDir)
+                     (buildPrefix </> sourceDir)
                      compiler
                      flags
                      name
@@ -181,6 +183,8 @@ toml2AppSettings tomlSettings release = do
   return AppSettings
     { appSettingsCompiler    = tomlSettingsCompiler tomlSettings
     , appSettingsProjectName = projectName
+    , appSettingsBuildPrefix = "build"
+                                 </> if release then "release" else "debug"
     , appSettingsFlags       = if release
                                  then
                                    [ "-Wall"
