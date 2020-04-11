@@ -5,9 +5,6 @@ module Main where
 import           Build                          ( buildLibrary
                                                 , buildProgram
                                                 )
-import           Data.Text                      ( Text
-                                                , unpack
-                                                )
 import qualified Data.Text.IO                  as TIO
 import           Development.Shake              ( FilePattern
                                                 , (<//>)
@@ -39,27 +36,27 @@ import qualified Toml
 data Arguments = Arguments { command' :: Command, release :: Bool }
 
 data TomlSettings = TomlSettings {
-      tomlSettingsCompiler :: !Text
-    , tomlSettingsProjectName :: !Text
-    , tomlSettingsLibrary :: !(Maybe Library)
-    , tomlSettingsExecutables :: ![Executable]
+      tomlSettingsCompiler :: String
+    , tomlSettingsProjectName :: String
+    , tomlSettingsLibrary :: (Maybe Library)
+    , tomlSettingsExecutables :: [Executable]
 }
 
 data AppSettings = AppSettings {
-      appSettingsCompiler :: !Text
-    , appSettingsProjectName :: !Text
-    , appSettingsFlags :: ![Text]
-    , appSettingsLibrary :: !(Maybe Library)
-    , appSettingsExecutables :: ![Executable]
+      appSettingsCompiler :: String
+    , appSettingsProjectName :: String
+    , appSettingsFlags :: [String]
+    , appSettingsLibrary :: (Maybe Library)
+    , appSettingsExecutables :: [Executable]
 }
 
-data Library = Library { librarySourceDir :: !Text }
+data Library = Library { librarySourceDir :: String }
 
 data Executable = Executable {
-      executableSourceDir :: !Text
-    , executableMainFile :: !Text
-    , executableName :: !Text
-} deriving Show
+      executableSourceDir :: String
+    , executableMainFile :: String
+    , executableName :: String
+}
 
 data Command = Run | Test | Build
 
@@ -83,13 +80,13 @@ app args settings = case command' args of
 build :: AppSettings -> IO ()
 build settings = do
   putStrLn "Building"
-  let compiler    = unpack $ appSettingsCompiler settings
-  let projectName = unpack $ appSettingsProjectName settings
-  let flags       = map unpack $ appSettingsFlags settings
+  let compiler    = appSettingsCompiler settings
+  let projectName = appSettingsProjectName settings
+  let flags       = appSettingsFlags settings
   let executables = appSettingsExecutables settings
   executableDepends <- case appSettingsLibrary settings of
     Just librarySettings -> do
-      let librarySourceDir' = unpack $ librarySourceDir librarySettings
+      let librarySourceDir' = librarySourceDir librarySettings
       buildLibrary librarySourceDir'
                    [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
                    ("build" </> "library")
@@ -103,17 +100,14 @@ build settings = do
   mapM_
     (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
       do
-        let sourceDir' = unpack sourceDir
-        let name'      = unpack name
-        let mainFile'  = unpack mainFile
-        buildProgram sourceDir'
+        buildProgram sourceDir
                      executableDepends
                      [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                     ("build" </> sourceDir')
+                     ("build" </> sourceDir)
                      compiler
                      flags
-                     name'
-                     mainFile'
+                     name
+                     mainFile
     )
     executables
 
@@ -155,9 +149,9 @@ getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
 settingsCodec :: TomlCodec TomlSettings
 settingsCodec =
   TomlSettings
-    <$> Toml.text "compiler"
+    <$> Toml.string "compiler"
     .=  tomlSettingsCompiler
-    <*> Toml.text "name"
+    <*> Toml.string "name"
     .=  tomlSettingsProjectName
     <*> Toml.dioptional (Toml.table libraryCodec "library")
     .=  tomlSettingsLibrary
@@ -165,16 +159,16 @@ settingsCodec =
     .=  tomlSettingsExecutables
 
 libraryCodec :: TomlCodec Library
-libraryCodec = Library <$> Toml.text "source-dir" .= librarySourceDir
+libraryCodec = Library <$> Toml.string "source-dir" .= librarySourceDir
 
 executableCodec :: TomlCodec Executable
 executableCodec =
   Executable
-    <$> Toml.text "source-dir"
+    <$> Toml.string "source-dir"
     .=  executableSourceDir
-    <*> Toml.text "main"
+    <*> Toml.string "main"
     .=  executableMainFile
-    <*> Toml.text "name"
+    <*> Toml.string "name"
     .=  executableName
 
 toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
@@ -225,7 +219,7 @@ getLibrarySettings maybeSettings = case maybeSettings of
       then return (Just (Library { librarySourceDir = "src" }))
       else return Nothing
 
-getExecutableSettings :: [Executable] -> Text -> IO [Executable]
+getExecutableSettings :: [Executable] -> String -> IO [Executable]
 getExecutableSettings [] projectName = do
   defaultDirectoryExists <- doesDirectoryExist "app"
   if defaultDirectoryExists
