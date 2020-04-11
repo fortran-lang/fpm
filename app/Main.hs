@@ -39,21 +39,25 @@ data Arguments = Arguments { command' :: Command, release :: Bool }
 data TomlSettings = TomlSettings {
       tomlSettingsCompiler :: !Text
     , tomlSettingsProjectName :: !Text
-    , tomlSettingsLibrary :: !(Maybe Library) }
+    , tomlSettingsLibrary :: !(Maybe Library)
+    , tomlSettingsExecutables :: ![Executable]
+}
 
 data AppSettings = AppSettings {
       appSettingsCompiler :: !Text
     , appSettingsProjectName :: !Text
     , appSettingsFlags :: ![Text]
     , appSettingsLibrary :: !(Maybe Library)
-    , appSettingsExecutables :: ![Executable] }
+    , appSettingsExecutables :: ![Executable]
+}
 
 data Library = Library { librarySourceDir :: !Text }
 
 data Executable = Executable {
       executableSourceDir :: !Text
     , executableMainFile :: !Text
-    , executableName :: !Text }
+    , executableName :: !Text
+} deriving Show
 
 data Command = Run | Test | Build
 
@@ -155,13 +159,27 @@ settingsCodec =
     .=  tomlSettingsProjectName
     <*> Toml.dioptional (Toml.table libraryCodec "library")
     .=  tomlSettingsLibrary
+    <*> Toml.list executableCodec "executable"
+    .=  tomlSettingsExecutables
 
 libraryCodec :: TomlCodec Library
 libraryCodec = Library <$> Toml.text "source-dir" .= librarySourceDir
 
+executableCodec :: TomlCodec Executable
+executableCodec =
+  Executable
+    <$> Toml.text "source-dir"
+    .=  executableSourceDir
+    <*> Toml.text "main"
+    .=  executableMainFile
+    <*> Toml.text "name"
+    .=  executableName
+
 toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
 toml2AppSettings tomlSettings release = do
-  librarySettings <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
+  librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
+  executableSettings <- getExecutableSettings
+    $ tomlSettingsExecutables tomlSettings
   return AppSettings
     { appSettingsCompiler    = tomlSettingsCompiler tomlSettings
     , appSettingsProjectName = tomlSettingsProjectName tomlSettings
@@ -191,11 +209,7 @@ toml2AppSettings tomlSettings release = do
                                    , "-fbacktrace"
                                    ]
     , appSettingsLibrary     = librarySettings
-    , appSettingsExecutables = [ Executable { executableSourceDir = "app"
-                                            , executableName = "example_project"
-                                            , executableMainFile = "main.f90"
-                                            }
-                               ]
+    , appSettingsExecutables = executableSettings
     }
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
@@ -206,3 +220,7 @@ getLibrarySettings maybeSettings = case maybeSettings of
     if defaultExists
       then return (Just (Library { librarySourceDir = "src" }))
       else return Nothing
+
+getExecutableSettings :: [Executable] -> IO [Executable]
+getExecutableSettings []          = undefined
+getExecutableSettings executables = return executables
