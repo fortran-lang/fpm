@@ -6,8 +6,3 @@ maintainer = "example@example.com"
 copyright = "2020 Author"
 dependencies = []
 compiler = "gfortran"
-
-[executables.example_project]
-main = "main.f90"
-source-dir = "app"
-dependencies = []
