@@ -1,6 +1,9 @@
 import           Development.Shake.FilePath     ( (</>) )
+import           Fpm                            ( Arguments(..)
+                                                , Command(..)
+                                                , start
+                                                )
 import           System.Directory               ( withCurrentDirectory )
-import           System.Process                 ( callCommand )
 
 main :: IO ()
 main = do
@@ -8,8 +11,8 @@ main = do
 
 testExampleProject :: IO ()
 testExampleProject =
-  withCurrentDirectory "example_project" $ callCommand "stack run -- build"
+  withCurrentDirectory "example_project" $ start $ Arguments Build False
 
 testHelloWorld :: IO ()
 testHelloWorld =
-  withCurrentDirectory "hello_world" $ callCommand "stack run -- run"
+  withCurrentDirectory "hello_world" $ start $ Arguments Run False
