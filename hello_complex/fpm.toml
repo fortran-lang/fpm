@@ -1,0 +1,25 @@
+name = "hello_complex"
+compiler = "gfortran"
+
+[library]
+source-dir="source"
+
+[[executable]]
+name="say_hello"
+source-dir="apps/say_hello"
+main="say_hello.f90"
+
+[[executable]]
+name="say_goodbye"
+source-dir="apps/say_goodbye"
+main="say_goodbye.f90"
+
+[[test]]
+name="greet_test"
+source-dir="tests/greet"
+main="greet_test.f90"
+
+[[test]]
+name="farewell_test"
+source-dir="tests/farewell"
+main="farewell_test.f90"
