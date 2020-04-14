@@ -5,6 +5,7 @@ module Build
 where
 
 import           Control.Applicative            ( (<|>) )
+import           Control.Monad                  ( filterM )
 import           Data.Char                      ( isAsciiLower
                                                 , isDigit
                                                 , toLower
@@ -41,6 +42,7 @@ import           Development.Shake.FilePath     ( dropExtension
                                                 , (<.>)
                                                 , (-<.>)
                                                 )
+import           System.Directory               ( makeAbsolute )
 import           System.FilePath                ( splitDirectories )
 import           Text.ParserCombinators.ReadP   ( ReadP
                                                 , char
@@ -71,8 +73,13 @@ buildProgram
 buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory compiler flags programName programSource
   = do
     sourceFiles <- getDirectoriesFiles [programDirectory] sourceExtensions
-    let moduleSourceFiles =
-          filter (/= programDirectory </> programSource) sourceFiles
+    canonicalProgramSource <- makeAbsolute $ programDirectory </> programSource
+    moduleSourceFiles <- filterM
+      (\source -> do
+        canonicalSource <- makeAbsolute source
+        return $ canonicalProgramSource /= canonicalSource
+      )
+      sourceFiles
     let moduleObjectFiles = map
           (sourceFileToObjectFile buildDirectory programDirectory)
           moduleSourceFiles
