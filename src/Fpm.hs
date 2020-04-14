@@ -16,7 +16,10 @@ import           Development.Shake              ( FilePattern
                                                 , (<//>)
                                                 , getDirectoryFilesIO
                                                 )
-import           Development.Shake.FilePath     ( (</>) )
+import           Development.Shake.FilePath     ( (</>)
+                                                , (<.>)
+                                                , exe
+                                                )
 import           Options.Applicative            ( Parser
                                                 , (<**>)
                                                 , command
@@ -92,7 +95,8 @@ app args settings = case command' args of
           sourceDir </> name
         )
         (appSettingsExecutables settings)
-    let executables = map (buildPrefix </>) executableNames
+    let executables =
+          map (buildPrefix </>) $ map (flip (<.>) exe) executableNames
     mapM_ runCommand executables
   Test -> do
     build settings
@@ -103,7 +107,8 @@ app args settings = case command' args of
           sourceDir </> name
         )
         (appSettingsTests settings)
-    let executables = map (buildPrefix </>) executableNames
+    let executables =
+          map (buildPrefix </>) $ map (flip (<.>) exe) executableNames
     mapM_ runCommand executables
 
 build :: AppSettings -> IO ()
