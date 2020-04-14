@@ -9,3 +9,7 @@ main = do
 testExampleProject :: IO ()
 testExampleProject =
   withCurrentDirectory "example_project" $ callCommand "stack run -- build"
+
+testHelloWorld :: IO ()
+testHelloWorld =
+  withCurrentDirectory "hello_world" $ callCommand "stack run -- run"
