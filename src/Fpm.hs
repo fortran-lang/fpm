@@ -36,6 +36,7 @@ import           Options.Applicative            ( Parser
                                                 )
 import           System.Directory               ( doesDirectoryExist
                                                 , doesFileExist
+                                                , makeAbsolute
                                                 )
 import           System.Process                 ( runCommand )
 import           Toml                           ( TomlCodec
@@ -97,7 +98,8 @@ app args settings = case command' args of
         (appSettingsExecutables settings)
     let executables =
           map (buildPrefix </>) $ map (flip (<.>) exe) executableNames
-    mapM_ runCommand executables
+    canonicalExecutables <- mapM makeAbsolute executables
+    mapM_ runCommand canonicalExecutables
   Test -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
@@ -109,7 +111,8 @@ app args settings = case command' args of
         (appSettingsTests settings)
     let executables =
           map (buildPrefix </>) $ map (flip (<.>) exe) executableNames
-    mapM_ runCommand executables
+    canonicalExecutables <- mapM makeAbsolute executables
+    mapM_ runCommand canonicalExecutables
 
 build :: AppSettings -> IO ()
 build settings = do
