@@ -39,6 +39,8 @@ To install:
 stack install
 ```
 
+On Linux, the above command installs `stack` to `${HOME}/.local/bin`.
+
 ### Building your Fortran project with FPM
 
 1. Copy `example_fpm.toml` from this repository 
