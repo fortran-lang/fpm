@@ -36,7 +36,7 @@ library:
   source-dirs: src
 
 executables:
-  fpm-exe:
+  fpm:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
