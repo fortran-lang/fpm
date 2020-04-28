@@ -17,7 +17,7 @@ and put the `stack` binary in your path, for example:
 export PATH="$PATH:`pwd`/stack-2.1.3-linux-x86_64-static/"
 ```
 
-### Download this repo
+### Download this repository
 
 ```
 git clone https://github.com/fortran-lang/fpm
