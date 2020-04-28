@@ -43,7 +43,7 @@ Here's what the layout of the top-level directory looks like:
 We have one source file (`main.f90`) in one directory (`app`).
 Its contents are:
 
-```
+```fortran
 program hello
   print *, 'Hello, World!'
 end program hello
@@ -57,7 +57,7 @@ This is FPM's configuration file specific to your package.
 It includes all the data that FPM needs to build your app.
 In our simple case, it looks like this:
 
-```
+```toml
 name = "hello"
 version = "0.1.0"
 license = "MIT"
@@ -83,7 +83,7 @@ development and release options.
 We'll get back to these later.
 The one option that matters here right now is:
 
-```
+```toml
 name = "hello"
 ``` 
 
@@ -94,7 +94,7 @@ In this example, our program executable, once built, will be called `hello`.
 Next, let's look at the parameters in the `[executables.executable-name]`
 section:
 
-```
+```toml
 main = "main.f90"
 source-dirs = "app"
 linker-options = ["-O3"]
@@ -134,7 +134,7 @@ to build it as a library to be used in other projects, you can include the
 module in your program source file as well.
 For example:
 
-```
+```fortran
 $ cat app/main.f90
 module math_constants
   real, parameter :: pi = 4 * atan(1.)
@@ -187,7 +187,7 @@ The package layout for this example looks like this:
 In this example we'll build a simple math constants library that exports 
 the number pi as a parameter:
 
-```
+```fortran
 $ cat src/math_constants.f90 
 module math_constants
   real, parameter :: pi = 4 * atan(1.)
@@ -196,7 +196,7 @@ end module math_constants
 
 and our `fpm.toml` looks like this:
 
-```
+```toml
 name = "math_constants"
 version = "0.1.0"
 license = "MIT"
@@ -215,7 +215,7 @@ source-dirs = "src"
 The key difference here relative to our single-program example is the 
 `[library]` section:
 
-```
+```toml
 [library]
 source-dirs = "src"
 ```
@@ -287,7 +287,7 @@ Our package layout looks like this:
 
 and our source file contents are:
 
-```
+```fortran
 $ cat src/math_constants.f90 
 module math_constants
   use type_kinds, only: rk
@@ -363,7 +363,7 @@ Here's the package layout for your application + library package:
 
 Our new `fpm.toml` is now:
 
-```
+```toml
 name = "math_constants"
 version = "0.1.0"
 license = "MIT"
@@ -387,7 +387,7 @@ source-dirs = "src"
 
 and our executable program source file is:
 
-```
+```fortran
 $ cat app/main.f90 
 program demo
   use math_constants, only: e, pi
@@ -450,7 +450,7 @@ previous example.
 
 The rest of the source files are:
 
-```
+```fortran
 $ cat src/math_constants.f90 
 module math_constants
   use math_constants_fundamental, only: e, pi
@@ -525,3 +525,9 @@ the `math_constants_derived` module.
 
 This rule applies generally to any number of nested directories and modules.
 For example, `src/a/b/c/d.f90` must define a module called `a_b_c_d`.
+
+Takeaways from this example are that:
+
+* You can place your module source files in any levels of subdirectories inside `src`.
+* The module name must include the path components and the source file name--for example, 
+`src/a/b/c/d.f90` must define a module called `a_b_c_d`. 
