@@ -66,21 +66,10 @@ maintainer = "jane@example.com"
 copyright = "2020 Jane Programmer"
 dependencies = []
 compiler = "gfortran"
-devel-options = ["-g", "-Wall", "-Wextra", "-pedantic"]
-release-options = ["-O3"]
-
-[executables.executable-name]
-main = "main.f90"
-source-dirs = "app"
-linker-options = ["-O3"]
-dependencies = []
 ```
 
 The preamble includes some metadata, such as `license`, `author`, and similar, 
 that you may have seen in other package manager configuration files.
-It also includes build instructions such as `dependencies`, `compiler` and 
-development and release options. 
-We'll get back to these later.
 The one option that matters here right now is:
 
 ```toml
@@ -90,20 +79,6 @@ name = "hello"
 This line specifies the name of your package, which determines the name of 
 the executable file of your program.
 In this example, our program executable, once built, will be called `hello`. 
-
-Next, let's look at the parameters in the `[executables.executable-name]`
-section:
-
-```toml
-main = "main.f90"
-source-dirs = "app"
-linker-options = ["-O3"]
-dependencies = []
-```
-
-The first line specifies the source file name, and the second line specifies
-the directory in which the program source file is located.
-We'll revisit `linker-options` and `dependencies` later--ignore them for now.
 
 Let's now build this program using FPM:
 
@@ -194,36 +169,9 @@ module math_constants
 end module math_constants
 ```
 
-and our `fpm.toml` looks like this:
+and our `fpm.toml` is the same as before.
 
-```toml
-name = "math_constants"
-version = "0.1.0"
-license = "MIT"
-author = "Jane Programmer"
-maintainer = "jane@example.com"
-copyright = "2020 Jane Programmer"
-dependencies = []
-compiler = "gfortran"
-devel-options = ["-g", "-Wall", "-Wextra", "-pedantic"]
-release-options = ["-O3"]
-
-[library]
-source-dirs = "src"
-```
-
-The key difference here relative to our single-program example is the 
-`[library]` section:
-
-```toml
-[library]
-source-dirs = "src"
-```
-
-This tells FPM where your library source files are located.
-In this case, it's the `src` directory.
-
-Now use `fpm build` to build it:
+Now use `fpm build` to build the package:
 
 ```
 $ fpm build
@@ -302,8 +250,7 @@ module type_kinds
 end module type_kinds
 ```
 
-and there are no changes to our `fpm.toml` relative to the single-module 
-example.
+and there are no changes to our `fpm.toml` relative to previous examples.
 
 Like before, notice that the module `type_kinds` is name exactly as the 
 source file that contains it. 
@@ -361,31 +308,7 @@ Here's the package layout for your application + library package:
     └── type_kinds.f90
 ```
 
-Our new `fpm.toml` is now:
-
-```toml
-name = "math_constants"
-version = "0.1.0"
-license = "MIT"
-author = "Jane Programmer"
-maintainer = "jane@example.com"
-copyright = "2020 Jane Programmer"
-dependencies = []
-compiler = "gfortran"
-devel-options = ["-g", "-Wall", "-Wextra", "-pedantic"]
-release-options = ["-O3"]
-
-[executables.executable-name]
-main = "main.f90"
-source-dirs = "app"
-linker-options = ["-O3"]
-dependencies = []
-
-[library]
-source-dirs = "src"
-```
-
-and our executable program source file is:
+Our `fpm.toml` remains unchanged and our executable program source file is:
 
 ```fortran
 $ cat app/main.f90 
