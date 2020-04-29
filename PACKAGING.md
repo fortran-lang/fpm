@@ -100,10 +100,6 @@ $ fpm run
  Hello, World!
 ```
 
-> **Issue candidate**: fpm.toml setting `main = "main.f90"` is currently hardcoded. 
-
-> **Question**: How to specify multiple executable programs?
-
 If your application needs to use a module internally, but you don't intent 
 to build it as a library to be used in other projects, you can include the 
 module in your program source file as well.
@@ -203,13 +199,6 @@ packages (more on this in a bit).
 
 Since this is a library without executable programs, `fpm run` here does 
 nothing.
-
-> **Issue candidate**: `fpm run` should trigger an error if run in a project 
-> without executable programs. For example:
-> 
-> ```
-> fpm error: This package has no executable programs.
-> ```
 
 In this example, our library is made of only one module.
 However, most real-world libraries are likely to use multiple modules.
