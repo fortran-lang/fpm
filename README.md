@@ -43,11 +43,4 @@ On Linux, the above command installs `stack` to `${HOME}/.local/bin`.
 
 ### Building your Fortran project with FPM
 
-1. Copy `example_fpm.toml` from this repository 
-to the base directory of your Fortran project.
-2. Rename it to `fpm.toml`.
-3. Edit `fpm.toml` for your package.
-4. Type `fpm build`.
-5. (optional) If you have tests, type `fpm test`.
-6. (optional) If your package is an executable program,
-run it by typing `fpm run`. 
+Please follow the instructions in the [Packaging guide](PACKAGING.md).
