@@ -1,6 +1,19 @@
-import Lib (someFunc, someFunc2)
+import           Development.Shake.FilePath     ( (</>) )
+import           Fpm                            ( Arguments(..)
+                                                , Command(..)
+                                                , start
+                                                )
+import           System.Directory               ( withCurrentDirectory )
 
 main :: IO ()
 main = do
-    someFunc
-    someFunc2
+  testHelloWorld
+  testHelloComplex
+
+testHelloWorld :: IO ()
+testHelloWorld =
+  withCurrentDirectory "hello_world" $ start $ Arguments Run False
+
+testHelloComplex :: IO ()
+testHelloComplex =
+  withCurrentDirectory "hello_complex" $ start $ Arguments Test False
