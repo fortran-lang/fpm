@@ -1,5 +1,4 @@
 name = "hello_complex"
-compiler = "gfortran"
 
 [library]
 source-dir="source"
