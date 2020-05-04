@@ -224,16 +224,17 @@ executableCodec =
 toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
 toml2AppSettings tomlSettings release = do
   let projectName = tomlSettingsProjectName tomlSettings
+  let compiler    = "gfortran"
   librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   executableSettings <- getExecutableSettings
     (tomlSettingsExecutables tomlSettings)
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
+  buildPrefix  <- makeBuildPrefix compiler release
   return AppSettings
-    { appSettingsCompiler    = "gfortran"
+    { appSettingsCompiler    = compiler
     , appSettingsProjectName = projectName
-    , appSettingsBuildPrefix = "build"
-                                 </> if release then "release" else "debug"
+    , appSettingsBuildPrefix = buildPrefix
     , appSettingsFlags       = if release
                                  then
                                    [ "-Wall"
@@ -304,3 +305,9 @@ getTestSettings [] = do
         else return []
     else return []
 getTestSettings tests = return tests
+
+makeBuildPrefix :: String -> Bool -> IO String
+makeBuildPrefix compiler release =
+  -- TODO Figure out what other info should be part of this
+  --      Probably version, and make sure to not include path to the compiler
+  return $ "build" </> compiler ++ "_" ++ if release then "release" else "debug"
