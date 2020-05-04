@@ -66,7 +66,6 @@ license = "MIT"
 author = "Jane Programmer"
 maintainer = "jane@example.com"
 copyright = "2020 Jane Programmer"
-compiler = "gfortran"
 ```
 
 The preamble includes some metadata, such as `license`, `author`, and similar,
@@ -462,7 +461,6 @@ license = "MIT"
 author = "Jane Programmer"
 maintainer = "jane@example.com"
 copyright = "2020 Jane Programmer"
-compiler = "gfortran"
 
 [library]
 source-dir="src"
@@ -493,7 +491,6 @@ license = "MIT"
 author = "Jane Programmer"
 maintainer = "jane@example.com"
 copyright = "2020 Jane Programmer"
-compiler = "gfortran"
 
 [library]
 source-dir="src"
