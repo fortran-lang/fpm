@@ -47,8 +47,7 @@ import qualified Toml
 data Arguments = Arguments { command' :: Command, release :: Bool }
 
 data TomlSettings = TomlSettings {
-      tomlSettingsCompiler :: String
-    , tomlSettingsProjectName :: String
+      tomlSettingsProjectName :: String
     , tomlSettingsLibrary :: (Maybe Library)
     , tomlSettingsExecutables :: [Executable]
     , tomlSettingsTests :: [Executable]
@@ -200,9 +199,7 @@ getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
 settingsCodec :: TomlCodec TomlSettings
 settingsCodec =
   TomlSettings
-    <$> Toml.string "compiler"
-    .=  tomlSettingsCompiler
-    <*> Toml.string "name"
+    <$> Toml.string "name"
     .=  tomlSettingsProjectName
     <*> Toml.dioptional (Toml.table libraryCodec "library")
     .=  tomlSettingsLibrary
@@ -233,7 +230,7 @@ toml2AppSettings tomlSettings release = do
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
   return AppSettings
-    { appSettingsCompiler    = tomlSettingsCompiler tomlSettings
+    { appSettingsCompiler    = "gfortran"
     , appSettingsProjectName = projectName
     , appSettingsBuildPrefix = "build"
                                  </> if release then "release" else "debug"
