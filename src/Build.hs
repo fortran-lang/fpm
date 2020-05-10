@@ -162,7 +162,7 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags lib
     otherModuleMaps <- mapM getLibraryModuleMap otherLibraryDirectories
     let allModuleMaps =
           moduleLookupMap `Map.union` foldl Map.union Map.empty otherModuleMaps
-    let archiveFile = buildDirectory </> libraryName <.> "a"
+    let archiveFile = buildDirectory </> "lib" ++ libraryName <.> "a"
     shake shakeOptions { shakeFiles    = buildDirectory
                        , shakeChange   = ChangeModtimeAndDigest
                        , shakeColor    = True
