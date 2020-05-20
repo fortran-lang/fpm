@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Fpm
@@ -11,6 +12,7 @@ where
 import           Build                          ( buildLibrary
                                                 , buildProgram
                                                 )
+import qualified Data.Map                      as Map
 import qualified Data.Text.IO                  as TIO
 import           Development.Shake              ( FilePattern
                                                 , (<//>)
@@ -22,6 +24,7 @@ import           Development.Shake.FilePath     ( (</>)
                                                 )
 import           Options.Applicative            ( Parser
                                                 , (<**>)
+                                                , (<|>)
                                                 , command
                                                 , execParser
                                                 , fullDesc
@@ -51,6 +54,7 @@ data TomlSettings = TomlSettings {
     , tomlSettingsLibrary :: (Maybe Library)
     , tomlSettingsExecutables :: [Executable]
     , tomlSettingsTests :: [Executable]
+    , tomlSettingsDependencies :: (Map.Map String Version)
 }
 
 data AppSettings = AppSettings {
@@ -61,6 +65,7 @@ data AppSettings = AppSettings {
     , appSettingsLibrary :: (Maybe Library)
     , appSettingsExecutables :: [Executable]
     , appSettingsTests :: [Executable]
+    , appSettingsDependencies :: (Map.Map String Version)
 }
 
 data Library = Library { librarySourceDir :: String }
@@ -70,6 +75,12 @@ data Executable = Executable {
     , executableMainFile :: String
     , executableName :: String
 }
+
+data Version = SimpleVersion String | GitVersion GitVersionSpec
+
+data GitVersionSpec = GitVersionSpec { gitVersionSpecUrl :: String, gitVersionSpecRef :: Maybe GitRef }
+
+data GitRef = Tag String | Branch String | Commit String
 
 data Command = Run | Test | Build
 
@@ -211,6 +222,8 @@ settingsCodec =
     .=  tomlSettingsExecutables
     <*> Toml.list executableCodec "test"
     .=  tomlSettingsTests
+    <*> Toml.tableMap Toml._KeyString versionCodec "dependencies"
+    .=  tomlSettingsDependencies
 
 libraryCodec :: TomlCodec Library
 libraryCodec = Library <$> Toml.string "source-dir" .= librarySourceDir
@@ -225,6 +238,50 @@ executableCodec =
     <*> Toml.string "name"
     .=  executableName
 
+matchSimpleVersion :: Version -> Maybe String
+matchSimpleVersion = \case
+  SimpleVersion v -> Just v
+  _               -> Nothing
+
+matchGitVersion :: Version -> Maybe GitVersionSpec
+matchGitVersion = \case
+  GitVersion v -> Just v
+  _            -> Nothing
+
+matchTag :: GitRef -> Maybe String
+matchTag = \case
+  Tag v -> Just v
+  _     -> Nothing
+
+matchBranch :: GitRef -> Maybe String
+matchBranch = \case
+  Branch v -> Just v
+  _        -> Nothing
+
+matchCommit :: GitRef -> Maybe String
+matchCommit = \case
+  Commit v -> Just v
+  _        -> Nothing
+
+versionCodec :: Toml.Key -> Toml.TomlCodec Version
+versionCodec key =
+  Toml.dimatch matchSimpleVersion SimpleVersion (Toml.string key)
+    <|> Toml.dimatch matchGitVersion GitVersion (Toml.table gitVersionCodec key)
+
+gitVersionCodec :: Toml.TomlCodec GitVersionSpec
+gitVersionCodec =
+  GitVersionSpec
+    <$> Toml.string "git"
+    .=  gitVersionSpecUrl
+    <*> Toml.dioptional gitRefCodec
+    .=  gitVersionSpecRef
+
+gitRefCodec :: Toml.TomlCodec GitRef
+gitRefCodec =
+  Toml.dimatch matchTag Tag (Toml.string "tag")
+    <|> Toml.dimatch matchBranch Branch (Toml.string "branch")
+    <|> Toml.dimatch matchCommit Commit (Toml.string "rev")
+
 toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
 toml2AppSettings tomlSettings release = do
   let projectName = tomlSettingsProjectName tomlSettings
@@ -235,36 +292,38 @@ toml2AppSettings tomlSettings release = do
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
   buildPrefix  <- makeBuildPrefix compiler release
+  let dependencies = tomlSettingsDependencies tomlSettings
   return AppSettings
-    { appSettingsCompiler    = compiler
-    , appSettingsProjectName = projectName
-    , appSettingsBuildPrefix = buildPrefix
-    , appSettingsFlags       = if release
-                                 then
-                                   [ "-Wall"
-                                   , "-Wextra"
-                                   , "-Wimplicit-interface"
-                                   , "-fPIC"
-                                   , "-fmax-errors=1"
-                                   , "-O3"
-                                   , "-march=native"
-                                   , "-ffast-math"
-                                   , "-funroll-loops"
-                                   ]
-                                 else
-                                   [ "-Wall"
-                                   , "-Wextra"
-                                   , "-Wimplicit-interface"
-                                   , "-fPIC"
-                                   , "-fmax-errors=1"
-                                   , "-g"
-                                   , "-fbounds-check"
-                                   , "-fcheck-array-temporaries"
-                                   , "-fbacktrace"
-                                   ]
-    , appSettingsLibrary     = librarySettings
-    , appSettingsExecutables = executableSettings
-    , appSettingsTests       = testSettings
+    { appSettingsCompiler     = compiler
+    , appSettingsProjectName  = projectName
+    , appSettingsBuildPrefix  = buildPrefix
+    , appSettingsFlags        = if release
+                                  then
+                                    [ "-Wall"
+                                    , "-Wextra"
+                                    , "-Wimplicit-interface"
+                                    , "-fPIC"
+                                    , "-fmax-errors=1"
+                                    , "-O3"
+                                    , "-march=native"
+                                    , "-ffast-math"
+                                    , "-funroll-loops"
+                                    ]
+                                  else
+                                    [ "-Wall"
+                                    , "-Wextra"
+                                    , "-Wimplicit-interface"
+                                    , "-fPIC"
+                                    , "-fmax-errors=1"
+                                    , "-g"
+                                    , "-fbounds-check"
+                                    , "-fcheck-array-temporaries"
+                                    , "-fbacktrace"
+                                    ]
+    , appSettingsLibrary      = librarySettings
+    , appSettingsExecutables  = executableSettings
+    , appSettingsTests        = testSettings
+    , appSettingsDependencies = dependencies
     }
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
