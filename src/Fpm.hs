@@ -44,7 +44,9 @@ import           System.Directory               ( doesDirectoryExist
                                                 , makeAbsolute
                                                 , withCurrentDirectory
                                                 )
-import           System.Process                 ( runCommand, system )
+import           System.Process                 ( runCommand
+                                                , system
+                                                )
 import           Toml                           ( TomlCodec
                                                 , (.=)
                                                 )
@@ -147,7 +149,7 @@ build settings = do
   let executables = appSettingsExecutables settings
   let tests       = appSettingsTests settings
   builtDependencies <-
-    fetchDependencies (appSettingsDependencies settings)
+    fetchDependencies [projectName] (appSettingsDependencies settings)
       >>= buildDependencies buildPrefix compiler flags
   executableDepends <- case appSettingsLibrary settings of
     Just librarySettings -> do
@@ -389,26 +391,32 @@ makeBuildPrefix compiler release =
   return $ "build" </> compiler ++ "_" ++ if release then "release" else "debug"
 
 -- This really needs to be a tree instead
-fetchDependencies :: Map.Map String Version -> IO [DependencyTree]
-fetchDependencies dependencies = do
-  theseDependencies <- mapM (uncurry fetchDependency) (Map.toList dependencies)
+fetchDependencies :: [String] -> Map.Map String Version -> IO [DependencyTree]
+fetchDependencies knownPackages dependencies = do
+  theseDependencies <- mapM
+    (uncurry fetchDependency)
+    (filter (\(name, _) -> not (name `elem` knownPackages)) (Map.toList dependencies))
   mapM fetchTransitiveDependencies theseDependencies
  where
   fetchTransitiveDependencies :: (String, FilePath) -> IO DependencyTree
   fetchTransitiveDependencies (name, path) = do
-    tomlSettings    <- Toml.decodeFile settingsCodec (path </> "fpm.toml")
-    librarySettingsM <- withCurrentDirectory path $ getLibrarySettings (tomlSettingsLibrary tomlSettings)
+    tomlSettings     <- Toml.decodeFile settingsCodec (path </> "fpm.toml")
+    librarySettingsM <- withCurrentDirectory path
+      $ getLibrarySettings (tomlSettingsLibrary tomlSettings)
     case librarySettingsM of
-        Just librarySettings -> do
-            newDependencies <- fetchDependencies (tomlSettingsDependencies tomlSettings)
-            return $ Dependency { dependencyName         = name
-                        , dependencyPath         = path
-                        , dependencySourcePath   = path </> (librarySourceDir librarySettings)
-                        , dependencyDependencies = newDependencies
-                        }
-        Nothing -> do
-            putStrLn $ "No library found in " ++ name
-            undefined
+      Just librarySettings -> do
+        newDependencies <- fetchDependencies
+          (name : knownPackages)
+          (tomlSettingsDependencies tomlSettings)
+        return $ Dependency
+          { dependencyName         = name
+          , dependencyPath         = path
+          , dependencySourcePath   = path </> (librarySourceDir librarySettings)
+          , dependencyDependencies = newDependencies
+          }
+      Nothing -> do
+        putStrLn $ "No library found in " ++ name
+        undefined
 
 fetchDependency :: String -> Version -> IO (String, FilePath)
 fetchDependency name version = do
