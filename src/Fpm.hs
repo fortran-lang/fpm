@@ -390,12 +390,21 @@ makeBuildPrefix compiler release =
   --      Probably version, and make sure to not include path to the compiler
   return $ "build" </> compiler ++ "_" ++ if release then "release" else "debug"
 
--- This really needs to be a tree instead
+{-
+    Fetching the dependencies is done on a sort of breadth first approach. All
+    of the dependencies are fetched before doing the transitive dependencies.
+    This means that the top level dependencies dictate which version is fetched.
+    The fetchDependency function is idempotent, so we don't have to worry about
+    dealing with half fetched, or adding dependencies.
+    TODO check for version compatibility issues
+-}
 fetchDependencies :: [String] -> Map.Map String Version -> IO [DependencyTree]
 fetchDependencies knownPackages dependencies = do
   theseDependencies <- mapM
     (uncurry fetchDependency)
-    (filter (\(name, _) -> not (name `elem` knownPackages)) (Map.toList dependencies))
+    (filter (\(name, _) -> not (name `elem` knownPackages))
+            (Map.toList dependencies)
+    )
   mapM fetchTransitiveDependencies theseDependencies
  where
   fetchTransitiveDependencies :: (String, FilePath) -> IO DependencyTree
@@ -444,6 +453,10 @@ fetchDependency name version = do
             return (name, clonePath)
           Nothing -> return (name, clonePath)
 
+{-
+    Bulding the dependencies is done on a depth first basis to ensure all of
+    the transitive dependencies have been built before trying to build this one
+-}
 buildDependencies
   :: String -> String -> [String] -> [DependencyTree] -> IO [FilePath]
 buildDependencies buildPrefix compiler flags dependencies = do
