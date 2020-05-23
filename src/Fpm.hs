@@ -12,6 +12,8 @@ where
 import           Build                          ( buildLibrary
                                                 , buildProgram
                                                 )
+import           Control.Monad.Extra            ( concatMapM )
+import           Data.List                      ( nub )
 import qualified Data.Map                      as Map
 import qualified Data.Text.IO                  as TIO
 import           Development.Shake              ( FilePattern
@@ -40,8 +42,9 @@ import           Options.Applicative            ( Parser
 import           System.Directory               ( doesDirectoryExist
                                                 , doesFileExist
                                                 , makeAbsolute
+                                                , withCurrentDirectory
                                                 )
-import           System.Process                 ( runCommand )
+import           System.Process                 ( runCommand, system )
 import           Toml                           ( TomlCodec
                                                 , (.=)
                                                 )
@@ -83,6 +86,13 @@ data GitVersionSpec = GitVersionSpec { gitVersionSpecUrl :: String, gitVersionSp
 data GitRef = Tag String | Branch String | Commit String
 
 data Command = Run | Test | Build
+
+data DependencyTree = Dependency {
+      dependencyName :: String
+    , dependencyPath :: FilePath
+    , dependencySourcePath :: FilePath
+    , dependencyDependencies :: [DependencyTree]
+}
 
 start :: Arguments -> IO ()
 start args = do
@@ -136,19 +146,22 @@ build settings = do
   let flags       = appSettingsFlags settings
   let executables = appSettingsExecutables settings
   let tests       = appSettingsTests settings
+  builtDependencies <-
+    fetchDependencies (appSettingsDependencies settings)
+      >>= buildDependencies buildPrefix compiler flags
   executableDepends <- case appSettingsLibrary settings of
     Just librarySettings -> do
       let librarySourceDir' = librarySourceDir librarySettings
       buildLibrary librarySourceDir'
                    [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                   (buildPrefix </> "library")
+                   (buildPrefix </> projectName)
                    compiler
                    flags
                    projectName
-                   []
-      return [buildPrefix </> "library"]
+                   builtDependencies
+      return $ (buildPrefix </> projectName) : builtDependencies
     Nothing -> do
-      return []
+      return builtDependencies
   mapM_
     (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
       do
@@ -374,3 +387,75 @@ makeBuildPrefix compiler release =
   -- TODO Figure out what other info should be part of this
   --      Probably version, and make sure to not include path to the compiler
   return $ "build" </> compiler ++ "_" ++ if release then "release" else "debug"
+
+-- This really needs to be a tree instead
+fetchDependencies :: Map.Map String Version -> IO [DependencyTree]
+fetchDependencies dependencies = do
+  theseDependencies <- mapM (uncurry fetchDependency) (Map.toList dependencies)
+  mapM fetchTransitiveDependencies theseDependencies
+ where
+  fetchTransitiveDependencies :: (String, FilePath) -> IO DependencyTree
+  fetchTransitiveDependencies (name, path) = do
+    tomlSettings    <- Toml.decodeFile settingsCodec (path </> "fpm.toml")
+    librarySettingsM <- withCurrentDirectory path $ getLibrarySettings (tomlSettingsLibrary tomlSettings)
+    case librarySettingsM of
+        Just librarySettings -> do
+            newDependencies <- fetchDependencies (tomlSettingsDependencies tomlSettings)
+            return $ Dependency { dependencyName         = name
+                        , dependencyPath         = path
+                        , dependencySourcePath   = path </> (librarySourceDir librarySettings)
+                        , dependencyDependencies = newDependencies
+                        }
+        Nothing -> do
+            putStrLn $ "No library found in " ++ name
+            undefined
+
+fetchDependency :: String -> Version -> IO (String, FilePath)
+fetchDependency name version = do
+  let clonePath = "build" </> "dependencies" </> name
+  alreadyFetched <- doesDirectoryExist clonePath
+  if alreadyFetched
+    then return (name, clonePath)
+    else case version of
+      SimpleVersion _ -> do
+        putStrLn "Simple dependencies are not yet supported :("
+        undefined
+      GitVersion versionSpec -> do
+        system
+          ("git clone " ++ gitVersionSpecUrl versionSpec ++ " " ++ clonePath)
+        case gitVersionSpecRef versionSpec of
+          Just ref -> withCurrentDirectory clonePath $ do
+            system
+              (  "git checkout "
+              ++ (case ref of
+                   Tag    tag    -> tag
+                   Branch branch -> branch
+                   Commit commit -> commit
+                 )
+              )
+            return (name, clonePath)
+          Nothing -> return (name, clonePath)
+
+buildDependencies
+  :: String -> String -> [String] -> [DependencyTree] -> IO [FilePath]
+buildDependencies buildPrefix compiler flags dependencies = do
+  built <- concatMapM (buildDependency buildPrefix compiler flags) dependencies
+  return $ nub built
+
+buildDependency
+  :: String -> String -> [String] -> DependencyTree -> IO [FilePath]
+buildDependency buildPrefix compiler flags (Dependency name path sourcePath dependencies)
+  = do
+    transitiveDependencies <- buildDependencies buildPrefix
+                                                compiler
+                                                flags
+                                                dependencies
+    let buildPath = buildPrefix </> name
+    buildLibrary sourcePath
+                 [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                 buildPath
+                 compiler
+                 flags
+                 name
+                 transitiveDependencies
+    return $ buildPath : transitiveDependencies
