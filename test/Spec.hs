@@ -9,6 +9,7 @@ main :: IO ()
 main = do
   testHelloWorld
   testHelloComplex
+  testHelloFpm
 
 testHelloWorld :: IO ()
 testHelloWorld =
@@ -17,3 +18,7 @@ testHelloWorld =
 testHelloComplex :: IO ()
 testHelloComplex =
   withCurrentDirectory "hello_complex" $ start $ Arguments Test False
+
+testHelloFpm :: IO ()
+testHelloFpm =
+    withCurrentDirectory "hello_fpm" $ start $ Arguments Run False

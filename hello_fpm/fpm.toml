@@ -1,0 +1,4 @@
+name = "hello_fpm"
+
+[dependencies]
+hello_complex = { path = "../hello_complex" }

@@ -81,11 +81,13 @@ data Executable = Executable {
     , executableName :: String
 }
 
-data Version = SimpleVersion String | GitVersion GitVersionSpec
+data Version = SimpleVersion String | GitVersion GitVersionSpec | PathVersion PathVersionSpec
 
 data GitVersionSpec = GitVersionSpec { gitVersionSpecUrl :: String, gitVersionSpecRef :: Maybe GitRef }
 
 data GitRef = Tag String | Branch String | Commit String
+
+data PathVersionSpec = PathVersionSpec { pathVersionSpecPath :: String }
 
 data Command = Run | Test | Build
 
@@ -263,6 +265,11 @@ matchGitVersion = \case
   GitVersion v -> Just v
   _            -> Nothing
 
+matchPathVersion :: Version -> Maybe PathVersionSpec
+matchPathVersion = \case
+  PathVersion v -> Just v
+  _             -> Nothing
+
 matchTag :: GitRef -> Maybe String
 matchTag = \case
   Tag v -> Just v
@@ -282,6 +289,7 @@ versionCodec :: Toml.Key -> Toml.TomlCodec Version
 versionCodec key =
   Toml.dimatch matchSimpleVersion SimpleVersion (Toml.string key)
     <|> Toml.dimatch matchGitVersion GitVersion (Toml.table gitVersionCodec key)
+    <|> Toml.dimatch matchPathVersion PathVersion (Toml.table pathVersionCodec key)
 
 gitVersionCodec :: Toml.TomlCodec GitVersionSpec
 gitVersionCodec =
@@ -296,6 +304,10 @@ gitRefCodec =
   Toml.dimatch matchTag Tag (Toml.string "tag")
     <|> Toml.dimatch matchBranch Branch (Toml.string "branch")
     <|> Toml.dimatch matchCommit Commit (Toml.string "rev")
+
+pathVersionCodec :: Toml.TomlCodec PathVersionSpec
+pathVersionCodec =
+    PathVersionSpec <$> Toml.string "path" .= pathVersionSpecPath
 
 toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
 toml2AppSettings tomlSettings release = do
@@ -452,6 +464,7 @@ fetchDependency name version = do
               )
             return (name, clonePath)
           Nothing -> return (name, clonePath)
+      PathVersion versionSpec -> return (name, pathVersionSpecPath versionSpec)
 
 {-
     Bulding the dependencies is done on a depth first basis to ensure all of
