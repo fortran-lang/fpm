@@ -3,7 +3,21 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    cabal-file:
+      size: 6802
+      sha256: 85568a0280115b6e9a9f263cf4cfc72ad5a6eaeb2412875816adb82ea6a405bc
+    name: tomland
+    version: 1.3.0.0
+    git: https://github.com/kowainik/tomland.git
+    pantry-tree:
+      size: 5000
+      sha256: 68d6f9a3e4c20cc4645374b30000017a75c4ab1c131590538edad2ea0e4a53bd
+    commit: 536a5e6ffb148d0dd4e4c4b120913a6744097676
+  original:
+    git: https://github.com/kowainik/tomland.git
+    commit: 536a5e6ffb148d0dd4e4c4b120913a6744097676
 snapshots:
 - completed:
     size: 524996
