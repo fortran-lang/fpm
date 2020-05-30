@@ -10,6 +10,7 @@ main = do
   testHelloWorld
   testHelloComplex
   testHelloFpm
+  testCircular
 
 testHelloWorld :: IO ()
 testHelloWorld =
@@ -22,3 +23,7 @@ testHelloComplex =
 testHelloFpm :: IO ()
 testHelloFpm =
     withCurrentDirectory "hello_fpm" $ start $ Arguments Run False
+
+testCircular :: IO ()
+testCircular =
+    withCurrentDirectory "circular_example" $ start $ Arguments Test False

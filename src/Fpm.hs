@@ -79,15 +79,16 @@ data Executable = Executable {
       executableSourceDir :: String
     , executableMainFile :: String
     , executableName :: String
-}
+    , executableDependencies :: (Map.Map String Version)
+} deriving Show
 
-data Version = SimpleVersion String | GitVersion GitVersionSpec | PathVersion PathVersionSpec
+data Version = SimpleVersion String | GitVersion GitVersionSpec | PathVersion PathVersionSpec deriving Show
 
-data GitVersionSpec = GitVersionSpec { gitVersionSpecUrl :: String, gitVersionSpecRef :: Maybe GitRef }
+data GitVersionSpec = GitVersionSpec { gitVersionSpecUrl :: String, gitVersionSpecRef :: Maybe GitRef } deriving Show
 
-data GitRef = Tag String | Branch String | Commit String
+data GitRef = Tag String | Branch String | Commit String deriving Show
 
-data PathVersionSpec = PathVersionSpec { pathVersionSpecPath :: String }
+data PathVersionSpec = PathVersionSpec { pathVersionSpecPath :: String } deriving Show
 
 data Command = Run | Test | Build
 
@@ -150,46 +151,67 @@ build settings = do
   let flags       = appSettingsFlags settings
   let executables = appSettingsExecutables settings
   let tests       = appSettingsTests settings
-  builtDependencies <-
-    fetchDependencies [projectName] (appSettingsDependencies settings)
-      >>= buildDependencies buildPrefix compiler flags
-  executableDepends <- case appSettingsLibrary settings of
+  mainDependencyTrees <- fetchDependencies (appSettingsDependencies settings)
+  builtDependencies   <- buildDependencies buildPrefix
+                                           compiler
+                                           flags
+                                           mainDependencyTrees
+  (executableDepends, maybeTree) <- case appSettingsLibrary settings of
     Just librarySettings -> do
       let librarySourceDir' = librarySourceDir librarySettings
-      buildLibrary librarySourceDir'
-                   [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                   (buildPrefix </> projectName)
-                   compiler
-                   flags
-                   projectName
-                   builtDependencies
-      return $ (buildPrefix </> projectName) : builtDependencies
+      let thisDependencyTree = Dependency
+            { dependencyName         = projectName
+            , dependencyPath         = "."
+            , dependencySourcePath   = librarySourceDir'
+            , dependencyDependencies = mainDependencyTrees
+            }
+      thisArchive <- buildLibrary librarySourceDir'
+                                  [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                                  (buildPrefix </> projectName)
+                                  compiler
+                                  flags
+                                  projectName
+                                  (map fst builtDependencies)
+      return
+        $ ( (buildPrefix </> projectName, thisArchive) : builtDependencies
+          , Just thisDependencyTree
+          )
     Nothing -> do
-      return builtDependencies
+      return (builtDependencies, Nothing)
   mapM_
-    (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+    (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name, executableDependencies = dependencies } ->
       do
-        buildProgram sourceDir
-                     executableDepends
-                     [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                     (buildPrefix </> sourceDir)
-                     compiler
-                     flags
-                     name
-                     mainFile
+        localDependencies <-
+          fetchExecutableDependencies maybeTree dependencies
+            >>= buildDependencies buildPrefix compiler flags
+        buildProgram
+          sourceDir
+          ((map fst executableDepends) ++ (map fst localDependencies))
+          [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+          (buildPrefix </> sourceDir)
+          compiler
+          flags
+          name
+          mainFile
+          ((map snd executableDepends) ++ (map snd localDependencies))
     )
     executables
   mapM_
-    (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+    (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name, executableDependencies = dependencies } ->
       do
-        buildProgram sourceDir
-                     executableDepends
-                     [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                     (buildPrefix </> sourceDir)
-                     compiler
-                     flags
-                     name
-                     mainFile
+        localDependencies <-
+          fetchExecutableDependencies maybeTree dependencies
+            >>= buildDependencies buildPrefix compiler flags
+        buildProgram
+          sourceDir
+          ((map fst executableDepends) ++ (map fst localDependencies))
+          [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+          (buildPrefix </> sourceDir)
+          compiler
+          flags
+          name
+          mainFile
+          ((map snd executableDepends) ++ (map snd localDependencies))
     )
     tests
 
@@ -254,6 +276,8 @@ executableCodec =
     .=  executableMainFile
     <*> Toml.string "name"
     .=  executableName
+    <*> Toml.tableMap Toml._KeyString versionCodec "dependencies"
+    .=  executableDependencies
 
 matchSimpleVersion :: Version -> Maybe String
 matchSimpleVersion = \case
@@ -289,7 +313,9 @@ versionCodec :: Toml.Key -> Toml.TomlCodec Version
 versionCodec key =
   Toml.dimatch matchSimpleVersion SimpleVersion (Toml.string key)
     <|> Toml.dimatch matchGitVersion GitVersion (Toml.table gitVersionCodec key)
-    <|> Toml.dimatch matchPathVersion PathVersion (Toml.table pathVersionCodec key)
+    <|> Toml.dimatch matchPathVersion
+                     PathVersion
+                     (Toml.table pathVersionCodec key)
 
 gitVersionCodec :: Toml.TomlCodec GitVersionSpec
 gitVersionCodec =
@@ -307,7 +333,7 @@ gitRefCodec =
 
 pathVersionCodec :: Toml.TomlCodec PathVersionSpec
 pathVersionCodec =
-    PathVersionSpec <$> Toml.string "path" .= pathVersionSpecPath
+  PathVersionSpec <$> Toml.string "path" .= pathVersionSpecPath
 
 toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
 toml2AppSettings tomlSettings release = do
@@ -370,9 +396,10 @@ getExecutableSettings [] projectName = do
       defaultMainExists <- doesFileExist ("app" </> "main.f90")
       if defaultMainExists
         then return
-          [ Executable { executableSourceDir = "app"
-                       , executableMainFile  = "main.f90"
-                       , executableName      = projectName
+          [ Executable { executableSourceDir    = "app"
+                       , executableMainFile     = "main.f90"
+                       , executableName         = projectName
+                       , executableDependencies = Map.empty
                        }
           ]
         else return []
@@ -387,9 +414,10 @@ getTestSettings [] = do
       defaultMainExists <- doesFileExist ("test" </> "main.f90")
       if defaultMainExists
         then return
-          [ Executable { executableSourceDir = "test"
-                       , executableMainFile  = "main.f90"
-                       , executableName      = "runTests"
+          [ Executable { executableSourceDir    = "test"
+                       , executableMainFile     = "main.f90"
+                       , executableName         = "runTests"
+                       , executableDependencies = Map.empty
                        }
           ]
         else return []
@@ -410,13 +438,9 @@ makeBuildPrefix compiler release =
     dealing with half fetched, or adding dependencies.
     TODO check for version compatibility issues
 -}
-fetchDependencies :: [String] -> Map.Map String Version -> IO [DependencyTree]
-fetchDependencies knownPackages dependencies = do
-  theseDependencies <- mapM
-    (uncurry fetchDependency)
-    (filter (\(name, _) -> not (name `elem` knownPackages))
-            (Map.toList dependencies)
-    )
+fetchDependencies :: Map.Map String Version -> IO [DependencyTree]
+fetchDependencies dependencies = do
+  theseDependencies <- mapM (uncurry fetchDependency) (Map.toList dependencies)
   mapM fetchTransitiveDependencies theseDependencies
  where
   fetchTransitiveDependencies :: (String, FilePath) -> IO DependencyTree
@@ -427,7 +451,40 @@ fetchDependencies knownPackages dependencies = do
     case librarySettingsM of
       Just librarySettings -> do
         newDependencies <- fetchDependencies
-          (name : knownPackages)
+          (tomlSettingsDependencies tomlSettings)
+        return $ Dependency
+          { dependencyName         = name
+          , dependencyPath         = path
+          , dependencySourcePath   = path </> (librarySourceDir librarySettings)
+          , dependencyDependencies = newDependencies
+          }
+      Nothing -> do
+        putStrLn $ "No library found in " ++ name
+        undefined
+
+fetchExecutableDependencies
+  :: (Maybe DependencyTree) -> Map.Map String Version -> IO [DependencyTree]
+fetchExecutableDependencies maybeProjectTree dependencies =
+  case maybeProjectTree of
+    Just projectTree@(Dependency name _ _ _) ->
+      if name `Map.member` dependencies {- map contains this project-}
+        then fmap (projectTree :)
+                  (fetchDependencies (Map.delete name dependencies)) {- fetch the other dependencies and include the project tree in the result -}
+        else do {- fetch all the dependencies, passing the project tree on down -}
+          theseDependencies <- mapM (uncurry fetchDependency)
+                                    (Map.toList dependencies)
+          mapM fetchTransitiveDependencies theseDependencies
+    Nothing -> fetchDependencies dependencies
+ where
+  fetchTransitiveDependencies :: (String, FilePath) -> IO DependencyTree
+  fetchTransitiveDependencies (name, path) = do
+    tomlSettings     <- Toml.decodeFile settingsCodec (path </> "fpm.toml")
+    librarySettingsM <- withCurrentDirectory path
+      $ getLibrarySettings (tomlSettingsLibrary tomlSettings)
+    case librarySettingsM of
+      Just librarySettings -> do
+        newDependencies <- fetchExecutableDependencies
+          maybeProjectTree
           (tomlSettingsDependencies tomlSettings)
         return $ Dependency
           { dependencyName         = name
@@ -471,13 +528,17 @@ fetchDependency name version = do
     the transitive dependencies have been built before trying to build this one
 -}
 buildDependencies
-  :: String -> String -> [String] -> [DependencyTree] -> IO [FilePath]
+  :: String
+  -> String
+  -> [String]
+  -> [DependencyTree]
+  -> IO [(FilePath, FilePath)]
 buildDependencies buildPrefix compiler flags dependencies = do
   built <- concatMapM (buildDependency buildPrefix compiler flags) dependencies
   return $ nub built
 
 buildDependency
-  :: String -> String -> [String] -> DependencyTree -> IO [FilePath]
+  :: String -> String -> [String] -> DependencyTree -> IO [(FilePath, FilePath)]
 buildDependency buildPrefix compiler flags (Dependency name path sourcePath dependencies)
   = do
     transitiveDependencies <- buildDependencies buildPrefix
@@ -485,11 +546,11 @@ buildDependency buildPrefix compiler flags (Dependency name path sourcePath depe
                                                 flags
                                                 dependencies
     let buildPath = buildPrefix </> name
-    buildLibrary sourcePath
-                 [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                 buildPath
-                 compiler
-                 flags
-                 name
-                 transitiveDependencies
-    return $ buildPath : transitiveDependencies
+    thisArchive <- buildLibrary sourcePath
+                                [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                                buildPath
+                                compiler
+                                flags
+                                name
+                                (map fst transitiveDependencies)
+    return $ (buildPath, thisArchive) : transitiveDependencies

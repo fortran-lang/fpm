@@ -1,0 +1,4 @@
+name = "circular_test"
+
+[dependencies]
+circular_example = { path = "../circular_example"}
