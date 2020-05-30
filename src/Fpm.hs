@@ -126,7 +126,7 @@ app args settings = case command' args of
     canonicalExecutables <- mapM makeAbsolute executables
     case canonicalExecutables of
       [] -> putStrLn "No Executables Found"
-      _  -> mapM_ runCommand canonicalExecutables
+      _  -> mapM_ system canonicalExecutables
   Test -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
@@ -141,7 +141,7 @@ app args settings = case command' args of
     canonicalExecutables <- mapM makeAbsolute executables
     case canonicalExecutables of
       [] -> putStrLn "No Tests Found"
-      _  -> mapM_ runCommand canonicalExecutables
+      _  -> mapM_ system canonicalExecutables
 
 build :: AppSettings -> IO ()
 build settings = do
