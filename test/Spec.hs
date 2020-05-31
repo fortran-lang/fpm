@@ -5,6 +5,8 @@ import           Fpm                            ( Arguments(..)
                                                 )
 import           System.Directory               ( withCurrentDirectory )
 
+example_path = "test" </> "example_packages"
+
 main :: IO ()
 main = do
   testHelloWorld
@@ -14,16 +16,16 @@ main = do
 
 testHelloWorld :: IO ()
 testHelloWorld =
-  withCurrentDirectory "hello_world" $ start $ Arguments Run False
+  withCurrentDirectory (example_path </> "hello_world") $ start $ Arguments Run False
 
 testHelloComplex :: IO ()
 testHelloComplex =
-  withCurrentDirectory "hello_complex" $ start $ Arguments Test False
+  withCurrentDirectory (example_path </> "hello_complex") $ start $ Arguments Test False
 
 testHelloFpm :: IO ()
 testHelloFpm =
-    withCurrentDirectory "hello_fpm" $ start $ Arguments Run False
+    withCurrentDirectory (example_path </> "hello_fpm") $ start $ Arguments Run False
 
 testCircular :: IO ()
 testCircular =
-    withCurrentDirectory "circular_example" $ start $ Arguments Test False
+    withCurrentDirectory (example_path </> "circular_example") $ start $ Arguments Test False
