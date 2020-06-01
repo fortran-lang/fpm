@@ -60,6 +60,7 @@ data TomlSettings = TomlSettings {
     , tomlSettingsExecutables :: [Executable]
     , tomlSettingsTests :: [Executable]
     , tomlSettingsDependencies :: (Map.Map String Version)
+    , tomlSettingsDevDependencies :: (Map.Map String Version)
 }
 
 data AppSettings = AppSettings {
@@ -71,6 +72,7 @@ data AppSettings = AppSettings {
     , appSettingsExecutables :: [Executable]
     , appSettingsTests :: [Executable]
     , appSettingsDependencies :: (Map.Map String Version)
+    , appSettingsDevDependencies :: (Map.Map String Version)
 }
 
 data Library = Library { librarySourceDir :: String }
@@ -196,6 +198,7 @@ build settings = do
           ((map snd executableDepends) ++ (map snd localDependencies))
     )
     executables
+  devDependencies <- fetchExecutableDependencies maybeTree (appSettingsDevDependencies settings) >>= buildDependencies buildPrefix compiler flags
   mapM_
     (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name, executableDependencies = dependencies } ->
       do
@@ -204,14 +207,14 @@ build settings = do
             >>= buildDependencies buildPrefix compiler flags
         buildProgram
           sourceDir
-          ((map fst executableDepends) ++ (map fst localDependencies))
+          ((map fst executableDepends) ++ (map fst devDependencies) ++ (map fst localDependencies))
           [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
           (buildPrefix </> sourceDir)
           compiler
           flags
           name
           mainFile
-          ((map snd executableDepends) ++ (map snd localDependencies))
+          ((map snd executableDepends) ++ (map snd devDependencies) ++ (map snd localDependencies))
     )
     tests
 
@@ -263,6 +266,7 @@ settingsCodec =
     .=  tomlSettingsTests
     <*> Toml.tableMap Toml._KeyString versionCodec "dependencies"
     .=  tomlSettingsDependencies
+    <*> Toml.tableMap Toml._KeyString versionCodec "dev-dependencies" .= tomlSettingsDevDependencies
 
 libraryCodec :: TomlCodec Library
 libraryCodec = Library <$> Toml.string "source-dir" .= librarySourceDir
@@ -346,6 +350,7 @@ toml2AppSettings tomlSettings release = do
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
   buildPrefix  <- makeBuildPrefix compiler release
   let dependencies = tomlSettingsDependencies tomlSettings
+  let devDependencies = tomlSettingsDevDependencies tomlSettings
   return AppSettings
     { appSettingsCompiler     = compiler
     , appSettingsProjectName  = projectName
@@ -377,6 +382,7 @@ toml2AppSettings tomlSettings release = do
     , appSettingsExecutables  = executableSettings
     , appSettingsTests        = testSettings
     , appSettingsDependencies = dependencies
+    , appSettingsDevDependencies = devDependencies
     }
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)

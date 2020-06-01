@@ -1,8 +1,4 @@
 name = "circular_example"
 
-[[test]]
-  name = "test"
-  source-dir = "tests"
-  main = "main.f90"
-  [test.dependencies]
-    circular_test = { path = "../circular_test" }
+[dev-dependencies]
+circular_test = { path = "../circular_test" }
