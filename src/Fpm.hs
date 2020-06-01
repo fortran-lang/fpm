@@ -198,7 +198,9 @@ build settings = do
           ((map snd executableDepends) ++ (map snd localDependencies))
     )
     executables
-  devDependencies <- fetchExecutableDependencies maybeTree (appSettingsDevDependencies settings) >>= buildDependencies buildPrefix compiler flags
+  devDependencies <-
+    fetchExecutableDependencies maybeTree (appSettingsDevDependencies settings)
+      >>= buildDependencies buildPrefix compiler flags
   mapM_
     (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name, executableDependencies = dependencies } ->
       do
@@ -207,14 +209,20 @@ build settings = do
             >>= buildDependencies buildPrefix compiler flags
         buildProgram
           sourceDir
-          ((map fst executableDepends) ++ (map fst devDependencies) ++ (map fst localDependencies))
+          (  (map fst executableDepends)
+          ++ (map fst devDependencies)
+          ++ (map fst localDependencies)
+          )
           [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
           (buildPrefix </> sourceDir)
           compiler
           flags
           name
           mainFile
-          ((map snd executableDepends) ++ (map snd devDependencies) ++ (map snd localDependencies))
+          (  (map snd executableDepends)
+          ++ (map snd devDependencies)
+          ++ (map snd localDependencies)
+          )
     )
     tests
 
@@ -266,7 +274,8 @@ settingsCodec =
     .=  tomlSettingsTests
     <*> Toml.tableMap Toml._KeyString versionCodec "dependencies"
     .=  tomlSettingsDependencies
-    <*> Toml.tableMap Toml._KeyString versionCodec "dev-dependencies" .= tomlSettingsDevDependencies
+    <*> Toml.tableMap Toml._KeyString versionCodec "dev-dependencies"
+    .=  tomlSettingsDevDependencies
 
 libraryCodec :: TomlCodec Library
 libraryCodec = Library <$> Toml.string "source-dir" .= librarySourceDir
@@ -349,39 +358,39 @@ toml2AppSettings tomlSettings release = do
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
   buildPrefix  <- makeBuildPrefix compiler release
-  let dependencies = tomlSettingsDependencies tomlSettings
+  let dependencies    = tomlSettingsDependencies tomlSettings
   let devDependencies = tomlSettingsDevDependencies tomlSettings
   return AppSettings
-    { appSettingsCompiler     = compiler
-    , appSettingsProjectName  = projectName
-    , appSettingsBuildPrefix  = buildPrefix
-    , appSettingsFlags        = if release
-                                  then
-                                    [ "-Wall"
-                                    , "-Wextra"
-                                    , "-Wimplicit-interface"
-                                    , "-fPIC"
-                                    , "-fmax-errors=1"
-                                    , "-O3"
-                                    , "-march=native"
-                                    , "-ffast-math"
-                                    , "-funroll-loops"
-                                    ]
-                                  else
-                                    [ "-Wall"
-                                    , "-Wextra"
-                                    , "-Wimplicit-interface"
-                                    , "-fPIC"
-                                    , "-fmax-errors=1"
-                                    , "-g"
-                                    , "-fbounds-check"
-                                    , "-fcheck-array-temporaries"
-                                    , "-fbacktrace"
-                                    ]
-    , appSettingsLibrary      = librarySettings
-    , appSettingsExecutables  = executableSettings
-    , appSettingsTests        = testSettings
-    , appSettingsDependencies = dependencies
+    { appSettingsCompiler        = compiler
+    , appSettingsProjectName     = projectName
+    , appSettingsBuildPrefix     = buildPrefix
+    , appSettingsFlags           = if release
+                                     then
+                                       [ "-Wall"
+                                       , "-Wextra"
+                                       , "-Wimplicit-interface"
+                                       , "-fPIC"
+                                       , "-fmax-errors=1"
+                                       , "-O3"
+                                       , "-march=native"
+                                       , "-ffast-math"
+                                       , "-funroll-loops"
+                                       ]
+                                     else
+                                       [ "-Wall"
+                                       , "-Wextra"
+                                       , "-Wimplicit-interface"
+                                       , "-fPIC"
+                                       , "-fmax-errors=1"
+                                       , "-g"
+                                       , "-fbounds-check"
+                                       , "-fcheck-array-temporaries"
+                                       , "-fbacktrace"
+                                       ]
+    , appSettingsLibrary         = librarySettings
+    , appSettingsExecutables     = executableSettings
+    , appSettingsTests           = testSettings
+    , appSettingsDependencies    = dependencies
     , appSettingsDevDependencies = devDependencies
     }
 
