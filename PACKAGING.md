@@ -532,3 +532,133 @@ ar: creating build/debug/library/math_constants.a
 # gfortran (for build/debug/test/runTests)
  sin(pi) =    1.2246467991473532E-016
 ```
+
+### Adding Dependencies
+
+Inevitably you'll want to be able to include other libraries in your project.
+fpm makes this incredibly simple, by taking care of fetching and compiling your
+dependencies for you. You just tell it what your dependencies are, and where to
+find them. Let's add a dependency to our library. Now our `fpm.toml` file looks
+like this:
+
+```toml
+name = "math_constants"
+version = "0.1.0"
+license = "MIT"
+author = "Jane Programmer"
+maintainer = "jane@example.com"
+copyright = "2020 Jane Programmer"
+
+[library]
+source-dir="src"
+
+[dependencies]
+helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
+
+[[executable]]
+name="math_constants"
+source-dir="app"
+main="main.f90"
+
+[[test]]
+name="runTests"
+source-dir="test"
+main="main.f90"
+```
+
+Now you can use any modules from this library anywhere in your code. Just like
+this:
+
+```fortran
+program demo
+  use helloff, only: create_greeting
+  use math_constants, only: e, pi, half_pi, two_pi
+  print *, 'math_constants library demo'
+  print *, 'pi = ', pi
+  print *, '2*pi = ', two_pi
+  print *, 'pi/2 = ', half_pi
+  print *, 'e = ', e
+  print *, create_greeting("fpm")
+end program demo
+```
+
+And now `fpm run` will output the following:
+
+```
+ math_constants library demo
+ pi =    3.1415926535897931
+ 2*pi =    6.2831853071795862
+ pi/2 =    1.5707963267948966
+ e =    2.7182818284590451
+ Hello, fpm!
+```
+
+Additionally, any users of your library will now automatically depend on your
+dependencies too. So if you don't need that depedency for the library, like in
+the above example, then you can specify it for the specific executable like
+below. Then fpm will still fetch and compile it when building your executable,
+but users of your library won't have to.
+
+```toml
+name = "math_constants"
+version = "0.1.0"
+license = "MIT"
+author = "Jane Programmer"
+maintainer = "jane@example.com"
+copyright = "2020 Jane Programmer"
+
+[library]
+source-dir="src"
+
+[[executable]]
+name="math_constants"
+source-dir="app"
+main="main.f90"
+[executable.dependencies]
+helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
+
+
+[[test]]
+name="runTests"
+source-dir="test"
+main="main.f90"
+```
+
+You can also specify dependencies for your tests in a similar way, with
+`[test.dependencies]` instead of `[executable.dependencies]`. There's also
+another option for test dependencies. The below example makes the dependencies
+available for all the tests, but again your users won't depend on these.
+
+```toml
+name = "math_constants"
+version = "0.1.0"
+license = "MIT"
+author = "Jane Programmer"
+maintainer = "jane@example.com"
+copyright = "2020 Jane Programmer"
+
+[library]
+source-dir="src"
+
+[dev-dependencies]
+helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
+
+[[executable]]
+name="math_constants"
+source-dir="app"
+main="main.f90"
+
+[[test]]
+name="runTests"
+source-dir="test"
+main="main.f90"
+```
+
+You can also be specific about which version of a dependency you'd like. You can
+specify a branch to use like `helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git", branch = "master" }`,
+or a tag like `helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git", tag = "v1.2.3" }`,
+or even a specific commit like `helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git", rev = "a1b2c3" }`.
+You can even specify the path to another folder, if for example you've got another
+fpm package in the same repository. Like this: `helloff = { path = "helloff" }`.
+Note that you should *not* specify paths outside of your repository, or things
+won't work for your users.
