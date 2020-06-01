@@ -1,0 +1,4 @@
+name = "circular_example"
+
+[dev-dependencies]
+circular_test = { path = "../circular_test" }

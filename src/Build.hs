@@ -69,8 +69,9 @@ buildProgram
   -> [String]
   -> String
   -> FilePath
+  -> [FilePath]
   -> IO ()
-buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory compiler flags programName programSource
+buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory compiler flags programName programSource archives
   = do
     sourceFiles <- getDirectoriesFiles [programDirectory] sourceExtensions
     canonicalProgramSource <- makeAbsolute $ programDirectory </> programSource
@@ -93,7 +94,6 @@ buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory
     let allModuleMaps =
           moduleLookupMap `Map.union` foldl Map.union Map.empty otherModuleMaps
     let includeFlags = map ("-I" ++) libraryDirectories
-    archives <- getDirectoriesFiles libraryDirectories [".a"]
     shake shakeOptions { shakeFiles    = buildDirectory
                        , shakeChange   = ChangeModtimeAndDigest
                        , shakeColor    = True
@@ -151,7 +151,7 @@ buildLibrary
   -> [String]
   -> String
   -> [FilePath]
-  -> IO ()
+  -> IO (FilePath)
 buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags libraryName otherLibraryDirectories
   = do
     sourceFiles <- getDirectoriesFiles [libraryDirectory] sourceExtensions
@@ -193,6 +193,7 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags lib
             need objectFiles
             cmd "ar" ["rs"] a objectFiles
           want [archiveFile]
+    return archiveFile
 
 -- A little wrapper around getDirectoryFiles so we can get files from multiple directories
 getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
