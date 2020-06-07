@@ -13,7 +13,7 @@ import           Build                          ( buildLibrary
                                                 , buildProgram
                                                 )
 import           Control.Monad.Extra            ( concatMapM )
-import           Data.List                      ( nub )
+import           Data.List                      (isSuffixOf,  find, nub )
 import qualified Data.Map                      as Map
 import qualified Data.Text.IO                  as TIO
 import           Development.Shake              ( FilePattern
@@ -35,9 +35,13 @@ import           Options.Applicative            ( Parser
                                                 , helper
                                                 , info
                                                 , long
+                                                , metavar
                                                 , progDesc
+                                                , strArgument
+                                                , strOption
                                                 , subparser
                                                 , switch
+                                                , value
                                                 )
 import           System.Directory               ( doesDirectoryExist
                                                 , doesFileExist
@@ -52,7 +56,7 @@ import           Toml                           ( TomlCodec
                                                 )
 import qualified Toml
 
-data Arguments = Arguments { command' :: Command, release :: Bool }
+data Arguments = Arguments { command' :: Command, release :: Bool, commandArguments :: String }
 
 data TomlSettings = TomlSettings {
       tomlSettingsProjectName :: String
@@ -92,7 +96,7 @@ data GitRef = Tag String | Branch String | Commit String deriving Show
 
 data PathVersionSpec = PathVersionSpec { pathVersionSpecPath :: String } deriving Show
 
-data Command = Run | Test | Build
+data Command = Run String | Test String | Build
 
 data DependencyTree = Dependency {
       dependencyName :: String
@@ -113,8 +117,8 @@ start args = do
 
 app :: Arguments -> AppSettings -> IO ()
 app args settings = case command' args of
-  Build -> build settings
-  Run   -> do
+  Build     -> build settings
+  Run whichOne  -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
@@ -128,8 +132,15 @@ app args settings = case command' args of
     canonicalExecutables <- mapM makeAbsolute executables
     case canonicalExecutables of
       [] -> putStrLn "No Executables Found"
-      _  -> mapM_ system canonicalExecutables
-  Test -> do
+      _  -> case whichOne of
+        "" -> mapM_ system (map (++ " " ++ commandArguments args) canonicalExecutables)
+        name -> do
+            case find (name `isSuffixOf`) canonicalExecutables of
+              Nothing -> putStrLn "Executable Not Found"
+              Just specified -> do
+                  system (specified ++ " " ++ (commandArguments args))
+                  return ()
+  Test whichOne -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
@@ -143,7 +154,14 @@ app args settings = case command' args of
     canonicalExecutables <- mapM makeAbsolute executables
     case canonicalExecutables of
       [] -> putStrLn "No Tests Found"
-      _  -> mapM_ system canonicalExecutables
+      _  -> case whichOne of
+        "" -> mapM_ system (map (++ " " ++ commandArguments args) canonicalExecutables)
+        name -> do
+            case find (name `isSuffixOf`) canonicalExecutables of
+              Nothing -> putStrLn "Test Not Found"
+              Just specified -> do
+                  system (specified ++ " " ++ (commandArguments args))
+                  return ()
 
 build :: AppSettings -> IO ()
 build settings = do
@@ -245,12 +263,13 @@ arguments =
                      (info buildArguments (progDesc "Build the executable"))
           )
     <*> switch (long "release" <> help "Build in release mode")
+    <*> strOption (long "args" <> metavar "ARGS" <> value "" <> help "Arguments to pass to executables/tests")
 
 runArguments :: Parser Command
-runArguments = pure Run
+runArguments = Run <$> strArgument (metavar "EXE" <> value "" <> help "Which executable to run")
 
 testArguments :: Parser Command
-testArguments = pure Test
+testArguments = Test <$> strArgument (metavar "TEST" <> value "" <> help "Which test to run")
 
 buildArguments :: Parser Command
 buildArguments = pure Build

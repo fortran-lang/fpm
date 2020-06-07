@@ -24,9 +24,9 @@ git clone https://github.com/fortran-lang/fpm
 cd fpm
 ```
 
-### Build and Test FPM
+### Build and Test fpm
 
-Build FPM using:
+Build fpm using:
 ```
 stack build
 ```
@@ -41,6 +41,17 @@ stack install
 
 On Linux, the above command installs `stack` to `${HOME}/.local/bin`.
 
-### Building your Fortran project with FPM
+### Building your Fortran project with fpm
 
-Please follow the instructions in the [Packaging guide](PACKAGING.md).
+fpm understands the basic commands:
+
+* `fpm build` - build your library, executables and tests
+* `fpm run` - run executables
+* `fpm test`- run tests
+
+The command `fpm run` can optionally accept the name of the specific executable
+to run, as can `fpm test`; like `fpm run specifc_executable`. Command line
+arguments can also be passed to the executable(s) or test(s) with the option
+`--args "some arguments"`.
+
+See additional instructions in the [Packaging guide](PACKAGING.md).
