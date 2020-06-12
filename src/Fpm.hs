@@ -569,7 +569,7 @@ buildDependencies
   -> IO [(FilePath, FilePath)]
 buildDependencies buildPrefix compiler flags dependencies = do
   built <- concatMapM (buildDependency buildPrefix compiler flags) dependencies
-  return $ nub built
+  return $ reverse (nub (reverse built))
 
 buildDependency
   :: String -> String -> [String] -> DependencyTree -> IO [(FilePath, FilePath)]
