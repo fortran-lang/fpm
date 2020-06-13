@@ -26,6 +26,8 @@ cd fpm
 
 ### Build and Test fpm
 
+Make sure that the developers library of `gmp` is installed (e.g. `sudo apt install libgmp-dev` on Debian-derived Linux distributions)
+
 Build fpm using:
 ```
 stack build
