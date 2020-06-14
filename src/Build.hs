@@ -1,6 +1,8 @@
+{-# LANGUAGE MultiWayIf #-}
 module Build
   ( buildLibrary
   , buildProgram
+  , buildWithScript
   )
 where
 
@@ -10,7 +12,9 @@ import           Data.Char                      ( isAsciiLower
                                                 , isDigit
                                                 , toLower
                                                 )
-import           Data.List                      ( intercalate )
+import           Data.List                      ( intercalate
+                                                , isSuffixOf
+                                                )
 import qualified Data.Map                      as Map
 import           Data.Maybe                     ( fromMaybe
                                                 , mapMaybe
@@ -42,8 +46,13 @@ import           Development.Shake.FilePath     ( dropExtension
                                                 , (<.>)
                                                 , (-<.>)
                                                 )
-import           System.Directory               ( makeAbsolute )
+import           System.Directory               ( createDirectoryIfMissing
+                                                , makeAbsolute
+                                                , withCurrentDirectory
+                                                )
+import           System.Environment             ( setEnv )
 import           System.FilePath                ( splitDirectories )
+import           System.Process                 ( system )
 import           Text.ParserCombinators.ReadP   ( ReadP
                                                 , char
                                                 , eof
@@ -359,3 +368,36 @@ digit = satisfy isDigit
 
 underscore :: ReadP Char
 underscore = char '_'
+
+buildWithScript
+  :: String
+  -> FilePath
+  -> FilePath
+  -> FilePath
+  -> [String]
+  -> String
+  -> [FilePath]
+  -> IO (FilePath)
+buildWithScript script projectDirectory buildDirectory compiler flags libraryName otherLibraryDirectories
+  = do
+    absoluteBuildDirectory <- makeAbsolute buildDirectory
+    createDirectoryIfMissing True absoluteBuildDirectory
+    absoluteLibraryDirectories <- mapM makeAbsolute otherLibraryDirectories
+    setEnv "FC"           compiler
+    setEnv "FFLAGS"       (intercalate " " flags)
+    setEnv "BUILD_DIR"    absoluteBuildDirectory
+    setEnv "INCLUDE_DIRS" (intercalate " " absoluteLibraryDirectories)
+    let archiveFile = absoluteBuildDirectory </> "lib" ++ libraryName <.> "a"
+    withCurrentDirectory
+      projectDirectory
+      if
+        | isMakefile script -> system
+          ("make -f " ++ script ++ " " ++ archiveFile)
+        | otherwise -> system (script ++ " " ++ archiveFile)
+    return archiveFile
+
+isMakefile :: String -> Bool
+isMakefile script | script == "Makefile"      = True
+                  | script == "makefile"      = True
+                  | ".mk" `isSuffixOf` script = True
+                  | otherwise                 = False

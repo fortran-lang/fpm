@@ -1,0 +1,5 @@
+name = "with_makefile"
+
+[library]
+source-dir = "src"
+build-script = "Makefile"

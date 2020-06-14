@@ -13,6 +13,8 @@ main = do
   testHelloComplex
   testHelloFpm
   testCircular
+  testWithMakefile
+  testMakefileComplex
 
 testHelloWorld :: IO ()
 testHelloWorld =
@@ -29,3 +31,11 @@ testHelloFpm =
 testCircular :: IO ()
 testCircular =
     withCurrentDirectory (example_path </> "circular_example") $ start $ Arguments (Test "") False ""
+
+testWithMakefile :: IO ()
+testWithMakefile =
+    withCurrentDirectory (example_path </> "with_makefile") $ start $ Arguments (Build) False ""
+
+testMakefileComplex :: IO ()
+testMakefileComplex =
+    withCurrentDirectory (example_path </> "makefile_complex") $ start $ Arguments (Run "") False ""

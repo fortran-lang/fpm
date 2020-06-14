@@ -1,0 +1,8 @@
+name = "makefile_complex"
+
+[dependencies]
+with_makefile = { path = "../with_makefile" }
+
+[library]
+source-dir = "src"
+build-script = "Makefile"
