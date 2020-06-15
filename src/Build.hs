@@ -15,6 +15,7 @@ import           Data.Char                      ( isAsciiLower
 import           Data.List                      ( intercalate
                                                 , isSuffixOf
                                                 )
+import           Data.List.Utils                ( replace )
 import qualified Data.Map                      as Map
 import           Data.Maybe                     ( fromMaybe
                                                 , mapMaybe
@@ -383,11 +384,17 @@ buildWithScript script projectDirectory buildDirectory compiler flags libraryNam
     absoluteBuildDirectory <- makeAbsolute buildDirectory
     createDirectoryIfMissing True absoluteBuildDirectory
     absoluteLibraryDirectories <- mapM makeAbsolute otherLibraryDirectories
-    setEnv "FC"           compiler
-    setEnv "FFLAGS"       (intercalate " " flags)
-    setEnv "BUILD_DIR"    $ removeDriveLetter absoluteBuildDirectory
-    setEnv "INCLUDE_DIRS" (intercalate " " (map removeDriveLetter absoluteLibraryDirectories))
-    let archiveFile = (removeDriveLetter absoluteBuildDirectory) </> "lib" ++ libraryName <.> "a"
+    setEnv "FC"     compiler
+    setEnv "FFLAGS" (intercalate " " flags)
+    setEnv "BUILD_DIR" $ unWindowsPath absoluteBuildDirectory
+    setEnv
+      "INCLUDE_DIRS"
+      (intercalate " " (map unWindowsPath absoluteLibraryDirectories))
+    let archiveFile =
+          (removeDriveLetter absoluteBuildDirectory)
+            </> "lib"
+            ++  libraryName
+            <.> "a"
     withCurrentDirectory
       projectDirectory
       if
@@ -402,7 +409,12 @@ isMakefile script | script == "Makefile"      = True
                   | ".mk" `isSuffixOf` script = True
                   | otherwise                 = False
 
+unWindowsPath :: String -> String
+unWindowsPath = changeSeparators . removeDriveLetter
+
 removeDriveLetter :: String -> String
-removeDriveLetter path
-    | ':' `elem` path = (tail . dropWhile (/= ':')) path
-    | otherwise = path
+removeDriveLetter path | ':' `elem` path = (tail . dropWhile (/= ':')) path
+                       | otherwise       = path
+
+changeSeparators :: String -> String
+changeSeparators = replace "\\" "/"
