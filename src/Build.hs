@@ -392,7 +392,7 @@ buildWithScript script projectDirectory buildDirectory compiler flags libraryNam
       (intercalate " " (map unWindowsPath absoluteLibraryDirectories))
     let archiveFile =
           (unWindowsPath absoluteBuildDirectory)
-            </> "lib"
+            ++ "/lib"
             ++  libraryName
             <.> "a"
     withCurrentDirectory
