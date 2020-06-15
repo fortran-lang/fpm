@@ -385,9 +385,9 @@ buildWithScript script projectDirectory buildDirectory compiler flags libraryNam
     absoluteLibraryDirectories <- mapM makeAbsolute otherLibraryDirectories
     setEnv "FC"           compiler
     setEnv "FFLAGS"       (intercalate " " flags)
-    setEnv "BUILD_DIR"    absoluteBuildDirectory
-    setEnv "INCLUDE_DIRS" (intercalate " " absoluteLibraryDirectories)
-    let archiveFile = absoluteBuildDirectory </> "lib" ++ libraryName <.> "a"
+    setEnv "BUILD_DIR"    $ removeDriveLetter absoluteBuildDirectory
+    setEnv "INCLUDE_DIRS" (intercalate " " (map removeDriveLetter absoluteLibraryDirectories))
+    let archiveFile = (removeDriveLetter absoluteBuildDirectory) </> "lib" ++ libraryName <.> "a"
     withCurrentDirectory
       projectDirectory
       if
@@ -401,3 +401,8 @@ isMakefile script | script == "Makefile"      = True
                   | script == "makefile"      = True
                   | ".mk" `isSuffixOf` script = True
                   | otherwise                 = False
+
+removeDriveLetter :: String -> String
+removeDriveLetter path
+    | ':' `elem` path = (tail . dropWhile (/= ':')) path
+    | otherwise = path
