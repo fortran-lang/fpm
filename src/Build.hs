@@ -15,6 +15,7 @@ import           Data.Char                      ( isAsciiLower
 import           Data.List                      ( intercalate
                                                 , isSuffixOf
                                                 )
+import Data.List.Utils (replace)
 import qualified Data.Map                      as Map
 import           Data.Maybe                     ( fromMaybe
                                                 , mapMaybe
@@ -385,7 +386,7 @@ buildWithScript script projectDirectory buildDirectory compiler flags libraryNam
     absoluteLibraryDirectories <- mapM makeAbsolute otherLibraryDirectories
     setEnv "FC"           compiler
     setEnv "FFLAGS"       (intercalate " " flags)
-    setEnv "BUILD_DIR"    absoluteBuildDirectory
+    setEnv "BUILD_DIR"    (escapeColon absoluteBuildDirectory)
     setEnv "INCLUDE_DIRS" (intercalate " " absoluteLibraryDirectories)
     let archiveFile = absoluteBuildDirectory </> "lib" ++ libraryName <.> "a"
     withCurrentDirectory
@@ -401,3 +402,6 @@ isMakefile script | script == "Makefile"      = True
                   | script == "makefile"      = True
                   | ".mk" `isSuffixOf` script = True
                   | otherwise                 = False
+
+escapeColon :: String -> String
+escapeColon = replace ":" "\\:"
