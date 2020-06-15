@@ -12,6 +12,8 @@ for it to successfully build with the Fortran Package Manager (FPM).
   - [Multi-level library](#multi-level-library)
   - [Be more explicit](#be-more-explicit)
   - [Add some tests](#add-some-tests)
+  - [Adding dependencies](#adding-dependencies)
+  - [Custom build scripts](#custom-build-scripts)
 
 ## What kind of package can FPM build?
 
@@ -662,3 +664,32 @@ You can even specify the path to another folder, if for example you've got anoth
 fpm package in the same repository. Like this: `helloff = { path = "helloff" }`.
 Note that you should *not* specify paths outside of your repository, or things
 won't work for your users.
+
+### Custom Build Scripts
+
+If there is something special about your library that makes fpm unable to build
+it, you can provide your own build script. fpm will then simply call your
+build script to build the library.
+
+To specify a build script to be used, put it in the library section of your
+`fpm.toml` file, like:
+
+```toml
+[library]
+source-dir="src"
+build-script="my_build_script"
+```
+
+fpm will set the following environment variables to specify some parameters to
+the build script.
+
+* `FC` - The Fortran compiler to be used
+* `FFLAGS` - The flags that should be passed to the Fortran compiler
+* `BUILD_DIR` - Where the compiled files should be placed
+* `INCLUDE_DIRS` - The folders where any dependencies can be found
+
+Additionally, script will be called with the name of the archive (`*.a` file)
+that should be produced as the command line argument.
+
+> Note: If the name of the build script is `Makefile` or ends with `.mk`, then
+> the make program will be used to run it.
