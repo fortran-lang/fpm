@@ -391,7 +391,7 @@ buildWithScript script projectDirectory buildDirectory compiler flags libraryNam
       "INCLUDE_DIRS"
       (intercalate " " (map unWindowsPath absoluteLibraryDirectories))
     let archiveFile =
-          (removeDriveLetter absoluteBuildDirectory)
+          (unWindowsPath absoluteBuildDirectory)
             </> "lib"
             ++  libraryName
             <.> "a"
