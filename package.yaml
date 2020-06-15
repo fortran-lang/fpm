@@ -25,7 +25,6 @@ dependencies:
 - directory
 - extra
 - filepath
-- MissingH
 - optparse-applicative
 - process
 - shake
