@@ -10,6 +10,7 @@ well as to include supported Fortran dependency projects.
 As a prototype, changes to fpm's behavior and inputs may occur as development continues.
 Please follow the [issues](https://github.com/fortran-lang/fpm/issues)
 to contribute and/or stay up to date with the development.
+As the prototype matures and we enter production, we will do our best to stay backwards compatible.
 
 ## Getting started
 
