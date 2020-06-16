@@ -26,6 +26,8 @@ cd fpm
 
 ### Build and Test fpm
 
+Make sure that the development library of `gmp` is installed (e.g. `sudo apt install libgmp-dev` on Debian-derived Linux distributions)
+
 Build fpm using:
 ```
 stack build
@@ -39,7 +41,7 @@ To install:
 stack install
 ```
 
-On Linux, the above command installs `stack` to `${HOME}/.local/bin`.
+On Linux, the above command installs `fpm` to `${HOME}/.local/bin`.
 
 ### Building your Fortran project with fpm
 
