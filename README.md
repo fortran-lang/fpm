@@ -7,7 +7,7 @@ If you are looking for the Effing Package Management instead, see
 Fortran Package Manager is an early prototype.
 You can use it to build and package your Fortran projects, as
 well as to include supported Fortran dependency projects.
-However, fpm's behavior can change in the future.
+As a prototype, changes to fpm's behavior and inputs may occur as development continues.
 Please follow the [issues](https://github.com/fortran-lang/fpm/issues)
 to contribute and/or stay up to date with the development.
 
