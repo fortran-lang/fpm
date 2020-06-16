@@ -11,9 +11,13 @@ where
 
 import           Build                          ( buildLibrary
                                                 , buildProgram
+                                                , buildWithScript
                                                 )
 import           Control.Monad.Extra            ( concatMapM )
-import           Data.List                      (isSuffixOf,  find, nub )
+import           Data.List                      ( isSuffixOf
+                                                , find
+                                                , nub
+                                                )
 import qualified Data.Map                      as Map
 import qualified Data.Text.IO                  as TIO
 import           Development.Shake              ( FilePattern
@@ -79,7 +83,7 @@ data AppSettings = AppSettings {
     , appSettingsDevDependencies :: (Map.Map String Version)
 }
 
-data Library = Library { librarySourceDir :: String }
+data Library = Library { librarySourceDir :: String, libraryBuildScript :: Maybe String }
 
 data Executable = Executable {
       executableSourceDir :: String
@@ -102,6 +106,7 @@ data DependencyTree = Dependency {
       dependencyName :: String
     , dependencyPath :: FilePath
     , dependencySourcePath :: FilePath
+    , dependencyBuildScript :: Maybe String
     , dependencyDependencies :: [DependencyTree]
 }
 
@@ -117,8 +122,8 @@ start args = do
 
 app :: Arguments -> AppSettings -> IO ()
 app args settings = case command' args of
-  Build     -> build settings
-  Run whichOne  -> do
+  Build        -> build settings
+  Run whichOne -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
@@ -133,13 +138,15 @@ app args settings = case command' args of
     case canonicalExecutables of
       [] -> putStrLn "No Executables Found"
       _  -> case whichOne of
-        "" -> mapM_ system (map (++ " " ++ commandArguments args) canonicalExecutables)
+        "" -> mapM_
+          system
+          (map (++ " " ++ commandArguments args) canonicalExecutables)
         name -> do
-            case find (name `isSuffixOf`) canonicalExecutables of
-              Nothing -> putStrLn "Executable Not Found"
-              Just specified -> do
-                  system (specified ++ " " ++ (commandArguments args))
-                  return ()
+          case find (name `isSuffixOf`) canonicalExecutables of
+            Nothing        -> putStrLn "Executable Not Found"
+            Just specified -> do
+              system (specified ++ " " ++ (commandArguments args))
+              return ()
   Test whichOne -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
@@ -155,13 +162,15 @@ app args settings = case command' args of
     case canonicalExecutables of
       [] -> putStrLn "No Tests Found"
       _  -> case whichOne of
-        "" -> mapM_ system (map (++ " " ++ commandArguments args) canonicalExecutables)
+        "" -> mapM_
+          system
+          (map (++ " " ++ commandArguments args) canonicalExecutables)
         name -> do
-            case find (name `isSuffixOf`) canonicalExecutables of
-              Nothing -> putStrLn "Test Not Found"
-              Just specified -> do
-                  system (specified ++ " " ++ (commandArguments args))
-                  return ()
+          case find (name `isSuffixOf`) canonicalExecutables of
+            Nothing        -> putStrLn "Test Not Found"
+            Just specified -> do
+              system (specified ++ " " ++ (commandArguments args))
+              return ()
 
 build :: AppSettings -> IO ()
 build settings = do
@@ -183,15 +192,24 @@ build settings = do
             { dependencyName         = projectName
             , dependencyPath         = "."
             , dependencySourcePath   = librarySourceDir'
+            , dependencyBuildScript  = libraryBuildScript librarySettings
             , dependencyDependencies = mainDependencyTrees
             }
-      thisArchive <- buildLibrary librarySourceDir'
-                                  [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                                  (buildPrefix </> projectName)
-                                  compiler
-                                  flags
-                                  projectName
-                                  (map fst builtDependencies)
+      thisArchive <- case libraryBuildScript librarySettings of
+        Just script -> buildWithScript script
+                                       "."
+                                       (buildPrefix </> projectName)
+                                       compiler
+                                       flags
+                                       projectName
+                                       (map fst builtDependencies)
+        Nothing -> buildLibrary librarySourceDir'
+                                [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                                (buildPrefix </> projectName)
+                                compiler
+                                flags
+                                projectName
+                                (map fst builtDependencies)
       return
         $ ( (buildPrefix </> projectName, thisArchive) : builtDependencies
           , Just thisDependencyTree
@@ -263,13 +281,18 @@ arguments =
                      (info buildArguments (progDesc "Build the executable"))
           )
     <*> switch (long "release" <> help "Build in release mode")
-    <*> strOption (long "args" <> metavar "ARGS" <> value "" <> help "Arguments to pass to executables/tests")
+    <*> strOption
+          (long "args" <> metavar "ARGS" <> value "" <> help
+            "Arguments to pass to executables/tests"
+          )
 
 runArguments :: Parser Command
-runArguments = Run <$> strArgument (metavar "EXE" <> value "" <> help "Which executable to run")
+runArguments = Run <$> strArgument
+  (metavar "EXE" <> value "" <> help "Which executable to run")
 
 testArguments :: Parser Command
-testArguments = Test <$> strArgument (metavar "TEST" <> value "" <> help "Which test to run")
+testArguments =
+  Test <$> strArgument (metavar "TEST" <> value "" <> help "Which test to run")
 
 buildArguments :: Parser Command
 buildArguments = pure Build
@@ -297,7 +320,12 @@ settingsCodec =
     .=  tomlSettingsDevDependencies
 
 libraryCodec :: TomlCodec Library
-libraryCodec = Library <$> Toml.string "source-dir" .= librarySourceDir
+libraryCodec =
+  Library
+    <$> Toml.string "source-dir"
+    .=  librarySourceDir
+    <*> Toml.dioptional (Toml.string "build-script")
+    .=  libraryBuildScript
 
 executableCodec :: TomlCodec Executable
 executableCodec =
@@ -419,7 +447,10 @@ getLibrarySettings maybeSettings = case maybeSettings of
   Nothing       -> do
     defaultExists <- doesDirectoryExist "src"
     if defaultExists
-      then return (Just (Library { librarySourceDir = "src" }))
+      then return
+        (Just
+          (Library { librarySourceDir = "src", libraryBuildScript = Nothing })
+        )
       else return Nothing
 
 getExecutableSettings :: [Executable] -> String -> IO [Executable]
@@ -490,6 +521,7 @@ fetchDependencies dependencies = do
           { dependencyName         = name
           , dependencyPath         = path
           , dependencySourcePath   = path </> (librarySourceDir librarySettings)
+          , dependencyBuildScript  = libraryBuildScript librarySettings
           , dependencyDependencies = newDependencies
           }
       Nothing -> do
@@ -500,7 +532,7 @@ fetchExecutableDependencies
   :: (Maybe DependencyTree) -> Map.Map String Version -> IO [DependencyTree]
 fetchExecutableDependencies maybeProjectTree dependencies =
   case maybeProjectTree of
-    Just projectTree@(Dependency name _ _ _) ->
+    Just projectTree@(Dependency name _ _ _ _) ->
       if name `Map.member` dependencies {- map contains this project-}
         then fmap (projectTree :)
                   (fetchDependencies (Map.delete name dependencies)) {- fetch the other dependencies and include the project tree in the result -}
@@ -524,6 +556,7 @@ fetchExecutableDependencies maybeProjectTree dependencies =
           { dependencyName         = name
           , dependencyPath         = path
           , dependencySourcePath   = path </> (librarySourceDir librarySettings)
+          , dependencyBuildScript  = libraryBuildScript librarySettings
           , dependencyDependencies = newDependencies
           }
       Nothing -> do
@@ -573,18 +606,26 @@ buildDependencies buildPrefix compiler flags dependencies = do
 
 buildDependency
   :: String -> String -> [String] -> DependencyTree -> IO [(FilePath, FilePath)]
-buildDependency buildPrefix compiler flags (Dependency name path sourcePath dependencies)
+buildDependency buildPrefix compiler flags (Dependency name path sourcePath mBuildScript dependencies)
   = do
     transitiveDependencies <- buildDependencies buildPrefix
                                                 compiler
                                                 flags
                                                 dependencies
     let buildPath = buildPrefix </> name
-    thisArchive <- buildLibrary sourcePath
-                                [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-                                buildPath
-                                compiler
-                                flags
-                                name
-                                (map fst transitiveDependencies)
+    thisArchive <- case mBuildScript of
+      Just script -> buildWithScript script
+                                     path
+                                     buildPath
+                                     compiler
+                                     flags
+                                     name
+                                     (map fst transitiveDependencies)
+      Nothing -> buildLibrary sourcePath
+                              [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+                              buildPath
+                              compiler
+                              flags
+                              name
+                              (map fst transitiveDependencies)
     return $ (buildPath, thisArchive) : transitiveDependencies
