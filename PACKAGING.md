@@ -686,10 +686,16 @@ the build script.
 * `FC` - The Fortran compiler to be used
 * `FFLAGS` - The flags that should be passed to the Fortran compiler
 * `BUILD_DIR` - Where the compiled files should be placed
-* `INCLUDE_DIRS` - The folders where any dependencies can be found
+* `INCLUDE_DIRS` - The folders where any dependencies can be found, space seperated.
+    It is then the responsibility of the build script to generate the appropriate
+    include flags.
 
 Additionally, script will be called with the name of the archive (`*.a` file)
 that should be produced as the command line argument.
 
 > Note: If the name of the build script is `Makefile` or ends with `.mk`, then
-> the make program will be used to run it.
+> the make program will be used to run it. Not the the archive file is explicitly
+> specified as the target to be built
+
+> Note: All file and directory names are specified with their full canonical
+> path.
