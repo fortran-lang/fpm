@@ -18,7 +18,7 @@ As the prototype matures and we enter production, we will do our best to stay ba
 
 To install [Haskell Stack](https://haskellstack.org/) on
 Linux without root access, follow the [manual download](https://docs.haskellstack.org/en/stable/install_and_upgrade/#manual-download_2) procedure:
-```
+```bash
 wget https://get.haskellstack.org/stable/linux-x86_64-static.tar.gz
 tar xaf linux-x86_64-static.tar.gz
 ```
@@ -27,13 +27,13 @@ navigate to stack directory:
 cd stack-2.1.3-linux-x86_64-static/
 ```
 and put the `stack` binary in your path, for example:
-```
+```bash
 export PATH="$PATH:`pwd`"
 ```
 
 ### Download this repository
 
-```
+```bash
 git clone https://github.com/fortran-lang/fpm
 cd fpm
 ```
@@ -43,15 +43,15 @@ cd fpm
 Make sure that the development library of `gmp` is installed (e.g. `sudo apt install libgmp-dev` on Debian-derived Linux distributions)
 
 Build fpm using:
-```
+```bash
 stack build
 ```
 To test:
-```
+```bash
 stack test
 ```
 To install:
-```
+```bash
 stack install
 ```
 
