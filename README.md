@@ -16,7 +16,7 @@ As the prototype matures and we enter production, we will do our best to stay ba
 
 ### Install Haskell
 
-To install [Haskell Stack](https://haskellstack.org/), follow these [instructions](https://docs.haskellstack.org/en/stable/README/)
+To install **Haskell Stack**, follow these [instructions](https://docs.haskellstack.org/en/stable/README/)
 
 ### Download this repository
 
