@@ -22,9 +22,13 @@ Linux without root access, follow the [manual download](https://docs.haskellstac
 wget https://get.haskellstack.org/stable/linux-x86_64-static.tar.gz
 tar xaf linux-x86_64-static.tar.gz
 ```
+navigate to stack directory:
+```bash
+cd stack-2.1.3-linux-x86_64-static/
+```
 and put the `stack` binary in your path, for example:
 ```
-export PATH="$PATH:`pwd`/stack-2.1.3-linux-x86_64-static/"
+export PATH="$PATH:`pwd`"
 ```
 
 ### Download this repository
