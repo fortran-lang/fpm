@@ -16,20 +16,7 @@ As the prototype matures and we enter production, we will do our best to stay ba
 
 ### Install Haskell
 
-To install [Haskell Stack](https://haskellstack.org/) on
-Linux without root access, follow the [manual download](https://docs.haskellstack.org/en/stable/install_and_upgrade/#manual-download_2) procedure:
-```bash
-wget https://get.haskellstack.org/stable/linux-x86_64-static.tar.gz
-tar xaf linux-x86_64-static.tar.gz
-```
-navigate to stack directory:
-```bash
-cd stack-2.1.3-linux-x86_64-static/
-```
-and put the `stack` binary in your path, for example:
-```bash
-export PATH="$PATH:`pwd`"
-```
+To install [Haskell Stack](https://haskellstack.org/), follow these [instructions](https://docs.haskellstack.org/en/stable/README/)
 
 ### Download this repository
 
