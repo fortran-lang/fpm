@@ -16,7 +16,8 @@ As the prototype matures and we enter production, we will do our best to stay ba
 
 ### Install Haskell
 
-To install **Haskell Stack**, follow these [instructions](https://docs.haskellstack.org/en/stable/README/)
+To install **Haskell Stack**, follow these [instructions](https://docs.haskellstack.org/en/stable/install_and_upgrade/)
+, users without superuser (admin) permissions should follow the [manual installation](https://docs.haskellstack.org/en/stable/install_and_upgrade/#manual-download_2) procedure.
 
 ### Download this repository
 
@@ -26,8 +27,6 @@ cd fpm
 ```
 
 ### Build and Test fpm
-
-Make sure that the development library of `gmp` is installed (e.g. `sudo apt install libgmp-dev` on Debian-derived Linux distributions)
 
 Build fpm using:
 ```bash
