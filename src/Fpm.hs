@@ -13,7 +13,9 @@ import           Build                          ( buildLibrary
                                                 , buildProgram
                                                 , buildWithScript
                                                 )
-import           Control.Monad.Extra            ( concatMapM )
+import           Control.Monad.Extra            ( concatMapM
+                                                , when
+                                                )
 import           Data.List                      ( isSuffixOf
                                                 , find
                                                 , nub
@@ -47,7 +49,8 @@ import           Options.Applicative            ( Parser
                                                 , switch
                                                 , value
                                                 )
-import           System.Directory               ( doesDirectoryExist
+import           System.Directory               ( createDirectory
+                                                , doesDirectoryExist
                                                 , doesFileExist
                                                 , makeAbsolute
                                                 , withCurrentDirectory
@@ -100,7 +103,7 @@ data GitRef = Tag String | Branch String | Commit String deriving Show
 
 data PathVersionSpec = PathVersionSpec { pathVersionSpecPath :: String } deriving Show
 
-data Command = Run String | Test String | Build
+data Command = Run String | Test String | Build | New String Bool Bool
 
 data DependencyTree = Dependency {
       dependencyName :: String
@@ -111,14 +114,17 @@ data DependencyTree = Dependency {
 }
 
 start :: Arguments -> IO ()
-start args = do
-  fpmContents <- TIO.readFile "fpm.toml"
-  let tomlSettings = Toml.decode settingsCodec fpmContents
-  case tomlSettings of
-    Left  err           -> print err
-    Right tomlSettings' -> do
-      appSettings <- toml2AppSettings tomlSettings' (release args)
-      app args appSettings
+start args = case command' args of
+  New projectName withExecutable withTest ->
+    createNewProject projectName withExecutable withTest
+  _ -> do
+    fpmContents <- TIO.readFile "fpm.toml"
+    let tomlSettings = Toml.decode settingsCodec fpmContents
+    case tomlSettings of
+      Left  err           -> print err
+      Right tomlSettings' -> do
+        appSettings <- toml2AppSettings tomlSettings' (release args)
+        app args appSettings
 
 app :: Arguments -> AppSettings -> IO ()
 app args settings = case command' args of
@@ -279,6 +285,8 @@ arguments =
           <> command "test" (info testArguments (progDesc "Run the tests"))
           <> command "build"
                      (info buildArguments (progDesc "Build the executable"))
+          <> command "new"
+                     (info newArguments (progDesc "Create a new project"))
           )
     <*> switch (long "release" <> help "Build in release mode")
     <*> strOption
@@ -296,6 +304,13 @@ testArguments =
 
 buildArguments :: Parser Command
 buildArguments = pure Build
+
+newArguments :: Parser Command
+newArguments =
+  New
+    <$> strArgument (metavar "NAME" <> help "Name of new project")
+    <*> switch (long "with-executable" <> help "Include an executable")
+    <*> switch (long "with-test" <> help "Include a test")
 
 getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
 getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
@@ -629,3 +644,77 @@ buildDependency buildPrefix compiler flags (Dependency name path sourcePath mBui
                               name
                               (map fst transitiveDependencies)
     return $ (buildPath, thisArchive) : transitiveDependencies
+
+createNewProject :: String -> Bool -> Bool -> IO ()
+createNewProject projectName withExecutable withTest = do
+  createDirectory projectName
+  writeFile (projectName </> "fpm.toml")   (templateFpmToml projectName)
+  writeFile (projectName </> "README.md")  (templateReadme projectName)
+  writeFile (projectName </> ".gitignore") "build/*\n"
+  createDirectory (projectName </> "src")
+  writeFile (projectName </> "src" </> projectName <.> "f90")
+            (templateModule projectName)
+  when withExecutable $ do
+    createDirectory (projectName </> "app")
+    writeFile (projectName </> "app" </> "main.f90")
+              (templateProgram projectName)
+  when withTest $ do
+    createDirectory (projectName </> "test")
+    writeFile (projectName </> "test" </> "main.f90") templateTest
+  withCurrentDirectory projectName $ do
+    system "git init"
+    return ()
+
+templateFpmToml :: String -> String
+templateFpmToml projectName =
+  "name = \""
+    ++ projectName
+    ++ "\"\n"
+    ++ "version = \"0.1.0\"\n"
+    ++ "license = \"license\"\n"
+    ++ "author = \"Jane Doe\"\n"
+    ++ "maintainer = \"jane.doe@example.com\"\n"
+    ++ "copyright = \"2020 Jane Doe\"\n"
+
+templateModule :: String -> String
+templateModule projectName =
+  "module "
+    ++ projectName
+    ++ "\n"
+    ++ "  implicit none\n"
+    ++ "  private\n"
+    ++ "\n"
+    ++ "  public :: say_hello\n"
+    ++ "contains\n"
+    ++ "  subroutine say_hello\n"
+    ++ "    print *, \"Hello, "
+    ++ projectName
+    ++ "!\"\n"
+    ++ "  end subroutine say_hello\n"
+    ++ "end module "
+    ++ projectName
+    ++ "\n"
+
+templateReadme :: String -> String
+templateReadme projectName =
+  "# " ++ projectName ++ "\n" ++ "\n" ++ "My cool new project!\n"
+
+templateProgram :: String -> String
+templateProgram projectName =
+  "program main\n"
+    ++ "  use "
+    ++ projectName
+    ++ ", only: say_hello\n"
+    ++ "\n"
+    ++ "  implicit none\n"
+    ++ "\n"
+    ++ "  call say_hello\n"
+    ++ "end program main\n"
+
+templateTest :: String
+templateTest =
+  "program main\n"
+    ++ "  implicit none\n"
+    ++ "\n"
+    ++ "  print *, \"Put some tests in here!\"\n"
+    ++ "end program main\n"
