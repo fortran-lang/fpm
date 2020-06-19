@@ -286,7 +286,7 @@ arguments =
           <> command "build"
                      (info buildArguments (progDesc "Build the executable"))
           <> command "new"
-                     (info newArguments (progDesc "Create a new project"))
+                     (info newArguments (progDesc "Create a new project in a new directory"))
           )
     <*> switch (long "release" <> help "Build in release mode")
     <*> strOption
