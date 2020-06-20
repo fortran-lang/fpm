@@ -16,38 +16,28 @@ As the prototype matures and we enter production, we will do our best to stay ba
 
 ### Install Haskell
 
-To install [Haskell Stack](https://haskellstack.org/) on
-Linux without root access, follow the [manual download](https://docs.haskellstack.org/en/stable/install_and_upgrade/#manual-download_2) procedure:
-```
-wget https://get.haskellstack.org/stable/linux-x86_64-static.tar.gz
-tar xaf linux-x86_64-static.tar.gz
-```
-and put the `stack` binary in your path, for example:
-```
-export PATH="$PATH:`pwd`/stack-2.1.3-linux-x86_64-static/"
-```
+To install **Haskell Stack**, follow these [instructions](https://docs.haskellstack.org/en/stable/install_and_upgrade/)
+, users without superuser (admin) permissions should follow the [manual installation](https://docs.haskellstack.org/en/stable/install_and_upgrade/#manual-download_2) procedure.
 
 ### Download this repository
 
-```
+```bash
 git clone https://github.com/fortran-lang/fpm
 cd fpm
 ```
 
 ### Build and Test fpm
 
-Make sure that the development library of `gmp` is installed (e.g. `sudo apt install libgmp-dev` on Debian-derived Linux distributions)
-
 Build fpm using:
-```
+```bash
 stack build
 ```
 To test:
-```
+```bash
 stack test
 ```
 To install:
-```
+```bash
 stack install
 ```
 
