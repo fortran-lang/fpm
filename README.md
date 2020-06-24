@@ -1,7 +1,7 @@
 # Fortran Package Manager
 
 This is the repository of the Fortran Package Manager (fpm).
-If you are looking for the Effing Package Management instead, see
+If you are looking for _fpm--packaging made simple_ instead, see
 [jordansissel/fpm](https://github.com/jordansissel/fpm).
 
 Fortran Package Manager is an early prototype.
