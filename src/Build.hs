@@ -120,7 +120,7 @@ buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory
             need allObjectFiles
             need archives
             cmd compiler allObjectFiles archives ["-o", executable] flags
-          buildDirectory </> programSource -<.> "o" %> \objectFile -> do
+          buildDirectory </> (map toLower programSource) -<.> "o" %> \objectFile -> do
             let realObjectFile = foldl (</>) "" $ splitDirectories objectFile
             let sourceFile     = programDirectory </> programSource
             need [sourceFile]
