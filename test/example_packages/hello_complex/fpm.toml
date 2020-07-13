@@ -4,9 +4,9 @@ name = "hello_complex"
 source-dir="source"
 
 [[executable]]
-name="say_hello"
+name="say_Hello"
 source-dir="apps/say_hello"
-main="say_hello.f90"
+main="say_Hello.f90"
 
 [[executable]]
 name="say_goodbye"
