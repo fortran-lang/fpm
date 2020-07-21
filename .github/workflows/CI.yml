@@ -88,6 +88,6 @@ jobs:
         ci/run_tests.sh
 
     - name: Build and run Fortran fpm (Windows)
-      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
+      if: contains(matrix.os, 'windows')
       run: |
         call ci\run_tests.bat
