@@ -67,10 +67,15 @@ jobs:
         stack build
         stack install
 
-    - name: macOS: put fpm to PATH
+    - name: put fpm to PATH (macOS)
       if: contains(matrix.os, 'macos')
       run: |
           cp /Users/runner/.local/bin/fpm /usr/local/bin
+
+    - name: put fpm to PATH (Windows)
+      if: contains(matrix.os, 'windows')
+      run: |
+          copy "C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe" "C:\Program Files\Git\usr\bin"
 
     - name: Run tests on Haskell fpm
       run: |
