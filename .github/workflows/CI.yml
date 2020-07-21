@@ -61,12 +61,19 @@ jobs:
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
         --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
 
-    - name: Build
+    - name: Build Haskell fpm
       run: |
         cd bootstrap
         stack build
+        stack install
 
-    - name: Run tests
+    - name: Run tests on Haskell fpm
       run: |
         cd bootstrap
         stack test
+
+    - name: Build and run Fortran fpm
+      run: |
+        cd fpm
+        fpm build
+        fpm run
