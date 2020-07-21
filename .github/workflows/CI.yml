@@ -63,8 +63,10 @@ jobs:
 
     - name: Build
       run: |
+        cd bootstrap
         stack build
 
     - name: Run tests
       run: |
+        cd bootstrap
         stack test
