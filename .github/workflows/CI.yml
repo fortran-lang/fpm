@@ -27,6 +27,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v1
 
+    - name: Install GFortran macOS
+      if: contains(matrix.os, 'macos')
+      run: |
+          ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
+          which gfortran-${GCC_V}
+          which gfortran
+
     - name: Install Haskell macOS
       if: contains(matrix.os, 'macos')
       run: |
