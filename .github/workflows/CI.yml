@@ -67,6 +67,11 @@ jobs:
         stack build
         stack install
 
+    - name: macOS: put fpm to PATH
+      if: contains(matrix.os, 'macos')
+      run: |
+          cp /Users/runner/.local/bin/fpm /usr/local/bin
+
     - name: Run tests on Haskell fpm
       run: |
         cd bootstrap
