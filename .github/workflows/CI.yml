@@ -87,3 +87,4 @@ jobs:
         cd fpm
         fpm build
         fpm run
+        fpm run --args build
