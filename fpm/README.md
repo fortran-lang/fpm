@@ -1,3 +1,4 @@
-# fpm
+# Fortran Package Manager
 
-My cool new project!
+This is the Fortran Package Manager, implemented in Fortran as an fpm package.
+Use fpm to build it.
