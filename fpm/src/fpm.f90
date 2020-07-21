@@ -20,11 +20,24 @@ if (stat /= 0) then
 end if
 end subroutine
 
+logical function exists(filename) result(r)
+character(len=*), intent(in) :: filename
+inquire(file=filename, exist=r)
+end function
+
 subroutine cmd_build()
+logical :: src
 print *, "# Building project"
-call run("gfortran -c src/fpm.f90 -o fpm.o")
+src = exists("src/fpm.f90")
+if (src) then
+    call run("gfortran -c src/fpm.f90 -o fpm.o")
+end if
 call run("gfortran -c app/main.f90 -o main.o")
-call run("gfortran main.o fpm.o -o fpm")
+if (src) then
+    call run("gfortran main.o fpm.o -o fpm")
+else
+    call run("gfortran main.o -o hello_world")
+end if
 end subroutine
 
 end module fpm
