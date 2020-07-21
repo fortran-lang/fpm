@@ -28,8 +28,9 @@ cd fpm
 
 ### Build and Test fpm
 
-Build fpm using:
+Bootstrap fpm using:
 ```bash
+cd bootstrap
 stack build
 ```
 To test:
