@@ -17,3 +17,6 @@ if errorlevel 1 exit 1
 
 ..\..\..\fpm\fpm build
 if errorlevel 1 exit 1
+
+.\hello_world
+if errorlevel 1 exit 1
