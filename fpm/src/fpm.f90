@@ -5,6 +5,6 @@ module fpm
   public :: say_hello
 contains
   subroutine say_hello
-    print *, "Hello, fpm!"
+    print *, "Fortran Package Manager (fpm)"
   end subroutine say_hello
 end module fpm
