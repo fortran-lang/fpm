@@ -27,8 +27,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v1
 
-    - name: Install Haskell Linux / macOS
-      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
+    - name: Install GFortran macOS
+      if: contains(matrix.os, 'macos')
+      run: |
+          ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
+          which gfortran-${GCC_V}
+          which gfortran
+
+    - name: Install Haskell macOS
+      if: contains(matrix.os, 'macos')
+      run: |
+          mkdir /Users/runner/.local/bin
+          curl -L https://gist.github.com/certik/0e35f35753ae76f0f575d9b3d3f53633/raw/4cde02cc9215635c9401c2257a46be319e7ab6dd/osx-x86_64.tar.gz | tar xz --strip-components=1 --include '*/stack' -C /Users/runner/.local/bin
+
+    - name: Install Haskell Linux
+      if: contains(matrix.os, 'ubuntu')
       uses: mstksg/setup-stack@v1
 
     - name: Install Haskell Windows
