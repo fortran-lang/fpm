@@ -9,7 +9,7 @@ integer, parameter :: OS_WINDOWS = 3
 
 contains
 
-integer function get_os() result(r)
+integer function get_os_type() result(r)
 ! Determines the OS type.
 !
 ! Currently we use the $HOMEPATH and $HOME environment variables to determine
@@ -53,7 +53,7 @@ end function
 
 subroutine print_help()
 print *, "Fortran Package Manager (fpm)"
-select case (get_os())
+select case (get_os_type())
     case (OS_LINUX)
         print *, "OS Type: Linux"
     case (OS_MACOS)
