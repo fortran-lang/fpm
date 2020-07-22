@@ -144,19 +144,19 @@ end function
 subroutine cmd_build()
 logical :: src
 type(string_t), allocatable :: files(:)
-integer :: i
+character(:), allocatable :: basename
+integer :: i, n
 print *, "# Building project"
 call list_files("src", files)
-print *, "Files in src/"
 do i = 1, size(files)
-    print *, i, files(i)%s
+    if (str_ends_with(files(i)%s, ".f90")) then
+        n = len(files(i)%s)
+        basename = files(i)%s(1:n-4)
+        call run("gfortran -c src/" // basename // ".f90 -o " // basename // ".o")
+    end if
 end do
-print *
-src = exists("src/fpm.f90")
-if (src) then
-    call run("gfortran -c src/fpm.f90 -o fpm.o")
-end if
 call run("gfortran -c app/main.f90 -o main.o")
+src = exists("src/fpm.f90")
 if (src) then
     call run("gfortran main.o fpm.o -o fpm")
 else
