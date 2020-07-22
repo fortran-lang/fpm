@@ -78,9 +78,13 @@ character(len=*), intent(in) :: dir
 type(string_t), allocatable, intent(out) :: files(:)
 character(len=100) :: filename
 integer :: stat, u, i
+! Using `inquire` / exists on directories works with gfortran, but not ifort
+if (.not. exists(dir)) then
+    allocate(files(0))
+    return
+end if
 select case (get_os_type())
     case (OS_LINUX)
-        ! TODO: add `dir` into the `ls` command here:
         call execute_command_line("ls " // dir // " > fpm_ls.out", exitstat=stat)
     case (OS_MACOS)
         print *, "macOS not supported yet"
@@ -90,10 +94,8 @@ select case (get_os_type())
         error stop
 end select
 if (stat /= 0) then
-    print *, "execute_command_line() failed, but continuing"
-    ! Not erroring out here, as sometimes the `dir` might not exist
-    allocate(files(0))
-    return
+    print *, "execute_command_line() failed"
+    error stop
 end if
 open(newunit=u, file="fpm_ls.out", status="old")
 allocate(files(number_of_rows(u)))
