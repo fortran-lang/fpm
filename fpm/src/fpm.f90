@@ -129,6 +129,18 @@ character(len=*), intent(in) :: filename
 inquire(file=filename, exist=r)
 end function
 
+logical function str_ends_with(s, e) result(r)
+character(*), intent(in) :: s, e
+integer :: n1, n2
+n1 = len(s)-len(e)+1
+n2 = len(s)
+if (n1 < 1) then
+    r = .false.
+else
+    r = (s(n1:n2) == e)
+end if
+end function
+
 subroutine cmd_build()
 logical :: src
 type(string_t), allocatable :: files(:)
