@@ -12,9 +12,9 @@ contains
 integer function get_os() result(r)
 #ifdef _WIN32
     r = os_windows
-#elif defined __APPLE__
+#elif defined(__APPLE__)
     r = os_macos
-#elif defined __linux__
+#elif defined(__linux__)
     r = os_linux
 #else
     ! Unsupported platform
