@@ -90,8 +90,10 @@ select case (get_os_type())
         error stop
 end select
 if (stat /= 0) then
-    print *, "execute_command_line() failed"
-    error stop
+    print *, "execute_command_line() failed, but continuing"
+    ! Not erroring out here, as sometimes the `dir` might not exist
+    allocate(files(0))
+    return
 end if
 open(newunit=u, file="fpm_ls.out", status="old")
 allocate(files(number_of_rows(u)))
