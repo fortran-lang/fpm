@@ -12,22 +12,21 @@ contains
 integer function get_os() result(r)
 #ifdef _WIN32
     r = os_windows
-#elif defined(__APPLE__)
-    r = os_macos
-#elif defined(__linux__)
-    r = os_linux
-#else
-    ! Unsupported platform
-    r = -1
-    error stop
+    return
 #endif
+#ifdef __APPLE__
+    r = os_macos
+    return
+#endif
+    ! Assuming Linux here, as gfortran does not specify any macro for Linux
+    r = os_linux
 end function
 
 subroutine print_help()
 integer :: ostype
 ostype = get_os()
 print *, "Fortran Package Manager (fpm)"
-print *, ostype
+print *, "OS Type: ", ostype
 end subroutine
 
 subroutine run(cmd)
