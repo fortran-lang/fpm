@@ -141,10 +141,20 @@ else
 end if
 end function
 
+subroutine package_name(name)
+character(:), allocatable, intent(out) :: name
+! Currrently a heuristic. We should update this to read the name from fpm.toml
+if (exists("src/fpm.f90")) then
+    name = "fpm"
+else
+    name = "hello_world"
+end if
+end subroutine
+
 subroutine cmd_build()
 logical :: src
 type(string_t), allocatable :: files(:)
-character(:), allocatable :: basename
+character(:), allocatable :: basename, pkg_name
 integer :: i, n
 print *, "# Building project"
 call list_files("src", files)
@@ -156,6 +166,7 @@ do i = 1, size(files)
     end if
 end do
 call run("gfortran -c app/main.f90 -o main.o")
+call package_name(pkg_name)
 src = exists("src/fpm.f90")
 if (src) then
     call run("gfortran main.o fpm.o -o fpm")
