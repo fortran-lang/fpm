@@ -52,10 +52,15 @@ end if
 end function
 
 subroutine print_help()
-integer :: ostype
-ostype = get_os()
 print *, "Fortran Package Manager (fpm)"
-print *, "OS Type: ", ostype
+select case (get_os())
+    case (OS_LINUX)
+        print *, "OS Type: Linux"
+    case (OS_MACOS)
+        print *, "OS Type: macOS"
+    case (OS_WINDOWS)
+        print *, "OS Type: Windows"
+end select
 end subroutine
 
 subroutine run(cmd)
