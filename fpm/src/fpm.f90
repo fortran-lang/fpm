@@ -89,8 +89,7 @@ select case (get_os_type())
     case (OS_MACOS)
         call execute_command_line("ls " // dir // " > fpm_ls.out", exitstat=stat)
     case (OS_WINDOWS)
-        print *, "Windows not supported yet"
-        error stop
+        call execute_command_line("dir /b " // dir // " > fpm_ls.out", exitstat=stat)
 end select
 if (stat /= 0) then
     print *, "execute_command_line() failed"
