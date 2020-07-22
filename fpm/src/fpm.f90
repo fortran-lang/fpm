@@ -3,7 +3,24 @@ implicit none
 private
 public :: print_help, cmd_build
 
+integer, parameter :: os_linux = 1
+integer, parameter :: os_macos = 2
+integer, parameter :: os_windows = 3
+
 contains
+
+integer function get_os() result(r)
+#ifdef _WIN32
+    r = os_windows
+#elif defined __APPLE__
+    r = os_macos
+#elif defined __linux__
+    r = os_linux
+#else
+    ! Unsupported platform
+    error stop
+#endif
+end function
 
 subroutine print_help()
 print *, "Fortran Package Manager (fpm)"
