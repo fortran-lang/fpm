@@ -18,12 +18,16 @@ integer function get_os() result(r)
     r = os_linux
 #else
     ! Unsupported platform
+    r = -1
     error stop
 #endif
 end function
 
 subroutine print_help()
+integer :: ostype
+ostype = get_os()
 print *, "Fortran Package Manager (fpm)"
+print *, ostype
 end subroutine
 
 subroutine run(cmd)
