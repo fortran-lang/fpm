@@ -169,9 +169,9 @@ call run("gfortran -c app/main.f90 -o main.o")
 call package_name(pkg_name)
 src = exists("src/fpm.f90")
 if (src) then
-    call run("gfortran main.o fpm.o -o fpm")
+    call run("gfortran main.o fpm.o -o " // pkg_name)
 else
-    call run("gfortran main.o -o hello_world")
+    call run("gfortran main.o -o " // pkg_name)
 end if
 end subroutine
 
