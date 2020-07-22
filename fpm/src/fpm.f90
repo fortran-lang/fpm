@@ -3,9 +3,9 @@ implicit none
 private
 public :: print_help, cmd_build
 
-integer, parameter :: os_linux = 1
-integer, parameter :: os_macos = 2
-integer, parameter :: os_windows = 3
+integer, parameter :: OS_LINUX = 1
+integer, parameter :: OS_MACOS = 2
+integer, parameter :: OS_WINDOWS = 3
 
 contains
 
@@ -24,7 +24,7 @@ integer stat
 ! or macOS, then this will be wrong):
 call get_environment_variable("HOMEPATH", val, status=stat)
 if (stat == 0) then
-    r = os_windows
+    r = OS_WINDOWS
     return
 end if
 
@@ -40,14 +40,14 @@ if (stat /= 0) then
     error stop
 end if
 if (val(1:6) == "/home/") then
-    r = os_linux
+    r = OS_LINUX
 else if (val(1:7) == "/Users/") then
-    r = os_macos
+    r = OS_MACOS
 else
     ! This will happen on HPC systems that typically do not use either /home nor
     ! /Users for $HOME. Those systems are typically Linux, so for now we simply
     ! set Linux here.
-    r = os_linux
+    r = OS_LINUX
 end if
 end function
 
