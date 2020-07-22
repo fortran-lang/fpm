@@ -10,16 +10,24 @@ integer, parameter :: os_windows = 3
 contains
 
 integer function get_os() result(r)
-#ifdef _WIN32
-    r = os_windows
-    return
-#endif
-#ifdef __APPLE__
-    r = os_macos
-    return
-#endif
-    ! Assuming Linux here, as gfortran does not specify any macro for Linux
+character(len=100) :: val
+integer stat
+call get_environment_variable("HOME", val, status=stat)
+if (stat == 1) then
+    print *, "$HOME does not exist"
+    error stop
+end if
+if (stat /= 0) then
+    print *, "get_environment_variable() failed"
+    error stop
+end if
+if (val(1:5) == "/home") then
     r = os_linux
+else if (val(1:6) == "/Users") then
+    r = os_macos
+else
+    r = os_windows
+end if
 end function
 
 subroutine print_help()
