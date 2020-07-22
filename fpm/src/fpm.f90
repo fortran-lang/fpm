@@ -91,6 +91,7 @@ select case (get_os_type())
 end select
 if (stat /= 0) then
     print *, "execute_command_line() failed"
+    error stop
 end if
 open(newunit=u, file="fpm_ls.out", status="old")
 allocate(files(number_of_rows(u)))
