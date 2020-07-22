@@ -45,9 +45,9 @@ end function
 subroutine cmd_build()
 logical :: src
 print *, "# Building project"
-src = exists("src/fpm.f90")
+src = exists("src/fpm.F90")
 if (src) then
-    call run("gfortran -c src/fpm.f90 -o fpm.o")
+    call run("gfortran -c src/fpm.F90 -o fpm.o")
 end if
 call run("gfortran -c app/main.f90 -o main.o")
 if (src) then
