@@ -152,27 +152,23 @@ end if
 end subroutine
 
 subroutine cmd_build()
-logical :: src
 type(string_t), allocatable :: files(:)
-character(:), allocatable :: basename, pkg_name
+character(:), allocatable :: basename, pkg_name, linking
 integer :: i, n
 print *, "# Building project"
 call list_files("src", files)
+linking = ""
 do i = 1, size(files)
     if (str_ends_with(files(i)%s, ".f90")) then
         n = len(files(i)%s)
         basename = files(i)%s(1:n-4)
         call run("gfortran -c src/" // basename // ".f90 -o " // basename // ".o")
+        linking = linking // " " // basename // ".o"
     end if
 end do
 call run("gfortran -c app/main.f90 -o main.o")
 call package_name(pkg_name)
-src = exists("src/fpm.f90")
-if (src) then
-    call run("gfortran main.o fpm.o -o " // pkg_name)
-else
-    call run("gfortran main.o -o " // pkg_name)
-end if
+call run("gfortran main.o " // linking // " -o " // pkg_name)
 end subroutine
 
 end module fpm
