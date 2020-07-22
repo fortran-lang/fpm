@@ -7,6 +7,10 @@ integer, parameter :: OS_LINUX = 1
 integer, parameter :: OS_MACOS = 2
 integer, parameter :: OS_WINDOWS = 3
 
+type string_t
+    character(len=:), allocatable :: s
+end type
+
 contains
 
 integer function get_os_type() result(r)
@@ -53,6 +57,50 @@ else
 end if
 end function
 
+integer function number_of_rows(s) result(nrows)
+! determine number or rows
+integer,intent(in)::s
+integer :: ios
+character(len=100) :: r
+rewind(s)
+nrows = 0
+do
+    read(s, *, iostat=ios) r
+    if (ios /= 0) exit
+    nrows = nrows + 1
+end do
+rewind(s)
+end function
+
+
+subroutine list_files(dir, files)
+character(len=*), intent(in) :: dir
+type(string_t), allocatable, intent(out) :: files(:)
+character(len=100) :: filename
+integer :: stat, u, i
+select case (get_os_type())
+    case (OS_LINUX)
+        ! TODO: add `dir` into the `ls` command here:
+        call execute_command_line("ls " // dir // " > fpm_ls.out", exitstat=stat)
+    case (OS_MACOS)
+        print *, "macOS not supported yet"
+        error stop
+    case (OS_WINDOWS)
+        print *, "Windows not supported yet"
+        error stop
+end select
+if (stat /= 0) then
+    print *, "execute_command_line() failed"
+end if
+open(newunit=u, file="fpm_ls.out", status="old")
+allocate(files(number_of_rows(u)))
+do i = 1, size(files)
+    read(u, *) filename
+    files(i)%s = trim(filename)
+end do
+close(u)
+end subroutine
+
 subroutine print_help()
 print *, "Fortran Package Manager (fpm)"
 select case (get_os_type())
@@ -83,7 +131,15 @@ end function
 
 subroutine cmd_build()
 logical :: src
+type(string_t), allocatable :: files(:)
+integer :: i
 print *, "# Building project"
+call list_files("src", files)
+print *, "Files in src/"
+do i = 1, size(files)
+    print *, i, files(i)%s
+end do
+print *
 src = exists("src/fpm.f90")
 if (src) then
     call run("gfortran -c src/fpm.f90 -o fpm.o")
