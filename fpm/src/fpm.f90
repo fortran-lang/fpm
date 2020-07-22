@@ -10,30 +10,26 @@ integer, parameter :: OS_WINDOWS = 3
 contains
 
 integer function get_os_type() result(r)
-! Determines the OS type.
+! Determine the OS type
 !
-! Currently we use the $HOMEPATH and $HOME environment variables to determine
-! the OS type. That is not 100% accurate in all cases, but it seems to be good
-! enough for now. See the following issue for a more robust solution:
+! Returns one of OS_LINUX, OS_MACOS, OS_WINDOWS.
+!
+! Currently we use the $HOME environment variable to determine the OS type. That
+! is not 100% accurate in all cases, but it seems to be good enough for now. See
+! the following issue for a more robust solution:
 !
 ! https://github.com/fortran-lang/fpm/issues/144
 !
 character(len=100) :: val
 integer stat
-! Only Windows define $HOMEPATH by default (if a user defines $HOMEPATH on Linux
-! or macOS, then this will be wrong):
-call get_environment_variable("HOMEPATH", val, status=stat)
-if (stat == 0) then
-    r = OS_WINDOWS
-    return
-end if
-
 ! We assume that $HOME=/home/... is Linux, $HOME=/Users/... is macOS, otherwise
-! we assume Linux. This is only a heuristic and can easily fail.
+! we assume Linux if $HOME is defined, otherwise Windows. This is only a
+! heuristic and can easily fail.
 call get_environment_variable("HOME", val, status=stat)
 if (stat == 1) then
-    print *, "$HOME does not exist"
-    error stop
+    ! $HOME does not exist, we assume Windows
+    r = OS_WINDOWS
+    return
 end if
 if (stat /= 0) then
     print *, "get_environment_variable() failed"
