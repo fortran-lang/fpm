@@ -12,6 +12,9 @@ if errorlevel 1 exit 1
 fpm run --args build
 if errorlevel 1 exit 1
 
+.\fpm
+if errorlevel 1 exit 1
+
 cd ..\test\example_packages\hello_world
 if errorlevel 1 exit 1
 
