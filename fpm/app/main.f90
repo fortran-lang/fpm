@@ -17,8 +17,8 @@ else if (command_argument_count() == 1) then
         case("run")
             call cmd_run()
         case default
-            print *, "Unknown command: " // trim(cmdarg)
-            call print_help()
+            print *, "fpm error: No such command " // trim(cmdarg)
+            error stop
     end select
 else
     print *, "Too many arguments"
