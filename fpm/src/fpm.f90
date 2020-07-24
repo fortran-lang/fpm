@@ -186,18 +186,22 @@ end subroutine
 
 subroutine cmd_install()
     print *, "fpm error: 'fpm install' not implemented."
+    error stop 1
 end subroutine
 
 subroutine cmd_new()
     print *, "fpm error: 'fpm new' not implemented."
+    error stop 1
 end subroutine
 
 subroutine cmd_run()
     print *, "fpm error: 'fpm run' not implemented."
+    error stop 1
 end subroutine
 
 subroutine cmd_test()
     print *, "fpm error: 'fpm test' not implemented."
+    error stop 1
 end subroutine
 
 end module fpm

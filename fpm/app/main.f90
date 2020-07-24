@@ -18,10 +18,10 @@ else if (command_argument_count() == 1) then
             call cmd_run()
         case default
             print *, "fpm error: No such command " // trim(cmdarg)
-            error stop
+            error stop 1
     end select
 else
     print *, "Too many arguments"
-    error stop
+    error stop 1
 end if
 end program main
