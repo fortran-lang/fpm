@@ -105,7 +105,7 @@ close(u)
 end subroutine
 
 subroutine print_help()
-print *, "Fortran Package Manager (fpm)"
+print *, "fpm - A Fortran package manager and build system"
 select case (get_os_type())
     case (OS_LINUX)
         print *, "OS Type: Linux"
@@ -115,7 +115,7 @@ select case (get_os_type())
         print *, "OS Type: Windows"
 end select
 print *
-print *, "USAGE:"
+print *, "Usage:"
 print *, "    fpm [COMMAND]"
 print *
 print *, "Valid fpm commands are:"
