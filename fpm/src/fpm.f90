@@ -1,7 +1,7 @@
 module fpm
 implicit none
 private
-public :: print_help, cmd_build
+public :: print_help, cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
 
 integer, parameter :: OS_LINUX = 1
 integer, parameter :: OS_MACOS = 2
@@ -172,6 +172,22 @@ end do
 call run("gfortran -c app/main.f90 -o main.o")
 call package_name(pkg_name)
 call run("gfortran main.o " // linking // " -o " // pkg_name)
+end subroutine
+
+subroutine cmd_install()
+    print *, "fpm error: 'fpm install' not implemented."
+end subroutine
+
+subroutine cmd_new()
+    print *, "fpm error: 'fpm new' not implemented."
+end subroutine
+
+subroutine cmd_run()
+    print *, "fpm error: 'fpm run' not implemented."
+end subroutine
+
+subroutine cmd_test()
+    print *, "fpm error: 'fpm test' not implemented."
 end subroutine
 
 end module fpm
