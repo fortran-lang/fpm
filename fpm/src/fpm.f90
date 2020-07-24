@@ -1,7 +1,7 @@
 module fpm
 implicit none
 private
-public :: print_help, cmd_build
+public :: print_help, cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
 
 integer, parameter :: OS_LINUX = 1
 integer, parameter :: OS_MACOS = 2
@@ -105,7 +105,7 @@ close(u)
 end subroutine
 
 subroutine print_help()
-print *, "Fortran Package Manager (fpm)"
+print *, "fpm - A Fortran package manager and build system"
 select case (get_os_type())
     case (OS_LINUX)
         print *, "OS Type: Linux"
@@ -114,6 +114,16 @@ select case (get_os_type())
     case (OS_WINDOWS)
         print *, "OS Type: Windows"
 end select
+print *
+print *, "Usage:"
+print *, "    fpm [COMMAND]"
+print *
+print *, "Valid fpm commands are:"
+print *, "    build    Compile the current package"
+print *, "    install  Install a Fortran binary or library (not implemented)"
+print *, "    new      Create a new Fortran package (not implemented)"
+print *, "    run      Run a binary of the local package (not implemented)"
+print *, "    test     Run the tests (not implemented)"
 end subroutine
 
 subroutine run(cmd)
@@ -172,6 +182,26 @@ end do
 call run("gfortran -c app/main.f90 -o main.o")
 call package_name(pkg_name)
 call run("gfortran main.o " // linking // " -o " // pkg_name)
+end subroutine
+
+subroutine cmd_install()
+    print *, "fpm error: 'fpm install' not implemented."
+    error stop 1
+end subroutine
+
+subroutine cmd_new()
+    print *, "fpm error: 'fpm new' not implemented."
+    error stop 1
+end subroutine
+
+subroutine cmd_run()
+    print *, "fpm error: 'fpm run' not implemented."
+    error stop 1
+end subroutine
+
+subroutine cmd_test()
+    print *, "fpm error: 'fpm test' not implemented."
+    error stop 1
 end subroutine
 
 end module fpm
