@@ -114,6 +114,16 @@ select case (get_os_type())
     case (OS_WINDOWS)
         print *, "OS Type: Windows"
 end select
+print *
+print *, "USAGE:"
+print *, "    fpm [COMMAND]"
+print *
+print *, "Valid fpm commands are:"
+print *, "    build    Compile the current package"
+print *, "    install  Install a Fortran binary or library (not implemented)"
+print *, "    new      Create a new Fortran package (not implemented)"
+print *, "    run      Run a binary of the local package (not implemented)"
+print *, "    test     Run the tests (not implemented)"
 end subroutine
 
 subroutine run(cmd)
