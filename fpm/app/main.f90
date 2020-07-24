@@ -7,12 +7,13 @@ if (command_argument_count() == 0) then
     call print_help()
 else if (command_argument_count() == 1) then
     call get_command_argument(1, cmdarg)
-    if (cmdarg == "build") then
-        call cmd_build()
-    else
-        print *, "Unknown command: ", cmdarg
-        error stop
-    end if
+    select case(trim(cmdarg))
+        case("build")
+            call cmd_build()
+        case default
+            print *, "Unknown command: ", cmdarg
+            error stop
+    end select
 else
     print *, "Too many arguments"
     error stop
