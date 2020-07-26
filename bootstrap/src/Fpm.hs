@@ -14,6 +14,7 @@ import           Build                          ( buildLibrary
                                                 , buildWithScript
                                                 )
 import           Control.Monad.Extra            ( concatMapM
+                                                , forM_
                                                 , when
                                                 )
 import           Data.List                      ( isSuffixOf
@@ -54,6 +55,9 @@ import           System.Directory               ( createDirectory
                                                 , doesFileExist
                                                 , makeAbsolute
                                                 , withCurrentDirectory
+                                                )
+import           System.Exit                    ( ExitCode(..)
+                                                , exitWith
                                                 )
 import           System.Process                 ( runCommand
                                                 , system
@@ -144,15 +148,25 @@ app args settings = case command' args of
     case canonicalExecutables of
       [] -> putStrLn "No Executables Found"
       _  -> case whichOne of
-        "" -> mapM_
-          system
-          (map (++ " " ++ commandArguments args) canonicalExecutables)
+        "" -> do
+          exitCodes <- mapM
+            system
+            (map (++ " " ++ commandArguments args) canonicalExecutables)
+          forM_
+            exitCodes
+            (\exitCode -> when
+              (case exitCode of
+                ExitSuccess -> False
+                _           -> True
+              )
+              (exitWith exitCode)
+            )
         name -> do
           case find (name `isSuffixOf`) canonicalExecutables of
             Nothing        -> putStrLn "Executable Not Found"
             Just specified -> do
-              system (specified ++ " " ++ (commandArguments args))
-              return ()
+              exitCode <- system (specified ++ " " ++ (commandArguments args))
+              exitWith exitCode
   Test whichOne -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
@@ -168,15 +182,25 @@ app args settings = case command' args of
     case canonicalExecutables of
       [] -> putStrLn "No Tests Found"
       _  -> case whichOne of
-        "" -> mapM_
-          system
-          (map (++ " " ++ commandArguments args) canonicalExecutables)
+        "" -> do
+          exitCodes <- mapM
+            system
+            (map (++ " " ++ commandArguments args) canonicalExecutables)
+          forM_
+            exitCodes
+            (\exitCode -> when
+              (case exitCode of
+                ExitSuccess -> False
+                _           -> True
+              )
+              (exitWith exitCode)
+            )
         name -> do
           case find (name `isSuffixOf`) canonicalExecutables of
             Nothing        -> putStrLn "Test Not Found"
             Just specified -> do
-              system (specified ++ " " ++ (commandArguments args))
-              return ()
+              exitCode <- system (specified ++ " " ++ (commandArguments args))
+              exitWith exitCode
 
 build :: AppSettings -> IO ()
 build settings = do
@@ -285,8 +309,11 @@ arguments =
           <> command "test" (info testArguments (progDesc "Run the tests"))
           <> command "build"
                      (info buildArguments (progDesc "Build the executable"))
-          <> command "new"
-                     (info newArguments (progDesc "Create a new project in a new directory"))
+          <> command
+               "new"
+               (info newArguments
+                     (progDesc "Create a new project in a new directory")
+               )
           )
     <*> switch (long "release" <> help "Build in release mode")
     <*> strOption
