@@ -5,7 +5,7 @@ set -ex
 cd fpm
 fpm build
 fpm run
-./fpm
+build/gfortran_debug/app/fpm
 cd ../test/example_packages/hello_world
-../../../fpm/fpm build
+../../../fpm/build/gfortran_debug/app/fpm build
 ./hello_world
