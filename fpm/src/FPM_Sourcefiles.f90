@@ -348,6 +348,8 @@ subroutine resolve_dependencies(sources)
 
         do j=1,n_depend
 
+            sources(i)%file_dependencies(j)%ptr => NULL()
+
             do k=1,size(sources)
 
                 if (sources(i)%module_dependencies(j)%s == sources(k)%unit_name) then

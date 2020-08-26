@@ -30,7 +30,9 @@ recursive subroutine build_source(source_file,linking)
 
     do i=1,size(source_file%file_dependencies)
 
-        call build_source(source_file%file_dependencies(i)%ptr,linking)
+        if (associated(source_file%file_dependencies(i)%ptr)) then
+            call build_source(source_file%file_dependencies(i)%ptr,linking)
+        end if
 
     end do
 
