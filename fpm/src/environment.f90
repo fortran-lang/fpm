@@ -6,7 +6,7 @@ module environment
     integer, parameter, public :: OS_MACOS = 2
     integer, parameter, public :: OS_WINDOWS = 3
 
-    public :: get_os_type
+    public :: get_os_type, run
 contains
     integer function get_os_type() result(r)
     ! Determine the OS type
@@ -51,4 +51,16 @@ contains
         r = OS_LINUX
     end if
     end function
+
+    subroutine run(cmd)
+        character(len=*), intent(in) :: cmd
+        integer :: stat
+        print *, "+ ", cmd
+        call execute_command_line(cmd, exitstat=stat)
+        if (stat /= 0) then
+            print *, "Command failed"
+            error stop
+        end if
+    end subroutine
+
 end module
