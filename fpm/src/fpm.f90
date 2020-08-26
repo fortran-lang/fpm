@@ -2,6 +2,8 @@ module fpm
 use FPM_Strings
 use environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 use FPM_Filesystem, only: number_of_rows, list_files, exists
+use FPM_Sourcefiles
+use FPM_Backend
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
@@ -21,23 +23,67 @@ end if
 end subroutine
 
 subroutine cmd_build()
+type(string_t), allocatable :: lib_files(:)
+type(string_t), allocatable :: app_files(:)
 type(string_t), allocatable :: files(:)
 character(:), allocatable :: basename, pkg_name, linking
 integer :: i, n
+
+type(srcfile_t), allocatable :: sources(:)
+character(:), allocatable :: file_parts(:)
+
 print *, "# Building project"
-call list_files("src", files)
+
+
+call list_files("src", lib_files)
+lib_files = [(string_t("src/"//lib_files(i)%s),i=1,size(lib_files))]
+
+call list_files("app", app_files)
+app_files = [(string_t("app/"//app_files(i)%s),i=1,size(app_files))]
+
+files = [lib_files, app_files]
+
+call scan_sources(files,sources)
+
 linking = ""
-do i = 1, size(files)
-    if (str_ends_with(files(i)%s, ".f90")) then
-        n = len(files(i)%s)
-        basename = files(i)%s(1:n-4)
-        call run("gfortran -c src/" // basename // ".f90 -o " // basename // ".o")
-        linking = linking // " " // basename // ".o"
+do i=1,size(sources)
+
+    if (sources(i)%unit_type == FPM_UNIT_MODULE .or. &
+        sources(i)%unit_type == FPM_UNIT_SUBMODULE .or. &
+        sources(i)%unit_type == FPM_UNIT_SUBPROGRAM) then
+    
+            call build_source(sources(i),linking)
+
     end if
+     
 end do
-call run("gfortran -c app/main.f90 -o main.o")
-call package_name(pkg_name)
-call run("gfortran main.o " // linking // " -o " // pkg_name)
+
+do i=1,size(sources)
+
+    if (sources(i)%unit_type == FPM_UNIT_PROGRAM) then
+
+        call split(sources(i)%file_name,file_parts,delimiters='\/.')
+        basename = file_parts(size(file_parts)-1)
+        
+        call run("gfortran " // sources(i)%file_name // linking // " -o " // basename)
+
+    end if
+
+end do
+
+! linking = ""
+! do i = 1, size(files)
+!     if (str_ends_with(files(i)%s, ".f90")) then
+!         n = len(files(i)%s)
+!         basename = files(i)%s(1:n-4)
+!         call run("gfortran -c src/" // basename // ".f90 -o " // basename // ".o")
+!         linking = linking // " " // basename // ".o"
+!     end if
+! end do
+
+! call run("gfortran -c app/main.f90 -o main.o")
+! call package_name(pkg_name)
+! call run("gfortran main.o " // linking // " -o " // pkg_name)
 end subroutine
 
 subroutine cmd_install()
