@@ -5,7 +5,7 @@ implicit none
 
 private
 public srcfile_ptr, srcfile_t
-public scan_f_sources
+public scan_sources
 
 integer, parameter, public :: FPM_UNIT_UNKNOWN = -1
 integer, parameter, public :: FPM_UNIT_PROGRAM = 1
@@ -47,42 +47,44 @@ end type srcfile_t
 
 contains
 
-subroutine scan_f_sources(file_names,f_sources)
+subroutine scan_sources(file_names,sources)
     ! Enumerate Fortran sources and resolve file
     !  dependencies
     !
     type(string_t), intent(in) :: file_names(:)
-    type(srcfile_t), allocatable, intent(out), target :: f_sources(:)
+    type(srcfile_t), allocatable, intent(out), target :: sources(:)
 
     integer :: i, j
-    logical :: is_f_source(size(file_names))
-    type(string_t), allocatable :: f_file_names(:)
+    logical :: is_source(size(file_names))
+    type(string_t), allocatable :: src_file_names(:)
 
-    is_f_source = [(str_ends_with(lower(file_names(i)%s), ".f90"),i=1,size(file_names))]
-    f_file_names = pack(file_names,is_f_source)
+    is_source = [(str_ends_with(lower(file_names(i)%s), ".f90"),i=1,size(file_names))]
+    src_file_names = pack(file_names,is_source)
 
-    allocate(f_sources(size(f_file_names)))
+    allocate(sources(size(src_file_names)))
 
-    do i = 1, size(f_file_names)
+    do i = 1, size(src_file_names)
 
-        f_sources(i) = parse_f_source(f_file_names(i)%s)
+        if (str_ends_with(lower(file_names(i)%s), ".f90")) then
+            sources(i) = parse_f_source(src_file_names(i)%s)
+        end if
 
     end do
 
-    do i=1,size(f_sources)
-        write(*,*) 'Filename: "',f_sources(i)%file_name,'"'
-        write(*,*) ' Module name: "',f_sources(i)%unit_name,'"'
-        do j=1,size(f_sources(i)%module_dependencies)
-            write(*,*) ' Uses: "',f_sources(i)%module_dependencies(j)%s,'"'
+    do i=1,size(sources)
+        write(*,*) 'Filename: "',sources(i)%file_name,'"'
+        write(*,*) ' Module name: "',sources(i)%unit_name,'"'
+        do j=1,size(sources(i)%module_dependencies)
+            write(*,*) ' Uses: "',sources(i)%module_dependencies(j)%s,'"'
         end do
-        do j=1,size(f_sources(i)%include_dependencies)
-            write(*,*) ' Includes: "',f_sources(i)%include_dependencies(j)%s,'"'
+        do j=1,size(sources(i)%include_dependencies)
+            write(*,*) ' Includes: "',sources(i)%include_dependencies(j)%s,'"'
         end do
     end do
 
-    call resolve_f_dependencies(f_sources)
+    call resolve_dependencies(sources)
 
-end subroutine scan_f_sources
+end subroutine scan_sources
 
 
 function parse_f_source(f_filename) result(f_source)
@@ -92,7 +94,7 @@ function parse_f_source(f_filename) result(f_source)
     character(*), intent(in) :: f_filename
     type(srcfile_t) :: f_source
 
-    integer :: fh, n_use, n_include, i, j, pass
+    integer :: fh, n_use, n_include, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:)
     character(:), allocatable :: line_parts(:)
     character(:), allocatable :: temp_string, use_module_name
@@ -108,8 +110,21 @@ function parse_f_source(f_filename) result(f_source)
         n_include = 0
         file_loop: do i=1,size(file_lines)
 
+            ! Skip lines that are continued: not statements
+            if (i > 1) then
+                ic = index(file_lines(i-1)%s,'!')
+                if (ic < 1) then
+                    ic = len(file_lines(i-1)%s)
+                end if
+                temp_string = trim(file_lines(i-1)%s(1:ic))
+                if (len(temp_string) > 0 .and. index(temp_string,'&') == len(temp_string)) then
+                    cycle
+                end if
+            end if
+
             ! Process 'USE' statements
-            if (index(adjustl(lower(file_lines(i)%s)),'use') == 1) then
+            if (index(adjustl(lower(file_lines(i)%s)),'use ') == 1 .or. &
+                index(adjustl(lower(file_lines(i)%s)),'use::') == 1) then
 
                 if (index(file_lines(i)%s,'::') > 0) then
 
@@ -123,6 +138,10 @@ function parse_f_source(f_filename) result(f_source)
                     call split(file_lines(i)%s,line_parts,delimiters=' ,')
                     use_module_name = trim(lower(line_parts(2)))
                     
+                end if
+
+                if (.not.validate_name(use_module_name)) then
+                    cycle
                 end if
 
                 if (any([(index(use_module_name,trim(INTRINSIC_MODULE_NAMES(j)))>0, &
@@ -206,57 +225,69 @@ function parse_f_source(f_filename) result(f_source)
 
     end do
 
-end function parse_f_source
+    contains
 
+    function validate_name(name) result(valid)
+        character(*), intent(in) :: name
+        logical :: valid
 
-subroutine resolve_f_dependencies(f_sources)
-    ! After enumerating all source files: resolve file dependencies
-    !  by searching on module names & include files
-    !
-    type(srcfile_t), intent(inout), target :: f_sources(:)
+        integer :: i
 
-    integer :: n_use, n_include, n_depend
-    integer ::  i, j, k
+        if (lower(name(1:1)) < 'a' .or. &
+            lower(name(1:1)) > 'z') then
 
-    do i=1,size(f_sources)
-        
-        n_use = size(f_sources(i)%module_dependencies)
-        n_include = size(f_sources(i)%include_dependencies)
-        n_depend = n_use + n_include
+            valid = .false.
+            return
+        end if
 
-        allocate(f_sources(i)%file_dependencies(n_depend))
+        do i=1,len(name)
 
-        do j=1,n_use
-
-            do k=1,size(f_sources)
-
-                if (f_sources(i)%module_dependencies(j)%s == f_sources(k)%unit_name) then
-                    f_sources(i)%file_dependencies(j)%ptr => f_sources(k)
-                    exit
-                end if
-                
-            end do
-
-            if (.not.associated(f_sources(i)%file_dependencies(j)%ptr)) then
-                write(*,*) '(!) Unable to find source for module dependency: ',f_sources(i)%module_dependencies(j)%s
-                stop
+            if (.not.( &
+                (name(i:i) >= '0' .and. name(i:i) <= '9').or. &
+                (lower(name(i:i)) >= 'a' .and. lower(name(i:i)) <= 'z').or. &
+                name(i:i) == '_') ) then
+                    
+                valid = .false.
+                return
             end if
 
         end do
 
-        do j=1,n_include
+        valid = .true.
+        return
 
-            do k=1,size(f_sources)
+    end function validate_name
 
-                if (index(f_sources(k)%file_name,f_sources(i)%include_dependencies(j)%s) > 0) then
-                    f_sources(i)%file_dependencies(n_use+j)%ptr => f_sources(k)
+end function parse_f_source
+
+
+subroutine resolve_dependencies(sources)
+    ! After enumerating all source files: resolve file dependencies
+    !  by searching on module names
+    !
+    type(srcfile_t), intent(inout), target :: sources(:)
+
+    integer :: n_depend, i, j, k
+
+    do i=1,size(sources)
+        
+        n_depend = size(sources(i)%module_dependencies)
+
+        allocate(sources(i)%file_dependencies(n_depend))
+
+        do j=1,n_depend
+
+            do k=1,size(sources)
+
+                if (sources(i)%module_dependencies(j)%s == sources(k)%unit_name) then
+                    sources(i)%file_dependencies(j)%ptr => sources(k)
                     exit
                 end if
                 
             end do
 
-            if (.not.associated(f_sources(i)%file_dependencies(n_use+j)%ptr)) then
-                write(*,*) '(!) Unable to find source for include dependency: ',f_sources(i)%include_dependencies(j)%s
+            if (.not.associated(sources(i)%file_dependencies(j)%ptr)) then
+                write(*,*) '(!) Unable to find source for module dependency: ',sources(i)%module_dependencies(j)%s
                 stop
             end if
 
@@ -264,7 +295,7 @@ subroutine resolve_f_dependencies(f_sources)
 
     end do
 
-end subroutine resolve_f_dependencies
+end subroutine resolve_dependencies
 
 
 

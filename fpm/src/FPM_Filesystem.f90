@@ -18,7 +18,7 @@ integer function number_of_rows(s) result(nrows)
     rewind(s)
     nrows = 0
     do
-        read(s, *, iostat=ios) r
+        read(s, '(A)', iostat=ios) r
         if (ios /= 0) exit
         nrows = nrows + 1
     end do
