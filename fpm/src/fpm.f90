@@ -34,7 +34,6 @@ character(:), allocatable :: file_parts(:)
 
 print *, "# Building project"
 
-
 call list_files("src", lib_files)
 lib_files = [(string_t("src/"//lib_files(i)%s),i=1,size(lib_files))]
 
@@ -50,7 +49,8 @@ do i=1,size(sources)
 
     if (sources(i)%unit_type == FPM_UNIT_MODULE .or. &
         sources(i)%unit_type == FPM_UNIT_SUBMODULE .or. &
-        sources(i)%unit_type == FPM_UNIT_SUBPROGRAM) then
+        sources(i)%unit_type == FPM_UNIT_SUBPROGRAM .or. &
+        sources(i)%unit_type == FPM_UNIT_CSOURCE) then
     
             call build_source(sources(i),linking)
 
@@ -71,19 +71,6 @@ do i=1,size(sources)
 
 end do
 
-! linking = ""
-! do i = 1, size(files)
-!     if (str_ends_with(files(i)%s, ".f90")) then
-!         n = len(files(i)%s)
-!         basename = files(i)%s(1:n-4)
-!         call run("gfortran -c src/" // basename // ".f90 -o " // basename // ".o")
-!         linking = linking // " " // basename // ".o"
-!     end if
-! end do
-
-! call run("gfortran -c app/main.f90 -o main.o")
-! call package_name(pkg_name)
-! call run("gfortran main.o " // linking // " -o " // pkg_name)
 end subroutine
 
 subroutine cmd_install()

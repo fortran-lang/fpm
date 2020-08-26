@@ -58,22 +58,29 @@ subroutine scan_sources(file_names,sources)
     logical :: is_source(size(file_names))
     type(string_t), allocatable :: src_file_names(:)
 
-    is_source = [(str_ends_with(lower(file_names(i)%s), ".f90"),i=1,size(file_names))]
+    is_source = [(str_ends_with(lower(file_names(i)%s), ".f90") .or. &
+                  str_ends_with(lower(file_names(i)%s), ".c") .or. &
+                  str_ends_with(lower(file_names(i)%s), ".h"),i=1,size(file_names))]
     src_file_names = pack(file_names,is_source)
 
     allocate(sources(size(src_file_names)))
 
     do i = 1, size(src_file_names)
 
-        if (str_ends_with(lower(file_names(i)%s), ".f90")) then
+        if (str_ends_with(lower(src_file_names(i)%s), ".f90")) then
             sources(i) = parse_f_source(src_file_names(i)%s)
+        end if
+
+        if (str_ends_with(lower(src_file_names(i)%s), ".c") .or. &
+            str_ends_with(lower(src_file_names(i)%s), ".h")) then
+            sources(i) = parse_c_source(src_file_names(i)%s)
         end if
 
     end do
 
     do i=1,size(sources)
         write(*,*) 'Filename: "',sources(i)%file_name,'"'
-        write(*,*) ' Module name: "',sources(i)%unit_name,'"'
+        write(*,*) ' Unit name: "',sources(i)%unit_name,'"'
         do j=1,size(sources(i)%module_dependencies)
             write(*,*) ' Uses: "',sources(i)%module_dependencies(j)%s,'"'
         end do
@@ -165,7 +172,7 @@ function parse_f_source(f_filename) result(f_source)
                 n_include = n_include + 1
 
                 if (pass == 2) then
-                    call split(file_lines(i)%s,line_parts,delimiters="'")
+                    call split(file_lines(i)%s,line_parts,delimiters="'"//'"')
                     f_source%include_dependencies(n_include)%s = line_parts(2)
                 end if
 
@@ -218,6 +225,10 @@ function parse_f_source(f_filename) result(f_source)
             f_source%unit_type = FPM_UNIT_SUBPROGRAM
         end if
 
+        if (.not.allocated(f_source%unit_name)) then
+            f_source%unit_name = f_filename
+        end if
+
         if (pass == 1) then
             allocate(f_source%module_dependencies(n_use))
             allocate(f_source%include_dependencies(n_include))
@@ -261,6 +272,66 @@ function parse_f_source(f_filename) result(f_source)
 end function parse_f_source
 
 
+function parse_c_source(c_filename) result(c_source)
+    ! Rudimentary scan of c source file and 
+    !  extract include dependencies
+    !
+    character(*), intent(in) :: c_filename
+    type(srcfile_t) :: c_source
+
+    integer :: fh, n_include, i, pass
+    type(string_t), allocatable :: file_lines(:)
+    character(:), allocatable :: line_parts(:)
+    character(:), allocatable :: temp_string, use_module_name
+
+    c_source%file_name = c_filename
+
+    if (str_ends_with(lower(c_filename), ".c")) then
+
+        c_source%unit_type = FPM_UNIT_CSOURCE
+
+    elseif (str_ends_with(lower(c_filename), ".h")) then
+
+        c_source%unit_type = FPM_UNIT_CHEADER
+
+    end if
+
+    c_source%unit_name = c_filename
+
+    allocate(c_source%module_dependencies(0))
+
+    open(newunit=fh,file=c_filename,status='old')
+    file_lines = read_lines(fh)
+    close(fh)
+
+    do pass = 1,2
+        n_include = 0
+        file_loop: do i=1,size(file_lines)
+
+            ! Process 'INCLUDE' statements
+            if (index(adjustl(lower(file_lines(i)%s)),'#include') == 1 .and. &
+                index(file_lines(i)%s,'"') > 0) then
+                            
+                n_include = n_include + 1
+
+                if (pass == 2) then
+                    call split(file_lines(i)%s,line_parts,delimiters='"')
+                    c_source%include_dependencies(n_include)%s = line_parts(2)
+                end if
+
+            end if
+
+        end do file_loop
+
+        if (pass == 1) then
+            allocate(c_source%include_dependencies(n_include))
+        end if
+
+    end do
+
+end function parse_c_source
+
+
 subroutine resolve_dependencies(sources)
     ! After enumerating all source files: resolve file dependencies
     !  by searching on module names
@@ -288,7 +359,7 @@ subroutine resolve_dependencies(sources)
 
             if (.not.associated(sources(i)%file_dependencies(j)%ptr)) then
                 write(*,*) '(!) Unable to find source for module dependency: ',sources(i)%module_dependencies(j)%s
-                stop
+                ! stop
             end if
 
         end do
