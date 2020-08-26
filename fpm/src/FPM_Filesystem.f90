@@ -35,7 +35,7 @@ function read_lines(fh) result(lines)
 
     allocate(lines(number_of_rows(fh)))
     do i = 1, size(lines)
-        read(fh, *) line_buffer
+        read(fh, '(A)') line_buffer
         lines(i)%s = trim(line_buffer)
     end do
 
