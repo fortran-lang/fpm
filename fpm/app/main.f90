@@ -1,5 +1,5 @@
 program main
-use command_line, only: &
+use fpm_command_line, only: &
         fpm_cmd_settings, &
         fpm_new_settings, &
         fpm_build_settings, &

@@ -1,6 +1,6 @@
-module FPM_Sourcefiles
-use FPM_Strings
-use FPM_Filesystem, only: read_lines
+module fpm_sources
+use fpm_strings
+use fpm_filesystem, only: read_lines
 implicit none
 
 private
@@ -372,4 +372,4 @@ end subroutine resolve_dependencies
 
 
 
-end module FPM_Sourcefiles
+end module fpm_sources

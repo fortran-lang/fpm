@@ -1,7 +1,7 @@
-module FPM_Backend
-use FPM_Strings
-use FPM_Model
-use environment
+module fpm_backend
+use fpm_strings
+use fpm_environment
+use fpm_sources
 implicit none
 
 
@@ -46,4 +46,4 @@ recursive subroutine build_source(source_file,linking)
 
 end subroutine build_source
 
-end module FPM_Backend
+end module fpm_backend

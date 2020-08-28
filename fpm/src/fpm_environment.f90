@@ -1,4 +1,4 @@
-module environment
+module fpm_environment
     implicit none
     private
 
@@ -61,6 +61,6 @@ contains
             print *, "Command failed"
             error stop
         end if
-    end subroutine
+    end subroutine run
 
-end module
+end module fpm_environment

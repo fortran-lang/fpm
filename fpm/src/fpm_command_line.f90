@@ -1,5 +1,5 @@
-module command_line
-    use environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
+module fpm_command_line
+    use fpm_environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 
     implicit none
     private
@@ -75,4 +75,4 @@ contains
         print *, "    run      Run a binary of the local package (not implemented)"
         print *, "    test     Run the tests (not implemented)"
     end subroutine
-end module command_line
+end module fpm_command_line

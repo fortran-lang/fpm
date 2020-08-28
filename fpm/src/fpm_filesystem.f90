@@ -1,6 +1,6 @@
-module FPM_Filesystem
-use FPM_Strings
-use environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
+module fpm_filesystem
+use fpm_strings
+use fpm_environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 implicit none
 
 private
@@ -23,7 +23,7 @@ integer function number_of_rows(s) result(nrows)
         nrows = nrows + 1
     end do
     rewind(s)
-end function
+end function number_of_rows
 
 
 function read_lines(fh) result(lines)
@@ -74,7 +74,7 @@ subroutine list_files(dir, files)
     files = read_lines(fh)
     close(fh,status="delete")
 
-end subroutine
+end subroutine list_files
 
 
 logical function exists(filename) result(r)
@@ -122,4 +122,4 @@ function get_temp_filename() result(tempfile)
 end function get_temp_filename
 
 
-end module FPM_Filesystem
+end module fpm_filesystem

@@ -1,4 +1,4 @@
-module FPM_Strings
+module fpm_strings
 implicit none
 
 type string_t
@@ -17,7 +17,7 @@ logical function str_ends_with(s, e) result(r)
     else
         r = (s(n1:n2) == e)
     end if
-end function
+end function str_ends_with
 
 function f_string(c_string)
     use iso_c_binding
@@ -192,4 +192,4 @@ subroutine split(input_line,array,delimiters,order,nulls)
 end subroutine split
 
 
-end module FPM_Strings
+end module fpm_strings

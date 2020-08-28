@@ -1,9 +1,9 @@
 module fpm
-use FPM_Strings
-use environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
-use FPM_Filesystem, only: number_of_rows, list_files, exists
-use FPM_Sourcefiles
-use FPM_Backend
+use fpm_strings
+use fpm_environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
+use fpm_filesystem, only: number_of_rows, list_files, exists
+use fpm_sources
+use fpm_backend
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
