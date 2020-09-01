@@ -2,10 +2,50 @@ module fpm_backend
 use fpm_strings
 use fpm_environment
 use fpm_sources
+use fpm_model
 implicit none
 
 
 contains
+
+
+subroutine build_package(model)
+    type(fpm_model_t), intent(inout) :: model
+
+    integer :: i
+    character(:), allocatable :: basename, linking
+    character(:), allocatable :: file_parts(:)
+
+    linking = ""
+    do i=1,size(model%sources)
+
+        if (model%sources(i)%unit_type == FPM_UNIT_MODULE .or. &
+            model%sources(i)%unit_type == FPM_UNIT_SUBMODULE .or. &
+            model%sources(i)%unit_type == FPM_UNIT_SUBPROGRAM .or. &
+            model%sources(i)%unit_type == FPM_UNIT_CSOURCE) then
+        
+            call build_source(model%sources(i),linking)
+
+        end if
+        
+    end do
+
+    do i=1,size(model%sources)
+
+        if (model%sources(i)%unit_type == FPM_UNIT_PROGRAM) then
+            
+            call split(model%sources(i)%file_name,file_parts,delimiters='\/.')
+            basename = file_parts(size(file_parts)-1)
+            
+            call run("gfortran " // model%sources(i)%file_name // linking // " -o " // basename)
+
+        end if
+
+    end do
+
+end subroutine build_package
+
+
 
 recursive subroutine build_source(source_file,linking)
     ! Compile Fortran source, called recursively on it dependents

@@ -15,11 +15,11 @@ class(fpm_cmd_settings), allocatable :: cmd_settings
 
 call get_command_line_settings(cmd_settings)
 
-select type(cmd_settings)
+select type(settings=>cmd_settings)
 type is (fpm_new_settings)
     call cmd_new()
 type is (fpm_build_settings)
-    call cmd_build()
+    call cmd_build(settings)
 type is (fpm_run_settings)
     call cmd_run()
 type is (fpm_test_settings)

@@ -1,6 +1,6 @@
 module fpm_sources
 use fpm_strings
-use fpm_filesystem, only: read_lines
+use fpm_filesystem, only: read_lines, list_files
 implicit none
 
 private
@@ -47,16 +47,27 @@ end type srcfile_t
 
 contains
 
-subroutine scan_sources(file_names,sources)
+subroutine scan_sources(sources,directories)
     ! Enumerate Fortran sources and resolve file
     !  dependencies
     !
-    type(string_t), intent(in) :: file_names(:)
     type(srcfile_t), allocatable, intent(out), target :: sources(:)
+    type(string_t), intent(in) :: directories(:)
 
     integer :: i, j
-    logical :: is_source(size(file_names))
+    logical, allocatable :: is_source(:)
+    type(string_t), allocatable :: dir_files(:)
+    type(string_t), allocatable :: file_names(:)
     type(string_t), allocatable :: src_file_names(:)
+
+    ! Scan directories for sources
+    allocate(file_names(0))
+    do i=1,size(directories)
+
+        call list_files(directories(i)%s, dir_files)
+        file_names = [file_names,(string_t(directories(i)%s//'/'//dir_files(j)%s),j=1,size(dir_files))]
+
+    end do
 
     is_source = [(str_ends_with(lower(file_names(i)%s), ".f90") .or. &
                   str_ends_with(lower(file_names(i)%s), ".c") .or. &

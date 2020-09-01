@@ -22,56 +22,17 @@ else
 end if
 end subroutine
 
-subroutine cmd_build()
-type(string_t), allocatable :: lib_files(:)
-type(string_t), allocatable :: app_files(:)
-type(string_t), allocatable :: files(:)
-character(:), allocatable :: basename, pkg_name, linking
-integer :: i, n
+subroutine cmd_build(settings)
+    type(fpm_build_settings), intent(in) :: settings
 
-type(srcfile_t), allocatable :: sources(:)
-character(:), allocatable :: file_parts(:)
+    type(fpm_manifest_t) :: manifest
+    type(fpm_model_t) :: model
 
-print *, "# Building project"
+    print *, "# Building project"
 
-call list_files("src", lib_files)
-lib_files = [(string_t("src/"//lib_files(i)%s),i=1,size(lib_files))]
+    call build_model(model, settings, manifest)
 
-call list_files("app", app_files)
-app_files = [(string_t("app/"//app_files(i)%s),i=1,size(app_files))]
-
-files = [lib_files, app_files]
-
-call scan_sources(files,sources)
-
-call resolve_dependencies(sources)
-
-linking = ""
-do i=1,size(sources)
-
-    if (sources(i)%unit_type == FPM_UNIT_MODULE .or. &
-        sources(i)%unit_type == FPM_UNIT_SUBMODULE .or. &
-        sources(i)%unit_type == FPM_UNIT_SUBPROGRAM .or. &
-        sources(i)%unit_type == FPM_UNIT_CSOURCE) then
-    
-            call build_source(sources(i),linking)
-
-    end if
-     
-end do
-
-do i=1,size(sources)
-
-    if (sources(i)%unit_type == FPM_UNIT_PROGRAM) then
-
-        call split(sources(i)%file_name,file_parts,delimiters='\/.')
-        basename = file_parts(size(file_parts)-1)
-        
-        call run("gfortran " // sources(i)%file_name // linking // " -o " // basename)
-
-    end if
-
-end do
+    call build_package(model)
 
 end subroutine
 
