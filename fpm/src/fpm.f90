@@ -1,5 +1,8 @@
 module fpm
 use environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
+use fpm_config, only : get_package_data, default_executable, default_library, &
+    & package_t
+use fpm_error, only : error_t
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
@@ -85,34 +88,55 @@ else
 end if
 end function
 
-subroutine package_name(name)
-character(:), allocatable, intent(out) :: name
-! Currrently a heuristic. We should update this to read the name from fpm.toml
-if (exists("src/fpm.f90")) then
-    name = "fpm"
-else
-    name = "hello_world"
-end if
-end subroutine
-
 subroutine cmd_build()
+type(package_t) :: package
+type(error_t), allocatable :: error
 type(string_t), allocatable :: files(:)
-character(:), allocatable :: basename, pkg_name, linking
+character(:), allocatable :: basename, linking
 integer :: i, n
-print *, "# Building project"
-call list_files("src", files)
+call get_package_data(package, "fpm.toml", error)
+if (allocated(error)) then
+    print '(a)', error%message
+    error stop 1
+end if
+
+! Populate library in case we find the default src directory
+if (.not.allocated(package%library) .and. exists("src")) then
+    call default_library(package%library)
+end if
+
+! Populate executable in case we find the default app directory
+if (.not.allocated(package%executable) .and. exists("app")) then
+    allocate(package%executable(1))
+    call default_executable(package%executable(1), package%name)
+end if
+
+if (.not.(allocated(package%library) .or. allocated(package%executable))) then
+    print '(a)', "Neither library nor executable found, there is nothing to do"
+    error stop 1
+end if
+
 linking = ""
-do i = 1, size(files)
-    if (str_ends_with(files(i)%s, ".f90")) then
-        n = len(files(i)%s)
-        basename = files(i)%s(1:n-4)
-        call run("gfortran -c src/" // basename // ".f90 -o " // basename // ".o")
-        linking = linking // " " // basename // ".o"
-    end if
+if (allocated(package%library)) then
+    call list_files(package%library%source_dir, files)
+    do i = 1, size(files)
+        if (str_ends_with(files(i)%s, ".f90")) then
+            n = len(files(i)%s)
+            basename = files(i)%s
+            call run("gfortran -c " // package%library%source_dir // "/" // &
+               & basename // " -o " // basename // ".o")
+            linking = linking // " " // basename // ".o"
+        end if
+    end do
+end if
+
+do i = 1, size(package%executable)
+    basename = package%executable(i)%main
+    call run("gfortran -c " // package%executable(i)%source_dir // "/" // &
+       & basename // " -o " // basename // ".o")
+    call run("gfortran " // basename // ".o " // linking // " -o " // &
+       & package%executable(i)%name)
 end do
-call run("gfortran -c app/main.f90 -o main.o")
-call package_name(pkg_name)
-call run("gfortran main.o " // linking // " -o " // pkg_name)
 end subroutine
 
 subroutine cmd_install()

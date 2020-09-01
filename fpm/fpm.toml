@@ -4,3 +4,6 @@ license = "MIT"
 author = "fpm maintainers"
 maintainer = ""
 copyright = "2020 fpm contributors"
+
+[dependencies]
+toml-f = { git = "https://github.com/toml-f/toml-f" }
