@@ -44,6 +44,8 @@ files = [lib_files, app_files]
 
 call scan_sources(files,sources)
 
+call resolve_dependencies(sources)
+
 linking = ""
 do i=1,size(sources)
 

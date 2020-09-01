@@ -22,7 +22,7 @@ recursive subroutine build_source(source_file,linking)
     end if
 
     if (source_file%touched) then
-        write(*,*) '(!) Circular dependency found with: ',source_file%unit_name
+        write(*,*) '(!) Circular dependency found with: ',source_file%file_name
         stop
     else
         source_file%touched = .true.

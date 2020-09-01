@@ -5,7 +5,7 @@ implicit none
 
 private
 public srcfile_ptr, srcfile_t
-public scan_sources
+public scan_sources, resolve_dependencies
 
 integer, parameter, public :: FPM_UNIT_UNKNOWN = -1
 integer, parameter, public :: FPM_UNIT_PROGRAM = 1
@@ -29,11 +29,11 @@ type srcfile_t
     !  and it's metadata
     character(:), allocatable :: file_name
         ! File path relative to cwd
-    character(:), allocatable :: unit_name
-        ! Module/program name
+    type(string_t), allocatable :: modules_provided(:)
+        ! Modules provided by this source file (lowerstring)
     integer :: unit_type = FPM_UNIT_UNKNOWN
         ! Type of program unit
-    type(string_t), allocatable :: module_dependencies(:)
+    type(string_t), allocatable :: modules_used(:)
         ! Modules USEd by this source file (lowerstring)
     type(string_t), allocatable :: include_dependencies(:)
         ! Files INCLUDEd by this source file
@@ -80,16 +80,16 @@ subroutine scan_sources(file_names,sources)
 
     do i=1,size(sources)
         write(*,*) 'Filename: "',sources(i)%file_name,'"'
-        write(*,*) ' Unit name: "',sources(i)%unit_name,'"'
-        do j=1,size(sources(i)%module_dependencies)
-            write(*,*) ' Uses: "',sources(i)%module_dependencies(j)%s,'"'
+        do j=1,size(sources(i)%modules_provided)
+            write(*,*) ' Provides: "',sources(i)%modules_provided(j)%s,'"'
+        end do
+        do j=1,size(sources(i)%modules_used)
+            write(*,*) ' Uses: "',sources(i)%modules_used(j)%s,'"'
         end do
         do j=1,size(sources(i)%include_dependencies)
             write(*,*) ' Includes: "',sources(i)%include_dependencies(j)%s,'"'
         end do
     end do
-
-    call resolve_dependencies(sources)
 
 end subroutine scan_sources
 
@@ -101,10 +101,10 @@ function parse_f_source(f_filename) result(f_source)
     character(*), intent(in) :: f_filename
     type(srcfile_t) :: f_source
 
-    integer :: fh, n_use, n_include, i, j, ic, pass
+    integer :: fh, n_use, n_include, n_mod, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:)
     character(:), allocatable :: line_parts(:)
-    character(:), allocatable :: temp_string, use_module_name
+    character(:), allocatable :: temp_string, mod_name
 
     f_source%file_name = f_filename
 
@@ -115,6 +115,7 @@ function parse_f_source(f_filename) result(f_source)
     do pass = 1,2
         n_use = 0
         n_include = 0
+        n_mod = 0
         file_loop: do i=1,size(file_lines)
 
             ! Skip lines that are continued: not statements
@@ -138,21 +139,21 @@ function parse_f_source(f_filename) result(f_source)
                     call split(file_lines(i)%s,line_parts,delimiters=':')
                     temp_string = line_parts(2)
                     call split(temp_string,line_parts,delimiters=' ,')
-                    use_module_name = trim(lower(line_parts(1)))
+                    mod_name = trim(lower(line_parts(1)))
 
                 else
 
                     call split(file_lines(i)%s,line_parts,delimiters=' ,')
-                    use_module_name = trim(lower(line_parts(2)))
-                    
+                    mod_name = trim(lower(line_parts(2)))
+    
                 end if
 
-                if (.not.validate_name(use_module_name)) then
+                if (.not.validate_name(mod_name)) then
                     cycle
                 end if
 
-                if (any([(index(use_module_name,trim(INTRINSIC_MODULE_NAMES(j)))>0, &
-                          j=1,size(INTRINSIC_MODULE_NAMES))])) then
+                if (any([(index(mod_name,trim(INTRINSIC_MODULE_NAMES(j)))>0, &
+                            j=1,size(INTRINSIC_MODULE_NAMES))])) then
                     cycle
                 end if
 
@@ -160,7 +161,7 @@ function parse_f_source(f_filename) result(f_source)
 
                 if (pass == 2) then
 
-                    f_source%module_dependencies(n_use)%s = use_module_name
+                    f_source%modules_used(n_use)%s = mod_name
 
                 end if
 
@@ -168,7 +169,7 @@ function parse_f_source(f_filename) result(f_source)
 
             ! Process 'INCLUDE' statements
             if (index(adjustl(lower(file_lines(i)%s)),'include') == 1) then
-                        
+    
                 n_include = n_include + 1
 
                 if (pass == 2) then
@@ -179,29 +180,38 @@ function parse_f_source(f_filename) result(f_source)
             end if
 
             ! Extract name of module if is module
-            if (f_source%unit_type == FPM_UNIT_UNKNOWN .and. &
-                 index(adjustl(lower(file_lines(i)%s)),'module') == 1) then
-                        
+            if (index(adjustl(lower(file_lines(i)%s)),'module ') == 1) then
+
                 call split(file_lines(i)%s,line_parts,delimiters=' ')
 
-                f_source%unit_name = adjustl(trim(lower(line_parts(2))))
+                mod_name = adjustl(trim(lower(line_parts(2))))
+
+                if (.not.validate_name(mod_name)) then
+                    cycle
+                end if
+
+                n_mod = n_mod + 1
+
+                if (pass == 2) then
+                    f_source%modules_provided(n_mod) = string_t(mod_name)
+                end if
+
                 f_source%unit_type = FPM_UNIT_MODULE
 
             end if
 
             ! Extract name of submodule if is submodule
             if (index(adjustl(lower(file_lines(i)%s)),'submodule') == 1) then
-                        
+
                 call split(file_lines(i)%s,line_parts,delimiters=' ()')
 
-                f_source%unit_name = adjustl(trim(lower(line_parts(3))))
                 f_source%unit_type = FPM_UNIT_SUBMODULE
 
                 n_use = n_use + 1
 
                 if (pass == 2) then
 
-                    f_source%module_dependencies(n_use)%s = adjustl(trim(lower(line_parts(2))))
+                    f_source%modules_used(n_use)%s = adjustl(trim(lower(line_parts(2))))
 
                 end if
 
@@ -210,10 +220,9 @@ function parse_f_source(f_filename) result(f_source)
             ! Extract name of program if is program
             if (f_source%unit_type == FPM_UNIT_UNKNOWN .and. &
                 index(adjustl(lower(file_lines(i)%s)),'program') == 1) then
-                
+
                 call split(file_lines(i)%s,line_parts,delimiters=' ')
 
-                f_source%unit_name = adjustl(trim(lower(line_parts(2))))
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
             end if
@@ -225,13 +234,10 @@ function parse_f_source(f_filename) result(f_source)
             f_source%unit_type = FPM_UNIT_SUBPROGRAM
         end if
 
-        if (.not.allocated(f_source%unit_name)) then
-            f_source%unit_name = f_filename
-        end if
-
         if (pass == 1) then
-            allocate(f_source%module_dependencies(n_use))
+            allocate(f_source%modules_used(n_use))
             allocate(f_source%include_dependencies(n_include))
+            allocate(f_source%modules_provided(n_mod))
         end if
 
     end do
@@ -243,6 +249,14 @@ function parse_f_source(f_filename) result(f_source)
         logical :: valid
 
         integer :: i
+
+        if (trim(lower(name)) == 'procedure' .or. &
+            trim(lower(name)) == 'subroutine' .or. &
+            trim(lower(name)) == 'function') then
+
+            valid = .false.
+            return
+        end if
 
         if (lower(name(1:1)) < 'a' .or. &
             lower(name(1:1)) > 'z') then
@@ -282,7 +296,6 @@ function parse_c_source(c_filename) result(c_source)
     integer :: fh, n_include, i, pass
     type(string_t), allocatable :: file_lines(:)
     character(:), allocatable :: line_parts(:)
-    character(:), allocatable :: temp_string, use_module_name
 
     c_source%file_name = c_filename
 
@@ -296,9 +309,8 @@ function parse_c_source(c_filename) result(c_source)
 
     end if
 
-    c_source%unit_name = c_filename
-
-    allocate(c_source%module_dependencies(0))
+    allocate(c_source%modules_used(0))
+    allocate(c_source%modules_provided(0))
 
     open(newunit=fh,file=c_filename,status='old')
     file_lines = read_lines(fh)
@@ -338,38 +350,52 @@ subroutine resolve_dependencies(sources)
     !
     type(srcfile_t), intent(inout), target :: sources(:)
 
-    integer :: n_depend, i, j, k
+    integer :: n_depend, i, j
 
     do i=1,size(sources)
         
-        n_depend = size(sources(i)%module_dependencies)
+        n_depend = size(sources(i)%modules_used)
 
         allocate(sources(i)%file_dependencies(n_depend))
 
         do j=1,n_depend
 
-            sources(i)%file_dependencies(j)%ptr => NULL()
-
-            do k=1,size(sources)
-
-                if (sources(i)%module_dependencies(j)%s == sources(k)%unit_name) then
-                    sources(i)%file_dependencies(j)%ptr => sources(k)
-                    exit
-                end if
-                
-            end do
+            sources(i)%file_dependencies(j)%ptr => &
+                 find_module_dependency(sources,sources(i)%modules_used(j)%s)
 
             if (.not.associated(sources(i)%file_dependencies(j)%ptr)) then
-                write(*,*) '(!) Unable to find source for module dependency: ',sources(i)%module_dependencies(j)%s
+                write(*,*) '(!) Unable to find source for module dependency: ',sources(i)%modules_used(j)%s
                 ! stop
             end if
 
         end do
 
-    end do
+    end do    
 
 end subroutine resolve_dependencies
 
+function find_module_dependency(sources,module_name) result(src_ptr)
+    type(srcfile_t), intent(in), target :: sources(:)
+    character(*), intent(in) :: module_name
+    type(srcfile_t), pointer :: src_ptr
 
+    integer :: k, l
+
+    src_ptr => NULL()
+
+    do k=1,size(sources)
+
+        do l=1,size(sources(k)%modules_provided)
+
+            if (module_name == sources(k)%modules_provided(l)%s) then
+                src_ptr => sources(k)
+                exit
+            end if
+
+        end do
+        
+    end do
+
+end function find_module_dependency
 
 end module fpm_sources
