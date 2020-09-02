@@ -222,6 +222,12 @@ function parse_f_source(f_filename) result(f_source)
 
                 if (pass == 2) then
 
+                    if (index(line_parts(2),':') > 0) then
+
+                        line_parts(2) = line_parts(2)(index(line_parts(2),':')+1:)
+
+                    end if
+
                     f_source%modules_used(n_use)%s = adjustl(trim(lower(line_parts(2))))
 
                 end if
