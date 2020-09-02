@@ -18,5 +18,5 @@ if errorlevel 1 exit 1
 ..\..\..\fpm\build\gfortran_debug\app\fpm build
 if errorlevel 1 exit 1
 
-.\hello_world
+.\build\gfortran_debug\hello_world
 if errorlevel 1 exit 1
