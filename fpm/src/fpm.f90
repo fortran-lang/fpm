@@ -1,5 +1,8 @@
 module fpm
 use fpm_strings
+use fpm_command_line
+use fpm_manifest
+use fpm_model
 use fpm_environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 use fpm_filesystem, only: number_of_rows, list_files, exists
 use fpm_sources

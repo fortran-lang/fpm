@@ -4,7 +4,7 @@ use fpm_environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 implicit none
 
 private
-public :: number_of_rows, read_lines, list_files, exists, get_temp_filename
+public :: number_of_rows, read_lines, list_files, mkdir, exists, get_temp_filename
 
 integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -40,6 +40,26 @@ function read_lines(fh) result(lines)
     end do
 
 end function read_lines
+
+subroutine mkdir(dir)
+    character(*), intent(in) :: dir
+
+    integer :: stat
+
+    select case (get_os_type())
+    case (OS_LINUX,OS_MACOS)
+        call execute_command_line("mkdir -p " // dir , exitstat=stat)
+        write(*,*) "mkdir -p " // dir
+    case (OS_WINDOWS)
+        call execute_command_line("mkdir " // dir, exitstat=stat)
+        write(*,*) "mkdir " // dir
+    end select
+    if (stat /= 0) then
+        print *, "execute_command_line() failed"
+        error stop
+    end if
+
+end subroutine mkdir
 
 
 subroutine list_files(dir, files)

@@ -89,18 +89,18 @@ subroutine scan_sources(sources,directories)
 
     end do
 
-    do i=1,size(sources)
-        write(*,*) 'Filename: "',sources(i)%file_name,'"'
-        do j=1,size(sources(i)%modules_provided)
-            write(*,*) ' Provides: "',sources(i)%modules_provided(j)%s,'"'
-        end do
-        do j=1,size(sources(i)%modules_used)
-            write(*,*) ' Uses: "',sources(i)%modules_used(j)%s,'"'
-        end do
-        do j=1,size(sources(i)%include_dependencies)
-            write(*,*) ' Includes: "',sources(i)%include_dependencies(j)%s,'"'
-        end do
-    end do
+    ! do i=1,size(sources)
+    !     write(*,*) 'Filename: "',sources(i)%file_name,'"'
+    !     do j=1,size(sources(i)%modules_provided)
+    !         write(*,*) ' Provides: "',sources(i)%modules_provided(j)%s,'"'
+    !     end do
+    !     do j=1,size(sources(i)%modules_used)
+    !         write(*,*) ' Uses: "',sources(i)%modules_used(j)%s,'"'
+    !     end do
+    !     do j=1,size(sources(i)%include_dependencies)
+    !         write(*,*) ' Includes: "',sources(i)%include_dependencies(j)%s,'"'
+    !     end do
+    ! end do
 
 end subroutine scan_sources
 

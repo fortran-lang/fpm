@@ -1,10 +1,15 @@
 module fpm_backend
+! Implements the native fpm build backend
+!
 use fpm_strings
 use fpm_environment
 use fpm_sources
 use fpm_model
+use fpm_filesystem
 implicit none
 
+private
+public :: build_package
 
 contains
 
@@ -16,6 +21,10 @@ subroutine build_package(model)
     character(:), allocatable :: basename, linking
     character(:), allocatable :: file_parts(:)
 
+    if(.not.exists(model%output_directory)) then
+        call mkdir(model%output_directory)
+    end if
+
     linking = ""
     do i=1,size(model%sources)
 
@@ -24,7 +33,7 @@ subroutine build_package(model)
             model%sources(i)%unit_type == FPM_UNIT_SUBPROGRAM .or. &
             model%sources(i)%unit_type == FPM_UNIT_CSOURCE) then
         
-            call build_source(model%sources(i),linking)
+            call build_source(model,model%sources(i),linking)
 
         end if
         
@@ -37,7 +46,12 @@ subroutine build_package(model)
             call split(model%sources(i)%file_name,file_parts,delimiters='\/.')
             basename = file_parts(size(file_parts)-1)
             
-            call run("gfortran " // model%sources(i)%file_name // linking // " -o " // basename)
+            call run("gfortran -c " // model%sources(i)%file_name // ' '//model%fortran_compile_flags &
+                      // " -o " // model%output_directory // '/' // basename // ".o")
+
+            call run("gfortran " // model%output_directory // '/' // basename // ".o "// &
+                     linking //" " //model%link_flags // " -o " // model%output_directory &
+                       // '/' // model%package_name)
 
         end if
 
@@ -47,13 +61,14 @@ end subroutine build_package
 
 
 
-recursive subroutine build_source(source_file,linking)
+recursive subroutine build_source(model,source_file,linking)
     ! Compile Fortran source, called recursively on it dependents
     !  
+    type(fpm_model_t), intent(in) :: model
     type(srcfile_t), intent(inout) :: source_file
     character(:), allocatable, intent(inout) :: linking
 
-    integer :: n, i
+    integer :: i
     character(:), allocatable :: file_parts(:)
     character(:), allocatable :: basename
 
@@ -71,7 +86,7 @@ recursive subroutine build_source(source_file,linking)
     do i=1,size(source_file%file_dependencies)
 
         if (associated(source_file%file_dependencies(i)%ptr)) then
-            call build_source(source_file%file_dependencies(i)%ptr,linking)
+            call build_source(model,source_file%file_dependencies(i)%ptr,linking)
         end if
 
     end do
@@ -79,8 +94,9 @@ recursive subroutine build_source(source_file,linking)
     call split(source_file%file_name,file_parts,delimiters='\/.')
     basename = file_parts(size(file_parts)-1)
     
-    call run("gfortran -c " // source_file%file_name // " -o " // basename // ".o")
-    linking = linking // " " // basename // ".o"
+    call run("gfortran -c " // source_file%file_name // model%fortran_compile_flags &
+              // " -o " // model%output_directory//'/'//basename // ".o")
+    linking = linking // " " // model%output_directory//'/'// basename // ".o"
 
     source_file%built = .true.
 
