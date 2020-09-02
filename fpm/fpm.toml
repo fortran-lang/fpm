@@ -7,3 +7,8 @@ copyright = "2020 fpm contributors"
 
 [dependencies]
 toml-f = { git = "https://github.com/toml-f/toml-f" }
+
+[[test]]
+name = "fpm-test"
+source-dir = "test"
+main = "main.f90"
