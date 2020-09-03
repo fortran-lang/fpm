@@ -22,7 +22,7 @@
 !  build the target declaring the dependency.
 !  Resolving a dependency will result in obtaining a new package configuration
 !  data for the respective project.
-module fpm_config_dependency
+module fpm_manifest_dependency
     use fpm_error, only : error_t, syntax_error
     use fpm_git, only : git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default
@@ -238,4 +238,4 @@ contains
     end subroutine info
 
 
-end module fpm_config_dependency
+end module fpm_manifest_dependency

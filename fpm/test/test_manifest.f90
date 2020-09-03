@@ -1,43 +1,43 @@
-!> Define tests for the `fpm_config` modules
-module test_config
+!> Define tests for the `fpm_manifest` modules
+module test_manifest
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
-    use fpm_config
+    use fpm_manifest
     implicit none
     private
 
-    public :: collect_config
+    public :: collect_manifest
 
 
 contains
 
 
     !> Collect all exported unit tests
-    subroutine collect_config(testsuite)
+    subroutine collect_manifest(testsuite)
 
         !> Collection of tests
         type(unittest_t), allocatable, intent(out) :: testsuite(:)
 
         testsuite = [ &
-            & new_unittest("valid-config", test_valid_config), &
-            & new_unittest("invalid-config", test_invalid_config, should_fail=.true.), &
+            & new_unittest("valid-manifest", test_valid_manifest), &
+            & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
             & new_unittest("default-library", test_default_library), &
             & new_unittest("default-executable", test_default_executable)]
 
-    end subroutine collect_config
+    end subroutine collect_manifest
 
 
     !> Try to read some unnecessary obscure and convoluted but not invalid package file
-    subroutine test_valid_config(error)
+    subroutine test_valid_manifest(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
         type(package_t) :: package
-        character(len=*), parameter :: config = 'fpm-valid-config.toml'
+        character(len=*), parameter :: manifest = 'fpm-valid-manifest.toml'
         character(len=:), allocatable :: string
         integer :: unit
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
             & '[dependencies.fpm]', &
@@ -57,9 +57,9 @@ contains
             & 'lib""" # comment'
         close(unit)
 
-        call get_package_data(package, config, error)
+        call get_package_data(package, manifest, error)
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         close(unit, status='delete')
 
         if (allocated(error)) return
@@ -99,33 +99,33 @@ contains
             return
         end if
 
-    end subroutine test_valid_config
+    end subroutine test_valid_manifest
 
 
     !> Try to read a valid TOML document which represent an invalid package file
-    subroutine test_invalid_config(error)
+    subroutine test_invalid_manifest(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
         type(package_t) :: package
-        character(len=*), parameter :: config = 'fpm-invalid-config.toml'
+        character(len=*), parameter :: manifest = 'fpm-invalid-manifest.toml'
         character(len=:), allocatable :: string
         integer :: unit
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & '[package]', &
             & 'name = "example"', &
             & 'version = "0.1.0"'
         close(unit)
 
-        call get_package_data(package, config, error)
+        call get_package_data(package, manifest, error)
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         close(unit, status='delete')
 
-    end subroutine test_invalid_config
+    end subroutine test_invalid_manifest
 
 
     !> Create a default library
@@ -185,4 +185,4 @@ contains
     end subroutine test_default_executable
 
 
-end module test_config
+end module test_manifest

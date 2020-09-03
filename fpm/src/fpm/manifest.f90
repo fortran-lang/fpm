@@ -6,10 +6,10 @@
 !
 !  Additionally, the required data types for users of this module are reexported
 !  to hide the actual implementation details.
-module fpm_config
-    use fpm_config_executable, only : executable_t
-    use fpm_config_library, only : library_t
-    use fpm_config_package, only : package_t, new_package
+module fpm_manifest
+    use fpm_manifest_executable, only : executable_t
+    use fpm_manifest_library, only : library_t
+    use fpm_manifest_package, only : package_t, new_package
     use fpm_error, only : error_t, fatal_error, file_not_found_error
     use fpm_toml, only : toml_table, read_package_file
     implicit none
@@ -76,4 +76,4 @@ contains
     end subroutine get_package_data
 
 
-end module fpm_config
+end module fpm_manifest

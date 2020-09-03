@@ -1,55 +1,48 @@
-!> Implementation of the meta data for an executables.
+!> Implementation of the meta data for a test.
 !
-!  An executable table can currently have the following fields
+!  The test data structure is effectively a decorated version of an executable
+!  and shares most of its properties, except for the defaults and can be
+!  handled under most circumstances just like any other executable.
+!
+!  A test table can currently have the following fields
 !
 !  ```toml
-!  [[executable]]
+!  [[test]]
 !  name = "string"
 !  source-dir = "path"
 !  main = "file"
-!  [executable.dependencies]
+!  [test.dependencies]
 !  ```
-module fpm_config_executable
-    use fpm_config_dependency, only : dependency_t, new_dependencies
+module fpm_manifest_test
+    use fpm_manifest_dependency, only : dependency_t, new_dependencies
+    use fpm_manifest_executable, only : executable_t
     use fpm_error, only : error_t, syntax_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     implicit none
     private
 
-    public :: executable_t, new_executable
+    public :: test_t, new_test
 
 
-    !> Configuation meta data for an executable
-    type :: executable_t
-
-        !> Name of the resulting executable
-        character(len=:), allocatable :: name
-
-        !> Source directory for collecting the executable
-        character(len=:), allocatable :: source_dir
-
-        !> Name of the source file declaring the main program
-        character(len=:), allocatable :: main
-
-        !> Dependency meta data for this executable
-        type(dependency_t), allocatable :: dependency(:)
+    !> Configuation meta data for an test
+    type, extends(executable_t) :: test_t
 
     contains
 
         !> Print information on this instance
         procedure :: info
 
-    end type executable_t
+    end type test_t
 
 
 contains
 
 
-    !> Construct a new executable configuration from a TOML data structure
-    subroutine new_executable(self, table, error)
+    !> Construct a new test configuration from a TOML data structure
+    subroutine new_test(self, table, error)
 
-        !> Instance of the executable configuration
-        type(executable_t), intent(out) :: self
+        !> Instance of the test configuration
+        type(test_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -63,7 +56,7 @@ contains
         if (allocated(error)) return
 
         call get_value(table, "name", self%name)
-        call get_value(table, "source-dir", self%source_dir, "app")
+        call get_value(table, "source-dir", self%source_dir, "test")
         call get_value(table, "main", self%main, "main.f90")
 
         call get_value(table, "dependencies", child, requested=.false.)
@@ -72,7 +65,7 @@ contains
             if (allocated(error)) return
         end if
 
-    end subroutine new_executable
+    end subroutine new_test
 
 
     !> Check local schema for allowed entries
@@ -100,7 +93,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed executable entry")
+                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in test entry")
                 exit
 
             case("name")
@@ -122,8 +115,8 @@ contains
     !> Write information on instance
     subroutine info(self, unit, verbosity)
 
-        !> Instance of the executable configuration
-        class(executable_t), intent(in) :: self
+        !> Instance of the test configuration
+        class(test_t), intent(in) :: self
 
         !> Unit for IO
         integer, intent(in) :: unit
@@ -143,18 +136,18 @@ contains
 
         if (pr < 1) return
 
-        write(unit, fmt) "Executable target"
+        write(unit, fmt) "Test target"
         if (allocated(self%name)) then
             write(unit, fmt) "- name", self%name
         end if
         if (allocated(self%source_dir)) then
-            if (self%source_dir /= "app" .or. pr > 2) then
+            if (self%source_dir /= "test" .or. pr > 2) then
                 write(unit, fmt) "- source directory", self%source_dir
             end if
         end if
         if (allocated(self%main)) then
             if (self%main /= "main.f90" .or. pr > 2) then
-                write(unit, fmt) "- program source", self%main
+                write(unit, fmt) "- test source", self%main
             end if
         end if
 
@@ -170,4 +163,4 @@ contains
     end subroutine info
 
 
-end module fpm_config_executable
+end module fpm_manifest_test

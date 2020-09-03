@@ -3,7 +3,7 @@ program fpm_testing
     use, intrinsic :: iso_fortran_env, only : error_unit
     use testsuite, only : run_testsuite
     use test_toml, only : collect_toml
-    use test_config, only : collect_config
+    use test_manifest, only : collect_manifest
     implicit none
     integer :: stat
     character(len=*), parameter :: fmt = '("#", *(1x, a))'
@@ -16,8 +16,8 @@ program fpm_testing
         error stop 1
     end if
 
-    write(error_unit, fmt) "Testing:", "fpm_config"
-    call run_testsuite(collect_config, error_unit, stat)
+    write(error_unit, fmt) "Testing:", "fpm_manifest"
+    call run_testsuite(collect_manifest, error_unit, stat)
 
     if (stat > 0) then
         write(error_unit, '(i0, 1x, a)') stat, "tests failed!"

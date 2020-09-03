@@ -7,7 +7,7 @@
 !  source-dir = "path"
 !  build-script = "file"
 !  ```
-module fpm_config_library
+module fpm_manifest_library
     use fpm_error, only : error_t, syntax_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     implicit none
@@ -123,4 +123,4 @@ contains
     end subroutine info
 
 
-end module fpm_config_library
+end module fpm_manifest_library

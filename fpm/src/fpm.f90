@@ -1,6 +1,6 @@
 module fpm
 use environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_config, only : get_package_data, default_executable, default_library, &
+use fpm_manifest, only : get_package_data, default_executable, default_library, &
     & package_t
 use fpm_error, only : error_t
 implicit none

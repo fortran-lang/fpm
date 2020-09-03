@@ -27,11 +27,11 @@
 !  [[executable]]
 !  [[test]]
 !  ```
-module fpm_config_package
-    use fpm_config_dependency, only : dependency_t, new_dependencies
-    use fpm_config_executable, only : executable_t, new_executable
-    use fpm_config_library, only : library_t, new_library
-    use fpm_config_test, only : test_t, new_test
+module fpm_manifest_package
+    use fpm_manifest_dependency, only : dependency_t, new_dependencies
+    use fpm_manifest_executable, only : executable_t, new_executable
+    use fpm_manifest_library, only : library_t, new_library
+    use fpm_manifest_test, only : test_t, new_test
     use fpm_error, only : error_t, fatal_error, syntax_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & len
@@ -267,4 +267,4 @@ contains
     end subroutine info
 
 
-end module fpm_config_package
+end module fpm_manifest_package

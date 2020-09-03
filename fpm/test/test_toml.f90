@@ -31,11 +31,11 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table), allocatable :: table
-        character(len=*), parameter :: config = 'fpm-valid-toml.toml'
+        character(len=*), parameter :: manifest = 'fpm-valid-toml.toml'
         character(len=:), allocatable :: string
         integer :: unit
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
             & '[dependencies.fpm]', &
@@ -55,9 +55,9 @@ contains
             & 'lib""" # comment'
         close(unit)
 
-        call read_package_file(table, config, error)
+        call read_package_file(table, manifest, error)
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         close(unit, status='delete')
 
     end subroutine test_valid_toml
@@ -70,11 +70,11 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table), allocatable :: table
-        character(len=*), parameter :: config = 'fpm-invalid-toml.toml'
+        character(len=*), parameter :: manifest = 'fpm-invalid-toml.toml'
         character(len=:), allocatable :: string
         integer :: unit
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & '# INVALID TOML DOC', &
             & 'name = "example"', &
@@ -84,9 +84,9 @@ contains
             & '"toml..f" = { path = ".." }'
         close(unit)
 
-        call read_package_file(table, config, error)
+        call read_package_file(table, manifest, error)
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         close(unit, status='delete')
 
     end subroutine test_invalid_toml

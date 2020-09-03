@@ -27,13 +27,13 @@ contains
 
 
     !> Process the configuration file to a TOML data structure
-    subroutine read_package_file(table, config, error)
+    subroutine read_package_file(table, manifest, error)
 
         !> TOML data structure
         type(toml_table), allocatable, intent(out) :: table
 
         !> Name of the package configuration file
-        character(len=*), intent(in) :: config
+        character(len=*), intent(in) :: manifest
 
         !> Error status of the operation
         type(error_t), allocatable, intent(out) :: error
@@ -42,14 +42,14 @@ contains
         integer :: unit
         logical :: exist
 
-        inquire(file=config, exist=exist)
+        inquire(file=manifest, exist=exist)
 
         if (.not.exist) then
-            call file_not_found_error(error, config)
+            call file_not_found_error(error, manifest)
             return
         end if
 
-        open(file=config, newunit=unit)
+        open(file=manifest, newunit=unit)
         call toml_parse(table, unit, parse_error)
         close(unit)
 
