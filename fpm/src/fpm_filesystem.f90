@@ -1,10 +1,11 @@
 module fpm_filesystem
-use fpm_strings
 use fpm_environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
+use fpm_strings, only: f_string, string_t 
 implicit none
 
 private
-public :: number_of_rows, read_lines, list_files, mkdir, exists, get_temp_filename
+public :: number_of_rows, read_lines, list_files, mkdir, exists, &
+          get_temp_filename
 
 integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -79,11 +80,14 @@ subroutine list_files(dir, files)
 
     select case (get_os_type())
         case (OS_LINUX)
-            call execute_command_line("ls " // dir // " > "//temp_file, exitstat=stat)
+            call execute_command_line("ls " // dir // " > "//temp_file, &
+                                      exitstat=stat)
         case (OS_MACOS)
-            call execute_command_line("ls " // dir // " > "//temp_file, exitstat=stat)
+            call execute_command_line("ls " // dir // " > "//temp_file, &
+                                      exitstat=stat)
         case (OS_WINDOWS)
-            call execute_command_line("dir /b " // dir // " > "//temp_file, exitstat=stat)
+            call execute_command_line("dir /b " // dir // " > "//temp_file, &
+                                      exitstat=stat)
     end select
     if (stat /= 0) then
         print *, "execute_command_line() failed"
@@ -118,7 +122,7 @@ function get_temp_filename() result(tempfile)
     
     interface
 
-        function c_tempnam(dir,pfx) result(tmp) BIND(C,name="tempnam")
+        function c_tempnam(dir,pfx) result(tmp) bind(c,name="tempnam")
             import
             type(c_ptr), intent(in), value :: dir
             type(c_ptr), intent(in), value :: pfx

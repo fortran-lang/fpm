@@ -1,12 +1,12 @@
 module fpm
-use fpm_strings
-use fpm_command_line
-use fpm_manifest
-use fpm_model
+
+use fpm_backend, only: build_package
+use fpm_command_line, only: fpm_build_settings
 use fpm_environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 use fpm_filesystem, only: number_of_rows, list_files, exists
-use fpm_sources
-use fpm_backend
+use fpm_manifest, only: fpm_manifest_t
+use fpm_model, only: build_model, fpm_model_t
+
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test

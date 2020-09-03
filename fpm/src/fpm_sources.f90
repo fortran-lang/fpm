@@ -1,19 +1,22 @@
 module fpm_sources
-use fpm_strings
 use fpm_filesystem, only: read_lines, list_files
+use fpm_strings, only: lower, split, str_ends_with, string_t
 implicit none
 
 private
-public srcfile_ptr, srcfile_t
-public scan_sources, resolve_dependencies
+public :: srcfile_ptr, srcfile_t
+public :: scan_sources, resolve_dependencies
+public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
+          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
+          FPM_UNIT_CHEADER
 
-integer, parameter, public :: FPM_UNIT_UNKNOWN = -1
-integer, parameter, public :: FPM_UNIT_PROGRAM = 1
-integer, parameter, public :: FPM_UNIT_MODULE = 2
-integer, parameter, public :: FPM_UNIT_SUBMODULE = 3
-integer, parameter, public :: FPM_UNIT_SUBPROGRAM = 4
-integer, parameter, public :: FPM_UNIT_CSOURCE = 5
-integer, parameter, public :: FPM_UNIT_CHEADER = 6
+integer, parameter :: FPM_UNIT_UNKNOWN = -1
+integer, parameter :: FPM_UNIT_PROGRAM = 1
+integer, parameter :: FPM_UNIT_MODULE = 2
+integer, parameter :: FPM_UNIT_SUBMODULE = 3
+integer, parameter :: FPM_UNIT_SUBPROGRAM = 4
+integer, parameter :: FPM_UNIT_CSOURCE = 5
+integer, parameter :: FPM_UNIT_CHEADER = 6
 
 character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
                              ['iso_c_binding  ', &
@@ -21,7 +24,7 @@ character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
 
 type srcfile_ptr
     ! For constructing arrays of src_file pointers
-    type(srcfile_t), pointer :: ptr => NULL()
+    type(srcfile_t), pointer :: ptr => null()
 end type srcfile_ptr
 
 type srcfile_t

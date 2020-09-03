@@ -1,12 +1,13 @@
 module fpm_environment
     implicit none
     private
-
-    integer, parameter, public :: OS_LINUX = 1
-    integer, parameter, public :: OS_MACOS = 2
-    integer, parameter, public :: OS_WINDOWS = 3
-
     public :: get_os_type, run
+    public :: OS_LINUX, OS_MACOS, OS_WINDOWS
+
+    integer, parameter :: OS_LINUX = 1
+    integer, parameter :: OS_MACOS = 2
+    integer, parameter :: OS_WINDOWS = 3
+
 contains
     integer function get_os_type() result(r)
     ! Determine the OS type

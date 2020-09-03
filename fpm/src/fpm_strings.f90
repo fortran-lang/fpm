@@ -1,6 +1,9 @@
 module fpm_strings
 implicit none
 
+private
+public :: f_string, lower, split, str_ends_with, string_t
+
 type string_t
     character(len=:), allocatable :: s
 end type

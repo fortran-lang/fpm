@@ -1,14 +1,19 @@
 module fpm_model
+
 ! Definition and validation of the backend model
-!
-use fpm_strings
-use fpm_sources
-use fpm_command_line
-use fpm_filesystem
-use fpm_manifest
+
+use fpm_command_line, only: fpm_build_settings
+use fpm_filesystem, only: exists
+use fpm_manifest, only: fpm_manifest_t
+use fpm_sources, only: resolve_dependencies, scan_sources, srcfile_t
+use fpm_strings, only: string_t
+
 implicit none
 
-type fpm_model_t
+private
+public :: build_model, fpm_model_t
+
+type :: fpm_model_t
     character(:), allocatable :: package_name
         ! Name of package
     type(srcfile_t), allocatable :: sources(:)
