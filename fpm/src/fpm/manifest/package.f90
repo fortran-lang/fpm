@@ -93,6 +93,10 @@ contains
         if (allocated(error)) return
 
         call get_value(table, "name", self%name)
+        if (.not.allocated(self%name)) then
+           call syntax_error(error, "Could not retrieve package name")
+           return
+        end if
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
@@ -110,6 +114,7 @@ contains
         if (associated(child)) then
             allocate(self%library)
             call new_library(self%library, child, error)
+            if (allocated(error)) return
         end if
 
         call get_value(table, "executable", children, requested=.false.)
@@ -125,6 +130,7 @@ contains
                 call new_executable(self%executable(ii), node, error)
                 if (allocated(error)) exit
             end do
+            if (allocated(error)) return
         end if
 
         call get_value(table, "test", children, requested=.false.)
@@ -140,6 +146,7 @@ contains
                 call new_test(self%test(ii), node, error)
                 if (allocated(error)) exit
             end do
+            if (allocated(error)) return
         end if
 
     end subroutine new_package
@@ -154,14 +161,12 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: name
         type(toml_key), allocatable :: list(:)
         logical :: name_present
         integer :: ikey
 
         name_present = .false.
 
-        call table%get_key(name)
         call table%get_keys(list)
 
         if (.not.allocated(list)) then

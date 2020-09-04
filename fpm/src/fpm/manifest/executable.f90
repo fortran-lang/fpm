@@ -63,6 +63,10 @@ contains
         if (allocated(error)) return
 
         call get_value(table, "name", self%name)
+        if (.not.allocated(self%name)) then
+           call syntax_error(error, "Could not retrieve executable name")
+           return
+        end if
         call get_value(table, "source-dir", self%source_dir, "app")
         call get_value(table, "main", self%main, "main.f90")
 
