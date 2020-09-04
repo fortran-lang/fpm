@@ -89,8 +89,8 @@ contains
 
         call table%get_keys(list)
 
-        if (.not.allocated(list)) then
-            call syntax_error(error, "Executable section does not provide sufficient entries")
+        if (size(list) < 1) then
+            call syntax_error(error, "Test section does not provide sufficient entries")
             return
         end if
 
@@ -110,7 +110,7 @@ contains
         end do
 
         if (.not.name_present) then
-            call syntax_error(error, "Executable name is not provided, please add a name entry")
+            call syntax_error(error, "Test name is not provided, please add a name entry")
         end if
 
     end subroutine check

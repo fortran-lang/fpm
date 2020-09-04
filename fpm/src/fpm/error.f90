@@ -49,11 +49,8 @@ contains
         !> Name of the missing file
         character(len=*), intent(in) :: file_name
 
-        character(len=:), allocatable :: message
-
-        message = "'"//file_name//"' could not be found, check if the file exists"
-
-        call move_alloc(message, error%message)
+        allocate(error)
+        error%message = "'"//file_name//"' could not be found, check if the file exists"
 
     end subroutine file_not_found_error
 

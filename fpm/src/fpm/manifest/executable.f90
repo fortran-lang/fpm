@@ -96,7 +96,7 @@ contains
 
         call table%get_keys(list)
 
-        if (.not.allocated(list)) then
+        if (size(list) < 1) then
             call syntax_error(error, "Executable section does not provide sufficient entries")
             return
         end if

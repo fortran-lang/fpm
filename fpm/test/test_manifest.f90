@@ -21,7 +21,13 @@ contains
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
             & new_unittest("default-library", test_default_library), &
-            & new_unittest("default-executable", test_default_executable)]
+            & new_unittest("default-executable", test_default_executable), &
+            & new_unittest("dependency-empty", test_dependency_empty, should_fail=.true.), &
+            & new_unittest("dependencies-empty", test_dependencies_empty), &
+            & new_unittest("executable-empty", test_executable_empty, should_fail=.true.), &
+            & new_unittest("library-empty", test_library_empty), &
+            & new_unittest("package-empty", test_package_empty, should_fail=.true.), &
+            & new_unittest("test-empty", test_test_empty, should_fail=.true.)]
 
     end subroutine collect_manifest
 
@@ -183,6 +189,134 @@ contains
         end if
 
     end subroutine test_default_executable
+
+
+    !> Dependencies cannot be created from empty tables
+    subroutine test_dependency_empty(error)
+        use fpm_manifest_dependency
+        use fpm_toml, only : new_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_t) :: dependency
+
+        call new_table(table)
+        table%key = "example"
+
+        call new_dependency(dependency, table, error)
+
+        call dependency%info(0)
+
+    end subroutine test_dependency_empty
+
+
+    !> Dependency tables can be empty
+    subroutine test_dependencies_empty(error)
+        use fpm_manifest_dependency
+        use fpm_toml, only : new_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_t), allocatable :: dependencies(:)
+
+        call new_table(table)
+
+        call new_dependencies(dependencies, table, error)
+        if (allocated(error)) return
+
+        if (allocated(dependencies)) then
+            call test_failed(error, "Found dependencies in empty table")
+        end if
+
+    end subroutine test_dependencies_empty
+
+
+    !> Executables cannot be created from empty tables
+    subroutine test_executable_empty(error)
+        use fpm_manifest_executable
+        use fpm_toml, only : new_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(executable_t) :: executable
+
+        call new_table(table)
+
+        call new_executable(executable, table, error)
+
+    end subroutine test_executable_empty
+
+
+    !> Libraries can be created from empty tables
+    subroutine test_library_empty(error)
+        use fpm_manifest_library
+        use fpm_toml, only : new_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(library_t) :: library
+
+        call new_table(table)
+
+        call new_library(library, table, error)
+        if (allocated(error)) return
+
+        if (.not.allocated(library%source_dir)) then
+            call test_failed(error, "Default library source-dir is not set")
+            return
+        end if
+
+        if (library%source_dir /= "src") then
+            call test_failed(error, "Default library source-dir is "// &
+                & library%source_dir//" but should be src")
+            return
+        end if
+
+    end subroutine test_library_empty
+
+
+    !> Packages cannot be created from empty tables
+    subroutine test_package_empty(error)
+        use fpm_manifest_package
+        use fpm_toml, only : new_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(package_t) :: package
+
+        call new_table(table)
+
+        call new_package(package, table, error)
+
+    end subroutine test_package_empty
+
+
+    !> Tests cannot be created from empty tables
+    subroutine test_test_empty(error)
+        use fpm_manifest_test
+        use fpm_toml, only : new_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(test_t) :: test
+
+        call new_table(table)
+
+        call new_test(test, table, error)
+
+    end subroutine test_test_empty
 
 
 end module test_manifest

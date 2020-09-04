@@ -72,7 +72,7 @@ contains
         call table%get_keys(list)
 
         ! table can be empty
-        if (.not.allocated(list)) return
+        if (size(list) < 1) return
 
         do ikey = 1, size(list)
             select case(list(ikey)%key)

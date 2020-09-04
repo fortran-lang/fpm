@@ -19,7 +19,8 @@ contains
 
         testsuite = [ &
             & new_unittest("valid-toml", test_valid_toml), &
-            & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.)]
+            & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.), &
+            & new_unittest("missing-file", test_missing_file, should_fail=.true.)]
 
     end subroutine collect_toml
 
@@ -90,6 +91,21 @@ contains
         close(unit, status='delete')
 
     end subroutine test_invalid_toml
+
+
+    !> Try to read configuration from a non-existing file
+    subroutine test_missing_file(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+        character(len=:), allocatable :: string
+        integer :: unit
+
+        call read_package_file(table, 'low+chance+of+existing.toml', error)
+
+    end subroutine test_missing_file
 
 
 end module test_toml

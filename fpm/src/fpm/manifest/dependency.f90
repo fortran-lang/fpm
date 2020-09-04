@@ -129,7 +129,7 @@ contains
         call table%get_key(name)
         call table%get_keys(list)
 
-        if (.not.allocated(list)) then
+        if (size(list) < 1) then
             call syntax_error(error, "Dependency "//name//" does not provide sufficient entries")
             return
         end if
@@ -158,6 +158,11 @@ contains
         end do
         if (allocated(error)) return
 
+        if (.not.url_present) then
+            call syntax_error(error, "Dependency "//name//" does not provide a method to actually retrieve itself")
+            return
+        end if
+
         if (.not.url_present .and. git_target_present) then
             call syntax_error(error, "Dependency "//name//" uses a local path, therefore no git identifiers are allowed")
         end if
@@ -183,7 +188,7 @@ contains
 
         call table%get_keys(list)
         ! An empty table is okay
-        if (.not.allocated(list)) return
+        if (size(list) < 1) return
 
         allocate(deps(size(list)))
         do idep = 1, size(list)
