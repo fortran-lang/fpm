@@ -205,8 +205,6 @@ contains
 
         call new_dependency(dependency, table, error)
 
-        call dependency%info(0)
-
     end subroutine test_dependency_empty
 
 
