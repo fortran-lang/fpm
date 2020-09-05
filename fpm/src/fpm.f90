@@ -1,12 +1,14 @@
 module fpm
 
+use fpm_strings, only: string_t, str_ends_with
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings
 use fpm_environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 use fpm_filesystem, only: number_of_rows, list_files, exists
-use fpm_manifest, only: fpm_manifest_t
 use fpm_model, only: build_model, fpm_model_t
-
+use fpm_manifest, only : get_package_data, default_executable, default_library, &
+    & package_t
+use fpm_error, only : error_t
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
@@ -15,28 +17,56 @@ public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
 contains
 
 
-subroutine package_name(name)
-character(:), allocatable, intent(out) :: name
-! Currrently a heuristic. We should update this to read the name from fpm.toml
-if (exists("src/fpm.f90")) then
-    name = "fpm"
-else
-    name = "hello_world"
-end if
-end subroutine
-
 subroutine cmd_build(settings)
-    type(fpm_build_settings), intent(in) :: settings
+type(fpm_build_settings), intent(in) :: settings
+type(package_t) :: package
+type(error_t), allocatable :: error
+type(string_t), allocatable :: files(:)
+character(:), allocatable :: basename, linking
+integer :: i, n
+call get_package_data(package, "fpm.toml", error)
+if (allocated(error)) then
+    print '(a)', error%message
+    error stop 1
+end if
 
-    type(fpm_manifest_t) :: manifest
-    type(fpm_model_t) :: model
+! Populate library in case we find the default src directory
+if (.not.allocated(package%library) .and. exists("src")) then
+    call default_library(package%library)
+end if
 
-    print *, "# Building project"
+! Populate executable in case we find the default app directory
+if (.not.allocated(package%executable) .and. exists("app")) then
+    allocate(package%executable(1))
+    call default_executable(package%executable(1), package%name)
+end if
 
-    call build_model(model, settings, manifest)
+if (.not.(allocated(package%library) .or. allocated(package%executable))) then
+    print '(a)', "Neither library nor executable found, there is nothing to do"
+    error stop 1
+end if
 
-    call build_package(model)
+linking = ""
+if (allocated(package%library)) then
+    call list_files(package%library%source_dir, files)
+    do i = 1, size(files)
+        if (str_ends_with(files(i)%s, ".f90")) then
+            n = len(files(i)%s)
+            basename = files(i)%s
+            call run("gfortran -c " // package%library%source_dir // "/" // &
+               & basename // " -o " // basename // ".o")
+            linking = linking // " " // basename // ".o"
+        end if
+    end do
+end if
 
+do i = 1, size(package%executable)
+    basename = package%executable(i)%main
+    call run("gfortran -c " // package%executable(i)%source_dir // "/" // &
+       & basename // " -o " // basename // ".o")
+    call run("gfortran " // basename // ".o " // linking // " -o " // &
+       & package%executable(i)%name)
+end do
 end subroutine
 
 subroutine cmd_install()

@@ -4,7 +4,7 @@ module fpm_model
 
 use fpm_command_line, only: fpm_build_settings
 use fpm_filesystem, only: exists
-use fpm_manifest, only: fpm_manifest_t
+use fpm_manifest, only: package_t
 use fpm_sources, only: resolve_dependencies, scan_sources, srcfile_t
 use fpm_strings, only: string_t
 
@@ -35,7 +35,7 @@ subroutine build_model(model, settings, manifest)
     !
     type(fpm_model_t), intent(out) :: model
     type(fpm_build_settings), intent(in) :: settings
-    type(fpm_manifest_t), intent(in) :: manifest
+    type(package_t), intent(in) :: manifest
 
     if (exists("src/fpm.f90")) then
         model%package_name = "fpm"

@@ -4,3 +4,13 @@ license = "MIT"
 author = "fpm maintainers"
 maintainer = ""
 copyright = "2020 fpm contributors"
+
+[dependencies]
+[dependencies.toml-f]
+git = "https://github.com/toml-f/toml-f"
+rev = "290ba87671ab593e7bd51599e1d80ea736b3cd36"
+
+[[test]]
+name = "fpm-test"
+source-dir = "test"
+main = "main.f90"
