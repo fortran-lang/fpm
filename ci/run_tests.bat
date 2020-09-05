@@ -9,6 +9,9 @@ if errorlevel 1 exit 1
 fpm run
 if errorlevel 1 exit 1
 
+fpm test
+if errorlevel 1 exit 1
+
 build\gfortran_debug\app\fpm
 if errorlevel 1 exit 1
 
