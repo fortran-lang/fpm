@@ -40,7 +40,6 @@ contains
 
         type(package_t) :: package
         character(len=*), parameter :: manifest = 'fpm-valid-manifest.toml'
-        character(len=:), allocatable :: string
         integer :: unit
 
         open(file=manifest, newunit=unit)
@@ -116,7 +115,6 @@ contains
 
         type(package_t) :: package
         character(len=*), parameter :: manifest = 'fpm-invalid-manifest.toml'
-        character(len=:), allocatable :: string
         integer :: unit
 
         open(file=manifest, newunit=unit)

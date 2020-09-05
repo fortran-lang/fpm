@@ -33,7 +33,6 @@ contains
 
         type(toml_table), allocatable :: table
         character(len=*), parameter :: manifest = 'fpm-valid-toml.toml'
-        character(len=:), allocatable :: string
         integer :: unit
 
         open(file=manifest, newunit=unit)
@@ -72,7 +71,6 @@ contains
 
         type(toml_table), allocatable :: table
         character(len=*), parameter :: manifest = 'fpm-invalid-toml.toml'
-        character(len=:), allocatable :: string
         integer :: unit
 
         open(file=manifest, newunit=unit)
@@ -100,8 +98,6 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table), allocatable :: table
-        character(len=:), allocatable :: string
-        integer :: unit
 
         call read_package_file(table, 'low+chance+of+existing.toml', error)
 
