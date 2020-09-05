@@ -54,7 +54,7 @@ the scope of the project, or if it has already been discussed.
 It's up to you to provide a strong argument to convince the community of the
 benefits of this feature.
 Please provide as much detail and context as possible.
-If possible, include a mocked-up snippet of what the output or behavior would
+If applicable, include a mocked-up snippet of what the output or behavior would
 look like with this feature implemented.
 "Crazy", out-of-the-box ideas are especially welcome.
 It's quite possible that we're not considering an unusually creative solution.
@@ -63,7 +63,7 @@ It's quite possible that we're not considering an unusually creative solution.
 
 fpm is a community project.
 There is no one single person making final decisions.
-This the workflow that we follow:
+This is the workflow that we follow:
 
 1. Open a [new issue](https://github.com/fortran-lang/fpm/issues/new) to
    describe a bug or propose a new feature.
