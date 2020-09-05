@@ -54,7 +54,7 @@ subroutine build_package(model)
 
             call run("gfortran " // model%output_directory // '/' // basename // ".o "// &
                      linking //" " //model%link_flags // " -o " // model%output_directory &
-                       // '/' // model%package_name)
+                       // '/' // model%sources(i)%exe_name)
 
         end if
 

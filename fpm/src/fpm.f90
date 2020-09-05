@@ -20,6 +20,7 @@ contains
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
 type(package_t) :: package
+type(fpm_model_t) :: model
 type(error_t), allocatable :: error
 type(string_t), allocatable :: files(:)
 character(:), allocatable :: basename, linking
@@ -46,27 +47,10 @@ if (.not.(allocated(package%library) .or. allocated(package%executable))) then
     error stop 1
 end if
 
-linking = ""
-if (allocated(package%library)) then
-    call list_files(package%library%source_dir, files)
-    do i = 1, size(files)
-        if (str_ends_with(files(i)%s, ".f90")) then
-            n = len(files(i)%s)
-            basename = files(i)%s
-            call run("gfortran -c " // package%library%source_dir // "/" // &
-               & basename // " -o " // basename // ".o")
-            linking = linking // " " // basename // ".o"
-        end if
-    end do
-end if
+call build_model(model, settings, package)
 
-do i = 1, size(package%executable)
-    basename = package%executable(i)%main
-    call run("gfortran -c " // package%executable(i)%source_dir // "/" // &
-       & basename // " -o " // basename // ".o")
-    call run("gfortran " // basename // ".o " // linking // " -o " // &
-       & package%executable(i)%name)
-end do
+call build_package(model)
+
 end subroutine
 
 subroutine cmd_install()
