@@ -1,68 +1,115 @@
 # Contributing to the Fortran Package Manager
 
-First off, thank you for considering contributing to the Fortran Package Manager (fpm).
-Please take a moment to review this guidelines to make the contribution process simple and effective for all involved.
+Thank you for considering contributing to the Fortran Package Manager (fpm).
+Please review and follow these guidelines to make the contribution process
+simple and effective for all involved.
+It will help communicate that you respect the time of the community
+developers.
+In return, the community will help address your problem, evaluate changes, and
+guide you through your pull requests.
 
-Respecting these guidelines helps communicate that you respect the time of the developers who manage and develop this open source project.
-In return, they should return this respect by addressing your problem, evaluating changes, and helping you handle your pull requests.
+* [Style](#style)
+* [Reporting a bug](#reporting-a-bug)
+* [Suggesting a feature](#suggesting-a-feature)
+* [Workflow](#workflow)
+* [General guidelines](#general-guidelines)
+* [For new contributors](#for-new-contributors)
 
-We encourage and enforce high quality code.
-Generally, follow the
-[style guide of the Fortran stdlib](https://github.com/fortran-lang/stdlib/blob/master/STYLE_GUIDE.md)
-for any contributed Fortran code.
-This allows code review discussions to focus on semantics and substance rather than pedantry.
+## Style
 
+We require high-quality code.
+Please follow the
+[Fortran stdlib style guide](https://github.com/fortran-lang/stdlib/blob/master/STYLE_GUIDE.md)
+for any Fortran code that you contribute.
+This allows us to focus on substance rather than style.
 
-## Reporting a Bug
+## Reporting a bug
 
-A bug is a _demonstratable problem_ caused by the code in this repository.
-Good bug reports are extremely valuable for us - thank you!
+A bug is a _demonstrable problem_ caused by the code in this repository.
+Good bug reports are extremely valuable to us—thank you!
 
 Before opening a bug report:
 
 1. Check if the issue has already been reported.
-2. Check if it still is an issue or has already been fixed?
-   Try to reproduce it with the latest version from the default branch.
-3. Isolate the problem and create a reduced test case.
+   ([issues](https://github.com/fortran-lang/fpm/issues))
+2. Check if it's still an issue or it has been fixed?
+   Try to reproduce it with the latest version from the master branch.
+3. Isolate the problem and create a minimal test case.
 
-A good bug report should not leave others needing to chase you up for more information.
-So please try to be as detailed as possible in your report, answer at least these questions:
+A good bug report should include all information needed to reproduce the bug.
+Please be as detailed as possible:
 
-1. Which version of fpm are you using?
-   The current version is always a subject to change, so be more specific.
-2. What steps will reproduce the issue?
-   We have to reproduce the issue, so we need all the input files.
-3. What would be the expected outcome?
-4. What did you see instead?
+1. Which version of fpm are you using? Please be specific.
+2. What are the steps to reproduce the issue?
+3. What is the expected outcome?
+4. What happens instead?
 
-All these details will help people to fix any potential bugs.
+This information will help the community diagnose the issue quickly and with
+minimal back-and-forth.
 
+## Suggesting a feature
 
-## Suggesting a New Feature
-
-Feature requests are welcome.
-But take a moment to find out if your idea fits the scope and goals of the project.
-It is up to you to provide a strong argument to convince the project's developers of the benefits of this feature.
+Before suggesting a new feature, take a moment to find out if it fits
+the scope of the project, or if it has already been discussed.
+It's up to you to provide a strong argument to convince the community of the
+benefits of this feature.
 Please provide as much detail and context as possible.
+If possible, include a mocked-up snippet of what the output or behavior would
+look like with this feature implemented.
+"Crazy", out-of-the-box ideas are especially welcome.
+It's quite possible that we're not considering an unusually creative solution.
 
+## Workflow
 
-## Implementing a New Feature
+fpm is a community project.
+There is no one single person making final decisions.
+This the workflow that we follow:
 
-Contributions are welcome via GitHub pull requests.
-But suggest a new feature in an issue first to discuss the scope of the necessary changes or the required functionality before submitting a pull request.
-You can always choose from one of the
-[existing issues](https://github.com/fortran-lang/fpm/issues).
+1. Open a [new issue](https://github.com/fortran-lang/fpm/issues/new) to
+   describe a bug or propose a new feature.
+   Refer to the earlier sections on how to write a good bug report or feature
+   request.
+2. Discuss with the community and reach majority consensus about what should be
+   done about the bug or feature request.
+   We define "majority" loosely as 80%.
+   This means that at least 4 of 5 people engaged in the discussion should be
+   able to agree on the next step.
+   This allows us to have the community mostly agree while not getting stuck if
+   one person disagrees.
+   At this stage, the scope of the fix/feature, its behavior, and API if
+   applicable should be defined.
+   Only when you have community concensus on these items you should proceed
+   to step 3.
+3. Open a new Pull Request (PR) with your contribution.
+   The body of the PR should at least include a bullet-point summary of the
+   changes, and a detailed description is encouraged.
+   If the PR completely addresses the issue you opened in step 1, include in
+   the PR description the following line: `Fixes #<issue-number>`.
+4. Request reviewers to your PR.
+   For small bug fixes or documentation improvements, 1 to 2 reviewers is
+   sufficient.
+   For implementation of bigger features, request 3 to 4 or more reviewers.
+   Ideally, request reviewers that participated in step 2.
+5. If your PR implements a feature that adds or changes the behavior of fpm,
+   your PR must also include appropriate changes to the documentation.
 
-- Each pull request should implement _one_ feature or fix _one_ bug.
-  If you want to add or fix more than one thing, submit more than one pull request.
-- Do not commit changes to files that are irrelevant to your feature or bugfix (_e.g._ `.gitignore`).
-- Add tests for your new features or fixed bugs such that we can ensure that they stay functional and useful
-- Be willing to accept criticism and work on improving your code.
-  Have one to three maintainers review your contribution.
-- Generally, follow the [style guide of the Fortran stdlib](https://github.com/fortran-lang/stdlib/blob/master/STYLE_GUIDE.md) for any contributed Fortran code.
+This workflow can evolve and change over time as we learn how best to work
+together.
+If you have an idea on how to improve the workflow itself, please open an issue
+and we'll discuss it.
 
+## General guidelines
 
-### For New Contributors
+* A PR should implement _only one_ feature or bug fix.
+* Do not commit changes to files that are irrelevant to your feature or bug fix.
+* Smaller PRs are better than large PRs, and will lead to a shorter review and
+  merge cycle
+* Add tests for your feature or bug fix to be sure that it stays functional and useful
+* Be open to constructive criticism and requests for improving your code.
+* Again, please follow the
+  [Fortran stdlib style guide](https://github.com/fortran-lang/stdlib/blob/master/STYLE_GUIDE.md).
+
+## For New Contributors
 
 If you never created a pull request before, welcome :tada:.
 You can learn how from
