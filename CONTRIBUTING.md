@@ -8,6 +8,10 @@ developers.
 In return, the community will help address your problem, evaluate changes, and
 guide you through your pull requests.
 
+By contributing to fpm, you certify that you own or are allowed to share the
+content of your contribution under the
+[fpm license](https://github.com/fortran-lang/fpm/blob/master/LICENSE).
+
 * [Style](#style)
 * [Reporting a bug](#reporting-a-bug)
 * [Suggesting a feature](#suggesting-a-feature)
