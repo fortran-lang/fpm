@@ -236,7 +236,7 @@ function parse_f_source(f_filename) result(f_source)
                 if (index(file_lines(i)%s,'::') > 0) then
 
                     call split(file_lines(i)%s,line_parts,delimiters=':')
-                    temp_string = line_parts(2)
+                    temp_string = trim(line_parts(2))
                     call split(temp_string,line_parts,delimiters=' ,')
                     mod_name = trim(lower(line_parts(1)))
 
@@ -273,7 +273,7 @@ function parse_f_source(f_filename) result(f_source)
 
                 if (pass == 2) then
                     call split(file_lines(i)%s,line_parts,delimiters="'"//'"')
-                    f_source%include_dependencies(n_include)%s = line_parts(2)
+                    f_source%include_dependencies(n_include)%s = trim(line_parts(2))
                 end if
 
             end if
@@ -322,11 +322,9 @@ function parse_f_source(f_filename) result(f_source)
 
             end if
 
-            ! Extract name of program if is program
+            ! Detect if is program
             if (f_source%unit_type == FPM_UNIT_UNKNOWN .and. &
                 index(adjustl(lower(file_lines(i)%s)),'program') == 1) then
-
-                call split(file_lines(i)%s,line_parts,delimiters=' ')
 
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
@@ -433,7 +431,7 @@ function parse_c_source(c_filename) result(c_source)
 
                 if (pass == 2) then
                     call split(file_lines(i)%s,line_parts,delimiters='"')
-                    c_source%include_dependencies(n_include)%s = line_parts(2)
+                    c_source%include_dependencies(n_include)%s = trim(line_parts(2))
                 end if
 
             end if
