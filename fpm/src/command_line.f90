@@ -120,15 +120,15 @@ contains
           &  '   COMMAND  Valid fpm commands are:                                             ', &
           &  '            build             Compile the current package                       ', &
           &  '            install           Install a Fortran binary or library               ', &
-          &  '            uninstall         Uninstall a Fortran binary or library             ', &
+!          &  '            uninstall         Uninstall a Fortran binary or library             ', &
           &  '            new NAME [--with-executable] [--with-test] Create a new             ', &
           &  '                              Fortran package directory with sample files       ', &
           &  '            run [NAME(s)]     Run the local package binaries. defaults          ', &
           &  '                              to all binaries for that releases.                ', &
           &  '            test [NAME(s)]    Run the tests                                     ', &
-          &  '            search [NAME(s)]  search for registered packages to add as          ', &
-          &  '                              dependencies.                                     ', &
-          &  '            list              list project files and dependencies               ', &
+!          &  '            search [NAME(s)]  search for registered packages to add as          ', &
+!          &  '                              dependencies.                                     ', &
+!          &  '            list              list project files and dependencies               ', &
           &  '   --release                  Build in release mode (versus debug mode)         ', &
           &  '                              fpm(1) Defaults to using common compiler          ', &
           &  '                              debug flags and building in                       ', &
@@ -141,7 +141,7 @@ contains
           &  '   --version                  Show version information and exit                 ', &
           &  'EXAMPLES                                                                        ', &
           &  '    fpm build                                                                   ', &
-          &  '    fpm new mypackage                                                           ', &
+          &  '    fpm new mypackage --with-executable                                         ', &
           &  '']
    
          call set_args('--release F --args "" ',help_text,version_text)

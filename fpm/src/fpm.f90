@@ -110,7 +110,7 @@ type(package_t) :: package
 type(error_t), allocatable  :: error
 type(string_t), allocatable :: files(:)
 character(:), allocatable   :: basename, linking
-integer                     :: i, n
+integer                     :: i, n, ilen
 logical                     :: release
 character(:), allocatable   :: release_name, options 
 character(:), allocatable   :: builddir, cmd, inc, appdir
@@ -142,6 +142,11 @@ character(len=1),save       :: sep='/'
              & -fbacktrace '
   endif
 
+  select case (get_os_type())
+    case  (OS_LINUX);    sep='/'
+    case  (OS_MACOS);    sep='/'
+    case  (OS_WINDOWS);  sep='\'
+  end select
 
 call get_package_data(package, "fpm.toml", error)
 if (allocated(error)) then
@@ -180,8 +185,10 @@ if (allocated(package%library)) then
         if (str_ends_with(files(i)%s, ".f90")) then
             n = len(files(i)%s)
             basename = files(i)%s
+            ilen=len_trim(basename)-4
+            basename = basename(:ilen)
             call run("gfortran -c " // inc // options // package%library%source_dir // "/" // &
-               & basename // " -o " // builddir // sep // basename // ".o")
+               & files(i)%s // " -o " // builddir // sep // basename // ".o")
             linking = linking // " " // builddir // sep // basename // ".o"
         endif
     enddo
@@ -191,16 +198,23 @@ if(size(files).ne.0)then
    call run('ar rv ' // builddir // '/lib' // package%name // ' ' // builddir // '/*.o')
 endif
 
-appdir= 'build/' // release_name // '/app/' // package%name
+appdir= 'build/' // release_name // '/app/'
+call ifmkdir(appdir)
+appdir= appdir // package%name
 call ifmkdir(appdir)
 do i = 1, size(package%executable)
     basename = package%executable(i)%main
-    call run("gfortran -c " // inc // options // package%executable(i)%source_dir // "/" // &
-       & basename // " -o " // appdir // sep // basename // ".o")
+    call run("gfortran -c " // inc // options // package%executable(i)%source_dir // "/" // basename &
+       & // " -o " // appdir // sep // basename // ".o")
     call run("gfortran " // inc // options // appdir // sep //basename // ".o " // linking // " -o " // &
        & appdir// sep //package%executable(i)%name)
 enddo
 end subroutine cmd_build
+!===================================================================================================================================
+
+  app2/main.f90 -o build/gfortran_debug/app/TEST/main.f90.o
+
+ + gfortran  -I build/gfortran_debug/TEST -J build/gfortran_debug/TEST   -mtune=generic  -Wall  -Wextra  -g  -Wimplicit-interface  -fPIC  -fmax-errors=1  -fbounds-check  -fcheck-array-temporaries -fbacktrace build/gfortran_debug/app/TEST/main.f90.o  build/gfortran_debug/TEST/TEST.o -o build/gfortran_debug/app/TEST/TEST
 !===================================================================================================================================
 !()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()!
 !===================================================================================================================================
@@ -227,6 +241,7 @@ character(len=:),allocatable :: message(:)
 character(len=:),allocatable :: littlefile(:)
 logical                      :: with_executable  ! command line keyword value set by get_args(3f)
 logical                      :: with_test        ! command line keyword value set by get_args(3f)
+character(len=1),save        :: sep='/'
    call get_args('with-executable',with_executable)                         ! get command line arguments
    call get_args('with-test',with_test)
    select case (get_os_type())
