@@ -5,7 +5,7 @@ implicit none
 
 private
 public :: basename, join_path, number_of_rows, read_lines, list_files,&
-           mkdir, exists, get_temp_filename
+           mkdir, exists, get_temp_filename, windows_path
 
 integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -119,8 +119,8 @@ subroutine mkdir(dir)
         call execute_command_line("mkdir -p " // dir , exitstat=stat)
         write(*,*) "mkdir -p " // dir
     case (OS_WINDOWS)
-        call execute_command_line("mkdir " // dir, exitstat=stat)
-        write(*,*) "mkdir " // dir
+        call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
+        write(*,*) "mkdir " // windows_path(dir)
     end select
     if (stat /= 0) then
         print *, "execute_command_line() failed"
@@ -153,7 +153,7 @@ subroutine list_files(dir, files)
             call execute_command_line("ls " // dir // " > "//temp_file, &
                                       exitstat=stat)
         case (OS_WINDOWS)
-            call execute_command_line("dir /b " // dir // " > "//temp_file, &
+            call execute_command_line("dir /b " // windows_path(dir) // " > "//temp_file, &
                                       exitstat=stat)
     end select
     if (stat /= 0) then
@@ -212,5 +212,19 @@ function get_temp_filename() result(tempfile)
 
 end function get_temp_filename
 
+
+function windows_path(path) result(winpath)
+    ! Replace file system separators for windows
+    !
+    character(*), intent(in) :: path
+    character(:), allocatable :: winpath
+    
+    winpath = path
+
+    do while(index(winpath,'/') > 0)
+        winpath(index(winpath,'/'):index(winpath,'/')) = '\'
+    end do
+    
+end function windows_path
 
 end module fpm_filesystem
