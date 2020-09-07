@@ -117,7 +117,7 @@ and we'll discuss it.
 
 ## For New Contributors
 
-If you never created a pull request before, welcome :tada:.
+If you have never created a pull request before, welcome :tada:.
 You can learn how from
 [this great tutorial](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
 
