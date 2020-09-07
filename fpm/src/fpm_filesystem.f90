@@ -30,10 +30,10 @@ function basename(path,suffix) result (base)
 
     if (with_suffix) then
         call split(path,file_parts,delimiters='\/')
-        base = file_parts(size(file_parts))
+        base = trim(file_parts(size(file_parts)))
     else
         call split(path,file_parts,delimiters='\/.')
-        base = file_parts(size(file_parts)-1)
+        base = trim(file_parts(size(file_parts)-1))
     end if    
 
 end function basename
