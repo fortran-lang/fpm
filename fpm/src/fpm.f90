@@ -3,15 +3,17 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
 use environment,  only : get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 use environment,  only : filewrite, system_getcwd, ifmkdir
 use M_CLI2,       only : get_args, words=>unnamed, remaining
-use fpm_manifest, only : get_package_data, default_executable, default_library, &
-    & package_t
-use fpm_error, only : error_t
+use environment,  only : system_mkdir, system_chdir, splitpath
+use fpm_manifest, only : get_package_data, default_executable, default_library, package_t
+use fpm_error,    only : error_t
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
 type string_t
     character(len=:), allocatable :: s
 end type
+
+logical,save :: debug_fpm=.false.
 
 contains
 !===================================================================================================================================
@@ -31,6 +33,17 @@ do
 enddo
 rewind(s)
 end function number_of_rows
+!===================================================================================================================================
+!()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()!
+!===================================================================================================================================
+function getsep()
+character(len=1) :: getsep
+  select case (get_os_type())
+    case  (OS_LINUX);    getsep='/'
+    case  (OS_MACOS);    getsep='/'
+    case  (OS_WINDOWS);  getsep='\'
+  end select
+end function getsep
 !===================================================================================================================================
 !()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()!
 !===================================================================================================================================
@@ -109,10 +122,10 @@ subroutine cmd_build()
 type(package_t) :: package
 type(error_t), allocatable  :: error
 type(string_t), allocatable :: files(:)
-character(:), allocatable   :: basename, linking
-integer                     :: i, n, ilen
+character(:), allocatable   :: basename, linking, main
+integer                     :: i
 logical                     :: release
-character(:), allocatable   :: release_name, options 
+character(:), allocatable   :: release_name, options
 character(:), allocatable   :: builddir, cmd, inc, appdir
 character(len=1),save       :: sep='/'
 
@@ -142,11 +155,7 @@ character(len=1),save       :: sep='/'
              & -fbacktrace '
   endif
 
-  select case (get_os_type())
-    case  (OS_LINUX);    sep='/'
-    case  (OS_MACOS);    sep='/'
-    case  (OS_WINDOWS);  sep='\'
-  end select
+  sep=getsep()
 
 call get_package_data(package, "fpm.toml", error)
 if (allocated(error)) then
@@ -183,10 +192,7 @@ if (allocated(package%library)) then
     call list_files(package%library%source_dir, files)
     do i = 1, size(files)
         if (str_ends_with(files(i)%s, ".f90")) then
-            n = len(files(i)%s)
-            basename = files(i)%s
-            ilen=len_trim(basename)-4
-            basename = basename(:ilen)
+            call splitpath(files(i)%s,basename=basename)
             call run("gfortran -c " // inc // options // package%library%source_dir // "/" // &
                & files(i)%s // " -o " // builddir // sep // basename // ".o")
             linking = linking // " " // builddir // sep // basename // ".o"
@@ -195,26 +201,21 @@ if (allocated(package%library)) then
 endif
 
 if(size(files).ne.0)then
-   call run('ar rv ' // builddir // '/lib' // package%name // ' ' // builddir // '/*.o')
+   call run('ar rv ' // builddir // '/lib' // package%name // '.a ' // builddir // '/*.o')
 endif
 
-appdir= 'build/' // release_name // '/app/'
-call ifmkdir(appdir)
-appdir= appdir // package%name
-call ifmkdir(appdir)
 do i = 1, size(package%executable)
-    basename = package%executable(i)%main
-    call run("gfortran -c " // inc // options // package%executable(i)%source_dir // "/" // basename &
+    call splitpath(package%executable(i)%main,basename=basename)
+    appdir= 'build/' // release_name // sep // package%executable(i)%source_dir
+    !! source_dir could be subdirectories, need recursive ifmkdir
+    call ifmkdir(appdir)
+    call run("gfortran -c " // inc // options // &
+       & package%executable(i)%source_dir // "/" // package%executable(i)%main &
        & // " -o " // appdir // sep // basename // ".o")
     call run("gfortran " // inc // options // appdir // sep //basename // ".o " // linking // " -o " // &
        & appdir// sep //package%executable(i)%name)
 enddo
 end subroutine cmd_build
-!===================================================================================================================================
-
-  app2/main.f90 -o build/gfortran_debug/app/TEST/main.f90.o
-
- + gfortran  -I build/gfortran_debug/TEST -J build/gfortran_debug/TEST   -mtune=generic  -Wall  -Wextra  -g  -Wimplicit-interface  -fPIC  -fmax-errors=1  -fbounds-check  -fcheck-array-temporaries -fbacktrace build/gfortran_debug/app/TEST/main.f90.o  build/gfortran_debug/TEST/TEST.o -o build/gfortran_debug/app/TEST/TEST
 !===================================================================================================================================
 !()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()!
 !===================================================================================================================================
@@ -227,7 +228,6 @@ end subroutine cmd_install
 !===================================================================================================================================
 subroutine cmd_new() ! --with-executable F --with-test F '
 use environment, only : system_perror
-use environment, only : system_mkdir, system_chdir, splitpath
 use environment, only : R_GRP,R_OTH,R_USR,RWX_G,RWX_O
 use environment, only : RWX_U,W_GRP,W_OTH,W_USR,X_GRP,X_OTH,X_USR
 !!type(package_t) :: package
@@ -244,11 +244,7 @@ logical                      :: with_test        ! command line keyword value se
 character(len=1),save        :: sep='/'
    call get_args('with-executable',with_executable)                         ! get command line arguments
    call get_args('with-test',with_test)
-   select case (get_os_type())
-    case  (OS_LINUX);    sep='/'
-    case  (OS_MACOS);    sep='/'
-    case  (OS_WINDOWS);  sep='\'
-   end select
+   sep=getsep()
    ! assume everything unclaimed by keywords on the command line are command arguments for new command
    if(size(words).ge.2.and.len(words).gt.0)then
       dirname=trim(words(2))
@@ -257,7 +253,7 @@ character(len=1),save        :: sep='/'
      write(stderr,'(a)') '      usage: fpm new DIRECTORY_NAME --with-executable --with-test'
      stop
    endif
-   if( system_mkdir(dirname, IANY([R_USR, W_USR, X_USR]) ) .ne. 0)then       ! make new directory 
+   if( system_mkdir(dirname, IANY([R_USR, W_USR, X_USR]) ) .ne. 0)then       ! make new directory
       call system_perror('fpm::new<WARNING>'//dirname)
       !!stop
    endif
@@ -363,7 +359,7 @@ character(len=1),save        :: sep='/'
    if(.not.exists(fname))then
       call filewrite(fname,data)
    else
-      write(*,'(*(g0,1x))')'fpm::new<WARNING>',fname,'already exists. Not overwriting'
+      write(stderr,'(*(g0,1x))')'fpm::new<WARNING>',fname,'already exists. Not overwriting'
    endif
    end subroutine warnwrite
 end subroutine cmd_new
@@ -371,25 +367,62 @@ end subroutine cmd_new
 !()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()!
 !===================================================================================================================================
 subroutine cmd_run()
-character(len=:),allocatable  :: release_name, args, cmd
+character(len=:),allocatable  :: release_name, args, cmd, fname
 logical                       :: release
-integer                       :: i
+integer                       :: i, j
 type(package_t)               :: package
 type(error_t), allocatable    :: error
+character(len=:),allocatable  :: newwords(:)
+character(len=1),save         :: sep='/'
+logical,allocatable           :: foundit(:)
+   sep=getsep()
    call get_package_data(package, "fpm.toml", error)
    if (allocated(error)) then
        print '(a)', error%message
        error stop 1
    endif
    call get_args('args',args)
-   args=args//remaining
+   if(args.ne.'')then
+      args=args//' '//remaining
+   else
+      args=remaining
+   endif
    call get_args('release',release)
    release_name=trim(merge('gfortran_release','gfortran_debug  ',release))
    if(size(words).eq.1)then
-      words=[character(len=max(len(words),len(package%name))) :: words,package%name]
+      !!words=[character(len=max(len(words),len(package%name))) :: words,package%name]
+      do i=1,size(package%executable)
+         fname='build' // sep // release_name // sep // package%executable(i)%source_dir // sep // package%executable(i)%name
+         words=[character(len=max(len(words),len(fname))) :: words,fname]
+      enddo
+   else
+      !! expand names somehow, duplicates are a problem??
+      newwords=['find']
+      allocate(foundit(size(words)))
+      foundit=.false.
+      FINDIT: do i=1,size(package%executable)
+         do j=2,size(words)
+            if(words(j).eq.package%executable(i)%name)then
+               fname='build' // sep // release_name // sep // package%executable(i)%source_dir // sep // package%executable(i)%name
+               newwords=[character(len=max(len(newwords),len(fname))) :: newwords,fname]
+               foundit(j)=.true.
+            endif
+         enddo
+      enddo FINDIT
+      do i=2,size(words)
+         if(.not.foundit(i))then
+            write(stderr,'(*(g0,1x))')'fpm::run<ERROR>:executable',words(i),'not located'
+            cycle
+         elseif(debug_fpm)then
+            write(stderr,'(*(g0,1x))')'fpm::run<INFO>:executable',words(i),'located at',newwords(i)
+         endif
+      enddo
+      words=newwords
+      if(allocated(foundit))deallocate(foundit)
+      deallocate(newwords)
    endif
    do i=2,size(words)
-      cmd='build/' // release_name // '/app/' // words(i)
+      cmd=words(i)
       if(exists(cmd))then
          call run(cmd//' '//args)
       else
@@ -397,7 +430,7 @@ type(error_t), allocatable    :: error
          if(exists(cmd))then
             call run(cmd//' '//args)
          else
-            write(*,*)'fpm::run<ERROR>',cmd,' not found'
+            write(stderr,*)'fpm::run<ERROR>',cmd,' not found'
          endif
       endif
    enddo
@@ -411,7 +444,11 @@ logical                      :: release
 character(len=:),allocatable :: args
 integer                      :: i
     call get_args('args',args)
-    args=args//remaining
+    if(args.ne.'')then
+       args=args//' '//remaining
+    else
+       args=remaining
+    endif
     call get_args('release',release)
     release_name=trim(merge('gfortran_release','gfortran_debug  ',release))
     write(*,*)'RELEASE_NAME=',release_name,' ARGS=',args

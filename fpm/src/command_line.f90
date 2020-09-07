@@ -57,7 +57,7 @@ contains
         '                                  ', &
         ' Usage: fpm run [NAME(s)] [--release] [--args ARGS|-- ARGS]]|[--help|--version|--usage]  ', &
         '' ]
-       call set_args('--args " " --release F ',help_text,version_text)
+       call set_args('--args " " --release F --',help_text,version_text)
        allocate(fpm_run_settings :: cmd_settings)
 !-----------------------------------------------------------------------------------------------------------------------------------
       case('build')
@@ -66,7 +66,7 @@ contains
         '                                   ', &
         ' Usage: fpm [--release] build |--help|--version|--usage ', &
         '' ]
-       call set_args(' -release F ',help_text,version_text)
+       call set_args(' -release F --',help_text,version_text)
        allocate(fpm_build_settings :: cmd_settings)
 !-----------------------------------------------------------------------------------------------------------------------------------
       case('new')
@@ -95,7 +95,7 @@ contains
         ' Usage:  fpm test [NAME(s)] [--release] [--args ARGS|-- ARGS]]|[--help|--version|--usage]  ', &
         ' ??? NOT IMPLEMENTED              ', &
         '' ]
-       call set_args('--args " " -release F ',help_text,version_text)
+       call set_args('--args " " -release F --',help_text,version_text)
        allocate(fpm_test_settings :: cmd_settings)
 !-----------------------------------------------------------------------------------------------------------------------------------
       case default
@@ -154,7 +154,7 @@ contains
          do i=1,size(help_text)
             write(stderr,'(g0)')trim(help_text(i))
          enddo
-         stop 1
+         stop
 !-----------------------------------------------------------------------------------------------------------------------------------
       end select
    end subroutine get_command_line_settings

@@ -449,6 +449,13 @@ character(len=len(path)+1)            :: path_local
 integer                               :: where
 integer                               :: i
 integer                               :: iend
+character(len=1),save                 :: sep='/'
+!===================================================================================================================================
+   select case (get_os_type())
+     case  (OS_LINUX);    sep='/'
+     case  (OS_MACOS);    sep='/'
+     case  (OS_WINDOWS);  sep='\'
+   end select
 !===================================================================================================================================
    path_local=path                           ! initialize variables
    dir_local=''
@@ -463,7 +470,7 @@ integer                               :: iend
       exit LOCAL
    endif
 !===================================================================================================================================
-   if(path_local(iend:iend).eq.'/')then      ! assume entire name is a directory if it ends in a slash
+   if(path_local(iend:iend).eq.sep)then      ! assume entire name is a directory if it ends in a slash
       if(iend.gt.1)then
          dir_local=path_local(:iend-1)
       else                                   ! if just a slash it means root directory so leave it as slash
@@ -473,7 +480,7 @@ integer                               :: iend
    endif
 !===================================================================================================================================
    TRIMSLASHES: do i=iend,1,-1               ! trim off trailing slashes even if duplicates
-      if(path_local(i:i).eq.'/')then
+      if(path_local(i:i).eq.sep)then
          path_local(i:i)=' '
          iend=i-1
       else
@@ -483,11 +490,11 @@ integer                               :: iend
    enddo TRIMSLASHES
 
    if(iend.eq.0)then                         ! path composed entirely of slashes.
-      dir_local='/'
+      dir_local=sep
       exit LOCAL
    endif
 !===================================================================================================================================
-   where=INDEX(path_local,'/',BACK=.true.)   ! find any right-most slash in remaining non-null name_local after trimming trailing slashes
+   where=INDEX(path_local,sep,BACK=.true.)   ! find any right-most slash in remaining non-null name_local after trimming trailing slashes
    if(where.le.0)then                        ! no slash in path so everything left is name_local
       name_local=path_local(:iend)                 ! this is name_local unless '.' or '..'
    else                                      ! last slash found
@@ -501,8 +508,8 @@ integer                               :: iend
       name_local=''
    case('.. ')
       if(dir_local.eq.'')then
-         if(path_local(1:1).eq.'/')then
-            dir_local='/'
+         if(path_local(1:1).eq.sep)then
+            dir_local=sep
          endif
       else
          dir_local=path_local
