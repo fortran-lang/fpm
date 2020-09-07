@@ -122,5 +122,5 @@ You can learn how from
 [this great tutorial](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
 
 Don't know where to start?
-You can start by looking through these
-[help-wanted issues](https://github.com/fortran-lang/fpm/issues?q=label%3A%22help+wanted%22+is%3Aissue+is%3Aopen).
+You can start by looking through the list of
+￼[open issues](https://github.com/fortran-lang/fpm/issues).
