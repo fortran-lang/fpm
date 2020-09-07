@@ -33,6 +33,7 @@ end if
 
 ! Populate library in case we find the default src directory
 if (.not.allocated(package%library) .and. exists("src")) then
+    allocate(package%library)
     call default_library(package%library)
 end if
 
