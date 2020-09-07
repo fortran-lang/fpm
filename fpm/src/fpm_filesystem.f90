@@ -4,8 +4,8 @@ use fpm_strings, only: f_string, string_t, split
 implicit none
 
 private
-public :: basename, number_of_rows, read_lines, list_files, mkdir, exists, &
-          get_temp_filename
+public :: basename, join_path, number_of_rows, read_lines, list_files,&
+           mkdir, exists, get_temp_filename
 
 integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -37,6 +37,45 @@ function basename(path,suffix) result (base)
     end if    
 
 end function basename
+
+
+function join_path(a1,a2,a3,a4,a5) result(path)
+    ! Construct path by joining strings with os file separator 
+    !
+    character(*), intent(in) :: a1, a2
+    character(*), intent(in), optional :: a3,a4,a5
+    character(:), allocatable :: path
+
+    character(1) :: filesep
+
+    select case (get_os_type())
+    case (OS_LINUX,OS_MACOS)
+        filesep = '/'
+    case (OS_WINDOWS)
+        filesep = '\'
+    end select
+
+    path = a1 // filesep // a2
+
+    if (present(a3)) then
+        path = path // filesep // a3
+    else
+        return
+    end if
+
+    if (present(a4)) then
+        path = path // filesep // a4
+    else
+        return
+    end if
+
+    if (present(a5)) then
+        path = path // filesep // a5
+    else
+        return
+    end if
+
+end function join_path
 
 
 integer function number_of_rows(s) result(nrows)

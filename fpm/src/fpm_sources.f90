@@ -35,6 +35,8 @@ type srcfile_t
         ! File path relative to cwd
     character(:), allocatable :: exe_name
         ! Name of executable for FPM_UNIT_PROGRAM
+    logical :: is_test = .false.
+        ! Is executable a test?
     type(string_t), allocatable :: modules_provided(:)
         ! Modules provided by this source file (lowerstring)
     integer :: unit_type = FPM_UNIT_UNKNOWN
@@ -112,12 +114,13 @@ subroutine add_sources_from_dir(sources,directory,with_executables)
 end subroutine add_sources_from_dir
 
 
-subroutine add_executable_sources(sources,executables)
+subroutine add_executable_sources(sources,executables,is_test)
     ! Add sources from executable directories specified in manifest
     ! Only allow executables that are explicitly specified in manifest
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     class(executable_t), intent(in), optional :: executables(:)
+    logical, intent(in) :: is_test
 
     integer :: i, j
 
@@ -144,6 +147,7 @@ subroutine add_executable_sources(sources,executables)
                                          executables(j)%main) then
                 exclude_source(i) = .false.
                 dir_sources(i)%exe_name = executables(j)%name
+                dir_sources(i)%is_test = is_test
                 exit
             end if
         end do
