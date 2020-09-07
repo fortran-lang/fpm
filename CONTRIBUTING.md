@@ -83,7 +83,10 @@ This is the workflow that we follow:
    At this stage, the scope of the fix/feature, its behavior, and API if
    applicable should be defined.
    Only when you have community concensus on these items you should proceed
-   to step 3.
+   to writing code and opening a PR.
+   __When actively working on code towards a PR, please assign yourself to the issue on github.__
+   This is good collaborative practice to avoid duplicated effort and also inform others what you 
+   are currently working on.
 3. Open a new Pull Request (PR) with your contribution.
    The body of the PR should at least include a bullet-point summary of the
    changes, and a detailed description is encouraged.
