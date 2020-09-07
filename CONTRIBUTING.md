@@ -21,7 +21,6 @@ content of your contribution under the
 
 ## Style
 
-We require high-quality code.
 Please follow the
 [Fortran stdlib style guide](https://github.com/fortran-lang/stdlib/blob/master/STYLE_GUIDE.md)
 for any Fortran code that you contribute.
