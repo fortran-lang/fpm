@@ -1,15 +1,43 @@
 module fpm_filesystem
 use fpm_environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_strings, only: f_string, string_t 
+use fpm_strings, only: f_string, string_t, split
 implicit none
 
 private
-public :: number_of_rows, read_lines, list_files, mkdir, exists, &
+public :: basename, number_of_rows, read_lines, list_files, mkdir, exists, &
           get_temp_filename
 
 integer, parameter :: LINE_BUFFER_LEN = 1000
 
 contains
+
+
+function basename(path,suffix) result (base)
+    ! Extract filename from path with/without suffix
+    !
+    character(*), intent(In) :: path
+    logical, intent(in), optional :: suffix
+    character(:), allocatable :: base
+
+    character(:), allocatable :: file_parts(:)
+    logical :: with_suffix
+
+    if (.not.present(suffix)) then
+        with_suffix = .true.
+    else
+        with_suffix = suffix
+    end if
+
+    if (with_suffix) then
+        call split(path,file_parts,delimiters='\/')
+        base = file_parts(size(file_parts))
+    else
+        call split(path,file_parts,delimiters='\/.')
+        base = file_parts(size(file_parts)-1)
+    end if    
+
+end function basename
+
 
 integer function number_of_rows(s) result(nrows)
     ! determine number or rows

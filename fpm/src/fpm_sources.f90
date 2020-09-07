@@ -1,5 +1,5 @@
 module fpm_sources
-use fpm_filesystem, only: read_lines, list_files
+use fpm_filesystem, only: basename, read_lines, list_files
 use fpm_strings, only: lower, split, str_ends_with, string_t
 use fpm_manifest_executable, only: executable_t
 implicit none
@@ -66,9 +66,6 @@ subroutine add_sources_from_dir(sources,directory,with_executables)
     type(string_t), allocatable :: src_file_names(:)
     type(srcfile_t), allocatable :: dir_sources(:)
 
-    character(:), allocatable :: basename
-    character(:), allocatable :: file_parts(:)
-
     ! Scan directory for sources
     call list_files(directory, file_names)
     file_names = [(string_t(directory//'/'//file_names(j)%s),j=1,size(file_names))]
@@ -99,10 +96,7 @@ subroutine add_sources_from_dir(sources,directory,with_executables)
             if (with_executables) then
 
                 exclude_source(i) = .false.
-                call split(src_file_names(i)%s,file_parts,delimiters='\/.')
-                basename = file_parts(size(file_parts)-1)
-
-                dir_sources(i)%exe_name = basename
+                dir_sources(i)%exe_name = basename(src_file_names(i)%s,suffix=.false.)
 
             end if
         end if
@@ -131,9 +125,6 @@ subroutine add_executable_sources(sources,executables)
     logical, allocatable :: exclude_source(:)
     type(srcfile_t), allocatable :: dir_sources(:)
 
-    character(:), allocatable :: basename
-    character(:), allocatable :: file_parts(:)
-
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
@@ -147,12 +138,10 @@ subroutine add_executable_sources(sources,executables)
 
         ! Only allow executables in 'executables' list
         exclude_source(i) = (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM)
-
-        call split(dir_sources(i)%file_name,file_parts,delimiters='\/')
-        basename = file_parts(size(file_parts))
         
         do j=1,size(executables)
-            if (executables(j)%main == basename) then
+            if (basename(dir_sources(i)%file_name,suffix=.true.) == &
+                                         executables(j)%main) then
                 exclude_source(i) = .false.
                 dir_sources(i)%exe_name = executables(j)%name
                 exit
