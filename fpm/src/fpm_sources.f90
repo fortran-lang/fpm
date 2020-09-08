@@ -122,7 +122,7 @@ subroutine add_executable_sources(sources,executables,is_test)
     ! Only allow executables that are explicitly specified in manifest
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
-    class(executable_t), intent(in), optional :: executables(:)
+    class(executable_t), intent(in) :: executables(:)
     logical, intent(in) :: is_test
 
     integer :: i, j
