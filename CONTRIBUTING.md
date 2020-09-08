@@ -54,7 +54,7 @@ minimal back-and-forth.
 
 Before suggesting a new feature, take a moment to find out if it fits
 the scope of the project, or if it has already been discussed.
-It's up to you to provide a strong argument to convince the community of the
+It is up to you to provide a strong argument to convince the community of the
 benefits of this feature.
 Please provide as much detail and context as possible.
 If applicable, include a mocked-up snippet of what the output or behavior would
