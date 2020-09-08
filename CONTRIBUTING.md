@@ -35,7 +35,7 @@ Before opening a bug report:
 
 1. Check if the issue has already been reported.
    ([issues](https://github.com/fortran-lang/fpm/issues))
-2. Check if it's still an issue or it has been fixed?
+2. Check if it is still an issue or it has been fixed?
    Try to reproduce it with the latest version from the master branch.
 3. Isolate the problem and create a minimal test case.
 
