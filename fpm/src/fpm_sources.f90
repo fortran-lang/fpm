@@ -21,7 +21,10 @@ integer, parameter :: FPM_UNIT_CHEADER = 6
 
 character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
                              ['iso_c_binding  ', &
-                              'iso_fortran_env']
+                              'iso_fortran_env', &
+                              'ieee_arithmetic', &
+                              'ieee_exceptions', &
+                              'ieee_features  ']
 
 type srcfile_ptr
     ! For constructing arrays of src_file pointers
