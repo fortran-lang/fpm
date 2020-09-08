@@ -22,9 +22,6 @@ type(fpm_build_settings), intent(in) :: settings
 type(package_t) :: package
 type(fpm_model_t) :: model
 type(error_t), allocatable :: error
-type(string_t), allocatable :: files(:)
-character(:), allocatable :: basename, linking
-integer :: i, n
 call get_package_data(package, "fpm.toml", error)
 if (allocated(error)) then
     print '(a)', error%message

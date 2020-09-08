@@ -1,6 +1,6 @@
 module fpm_sources
 use fpm_filesystem, only: basename, read_lines, list_files
-use fpm_strings, only: lower, split, str_ends_with, string_t
+use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.)
 use fpm_manifest_executable, only: executable_t
 implicit none
 
@@ -97,7 +97,7 @@ subroutine add_sources_from_dir(sources,directory,with_executables)
         ! Exclude executables unless specified otherwise
         exclude_source(i) = (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM)
         if (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM .and. &
-             present(with_executables)) then
+            & present(with_executables)) then
             if (with_executables) then
 
                 exclude_source(i) = .false.
@@ -174,12 +174,11 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
 
     type(string_t) :: dirs_temp(size(executables))
 
-    integer :: i, j, n
+    integer :: i, n
 
     n = 0
     do i=1,size(executables)
-        if (.not.any([(dirs_temp(j)%s==executables(i)%source_dir, &
-                j=1,n)])) then
+        if (.not.(executables(i)%source_dir .in. dirs_temp)) then
 
             n = n + 1
             dirs_temp(n)%s = executables(i)%source_dir

@@ -3,10 +3,15 @@ implicit none
 
 private
 public :: f_string, lower, split, str_ends_with, string_t
+public :: string_array_contains, operator(.in.)
 
 type string_t
     character(len=:), allocatable :: s
 end type
+
+interface operator(.in.)
+    module procedure string_array_contains
+end interface
 
 contains
 
@@ -74,6 +79,20 @@ elemental pure function lower(str,begin,end) result (string)
     end do
 
 end function lower
+
+
+logical function string_array_contains(search_string,array)
+    ! Check if array of string_t contains a particular string
+    !
+    character(*), intent(in) :: search_string
+    type(string_t), intent(in) :: array(:)
+
+    integer :: i
+
+    string_array_contains = any([(array(i)%s==search_string, &
+                                   i=1,size(array))])
+
+end function string_array_contains
 
 
 subroutine split(input_line,array,delimiters,order,nulls)

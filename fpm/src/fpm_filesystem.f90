@@ -218,11 +218,15 @@ function windows_path(path) result(winpath)
     !
     character(*), intent(in) :: path
     character(:), allocatable :: winpath
-    
+
+    integer :: idx
+
     winpath = path
 
-    do while(index(winpath,'/') > 0)
-        winpath(index(winpath,'/'):index(winpath,'/')) = '\'
+    idx = index(winpath,'/')
+    do while(idx > 0)
+        winpath(idx:idx) = '\'
+        idx = index(winpath,'/')
     end do
     
 end function windows_path
