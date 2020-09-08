@@ -60,7 +60,7 @@ Please provide as much detail and context as possible.
 If applicable, include a mocked-up snippet of what the output or behavior would
 look like with this feature implemented.
 "Crazy", out-of-the-box ideas are especially welcome.
-It's quite possible that we're not considering an unusually creative solution.
+It's quite possible that we are not considering an unusually creative solution.
 
 ## Workflow
 
