@@ -4,9 +4,9 @@ module fpm_backend
 
 use fpm_environment, only: run
 use fpm_filesystem, only: basename, join_path, exists, mkdir
-use fpm_model, only: fpm_model_t
-use fpm_sources, only: srcfile_t, FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, &
-                       FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, FPM_UNIT_PROGRAM
+use fpm_model, only: fpm_model_t, srcfile_t, FPM_UNIT_MODULE, &
+                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
+                     FPM_UNIT_CSOURCE, FPM_UNIT_PROGRAM
 use fpm_strings, only: split
 
 implicit none

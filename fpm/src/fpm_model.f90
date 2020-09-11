@@ -1,19 +1,51 @@
 module fpm_model
-
 ! Definition and validation of the backend model
-
-use fpm_command_line, only: fpm_build_settings
-use fpm_filesystem, only: exists, join_path
-use fpm_manifest, only: package_t, default_library, default_executable
-use fpm_manifest_executable, only: executable_t
-use fpm_sources, only: resolve_module_dependencies, add_sources_from_dir, &
-                       add_executable_sources, srcfile_t
 use fpm_strings, only: string_t
-
 implicit none
 
 private
-public :: build_model, fpm_model_t
+public :: srcfile_ptr, srcfile_t, fpm_model_t
+
+public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
+          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
+          FPM_UNIT_CHEADER
+
+integer, parameter :: FPM_UNIT_UNKNOWN = -1
+integer, parameter :: FPM_UNIT_PROGRAM = 1
+integer, parameter :: FPM_UNIT_MODULE = 2
+integer, parameter :: FPM_UNIT_SUBMODULE = 3
+integer, parameter :: FPM_UNIT_SUBPROGRAM = 4
+integer, parameter :: FPM_UNIT_CSOURCE = 5
+integer, parameter :: FPM_UNIT_CHEADER = 6
+
+type srcfile_ptr
+    ! For constructing arrays of src_file pointers
+    type(srcfile_t), pointer :: ptr => null()
+end type srcfile_ptr
+
+type srcfile_t
+    ! Type for encapsulating a source file 
+    !  and it's metadata
+    character(:), allocatable :: file_name
+        ! File path relative to cwd
+    character(:), allocatable :: exe_name
+        ! Name of executable for FPM_UNIT_PROGRAM
+    logical :: is_test = .false.
+        ! Is executable a test?
+    type(string_t), allocatable :: modules_provided(:)
+        ! Modules provided by this source file (lowerstring)
+    integer :: unit_type = FPM_UNIT_UNKNOWN
+        ! Type of program unit
+    type(string_t), allocatable :: modules_used(:)
+        ! Modules USEd by this source file (lowerstring)
+    type(string_t), allocatable :: include_dependencies(:)
+        ! Files INCLUDEd by this source file
+    type(srcfile_ptr), allocatable :: file_dependencies(:)
+        ! Resolved source file dependencies
+
+    logical :: built = .false.
+    logical :: touched = .false.
+end type srcfile_t
 
 type :: fpm_model_t
     character(:), allocatable :: package_name
@@ -29,40 +61,5 @@ type :: fpm_model_t
     character(:), allocatable :: output_directory
         ! Base directory for build
 end type fpm_model_t
-
-contains
-
-subroutine build_model(model, settings, package)
-    ! Constructs a valid fpm model from command line settings and toml manifest
-    !
-    type(fpm_model_t), intent(out) :: model
-    type(fpm_build_settings), intent(in) :: settings
-    type(package_t), intent(in) :: package
-
-    model%package_name = package%name
-
-    ! #TODO: Choose flags and output directory based on cli settings & manifest inputs
-    model%fortran_compiler = 'gfortran'
-    model%output_directory = 'build/gfortran_debug'
-    model%fortran_compile_flags = ' -Wall -Wextra -Wimplicit-interface  -fPIC -fmax-errors=1 -g '// &
-                                  '-fbounds-check -fcheck-array-temporaries -fbacktrace '// &
-                                  '-J'//join_path(model%output_directory,model%package_name)
-    model%link_flags = ''
-
-    ! Add sources from executable directories
-    if (allocated(package%executable)) then
-        call add_executable_sources(model%sources, package%executable,is_test=.false.)
-    end if
-    if (allocated(package%test)) then
-        call add_executable_sources(model%sources, package%test,is_test=.true.)
-    end if
-
-    if (allocated(package%library)) then
-        call add_sources_from_dir(model%sources,package%library%source_dir)
-    end if
-
-    call resolve_module_dependencies(model%sources)
-
-end subroutine build_model
 
 end module fpm_model
