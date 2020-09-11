@@ -1,28 +1,35 @@
-module command_line
-    use environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
+module fpm_command_line
+    use fpm_environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
 
     implicit none
+    
     private
+    public :: fpm_cmd_settings, &
+              fpm_build_settings, &
+              fpm_install_settings, &
+              fpm_new_settings, &
+              fpm_run_settings, &
+              fpm_test_settings, &
+              get_command_line_settings        
 
-    type, public, abstract :: fpm_cmd_settings
+    type, abstract :: fpm_cmd_settings
     end type
 
-    type, public, extends(fpm_cmd_settings) :: fpm_new_settings
+    type, extends(fpm_cmd_settings) :: fpm_new_settings
     end type
 
-    type, public, extends(fpm_cmd_settings) :: fpm_build_settings
+    type, extends(fpm_cmd_settings) :: fpm_build_settings
     end type
 
-    type, public, extends(fpm_cmd_settings) :: fpm_run_settings
+    type, extends(fpm_cmd_settings) :: fpm_run_settings
     end type
 
-    type, public, extends(fpm_cmd_settings) :: fpm_test_settings
+    type, extends(fpm_cmd_settings) :: fpm_test_settings
     end type
 
-    type, public, extends(fpm_cmd_settings) :: fpm_install_settings
+    type, extends(fpm_cmd_settings) :: fpm_install_settings
     end type
 
-    public :: get_command_line_settings
 contains
     subroutine get_command_line_settings(cmd_settings)
         class(fpm_cmd_settings), allocatable, intent(out) :: cmd_settings
@@ -75,4 +82,4 @@ contains
         print *, "    run      Run a binary of the local package (not implemented)"
         print *, "    test     Run the tests (not implemented)"
     end subroutine
-end module command_line
+end module fpm_command_line

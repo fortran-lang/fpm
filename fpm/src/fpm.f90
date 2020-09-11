@@ -1,99 +1,61 @@
 module fpm
-use environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_manifest, only : get_package_data, default_executable, default_library, &
-    & package_t
+
+use fpm_strings, only: string_t, str_ends_with
+use fpm_backend, only: build_package
+use fpm_command_line, only: fpm_build_settings
+use fpm_environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
+use fpm_filesystem, only: join_path, number_of_rows, list_files, exists
+use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t
+use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
+                       resolve_module_dependencies
+use fpm_manifest, only : get_package_data, default_executable, &
+                         default_library, package_t
 use fpm_error, only : error_t
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
 
-type string_t
-    character(len=:), allocatable :: s
-end type
 
 contains
 
-integer function number_of_rows(s) result(nrows)
-! determine number or rows
-integer,intent(in)::s
-integer :: ios
-character(len=100) :: r
-rewind(s)
-nrows = 0
-do
-    read(s, *, iostat=ios) r
-    if (ios /= 0) exit
-    nrows = nrows + 1
-end do
-rewind(s)
-end function
+subroutine build_model(model, settings, package)
+    ! Constructs a valid fpm model from command line settings and toml manifest
+    !
+    type(fpm_model_t), intent(out) :: model
+    type(fpm_build_settings), intent(in) :: settings
+    type(package_t), intent(in) :: package
 
+    model%package_name = package%name
 
-subroutine list_files(dir, files)
-character(len=*), intent(in) :: dir
-type(string_t), allocatable, intent(out) :: files(:)
-character(len=100) :: filename
-integer :: stat, u, i
-! Using `inquire` / exists on directories works with gfortran, but not ifort
-if (.not. exists(dir)) then
-    allocate(files(0))
-    return
-end if
-select case (get_os_type())
-    case (OS_LINUX)
-        call execute_command_line("ls " // dir // " > fpm_ls.out", exitstat=stat)
-    case (OS_MACOS)
-        call execute_command_line("ls " // dir // " > fpm_ls.out", exitstat=stat)
-    case (OS_WINDOWS)
-        call execute_command_line("dir /b " // dir // " > fpm_ls.out", exitstat=stat)
-end select
-if (stat /= 0) then
-    print *, "execute_command_line() failed"
-    error stop
-end if
-open(newunit=u, file="fpm_ls.out", status="old")
-allocate(files(number_of_rows(u)))
-do i = 1, size(files)
-    read(u, *) filename
-    files(i)%s = trim(filename)
-end do
-close(u)
-end subroutine
+    ! #TODO: Choose flags and output directory based on cli settings & manifest inputs
+    model%fortran_compiler = 'gfortran'
+    model%output_directory = 'build/gfortran_debug'
+    model%fortran_compile_flags = ' -Wall -Wextra -Wimplicit-interface  -fPIC -fmax-errors=1 -g '// &
+                                  '-fbounds-check -fcheck-array-temporaries -fbacktrace '// &
+                                  '-J'//join_path(model%output_directory,model%package_name)
+    model%link_flags = ''
 
-subroutine run(cmd)
-character(len=*), intent(in) :: cmd
-integer :: stat
-print *, "+ ", cmd
-call execute_command_line(cmd, exitstat=stat)
-if (stat /= 0) then
-    print *, "Command failed"
-    error stop
-end if
-end subroutine
+    ! Add sources from executable directories
+    if (allocated(package%executable)) then
+        call add_executable_sources(model%sources, package%executable,is_test=.false.)
+    end if
+    if (allocated(package%test)) then
+        call add_executable_sources(model%sources, package%test,is_test=.true.)
+    end if
 
-logical function exists(filename) result(r)
-character(len=*), intent(in) :: filename
-inquire(file=filename, exist=r)
-end function
+    if (allocated(package%library)) then
+        call add_sources_from_dir(model%sources,package%library%source_dir)
+    end if
 
-logical function str_ends_with(s, e) result(r)
-character(*), intent(in) :: s, e
-integer :: n1, n2
-n1 = len(s)-len(e)+1
-n2 = len(s)
-if (n1 < 1) then
-    r = .false.
-else
-    r = (s(n1:n2) == e)
-end if
-end function
+    call resolve_module_dependencies(model%sources)
 
-subroutine cmd_build()
+end subroutine build_model
+
+subroutine cmd_build(settings)
+type(fpm_build_settings), intent(in) :: settings
 type(package_t) :: package
+type(fpm_model_t) :: model
 type(error_t), allocatable :: error
-type(string_t), allocatable :: files(:)
-character(:), allocatable :: basename, linking
-integer :: i, n
 call get_package_data(package, "fpm.toml", error)
 if (allocated(error)) then
     print '(a)', error%message
@@ -102,6 +64,7 @@ end if
 
 ! Populate library in case we find the default src directory
 if (.not.allocated(package%library) .and. exists("src")) then
+    allocate(package%library)
     call default_library(package%library)
 end if
 
@@ -116,27 +79,10 @@ if (.not.(allocated(package%library) .or. allocated(package%executable))) then
     error stop 1
 end if
 
-linking = ""
-if (allocated(package%library)) then
-    call list_files(package%library%source_dir, files)
-    do i = 1, size(files)
-        if (str_ends_with(files(i)%s, ".f90")) then
-            n = len(files(i)%s)
-            basename = files(i)%s
-            call run("gfortran -c " // package%library%source_dir // "/" // &
-               & basename // " -o " // basename // ".o")
-            linking = linking // " " // basename // ".o"
-        end if
-    end do
-end if
+call build_model(model, settings, package)
 
-do i = 1, size(package%executable)
-    basename = package%executable(i)%main
-    call run("gfortran -c " // package%executable(i)%source_dir // "/" // &
-       & basename // " -o " // basename // ".o")
-    call run("gfortran " // basename // ".o " // linking // " -o " // &
-       & package%executable(i)%name)
-end do
+call build_package(model)
+
 end subroutine
 
 subroutine cmd_install()

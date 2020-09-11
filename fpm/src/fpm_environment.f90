@@ -1,12 +1,13 @@
-module environment
+module fpm_environment
     implicit none
     private
+    public :: get_os_type, run
+    public :: OS_LINUX, OS_MACOS, OS_WINDOWS
 
-    integer, parameter, public :: OS_LINUX = 1
-    integer, parameter, public :: OS_MACOS = 2
-    integer, parameter, public :: OS_WINDOWS = 3
+    integer, parameter :: OS_LINUX = 1
+    integer, parameter :: OS_MACOS = 2
+    integer, parameter :: OS_WINDOWS = 3
 
-    public :: get_os_type
 contains
     integer function get_os_type() result(r)
     ! Determine the OS type
@@ -51,4 +52,16 @@ contains
         r = OS_LINUX
     end if
     end function
-end module
+
+    subroutine run(cmd)
+        character(len=*), intent(in) :: cmd
+        integer :: stat
+        print *, "+ ", cmd
+        call execute_command_line(cmd, exitstat=stat)
+        if (stat /= 0) then
+            print *, "Command failed"
+            error stop
+        end if
+    end subroutine run
+
+end module fpm_environment
