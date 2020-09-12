@@ -1,6 +1,8 @@
-module environment
+module fpm_environment
     implicit none
     private
+    public :: get_os_type
+    public :: run
 
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
@@ -9,8 +11,6 @@ module environment
     integer, parameter, public :: OS_CYGWIN  = 4
     integer, parameter, public :: OS_SOLARIS = 5
     integer, parameter, public :: OS_FREEBSD = 6
-
-    public :: get_os_type
 contains
     integer function get_os_type() result(r)
         !! Determine the OS type
@@ -20,7 +20,7 @@ contains
         !!
         !! At first, the environment variable `OS` is checked, which is usually
         !! found on Windows. Then, `OSTYPE` is read in and compared with common
-        !! names. If this fails too, check the existance of files that can be
+        !! names. If this fails too, check the existence of files that can be
         !! found on specific system types only.
         !!
         !! Returns OS_UNKNOWN if the operating system cannot be determined.
@@ -103,4 +103,15 @@ contains
             return
         end if
     end function get_os_type
-end module environment
+
+    subroutine run(cmd)
+        character(len=*), intent(in) :: cmd
+        integer :: stat
+        print *, '+ ', cmd
+        call execute_command_line(cmd, exitstat=stat)
+        if (stat /= 0) then
+            print *, 'Command failed'
+            error stop
+        end if
+    end subroutine run
+end module fpm_environment
