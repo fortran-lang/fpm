@@ -22,13 +22,13 @@ character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
 
 contains
 
-subroutine add_sources_from_dir(sources,directory,with_executables)
+subroutine add_sources_from_dir(sources,directory,with_executables,error)
     ! Enumerate sources in a directory
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     character(*), intent(in) :: directory
     logical, intent(in), optional :: with_executables
-    type(error_t), allocatable :: error
+    type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
     logical, allocatable :: is_source(:), exclude_source(:)
@@ -51,12 +51,24 @@ subroutine add_sources_from_dir(sources,directory,with_executables)
     do i = 1, size(src_file_names)
 
         if (str_ends_with(lower(src_file_names(i)%s), ".f90")) then
+
             dir_sources(i) = parse_f_source(src_file_names(i)%s, error)
+
+            if (allocated(error)) then
+                return
+            end if
+
         end if
 
         if (str_ends_with(lower(src_file_names(i)%s), ".c") .or. &
             str_ends_with(lower(src_file_names(i)%s), ".h")) then
+
             dir_sources(i) = parse_c_source(src_file_names(i)%s,error)
+
+            if (allocated(error)) then
+                return
+            end if
+
         end if
 
         ! Exclude executables unless specified otherwise
@@ -82,13 +94,14 @@ subroutine add_sources_from_dir(sources,directory,with_executables)
 end subroutine add_sources_from_dir
 
 
-subroutine add_executable_sources(sources,executables,is_test)
+subroutine add_executable_sources(sources,executables,is_test,error)
     ! Add sources from executable directories specified in manifest
     ! Only allow executables that are explicitly specified in manifest
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     class(executable_t), intent(in) :: executables(:)
     logical, intent(in) :: is_test
+    type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
 
@@ -99,8 +112,14 @@ subroutine add_executable_sources(sources,executables,is_test)
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
+
         call add_sources_from_dir(dir_sources,exe_dirs(i)%s, &
-                     with_executables=.true.)
+                     with_executables=.true.,error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
     end do
 
     allocate(exclude_source(size(dir_sources)))
