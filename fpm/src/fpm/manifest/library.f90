@@ -77,7 +77,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in package file")
+                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
                 exit
 
             case("source-dir", "build-script")

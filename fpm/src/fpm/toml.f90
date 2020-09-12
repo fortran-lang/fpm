@@ -14,14 +14,14 @@
 module fpm_toml
     use fpm_error, only : error_t, fatal_error, file_not_found_error
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
-        & toml_parse, toml_error
-    use tomlf_type, only : new_table, len
+        & set_value, toml_parse, toml_error
+    use tomlf_type, only : new_table, add_table, add_array, len
     implicit none
     private
 
     public :: read_package_file
-    public :: toml_table, toml_array, toml_key, toml_stat, get_value
-    public :: new_table, len
+    public :: toml_table, toml_array, toml_key, toml_stat, get_value, set_value
+    public :: new_table, add_table, add_array, len
 
 
 contains
