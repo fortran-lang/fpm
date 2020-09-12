@@ -19,6 +19,21 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         gcc_v: [9] # Version of GFortran we want to use.
+        include:
+        - os: ubuntu-latest
+          STACK_CACHE: "/home/runner/.stack/"
+          STACK_CACHE_VERSION: ""
+        - os: macos-latest
+          STACK_CACHE: |
+           /Users/runner/.stack/snapshots
+           /Users/runner/.stack/setup-exe-src
+          STACK_CACHE_VERSION: "v2"
+        - os: windows-latest
+          STACK_CACHE: |
+           C:\Users\runneradmin\AppData\Roaming\stack
+           C:\Users\runneradmin\AppData\Local\Programs\stack
+          STACK_CACHE_VERSION: "v2"
+
     env:
       FC: gfortran
       GCC_V: ${{ matrix.gcc_v }}
@@ -60,6 +75,19 @@ jobs:
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
         --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
+
+    - name: Get Time
+      id: time
+      uses: nanzm/get-time-action@v1.0
+      with:
+        format: 'YYYY-MM'
+          
+    - name: Setup github actions cache
+      id: cache
+      uses: actions/cache@v2
+      with:
+        path: ${{matrix.STACK_CACHE}}
+        key: ${{ runner.os }}-${{ steps.time.outputs.time }}${{matrix.STACK_CACHE_VERSION}}
 
     - name: Build Haskell fpm
       run: |
