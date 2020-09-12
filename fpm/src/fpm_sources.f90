@@ -224,15 +224,17 @@ function parse_f_source(f_filename,error) result(f_source)
 
                     temp_string = split_n(file_lines(i)%s,delims=':',n=2,stat=stat)
                     if (stat /= 0) then
-                        call file_parse_error(error,f_filename,i, &
-                                message='unable to find used module name')
+                        call file_parse_error(error,f_filename, &
+                                'unable to find used module name',i, &
+                                file_lines(i)%s,index(file_lines(i)%s,'::'))
                         return
                     end if
 
                     mod_name = split_n(temp_string,delims=' ,',n=1,stat=stat)
                     if (stat /= 0) then
-                        call file_parse_error(error,f_filename,i, &
-                                 message='unable to find used module name')
+                        call file_parse_error(error,f_filename, &
+                                 'unable to find used module name',i, &
+                                 file_lines(i)%s)
                         return
                     end if
                     mod_name = lower(mod_name)
@@ -241,8 +243,9 @@ function parse_f_source(f_filename,error) result(f_source)
 
                     mod_name = split_n(file_lines(i)%s,n=2,delims=' ,',stat=stat)
                     if (stat /= 0) then
-                        call file_parse_error(error,f_filename,i, &
-                                message='unable to find used module name')
+                        call file_parse_error(error,f_filename, &
+                                'unable to find used module name',i, &
+                                file_lines(i)%s)
                         return
                     end if
                     mod_name = lower(mod_name)
@@ -277,8 +280,9 @@ function parse_f_source(f_filename,error) result(f_source)
                     f_source%include_dependencies(n_include)%s = &
                      & split_n(file_lines(i)%s,n=2,delims="'"//'"',stat=stat)
                     if (stat /= 0) then
-                        call file_parse_error(error,f_filename,i, &
-                              message='unable to find include file name')
+                        call file_parse_error(error,f_filename, &
+                              'unable to find include file name',i, &
+                              file_lines(i)%s)
                         return
                     end if
                 end if
@@ -290,8 +294,9 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 mod_name = lower(split_n(file_lines(i)%s,n=2,delims=' ',stat=stat))
                 if (stat /= 0) then
-                    call file_parse_error(error,f_filename,i, &
-                          message='unable to find module name')
+                    call file_parse_error(error,f_filename, &
+                          'unable to find module name',i, &
+                          file_lines(i)%s)
                     return
                 end if
 
@@ -303,8 +308,9 @@ function parse_f_source(f_filename,error) result(f_source)
                 end if
 
                 if (.not.validate_name(mod_name)) then
-                    call file_parse_error(error,f_filename,i, &
-                          message='empty or invalid name for module')
+                    call file_parse_error(error,f_filename, &
+                          'empty or invalid name for module',i, &
+                          file_lines(i)%s)
                     return
                 end if
 
@@ -323,8 +329,9 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 temp_string = split_n(file_lines(i)%s,n=2,delims='()',stat=stat)
                 if (stat /= 0) then
-                    call file_parse_error(error,f_filename,i, &
-                          message='unable to get submodule ancestry')
+                    call file_parse_error(error,f_filename, &
+                          'unable to get submodule ancestry',i, &
+                          file_lines(i)%s)
                     return
                 end if
 
@@ -343,8 +350,9 @@ function parse_f_source(f_filename,error) result(f_source)
                     f_source%modules_used(n_use)%s = lower(temp_string)
 
                     if (.not.validate_name(temp_string)) then
-                        call file_parse_error(error,f_filename,i, &
-                          message='empty or invalid name for submodule parent')
+                        call file_parse_error(error,f_filename, &
+                          'empty or invalid name for submodule parent',i, &
+                          file_lines(i)%s, index(file_lines(i)%s,temp_string))
                         return
                     end if
 
@@ -461,8 +469,9 @@ function parse_c_source(c_filename,error) result(c_source)
                     c_source%include_dependencies(n_include)%s = &
                      &   split_n(file_lines(i)%s,n=2,delims='"',stat=stat)
                     if (stat /= 0) then
-                        call file_parse_error(error,c_filename,i, &
-                            message='unable to get c include file')
+                        call file_parse_error(error,c_filename, &
+                            'unable to get c include file',i, &
+                            file_lines(i)%s,index(file_lines(i)%s,'"'))
                         return
                     end if
 

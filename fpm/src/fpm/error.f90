@@ -57,7 +57,8 @@ contains
 
 
     !> Error created when file parsing fails
-    subroutine file_parse_error(error, file_name, line, message)
+    subroutine file_parse_error(error, file_name, message, line_num, &
+                                 line_string, line_col)
 
         !> Instance of the error data
         type(error_t), allocatable, intent(out) :: error
@@ -65,19 +66,61 @@ contains
         !> Name of file
         character(len=*), intent(in) :: file_name
 
-        !> Line number of parse error
-        integer, intent(in) :: line
-
         !> Parse error message
         character(len=*), intent(in) :: message
 
-        character(50) :: line_no_string
+        !> Line number of parse error
+        integer, intent(in), optional :: line_num
 
-        write(line_no_string,'(I0)') line
+        !> Line context string
+        character(len=*), intent(in), optional :: line_string
+
+        !> Line context column
+        integer, intent(in), optional :: line_col
+
+        character(50) :: temp_string
 
         allocate(error)
-        error%message = 'Error while parsing file "'//file_name//'" on line '// &
-                        trim(line_no_string)//': '//message
+        error%message = 'Parse error: '//message//new_line('a')
+        
+        error%message = error%message//file_name
+        
+        if (present(line_num)) then
+
+            write(temp_string,'(I0)') line_num
+
+            error%message = error%message//':'//trim(temp_string)
+
+        end if
+
+        if (present(line_col)) then
+
+            if (line_col > 0) then
+
+                write(temp_string,'(I0)') line_col
+                error%message = error%message//':'//trim(temp_string)
+
+            end if
+
+        end if
+
+        if (present(line_string)) then
+
+            error%message = error%message//new_line('a')
+            error%message = error%message//'   | '//line_string
+
+            if (present(line_col)) then
+
+                if (line_col > 0) then
+
+                    error%message = error%message//new_line('a')
+                    error%message = error%message//'   | '//repeat(' ',line_col-1)//'^'
+                
+                end if
+                
+            end if
+
+        end if
 
     end subroutine file_parse_error
 
