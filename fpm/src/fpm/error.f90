@@ -5,6 +5,7 @@ module fpm_error
 
     public :: error_t
     public :: fatal_error, syntax_error, file_not_found_error
+    public :: file_parse_error
 
 
     !> Data type defining an error
@@ -53,6 +54,32 @@ contains
         error%message = "'"//file_name//"' could not be found, check if the file exists"
 
     end subroutine file_not_found_error
+
+
+    !> Error created when file parsing fails
+    subroutine file_parse_error(error, file_name, line, message)
+
+        !> Instance of the error data
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Name of file
+        character(len=*), intent(in) :: file_name
+
+        !> Line number of parse error
+        integer, intent(in) :: line
+
+        !> Parse error message
+        character(len=*), intent(in) :: message
+
+        character(50) :: line_no_string
+
+        write(line_no_string,'(I0)') line
+
+        allocate(error)
+        error%message = 'Error while parsing file "'//file_name//'" on line '// &
+                        trim(line_no_string)//': '//message
+
+    end subroutine file_parse_error
 
 
 end module fpm_error
