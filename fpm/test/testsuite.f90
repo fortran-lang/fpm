@@ -74,7 +74,8 @@ contains
         call collect(testsuite)
 
         do ii = 1, size(testsuite)
-            write(unit, '("#", *(1x, a))') "Starting", testsuite(ii)%name, "..."
+            write(unit, '("#", 3(1x, a), 1x, "(", i0, "/", i0, ")")') &
+                & "Starting", testsuite(ii)%name, "...", ii, size(testsuite)
             call testsuite(ii)%test(error)
             if (allocated(error) .neqv. testsuite(ii)%should_fail) then
                 if (testsuite(ii)%should_fail) then
@@ -91,7 +92,7 @@ contains
                 end if
             end if
             if (allocated(error)) then
-                write(unit, '(a)') error%message
+                write(unit, fmt) "Message:", error%message
             end if
         end do
 

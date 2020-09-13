@@ -184,8 +184,9 @@ contains
                 name_present = .true.
 
             case("version", "license", "author", "maintainer", "copyright", &
+                    & "description", "keywords", "categories", "homepage", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
-                    & "description", "keywords", "categories", "library")
+                    & "library")
                 continue
 
             end select
