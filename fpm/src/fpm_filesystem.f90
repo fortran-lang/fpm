@@ -1,8 +1,8 @@
 module fpm_filesystem
-    use :: fpm_environment, only: get_os_type, &
-                                  OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                                  OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
-    use :: fpm_strings, only: f_string, string_t, split
+    use fpm_environment, only: get_os_type, &
+                               OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
+                               OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
+    use fpm_strings, only: f_string, string_t, split
     implicit none
     private
     public :: basename, join_path, number_of_rows, read_lines, list_files, &
