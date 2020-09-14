@@ -8,7 +8,7 @@ copyright = "2020 fpm contributors"
 [dependencies]
 [dependencies.toml-f]
 git = "https://github.com/toml-f/toml-f"
-rev = "28c672d062ec4bb1e03e3e9def2add6800ec0088"
+tag = "v0.2"
 
 [[test]]
 name = "fpm-test"
