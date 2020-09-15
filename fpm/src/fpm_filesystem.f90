@@ -1,13 +1,14 @@
 module fpm_filesystem
-use fpm_environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_strings, only: f_string, string_t, split
-implicit none
+    use fpm_environment, only: get_os_type, &
+                               OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
+                               OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
+    use fpm_strings, only: f_string, string_t, split
+    implicit none
+    private
+    public :: basename, join_path, number_of_rows, read_lines, list_files, &
+              mkdir, exists, get_temp_filename, windows_path
 
-private
-public :: basename, join_path, number_of_rows, read_lines, list_files,&
-           mkdir, exists, get_temp_filename, windows_path
-
-integer, parameter :: LINE_BUFFER_LEN = 1000
+    integer, parameter :: LINE_BUFFER_LEN = 1000
 
 contains
 
@@ -34,25 +35,24 @@ function basename(path,suffix) result (base)
     else
         call split(path,file_parts,delimiters='\/.')
         base = trim(file_parts(size(file_parts)-1))
-    end if    
+    end if
 
 end function basename
 
 
 function join_path(a1,a2,a3,a4,a5) result(path)
-    ! Construct path by joining strings with os file separator 
+    ! Construct path by joining strings with os file separator
     !
-    character(*), intent(in) :: a1, a2
-    character(*), intent(in), optional :: a3,a4,a5
-    character(:), allocatable :: path
-
-    character(1) :: filesep
+    character(len=*), intent(in)           :: a1, a2
+    character(len=*), intent(in), optional :: a3, a4, a5
+    character(len=:), allocatable          :: path
+    character(len=1)                       :: filesep
 
     select case (get_os_type())
-    case (OS_LINUX,OS_MACOS)
-        filesep = '/'
-    case (OS_WINDOWS)
-        filesep = '\'
+        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+            filesep = '/'
+        case (OS_WINDOWS)
+            filesep = '\'
     end select
 
     path = a1 // filesep // a2
@@ -110,61 +110,57 @@ function read_lines(fh) result(lines)
 end function read_lines
 
 subroutine mkdir(dir)
-    character(*), intent(in) :: dir
-
-    integer :: stat
+    character(len=*), intent(in) :: dir
+    integer                      :: stat
 
     select case (get_os_type())
-    case (OS_LINUX,OS_MACOS)
-        call execute_command_line("mkdir -p " // dir , exitstat=stat)
-        write(*,*) "mkdir -p " // dir
-    case (OS_WINDOWS)
-        call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
-        write(*,*) "mkdir " // windows_path(dir)
+        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+            call execute_command_line('mkdir -p ' // dir, exitstat=stat)
+            write (*, '(2a)') 'mkdir -p ' // dir
+
+        case (OS_WINDOWS)
+            call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
+            write (*, '(2a)') 'mkdir ' // windows_path(dir)
     end select
+
     if (stat /= 0) then
-        print *, "execute_command_line() failed"
+        print *, 'execute_command_line() failed'
         error stop
     end if
-
 end subroutine mkdir
 
 
 subroutine list_files(dir, files)
-    character(len=*), intent(in) :: dir
+    character(len=*),            intent(in)  :: dir
     type(string_t), allocatable, intent(out) :: files(:)
-
-    integer :: stat, fh
-    character(:), allocatable :: temp_file
+    character(len=:), allocatable            :: temp_file
+    integer                                  :: stat, fh
 
     ! Using `inquire` / exists on directories works with gfortran, but not ifort
     if (.not. exists(dir)) then
-        allocate(files(0))
+        allocate (files(0))
         return
     end if
 
-    allocate(temp_file, source = get_temp_filename() )
+    allocate (temp_file, source=get_temp_filename())
 
     select case (get_os_type())
-        case (OS_LINUX)
-            call execute_command_line("ls " // dir // " > "//temp_file, &
-                                      exitstat=stat)
-        case (OS_MACOS)
-            call execute_command_line("ls " // dir // " > "//temp_file, &
+        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+            call execute_command_line('ls ' // dir // ' > ' // temp_file, &
                                       exitstat=stat)
         case (OS_WINDOWS)
-            call execute_command_line("dir /b " // windows_path(dir) // " > "//temp_file, &
+            call execute_command_line('dir /b ' // windows_path(dir) // ' > ' // temp_file, &
                                       exitstat=stat)
     end select
+
     if (stat /= 0) then
-        print *, "execute_command_line() failed"
+        print *, 'execute_command_line() failed'
         error stop
     end if
 
-    open(newunit=fh, file=temp_file, status="old")
+    open (newunit=fh, file=temp_file, status='old')
     files = read_lines(fh)
-    close(fh,status="delete")
-
+    close (fh, status='delete')
 end subroutine list_files
 
 

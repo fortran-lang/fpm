@@ -1,8 +1,9 @@
 module fpm_command_line
-    use fpm_environment, only: get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
-
+    use fpm_environment, only: get_os_type, &
+                               OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
+                               OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
     implicit none
-    
+
     private
     public :: fpm_cmd_settings, &
               fpm_build_settings, &
@@ -10,7 +11,7 @@ module fpm_command_line
               fpm_new_settings, &
               fpm_run_settings, &
               fpm_test_settings, &
-              get_command_line_settings        
+              get_command_line_settings
 
     type, abstract :: fpm_cmd_settings
     end type
@@ -62,24 +63,40 @@ contains
     end subroutine
 
     subroutine print_help()
-        print *, "fpm - A Fortran package manager and build system"
+        print *, 'fpm - A Fortran package manager and build system'
+
         select case (get_os_type())
+            case (OS_UNKNOWN)
+                print *, 'OS Type: Unknown'
+
             case (OS_LINUX)
-                print *, "OS Type: Linux"
+                print *, 'OS Type: Linux'
+
             case (OS_MACOS)
-                print *, "OS Type: macOS"
+                print *, 'OS Type: macOS'
+
             case (OS_WINDOWS)
-                print *, "OS Type: Windows"
+                print *, 'OS Type: Windows'
+
+            case (OS_CYGWIN)
+                print *, 'OS Type: Cygwin'
+
+            case (OS_SOLARIS)
+                print *, 'OS Type: Solaris'
+
+            case (OS_FREEBSD)
+                print *, 'OS Type: FreeBSD'
         end select
+
         print *
-        print *, "Usage:"
-        print *, "    fpm [COMMAND]"
+        print *, 'Usage:'
+        print *, '    fpm [COMMAND]'
         print *
-        print *, "Valid fpm commands are:"
-        print *, "    build    Compile the current package"
-        print *, "    install  Install a Fortran binary or library (not implemented)"
-        print *, "    new      Create a new Fortran package (not implemented)"
-        print *, "    run      Run a binary of the local package (not implemented)"
-        print *, "    test     Run the tests (not implemented)"
+        print *, 'Valid fpm commands are:'
+        print *, '    build    Compile the current package'
+        print *, '    install  Install a Fortran binary or library (not implemented)'
+        print *, '    new      Create a new Fortran package (not implemented)'
+        print *, '    run      Run a binary of the local package (not implemented)'
+        print *, '    test     Run the tests (not implemented)'
     end subroutine
 end module fpm_command_line
