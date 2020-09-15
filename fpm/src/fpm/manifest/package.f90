@@ -85,8 +85,8 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        class(toml_table), pointer :: child, node
-        class(toml_array), pointer :: children
+        type(toml_table), pointer :: child, node
+        type(toml_array), pointer :: children
         integer :: ii, nn, stat
 
         call check(table, error)
@@ -184,6 +184,7 @@ contains
                 name_present = .true.
 
             case("version", "license", "author", "maintainer", "copyright", &
+                    & "description", "keywords", "categories", "homepage", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
                     & "library")
                 continue

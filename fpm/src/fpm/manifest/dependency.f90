@@ -94,7 +94,7 @@ contains
             end if
 
             if (.not.allocated(self%git)) then
-                call get_value(table, "revision", obj)
+                call get_value(table, "rev", obj)
                 if (allocated(obj)) then
                     self%git = git_target_revision(url, obj)
                 end if
@@ -120,9 +120,10 @@ contains
 
         character(len=:), allocatable :: name
         type(toml_key), allocatable :: list(:)
-        logical :: url_present, git_target_present
+        logical :: url_present, git_target_present, has_path
         integer :: ikey
 
+        has_path = .false.
         url_present = .false.
         git_target_present = .false.
 
@@ -146,6 +147,7 @@ contains
                     exit
                 end if
                 url_present = .true.
+                has_path = list(ikey)%key == 'path'
 
             case("branch", "rev", "tag")
                 if (git_target_present) then
@@ -163,7 +165,7 @@ contains
             return
         end if
 
-        if (.not.url_present .and. git_target_present) then
+        if (has_path .and. git_target_present) then
             call syntax_error(error, "Dependency "//name//" uses a local path, therefore no git identifiers are allowed")
         end if
 
@@ -182,7 +184,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        class(toml_table), pointer :: node
+        type(toml_table), pointer :: node
         type(toml_key), allocatable :: list(:)
         integer :: idep, stat
 

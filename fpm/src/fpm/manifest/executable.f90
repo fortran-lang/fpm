@@ -57,7 +57,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        class(toml_table), pointer :: child
+        type(toml_table), pointer :: child
 
         call check(table, error)
         if (allocated(error)) return
@@ -104,7 +104,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed executable entry")
+                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed as executable entry")
                 exit
 
             case("name")
@@ -115,6 +115,7 @@ contains
 
             end select
         end do
+        if (allocated(error)) return
 
         if (.not.name_present) then
             call syntax_error(error, "Executable name is not provided, please add a name entry")
