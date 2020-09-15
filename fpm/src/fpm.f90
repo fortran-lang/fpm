@@ -18,12 +18,13 @@ public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
 
 contains
 
-subroutine build_model(model, settings, package)
+subroutine build_model(model, settings, package, error)
     ! Constructs a valid fpm model from command line settings and toml manifest
     !
     type(fpm_model_t), intent(out) :: model
     type(fpm_build_settings), intent(in) :: settings
     type(package_t), intent(in) :: package
+    type(error_t), allocatable, intent(out) :: error
 
     model%package_name = package%name
 
@@ -37,14 +38,35 @@ subroutine build_model(model, settings, package)
 
     ! Add sources from executable directories
     if (allocated(package%executable)) then
-        call add_executable_sources(model%sources, package%executable,is_test=.false.)
+
+        call add_executable_sources(model%sources, package%executable, &
+                                     is_test=.false., error=error)
+                        
+        if (allocated(error)) then
+            return
+        end if
+
     end if
     if (allocated(package%test)) then
-        call add_executable_sources(model%sources, package%test,is_test=.true.)
+
+        call add_executable_sources(model%sources, package%test, &
+                                     is_test=.true., error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
     end if
 
     if (allocated(package%library)) then
-        call add_sources_from_dir(model%sources,package%library%source_dir)
+
+        call add_sources_from_dir(model%sources,package%library%source_dir, &
+                                      error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
     end if
 
     call resolve_module_dependencies(model%sources)
@@ -79,7 +101,11 @@ if (.not.(allocated(package%library) .or. allocated(package%executable))) then
     error stop 1
 end if
 
-call build_model(model, settings, package)
+call build_model(model, settings, package, error)
+if (allocated(error)) then
+    print '(a)', error%message
+    error stop 1
+end if
 
 call build_package(model)
 
