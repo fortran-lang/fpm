@@ -617,19 +617,23 @@ fetchDependency name version = do
         undefined
       GitVersion versionSpec -> do
         system
-          ("git clone " ++ gitVersionSpecUrl versionSpec ++ " " ++ clonePath)
+          ("git init " ++ clonePath)
         case gitVersionSpecRef versionSpec of
-          Just ref -> withCurrentDirectory clonePath $ do
+          Just ref -> do
             system
-              (  "git checkout "
+              ("git -C " ++ clonePath ++ " fetch " ++ gitVersionSpecUrl versionSpec ++ " "
               ++ (case ref of
                    Tag    tag    -> tag
                    Branch branch -> branch
                    Commit commit -> commit
                  )
               )
-            return (name, clonePath)
-          Nothing -> return (name, clonePath)
+          Nothing -> do
+            system
+              ("git -C " ++ clonePath ++ " fetch " ++ gitVersionSpecUrl versionSpec)
+        system
+          ("git -C " ++ clonePath ++ " checkout -qf FETCH_HEAD")
+        return (name, clonePath)
       PathVersion versionSpec -> return (name, pathVersionSpecPath versionSpec)
 
 {-
