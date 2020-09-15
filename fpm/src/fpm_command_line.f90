@@ -1,7 +1,7 @@
 module fpm_command_line
-    use :: fpm_environment, only: get_os_type, &
-                                  OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                                  OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
+    use fpm_environment, only: get_os_type, &
+                               OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
+                               OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
     implicit none
 
     private
