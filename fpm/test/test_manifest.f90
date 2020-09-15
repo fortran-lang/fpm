@@ -600,7 +600,6 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(toml_table), pointer :: child
         type(toml_array), pointer :: children, children2
         integer :: stat
         type(package_t) :: package
@@ -624,7 +623,6 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(toml_table), pointer :: child
         type(toml_array), pointer :: children, children2
         integer :: stat
         type(package_t) :: package
@@ -649,7 +647,6 @@ contains
 
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        character(len=:), allocatable :: name
         integer :: stat
         type(test_t) :: test
 
