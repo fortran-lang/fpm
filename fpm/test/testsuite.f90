@@ -78,12 +78,10 @@ contains
         integer, intent(in) :: unit
 
         !> Number of failed tests
-        integer, intent(out) :: stat
+        integer, intent(inout) :: stat
 
         type(unittest_t), allocatable :: testsuite(:)
         integer :: ii
-
-        stat = 0
 
         call collect(testsuite)
 
@@ -109,12 +107,10 @@ contains
         integer, intent(in) :: unit
 
         !> Number of failed tests
-        integer, intent(out) :: stat
+        integer, intent(inout) :: stat
 
         type(unittest_t), allocatable :: testsuite(:)
         integer :: ii
-
-        stat = 0
 
         call collect(testsuite)
 
@@ -127,7 +123,7 @@ contains
             do ii = 1, size(testsuite)
                 write(unit, fmt) "-", testsuite(ii)%name
             end do
-            stat = -1
+            stat = -huge(ii)
         end if
 
     end subroutine run_selected

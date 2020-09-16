@@ -12,6 +12,8 @@ program fpm_testing
     type(testsuite_t), allocatable :: testsuite(:)
     character(len=*), parameter :: fmt = '("#", *(1x, a))'
 
+    stat = 0
+
     testsuite = [ &
         & new_testsuite("fpm_toml", collect_toml), &
         & new_testsuite("fpm_manifest", collect_manifest), &
@@ -27,17 +29,12 @@ program fpm_testing
             if (allocated(test_name)) then
                 write(error_unit, fmt) "Suite:", testsuite(is)%name
                 call run_selected(testsuite(is)%collect, test_name, error_unit, stat)
-                if (stat == -1) then
+                if (stat < 0) then
                     error stop 1
                 end if
             else
                 write(error_unit, fmt) "Testing:", testsuite(is)%name
                 call run_testsuite(testsuite(is)%collect, error_unit, stat)
-            end if
-
-            if (stat > 0) then
-                write(error_unit, '(i0, 1x, a)') stat, "test(s) failed!"
-                error stop 1
             end if
         else
             write(error_unit, fmt) "Available testsuites"
@@ -50,12 +47,12 @@ program fpm_testing
         do is = 1, size(testsuite)
             write(error_unit, fmt) "Testing:", testsuite(is)%name
             call run_testsuite(testsuite(is)%collect, error_unit, stat)
-
-            if (stat > 0) then
-                write(error_unit, '(i0, 1x, a)') stat, "test(s) failed!"
-                error stop 1
-            end if
         end do
+    end if
+
+    if (stat > 0) then
+       write(error_unit, '(i0, 1x, a)') stat, "test(s) failed!"
+       error stop 1
     end if
 
 
