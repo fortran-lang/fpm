@@ -308,7 +308,7 @@ contains
 
         open(file=temp_file, newunit=unit)
         write(unit, '(a)') &
-            & 'submodule (parent) :: child', &
+            & 'submodule (parent) child', &
             & 'use module_one', &
             & 'end submodule test'
         close(unit)
@@ -323,13 +323,18 @@ contains
             return
         end if
 
-        if (size(f_source%modules_provided) /= 0) then
-            call test_failed(error,'Unexpected modules_provided - expecting zero')
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error,'Unexpected modules_provided - expecting one')
             return
         end if
 
         if (size(f_source%modules_used) /= 2) then
             call test_failed(error,'Incorrect number of modules_used - expecting two')
+            return
+        end if
+
+        if (.not.('child' .in. f_source%modules_provided)) then
+            call test_failed(error,'Missing module in modules_provided')
             return
         end if
 
@@ -360,7 +365,7 @@ contains
 
         open(file=temp_file, newunit=unit)
         write(unit, '(a)') &
-            & 'submodule (ancestor:parent) :: child', &
+            & 'submodule (ancestor:parent) child', &
             & 'use module_one', &
             & 'end submodule test'
         close(unit)
@@ -375,13 +380,18 @@ contains
             return
         end if
 
-        if (size(f_source%modules_provided) /= 0) then
-            call test_failed(error,'Unexpected modules_provided - expecting zero')
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error,'Unexpected modules_provided - expecting one')
             return
         end if
 
         if (size(f_source%modules_used) /= 2) then
             call test_failed(error,'Incorrect number of modules_used - expecting two')
+            return
+        end if
+
+        if (.not.('child' .in. f_source%modules_provided)) then
+            call test_failed(error,'Missing module in modules_provided')
             return
         end if
 
