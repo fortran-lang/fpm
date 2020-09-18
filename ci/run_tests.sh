@@ -22,3 +22,6 @@ cd ../hello_complex
 cd ../with_c
 ../../../fpm/build/gfortran_debug/app/fpm build
 ./build/gfortran_debug/app/with_c
+
+cd ../submodules
+../../../fpm/build/gfortran_debug/app/fpm build
