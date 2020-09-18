@@ -526,7 +526,7 @@ function split_n(string,delims,n,stat) result(substring)
         return
     end if
 
-    substring = trim(string_parts(i))
+    substring = trim(adjustl(string_parts(i)))
     stat = 0
 
 end function split_n
@@ -553,6 +553,7 @@ subroutine resolve_module_dependencies(sources)
 
             if (.not.associated(sources(i)%file_dependencies(j)%ptr)) then
                 write(*,*) '(!) Unable to find source for module dependency: ',sources(i)%modules_used(j)%s
+                write(*,*) '    for file ',sources(i)%file_name
                 ! stop
             end if
 
