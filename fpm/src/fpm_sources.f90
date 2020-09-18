@@ -310,7 +310,7 @@ function parse_f_source(f_filename,error) result(f_source)
                 if (.not.validate_name(mod_name)) then
                     call file_parse_error(error,f_filename, &
                           'empty or invalid name for module',i, &
-                          file_lines(i)%s)
+                          file_lines(i)%s, index(file_lines(i)%s,mod_name))
                     return
                 end if
 
@@ -326,6 +326,22 @@ function parse_f_source(f_filename,error) result(f_source)
 
             ! Extract name of submodule if is submodule
             if (index(adjustl(lower(file_lines(i)%s)),'submodule') == 1) then
+
+                mod_name = split_n(file_lines(i)%s,n=3,delims='()',stat=stat)
+                if (stat /= 0) then
+                    call file_parse_error(error,f_filename, &
+                          'unable to get submodule name',i, &
+                          file_lines(i)%s)
+                    return
+                end if
+                if (.not.validate_name(mod_name)) then
+                    call file_parse_error(error,f_filename, &
+                          'empty or invalid name for submodule',i, &
+                          file_lines(i)%s, index(file_lines(i)%s,mod_name))
+                    return
+                end if
+
+                n_mod = n_mod + 1
 
                 temp_string = split_n(file_lines(i)%s,n=2,delims='()',stat=stat)
                 if (stat /= 0) then
@@ -347,14 +363,16 @@ function parse_f_source(f_filename,error) result(f_source)
                         
                     end if
 
-                    f_source%modules_used(n_use)%s = lower(temp_string)
-
                     if (.not.validate_name(temp_string)) then
                         call file_parse_error(error,f_filename, &
                           'empty or invalid name for submodule parent',i, &
                           file_lines(i)%s, index(file_lines(i)%s,temp_string))
                         return
                     end if
+
+                    f_source%modules_used(n_use)%s = lower(temp_string)
+
+                    f_source%modules_provided(n_mod)%s = lower(mod_name)
 
                 end if
 
