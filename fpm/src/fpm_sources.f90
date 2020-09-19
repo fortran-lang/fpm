@@ -378,9 +378,9 @@ function parse_f_source(f_filename,error) result(f_source)
 
             end if
 
-            ! Detect if is program
-            if (f_source%unit_type == FPM_UNIT_UNKNOWN .and. &
-                index(adjustl(lower(file_lines(i)%s)),'program') == 1) then
+            ! Detect if contains a program
+            !  (no modules allowed after program def)
+            if (index(adjustl(lower(file_lines(i)%s)),'program') == 1) then
 
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
