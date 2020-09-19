@@ -25,3 +25,7 @@ cd ../with_c
 
 cd ../submodules
 ../../../fpm/build/gfortran_debug/app/fpm build
+
+cd ../program_with_module
+../../../fpm/build/gfortran_debug/app/fpm build
+./build/gfortran_debug/app/Program_with_module

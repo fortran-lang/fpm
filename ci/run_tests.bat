@@ -59,3 +59,13 @@ if errorlevel 1 exit 1
 
 ..\..\..\fpm\build\gfortran_debug\app\fpm build
 if errorlevel 1 exit 1
+
+
+cd ..\program_with_module
+if errorlevel 1 exit 1
+
+..\..\..\fpm\build\gfortran_debug\app\fpm build
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\app\Program_with_module
+if errorlevel 1 exit 1
