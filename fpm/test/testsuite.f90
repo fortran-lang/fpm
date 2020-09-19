@@ -5,6 +5,7 @@ module testsuite
     private
 
     public :: run_testsuite, new_unittest, test_failed
+    public :: check_string
     public :: unittest_t, error_t
 
 
@@ -73,7 +74,8 @@ contains
         call collect(testsuite)
 
         do ii = 1, size(testsuite)
-            write(unit, '("#", *(1x, a))') "Starting", testsuite(ii)%name, "..."
+            write(unit, '("#", 3(1x, a), 1x, "(", i0, "/", i0, ")")') &
+                & "Starting", testsuite(ii)%name, "...", ii, size(testsuite)
             call testsuite(ii)%test(error)
             if (allocated(error) .neqv. testsuite(ii)%should_fail) then
                 if (testsuite(ii)%should_fail) then
@@ -90,7 +92,7 @@ contains
                 end if
             end if
             if (allocated(error)) then
-                write(unit, '(a)') error%message
+                write(unit, fmt) "Message:", error%message
             end if
         end do
 
@@ -117,6 +119,34 @@ contains
         if (present(should_fail)) self%should_fail = should_fail
 
     end function new_unittest
+
+
+    !> Check a deferred length character variable against a reference value
+    subroutine check_string(error, actual, expected, name)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Actual string value
+        character(len=:), allocatable, intent(in) :: actual
+
+        !> Expected string value
+        character(len=*), intent(in) :: expected
+
+        !> Name of the string to check
+        character(len=*), intent(in) :: name
+
+        if (.not.allocated(actual)) then
+            call test_failed(error, name//" is not set correctly")
+            return
+        end if
+
+        if (actual /= expected) then
+            call test_failed(error, name//" is "//actual// &
+                & " but should be "//expected)
+        end if
+
+    end subroutine check_string
 
 
 end module testsuite

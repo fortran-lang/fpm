@@ -1,66 +1,34 @@
 module fpm_sources
+use fpm_error, only: error_t, file_parse_error
+use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
+                    FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
+                    FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
+                    FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER
 use fpm_filesystem, only: basename, read_lines, list_files
-use fpm_strings, only: lower, split, str_ends_with, string_t
+use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.)
 use fpm_manifest_executable, only: executable_t
 implicit none
 
 private
-public :: srcfile_ptr, srcfile_t
-public :: add_sources_from_dir, add_executable_sources, resolve_module_dependencies
-public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
-          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
-          FPM_UNIT_CHEADER
-
-integer, parameter :: FPM_UNIT_UNKNOWN = -1
-integer, parameter :: FPM_UNIT_PROGRAM = 1
-integer, parameter :: FPM_UNIT_MODULE = 2
-integer, parameter :: FPM_UNIT_SUBMODULE = 3
-integer, parameter :: FPM_UNIT_SUBPROGRAM = 4
-integer, parameter :: FPM_UNIT_CSOURCE = 5
-integer, parameter :: FPM_UNIT_CHEADER = 6
+public :: add_sources_from_dir, add_executable_sources
+public :: parse_f_source, parse_c_source, resolve_module_dependencies
 
 character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
                              ['iso_c_binding  ', &
-                              'iso_fortran_env']
-
-type srcfile_ptr
-    ! For constructing arrays of src_file pointers
-    type(srcfile_t), pointer :: ptr => null()
-end type srcfile_ptr
-
-type srcfile_t
-    ! Type for encapsulating a source file 
-    !  and it's metadata
-    character(:), allocatable :: file_name
-        ! File path relative to cwd
-    character(:), allocatable :: exe_name
-        ! Name of executable for FPM_UNIT_PROGRAM
-    logical :: is_test = .false.
-        ! Is executable a test?
-    type(string_t), allocatable :: modules_provided(:)
-        ! Modules provided by this source file (lowerstring)
-    integer :: unit_type = FPM_UNIT_UNKNOWN
-        ! Type of program unit
-    type(string_t), allocatable :: modules_used(:)
-        ! Modules USEd by this source file (lowerstring)
-    type(string_t), allocatable :: include_dependencies(:)
-        ! Files INCLUDEd by this source file
-    type(srcfile_ptr), allocatable :: file_dependencies(:)
-        ! Resolved source file dependencies
-
-    logical :: built = .false.
-    logical :: touched = .false.
-end type srcfile_t
-
+                              'iso_fortran_env', &
+                              'ieee_arithmetic', &
+                              'ieee_exceptions', &
+                              'ieee_features  ']
 
 contains
 
-subroutine add_sources_from_dir(sources,directory,with_executables)
+subroutine add_sources_from_dir(sources,directory,with_executables,error)
     ! Enumerate sources in a directory
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     character(*), intent(in) :: directory
     logical, intent(in), optional :: with_executables
+    type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
     logical, allocatable :: is_source(:), exclude_source(:)
@@ -82,18 +50,30 @@ subroutine add_sources_from_dir(sources,directory,with_executables)
     do i = 1, size(src_file_names)
 
         if (str_ends_with(lower(src_file_names(i)%s), ".f90")) then
-            dir_sources(i) = parse_f_source(src_file_names(i)%s)
+
+            dir_sources(i) = parse_f_source(src_file_names(i)%s, error)
+
+            if (allocated(error)) then
+                return
+            end if
+
         end if
 
         if (str_ends_with(lower(src_file_names(i)%s), ".c") .or. &
             str_ends_with(lower(src_file_names(i)%s), ".h")) then
-            dir_sources(i) = parse_c_source(src_file_names(i)%s)
+
+            dir_sources(i) = parse_c_source(src_file_names(i)%s,error)
+
+            if (allocated(error)) then
+                return
+            end if
+
         end if
 
         ! Exclude executables unless specified otherwise
         exclude_source(i) = (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM)
         if (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM .and. &
-             present(with_executables)) then
+            & present(with_executables)) then
             if (with_executables) then
 
                 exclude_source(i) = .false.
@@ -113,13 +93,14 @@ subroutine add_sources_from_dir(sources,directory,with_executables)
 end subroutine add_sources_from_dir
 
 
-subroutine add_executable_sources(sources,executables,is_test)
+subroutine add_executable_sources(sources,executables,is_test,error)
     ! Add sources from executable directories specified in manifest
     ! Only allow executables that are explicitly specified in manifest
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
-    class(executable_t), intent(in), optional :: executables(:)
+    class(executable_t), intent(in) :: executables(:)
     logical, intent(in) :: is_test
+    type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
 
@@ -130,8 +111,14 @@ subroutine add_executable_sources(sources,executables,is_test)
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
+
         call add_sources_from_dir(dir_sources,exe_dirs(i)%s, &
-                     with_executables=.true.)
+                     with_executables=.true.,error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
     end do
 
     allocate(exclude_source(size(dir_sources)))
@@ -170,12 +157,11 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
 
     type(string_t) :: dirs_temp(size(executables))
 
-    integer :: i, j, n
+    integer :: i, n
 
     n = 0
     do i=1,size(executables)
-        if (.not.any([(dirs_temp(j)%s==executables(i)%source_dir, &
-                j=1,n)])) then
+        if (.not.(executables(i)%source_dir .in. dirs_temp)) then
 
             n = n + 1
             dirs_temp(n)%s = executables(i)%source_dir
@@ -192,16 +178,17 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
 end subroutine get_executable_source_dirs
 
 
-function parse_f_source(f_filename) result(f_source)
+function parse_f_source(f_filename,error) result(f_source)
     ! Rudimentary scan of Fortran source file and 
     !  extract program unit name and use/include dependencies
     !
     character(*), intent(in) :: f_filename
     type(srcfile_t) :: f_source
+    type(error_t), allocatable, intent(out) :: error
 
+    integer :: stat
     integer :: fh, n_use, n_include, n_mod, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:)
-    character(:), allocatable :: line_parts(:)
     character(:), allocatable :: temp_string, mod_name
 
     f_source%file_name = f_filename
@@ -234,16 +221,34 @@ function parse_f_source(f_filename) result(f_source)
 
                 if (index(file_lines(i)%s,'::') > 0) then
 
-                    call split(file_lines(i)%s,line_parts,delimiters=':')
-                    temp_string = line_parts(2)
-                    call split(temp_string,line_parts,delimiters=' ,')
-                    mod_name = trim(lower(line_parts(1)))
+                    temp_string = split_n(file_lines(i)%s,delims=':',n=2,stat=stat)
+                    if (stat /= 0) then
+                        call file_parse_error(error,f_filename, &
+                                'unable to find used module name',i, &
+                                file_lines(i)%s,index(file_lines(i)%s,'::'))
+                        return
+                    end if
+
+                    mod_name = split_n(temp_string,delims=' ,',n=1,stat=stat)
+                    if (stat /= 0) then
+                        call file_parse_error(error,f_filename, &
+                                 'unable to find used module name',i, &
+                                 file_lines(i)%s)
+                        return
+                    end if
+                    mod_name = lower(mod_name)
 
                 else
 
-                    call split(file_lines(i)%s,line_parts,delimiters=' ,')
-                    mod_name = trim(lower(line_parts(2)))
-    
+                    mod_name = split_n(file_lines(i)%s,n=2,delims=' ,',stat=stat)
+                    if (stat /= 0) then
+                        call file_parse_error(error,f_filename, &
+                                'unable to find used module name',i, &
+                                file_lines(i)%s)
+                        return
+                    end if
+                    mod_name = lower(mod_name)
+
                 end if
 
                 if (.not.validate_name(mod_name)) then
@@ -271,8 +276,14 @@ function parse_f_source(f_filename) result(f_source)
                 n_include = n_include + 1
 
                 if (pass == 2) then
-                    call split(file_lines(i)%s,line_parts,delimiters="'"//'"')
-                    f_source%include_dependencies(n_include)%s = line_parts(2)
+                    f_source%include_dependencies(n_include)%s = &
+                     & split_n(file_lines(i)%s,n=2,delims="'"//'"',stat=stat)
+                    if (stat /= 0) then
+                        call file_parse_error(error,f_filename, &
+                              'unable to find include file name',i, &
+                              file_lines(i)%s)
+                        return
+                    end if
                 end if
 
             end if
@@ -280,12 +291,26 @@ function parse_f_source(f_filename) result(f_source)
             ! Extract name of module if is module
             if (index(adjustl(lower(file_lines(i)%s)),'module ') == 1) then
 
-                call split(file_lines(i)%s,line_parts,delimiters=' ')
+                mod_name = lower(split_n(file_lines(i)%s,n=2,delims=' ',stat=stat))
+                if (stat /= 0) then
+                    call file_parse_error(error,f_filename, &
+                          'unable to find module name',i, &
+                          file_lines(i)%s)
+                    return
+                end if
 
-                mod_name = adjustl(trim(lower(line_parts(2))))
+                if (mod_name == 'procedure' .or. &
+                    mod_name == 'subroutine' .or. &
+                    mod_name == 'function') then
+                    ! Ignore these cases
+                    cycle
+                end if
 
                 if (.not.validate_name(mod_name)) then
-                    cycle
+                    call file_parse_error(error,f_filename, &
+                          'empty or invalid name for module',i, &
+                          file_lines(i)%s)
+                    return
                 end if
 
                 n_mod = n_mod + 1
@@ -301,7 +326,13 @@ function parse_f_source(f_filename) result(f_source)
             ! Extract name of submodule if is submodule
             if (index(adjustl(lower(file_lines(i)%s)),'submodule') == 1) then
 
-                call split(file_lines(i)%s,line_parts,delimiters=' ()')
+                temp_string = split_n(file_lines(i)%s,n=2,delims='()',stat=stat)
+                if (stat /= 0) then
+                    call file_parse_error(error,f_filename, &
+                          'unable to get submodule ancestry',i, &
+                          file_lines(i)%s)
+                    return
+                end if
 
                 f_source%unit_type = FPM_UNIT_SUBMODULE
 
@@ -309,23 +340,28 @@ function parse_f_source(f_filename) result(f_source)
 
                 if (pass == 2) then
 
-                    if (index(line_parts(2),':') > 0) then
+                    if (index(temp_string,':') > 0) then
 
-                        line_parts(2) = line_parts(2)(index(line_parts(2),':')+1:)
-
+                        temp_string = temp_string(index(temp_string,':')+1:)
+                        
                     end if
 
-                    f_source%modules_used(n_use)%s = adjustl(trim(lower(line_parts(2))))
+                    f_source%modules_used(n_use)%s = lower(temp_string)
+
+                    if (.not.validate_name(temp_string)) then
+                        call file_parse_error(error,f_filename, &
+                          'empty or invalid name for submodule parent',i, &
+                          file_lines(i)%s, index(file_lines(i)%s,temp_string))
+                        return
+                    end if
 
                 end if
 
             end if
 
-            ! Extract name of program if is program
+            ! Detect if is program
             if (f_source%unit_type == FPM_UNIT_UNKNOWN .and. &
                 index(adjustl(lower(file_lines(i)%s)),'program') == 1) then
-
-                call split(file_lines(i)%s,line_parts,delimiters=' ')
 
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
@@ -354,10 +390,7 @@ function parse_f_source(f_filename) result(f_source)
 
         integer :: i
 
-        if (trim(lower(name)) == 'procedure' .or. &
-            trim(lower(name)) == 'subroutine' .or. &
-            trim(lower(name)) == 'function') then
-
+        if (len_trim(name) < 1) then
             valid = .false.
             return
         end if
@@ -390,16 +423,16 @@ function parse_f_source(f_filename) result(f_source)
 end function parse_f_source
 
 
-function parse_c_source(c_filename) result(c_source)
+function parse_c_source(c_filename,error) result(c_source)
     ! Rudimentary scan of c source file and 
     !  extract include dependencies
     !
     character(*), intent(in) :: c_filename
     type(srcfile_t) :: c_source
+    type(error_t), allocatable, intent(out) :: error
 
-    integer :: fh, n_include, i, pass
+    integer :: fh, n_include, i, pass, stat
     type(string_t), allocatable :: file_lines(:)
-    character(:), allocatable :: line_parts(:)
 
     c_source%file_name = c_filename
 
@@ -431,8 +464,16 @@ function parse_c_source(c_filename) result(c_source)
                 n_include = n_include + 1
 
                 if (pass == 2) then
-                    call split(file_lines(i)%s,line_parts,delimiters='"')
-                    c_source%include_dependencies(n_include)%s = line_parts(2)
+
+                    c_source%include_dependencies(n_include)%s = &
+                     &   split_n(file_lines(i)%s,n=2,delims='"',stat=stat)
+                    if (stat /= 0) then
+                        call file_parse_error(error,c_filename, &
+                            'unable to get c include file',i, &
+                            file_lines(i)%s,index(file_lines(i)%s,'"'))
+                        return
+                    end if
+
                 end if
 
             end if
@@ -446,6 +487,48 @@ function parse_c_source(c_filename) result(c_source)
     end do
 
 end function parse_c_source
+
+
+function split_n(string,delims,n,stat) result(substring)
+    ! Split a string on one or more delimeters
+    !  and return the nth substring if it exists
+    !
+    ! n=0  will return the last item
+    ! n=-1 will return the penultimate item etc.
+    !
+    ! stat = 1 on return if the index 
+    !  is not found
+    !
+    character(*), intent(in) :: string
+    character(*), intent(in) :: delims
+    integer, intent(in) :: n
+    integer, intent(out) :: stat
+    character(:), allocatable :: substring
+
+    integer :: i
+    character(:), allocatable :: string_parts(:)
+
+    call split(string,string_parts,delims)
+
+    if (n<1) then
+        i = size(string_parts) + n
+        if (i < 1) then
+            stat = 1
+            return
+        end if
+    else
+        i = n
+    end if
+
+    if (i>size(string_parts)) then
+        stat = 1
+        return
+    end if
+
+    substring = trim(string_parts(i))
+    stat = 0
+
+end function split_n
 
 
 subroutine resolve_module_dependencies(sources)

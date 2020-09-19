@@ -50,7 +50,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        class(toml_table), pointer :: child
+        type(toml_table), pointer :: child
 
         call check(table, error)
         if (allocated(error)) return
@@ -108,6 +108,7 @@ contains
 
             end select
         end do
+        if (allocated(error)) return
 
         if (.not.name_present) then
             call syntax_error(error, "Test name is not provided, please add a name entry")
