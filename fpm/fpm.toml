@@ -10,6 +10,9 @@ copyright = "2020 fpm contributors"
 git = "https://github.com/toml-f/toml-f"
 tag = "v0.2"
 
+[dependencies.M_CLI2]
+git = "https://github.com/urbanjost/M_CLI2.git"
+
 [[test]]
 name = "fpm-test"
 source-dir = "test"
