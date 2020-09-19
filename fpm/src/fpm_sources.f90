@@ -556,23 +556,42 @@ subroutine resolve_module_dependencies(sources)
     !
     type(srcfile_t), intent(inout), target :: sources(:)
 
-    integer :: n_depend, i, j
+    type(srcfile_ptr) :: dep
+
+    integer :: n_depend, i, pass, j
 
     do i=1,size(sources)
         
-        n_depend = size(sources(i)%modules_used)
+        do pass=1,2
 
-        allocate(sources(i)%file_dependencies(n_depend))
+            n_depend = 0
 
-        do j=1,n_depend
+            do j=1,size(sources(i)%modules_used)
 
-            sources(i)%file_dependencies(j)%ptr => &
-                 find_module_dependency(sources,sources(i)%modules_used(j)%s)
+                if (sources(i)%modules_used(j)%s .in. sources(i)%modules_provided) then
+                    ! Dependency satisfied in same file, skip
+                    cycle
+                end if
 
-            if (.not.associated(sources(i)%file_dependencies(j)%ptr)) then
-                write(*,*) '(!) Unable to find source for module dependency: ',sources(i)%modules_used(j)%s
-                write(*,*) '    for file ',sources(i)%file_name
-                ! stop
+                dep%ptr => find_module_dependency(sources,sources(i)%modules_used(j)%s)
+
+                if (.not.associated(dep%ptr)) then
+                    write(*,*) '(!) Unable to find source for module dependency: ', &
+                               sources(i)%modules_used(j)%s
+                    write(*,*) '    for file ',sources(i)%file_name
+                    ! stop
+                end if
+
+                n_depend = n_depend + 1
+
+                if (pass == 2) then
+                    sources(i)%file_dependencies(n_depend) = dep
+                end if
+
+            end do
+
+            if (pass == 1) then
+                allocate(sources(i)%file_dependencies(n_depend))
             end if
 
         end do
