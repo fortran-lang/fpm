@@ -152,7 +152,7 @@ function get_object_name(model,source_file_name) result(object_file)
 
     ! Construct full target path
     object_file = join_path(model%output_directory, model%package_name, &
-                        basename(object_file,suffix=.false.)//'.o')
+                        object_file//'.o')
 
 end function get_object_name
 
