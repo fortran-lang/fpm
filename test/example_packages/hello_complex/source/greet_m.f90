@@ -1,4 +1,5 @@
 module greet_m
+    use subdir_constants, only: GREET_STR
     implicit none
     private
 
@@ -8,6 +9,6 @@ contains
         character(len=*), intent(in) :: name
         character(len=:), allocatable :: greeting
 
-        greeting = "Hello, " // name // "!"
+        greeting = GREET_STR // name // "!"
     end function make_greeting
 end module greet_m

@@ -2,7 +2,7 @@ module fpm_backend
 
 ! Implements the native fpm build backend
 
-use fpm_environment, only: run
+use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, join_path, exists, mkdir
 use fpm_model, only: fpm_model_t, srcfile_t, FPM_UNIT_MODULE, &
                      FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -109,8 +109,7 @@ recursive subroutine build_source(model,source_file,linking)
 
     end do
 
-    object_file = join_path(model%output_directory, model%package_name, &
-                        basename(source_file%file_name,suffix=.false.)//'.o')
+    object_file = get_object_name(model,source_file%file_name)
     
     call run("gfortran -c " // source_file%file_name // model%fortran_compile_flags &
               // " -o " // object_file)
@@ -119,5 +118,42 @@ recursive subroutine build_source(model,source_file,linking)
     source_file%built = .true.
 
 end subroutine build_source
+
+
+function get_object_name(model,source_file_name) result(object_file)
+    ! Generate object target path from source name and model params
+    !  
+    !  src/test.f90        ->  <output-dir>/<package-name>/test.o
+    !  src/subdir/test.f90 ->  <output-dir>/<package-name>/subdir_test.o
+    !
+    type(fpm_model_t), intent(in) :: model
+    character(*), intent(in) :: source_file_name
+    character(:), allocatable :: object_file
+
+    integer :: i
+    character(1) :: filesep
+
+    select case(get_os_type())
+    case (OS_WINDOWS)
+        filesep = '\'
+    case default
+        filesep = '/'
+    end select
+
+    ! Exclude first directory level from path
+    object_file = source_file_name(index(source_file_name,filesep)+1:)
+
+    ! Convert remaining directory separators to underscores
+    i = index(object_file,filesep)
+    do while(i > 0)
+        object_file(i:i) = '_'
+        i = index(object_file,filesep)
+    end do
+
+    ! Construct full target path
+    object_file = join_path(model%output_directory, model%package_name, &
+                        object_file//'.o')
+
+end function get_object_name
 
 end module fpm_backend

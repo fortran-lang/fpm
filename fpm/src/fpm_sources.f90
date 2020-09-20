@@ -37,8 +37,7 @@ subroutine add_sources_from_dir(sources,directory,with_executables,error)
     type(srcfile_t), allocatable :: dir_sources(:)
 
     ! Scan directory for sources
-    call list_files(directory, file_names)
-    file_names = [(string_t(directory//'/'//file_names(j)%s),j=1,size(file_names))]
+    call list_files(directory, file_names,recurse=.true.)
 
     is_source = [(str_ends_with(lower(file_names(i)%s), ".f90") .or. &
                   str_ends_with(lower(file_names(i)%s), ".c") .or. &

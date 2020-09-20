@@ -40,6 +40,25 @@ function basename(path,suffix) result (base)
 end function basename
 
 
+logical function is_dir(dir) 
+    character(*), intent(in) :: dir 
+    integer :: stat 
+
+    select case (get_os_type()) 
+
+    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+        call execute_command_line("test -d " // dir , exitstat=stat) 
+
+    case (OS_WINDOWS) 
+        call execute_command_line('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', exitstat=stat) 
+
+    end select 
+
+    is_dir = (stat == 0) 
+
+end function is_dir 
+
+
 function join_path(a1,a2,a3,a4,a5) result(path)
     ! Construct path by joining strings with os file separator
     !
@@ -130,11 +149,15 @@ subroutine mkdir(dir)
 end subroutine mkdir
 
 
-subroutine list_files(dir, files)
-    character(len=*),            intent(in)  :: dir
+recursive subroutine list_files(dir, files, recurse)
+    character(len=*), intent(in) :: dir
     type(string_t), allocatable, intent(out) :: files(:)
-    character(len=:), allocatable            :: temp_file
-    integer                                  :: stat, fh
+    logical, intent(in), optional :: recurse
+
+    integer :: stat, fh, i
+    character(:), allocatable :: temp_file
+    type(string_t), allocatable :: dir_files(:)
+    type(string_t), allocatable :: sub_dir_files(:)
 
     ! Using `inquire` / exists on directories works with gfortran, but not ifort
     if (.not. exists(dir)) then
@@ -160,7 +183,31 @@ subroutine list_files(dir, files)
 
     open (newunit=fh, file=temp_file, status='old')
     files = read_lines(fh)
-    close (fh, status='delete')
+    close(fh,status="delete")
+
+    do i=1,size(files)
+        files(i)%s = join_path(dir,files(i)%s)
+    end do
+
+    if (present(recurse)) then
+        if (recurse) then
+
+            allocate(sub_dir_files(0))
+
+            do i=1,size(files)
+                if (is_dir(files(i)%s)) then
+
+                    call list_files(files(i)%s, dir_files, recurse=.true.) 
+                    sub_dir_files = [sub_dir_files, dir_files]
+
+                end if
+            end do
+
+            files = [files, sub_dir_files]
+
+        end if
+    end if
+
 end subroutine list_files
 
 
