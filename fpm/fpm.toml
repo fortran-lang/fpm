@@ -12,6 +12,7 @@ tag = "v0.2"
 
 [dependencies.M_CLI2]
 git = "https://github.com/urbanjost/M_CLI2.git"
+commit = "a177b0077819571815fa6a8da6980bcb45443858"
 
 [[test]]
 name = "fpm-test"
