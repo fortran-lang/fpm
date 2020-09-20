@@ -44,7 +44,8 @@ subroutine build_model(model, settings, package, error)
              & -fPIC &
              & -fmax-errors=1 &
              & -ffast-math &
-             & -funroll-loops '
+             & -funroll-loops ' // &
+             & '-J'//join_path(model%output_directory,model%package_name)
     else
         model%output_directory = 'build/gfortran_debug'
         model%fortran_compile_flags = ' -Wall -Wextra -Wimplicit-interface  -fPIC -fmax-errors=1 -g '// &
