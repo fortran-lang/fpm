@@ -88,7 +88,7 @@ jobs:
     - name: put fpm to PATH (Linux)
       if: contains(matrix.os, 'ubuntu')
       run: |
-          cp /home/runner/.local/bin/fpm /usr/local/bin
+          sudo cp /home/runner/.local/bin/fpm /usr/local/bin
           
     - name: Run tests on Haskell fpm
       run: |
