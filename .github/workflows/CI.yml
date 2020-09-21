@@ -53,16 +53,18 @@ jobs:
       if: contains(matrix.os, 'macos')
       run: |
           mkdir /Users/runner/.local/bin
-          curl -L https://gist.github.com/certik/0e35f35753ae76f0f575d9b3d3f53633/raw/4cde02cc9215635c9401c2257a46be319e7ab6dd/osx-x86_64.tar.gz | tar xz --strip-components=1 --include '*/stack' -C /Users/runner/.local/bin
+          curl -L https://github.com/commercialhaskell/stack/releases/download/v2.3.3/stack-2.3.3-osx-x86_64.tar.gz | tar xz --strip-components=1 --include '*/stack' -C /Users/runner/.local/bin
 
     - name: Install Haskell Linux
       if: contains(matrix.os, 'ubuntu')
-      uses: mstksg/setup-stack@v1
+      run: |
+          mkdir -p /home/runner/.local/bin
+          curl -L https://github.com/commercialhaskell/stack/releases/download/v2.3.3/stack-2.3.3-linux-x86_64.tar.gz | tar --strip-components 1 --wildcards -xz */stack -C /home/runner/.local/bin
 
     - name: Install Haskell Windows
       if: contains(matrix.os, 'windows')
       run: |
-          (New-Object System.Net.WebClient).DownloadFile("https://get.haskellstack.org/stable/windows-x86_64.zip", "windows-x86_64.zip")
+          (New-Object System.Net.WebClient).DownloadFile("https://github.com/commercialhaskell/stack/releases/download/v2.3.3/stack-2.3.3-windows-x86_64.zip", "windows-x86_64.zip")
           mkdir stack-tmp
           cd stack-tmp
           unzip ..\windows-x86_64.zip
