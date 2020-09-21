@@ -25,6 +25,7 @@ contains
             & new_unittest("intrinsic-modules-used", test_intrinsic_modules_used), &
             & new_unittest("include-stmt", test_include_stmt), &
             & new_unittest("module", test_module), &
+            & new_unittest("program-with-module", test_program_with_module), &
             & new_unittest("submodule", test_submodule), &
             & new_unittest("submodule-ancestor", test_submodule_ancestor), &
             & new_unittest("subprogram", test_subprogram), &
@@ -258,7 +259,7 @@ contains
             & 'contains', &
             & 'module procedure f()', &
             & 'end procedure f', &
-            & 'end submodule test'
+            & 'end module test'
         close(unit)
 
         f_source = parse_f_source(temp_file,error)
@@ -287,11 +288,74 @@ contains
         end if
 
         if (.not.('module_one' .in. f_source%modules_used)) then
-            call test_failed(error,'Missing parent module in modules_used')
+            call test_failed(error,'Missing module in modules_used')
             return
         end if
 
     end subroutine test_module
+
+
+    !> Try to parse combined fortran module and program
+    !>  Check that parsed unit type is FPM_UNIT_PROGRAM
+    subroutine test_program_with_module(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'module my_mod', &
+            & 'use module_one', &
+            & 'interface', &
+            & '  module subroutine f()', &
+            & 'end interface', &
+            & 'contains', &
+            & 'module procedure f()', &
+            & 'end procedure f', &
+            & 'end module test', &
+            & 'program my_program', &
+            & 'use my_mod', &
+            & 'implicit none', &
+            & 'end my_program'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+            call test_failed(error,'Wrong unit type detected - expecting FPM_UNIT_PROGRAM')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error,'Unexpected modules_provided - expecting one')
+            return
+        end if
+
+        if (.not.('my_mod' .in. f_source%modules_provided)) then
+            call test_failed(error,'Missing module in modules_provided')
+            return
+        end if
+
+        if (.not.('module_one' .in. f_source%modules_used)) then
+            call test_failed(error,'Missing module in modules_used')
+            return
+        end if
+
+        if (.not.('my_mod' .in. f_source%modules_used)) then
+            call test_failed(error,'Missing module in modules_used')
+            return
+        end if
+
+    end subroutine test_program_with_module
 
 
     !> Try to parse fortran submodule for ancestry
@@ -308,7 +372,7 @@ contains
 
         open(file=temp_file, newunit=unit)
         write(unit, '(a)') &
-            & 'submodule (parent) :: child', &
+            & 'submodule (parent) child', &
             & 'use module_one', &
             & 'end submodule test'
         close(unit)
@@ -323,13 +387,18 @@ contains
             return
         end if
 
-        if (size(f_source%modules_provided) /= 0) then
-            call test_failed(error,'Unexpected modules_provided - expecting zero')
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error,'Unexpected modules_provided - expecting one')
             return
         end if
 
         if (size(f_source%modules_used) /= 2) then
             call test_failed(error,'Incorrect number of modules_used - expecting two')
+            return
+        end if
+
+        if (.not.('child' .in. f_source%modules_provided)) then
+            call test_failed(error,'Missing module in modules_provided')
             return
         end if
 
@@ -360,7 +429,7 @@ contains
 
         open(file=temp_file, newunit=unit)
         write(unit, '(a)') &
-            & 'submodule (ancestor:parent) :: child', &
+            & 'submodule (ancestor:parent) child', &
             & 'use module_one', &
             & 'end submodule test'
         close(unit)
@@ -375,13 +444,18 @@ contains
             return
         end if
 
-        if (size(f_source%modules_provided) /= 0) then
-            call test_failed(error,'Unexpected modules_provided - expecting zero')
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error,'Unexpected modules_provided - expecting one')
             return
         end if
 
         if (size(f_source%modules_used) /= 2) then
             call test_failed(error,'Incorrect number of modules_used - expecting two')
+            return
+        end if
+
+        if (.not.('child' .in. f_source%modules_provided)) then
+            call test_failed(error,'Missing module in modules_provided')
             return
         end if
 
