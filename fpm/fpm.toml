@@ -21,7 +21,17 @@ main = "cli_test.f90"
 
 [[test]]
 name = "fpm-test"
+<<<<<<< HEAD
 source-dir = "test/fpm_test"
 main = "main.f90"
 
+=======
+source-dir = "test/main"
+main = "main.f90"
+
+[[test]]
+name = "cli-test"
+source-dir = "test/cli_test"
+main = "cli_test.f90"
+>>>>>>> add test program for CLI
 

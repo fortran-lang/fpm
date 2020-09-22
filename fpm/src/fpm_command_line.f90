@@ -74,7 +74,11 @@ contains
 
         ! text for --version switch,
         version_text = [character(len=80) :: &
+<<<<<<< HEAD
            &  'VERSION:     0.1.0, Pre-alpha',                              &
+=======
+           &  'VERSION:     0.0.0, 20200920',                               &
+>>>>>>> add test program for CLI
            &  'PROGRAM:     fpm(1)',                                        &
            &  'DESCRIPTION: A Fortran package manager and build system',    &
            &  'HOME PAGE:   https://github.com/fortran-lang/fpm',           &
@@ -142,6 +146,7 @@ contains
 
         case('build')
          help_text=[character(len=80) :: &
+<<<<<<< HEAD
           'NAME                                                                  ', &
           '    build(1) - the fpm(1) subcommand to build a project               ', &
           'SYNOPSIS                                                              ', &
@@ -175,6 +180,39 @@ contains
           '  fpm build -release # build with high optimization                   ', &
           'SEE ALSO                                                              ', &
           ' The fpm(1) home page is https://github.com/fortran-lang/fpm          ', &
+=======
+          'NAME                                                    ', &
+          '     build(1) - the fpm(1) subcommand to build a project', &
+          'SYNOPSIS                                                ', &
+          ' fpm build [--release] build                            ', &
+          ' fpm build --help|--version|--usage                     ', &
+          '                                                        ', &
+          'DESCRIPTION                                             ', &
+          ' Finds the Fortran source files in app/, test/, and     ', &
+          ' src/ by default; determines the dependencies           ', &
+          ' between the files and rebuilds unbuilt or changed      ', &
+          ' files. The results are placed in the build/ directory. ', &
+          '                                                        ', &
+          ' Non-default pathnames are used if specified in the     ', &
+          ' "fpm.toml" file.                                       ', &
+          '                                                        ', &
+          ' Remote dependencies are satisfied as well if specified ', &
+          ' in the "fpm.toml" file.                                ', &
+          '                                                        ', &
+          'OPTIONS                                                 ', &
+          ' --release  build in build/*_release instead of         ', &
+          '            build/*_debug/ with high optimization       ', &
+          '            instead of full debug options.              ', &
+          ' --help     print this help and exit                    ', &
+          ' --version  print program version information and exit  ', &
+          ' --usage    show table of options and exit              ', &
+          '                                                        ', &
+          'EXAMPLES                                                ', &
+          ' Sample commands:                                       ', &
+          '                                                        ', &
+          '  fpm build          # build with debug options         ', &
+          '  fpm build -release # build with high optimization     ', &
+>>>>>>> add test program for CLI
           '' ]
          call set_args( '--release F --list F --',help_text,version_text )
 
@@ -182,6 +220,7 @@ contains
          cmd_settings=fpm_build_settings( release=lget('release'),list=lget('list') )
 
         case('new')
+<<<<<<< HEAD
          help_text=[character(len=80) ::                                      &
           'NAME                                                            ', &
           '   new(1) - the fpm(1) subcommand to initialize a new project   ', &
@@ -226,18 +265,53 @@ contains
           ' The fpm(1) home page is https://github.com/fortran-lang/fpm    ', &
           '                                                                ', &
           ' Registered packages are at https://fortran-lang.org/packages   ', &
+=======
+         help_text=[character(len=80) ::                                     &
+          'NAME                                                           ', &
+          '     new(1) - the fpm(1) subcommand to initialize a new project', &
+          'SYNOPSIS                                                       ', &
+          ' fpm new NAME [--with-executable] [--with-test]                ', &
+          '                                                               ', &
+          ' fpm new --help|--version|--usage                              ', &
+          '                                                               ', &
+          'DESCRIPTION                                                    ', &
+          ' Create a new project in a new directory                       ', &
+          '                                                               ', &
+          ' The "new" subcommand creates a directory and runs the command ', &
+          ' "git init" in that directory and makes an example fpm.toml    ', &
+          ' file, a src/ directory, and optionally a test/ and app/       ', &
+          ' directory with trivial example Fortran source files.          ', &
+          '                                                               ', &
+          'EXAMPLES                                                       ', &
+          ' Enter the directory and run commands such as                  ', &
+          '                                                               ', &
+          '   fpm new myproject                                           ', &
+          '   cd myproject                                                ', &
+          '   fpm build                                                   ', &
+          '   fpm run  # if you selected --with-executable                ', &
+          '   fpm test # if you selected --with-test                      ', &
+          '                                                               ', &
+>>>>>>> add test program for CLI
           '' ]
          call set_args(' --with-executable F --with-test F --lib F --app F --test F', help_text, version_text)
          select case(size(unnamed))
          case(1)
+<<<<<<< HEAD
             write(stderr,'(*(g0))')'ERROR: directory name required'
             write(stderr,'(*(g0))')'       usage: fpm new NAME [--with-executable] [--with-test]'
+=======
+            write(stderr,*)'FPM:NEW: directory name required'
+>>>>>>> add test program for CLI
             stop 1
          case(2)
             name=trim(unnamed(2))
          case default
+<<<<<<< HEAD
             write(stderr,'(*(g0))')'ERROR: only one directory name allowed'
             write(stderr,'(*(g0))')'       usage: fpm new NAME [--with-executable] [--with-test]'
+=======
+            write(stderr,*)'FPM:NEW: only one directory name allowed'
+>>>>>>> add test program for CLI
             stop 2
          end select
 
@@ -346,6 +420,7 @@ contains
                case default     ; help_text=[character(len=80) :: help_text, "    UNKNOWN" ]
             end select
          help_text=[character(len=80) :: help_text, &
+<<<<<<< HEAD
           'SYNOPSIS                                                                        ', &
           '   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                          ', &
           '                                                                                ', &
@@ -414,6 +489,70 @@ contains
          write(stderr,'(g0)')(trim(help_text(i)), i=1, size(help_text) )
          !!stop 3 ! causes github site tests to fail
          stop
+=======
+           'SYNTAX                                                                          ', &
+           '   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                          ', &
+           '                                                                                ', &
+           '   fpm --help|--version|--usage                                                 ', &
+           '                                                                                ', &
+           'DESCRIPTION                                                                     ', &
+           '   fpm is a package manager that helps you create Fortran projects that are     ', &
+           '   optionally dependent on multiple files and other fpm(1) packages.            ', &
+           '                                                                                ', &
+           '   Most significantly fpm(1) lets you pull upon other fpm(1) packages in        ', &
+           '   distributed git(1) repositories as if the packages were a basic part         ', &
+           '   of your default programming environment, as well as letting you share        ', &
+           '   your projects with others in a similiar manner.                              ', &
+           '                                                                                ', &
+           '   See the fpm(1) repository for a listing of such available projects.          ', &
+           '                                                                                ', &
+           '   All output goes into the directory "build/".                                 ', &
+           '                                                                                ', &
+           'SUBCOMMANDS                                                                     ', &
+           '   Valid fpm subcommands are:                                                   ', &
+           '                                                                                ', &
+           '     build [--release]  Compile the packages into the "build/" directory.       ', &
+           '     new NAME [--with-executable] [--with-test]                                 ', &
+           '                        Create a new Fortran package directory                  ', &
+           '                        with sample files                                       ', &
+           '     run [NAME(s)] [--release] [--list] [-- ARGS]                               ', &
+           '                        Run the local package binaries. defaults to all         ', &
+           '                        binaries for that release.                              ', &
+           '     test [NAME(s)] [--release] [-- ARGS]                                       ', &
+           '                        Run the tests                                           ', &
+           'SUBCOMMAND OPTIONS                                                              ', &
+           '   --release       Builds or runs in release mode (versus debug mode). fpm(1)   ', &
+           '                   Defaults to using common compiler debug flags and building   ', &
+           '                   in "build/gfortran_debug/". When this flag is present build  ', &
+           '                   output goes into "build/gfortran_release/" and common        ', &
+           '                   compiler optimization flags are used.                        ', &
+           '   --list          list candidates instead of building or running them          ', &
+           '   -- ARGS         Arguments to pass to executables/tests                       ', &
+           '   --help          Show this help text and exit. Valid for all subcommands.     ', &
+           '   --version       Show version information and exit. Valid for all subcommands.', &
+           'EXAMPLES                                                                        ', &
+           ' sample commands:                                                               ', &
+           '                                                                                ', &
+           '    fpm build                                                                   ', &
+           '    fpm test                                                                    ', &
+           '    fpm run                                                                     ', &
+           '    fpm new --help                                                              ', &
+           '    fpm new mypackage --with-executable --with-test                             ', &
+           '    fpm run myprogram --release -- -x 10 -y 20 --title "my title"               ', &
+           'SEE ALSO                                                                        ', &
+           ' For examples and documentation see https://github.com/fortran-lang/fpm         ', &
+           '']
+
+         call set_args(' ', help_text, version_text)
+         ! Note: will not get here if --version or --usage or --help is present on commandline
+         write(stderr,'(*(a))')'*fpm* error: unknown or missing subcommand [', trim(cmdarg), ']'
+         help_text=[character(len=80) ::                                                  &
+           '      Usage: fpm [COMMAND [[--release] [--]|[--help|--version|--usage]     ', &
+           '      Enter "fpm --help" for more information                              ', &
+           '' ]
+         write(stderr,'(g0)')(trim(help_text(i)), i=1, size(help_text) )
+         stop 3
+>>>>>>> add test program for CLI
 
         end select
    end subroutine get_command_line_settings
