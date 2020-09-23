@@ -185,7 +185,7 @@ contains
           '     build(1) - the fpm(1) subcommand to build a project', &
           'SYNOPSIS                                                ', &
           ' fpm build [--release] build                            ', &
-          ' fpm build --help|--version|--usage                     ', &
+          ' fpm build --help|--version                             ', &
           '                                                        ', &
           'DESCRIPTION                                             ', &
           ' Finds the Fortran source files in app/, test/, and     ', &
@@ -205,7 +205,6 @@ contains
           '            instead of full debug options.              ', &
           ' --help     print this help and exit                    ', &
           ' --version  print program version information and exit  ', &
-          ' --usage    show table of options and exit              ', &
           '                                                        ', &
           'EXAMPLES                                                ', &
           ' Sample commands:                                       ', &
@@ -272,7 +271,7 @@ contains
           'SYNOPSIS                                                       ', &
           ' fpm new NAME [--with-executable] [--with-test]                ', &
           '                                                               ', &
-          ' fpm new --help|--version|--usage                              ', &
+          ' fpm new --help|--version                                      ', &
           '                                                               ', &
           'DESCRIPTION                                                    ', &
           ' Create a new project in a new directory                       ', &
@@ -493,7 +492,7 @@ contains
            'SYNTAX                                                                          ', &
            '   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                          ', &
            '                                                                                ', &
-           '   fpm --help|--version|--usage                                                 ', &
+           '   fpm --help|--version                                                         ', &
            '                                                                                ', &
            'DESCRIPTION                                                                     ', &
            '   fpm is a package manager that helps you create Fortran projects that are     ', &
@@ -547,7 +546,7 @@ contains
          ! Note: will not get here if --version or --usage or --help is present on commandline
          write(stderr,'(*(a))')'*fpm* error: unknown or missing subcommand [', trim(cmdarg), ']'
          help_text=[character(len=80) ::                                                  &
-           '      Usage: fpm [COMMAND [[--release] [--]|[--help|--version|--usage]     ', &
+           '      Usage: fpm [COMMAND [[--release] [--]|[--help|--version]             ', &
            '      Enter "fpm --help" for more information                              ', &
            '' ]
          write(stderr,'(g0)')(trim(help_text(i)), i=1, size(help_text) )
