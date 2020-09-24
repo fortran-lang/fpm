@@ -15,7 +15,7 @@ git = "https://github.com/urbanjost/M_CLI2.git"
 rev = "5c7df1267c918ec2b1b8e2c6a0ac000367b562cf"
 
 [[test]]
-name = "cli-test"
+name = "cli_test"
 source-dir = "test/cli_test"
 main = "cli_test.f90"
 
