@@ -12,12 +12,22 @@ tag = "v0.2"
 
 [dependencies.M_CLI2]
 git = "https://github.com/urbanjost/M_CLI2.git"
+<<<<<<< HEAD
 rev = "5c7df1267c918ec2b1b8e2c6a0ac000367b562cf"
+=======
+rev = "a177b0077819571815fa6a8da6980bcb45443858"
 
 [[test]]
-name = "cli_test"
+name = "cli-test"
 source-dir = "test/cli_test"
 main = "cli_test.f90"
+
+[[test]]
+name = "fpm-test"
+source-dir = "test/fpm_test"
+main = "main.f90"
+>>>>>>> try one more like previous build to clear error
+
 
 [[test]]
 name = "fpm-test"
