@@ -182,7 +182,6 @@ contains
          cmd_settings=fpm_build_settings( release=lget('release'),list=lget('list') )
 
         case('new')
-<<<<<<< HEAD
          help_text=[character(len=80) ::                                      &
           'NAME                                                            ', &
           '   new(1) - the fpm(1) subcommand to initialize a new project   ', &
@@ -227,39 +226,6 @@ contains
           ' The fpm(1) home page is https://github.com/fortran-lang/fpm    ', &
           '                                                                ', &
           ' Registered packages are at https://fortran-lang.org/packages   ', &
-=======
-         help_text=[character(len=80) ::                                     &
-          'NAME                                                           ', &
-          '   new(1) - the fpm(1) subcommand to initialize a new project  ', &
-          'SYNOPSIS                                                       ', &
-          ' fpm new NAME [--with-executable] [--with-test]                ', &
-          '                                                               ', &
-          ' fpm new --help|--version                                      ', &
-          '                                                               ', &
-          'DESCRIPTION                                                    ', &
-          ' Create a new programming project in a new directory           ', &
-          '                                                               ', &
-          ' The "new" subcommand creates a directory and runs the command ', &
-          ' "git init" in that directory and makes an example "fpm.toml"  ', &
-          ' file, a src/ directory, and optionally a test/ and app/       ', &
-          ' directory with trivial example Fortran source files.          ', &
-          '                                                               ', &
-          ' Remember to update the information in the sample "fpm.toml"   ', &
-          ' file with such information as your name and e-mail address.   ', &
-          '                                                               ', &
-          'EXAMPLES                                                       ', &
-          ' Sample use                                                    ', &
-          '                                                               ', &
-          '   # create new project directory and seed it                  ', &
-          '   fpm new myproject                                           ', &
-          '   # Enter the new directory                                   ', &
-          '   cd myproject                                                ', &
-          '   # and run commands such as                                  ', &
-          '   fpm build                                                   ', &
-          '   fpm run  # if you selected --with-executable                ', &
-          '   fpm test # if you selected --with-test                      ', &
-          '                                                               ', &
->>>>>>> try one more like previous build to clear error
           '' ]
          call set_args(' --with-executable F --with-test F --lib F --app F --test F', help_text, version_text)
          select case(size(unnamed))
@@ -443,11 +409,7 @@ contains
          endif
          help_text=[character(len=80) ::                                            &
            'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ] | [|--help|--version] ', &
-<<<<<<< HEAD
            '       Enter "fpm --help" for more information                       ', &
-=======
-           '       Enter "fpm --help" for more information                        , &
->>>>>>> try one more like previous build to clear error
            '' ]
          write(stderr,'(g0)')(trim(help_text(i)), i=1, size(help_text) )
          !!stop 3 ! causes github site tests to fail
