@@ -123,7 +123,8 @@ contains
          endif
 
          allocate(fpm_run_settings :: cmd_settings)
-         cmd_settings=fpm_run_settings( name=names, release=lget('release'), args=remaining )
+         cmd_settings=fpm_run_settings( name=names, list=lget('list'), &
+          & release=lget('release'), args=remaining )
 
         case('build')
          help_text=[character(len=80) :: &
