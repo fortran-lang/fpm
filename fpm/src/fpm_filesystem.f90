@@ -5,8 +5,8 @@ module fpm_filesystem
     use fpm_strings, only: f_string, string_t, split
     implicit none
     private
-    public :: basename, join_path, number_of_rows, read_lines, list_files, &
-              mkdir, exists, get_temp_filename, windows_path
+    public :: basename, dirname, is_dir, join_path, number_of_rows, read_lines, list_files,&
+            mkdir, exists, get_temp_filename, windows_path
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -38,6 +38,19 @@ function basename(path,suffix) result (base)
     end if
 
 end function basename
+
+
+function dirname(path) result (dir)
+    ! Extract dirname from path
+    !
+    character(*), intent(In) :: path
+    character(:), allocatable :: dir
+
+    character(:), allocatable :: file_parts(:)
+
+    dir = path(1:scan(path,'/\',back=.true.))
+
+end function dirname
 
 
 logical function is_dir(dir) 

@@ -3,8 +3,10 @@ use fpm_error, only: error_t, file_parse_error
 use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
-                    FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER
-use fpm_filesystem, only: basename, read_lines, list_files
+                    FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
+                    FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
+                    
+use fpm_filesystem, only: basename, dirname, read_lines, list_files
 use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.)
 use fpm_manifest_executable, only: executable_t
 implicit none
@@ -22,11 +24,12 @@ character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
 
 contains
 
-subroutine add_sources_from_dir(sources,directory,with_executables,error)
+subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
     ! Enumerate sources in a directory
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     character(*), intent(in) :: directory
+    integer, intent(in) :: scope
     logical, intent(in), optional :: with_executables
     type(error_t), allocatable, intent(out) :: error
 
@@ -34,14 +37,25 @@ subroutine add_sources_from_dir(sources,directory,with_executables,error)
     logical, allocatable :: is_source(:), exclude_source(:)
     type(string_t), allocatable :: file_names(:)
     type(string_t), allocatable :: src_file_names(:)
+    type(string_t), allocatable :: existing_src_files(:)
     type(srcfile_t), allocatable :: dir_sources(:)
 
     ! Scan directory for sources
     call list_files(directory, file_names,recurse=.true.)
 
-    is_source = [(str_ends_with(lower(file_names(i)%s), ".f90") .or. &
-                  str_ends_with(lower(file_names(i)%s), ".c") .or. &
-                  str_ends_with(lower(file_names(i)%s), ".h"),i=1,size(file_names))]
+    if (allocated(sources)) then
+        allocate(existing_src_files(size(sources)))
+        do i=1,size(sources)
+            existing_src_files(i)%s = sources(i)%file_name
+        end do
+    else
+        allocate(existing_src_files(0))
+    end if
+
+    is_source = [(.not.(file_names(i)%s .in. existing_src_files) .and. &
+                  (str_ends_with(lower(file_names(i)%s), ".f90") .or. &
+                   str_ends_with(lower(file_names(i)%s), ".c") .or. &
+                   str_ends_with(lower(file_names(i)%s), ".h") ),i=1,size(file_names))]
     src_file_names = pack(file_names,is_source)
 
     allocate(dir_sources(size(src_file_names)))
@@ -70,6 +84,8 @@ subroutine add_sources_from_dir(sources,directory,with_executables,error)
 
         end if
 
+        dir_sources(i)%unit_scope = scope
+
         ! Exclude executables unless specified otherwise
         exclude_source(i) = (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM)
         if (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM .and. &
@@ -93,58 +109,42 @@ subroutine add_sources_from_dir(sources,directory,with_executables,error)
 end subroutine add_sources_from_dir
 
 
-subroutine add_executable_sources(sources,executables,is_test,error)
-    ! Add sources from executable directories specified in manifest
-    ! Only allow executables that are explicitly specified in manifest
-    !
+subroutine add_executable_sources(sources,executables,scope,error)
+    ! Include sources from any directories specified 
+    !  in [[executable]] entries and apply any customisations
+    !  
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     class(executable_t), intent(in) :: executables(:)
-    logical, intent(in) :: is_test
+    integer, intent(in) :: scope
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
 
     type(string_t), allocatable :: exe_dirs(:)
-    logical, allocatable :: exclude_source(:)
-    type(srcfile_t), allocatable :: dir_sources(:)
 
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
-
-        call add_sources_from_dir(dir_sources,exe_dirs(i)%s, &
-                     with_executables=.true.,error=error)
+        call add_sources_from_dir(sources,exe_dirs(i)%s, &
+                     scope, with_executables=.true.,error=error)
 
         if (allocated(error)) then
             return
         end if
-
     end do
 
-    allocate(exclude_source(size(dir_sources)))
-
-    do i = 1, size(dir_sources)
-
-        ! Only allow executables in 'executables' list
-        exclude_source(i) = (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM)
+    do i = 1, size(sources)
         
         do j=1,size(executables)
-            if (basename(dir_sources(i)%file_name,suffix=.true.) == &
+            if (basename(sources(i)%file_name,suffix=.true.) == &
                                          executables(j)%main) then
-                exclude_source(i) = .false.
-                dir_sources(i)%exe_name = executables(j)%name
-                dir_sources(i)%is_test = is_test
+                                            
+                sources(i)%exe_name = executables(j)%name
                 exit
             end if
         end do
 
     end do
-
-    if (.not.allocated(sources)) then
-        sources = pack(dir_sources,.not.exclude_source)
-    else
-        sources = [sources, pack(dir_sources,.not.exclude_source)]
-    end if
 
 end subroutine add_executable_sources
 
@@ -571,14 +571,21 @@ subroutine resolve_module_dependencies(sources)
                     ! Dependency satisfied in same file, skip
                     cycle
                 end if
-
-                dep%ptr => find_module_dependency(sources,sources(i)%modules_used(j)%s)
+            
+                if (sources(i)%unit_type == FPM_UNIT_PROGRAM) then
+                    dep%ptr => &
+                        find_module_dependency(sources,sources(i)%modules_used(j)%s, &
+                                            include_dir = dirname(sources(i)%file_name))
+                else
+                    dep%ptr => &
+                        find_module_dependency(sources,sources(i)%modules_used(j)%s)
+                end if
 
                 if (.not.associated(dep%ptr)) then
                     write(*,*) '(!) Unable to find source for module dependency: ', &
                                sources(i)%modules_used(j)%s
                     write(*,*) '    for file ',sources(i)%file_name
-                    ! stop
+                    error stop
                 end if
 
                 n_depend = n_depend + 1
@@ -599,9 +606,15 @@ subroutine resolve_module_dependencies(sources)
 
 end subroutine resolve_module_dependencies
 
-function find_module_dependency(sources,module_name) result(src_ptr)
+function find_module_dependency(sources,module_name,include_dir) result(src_ptr)
+    ! Find a module dependency in the library or a dependency library
+    !
+    ! 'include_dir' specifies an allowable non-library search directory
+    !   (Used for executable dependencies)
+    !
     type(srcfile_t), intent(in), target :: sources(:)
     character(*), intent(in) :: module_name
+    character(*), intent(in), optional :: include_dir
     type(srcfile_t), pointer :: src_ptr
 
     integer :: k, l
@@ -613,8 +626,18 @@ function find_module_dependency(sources,module_name) result(src_ptr)
         do l=1,size(sources(k)%modules_provided)
 
             if (module_name == sources(k)%modules_provided(l)%s) then
-                src_ptr => sources(k)
-                exit
+                select case(sources(k)%unit_scope)
+                case (FPM_SCOPE_LIB, FPM_SCOPE_DEP)
+                    src_ptr => sources(k)
+                    exit
+                case default
+                    if (present(include_dir)) then
+                        if (dirname(sources(k)%file_name) == include_dir) then
+                            src_ptr => sources(k)
+                            exit
+                        end if
+                    end if
+                end select
             end if
 
         end do

@@ -4,8 +4,11 @@ use fpm_strings, only: string_t, str_ends_with
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings
 use fpm_environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_filesystem, only: join_path, number_of_rows, list_files, exists
-use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t
+use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists
+use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
+                    FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
+                    FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
+
 use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
                        resolve_module_dependencies
 use fpm_manifest, only : get_package_data, default_executable, &
@@ -37,20 +40,36 @@ subroutine build_model(model, settings, package, error)
     model%link_flags = ''
 
     ! Add sources from executable directories
-    if (allocated(package%executable)) then
+    if (is_dir('app')) then
+        call add_sources_from_dir(model%sources,'app', FPM_SCOPE_APP, &
+                                   with_executables=.true., error=error)
 
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+    if (is_dir('test')) then
+        call add_sources_from_dir(model%sources,'test', FPM_SCOPE_TEST, &
+                                   with_executables=.true., error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+    if (allocated(package%executable)) then
         call add_executable_sources(model%sources, package%executable, &
-                                     is_test=.false., error=error)
-                        
+                                     FPM_SCOPE_APP, error=error)
+
         if (allocated(error)) then
             return
         end if
 
     end if
     if (allocated(package%test)) then
-
         call add_executable_sources(model%sources, package%test, &
-                                     is_test=.true., error=error)
+                                     FPM_SCOPE_TEST, error=error)
 
         if (allocated(error)) then
             return
@@ -59,9 +78,8 @@ subroutine build_model(model, settings, package, error)
     end if
 
     if (allocated(package%library)) then
-
-        call add_sources_from_dir(model%sources,package%library%source_dir, &
-                                      error=error)
+        call add_sources_from_dir(model%sources, package%library%source_dir, &
+                                    FPM_SCOPE_LIB, error=error)
 
         if (allocated(error)) then
             return
@@ -90,8 +108,9 @@ if (.not.allocated(package%library) .and. exists("src")) then
     call default_library(package%library)
 end if
 
-! Populate executable in case we find the default app directory
-if (.not.allocated(package%executable) .and. exists("app")) then
+! Populate executable in case we find the default app
+if (.not.allocated(package%executable) .and. &
+     exists(join_path('app',"main.f90"))) then
     allocate(package%executable(1))
     call default_executable(package%executable(1), package%name)
 end if

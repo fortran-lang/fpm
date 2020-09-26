@@ -6,7 +6,9 @@ use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, join_path, exists, mkdir
 use fpm_model, only: fpm_model_t, srcfile_t, FPM_UNIT_MODULE, &
                      FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
-                     FPM_UNIT_CSOURCE, FPM_UNIT_PROGRAM
+                     FPM_UNIT_CSOURCE, FPM_UNIT_PROGRAM, &
+                     FPM_SCOPE_TEST
+                     
 use fpm_strings, only: split
 
 implicit none
@@ -59,7 +61,7 @@ subroutine build_package(model)
             
             base = basename(model%sources(i)%file_name,suffix=.false.)
             
-            if (model%sources(i)%is_test) then
+            if (model%sources(i)%unit_scope == FPM_SCOPE_TEST) then
                 subdir = 'test'
             else
                 subdir = 'app'
