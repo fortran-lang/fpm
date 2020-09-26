@@ -1,5 +1,5 @@
 module fpm_sources
-use fpm_error, only: error_t, file_parse_error
+use fpm_error, only: error_t, file_parse_error, fatal_error
 use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -549,11 +549,12 @@ function split_n(string,delims,n,stat) result(substring)
 end function split_n
 
 
-subroutine resolve_module_dependencies(sources)
+subroutine resolve_module_dependencies(sources,error)
     ! After enumerating all source files: resolve file dependencies
     !  by searching on module names
     !
     type(srcfile_t), intent(inout), target :: sources(:)
+    type(error_t), allocatable, intent(out) :: error
 
     type(srcfile_ptr) :: dep
 
@@ -583,10 +584,11 @@ subroutine resolve_module_dependencies(sources)
                 end if
 
                 if (.not.associated(dep%ptr)) then
-                    write(*,*) '(!) Unable to find source for module dependency: ', &
-                               sources(i)%modules_used(j)%s
-                    write(*,*) '    for file ',sources(i)%file_name
-                    error stop
+                    call fatal_error(error, &
+                            'Unable to find source for module dependency: "' // &
+                            sources(i)%modules_used(j)%s // &
+                            '" used by "'//sources(i)%file_name//'"')
+                    return
                 end if
 
                 n_depend = n_depend + 1

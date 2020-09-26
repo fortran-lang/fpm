@@ -87,7 +87,7 @@ subroutine build_model(model, settings, package, error)
 
     end if
 
-    call resolve_module_dependencies(model%sources)
+    call resolve_module_dependencies(model%sources,error)
 
 end subroutine build_model
 
