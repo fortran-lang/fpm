@@ -572,7 +572,8 @@ subroutine resolve_module_dependencies(sources)
                     cycle
                 end if
             
-                if (sources(i)%unit_type == FPM_UNIT_PROGRAM) then
+                if (sources(i)%unit_scope == FPM_SCOPE_APP .OR. &
+                    sources(i)%unit_scope == FPM_SCOPE_TEST ) then
                     dep%ptr => &
                         find_module_dependency(sources,sources(i)%modules_used(j)%s, &
                                             include_dir = dirname(sources(i)%file_name))
