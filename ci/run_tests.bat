@@ -43,6 +43,13 @@ if errorlevel 1 exit 1
 if errorlevel 1 exit 1
 
 
+cd ..\circular_example
+if errorlevel 1 exit 1
+
+..\..\..\fpm\build\gfortran_debug\app\fpm build
+if errorlevel 1 exit 1
+
+
 cd ..\hello_complex
 if errorlevel 1 exit 1
 

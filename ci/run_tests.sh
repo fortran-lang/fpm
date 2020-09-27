@@ -19,6 +19,9 @@ cd ../hello_fpm
 cd ../circular_test
 ../../../fpm/build/gfortran_debug/app/fpm build
 
+cd ../circular_example
+../../../fpm/build/gfortran_debug/app/fpm build
+
 cd ../hello_complex
 ../../../fpm/build/gfortran_debug/app/fpm build
 ./build/gfortran_debug/app/say_Hello
