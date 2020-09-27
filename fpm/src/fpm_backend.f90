@@ -3,7 +3,7 @@ module fpm_backend
 ! Implements the native fpm build backend
 
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
-use fpm_filesystem, only: basename, join_path, exists, mkdir
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir
 use fpm_model, only: fpm_model_t, srcfile_t, FPM_UNIT_MODULE, &
                      FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                      FPM_UNIT_CSOURCE, FPM_UNIT_PROGRAM, &
@@ -113,6 +113,10 @@ recursive subroutine build_source(model,source_file,linking)
 
     object_file = get_object_name(model,source_file%file_name)
     
+    if (.not.exists(dirname(object_file))) then
+        call mkdir(dirname(object_file))
+    end if
+
     call run("gfortran -c " // source_file%file_name // model%fortran_compile_flags &
               // " -o " // object_file)
     linking = linking // " " // object_file
@@ -144,13 +148,6 @@ function get_object_name(model,source_file_name) result(object_file)
 
     ! Exclude first directory level from path
     object_file = source_file_name(index(source_file_name,filesep)+1:)
-
-    ! Convert remaining directory separators to underscores
-    i = index(object_file,filesep)
-    do while(i > 0)
-        object_file(i:i) = '_'
-        i = index(object_file,filesep)
-    end do
 
     ! Construct full target path
     object_file = join_path(model%output_directory, model%package_name, &
