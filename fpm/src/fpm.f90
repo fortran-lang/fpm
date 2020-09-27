@@ -69,7 +69,7 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
         if (allocated(error)) then
             return
         end if
-        
+
     end if
 
     contains
@@ -97,11 +97,11 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
             if (allocated(dependency_list(i)%path)) then
 
                 call get_package_data(dependency, &
-                      join_path(dependency_list(i)%path,"fpm.toml"), error)
+                      join_path(package_root,dependency_list(i)%path,"fpm.toml"), error)
 
                 if (allocated(error)) then
                     error%message = 'Error while parsing manifest for dependency package at:'//&
-                                    new_line('a')//join_path(dependency_list(i)%path,"fpm.toml")//&
+                                    new_line('a')//join_path(package_root,dependency_list(i)%path,"fpm.toml")//&
                                     new_line('a')//error%message
                     return
                 end if
