@@ -1,6 +1,5 @@
 module fpm
-
-use fpm_strings, only: string_t, str_ends_with
+use fpm_strings, only: string_t, str_ends_with, operator(.in.)
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
@@ -14,7 +13,7 @@ use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
                        resolve_module_dependencies
 use fpm_manifest, only : get_package_data, default_executable, &
                          default_library, package_t
-use fpm_error, only : error_t
+use fpm_error, only : error_t, fatal_error
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -25,6 +24,90 @@ public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
 
 contains
 
+
+recursive subroutine add_libsources_from_package(sources,package_list,package,package_root,error)
+    ! Discover library sources in a package, recursively including dependencies
+    !  Only supports local path dependencies currently
+    !
+    type(srcfile_t), allocatable, intent(inout), target :: sources(:)
+    type(string_t), allocatable, intent(inout) :: package_list(:)
+    type(package_t), intent(in) :: package
+    character(*), intent(in) :: package_root
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: i
+    type(string_t) :: dep_name
+    type(package_t) :: dependency
+
+    ! Add package library sources
+    if (allocated(package%library)) then
+
+        call add_sources_from_dir(sources, join_path(package_root,package%library%source_dir), &
+                                    FPM_SCOPE_LIB, error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+
+    ! Add library sources from dependencies
+    if (allocated(package%dependency)) then
+
+        do i=1,size(package%dependency)
+            
+            if (allocated(package%dependency(i)%git)) then
+
+                call fatal_error(error,'Remote dependencies not implemented')
+                return
+
+            end if
+
+            if (allocated(package%dependency(i)%path)) then
+
+                call get_package_data(dependency, &
+                      join_path(package%dependency(i)%path,"fpm.toml"), error)
+
+                if (allocated(error)) then
+                    error%message = 'Error while parsing manifest for dependency package at:'//&
+                                    new_line('a')//join_path(package%dependency(i)%path,"fpm.toml")//&
+                                    new_line('a')//error%message
+                    return
+                end if
+
+                if (dependency%name .in. package_list) then
+                    cycle
+                end if
+
+                if (.not.allocated(dependency%library) .and. &
+                     exists(join_path(package_root,package%dependency(i)%path,"src"))) then
+                    allocate(dependency%library)
+                    dependency%library%source_dir = "src"
+                end if
+
+                
+                call add_libsources_from_package(sources,package_list,dependency, &
+                    package_root=join_path(package_root,package%dependency(i)%path), error=error)
+                
+                if (allocated(error)) then
+                    error%message = 'Error while processing sources for dependency package "'//&
+                                    new_line('a')//dependency%name//'"'//&
+                                    new_line('a')//error%message
+                    return
+                end if
+
+                dep_name%s = dependency%name
+                package_list = [package_list, dep_name]
+
+            end if
+
+        end do
+
+    end if
+
+end subroutine add_libsources_from_package
+
+
 subroutine build_model(model, settings, package, error)
     ! Constructs a valid fpm model from command line settings and toml manifest
     !
@@ -33,7 +116,12 @@ subroutine build_model(model, settings, package, error)
     type(package_t), intent(in) :: package
     type(error_t), allocatable, intent(out) :: error
 
+    type(string_t), allocatable :: package_list(:)
+
     model%package_name = package%name
+
+    allocate(package_list(1))
+    package_list(1)%s = package%name
 
     ! #TODO: Choose flags and output directory based on cli settings & manifest inputs
     model%fortran_compiler = 'gfortran'
@@ -94,14 +182,11 @@ subroutine build_model(model, settings, package, error)
 
     end if
 
-    if (allocated(package%library)) then
-        call add_sources_from_dir(model%sources, package%library%source_dir, &
-                                    FPM_SCOPE_LIB, error=error)
-
-        if (allocated(error)) then
-            return
-        end if
-
+    ! Add library sources, including local dependencies
+    call add_libsources_from_package(model%sources,package_list,package, &
+                                      package_root='.',error=error)
+    if (allocated(error)) then
+        return
     end if
 
     call resolve_module_dependencies(model%sources,error)
