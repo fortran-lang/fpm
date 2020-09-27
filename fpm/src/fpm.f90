@@ -17,6 +17,7 @@ use fpm_error, only : error_t, fatal_error
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
+use fpm_manifest_dependency, only: dependency_t
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
@@ -25,7 +26,8 @@ public :: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
 contains
 
 
-recursive subroutine add_libsources_from_package(sources,package_list,package,package_root,error)
+recursive subroutine add_libsources_from_package(sources,package_list,package, &
+                                                  package_root,dev_depends,error)
     ! Discover library sources in a package, recursively including dependencies
     !  Only supports local path dependencies currently
     !
@@ -33,11 +35,8 @@ recursive subroutine add_libsources_from_package(sources,package_list,package,pa
     type(string_t), allocatable, intent(inout) :: package_list(:)
     type(package_t), intent(in) :: package
     character(*), intent(in) :: package_root
+    logical, intent(in) :: dev_depends
     type(error_t), allocatable, intent(out) :: error
-
-    integer :: i
-    type(string_t) :: dep_name
-    type(package_t) :: dependency
 
     ! Add package library sources
     if (allocated(package%library)) then
@@ -54,40 +53,69 @@ recursive subroutine add_libsources_from_package(sources,package_list,package,pa
     ! Add library sources from dependencies
     if (allocated(package%dependency)) then
 
-        do i=1,size(package%dependency)
+        call add_local_dependencies(package%dependency)
+
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+
+    ! Add library sources from dev-dependencies
+    if (dev_depends .and. allocated(package%dev_dependency)) then
+
+        call add_local_dependencies(package%dev_dependency)
+
+        if (allocated(error)) then
+            return
+        end if
+        
+    end if
+
+    contains
+
+    subroutine add_local_dependencies(dependency_list)
+        type(dependency_t) :: dependency_list(:)
+
+        integer :: i
+        type(string_t) :: dep_name
+        type(package_t) :: dependency
+
+        do i=1,size(dependency_list)
             
-            if (allocated(package%dependency(i)%git)) then
+            if (dependency_list(i)%name .in. package_list) then
+                cycle
+            end if
+
+            if (allocated(dependency_list(i)%git)) then
 
                 call fatal_error(error,'Remote dependencies not implemented')
                 return
 
             end if
 
-            if (allocated(package%dependency(i)%path)) then
+            if (allocated(dependency_list(i)%path)) then
 
                 call get_package_data(dependency, &
-                      join_path(package%dependency(i)%path,"fpm.toml"), error)
+                      join_path(dependency_list(i)%path,"fpm.toml"), error)
 
                 if (allocated(error)) then
                     error%message = 'Error while parsing manifest for dependency package at:'//&
-                                    new_line('a')//join_path(package%dependency(i)%path,"fpm.toml")//&
+                                    new_line('a')//join_path(dependency_list(i)%path,"fpm.toml")//&
                                     new_line('a')//error%message
                     return
                 end if
 
-                if (dependency%name .in. package_list) then
-                    cycle
-                end if
-
                 if (.not.allocated(dependency%library) .and. &
-                     exists(join_path(package_root,package%dependency(i)%path,"src"))) then
+                     exists(join_path(package_root,dependency_list(i)%path,"src"))) then
                     allocate(dependency%library)
                     dependency%library%source_dir = "src"
                 end if
 
                 
                 call add_libsources_from_package(sources,package_list,dependency, &
-                    package_root=join_path(package_root,package%dependency(i)%path), error=error)
+                    package_root=join_path(package_root,dependency_list(i)%path), &
+                    dev_depends=dev_depends, error=error)
                 
                 if (allocated(error)) then
                     error%message = 'Error while processing sources for dependency package "'//&
@@ -96,14 +124,14 @@ recursive subroutine add_libsources_from_package(sources,package_list,package,pa
                     return
                 end if
 
-                dep_name%s = dependency%name
+                dep_name%s = dependency_list(i)%name
                 package_list = [package_list, dep_name]
 
             end if
 
         end do
 
-    end if
+    end subroutine add_local_dependencies
 
 end subroutine add_libsources_from_package
 
@@ -184,7 +212,7 @@ subroutine build_model(model, settings, package, error)
 
     ! Add library sources, including local dependencies
     call add_libsources_from_package(model%sources,package_list,package, &
-                                      package_root='.',error=error)
+                                      package_root='.',dev_depends=.true.,error=error)
     if (allocated(error)) then
         return
     end if
