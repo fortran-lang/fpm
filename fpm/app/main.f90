@@ -17,15 +17,15 @@ call get_command_line_settings(cmd_settings)
 
 select type(settings=>cmd_settings)
 type is (fpm_new_settings)
-    call cmd_new()
+    call cmd_new(settings)
 type is (fpm_build_settings)
     call cmd_build(settings)
 type is (fpm_run_settings)
-    call cmd_run()
+    call cmd_run(settings)
 type is (fpm_test_settings)
-    call cmd_test()
+    call cmd_test(settings)
 type is (fpm_install_settings)
-    call cmd_install()
+    call cmd_install(settings)
 end select
 
 end program main

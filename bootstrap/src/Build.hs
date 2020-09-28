@@ -259,7 +259,7 @@ createSourceToObjectMap buildDirectory libraryDirectory sourceFile =
 
 sourceFileToObjectFile :: FilePath -> FilePath -> FilePath -> FilePath
 sourceFileToObjectFile buildDirectory libraryDirectory sourceFile =
-  buildDirectory
+  (foldl (</>) "" $ splitDirectories buildDirectory)
     </>  map
            toLower
            (pathSeparatorsToUnderscores
