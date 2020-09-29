@@ -49,7 +49,7 @@ module fpm_manifest_package
         character(len=:), allocatable :: name
 
         !> Build configuration data
-        type(build_config_t), allocatable :: build_config
+        type(build_config_t) :: build_config
 
         !> Library meta data
         type(library_t), allocatable :: library
@@ -107,7 +107,6 @@ contains
             call fatal_error(error, "Type mismatch for build entry, must be a table")
             return
         end if
-        allocate(self%build_config)
         call new_build_config(self%build_config, child, error)
         if (allocated(error)) return
 
@@ -242,9 +241,7 @@ contains
             write(unit, fmt) "- name", self%name
         end if
 
-        if (allocated(self%build_config)) then
-            call self%build_config%info(unit, pr - 1)
-        end if
+        call self%build_config%info(unit, pr - 1)
 
         if (allocated(self%library)) then
             write(unit, fmt) "- target", "archive"

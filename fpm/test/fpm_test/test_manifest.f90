@@ -101,11 +101,6 @@ contains
             return
         end if
 
-        if (.not.allocated(package%build_config)) then
-            call test_failed(error, "build is not present in package data")
-            return
-        end if
-
         if (.not.allocated(package%library)) then
             call test_failed(error, "library is not present in package data")
             return
@@ -482,11 +477,6 @@ contains
 
         if (allocated(error)) return
 
-        if (.not.allocated(package%build_config)) then
-            call test_failed(error, "build is not present in package data")
-            return
-        end if
-
         if (package%build_config%auto_executables) then
             call test_failed(error, "Wong value of 'auto-executables' read, expecting .false.")
             return
@@ -522,11 +512,6 @@ contains
         call get_package_data(package, temp_file, error)
 
         if (allocated(error)) return
-
-        if (.not.allocated(package%build_config)) then
-            call test_failed(error, "build is not present in package data")
-            return
-        end if
 
         if (.not.package%build_config%auto_executables) then
             call test_failed(error, "Wong default value of 'auto-executables' read, expecting .true.")
