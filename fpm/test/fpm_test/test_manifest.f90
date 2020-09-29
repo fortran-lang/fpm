@@ -1,5 +1,6 @@
 !> Define tests for the `fpm_manifest` modules
 module test_manifest
+    use fpm_filesystem, only: get_temp_filename
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_manifest
@@ -17,10 +18,11 @@ contains
 
         !> Collection of tests
         type(unittest_t), allocatable, intent(out) :: testsuite(:)
-
+        
         testsuite = [ &
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
+            & new_unittest("default-build-configuration", test_default_build_config), &
             & new_unittest("default-library", test_default_library), &
             & new_unittest("default-executable", test_default_executable), &
             & new_unittest("dependency-empty", test_dependency_empty, should_fail=.true.), &
@@ -35,6 +37,9 @@ contains
             & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
             & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
             & new_unittest("executable-wrongkey", test_executable_wrongkey, should_fail=.true.), &
+            & new_unittest("build-config-valid", test_build_config_valid), &
+            & new_unittest("build-config-empty", test_build_config_empty), &
+            & new_unittest("build-config-invalid-values", test_build_config_invalid_values, should_fail=.true.), &
             & new_unittest("library-empty", test_library_empty), &
             & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
             & new_unittest("package-simple", test_package_simple), &
@@ -65,6 +70,9 @@ contains
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
             & 'name = "example"', &
+            & '[build]', &
+            & 'auto-executables = false', &
+            & 'auto-tests = false', &
             & '[dependencies.fpm]', &
             & 'git = "https://github.com/fortran-lang/fpm"', &
             & '[[executable]]', &
@@ -91,6 +99,11 @@ contains
 
         if (package%name /= "example") then
             call test_failed(error, "Package name is "//package%name//" but should be example")
+            return
+        end if
+
+        if (.not.allocated(package%build_config)) then
+            call test_failed(error, "build is not present in package data")
             return
         end if
 
@@ -150,6 +163,31 @@ contains
         close(unit, status='delete')
 
     end subroutine test_invalid_manifest
+
+
+    !> Create a default build configuration
+    subroutine test_default_build_config(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_t) :: package
+
+        allocate(package%build_config)
+        call default_build_config(package%build_config)
+
+        if (.not. package%build_config%auto_executables) then
+            call test_failed(error,'Incorrect value for auto_executables in default build configuration, expecting .true.')
+            return
+        end if
+
+        if (.not. package%build_config%auto_tests) then
+            call test_failed(error,'Incorrect value for auto_tests in default build configuration, expecting .true.')
+            return
+        end if
+
+
+    end subroutine test_default_build_config
 
 
     !> Create a default library
@@ -444,6 +482,113 @@ contains
         call new_executable(executable, table, error)
 
     end subroutine test_executable_wrongkey
+
+
+    !> Try to read values from the [build] table
+    subroutine test_build_config_valid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[build]', &
+            & 'auto-executables = false', &
+            & 'auto-tests = false'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+        if (allocated(error)) return
+
+        if (.not.allocated(package%build_config)) then
+            call test_failed(error, "build is not present in package data")
+            return
+        end if
+
+        if (package%build_config%auto_executables) then
+            call test_failed(error, "Wong value of 'auto-executables' read, expecting .false.")
+            return
+        end if
+
+        if (package%build_config%auto_tests) then
+            call test_failed(error, "Wong value of 'auto-tests' read, expecting .false.")
+            return
+        end if
+
+    end subroutine test_build_config_valid
+
+
+    !> Try to read values from an empty [build] table
+    subroutine test_build_config_empty(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[build]', &
+            & '[library]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+        if (allocated(error)) return
+
+        if (.not.allocated(package%build_config)) then
+            call test_failed(error, "build is not present in package data")
+            return
+        end if
+
+        if (.not.package%build_config%auto_executables) then
+            call test_failed(error, "Wong default value of 'auto-executables' read, expecting .true.")
+            return
+        end if
+
+        if (.not.package%build_config%auto_tests) then
+            call test_failed(error, "Wong default value of 'auto-tests' read, expecting .true.")
+            return
+        end if
+
+    end subroutine test_build_config_empty
+
+
+    !> Try to read values from a [build] table with invalid values
+    subroutine test_build_config_invalid_values(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[build]', &
+            & 'auto-executables = "false"'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+
+    end subroutine test_build_config_invalid_values
 
 
     !> Libraries can be created from empty tables
