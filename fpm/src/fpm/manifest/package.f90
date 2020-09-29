@@ -36,6 +36,7 @@ module fpm_manifest_package
     use fpm_error, only : error_t, fatal_error, syntax_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & len
+    use fpm_versioning, only : version_t, new_version
     implicit none
     private
 
@@ -50,6 +51,9 @@ module fpm_manifest_package
 
         !> Build configuration data
         type(build_config_t) :: build_config
+
+        !> Package version
+        type(version_t) :: version
 
         !> Library meta data
         type(library_t), allocatable :: library
@@ -91,6 +95,7 @@ contains
 
         type(toml_table), pointer :: child, node
         type(toml_array), pointer :: children
+        character(len=:), allocatable :: version
         integer :: ii, nn, stat
 
         call check(table, error)
@@ -108,6 +113,12 @@ contains
             return
         end if
         call new_build_config(self%build_config, child, error)
+
+        if (allocated(error)) return
+        
+        call get_value(table, "version", version, "0")
+        call new_version(self%version, version, error)
+        
         if (allocated(error)) return
 
         call get_value(table, "dependencies", child, requested=.false.)
