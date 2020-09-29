@@ -5,7 +5,7 @@ module fpm_filesystem
     use fpm_strings, only: f_string, string_t, split
     implicit none
     private
-    public :: basename, dirname, is_dir, join_path, number_of_rows, read_lines, list_files,&
+    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files,&
             mkdir, exists, get_temp_filename, windows_path
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
@@ -38,6 +38,76 @@ function basename(path,suffix) result (base)
     end if
 
 end function basename
+
+
+function canon_path(path) result(canon)
+    ! Canonicalize path for comparison
+    !  Handles path string redundancies
+    !  Does not test existence of path
+    ! 
+    ! To be replaced by realpath/_fullname in stdlib_os
+    !
+    character(*), intent(in) :: path
+    character(:), allocatable :: canon
+
+    integer :: i, j
+    integer :: iback
+    character(len(path)) :: nixpath
+    character(len(path)) :: temp
+
+    nixpath = unix_path(path)
+
+    j = 1
+    do i=1,len(nixpath)
+
+        ! Skip back to last directory for '/../'
+        if (i > 4) then
+
+            if (nixpath(i-3:i) == '/../') then
+
+                iback = scan(nixpath(1:i-4),'/',back=.true.)
+                if (iback > 0) then
+                    j = iback + 1
+                    cycle
+                end if
+
+            end if
+
+        end if
+
+        if (i > 1 .and. j > 1) then
+
+            ! Ignore current directory reference
+            if (nixpath(i-1:i) == './') then
+
+                j = j - 1
+                cycle
+
+            end if
+
+            ! Ignore repeated separators
+            if (nixpath(i-1:i) == '//') then
+
+                cycle
+
+            end if
+
+            ! Do NOT include trailing slash
+            if (i == len(nixpath) .and. nixpath(i:i) == '/') then
+                cycle
+            end if
+
+        end if
+        
+
+        temp(j:j) = nixpath(i:i)
+        j = j + 1
+
+    end do
+
+    canon = temp(1:j-1)
+
+end function canon_path
 
 
 function dirname(path) result (dir)
@@ -286,5 +356,24 @@ function windows_path(path) result(winpath)
     end do
     
 end function windows_path
+
+
+function unix_path(path) result(nixpath)
+    ! Replace file system separators for unix
+    !
+    character(*), intent(in) :: path
+    character(:), allocatable :: nixpath
+
+    integer :: idx
+
+    nixpath = path
+
+    idx = index(nixpath,'\')
+    do while(idx > 0)
+        nixpath(idx:idx) = '/'
+        idx = index(nixpath,'\')
+    end do
+    
+end function unix_path
 
 end module fpm_filesystem
