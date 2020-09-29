@@ -7,6 +7,7 @@
 !  Additionally, the required data types for users of this module are reexported
 !  to hide the actual implementation details.
 module fpm_manifest
+    use fpm_manifest_build_config, only: build_config_t
     use fpm_manifest_executable, only : executable_t
     use fpm_manifest_library, only : library_t
     use fpm_manifest_package, only : package_t, new_package
@@ -16,10 +17,23 @@ module fpm_manifest
     private
 
     public :: get_package_data, default_executable, default_library
+    public :: default_build_config
     public :: package_t
 
 
 contains
+
+
+    !> Populate build configuration with defaults
+    subroutine default_build_config(self)
+
+        !> Instance of the build configuration data
+        type(build_config_t), intent(out) :: self
+
+        self%auto_executables = .true.
+        self%auto_tests = .true.
+
+    end subroutine default_build_config
 
 
     !> Populate library in case we find the default src directory

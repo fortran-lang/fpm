@@ -28,6 +28,7 @@
 !  [[test]]
 !  ```
 module fpm_manifest_package
+    use fpm_manifest_build_config, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_t, new_dependencies
     use fpm_manifest_executable, only : executable_t, new_executable
     use fpm_manifest_library, only : library_t, new_library
@@ -46,6 +47,9 @@ module fpm_manifest_package
 
         !> Name of the package
         character(len=:), allocatable :: name
+
+        !> Build configuration data
+        type(build_config_t), allocatable :: build_config
 
         !> Library meta data
         type(library_t), allocatable :: library
@@ -96,6 +100,13 @@ contains
         if (.not.allocated(self%name)) then
            call syntax_error(error, "Could not retrieve package name")
            return
+        end if
+
+        call get_value(table, "build", child, requested=.false.)
+        if (associated(child)) then
+            allocate(self%build_config)
+            call new_build_config(self%build_config, child, error)
+            if (allocated(error)) return
         end if
 
         call get_value(table, "dependencies", child, requested=.false.)
@@ -184,7 +195,7 @@ contains
                 name_present = .true.
 
             case("version", "license", "author", "maintainer", "copyright", &
-                    & "description", "keywords", "categories", "homepage", &
+                    & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
                     & "library")
                 continue
@@ -227,6 +238,11 @@ contains
         write(unit, fmt) "Package"
         if (allocated(self%name)) then
             write(unit, fmt) "- name", self%name
+        end if
+
+        if (allocated(self%build_config)) then
+            write(unit, fmt) "- build configuration", ""
+            call self%build_config%info(unit, pr - 1)
         end if
 
         if (allocated(self%library)) then

@@ -13,7 +13,7 @@ use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
 use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
                        resolve_module_dependencies
 use fpm_manifest, only : get_package_data, default_executable, &
-                         default_library, package_t
+                         default_library, default_build_config, package_t
 use fpm_error, only : error_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
@@ -57,7 +57,7 @@ subroutine build_model(model, settings, package, error)
     model%link_flags = ''
 
     ! Add sources from executable directories
-    if (is_dir('app')) then
+    if (is_dir('app') .and. package%build_config%auto_executables) then
         call add_sources_from_dir(model%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., error=error)
 
@@ -66,7 +66,7 @@ subroutine build_model(model, settings, package, error)
         end if
 
     end if
-    if (is_dir('test')) then
+    if (is_dir('test') .and. package%build_config%auto_tests) then
         call add_sources_from_dir(model%sources,'test', FPM_SCOPE_TEST, &
                                    with_executables=.true., error=error)
 
@@ -76,8 +76,9 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%executable)) then
-        call add_executable_sources(model%sources, package%executable, &
-                                     FPM_SCOPE_APP, auto_discover=.true., error=error)
+        call add_executable_sources(model%sources, package%executable, FPM_SCOPE_APP, &
+                                     auto_discover=package%build_config%auto_executables, &
+                                     error=error)
 
         if (allocated(error)) then
             return
@@ -85,8 +86,9 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%test)) then
-        call add_executable_sources(model%sources, package%test, &
-                                     FPM_SCOPE_TEST, auto_discover=.true., error=error)
+        call add_executable_sources(model%sources, package%test, FPM_SCOPE_TEST, &
+                                     auto_discover=package%build_config%auto_tests, &
+                                     error=error)
 
         if (allocated(error)) then
             return
@@ -117,6 +119,14 @@ call get_package_data(package, "fpm.toml", error)
 if (allocated(error)) then
     print '(a)', error%message
     error stop 1
+end if
+
+call package%info(stdout,10)
+
+! Populate default build configuration if not included
+if (.not.allocated(package%build_config)) then
+    allocate(package%build_config)
+    call default_build_config(package%build_config)
 end if
 
 ! Populate library in case we find the default src directory
