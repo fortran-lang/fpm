@@ -77,7 +77,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%executable)) then
         call add_executable_sources(model%sources, package%executable, &
-                                     FPM_SCOPE_APP, error=error)
+                                     FPM_SCOPE_APP, auto_discover=.true., error=error)
 
         if (allocated(error)) then
             return
@@ -86,7 +86,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%test)) then
         call add_executable_sources(model%sources, package%test, &
-                                     FPM_SCOPE_TEST, error=error)
+                                     FPM_SCOPE_TEST, auto_discover=.true., error=error)
 
         if (allocated(error)) then
             return

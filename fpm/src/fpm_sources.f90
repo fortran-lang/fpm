@@ -109,23 +109,26 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
 end subroutine add_sources_from_dir
 
 
-subroutine add_executable_sources(sources,executables,scope,error)
+subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     ! Include sources from any directories specified 
     !  in [[executable]] entries and apply any customisations
     !  
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     class(executable_t), intent(in) :: executables(:)
     integer, intent(in) :: scope
+    logical, intent(in) :: auto_discover
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
 
     type(string_t), allocatable :: exe_dirs(:)
+    logical, allocatable :: include_source(:)
+    type(srcfile_t), allocatable :: dir_sources(:)
 
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
-        call add_sources_from_dir(sources,exe_dirs(i)%s, &
+        call add_sources_from_dir(dir_sources,exe_dirs(i)%s, &
                      scope, with_executables=.true.,error=error)
 
         if (allocated(error)) then
@@ -133,20 +136,35 @@ subroutine add_executable_sources(sources,executables,scope,error)
         end if
     end do
 
-    do i = 1, size(sources)
+    allocate(include_source(size(dir_sources)))
+
+    do i = 1, size(dir_sources)
         
+        ! Include source by default if not a program or if auto_discover is enabled
+        include_source(i) = (dir_sources(i)%unit_type /= FPM_UNIT_PROGRAM) .or. &
+                             auto_discover
+
+        ! Always include sources specified in fpm.toml
         do j=1,size(executables)
-            if (basename(sources(i)%file_name,suffix=.true.) == &
-            if (basename(sources(i)%file_name,suffix=.true.) == executables(j)%main .and.&
-                 canon_path(dirname(sources(i)%file_name)) == &
+
+            if (basename(dir_sources(i)%file_name,suffix=.true.) == executables(j)%main .and.&
+                 canon_path(dirname(dir_sources(i)%file_name)) == &
                  canon_path(executables(j)%source_dir) ) then
-                                            
-                sources(i)%exe_name = executables(j)%name
+                
+                include_source(i) = .true.
+                dir_sources(i)%exe_name = executables(j)%name
                 exit
+
             end if
         end do
 
     end do
+
+    if (.not.allocated(sources)) then
+        sources = pack(dir_sources,include_source)
+    else
+        sources = [sources, pack(dir_sources,include_source)]
+    end if
 
 end subroutine add_executable_sources
 
