@@ -1,0 +1,12 @@
+name = "auto_discovery_off"
+
+[build]
+auto-executables = false
+auto-tests = false
+
+
+[[test]]
+name = "my_test"
+source-dir="test"
+main="my_test.f90"
+

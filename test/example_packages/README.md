@@ -6,6 +6,7 @@ the features demonstrated in each package and which versions of fpm are supporte
 
 | Name                | Features                                                      | Bootstrap (Haskell) fpm | fpm |
 |---------------------|---------------------------------------------------------------|:-----------------------:|:---:|
+| auto_discovery_off  | Default layout with auto-discovery disabled                   |            N            |  Y  |
 | circular_example    | Local path dependency; circular dependency                    |            Y            |  N  |
 | circular_test       | Local path dependency; circular dependency                    |            Y            |  N  |
 | hello_complex       | Non-standard directory layout; multiple tests and executables |            Y            |  Y  |

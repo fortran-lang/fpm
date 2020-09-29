@@ -121,8 +121,6 @@ if (allocated(error)) then
     error stop 1
 end if
 
-call package%info(stdout,10)
-
 ! Populate default build configuration if not included
 if (.not.allocated(package%build_config)) then
     allocate(package%build_config)
