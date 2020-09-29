@@ -17,23 +17,10 @@ module fpm_manifest
     private
 
     public :: get_package_data, default_executable, default_library
-    public :: default_build_config
     public :: package_t
 
 
 contains
-
-
-    !> Populate build configuration with defaults
-    subroutine default_build_config(self)
-
-        !> Instance of the build configuration data
-        type(build_config_t), intent(out) :: self
-
-        self%auto_executables = .true.
-        self%auto_tests = .true.
-
-    end subroutine default_build_config
 
 
     !> Populate library in case we find the default src directory

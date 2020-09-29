@@ -102,12 +102,14 @@ contains
            return
         end if
 
-        call get_value(table, "build", child, requested=.false.)
-        if (associated(child)) then
-            allocate(self%build_config)
-            call new_build_config(self%build_config, child, error)
-            if (allocated(error)) return
+        call get_value(table, "build", child, requested=.true., stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, "Type mismatch for build entry, must be a table")
+            return
         end if
+        allocate(self%build_config)
+        call new_build_config(self%build_config, child, error)
+        if (allocated(error)) return
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
@@ -241,7 +243,6 @@ contains
         end if
 
         if (allocated(self%build_config)) then
-            write(unit, fmt) "- build configuration", ""
             call self%build_config%info(unit, pr - 1)
         end if
 

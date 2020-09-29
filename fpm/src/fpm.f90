@@ -13,7 +13,7 @@ use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
 use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
                        resolve_module_dependencies
 use fpm_manifest, only : get_package_data, default_executable, &
-                         default_library, default_build_config, package_t
+                         default_library, package_t
 use fpm_error, only : error_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
@@ -119,12 +119,6 @@ call get_package_data(package, "fpm.toml", error)
 if (allocated(error)) then
     print '(a)', error%message
     error stop 1
-end if
-
-! Populate default build configuration if not included
-if (.not.allocated(package%build_config)) then
-    allocate(package%build_config)
-    call default_build_config(package%build_config)
 end if
 
 ! Populate library in case we find the default src directory

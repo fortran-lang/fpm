@@ -22,7 +22,6 @@ contains
         testsuite = [ &
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
-            & new_unittest("default-build-configuration", test_default_build_config), &
             & new_unittest("default-library", test_default_library), &
             & new_unittest("default-executable", test_default_executable), &
             & new_unittest("dependency-empty", test_dependency_empty, should_fail=.true.), &
@@ -163,31 +162,6 @@ contains
         close(unit, status='delete')
 
     end subroutine test_invalid_manifest
-
-
-    !> Create a default build configuration
-    subroutine test_default_build_config(error)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(package_t) :: package
-
-        allocate(package%build_config)
-        call default_build_config(package%build_config)
-
-        if (.not. package%build_config%auto_executables) then
-            call test_failed(error,'Incorrect value for auto_executables in default build configuration, expecting .true.')
-            return
-        end if
-
-        if (.not. package%build_config%auto_tests) then
-            call test_failed(error,'Incorrect value for auto_tests in default build configuration, expecting .true.')
-            return
-        end if
-
-
-    end subroutine test_default_build_config
 
 
     !> Create a default library
