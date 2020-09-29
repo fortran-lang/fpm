@@ -6,7 +6,7 @@ use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
                     
-use fpm_filesystem, only: basename, dirname, read_lines, list_files
+use fpm_filesystem, only: basename, canon_path, dirname, read_lines, list_files
 use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.)
 use fpm_manifest_executable, only: executable_t
 implicit none
@@ -137,7 +137,9 @@ subroutine add_executable_sources(sources,executables,scope,error)
         
         do j=1,size(executables)
             if (basename(sources(i)%file_name,suffix=.true.) == &
-                                         executables(j)%main) then
+            if (basename(sources(i)%file_name,suffix=.true.) == executables(j)%main .and.&
+                 canon_path(dirname(sources(i)%file_name)) == &
+                 canon_path(executables(j)%source_dir) ) then
                                             
                 sources(i)%exe_name = executables(j)%name
                 exit
