@@ -113,7 +113,7 @@ end function canon_path
 function dirname(path) result (dir)
     ! Extract dirname from path
     !
-    character(*), intent(In) :: path
+    character(*), intent(in) :: path
     character(:), allocatable :: dir
 
     character(:), allocatable :: file_parts(:)
