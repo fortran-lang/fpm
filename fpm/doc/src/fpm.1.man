@@ -1,0 +1,59 @@
+NAME
+   fpm(1) - A Fortran package manager and build system
+OS TYPE
+    Linux
+SYNOPSIS
+   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]
+
+   fpm --help|--version
+
+DESCRIPTION
+   fpm is a package manager that helps you create Fortran projects that are
+   optionally dependent on multiple files and other fpm(1) packages.
+
+   Most significantly fpm(1) lets you pull upon other fpm(1) packages in
+   distributed git(1) repositories as if the packages were a basic part
+   of your default programming environment, as well as letting you share
+   your projects with others in a similar manner.
+
+   See the fpm(1) repository for a listing of such available projects.
+
+   All output goes into the directory "build/".
+
+SUBCOMMANDS
+   Valid fpm subcommands are:
+
+     build [--release] [--list]
+                        Compile the packages into the "build/" directory.
+     new NAME [--with-executable] [--with-test]
+                        Create a new Fortran package directory
+                        with sample files
+     run [NAME(s)] [--release] [--list] [-- ARGS]
+                        Run the local package binaries. defaults to all
+                        binaries for that release.
+     test [NAME(s)] [--release] [--list] [-- ARGS]
+                        Run the tests
+     help [NAME(s)]     Alternate method for displaying subcommand help
+
+SUBCOMMAND OPTIONS
+   --release       Builds or runs in release mode (versus debug mode). fpm(1)
+                   Defaults to using common compiler debug flags and building
+                   in "build/gfortran_debug/". When this flag is present build
+                   output goes into "build/gfortran_release/" and common
+                   compiler optimization flags are used.
+   --list          list candidates instead of building or running them
+   -- ARGS         Arguments to pass to executables/tests
+   --help          Show this help text and exit. Valid for all subcommands.
+   --version       Show version information and exit. Valid for all subcommands.
+EXAMPLES
+ sample commands:
+
+    fpm build
+    fpm test
+    fpm run
+    fpm new --help
+    fpm new mypackage --with-executable --with-test
+    fpm run myprogram --release -- -x 10 -y 20 --title "my title"
+SEE ALSO
+ The fpm(1) home page is https://github.com/fortran-lang/fpm
+

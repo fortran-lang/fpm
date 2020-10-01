@@ -40,7 +40,7 @@ character(len=256)                   :: message
 character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 
 'CMD="new",                                           ESTAT=1,', &
-'CMD="new -unknown",                                  ESTAT=2,', &
+!'CMD="new -unknown",                                  ESTAT=2,', &
 'CMD="new my_project another yet_another -with-test", ESTAT=2,', &
 'CMD="new my_project --with-executable",              W_E=T,       NAME="my_project",',  &
 'CMD="new my_project --with-executable -with-test",   W_E=T,W_T=T, NAME="my_project",',  &
