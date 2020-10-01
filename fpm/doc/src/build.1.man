@@ -1,0 +1,34 @@
+NAME
+    build(1) - the fpm(1) subcommand to build a project
+SYNOPSIS
+ fpm build [--release]|[-list]
+ fpm build --help|--version
+
+DESCRIPTION
+ The "fpm build" command
+    o Fetches any dependencies
+    o Scans your sources
+    o Builds them in the proper order
+
+ The Fortran source files are assumed to be in app/, test/, and src/
+ by default. The changed or new files found are rebuilt.
+ The results are placed in the build/ directory.
+
+ Non-default pathnames and remote dependencies are used if
+ specified in the "fpm.toml" file.
+
+OPTIONS
+ --release  build in build/*_release instead of build/*_debug with
+            high optimization instead of full debug options.
+ --list     list candidates instead of building or running them
+ --help     print this help and exit
+ --version  print program version information and exit
+
+EXAMPLES
+ Sample commands:
+
+  fpm build          # build with debug options
+  fpm build -release # build with high optimization
+SEE ALSO
+ The fpm(1) home page is https://github.com/fortran-lang/fpm
+

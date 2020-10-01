@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta name="generator" content="HTML Tidy for HTML5 for Linux version 5.6.0" />
+  <title></title>
+  <style>
+  <![CDATA[
+
+  px {font-family: "Lucida Console", Monaco, monospace}
+  p { font-size:100%; line-height:1.1em; }
+  body {xfont-style: sans-serif}
+  body {
+  color:#333; font-family:Verdana, Arial, Helvetica, sans-serif; font-size:1em; line-height:1.3em; }
+  a:visited { color:#666; }
+  h1,h2,h3,h4,h5,h6 { color:#333; font-family:georgia, verdana, sans-serif; }
+  h1 { font-size:150%; page-break-before:auto;background-color: #aaaaff}
+  h2 { font-size:143%;color:teal; }
+  h3 { font-size:134%;color:blue; }
+  h4 { font-size:120%;color:gray; }
+  img { max-width: 55em}
+  p{ padding: 0;margin:0; }
+  p{ padding-right:1.4em; }
+  p{ padding-bottom:1em; }
+  p{ padding-top:1em; }
+  p{ whitespace: pre-wrap; }
+  h5,h6 { font-size:100% }
+  a.nav,a:link.nav, a:visited.nav { background-color:#FFF; color:#000; }
+  XXtable { border:double #000; border-collapse:collapse; }
+  XXtable { border-collapse:collapse; }
+  XXtd { border:thin solid #888; }
+  XXtd { border:none; }
+  li { margin-bottom:0.5em; }
+  blockquote { display:block; font-size:100%; line-height:1.1em; margin:0 0 1.5em; padding:0 2.5em; }
+  pre { background-color:#DDD; font-size:100%; overflow:auto; padding:1em; }
+  a,li span { color:#000; }
+  a:hover, a.nav:hover, a:hover math { background-color:#000; color:#FFF; }
+  #Container { margin:0 10px; text-align:center; background-color: #BBB}
+  #Content { border-top:none; margin:auto; padding:0.3em; text-align:left; width:100%; max-width:55em; background:#FFF}
+  span.webName { font-size:.5em; }
+  textarea#content { font-size: 1em; line-height: 1.125; }
+  h1#pageName { line-height:1em; margin:0.2em 0 0.2em 0; padding:0; }
+  .property { color:#666; font-size:100%; }
+  a.existingWikiWord[title]{ //border: 1px dashed #BBB; }
+  .byline { color:#666; font-size:1.0em; font-style:italic; margin-bottom:1em; padding-top:1px; } 
+  ]]>
+  </style>
+  <style type="text/css">
+  /*<![CDATA[*/
+  body {
+  background-color: #F0F0F0;
+  color: #000000;
+  }
+  :link { color: #0000FF }
+  :visited { color: #C000C0 }
+  :active { color: #FF0000 }
+  span.c4 {font-size: 80%}
+  td.c3 {font-style: italic}
+  td.c2 {font-weight: bold}
+  div.c1 {text-align: center}
+  /*]]>*/
+  </style>
+</head>
+<body>
+  <a name="top" id="top"></a>
+  <h5><a href="download.html">[UP]</a></h5>
+  <div id="Container">
+    <div id="Content">
+      <div class="c1">
+        <hr />
+        <h1><i>Manual Reference Pages  - </i>fpm&nbsp;(fpm)</h1>
+        <hr />
+      </div><a name="0" id="0">
+      <h3>NAME</h3></a>
+      <blockquote>
+        <b>fpm(1)</b> - A Fortran package manager and build system
+      </blockquote><a name="contents" id="contents"></a>
+      <h3>CONTENTS</h3>
+      <blockquote>
+        <a href="#1">Os Type</a><br />
+        <a href="#2">Synopsis</a><br />
+        <a href="#3">Description</a><br />
+        <a href="#4">Subcommands</a><br />
+        <a href="#5">Subcommand Options</a><br />
+        <a href="#6">Examples</a><br />
+        <a href="#7">See Also</a><br />
+      </blockquote><a name="8" id="8">
+      <h3>OS TYPE</h3></a>
+      <blockquote>
+        Linux
+      </blockquote><a name="2" id="2">
+      <h3>SYNOPSIS</h3></a>
+      <blockquote>
+        <pre>
+<b>fpm</b> <i>SUBCOMMAND</i> [SUBCOMMAND_OPTIONS]
+<br />
+<b>fpm</b> <b>--help</b>|<b>--version</b>
+</pre>
+      </blockquote><a name="3" id="3">
+      <h3>DESCRIPTION</h3></a>
+      <blockquote>
+        <b>fpm</b> is a package manager that helps you create Fortran projects that are optionally dependent on multiple files and other <b>fpm</b>(1)
+        packages.
+        <p>Most significantly <b>fpm</b>(1) lets you pull upon other <b>fpm</b>(1) packages in distributed <b>git</b>(1) repositories as if the packages
+        were a basic part of your default programming environment, as well as letting you share your projects with others in a similar manner.</p>
+        <p>See the <b>fpm</b>(1) repository for a listing of such available projects.</p>
+        <p>All output goes into the directory "build/".</p>
+      </blockquote><a name="4" id="4">
+      <h3>SUBCOMMANDS</h3></a>
+      <blockquote>
+        Valid <b>fpm</b> subcommands are:
+        <pre>
+     build [--release] [--list]
+                        Compile the packages into the "build/" directory.
+     new NAME [--with-executable] [--with-test]
+                        Create a new Fortran package directory
+                        with sample files
+     run [NAME(s)] [--release] [--list] [-- ARGS]
+                        Run the local package binaries. defaults to all
+                        binaries for that release.
+     test [NAME(s)] [--release] [--list] [-- ARGS]
+                        Run the tests
+     help [NAME(s)]     Alternate method for displaying subcommand help
+<br />
+</pre>
+      </blockquote><a name="5" id="5">
+      <h3>SUBCOMMAND OPTIONS</h3></a>
+      <blockquote>
+        <table cellpadding="3">
+          <tr valign="top">
+            <td class="c2" colspan="2">--release</td>
+          </tr>
+          <tr valign="top">
+            <td width="6%"> </td>
+            <td>Builds or runs in release mode (versus debug mode). <b>fpm</b>(1) Defaults to using common compiler debug flags and building in
+            "build/gfortran_debug/". When this flag is present build output goes into "build/gfortran_release/" and common compiler optimization flags are
+            used.</td>
+          </tr>
+          <tr valign="top">
+            <td class="c2" width="6%" nowrap="nowrap">--list</td>
+            <td valign="bottom">list candidates instead of building or running them</td>
+          </tr>
+          <tr valign="top">
+            <td class="c2" colspan="2">-- ARGS</td>
+          </tr>
+          <tr valign="top">
+            <td width="6%"> </td>
+            <td>Arguments to pass to executables/tests</td>
+          </tr>
+          <tr valign="top">
+            <td class="c2" width="6%" nowrap="nowrap">--help</td>
+            <td valign="bottom">Show this help text and exit. Valid for all subcommands.</td>
+          </tr>
+          <tr valign="top">
+            <td class="c2" colspan="2">--version</td>
+          </tr>
+          <tr valign="top">
+            <td width="6%"> </td>
+            <td>Show version information and exit. Valid for all subcommands.</td>
+          </tr>
+          <tr>
+            <td></td>
+          </tr>
+        </table>
+      </blockquote><a name="6" id="6">
+      <h3>EXAMPLES</h3></a>
+      <blockquote>
+        sample commands:
+        <pre>
+    fpm build
+    fpm test
+    fpm run
+    fpm new --help
+    fpm new mypackage --with-executable --with-test
+    fpm run myprogram --release -- -x 10 -y 20 --title "my title"
+</pre>
+      </blockquote><a name="7" id="7">
+      <h3>SEE ALSO</h3></a>
+      <blockquote>
+        The <b>fpm</b>(1) home page is https://github.com/fortran-lang/<b>fpm</b>
+      </blockquote>
+      <hr />
+      <table width="100%">
+        <tr>
+          <td width="33%"></td>
+          <td width="33%" align="center">fpm (fpm)</td>
+          <td class="c3" align="right" width="33%">October 01, 2020</td>
+        </tr>
+      </table><span class="c4">Generated by <a href="http://www.squarebox.co.uk/download/manServer.shtml">manServer 1.08</a> from
+      7ff76770-4194-4184-8269-eb1d56de71cb using man macros.</span><br />
+      <br />
+      <div class="c1"><img src="images/IMAGE.gif" /></div>
+    </div>
+  </div>
+</body>
+</html>
