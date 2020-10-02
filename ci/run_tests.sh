@@ -19,6 +19,20 @@ cd ../hello_complex
 ./build/gfortran_debug/test/greet_test
 ./build/gfortran_debug/test/farewell_test
 
+cd ../hello_complex_2
+../../../fpm/build/gfortran_debug/app/fpm build
+./build/gfortran_debug/app/say_hello_world
+./build/gfortran_debug/app/say_goodbye
+./build/gfortran_debug/test/greet_test
+./build/gfortran_debug/test/farewell_test
+
+cd ../auto_discovery_off
+../../../fpm/build/gfortran_debug/app/fpm build
+./build/gfortran_debug/app/auto_discovery_off
+./build/gfortran_debug/test/my_test
+test ! -x ./build/gfortran_debug/app/unused
+test ! -x ./build/gfortran_debug/test/unused_test
+
 cd ../with_c
 ../../../fpm/build/gfortran_debug/app/fpm build
 ./build/gfortran_debug/app/with_c

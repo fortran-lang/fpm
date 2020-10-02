@@ -44,6 +44,41 @@ if errorlevel 1 exit 1
 if errorlevel 1 exit 1
 
 
+cd ..\hello_complex_2
+if errorlevel 1 exit 1
+
+..\..\..\fpm\build\gfortran_debug\app\fpm build
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\app\say_hello_world
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\app\say_goodbye
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\test\greet_test
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\test\farewell_test
+
+
+cd ..\auto_discovery_off
+if errorlevel 1 exit 1
+
+..\..\..\fpm\build\gfortran_debug\app\fpm build
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\app\auto_discovery_off
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\test\my_test
+if errorlevel 1 exit 1
+
+if exist .\build\gfortran_debug\app\unused exit /B 1
+
+if exist .\build\gfortran_debug\test\unused_test exit /B 1
+
+
 cd ..\with_c
 if errorlevel 1 exit 1
 

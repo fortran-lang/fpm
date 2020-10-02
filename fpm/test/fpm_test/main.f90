@@ -6,6 +6,7 @@ program fpm_testing
     use test_toml, only : collect_toml
     use test_manifest, only : collect_manifest
     use test_source_parsing, only : collect_source_parsing
+    use test_module_dependencies, only : collect_module_dependencies
     use test_versioning, only : collect_versioning
     implicit none
     integer :: stat, is
@@ -19,6 +20,7 @@ program fpm_testing
         & new_testsuite("fpm_toml", collect_toml), &
         & new_testsuite("fpm_manifest", collect_manifest), &
         & new_testsuite("fpm_source_parsing", collect_source_parsing), &
+        & new_testsuite("fpm_module_dependencies", collect_module_dependencies), &
         & new_testsuite("fpm_versioning", collect_versioning) &
         & ]
 

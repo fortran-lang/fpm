@@ -8,7 +8,8 @@ public :: srcfile_ptr, srcfile_t, fpm_model_t
 
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
-          FPM_UNIT_CHEADER
+          FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
+          FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
 
 integer, parameter :: FPM_UNIT_UNKNOWN = -1
 integer, parameter :: FPM_UNIT_PROGRAM = 1
@@ -17,6 +18,12 @@ integer, parameter :: FPM_UNIT_SUBMODULE = 3
 integer, parameter :: FPM_UNIT_SUBPROGRAM = 4
 integer, parameter :: FPM_UNIT_CSOURCE = 5
 integer, parameter :: FPM_UNIT_CHEADER = 6
+
+integer, parameter :: FPM_SCOPE_UNKNOWN = -1
+integer, parameter :: FPM_SCOPE_LIB = 1
+integer, parameter :: FPM_SCOPE_DEP = 2
+integer, parameter :: FPM_SCOPE_APP = 3
+integer, parameter :: FPM_SCOPE_TEST = 4
 
 type srcfile_ptr
     ! For constructing arrays of src_file pointers
@@ -30,6 +37,8 @@ type srcfile_t
         ! File path relative to cwd
     character(:), allocatable :: exe_name
         ! Name of executable for FPM_UNIT_PROGRAM
+    integer :: unit_scope = FPM_SCOPE_UNKNOWN
+        ! app/test/lib/dependency
     logical :: is_test = .false.
         ! Is executable a test?
     type(string_t), allocatable :: modules_provided(:)
