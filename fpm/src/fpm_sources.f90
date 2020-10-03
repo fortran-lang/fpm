@@ -73,13 +73,13 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
     if (allocated(sources)) then
         allocate(existing_src_files(size(sources)))
         do i=1,size(sources)
-            existing_src_files(i)%s = sources(i)%file_name
+            existing_src_files(i)%s = canon_path(sources(i)%file_name)
         end do
     else
         allocate(existing_src_files(0))
     end if
 
-    is_source = [(.not.(file_names(i)%s .in. existing_src_files) .and. &
+    is_source = [(.not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
                   (str_ends_with(lower(file_names(i)%s), ".f90") .or. &
                    str_ends_with(lower(file_names(i)%s), ".c") .or. &
                    str_ends_with(lower(file_names(i)%s), ".h") ),i=1,size(file_names))]
