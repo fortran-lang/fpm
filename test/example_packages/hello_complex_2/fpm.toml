@@ -1,0 +1,6 @@
+name = "hello_complex"
+
+[[executable]]
+name="say_hello_world"
+source-dir="app/say_hello"
+main="say_Hello.f90"

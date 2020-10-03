@@ -1,14 +1,17 @@
 module fpm
 
-use fpm_strings, only : string_t, str_ends_with
-use fpm_backend, only : build_package
-use fpm_command_line, only : fpm_build_settings, fpm_new_settings, &
-    fpm_run_settings, fpm_install_settings, fpm_test_settings
-use fpm_environment, only : run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_filesystem, only : join_path, number_of_rows, list_files, exists, basename, mkdir
-use fpm_model, only : srcfile_ptr, srcfile_t, fpm_model_t
-use fpm_sources, only : add_executable_sources, add_sources_from_dir, &
-    resolve_module_dependencies
+use fpm_strings, only: string_t, str_ends_with
+use fpm_backend, only: build_package
+use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
+                      fpm_run_settings, fpm_install_settings, fpm_test_settings
+use fpm_environment, only: run, get_os_type, OS_LINUX, OS_MACOS, OS_WINDOWS
+use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename, mkdir
+use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
+                    FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
+                    FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
+
+use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
+                       resolve_module_dependencies
 use fpm_manifest, only : get_package_data, default_executable, &
     default_library, package_t, default_test
 use fpm_error, only : error_t
@@ -56,20 +59,38 @@ subroutine build_model(model, settings, package, error)
     model%link_flags = ''
 
     ! Add sources from executable directories
-    if (allocated(package%executable)) then
+    if (is_dir('app') .and. package%build_config%auto_executables) then
+        call add_sources_from_dir(model%sources,'app', FPM_SCOPE_APP, &
+                                   with_executables=.true., error=error)
 
-        call add_executable_sources(model%sources, package%executable, &
-                                    is_test=.false., error=error)
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+    if (is_dir('test') .and. package%build_config%auto_tests) then
+        call add_sources_from_dir(model%sources,'test', FPM_SCOPE_TEST, &
+                                   with_executables=.true., error=error)
 
         if (allocated(error)) then
             return
         endif
 
-    endif
-    if (allocated(package%test)) then
+    end if
+    if (allocated(package%executable)) then
+        call add_executable_sources(model%sources, package%executable, FPM_SCOPE_APP, &
+                                     auto_discover=package%build_config%auto_executables, &
+                                     error=error)
 
-        call add_executable_sources(model%sources, package%test, &
-                                    is_test=.true., error=error)
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+    if (allocated(package%test)) then
+        call add_executable_sources(model%sources, package%test, FPM_SCOPE_TEST, &
+                                     auto_discover=package%build_config%auto_tests, &
+                                     error=error)
 
         if (allocated(error)) then
             return
@@ -79,12 +100,13 @@ subroutine build_model(model, settings, package, error)
 
     if (allocated(package%library)) then
 
-        call add_sources_from_dir(model%sources,package%library%source_dir, &
-                                  error=error)
+        call add_sources_from_dir(model%sources, package%library%source_dir, &
+                                    FPM_SCOPE_LIB, error=error)
 
         if (allocated(error)) then
             return
         endif
+
 
     endif
     if(settings%list)then
@@ -94,7 +116,7 @@ subroutine build_model(model, settings, package, error)
         enddo
         stop
     else
-        call resolve_module_dependencies(model%sources)
+        call resolve_module_dependencies(model%sources,error)
     endif
 
 end subroutine build_model
@@ -106,45 +128,39 @@ type(package_t) :: package
 type(fpm_model_t) :: model
 type(error_t), allocatable :: error
 
-    call get_package_data(package, "fpm.toml", error)
-    if (allocated(error)) then
-        print '(a)', error%message
-        error stop 5
-    endif
+call get_package_data(package, "fpm.toml", error)
+if (allocated(error)) then
+    print '(a)', error%message
+    error stop 1
+end if
 
-    ! Populate library in case we find the default src directory
-    if (.not.allocated(package%library) .and. exists("src")) then
-        allocate(package%library)
-        call default_library(package%library)
-    endif
+! Populate library in case we find the default src directory
+if (.not.allocated(package%library) .and. exists("src")) then
+    allocate(package%library)
+    call default_library(package%library)
+end if
 
-    ! Populate executable in case we find the default app directory
-    if (.not.allocated(package%executable) .and. exists("app")) then
-        allocate(package%executable(1))
-        call default_executable(package%executable(1), package%name)
-    endif
+! Populate executable in case we find the default app
+if (.not.allocated(package%executable) .and. &
+     exists(join_path('app',"main.f90"))) then
+    allocate(package%executable(1))
+    call default_executable(package%executable(1), package%name)
+end if
 
-    ! Populate test in case we find the default test directory
-    if (.not.allocated(package%test) .and. exists("test")) then
-        allocate(package%test(1))
-        call default_test(package%test(1), package%name)
-    endif
+if (.not.(allocated(package%library) .or. allocated(package%executable))) then
+    print '(a)', "Neither library nor executable found, there is nothing to do"
+    error stop 1
+end if
 
-    if (.not.(allocated(package%library) .or. allocated(package%executable) .or. allocated(package%test) )) then
-        print '(a)', "Neither library nor executable found, there is nothing to do"
-        error stop 6
-    endif
+call build_model(model, settings, package, error)
+if (allocated(error)) then
+    print '(a)', error%message
+    error stop 1
+end if
 
-    call build_model(model, settings, package, error)
-    if (allocated(error)) then
-        print '(a)', error%message
-        error stop 7
-    endif
+call build_package(model)
 
-    call build_package(model)
-
-end subroutine cmd_build
-
+end subroutine
 
 subroutine cmd_install(settings)
 type(fpm_install_settings), intent(in) :: settings
