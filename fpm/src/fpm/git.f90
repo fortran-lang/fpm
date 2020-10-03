@@ -138,9 +138,18 @@ contains
 
         !> Error
         type(error_t), allocatable, intent(out) :: error
+        
+        !> git object ref
+        character(:), allocatable :: object
 
         !> Stat for execute_command_line
         integer :: stat
+
+        if (allocated(self%object)) then
+            object = self%object
+        else
+            object = 'HEAD'
+        end if
 
         call execute_command_line("git init "//local_path, exitstat=stat)
 
@@ -150,7 +159,7 @@ contains
         end if
 
         call execute_command_line("git -C "//local_path//" fetch "//self%url//&
-                                        " "//self%object, exitstat=stat)
+                                        " "//object, exitstat=stat)
 
         if (stat /= 0) then
             call fatal_error(error,'Error while fetching git repository for remote dependency')
