@@ -6,7 +6,7 @@ use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
                     
-use fpm_filesystem, only: basename, canon_path, dirname, read_lines, list_files
+use fpm_filesystem, only: basename, canon_path, dirname, join_path, read_lines, list_files
 use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.)
 use fpm_manifest_executable, only: executable_t
 implicit none
@@ -24,6 +24,33 @@ character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
 
 contains
 
+function parse_source(source_file_path,error) result(source)
+    character(*), intent(in) :: source_file_path
+    type(error_t), allocatable, intent(out) :: error
+    type(srcfile_t)  :: source
+
+    if (str_ends_with(lower(source_file_path), ".f90")) then
+
+        source = parse_f_source(source_file_path, error)
+
+        if (source%unit_type == FPM_UNIT_PROGRAM) then
+            source%exe_name = basename(source_file_path,suffix=.false.)
+        end if
+
+    else if (str_ends_with(lower(source_file_path), ".c") .or. &
+        str_ends_with(lower(source_file_path), ".h")) then
+
+        source = parse_c_source(source_file_path,error)
+
+    end if
+
+    if (allocated(error)) then
+        return
+    end if
+
+end function parse_source
+
+
 subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
     ! Enumerate sources in a directory
     !
@@ -33,7 +60,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
     logical, intent(in), optional :: with_executables
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: i, j
+    integer :: i
     logical, allocatable :: is_source(:), exclude_source(:)
     type(string_t), allocatable :: file_names(:)
     type(string_t), allocatable :: src_file_names(:)
@@ -46,13 +73,13 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
     if (allocated(sources)) then
         allocate(existing_src_files(size(sources)))
         do i=1,size(sources)
-            existing_src_files(i)%s = sources(i)%file_name
+            existing_src_files(i)%s = canon_path(sources(i)%file_name)
         end do
     else
         allocate(existing_src_files(0))
     end if
 
-    is_source = [(.not.(file_names(i)%s .in. existing_src_files) .and. &
+    is_source = [(.not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
                   (str_ends_with(lower(file_names(i)%s), ".f90") .or. &
                    str_ends_with(lower(file_names(i)%s), ".c") .or. &
                    str_ends_with(lower(file_names(i)%s), ".h") ),i=1,size(file_names))]
@@ -63,26 +90,8 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
 
     do i = 1, size(src_file_names)
 
-        if (str_ends_with(lower(src_file_names(i)%s), ".f90")) then
-
-            dir_sources(i) = parse_f_source(src_file_names(i)%s, error)
-
-            if (allocated(error)) then
-                return
-            end if
-
-        end if
-
-        if (str_ends_with(lower(src_file_names(i)%s), ".c") .or. &
-            str_ends_with(lower(src_file_names(i)%s), ".h")) then
-
-            dir_sources(i) = parse_c_source(src_file_names(i)%s,error)
-
-            if (allocated(error)) then
-                return
-            end if
-
-        end if
+        dir_sources(i) = parse_source(src_file_names(i)%s,error)
+        if (allocated(error)) return
 
         dir_sources(i)%unit_scope = scope
 
@@ -93,7 +102,6 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
             if (with_executables) then
 
                 exclude_source(i) = .false.
-                dir_sources(i)%exe_name = basename(src_file_names(i)%s,suffix=.false.)
 
             end if
         end if
@@ -122,49 +130,50 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     integer :: i, j
 
     type(string_t), allocatable :: exe_dirs(:)
-    logical, allocatable :: include_source(:)
-    type(srcfile_t), allocatable :: dir_sources(:)
+    type(srcfile_t) :: exe_source
 
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
-        call add_sources_from_dir(dir_sources,exe_dirs(i)%s, &
-                     scope, with_executables=.true.,error=error)
+        call add_sources_from_dir(sources,exe_dirs(i)%s, &
+                     scope, with_executables=auto_discover,error=error)
 
         if (allocated(error)) then
             return
         end if
     end do
 
-    allocate(include_source(size(dir_sources)))
+    exe_loop: do i=1,size(executables)
 
-    do i = 1, size(dir_sources)
-        
-        ! Include source by default if not a program or if auto_discover is enabled
-        include_source(i) = (dir_sources(i)%unit_type /= FPM_UNIT_PROGRAM) .or. &
-                             auto_discover
+        ! Check if executable already discovered automatically
+        !  and apply any overrides
+        do j=1,size(sources)
 
-        ! Always include sources specified in fpm.toml
-        do j=1,size(executables)
-
-            if (basename(dir_sources(i)%file_name,suffix=.true.) == executables(j)%main .and.&
-                 canon_path(dirname(dir_sources(i)%file_name)) == &
-                 canon_path(executables(j)%source_dir) ) then
+            if (basename(sources(j)%file_name,suffix=.true.) == executables(i)%main .and.&
+                 canon_path(dirname(sources(j)%file_name)) == &
+                 canon_path(executables(i)%source_dir) ) then
                 
-                include_source(i) = .true.
-                dir_sources(i)%exe_name = executables(j)%name
-                exit
+                sources(j)%exe_name = executables(i)%name
+                cycle exe_loop
 
             end if
+
         end do
 
-    end do
+        ! Add if not already discovered (auto_discovery off)
+        exe_source = parse_source(join_path(executables(i)%source_dir,executables(i)%main),error)
+        exe_source%exe_name = executables(i)%name
+        exe_source%unit_scope = scope
+        
+        if (allocated(error)) return
 
-    if (.not.allocated(sources)) then
-        sources = pack(dir_sources,include_source)
-    else
-        sources = [sources, pack(dir_sources,include_source)]
-    end if
+        if (.not.allocated(sources)) then
+            sources = [exe_source]
+        else
+            sources = [sources, exe_source]
+        end if
+
+    end do exe_loop
 
 end subroutine add_executable_sources
 
