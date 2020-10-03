@@ -218,11 +218,11 @@ subroutine mkdir(dir)
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
             call execute_command_line('mkdir -p ' // dir, exitstat=stat)
-            write (*, '(2a)') 'mkdir -p ' // dir
+            write (*, '(" + ",2a)') 'mkdir -p ' // dir
 
         case (OS_WINDOWS)
             call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
-            write (*, '(2a)') 'mkdir ' // windows_path(dir)
+            write (*, '(" + ",2a)') 'mkdir ' // windows_path(dir)
     end select
 
     if (stat /= 0) then
