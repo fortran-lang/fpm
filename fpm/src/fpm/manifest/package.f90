@@ -28,6 +28,7 @@
 !  [[test]]
 !  ```
 module fpm_manifest_package
+    use fpm_manifest_build_config, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_t, new_dependencies
     use fpm_manifest_executable, only : executable_t, new_executable
     use fpm_manifest_library, only : library_t, new_library
@@ -35,6 +36,7 @@ module fpm_manifest_package
     use fpm_error, only : error_t, fatal_error, syntax_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & len
+    use fpm_versioning, only : version_t, new_version
     implicit none
     private
 
@@ -46,6 +48,12 @@ module fpm_manifest_package
 
         !> Name of the package
         character(len=:), allocatable :: name
+
+        !> Build configuration data
+        type(build_config_t) :: build_config
+
+        !> Package version
+        type(version_t) :: version
 
         !> Library meta data
         type(library_t), allocatable :: library
@@ -87,6 +95,7 @@ contains
 
         type(toml_table), pointer :: child, node
         type(toml_array), pointer :: children
+        character(len=:), allocatable :: version
         integer :: ii, nn, stat
 
         call check(table, error)
@@ -97,6 +106,20 @@ contains
            call syntax_error(error, "Could not retrieve package name")
            return
         end if
+
+        call get_value(table, "build", child, requested=.true., stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, "Type mismatch for build entry, must be a table")
+            return
+        end if
+        call new_build_config(self%build_config, child, error)
+
+        if (allocated(error)) return
+        
+        call get_value(table, "version", version, "0")
+        call new_version(self%version, version, error)
+        
+        if (allocated(error)) return
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
@@ -184,7 +207,7 @@ contains
                 name_present = .true.
 
             case("version", "license", "author", "maintainer", "copyright", &
-                    & "description", "keywords", "categories", "homepage", &
+                    & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
                     & "library")
                 continue
@@ -228,6 +251,8 @@ contains
         if (allocated(self%name)) then
             write(unit, fmt) "- name", self%name
         end if
+
+        call self%build_config%info(unit, pr - 1)
 
         if (allocated(self%library)) then
             write(unit, fmt) "- target", "archive"

@@ -7,6 +7,7 @@
 !  Additionally, the required data types for users of this module are reexported
 !  to hide the actual implementation details.
 module fpm_manifest
+    use fpm_manifest_build_config, only: build_config_t
     use fpm_manifest_executable, only : executable_t
     use fpm_manifest_library, only : library_t
     use fpm_manifest_package, only : package_t, new_package

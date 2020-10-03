@@ -173,7 +173,7 @@ subroutine build_model(model, settings, package, error)
     model%link_flags = ''
 
     ! Add sources from executable directories
-    if (is_dir('app')) then
+    if (is_dir('app') .and. package%build_config%auto_executables) then
         call add_sources_from_dir(model%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., error=error)
 
@@ -182,7 +182,7 @@ subroutine build_model(model, settings, package, error)
         end if
 
     end if
-    if (is_dir('test')) then
+    if (is_dir('test') .and. package%build_config%auto_tests) then
         call add_sources_from_dir(model%sources,'test', FPM_SCOPE_TEST, &
                                    with_executables=.true., error=error)
 
@@ -192,8 +192,9 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%executable)) then
-        call add_executable_sources(model%sources, package%executable, &
-                                     FPM_SCOPE_APP, error=error)
+        call add_executable_sources(model%sources, package%executable, FPM_SCOPE_APP, &
+                                     auto_discover=package%build_config%auto_executables, &
+                                     error=error)
 
         if (allocated(error)) then
             return
@@ -201,8 +202,9 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%test)) then
-        call add_executable_sources(model%sources, package%test, &
-                                     FPM_SCOPE_TEST, error=error)
+        call add_executable_sources(model%sources, package%test, FPM_SCOPE_TEST, &
+                                     auto_discover=package%build_config%auto_tests, &
+                                     error=error)
 
         if (allocated(error)) then
             return
