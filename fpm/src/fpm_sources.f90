@@ -300,21 +300,26 @@ function parse_f_source(f_filename,error) result(f_source)
             end if
 
             ! Process 'INCLUDE' statements
-            if (index(adjustl(lower(file_lines(i)%s)),'include') == 1) then
-    
-                n_include = n_include + 1
+            ic = index(adjustl(lower(file_lines(i)%s)),'include')
+            if ( ic == 1 ) then
+                ic = index(lower(file_lines(i)%s),'include')
+                if (index(adjustl(file_lines(i)%s(ic+7:)),'"') == 1 .or. &
+                    index(adjustl(file_lines(i)%s(ic+7:)),"'") == 1 ) then
 
-                if (pass == 2) then
-                    f_source%include_dependencies(n_include)%s = &
-                     & split_n(file_lines(i)%s,n=2,delims="'"//'"',stat=stat)
-                    if (stat /= 0) then
-                        call file_parse_error(error,f_filename, &
-                              'unable to find include file name',i, &
-                              file_lines(i)%s)
-                        return
+    
+                    n_include = n_include + 1
+
+                    if (pass == 2) then
+                        f_source%include_dependencies(n_include)%s = &
+                         & split_n(file_lines(i)%s,n=2,delims="'"//'"',stat=stat)
+                        if (stat /= 0) then
+                            call file_parse_error(error,f_filename, &
+                                  'unable to find include file name',i, &
+                                  file_lines(i)%s)
+                            return
+                        end if
                     end if
                 end if
-
             end if
 
             ! Extract name of module if is module

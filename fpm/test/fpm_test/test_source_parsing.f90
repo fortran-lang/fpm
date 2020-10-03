@@ -198,11 +198,11 @@ contains
         write(unit, '(a)') &
             & 'program test', &
             & ' implicit none', &
-            & ' include "included_file.f90"', &
-            & ' logical :: include_comments', &
-            & ' include_comments = .false.', &
+            & ' include  "included_file.f90"', &
+            & ' character(*) :: include_comments', &
+            & ' include_comments = "some comments"', &
             & ' contains ', &
-            & '  include "second_include.f90"', &
+            & '  include"second_include.f90"', &
             & 'end program test'
         close(unit)
 
