@@ -13,10 +13,11 @@ module fpm_manifest
     use fpm_manifest_package, only : package_t, new_package
     use fpm_error, only : error_t, fatal_error, file_not_found_error
     use fpm_toml, only : toml_table, read_package_file
+    use fpm_manifest_test, only : test_t
     implicit none
     private
 
-    public :: get_package_data, default_executable, default_library
+    public :: get_package_data, default_executable, default_library, default_test
     public :: package_t
 
 
@@ -48,6 +49,21 @@ contains
         self%main = "main.f90"
 
     end subroutine default_executable
+
+    !> Populate test in case we find the default test/ directory
+    subroutine default_test(self, name)
+
+        !> Instance of the executable meta data
+        type(test_t), intent(out) :: self
+
+        !> Name of the package
+        character(len=*), intent(in) :: name
+
+        self%name = name
+        self%source_dir = "test"
+        self%main = "main.f90"
+
+    end subroutine default_test
 
 
     !> Obtain package meta data from a configuation file
