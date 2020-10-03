@@ -170,11 +170,18 @@ end subroutine cmd_install
 
 
 subroutine cmd_new(settings) ! --with-executable F --with-test F '
+use fpm_toml, only : toml_table, toml_array, add_table, add_array, set_value, &
+    & write_package_file, read_package_file
 type(fpm_new_settings), intent(in) :: settings
 integer :: ierr
 character(len=:),allocatable :: bname          ! baeename of NAME
 character(len=:),allocatable :: message(:)
 character(len=:),allocatable :: littlefile(:)
+type(error_t), allocatable :: error
+type(toml_table) :: manifest
+type(toml_table), pointer :: child
+type(toml_array), pointer :: children
+integer :: stat
 
     call mkdir(settings%name)      ! make new directory
     call run('cd '//settings%name) ! change to new directory as a test. New OS routines to improve this; system dependent potentially
@@ -190,22 +197,19 @@ character(len=:),allocatable :: littlefile(:)
 
     call warnwrite(join_path(settings%name, 'README.md'), littlefile)          ! create NAME/README.md
 
-    message=[character(len=80) ::             &                                ! start building NAME/fpm.toml
-    &'name = "'//bname//'"                 ', &
-    &'version = "0.1.0"                    ', &
-    &'license = "license"                  ', &
-    &'author = "Jane Doe"                  ', &
-    &'maintainer = "jane.doe@example.com"  ', &
-    &'copyright = "2020 Jane Doe"          ', &
-    &'                                     ', &
-    &'']
+    manifest = toml_table()
+    call set_value(manifest, "name", bname)
+    call set_value(manifest, "version", "0.1.0")
+    call set_value(manifest, "license", "unknown")
+    call set_value(manifest, "author", "Jane Doe")
+    call set_value(manifest, "maintainer", "jane.doe@example.com")
+    call set_value(manifest, "copyright", "2020 Jane Doe")
 
     if(settings%with_lib)then
         call mkdir(join_path(settings%name,'src') )
-        message=[character(len=80) ::  message,   &                             ! create next section of fpm.toml
-        &'[library]                            ', &
-        &'source-dir="src"                     ', &
-        &'']
+        call add_table(manifest, "library", child, stat)
+        call set_value(child, "source-dir", "src")
+
         littlefile=[character(len=80) ::          &                             ! create placeholder module src/bname.f90
         &'module '//bname,                        &
         &'  implicit none',                       &
@@ -222,13 +226,13 @@ character(len=:),allocatable :: littlefile(:)
     endif
 
     if(settings%with_test)then
+        call add_array(manifest, "test", children, stat)
+        call add_table(children, child, stat)
+        call set_value(child, "name", "runTests")
+        call set_value(child, "source-dir", "test")
+        call set_value(child, "main", "main.f90")
+
         call mkdir(join_path(settings%name, 'test'))                            ! create NAME/test or stop
-        message=[character(len=80) ::  message,   &                             ! create next section of fpm.toml
-        &'[[test]]                             ', &
-        &'name="runTests"                      ', &
-        &'source-dir="test"                    ', &
-        &'main="main.f90"                      ', &
-        &'']
   
         littlefile=[character(len=80) ::        &
         &'program main',                       &
@@ -241,13 +245,13 @@ character(len=:),allocatable :: littlefile(:)
     endif
 
     if(settings%with_executable)then
+        call add_array(manifest, "executable", children, stat)
+        call add_table(children, child, stat)
+        call set_value(child, "name", bname)
+        call set_value(child, "source-dir", "test")
+        call set_value(child, "main", "main.f90")
+
         call mkdir(join_path(settings%name, 'app'))                             ! create NAME/app or stop
-        message=[character(len=80) ::  message,   &                             ! create next section of fpm.toml
-        &'[[executable]]                       ', &
-        &'name="'//bname//'"                   ', &
-        &'source-dir="app"                     ', &
-        &'main="main.f90"                      ', &
-        &'']
 
         littlefile=[character(len=80) ::          &
         &'program main',                          &
@@ -260,9 +264,10 @@ character(len=:),allocatable :: littlefile(:)
         call warnwrite(join_path(settings%name, 'app/main.f90'), littlefile)
     endif
 
-    call warnwrite(join_path(settings%name, 'fpm.toml'), message)               ! now that built it write NAME/fpm.toml
+    ! now that built it write NAME/fpm.toml
+    call write_package_file(manifest, join_path(settings%name, 'fpm.toml'), error)
 
-    call run('cd ' // settings%name // ';git init')    ! assumes these commands work on all systems and git(1) is installed
+    call run('git init '//settings%name)    ! assumes these commands work on all systems and git(1) is installed
 contains
 
 subroutine warnwrite(fname,data)
