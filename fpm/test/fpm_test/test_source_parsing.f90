@@ -199,6 +199,8 @@ contains
             & 'program test', &
             & ' implicit none', &
             & ' include "included_file.f90"', &
+            & ' logical :: include_comments', &
+            & ' include_comments = .false.', &
             & ' contains ', &
             & '  include "second_include.f90"', &
             & 'end program test'
