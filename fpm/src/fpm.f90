@@ -53,7 +53,7 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
     ! Add library sources from dependencies
     if (allocated(package%dependency)) then
 
-        call add_local_dependencies(package%dependency)
+        call add_dependencies(package%dependency)
 
         if (allocated(error)) then
             return
@@ -64,7 +64,7 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
     ! Add library sources from dev-dependencies
     if (dev_depends .and. allocated(package%dev_dependency)) then
 
-        call add_local_dependencies(package%dev_dependency)
+        call add_dependencies(package%dev_dependency)
 
         if (allocated(error)) then
             return
@@ -74,12 +74,14 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
 
     contains
 
-    subroutine add_local_dependencies(dependency_list)
+    subroutine add_dependencies(dependency_list)
         type(dependency_t) :: dependency_list(:)
 
         integer :: i
         type(string_t) :: dep_name
         type(package_t) :: dependency
+
+        character(:), allocatable :: dependency_path
 
         do i=1,size(dependency_list)
             
@@ -89,49 +91,53 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
 
             if (allocated(dependency_list(i)%git)) then
 
-                call fatal_error(error,'Remote dependencies not implemented')
+                dependency_path = join_path('build','dependencies',dependency_list(i)%name)
+
+                if (.not.exists(join_path(dependency_path,'fpm.toml'))) then
+                    call dependency_list(i)%git%checkout(dependency_path, error)
+                    if (allocated(error)) return
+                end if
+
+            else if (allocated(dependency_list(i)%path)) then
+                
+                dependency_path = join_path(package_root,dependency_list(i)%path)
+
+            end if
+
+            call get_package_data(dependency, &
+                    join_path(dependency_path,"fpm.toml"), error)
+
+            if (allocated(error)) then
+                error%message = 'Error while parsing manifest for dependency package at:'//&
+                                new_line('a')//join_path(dependency_path,"fpm.toml")//&
+                                new_line('a')//error%message
                 return
-
             end if
 
-            if (allocated(dependency_list(i)%path)) then
-
-                call get_package_data(dependency, &
-                      join_path(package_root,dependency_list(i)%path,"fpm.toml"), error)
-
-                if (allocated(error)) then
-                    error%message = 'Error while parsing manifest for dependency package at:'//&
-                                    new_line('a')//join_path(package_root,dependency_list(i)%path,"fpm.toml")//&
-                                    new_line('a')//error%message
-                    return
-                end if
-
-                if (.not.allocated(dependency%library) .and. &
-                     exists(join_path(package_root,dependency_list(i)%path,"src"))) then
-                    allocate(dependency%library)
-                    dependency%library%source_dir = "src"
-                end if
-
-                
-                call add_libsources_from_package(sources,package_list,dependency, &
-                    package_root=join_path(package_root,dependency_list(i)%path), &
-                    dev_depends=dev_depends, error=error)
-                
-                if (allocated(error)) then
-                    error%message = 'Error while processing sources for dependency package "'//&
-                                    new_line('a')//dependency%name//'"'//&
-                                    new_line('a')//error%message
-                    return
-                end if
-
-                dep_name%s = dependency_list(i)%name
-                package_list = [package_list, dep_name]
-
+            if (.not.allocated(dependency%library) .and. &
+                    exists(join_path(dependency_path,"src"))) then
+                allocate(dependency%library)
+                dependency%library%source_dir = "src"
             end if
+
+            
+            call add_libsources_from_package(sources,package_list,dependency, &
+                package_root=dependency_path, &
+                dev_depends=dev_depends, error=error)
+            
+            if (allocated(error)) then
+                error%message = 'Error while processing sources for dependency package "'//&
+                                new_line('a')//dependency%name//'"'//&
+                                new_line('a')//error%message
+                return
+            end if
+
+            dep_name%s = dependency_list(i)%name
+            package_list = [package_list, dep_name]
 
         end do
 
-    end subroutine add_local_dependencies
+    end subroutine add_dependencies
 
 end subroutine add_libsources_from_package
 
