@@ -4,8 +4,8 @@ use fpm_strings, only: string_t, str_ends_with
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
-use fpm_environment, only: run 
-use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename 
+use fpm_environment, only: run
+use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST

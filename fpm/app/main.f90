@@ -8,7 +8,7 @@ use fpm_command_line, only: &
         fpm_install_settings, &
         get_command_line_settings
 use fpm, only: cmd_build, cmd_install, cmd_run, cmd_test
-use fpm_new_subcommand, only: cmd_new
+use fpm_cmd_new, only: cmd_new
 
 implicit none
 

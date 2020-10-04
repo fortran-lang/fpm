@@ -1,4 +1,4 @@
-module fpm_new_subcommand
+module fpm_cmd_new
 
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
@@ -6,13 +6,12 @@ use fpm_filesystem, only : join_path, exists, basename, mkdir
 use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
 implicit none
 private
-public :: cmd_new 
+public :: cmd_new
 
 contains
 
 subroutine cmd_new(settings) ! --with-executable F --with-test F '
 type(fpm_new_settings), intent(in) :: settings
-integer :: ierr
 character(len=:),allocatable :: bname          ! baeename of NAME
 character(len=:),allocatable :: message(:)
 character(len=:),allocatable :: littlefile(:)
@@ -70,7 +69,7 @@ character(len=:),allocatable :: littlefile(:)
         &'source-dir="test"                    ', &
         &'main="main.f90"                      ', &
         &'']
-  
+
         littlefile=[character(len=80) ::        &
         &'program main',                       &
         &'implicit none',                      &
@@ -162,4 +161,4 @@ end subroutine filewrite
 
 end subroutine cmd_new
 
-end module fpm_new_subcommand
+end module fpm_cmd_new
