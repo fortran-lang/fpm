@@ -29,7 +29,6 @@ contains
 recursive subroutine add_libsources_from_package(sources,package_list,package, &
                                                   package_root,dev_depends,error)
     ! Discover library sources in a package, recursively including dependencies
-    !  Only supports local path dependencies currently
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     type(string_t), allocatable, intent(inout) :: package_list(:)
@@ -123,7 +122,7 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
             
             call add_libsources_from_package(sources,package_list,dependency, &
                 package_root=dependency_path, &
-                dev_depends=dev_depends, error=error)
+                dev_depends=.false., error=error)
             
             if (allocated(error)) then
                 error%message = 'Error while processing sources for dependency package "'//&
