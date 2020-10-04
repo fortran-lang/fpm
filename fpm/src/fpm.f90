@@ -75,7 +75,7 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
     contains
 
     subroutine add_dependencies(dependency_list)
-        type(dependency_t) :: dependency_list(:)
+        type(dependency_t), intent(in) :: dependency_list(:)
 
         integer :: i
         type(string_t) :: dep_name
