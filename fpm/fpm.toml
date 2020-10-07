@@ -15,7 +15,7 @@ git = "https://github.com/urbanjost/M_CLI2.git"
 rev = "649075aceb97f997665a1a4656514fd2e9b4becc"
 
 [dependencies.fortran-intrinsic-manpages]
-git = "https://github.com/urbanjost/fortran-intrinsic-manpages.git"
+git = "https://github.com/urbanjost/M_intrinsics.git"
 
 [[test]]
 name = "cli-test"
