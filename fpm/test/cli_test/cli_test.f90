@@ -41,11 +41,11 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 
 'CMD="new",                                           ESTAT=1,', &
 !'CMD="new -unknown",                                  ESTAT=2,', &
-'CMD="new my_project another yet_another -with-test", ESTAT=2,', &
-'CMD="new my_project --with-executable",              W_E=T,       NAME="my_project",',  &
-'CMD="new my_project --with-executable -with-test",   W_E=T,W_T=T, NAME="my_project",',  &
-'CMD="new my_project -with-test",                           W_T=T, NAME="my_project",',  &
-'CMD="new my_project",                                             NAME="my_project",',  &
+'CMD="new my_project another yet_another -test", ESTAT=2,', &
+'CMD="new my_project --app",              W_E=T,       NAME="my_project",',  &
+'CMD="new my_project --app --test",                   W_E=T,W_T=T, NAME="my_project",',  &
+'CMD="new my_project --test",                               W_T=T, NAME="my_project",',  &
+'CMD="new my_project",                                W_E=T,W_T=T, NAME="my_project",',  &
 
 'CMD="run",                                                                                               ', &
 'CMD="run my_project",                                             NAME="my_project",                     ', &
@@ -91,8 +91,8 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
       ! blank out name group EXPECTED
       name=[(repeat(' ',len(name)),i=1,max_names)] ! the words on the command line sans the subcommand name
       release=.false.                ! --release
-      w_e=.false.                    ! --with-executable
-      w_t=.false.                    ! --with-test
+      w_e=.false.                    ! --app
+      w_t=.false.                    ! --test
       args=repeat(' ',132)           ! -- ARGS
       cmd=repeat(' ',132)            ! the command line arguments to test
       cstat=0                        ! status values from EXECUTE_COMMAND_LINE()
