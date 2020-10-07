@@ -77,7 +77,7 @@ with the following contents and initialized as a git repository.
 * `fpm test` – run tests
 
 The command `fpm run` can optionally accept the name of the specific executable
-to run, as can `fpm test`; like `fpm run specifc_executable`. Command line
+to run, as can `fpm test`; like `fpm run specific_executable`. Command line
 arguments can also be passed to the executable(s) or test(s) with the option
 `--args "some arguments"`.
 
