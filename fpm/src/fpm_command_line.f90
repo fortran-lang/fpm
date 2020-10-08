@@ -198,6 +198,7 @@ contains
                    help_text=[character(len=widest) :: help_text, help_help]
                    help_text=[character(len=widest) :: help_text, version_text]
                 case default
+                   ! note help_intrinsics is returning a fixed-length array to avoid compiler issues
                    help_text=[character(len=widest) :: help_text, help_intrinsics( lower( unnamed(i) ) ) ]
                    if(size(help_text).eq.0)then
                       help_text=[character(len=widest) :: help_text, &
