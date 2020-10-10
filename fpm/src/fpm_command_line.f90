@@ -463,7 +463,7 @@ contains
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
-    ' "fpm new" creates a new programming project in a new directory       .', &
+    ' "fpm new" creates a new programming project in a new directory.       ', &
     '                                                                       ', &
     ' The "new" subcommand creates a directory with the specified           ', &
     ' name and runs the command "git init" in that directory and            ', &
