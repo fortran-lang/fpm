@@ -5,7 +5,7 @@ use fpm_environment,  only : get_os_type, &
 use M_CLI2,           only : set_args, lget, unnamed, remaining, specified
 use M_intrinsics,     only : help_intrinsics
 use fpm_strings,      only : lower
-use fpm_filesystem,   only : basename
+use fpm_filesystem,   only : basename, canon_path
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -60,8 +60,9 @@ character(len=ibug),allocatable :: names(:)
 
 character(len=:), allocatable :: version_text(:)
 character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
-                               & help_test(:), help_build(:), help_usage(:), &
-                               & help_text(:), help_install(:), help_help(:)
+                 & help_test(:), help_build(:), help_usage(:), &
+                 & help_text(:), help_install(:), help_help(:), &
+                 & help_list(:), help_list_dash(:), help_list_nodash(:)
 
 contains
     subroutine get_command_line_settings(cmd_settings)
@@ -139,7 +140,8 @@ contains
                 & 'usage: fpm new NAME [--lib] [--app] [--test] [--backfill]'
                 stop 2
             end select
-
+            !! canon_path is not converting ".", etc.
+            name=canon_path(name)
             if( .not.is_fortran_name(basename(name)) )then
                 write(stderr,'(g0)') [ character(len=72) :: &
                 & 'ERROR: the new directory basename must be an allowed ', &
@@ -187,6 +189,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_new]
                 case('fpm    ' )
                    help_text=[character(len=widest) :: help_text, help_fpm]
+                case('list   ' )
+                   help_text=[character(len=widest) :: help_text, help_list]
                 case('version' )
                    help_text=[character(len=widest) :: help_text, version_text]
                 case('manual ' )
@@ -198,21 +202,28 @@ contains
                    help_text=[character(len=widest) :: help_text, help_help]
                    help_text=[character(len=widest) :: help_text, version_text]
                 case default
-                   ! note help_intrinsics is returning a fixed-length array to avoid compiler issues
-                   help_text=[character(len=widest) :: help_text, help_intrinsics( lower( unnamed(i) ) ) ]
+                   ! note help_intrinsics is returning a fixed-length array
+                   ! to avoid compiler issues
+                   help_text=[character(len=widest) :: help_text, &
+                   & help_intrinsics( lower( unnamed(i) ) ) ]
                    if(size(help_text).eq.0)then
                       help_text=[character(len=widest) :: help_text, &
                       & 'ERROR: unknown help topic "'//trim(unnamed(i))//'"']
                    endif
                 end select
             enddo
-            write(stderr,'(g0)')(trim(help_text(i)), i=1, size(help_text) )
+            call printhelp(help_text)
 
         case('install')
             call set_args('--release F ', help_install, version_text)
 
             allocate(fpm_install_settings :: cmd_settings)
-
+        case('list')
+            call set_args(' --list F', help_list, version_text)
+            call printhelp(help_list_nodash)
+            if(lget('list'))then
+               call printhelp(help_list_dash)
+            endif
         case('test')
             call set_args('--list F --release F --',help_test,version_text)
 
@@ -228,18 +239,27 @@ contains
 
         case default
 
-            call set_args(' ', help_fpm, version_text)
+            call set_args(' --list F', help_fpm, version_text)
             ! Note: will not get here if --version or --usage or --help
             ! is present on commandline
-            if(len_trim(cmdarg).eq.0)then
-                write(stderr,'(*(a))')'ERROR: missing subcommand'
+            help_text=help_usage
+            if(lget('list'))then
+               help_text=help_list_dash
+            elseif(len_trim(cmdarg).eq.0)then
+                write(stderr,'(*(a))')'ERROR: missing subcommand. Must be one of'
+                call printhelp(help_list_nodash)
             else
                 write(stderr,'(*(a))')'ERROR: unknown subcommand [', &
                  & trim(cmdarg), ']'
             endif
-            write(stderr,'(g0)')(trim(help_usage(i)), i=1, size(help_usage) )
+            call printhelp(help_text)
 
         end select
+    contains
+    subroutine printhelp(lines)
+    character(len=:),intent(in),allocatable :: lines(:)
+            write(stdout,'(g0)')(trim(lines(i)), i=1, size(lines) )
+    end subroutine printhelp
     end subroutine get_command_line_settings
 
     function is_fortran_name(line) result (lout)
@@ -264,13 +284,32 @@ contains
     end function is_fortran_name
 
     subroutine set_help()
+    help_list_nodash=[character(len=80) :: &
+    '                                                                       ', &
+   ' build      Compile the package placing results in the "build" directory', &
+   ' help       Display help                                                ', &
+   ' list       Display this list of subcommand descriptions                ', &
+   ' new        Create a new Fortran package directory with sample files    ', &
+   ' run        Run the local package application programs                  ', &
+   ' test       Run the test programs                                       ', &
+   ' ']
+   help_list_dash = [character(len=80) :: &
+    '                                                                       ', &
+   ' build [--release] [--list]                                             ', &
+   ' help [NAME(s)]                                                         ', &
+   ' new NAME [--lib] [--app] [--test] [--backfill]                         ', &
+   ' list [--list]                                                          ', &
+   ' run [NAME(s)] [--release] [--list] [-- ARGS]                           ', &
+   ' test [NAME(s)] [--release] [--list] [-- ARGS]                          ', &
+   ' ']
     help_usage=[character(len=80) :: &
     '                                                                       ', &
-    'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ] | [|--help|--version]   ', &
+    'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ] | [--help|--version]    ', &
+    '       where SUBCOMMAND is commonly new|build|run|test                 ', &
     '                                                                       ', &
-    '       where SUBCOMMAND is commonly new|build|run|test|install|help    ', &
-    '       Enter "fpm --help" or "fpm SUBCOMMAND --help" for more          ', &
-    '       information.', &
+    '       Enter "fpm list " or "fpm --list" for a full list of            ', &
+    '       subcommands. Enter "fpm --help" or "fpm SUBCOMMAND --help"      ', &
+    '       for detailed command information.                               ', &
     '' ]
     help_fpm=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -294,7 +333,9 @@ contains
     '   See the fpm(1) repository at https://fortran-lang.org/packages      ', &
     '   for a listing of registered projects.                               ', &
     '                                                                       ', &
-    '   All output goes into the directory "build/".                        ', &
+    '   All output goes into the directory "build/" which can generally be  ', &
+    '   removed and rebuilt if required. Note that if external packages are ', &
+    '   being used you need network connectivity to rebuild from scratch.   ', &
     '                                                                       ', &
     'SUBCOMMANDS                                                            ', &
     '  Valid fpm subcommands are:                                           ', &
@@ -310,13 +351,14 @@ contains
     '     test [NAME(s)] [--release] [--list] [-- ARGS]                     ', &
     '                     Run the tests                                     ', &
     '     help [NAME(s)]  Alternate method for displaying subcommand help   ', &
+    '     list [--list]   Display brief descriptions of all subcommands.    ', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
     '  --release  Builds or runs in release mode (versus debug mode). fpm(1)', &
     '             Defaults to using common compiler debug flags and building', &
-    '             in "build/gfortran_debug/". When this flag is present     ', &
-    '             build output goes into "build/gfortran_release/" and      ', &
-    '             common compiler optimization flags are used.              ', &
+    '             in "build/*_debug/". When this flag is present build      ', &
+    '             output goes into "build/*_release/" and common compiler   ', &
+    '             optimization flags are used.                              ', &
     '  --list     list candidates instead of building or running them       ', &
     '  -- ARGS    Arguments to pass to executables/tests                    ', &
     '  --help     Show help text and exit. Valid for all subcommands.       ', &
@@ -334,9 +376,33 @@ contains
     'SEE ALSO                                                               ', &
     '   The fpm(1) home page at https://github.com/fortran-lang/fpm         ', &
     '']
+    help_list=[character(len=80) :: &
+    'NAME                                                                   ', &
+    ' list(1) - list summary of fpm(1) subcommands                          ', &
+    '                                                                       ', &
+    'SYNOPSIS                                                               ', &
+    ' fpm list [-list]                                                      ', &
+    '                                                                       ', &
+    ' fpm run --help|--version                                              ', &
+    '                                                                       ', &
+    'DESCRIPTION                                                            ', &
+    ' Display a short description for each fpm(1) subcommand.               ', &
+    '                                                                       ', &
+    'OPTIONS                                                                ', &
+    ' --list     display a list of command options as well. This is the     ', &
+    '            same output as generated by "fpm --list".                  ', &
+    '                                                                       ', &
+    'EXAMPLES                                                               ', &
+    ' display a short list of fpm(1) subcommands                            ', &
+    '                                                                       ', &
+    '  fpm list                                                             ', &
+    '  fpm --list                                                           ', &
+    'SEE ALSO                                                               ', &
+    ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
+    '' ]
     help_run=[character(len=80) :: &
     'NAME                                                                   ', &
-    '  run(1) - the fpm(1) subcommand to run project applications           ', &
+    ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm run [NAME(s)] [--release] [-- ARGS]                               ', &
@@ -366,14 +432,14 @@ contains
     '  # run a specific program and pass arguments to the command           ', &
     '  fpm run mytest -- -x 10 -y 20 --title "my title line"                ', &
     '                                                                       ', &
-    '  # production version of two applications                             ', &
-    '  fpm run tst1 tst2 --release                                          ', &
+    '  # run production version of two applications                         ', &
+    '  fpm run prg1 prg2 --release                                          ', &
     'SEE ALSO                                                               ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
     help_build=[character(len=80) :: &
     'NAME                                                                   ', &
-    '    build(1) - the fpm(1) subcommand to build a project                ', &
+    ' build(1) - the fpm(1) subcommand to build a project                   ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--release]|[-list]                                         ', &
     '                                                                       ', &
@@ -385,9 +451,12 @@ contains
     '    o Scans your sources                                               ', &
     '    o Builds them in the proper order                                  ', &
     '                                                                       ', &
-    ' The Fortran source files are assumed to be in app/, test/, and src/   ', &
-    ' by default. The changed or new files found are rebuilt.               ', &
-    ' The results are placed in the build/ directory.                       ', &
+    ' The Fortran source files are assumed by default to be in              ', &
+    '    o src/     for modules and procedure source                        ', &
+    '    o app/     main program(s) for applications                        ', &
+    '    o test/    main program(s) and support files for project tests     ', &
+    ' Changed or new files found are rebuilt. The results are placed in     ', &
+    ' the build/ directory.                                                 ', &
     '                                                                       ', &
     ' Non-default pathnames and remote dependencies are used if             ', &
     ' specified in the "fpm.toml" file.                                     ', &
@@ -456,7 +525,7 @@ contains
     '' ]
     help_new=[character(len=80) ::                                             &
     'NAME                                                                   ', &
-    '   new(1) - the fpm(1) subcommand to initialize a new project          ', &
+    ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
     'SYNOPSIS                                                               ', &
     ' fpm new NAME [--lib] [--app] [--test] [--backfill]                    ', &
     '                                                                       ', &
@@ -532,7 +601,7 @@ contains
     '' ]
     help_test=[character(len=80) :: &
     'NAME                                                                   ', &
-    '  test(1) - the fpm(1) subcommand to run project tests                 ', &
+    ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm test [NAME(s)] [--release] [--list] [-- ARGS]                     ', &
