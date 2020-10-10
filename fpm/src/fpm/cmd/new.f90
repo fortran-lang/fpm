@@ -16,7 +16,13 @@ character(len=:),allocatable :: bname          ! baeename of NAME
 character(len=:),allocatable :: message(:)
 character(len=:),allocatable :: littlefile(:)
 
-    call mkdir(settings%name)      ! make new directory
+    if(exists(settings%name) .and. .not.settings%backfill )then
+       write(stderr,'(*(g0,1x))')'fpm::new<ERROR>',settings%name,'already exists.'
+       write(stderr,'(*(g0,1x))')'        perhaps you wanted to add --backfill ?'
+       return
+    else
+       call mkdir(settings%name)      ! make new directory
+    endif
     call run('cd '//settings%name) ! change to new directory as a test. System dependent potentially
     !! NOTE: need some system routines to handle filenames like "." like realpath() or getcwd().
     bname=basename(settings%name)
@@ -89,17 +95,25 @@ character(len=:),allocatable :: littlefile(:)
         &'main="main.f90"                      ', &
         &'']
 
-        littlefile=[character(len=80) ::          &
-        &'program main',                          &
-        &'  use '//bname//', only: say_hello',    &
-        &'',                                      &
-        &'  implicit none',                       &
-        &'',                                      &
-        &'  call say_hello',                      &
-        &'end program main']
+       
+        if(exists(bname//'/src/'))then
+            littlefile=[character(len=80) ::          &
+            &'program main',                          &
+            &'  use '//bname//', only: say_hello',    &
+            &'  implicit none',                       &
+            &'',                                      &
+            &'  call say_hello()',                    &
+            &'end program main']
+        else
+            littlefile=[character(len=80) ::                 &
+            &'program main',                                 &
+            &'  implicit none',                              &
+            &'',                                             &
+            &'  print *, "hello from project '//bname//'"',  &
+            &'end program main']
+        endif
         call warnwrite(join_path(settings%name, 'app/main.f90'), littlefile)
     endif
-
     call warnwrite(join_path(settings%name, 'fpm.toml'), message)               ! now that built it write NAME/fpm.toml
 
     call run('cd ' // settings%name // ';git init')    ! assumes these commands work on all systems and git(1) is installed
@@ -112,7 +126,7 @@ character(len=*),intent(in) :: data(:)
     if(.not.exists(fname))then
        call filewrite(fname,data)
     else
-       write(stderr,'(*(g0,1x))')'fpm::new<WARNING>',fname,'already exists. Not overwriting'
+       write(stderr,'(*(g0,1x))')'fpm::new<INFO>',fname,'already exists. Not overwriting'
     endif
 
 end subroutine warnwrite

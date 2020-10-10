@@ -123,7 +123,7 @@ contains
                                              & list=lget('list') )
 
         case('new')
-            call set_args(' --lib F --app F --test F -backfill F', &
+            call set_args(' --lib F --app F --test F --backfill F', &
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
@@ -364,10 +364,10 @@ contains
     ' fpm run                                                       ', &
     '                                                               ', &
     ' # run a specific program and pass arguments to the command    ', &
-    ' fpm run mytest -- -x 10 -y 20 -title "my title line"          ', &
+    ' fpm run mytest -- -x 10 -y 20 --title "my title line"         ', &
     '                                                               ', &
     ' # production version of two applications                      ', &
-    ' fpm run tst1 test2 -release                                   ', &
+    ' fpm run tst1 tst2 --release                                   ', &
     'SEE ALSO                                                       ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm   ', &
     '' ]
@@ -402,8 +402,8 @@ contains
     'EXAMPLES                                                              ', &
     ' Sample commands:                                                     ', &
     '                                                                      ', &
-    '  fpm build          # build with debug options                       ', &
-    '  fpm build -release # build with high optimization                   ', &
+    '  fpm build           # build with debug options                      ', &
+    '  fpm build --release # build with high optimization                  ', &
     'SEE ALSO                                                              ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm          ', &
     '' ]
@@ -509,8 +509,8 @@ contains
     '             option is present the directory may pre-exist and  ', &
     '             only subdirectories and files that do not          ', &
     '             already exist will be created. For example, if you ', &
-    '             previously entered "fpm new myname -lib" entering  ', &
-    '             "fpm new myname -backfill" will create the missing ', &
+    '             previously entered "fpm new myname --lib" entering ', &
+    '             "fpm new myname --backfill" will create the missing', &
     '             app/ and test/ directories and missing programs.   ', &
     '                                                                ', &
     ' --help      print this help and exit                           ', &
@@ -560,9 +560,9 @@ contains
     ' fpm test                                                      ', &
     '                                                               ', &
     ' # run a specific test and pass arguments to the command       ', &
-    ' fpm test mytest -- -x 10 -y 20 -title "my title line"         ', &
+    ' fpm test mytest -- -x 10 -y 20 --title "my title line"        ', &
     '                                                               ', &
-    ' fpm test tst1 test2 -release # production version of two tests', &
+    ' fpm test tst1 tst2 --release # production version of two tests', &
     'SEE ALSO                                                       ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm   ', &
     '' ]
