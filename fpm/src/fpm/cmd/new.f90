@@ -118,7 +118,7 @@ character(len=:),allocatable :: littlefile(:)
     endif
     call warnwrite(join_path(settings%name, 'fpm.toml'), message)               ! now that built it write NAME/fpm.toml
 
-    call run('cd ' // settings%name // ';git init')    ! assumes these commands work on all systems and git(1) is installed
+    call run('cd ' // settings%name // '&&git init')    ! assumes these commands work on all systems and git(1) is installed
 contains
 
 subroutine warnwrite(fname,data)
