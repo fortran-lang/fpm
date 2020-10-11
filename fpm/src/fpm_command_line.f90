@@ -124,20 +124,20 @@ contains
                                              & list=lget('list') )
 
         case('new')
-            call set_args(' --lib F --app F --test F --backfill F', &
+            call set_args(' --src F --lib F --app F --test F --backfill F', &
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
                 write(stderr,'(*(g0,/))')'ERROR: directory name required'
                 write(stderr,'(*(7x,g0,/))') &
-                & 'usage: fpm new NAME [--lib] [--app] [--test] [--backfill]'
+                & 'usage: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
                 stop 1
             case(2)
                 name=trim(unnamed(2))
             case default
                 write(stderr,'(g0)')'ERROR: only one directory name allowed'
                 write(stderr,'(7x,g0)') &
-                & 'usage: fpm new NAME [--lib] [--app] [--test] [--backfill]'
+                & 'usage: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
                 stop 2
             end select
             !! canon_path is not converting ".", etc.
@@ -154,11 +154,11 @@ contains
 
             allocate(fpm_new_settings :: cmd_settings)
 
-            if (any( specified(['lib ','app ','test']) ) )then
-                cmd_settings=fpm_new_settings(name=name, &
-                 & with_executable=lget('app'),          &
-                 & with_test=lget('test'),               &
-                 & with_lib=lget('lib'),                 &
+            if (any( specified(['src ','lib ','app ','test']) ) )then
+                cmd_settings=fpm_new_settings(name=name,    &
+                 & with_executable=lget('app'),             &
+                 & with_test=lget('test'),                  &
+                 & with_lib=any([lget('lib'),lget('src')]), &
                  & backfill=lget('backfill') )
             else
                 cmd_settings=fpm_new_settings(name=name, &
@@ -246,7 +246,9 @@ contains
             if(lget('list'))then
                help_text=help_list_dash
             elseif(len_trim(cmdarg).eq.0)then
-                write(stderr,'(*(a))')'ERROR: missing subcommand. Must be one of'
+                write(stdout,'(*(a))')'Fortran Package Manager:'
+                write(stdout,'(*(a))')' '
+                write(stdout,'(*(a))')' subcommand may be one of'
                 call printhelp(help_list_nodash)
             else
                 write(stderr,'(*(a))')'ERROR: unknown subcommand [', &
@@ -297,7 +299,7 @@ contains
     '                                                                       ', &
    ' build [--release] [--list]                                             ', &
    ' help [NAME(s)]                                                         ', &
-   ' new NAME [--lib] [--app] [--test] [--backfill]                         ', &
+   ' new NAME [--lib|--src] [--app] [--test] [--backfill]                   ', &
    ' list [--list]                                                          ', &
    ' run [NAME(s)] [--release] [--list] [-- ARGS]                           ', &
    ' test [NAME(s)] [--release] [--list] [-- ARGS]                          ', &
@@ -314,8 +316,7 @@ contains
     help_fpm=[character(len=80) :: &
     'NAME                                                                   ', &
     '   fpm(1) - A Fortran package manager and build system                 ', &
-    'OS TYPE' ]
-    help_fpm=[character(len=80) :: help_fpm, &
+    '                                                                       ', &
     'SYNOPSIS                                                               ', &
     '   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                 ', &
     '                                                                       ', &
@@ -342,7 +343,7 @@ contains
     '                                                                       ', &
     '     build [--release] [--list]                                        ', &
     '                     Compile the packages into the "build/" directory. ', &
-    '     new NAME [--lib] [--app] [--test] [--backfill]                    ', &
+    '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
     '                     Create a new Fortran package directory            ', &
     '                     with sample files                                 ', &
     '     run [NAME(s)] [--release] [--list] [-- ARGS]                      ', &
@@ -364,6 +365,7 @@ contains
     '  --help     Show help text and exit. Valid for all subcommands.       ', &
     '  --version  Show version information and exit. Valid for all          ', &
     '             subcommands.                                              ', &
+    '                                                                       ', &
     'EXAMPLES                                                               ', &
     '   sample commands:                                                    ', &
     '                                                                       ', &
@@ -373,6 +375,7 @@ contains
     '    fpm run                                                            ', &
     '    fpm new --help                                                     ', &
     '    fpm run myprogram --release -- -x 10 -y 20 --title "my title"      ', &
+    '                                                                       ', &
     'SEE ALSO                                                               ', &
     '   The fpm(1) home page at https://github.com/fortran-lang/fpm         ', &
     '']
@@ -397,6 +400,7 @@ contains
     '                                                                       ', &
     '  fpm list                                                             ', &
     '  fpm --list                                                           ', &
+    '                                                                       ', &
     'SEE ALSO                                                               ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
@@ -434,12 +438,14 @@ contains
     '                                                                       ', &
     '  # run production version of two applications                         ', &
     '  fpm run prg1 prg2 --release                                          ', &
+    '                                                                       ', &
     'SEE ALSO                                                               ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
     help_build=[character(len=80) :: &
     'NAME                                                                   ', &
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
+    '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--release]|[-list]                                         ', &
     '                                                                       ', &
@@ -473,6 +479,7 @@ contains
     '                                                                       ', &
     '  fpm build           # build with debug options                       ', &
     '  fpm build --release # build with high optimization                   ', &
+    '                                                                       ', &
     'SEE ALSO                                                               ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
@@ -505,6 +512,7 @@ contains
     '                 fortran documentation. Entries should be in           ', &
     '                 uppercase to avoid conflicts with fpm(1) topics;      ', &
     '                 but can be in lowercase if there is no conflict.      ', &
+    '                                                                       ', &
     'EXAMPLES                                                               ', &
     '   Sample usage:                                                       ', &
     '                                                                       ', &
@@ -527,7 +535,7 @@ contains
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
     'SYNOPSIS                                                               ', &
-    ' fpm new NAME [--lib] [--app] [--test] [--backfill]                    ', &
+    ' fpm new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
     '                                                                       ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
@@ -564,26 +572,26 @@ contains
     ' directories. If any of the following options are specified            ', &
     ' then only specified subdirectories are generated:                     ', &
     '                                                                       ', &
-    ' --lib       create directory src/ and a placeholder module            ', &
-    '             named "NAME.f90" for use with subcommand "build".         ', &
-    ' --app       create directory app/ and a placeholder main              ', &
-    '             program for use with subcommand "run".                    ', &
-    ' --test      create directory test/ and a placeholder program          ', &
-    '             for use with the subcommand "test". Note that sans        ', &
-    '             "--lib" it really does not have anything to test.         ', &
+    ' --lib,--src  create directory src/ and a placeholder module           ', &
+    '              named "NAME.f90" for use with subcommand "build".        ', &
+    ' --app        create directory app/ and a placeholder main             ', &
+    '              program for use with subcommand "run".                   ', &
+    ' --test       create directory test/ and a placeholder program         ', &
+    '              for use with the subcommand "test". Note that sans       ', &
+    '              "--lib" it really does not have anything to test.        ', &
     '                                                                       ', &
     ' So the default is equivalent to "fpm NAME --lib --app --test".        ', &
     '                                                                       ', &
-    ' --backfill  By default the directory must not exist. If this          ', &
-    '             option is present the directory may pre-exist and         ', &
-    '             only subdirectories and files that do not                 ', &
-    '             already exist will be created. For example, if you        ', &
-    '             previously entered "fpm new myname --lib" entering        ', &
-    '             "fpm new myname --backfill" will create the missing       ', &
-    '             app/ and test/ directories and programs.                  ', &
+    ' --backfill   By default the directory must not exist. If this         ', &
+    '              option is present the directory may pre-exist and        ', &
+    '              only subdirectories and files that do not                ', &
+    '              already exist will be created. For example, if you       ', &
+    '              previously entered "fpm new myname --lib" entering       ', &
+    '              "fpm new myname --backfill" will create the missing      ', &
+    '              app/ and test/ directories and programs.                 ', &
     '                                                                       ', &
-    ' --help      print this help and exit                                  ', &
-    ' --version   print program version information and exit                ', &
+    ' --help       print this help and exit                                 ', &
+    ' --version    print program version information and exit               ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     ' Sample use                                                            ', &
@@ -594,6 +602,7 @@ contains
     '   fpm build                                                           ', &
     '   fpm run            # run example application program                ', &
     '   fpm test           # run example test program                       ', &
+    '                                                                       ', &
     'SEE ALSO                                                               ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '                                                                       ', &
@@ -632,6 +641,7 @@ contains
     ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &
     '                                                                       ', &
     ' fpm test tst1 tst2 --release # production version of two tests        ', &
+    '                                                                       ', &
     'SEE ALSO                                                               ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
