@@ -10,38 +10,50 @@ public :: cmd_new
 
 contains
 
-subroutine cmd_new(settings) ! --with-executable F --with-test F '
+subroutine cmd_new(settings)
 type(fpm_new_settings), intent(in) :: settings
 character(len=:),allocatable :: bname          ! baeename of NAME
 character(len=:),allocatable :: message(:)
 character(len=:),allocatable :: littlefile(:)
 
     if(exists(settings%name) .and. .not.settings%backfill )then
-        write(stderr,'(*(g0,1x))')'fpm::new<ERROR>',settings%name,'already exists.'
-        write(stderr,'(*(g0,1x))')'        perhaps you wanted to add --backfill ?'
+        write(stderr,'(*(g0,1x))')&
+        & 'ERROR: ',settings%name,'already exists.'
+        write(stderr,'(*(g0,1x))')&
+        & '        perhaps you wanted to add --backfill ?'
         return
     elseif(is_dir(settings%name) .and. settings%backfill )then
         write(*,'(*(g0))')'backfilling ',settings%name
     elseif(exists(settings%name) )then
-        write(stderr,'(*(g0,1x))')'fpm::new<ERROR>',settings%name,'already exists and is not a directory.'
+        write(stderr,'(*(g0,1x))')&
+        & 'ERROR: ',settings%name,'already exists and is not a directory.'
         return
     else
-        call mkdir(settings%name)      ! make new directory
+        ! make new directory
+        call mkdir(settings%name)
     endif
-    call run('cd '//settings%name) ! change to new directory as a test. System dependent potentially
-    !! NOTE: need some system routines to handle filenames like "." like realpath() or getcwd().
+
+    ! change to new directory as a test. System dependent potentially
+    call run('cd '//settings%name)
+    !! NOTE: need some system routines to handle filenames like "."
+    !! like realpath() or getcwd().
     bname=basename(settings%name)
 
-    !! weird gfortran bug?? lines truncated to concatenated string length, not 80
-    !! hit some weird gfortran bug when littlefile data was an argument to warnwrite(3f), ok when a variable
+    !! weird gfortran bug?? lines truncated to concatenated string length,
+    !! not 80
+    !! hit some weird gfortran bug when littlefile data was an argument
+    !! to warnwrite(3f), ok when a variable
 
-    call warnwrite(join_path(settings%name, '.gitignore'), ['build/*'])        ! create NAME/.gitignore file
+    ! create NAME/.gitignore file
+    call warnwrite(join_path(settings%name, '.gitignore'), ['build/*'])
 
     littlefile=[character(len=80) :: '# '//bname, 'My cool new project!']
 
-    call warnwrite(join_path(settings%name, 'README.md'), littlefile)          ! create NAME/README.md
+    ! create NAME/README.md
+    call warnwrite(join_path(settings%name, 'README.md'), littlefile)
 
-    message=[character(len=80) ::             &                                ! start building NAME/fpm.toml
+    ! start building NAME/fpm.toml
+    message=[character(len=80) ::             &
     &'name = "'//bname//'"                 ', &
     &'version = "0.1.0"                    ', &
     &'license = "license"                  ', &
@@ -53,11 +65,13 @@ character(len=:),allocatable :: littlefile(:)
 
     if(settings%with_lib)then
         call mkdir(join_path(settings%name,'src') )
-        message=[character(len=80) ::  message,   &                             ! create next section of fpm.toml
+        ! create next section of fpm.toml
+        message=[character(len=80) ::  message,   &
         &'[library]                            ', &
         &'source-dir="src"                     ', &
         &'']
-        littlefile=[character(len=80) ::          &                             ! create placeholder module src/bname.f90
+        ! create placeholder module src/bname.f90
+        littlefile=[character(len=80) ::          &
         &'module '//bname,                        &
         &'  implicit none',                       &
         &'  private',                             &
@@ -68,39 +82,44 @@ character(len=:),allocatable :: littlefile(:)
         &'    print *, "Hello, '//bname//'!"',    &
         &'  end subroutine say_hello',            &
         &'end module '//bname]
-       ! a proposed alternative default
-        call warnwrite(join_path(settings%name, 'src', bname//'.f90'), littlefile) ! create NAME/src/NAME.f90
+        ! create NAME/src/NAME.f90
+        call warnwrite(join_path(settings%name, 'src', bname//'.f90'),&
+         & littlefile)
     endif
 
     if(settings%with_test)then
-        call mkdir(join_path(settings%name, 'test'))                            ! create NAME/test or stop
-        message=[character(len=80) ::  message,   &                             ! create next section of fpm.toml
+
+       ! create NAME/test or stop
+       call mkdir(join_path(settings%name, 'test'))
+        ! create next section of fpm.toml
+        message=[character(len=80) ::  message,   &
         &'[[test]]                             ', &
         &'name="runTests"                      ', &
         &'source-dir="test"                    ', &
         &'main="main.f90"                      ', &
         &'']
 
-        littlefile=[character(len=80) ::        &
+        littlefile=[character(len=80) ::       &
         &'program main',                       &
         &'implicit none',                      &
         &'',                                   &
         &'print *, "Put some tests in here!"', &
         &'end program main']
-        ! a proposed alternative default a little more substantive
-        call warnwrite(join_path(settings%name, 'test/main.f90'), littlefile)    ! create NAME/test/main.f90
+        ! create NAME/test/main.f90
+        call warnwrite(join_path(settings%name, 'test/main.f90'), littlefile)
     endif
 
     if(settings%with_executable)then
-        call mkdir(join_path(settings%name, 'app'))                             ! create NAME/app or stop
-        message=[character(len=80) ::  message,   &                             ! create next section of fpm.toml
+        ! create next section of fpm.toml
+        call mkdir(join_path(settings%name, 'app'))
+        ! create NAME/app or stop
+        message=[character(len=80) ::  message,   &
         &'[[executable]]                       ', &
         &'name="'//bname//'"                   ', &
         &'source-dir="app"                     ', &
         &'main="main.f90"                      ', &
         &'']
 
-       
         if(exists(bname//'/src/'))then
             littlefile=[character(len=80) ::          &
             &'program main',                          &
@@ -119,9 +138,11 @@ character(len=:),allocatable :: littlefile(:)
         endif
         call warnwrite(join_path(settings%name, 'app/main.f90'), littlefile)
     endif
-    call warnwrite(join_path(settings%name, 'fpm.toml'), message)               ! now that built it write NAME/fpm.toml
 
-    call run('cd ' // settings%name // '&&git init')    ! assumes these commands work on all systems and git(1) is installed
+    ! now that built it write NAME/fpm.toml
+    call warnwrite(join_path(settings%name, 'fpm.toml'), message)
+    ! assumes git(1) is installed and in path
+    call run('git init ' // settings%name)
 contains
 
 subroutine warnwrite(fname,data)
@@ -131,14 +152,17 @@ character(len=*),intent(in) :: data(:)
     if(.not.exists(fname))then
         call filewrite(fname,data)
     else
-        write(stderr,'(*(g0,1x))')'fpm::new<INFO>',fname,'already exists. Not overwriting'
+        write(stderr,'(*(g0,1x))')'INFO:   ',fname,&
+        & 'already exists. Not overwriting'
     endif
 
 end subroutine warnwrite
 
 subroutine filewrite(filename,filedata)
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-! write filedata to file filename
+! procedure to write filedata to file filename
+use,intrinsic :: iso_fortran_env, only : &
+ & stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+
 character(len=*),intent(in)           :: filename
 character(len=*),intent(in)           :: filedata(:)
 integer                               :: lun, i, ios
@@ -149,11 +173,11 @@ character(len=256)                    :: message
     if(filename.ne.' ')then
         open(file=filename, &
         & newunit=lun, &
-        & form='formatted', &      !  FORM      =  FORMATTED   |  UNFORMATTED
-        & access='sequential', &   !  ACCESS    =  SEQUENTIAL  |  DIRECT       |  STREAM
-        & action='write', &        !  ACTION    =  READ|WRITE  |  READWRITE
-        & position='rewind', &     !  POSITION  =  ASIS        |  REWIND       |  APPEND
-        & status='new', &          !  STATUS    =  NEW         |  REPLACE      |  OLD     |  SCRATCH   | UNKNOWN
+        & form='formatted', &    ! FORM    = FORMATTED | UNFORMATTED
+        & access='sequential', & ! ACCESS  = SEQUENTIAL| DIRECT | STREAM
+        & action='write', &      ! ACTION  = READ|WRITE| READWRITE
+        & position='rewind', &   ! POSITION= ASIS      | REWIND | APPEND
+        & status='new', &        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN
         & iostat=ios, &
         & iomsg=message)
     else
@@ -161,17 +185,21 @@ character(len=256)                    :: message
         ios=0
     endif
     if(ios.ne.0)then
-        write(stderr,'(*(a:,1x))')'*filewrite* error:',filename,trim(message)
+        write(stderr,'(*(a:,1x))')&
+        & '*filewrite* error:',filename,trim(message)
         error stop 1
     endif
-    do i=1,size(filedata)                                                    ! write file
+    ! write file
+    do i=1,size(filedata)
         write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
         if(ios.ne.0)then
-            write(stderr,'(*(a:,1x))')'*filewrite* error:',filename,trim(message)
+            write(stderr,'(*(a:,1x))')&
+            & '*filewrite* error:',filename,trim(message)
             error stop 4
         endif
     enddo
-    close(unit=lun,iostat=ios,iomsg=message)                                 ! close file
+    ! close file
+    close(unit=lun,iostat=ios,iomsg=message)
     if(ios.ne.0)then
         write(stderr,'(*(a:,1x))')'*filewrite* error:',trim(message)
         error stop 2
