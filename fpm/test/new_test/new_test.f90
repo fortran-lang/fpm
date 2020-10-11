@@ -116,7 +116,7 @@ logical,allocatable           :: tally(:)
          if(allocated(fnames))deallocate(fnames)
          allocate(character(len=0) :: fnames(0))
          do j=1,size(file_names)
-           if(file_names(j)%s(1:1).eq.'.')cycle
+           if(file_names(j)%s(1:1).eq.'.'.or.index(file_names(j)%s,'/.').ne.0.or.index(file_names(j)%s,'\.').ne.0)cycle
            fnames=[character(len=max(len(fnames),len(file_names(j)%s))) :: fnames,file_names(j)%s]
          enddo
          write(*,'(*(g0))',advance='no')'>>>DIRECTORY ',trim(directories(i)),':   '
