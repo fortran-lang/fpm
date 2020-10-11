@@ -2,7 +2,7 @@ module fpm_cmd_new
 
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_filesystem, only : join_path, exists, basename, mkdir
+use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
 use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
 implicit none
 private
@@ -20,8 +20,11 @@ character(len=:),allocatable :: littlefile(:)
         write(stderr,'(*(g0,1x))')'fpm::new<ERROR>',settings%name,'already exists.'
         write(stderr,'(*(g0,1x))')'        perhaps you wanted to add --backfill ?'
         return
-    elseif(exists(settings%name) .and. settings%backfill )then
+    elseif(is_dir(settings%name) .and. settings%backfill )then
         write(*,'(*(g0))')'backfilling ',settings%name
+    elseif(exists(settings%name) )then
+        write(stderr,'(*(g0,1x))')'fpm::new<ERROR>',settings%name,'already exists and is not a directory.'
+        return
     else
         call mkdir(settings%name)      ! make new directory
     endif
