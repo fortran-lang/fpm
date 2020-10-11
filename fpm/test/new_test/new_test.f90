@@ -5,6 +5,7 @@ use fpm_strings,     only : string_t
 use fpm_environment, only : run, get_os_type 
 use fpm_environment, only : OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_WINDOWS
 type(string_t), allocatable    :: file_names(:)
+character(len=:), allocatable  :: fnames(:)
 character(len=:), allocatable  :: directory
 integer                        :: i, j, k
 character(len=*),parameter     :: cmdpath = 'build/gfortran_debug/app/fpm'
@@ -110,11 +111,18 @@ logical,allocatable           :: tally(:)
             write(*,*)'ERROR: internal error. unknown directory name ',trim(directories(i))
             stop 4
          end select
+         !! MSwindows has hidden files in it
          call list_files(trim(directories(i)), file_names,recurse=.true.)
+         if(allocated(fnames))deallocate(fnames)
+         allocate(character(len=0) :: fnames(0))
+         do j=1,size(file_names)
+           if(file_names(j)%s(1:1).eq.'.')cycle
+           fnames=[character(len=max(len(fnames),len(file_names(j)%s))) :: fnames,file_names(j)%s]
+         enddo
          write(*,'(*(g0))',advance='no')'>>>DIRECTORY ',trim(directories(i)),':   '
          write(*,'(*(g0:,", "))')( file_names(j)%s, j=1,size(file_names) )
-         if(size(expected).ne.size(file_names))then
-            write(*,*)'unexpected number of files in file list=',size(file_names),' expected ',size(directories)
+         if(size(expected).ne.size(fnames))then
+            write(*,*)'unexpected number of files in file list=',size(fnames),' expected ',size(expected)
             tally=[tally,.false.]
             cycle TESTS
          else
@@ -129,10 +137,10 @@ logical,allocatable           :: tally(:)
                stop 3
             end select 
             do j=1,size(expected)
-               if( .not.any(file_names(j)%s==expected) )then
+               if( .not.any(fnames(j)==expected) )then
                   tally=[tally,.false.]
                   write(*,'("ERROR: EXPECTED ",*(g0:,", "))')( trim(expected(k)), k=1,size(expected) )
-                  write(*,'(*(g0))')'       NO MATCH FOR ',file_names(j)%s
+                  write(*,'(*(g0))')'       NO MATCH FOR ',fnames(j)
                   cycle TESTS
                endif
             enddo
