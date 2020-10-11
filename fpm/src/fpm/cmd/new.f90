@@ -20,12 +20,12 @@ character(len=:),allocatable :: littlefile(:)
        write(stderr,'(*(g0,1x))')'fpm::new<ERROR>',settings%name,'already exists.'
        write(stderr,'(*(g0,1x))')'        perhaps you wanted to add --backfill ?'
        return
+    elseif(exists(settings%name) .and. settings%backfill )then
+       write(*,'(*(g0))')'backfilling ',settings%name
     else
        call mkdir(settings%name)      ! make new directory
     endif
-    call showcwd('before test')
     call run('cd '//settings%name) ! change to new directory as a test. System dependent potentially
-    call showcwd('after test')
     !! NOTE: need some system routines to handle filenames like "." like realpath() or getcwd().
     bname=basename(settings%name)
 
@@ -118,26 +118,8 @@ character(len=:),allocatable :: littlefile(:)
     endif
     call warnwrite(join_path(settings%name, 'fpm.toml'), message)               ! now that built it write NAME/fpm.toml
 
-    call showcwd('before init')
     call run('cd ' // settings%name // ';git init')    ! assumes these commands work on all systems and git(1) is installed
-    call showcwd('after init')
 contains
-
-subroutine showcwd(msg)
-use fpm_environment, only : run, get_os_type 
-use fpm_environment, only : OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_WINDOWS
-character(len=*),intent(in) :: msg
-    write(*,'(a,1x)',advance='no')msg
-    select case (get_os_type()) 
-    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
-       call run('pwd')
-    case (OS_WINDOWS) 
-       call run('chdir')
-    case default
-       write(*,*)'ERROR: unknown OS. Stopping test'
-       stop 2
-    end select 
-end subroutine showcwd
 
 subroutine warnwrite(fname,data)
 character(len=*),intent(in) :: fname
