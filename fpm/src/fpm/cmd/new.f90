@@ -17,13 +17,13 @@ character(len=:),allocatable :: message(:)
 character(len=:),allocatable :: littlefile(:)
 
     if(exists(settings%name) .and. .not.settings%backfill )then
-       write(stderr,'(*(g0,1x))')'fpm::new<ERROR>',settings%name,'already exists.'
-       write(stderr,'(*(g0,1x))')'        perhaps you wanted to add --backfill ?'
-       return
+        write(stderr,'(*(g0,1x))')'fpm::new<ERROR>',settings%name,'already exists.'
+        write(stderr,'(*(g0,1x))')'        perhaps you wanted to add --backfill ?'
+        return
     elseif(exists(settings%name) .and. settings%backfill )then
-       write(*,'(*(g0))')'backfilling ',settings%name
+        write(*,'(*(g0))')'backfilling ',settings%name
     else
-       call mkdir(settings%name)      ! make new directory
+        call mkdir(settings%name)      ! make new directory
     endif
     call run('cd '//settings%name) ! change to new directory as a test. System dependent potentially
     !! NOTE: need some system routines to handle filenames like "." like realpath() or getcwd().
@@ -126,9 +126,9 @@ character(len=*),intent(in) :: fname
 character(len=*),intent(in) :: data(:)
 
     if(.not.exists(fname))then
-       call filewrite(fname,data)
+        call filewrite(fname,data)
     else
-       write(stderr,'(*(g0,1x))')'fpm::new<INFO>',fname,'already exists. Not overwriting'
+        write(stderr,'(*(g0,1x))')'fpm::new<INFO>',fname,'already exists. Not overwriting'
     endif
 
 end subroutine warnwrite
