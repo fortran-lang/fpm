@@ -59,7 +59,8 @@ logical,allocatable           :: tally(:)
 
    do i=1,size(cmds)
       message=''
-      call execute_command_line(cmdpath//''//cmds(i),exitstat=estat,cmdstat=cstat,cmdmsg=message)
+      write(*,*)path//' '//cmds(i)
+      call execute_command_line(path//' '//cmds(i),exitstat=estat,cmdstat=cstat,cmdmsg=message)
       write(*,'(*(g0))')'CMD=',trim(cmds(i)),' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
    enddo
 
