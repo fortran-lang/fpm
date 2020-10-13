@@ -9,7 +9,7 @@ else
   echo "Haskell stack not found."
   echo "Installing Haskell stack to."
   curl -sSL https://get.haskellstack.org/ | sh
-  if [[ -x "$install_path/stack" ]]; then
+  if command -v stack &> /dev/null ; then
     echo "Haskell stack installation successful."
   else
     echo "Haskell stack installation unsuccessful."
