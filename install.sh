@@ -3,23 +3,30 @@
 set -u # error on use of undefined variable
 set -e # exit on error
 
-# Install Haskell Stack to /usr/local/bin/stack
 if command -v stack &> /dev/null ; then
   echo "found stack"
 else
+  echo "Haskell stack not found."
+  echo "Installing Haskell stack to."
   curl -sSL https://get.haskellstack.org/ | sh
+  if [[ -x "$install_path/stack" ]]; then
+    echo "Haskell stack installation successful."
+  else
+    echo "Haskell stack installation unsuccessful."
+    exit 1
+  fi
 fi
 
+install_path="$HOME/.local/bin"
+if [[ -x "$install_path/fpm" ]]; then
+  echo "Overwriting existing fpm installation in $install_path"
+fi
 
-# Check for Stack in /usr/local/bin/stack
+cd bootstrap
+stack install
 
-# On macOS, it might be necessary to run 'xcode-select --install' and/or
-#      'open /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg'
-#      to set up the Xcode command-line tools, which Stack uses.
-
-# Add '${USER}/.local/bin' the beginning of PATH in the fpm-setup.sh
-
-#cd boostrap
-#stack install
-
-# Check for fpm in ${USER}/.local/bin
+if [[ -x "$install_path/fpm" ]]; then
+  echo "fpm installed successfully to $install_path"
+else
+  echo "fpm installation unsuccessful: fpm not found in $install_path"
+fi
