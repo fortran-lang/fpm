@@ -5,7 +5,7 @@ data RawSource = RawSource {
   , rawSourceContents :: String
 }
 
-data Source = Program
+data Source = Program { programSourceFileName :: String}
 
 processRawSource :: RawSource -> Source
-processRawSource _ = Program
+processRawSource rawSource = Program $ rawSourceFilename rawSource
