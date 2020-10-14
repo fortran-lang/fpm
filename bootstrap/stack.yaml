@@ -43,7 +43,7 @@ extra-deps:
 - git: https://github.com/kowainik/tomland.git
   commit: 536a5e6ffb148d0dd4e4c4b120913a6744097676
 - git: https://gitlab.com/everythingfunctional/hedge.git
-  commit: 597b6475fd0b88369020e0de1de5885546d572f8
+  commit: 1c6cba3b5f8e52cf317f2421aaca13a0ddab4e92
   subdirs:
     - .
     - hedge-trimmer

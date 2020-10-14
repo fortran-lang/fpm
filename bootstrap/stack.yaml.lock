@@ -23,11 +23,11 @@ packages:
     pantry-tree:
       size: 226
       sha256: 19972f5b81c7627d6b66c852dfb7e0e67b3931ed4f418663c152717ce4ea267e
-    commit: 597b6475fd0b88369020e0de1de5885546d572f8
+    commit: 1c6cba3b5f8e52cf317f2421aaca13a0ddab4e92
   original:
     subdir: hedge-trimmer
     git: https://gitlab.com/everythingfunctional/hedge.git
-    commit: 597b6475fd0b88369020e0de1de5885546d572f8
+    commit: 1c6cba3b5f8e52cf317f2421aaca13a0ddab4e92
 - completed:
     hackage: quickcheck-with-counterexamples-1.2@sha256:d322d79008602df26f5eb4e1379e5b58bf1a92604df8601e71e200cfc3e847a3,1688
     pantry-tree:
