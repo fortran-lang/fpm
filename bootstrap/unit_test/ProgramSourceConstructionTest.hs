@@ -1,4 +1,4 @@
-module SourceConstructionTest
+module ProgramSourceConstructionTest
   ( test
   )
 where
