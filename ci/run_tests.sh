@@ -8,7 +8,7 @@ fpm run
 fpm test
 build/gfortran_debug/app/fpm
 
-cd ../test/example_packages/hello_world
+cd ../example_packages/hello_world
 ../../../fpm/build/gfortran_debug/app/fpm build
 ./build/gfortran_debug/app/hello_world
 
