@@ -25,7 +25,7 @@ import           Text.ParserCombinators.ReadP   ( ReadP
                                                 , string
                                                 )
 
-data LineContents = ModuleUsed String | Other
+data LineContents = ProgramDeclaration | ModuleUsed String | Other
 
 data RawSource = RawSource {
     rawSourceFilename :: FilePath
@@ -42,16 +42,18 @@ processRawSource :: RawSource -> Source
 processRawSource rawSource =
   let sourceFileName = rawSourceFilename rawSource
       parsedContents = parseContents rawSource
-  in  Program
-        { programSourceFileName = sourceFileName
-        , programObjectFileName = \buildDirectory ->
-                                    buildDirectory
-                                      </> (pathSeparatorsToUnderscores
-                                            sourceFileName
-                                          )
-                                      <.> "o"
-        , programModulesUsed    = getModulesUsed parsedContents
-        }
+  in  if hasProgramDeclaration parsedContents
+        then Program
+          { programSourceFileName = sourceFileName
+          , programObjectFileName = \buildDirectory ->
+                                      buildDirectory
+                                        </> (pathSeparatorsToUnderscores
+                                              sourceFileName
+                                            )
+                                        <.> "o"
+          , programModulesUsed    = getModulesUsed parsedContents
+          }
+        else undefined
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
 pathSeparatorsToUnderscores fileName =
@@ -59,16 +61,24 @@ pathSeparatorsToUnderscores fileName =
 
 parseContents :: RawSource -> [LineContents]
 parseContents rawSource =
-  let fileLines    = lines $ rawSourceContents rawSource in
-  map parseFortranLine fileLines
+  let fileLines = lines $ rawSourceContents rawSource
+  in  map parseFortranLine fileLines
+
+hasProgramDeclaration :: [LineContents] -> Bool
+hasProgramDeclaration parsedContents = case filter f parsedContents of
+  x : _ -> True
+  _     -> False
+ where
+  f lc = case lc of
+    ProgramDeclaration -> True
+    _                  -> False
 
 getModulesUsed :: [LineContents] -> [String]
-getModulesUsed =
-  mapMaybe contentToMaybeModuleName
-   where
-    contentToMaybeModuleName content = case content of
-      ModuleUsed moduleName -> Just moduleName
-      _                     -> Nothing
+getModulesUsed = mapMaybe contentToMaybeModuleName
+ where
+  contentToMaybeModuleName content = case content of
+    ModuleUsed moduleName -> Just moduleName
+    _                     -> Nothing
 
 readFileLinesIO :: FilePath -> IO [String]
 readFileLinesIO file = do
@@ -89,7 +99,15 @@ doFortranLineParse :: ReadP LineContents
 doFortranLineParse = option Other fortranUsefulContents
 
 fortranUsefulContents :: ReadP LineContents
-fortranUsefulContents = useStatement
+fortranUsefulContents = programDeclaration <|> useStatement
+
+programDeclaration :: ReadP LineContents
+programDeclaration = do
+  skipSpaces
+  _ <- string "program"
+  skipAtLeastOneWhiteSpace
+  _ <- validIdentifier
+  return ProgramDeclaration
 
 useStatement :: ReadP LineContents
 useStatement = do
