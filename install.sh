@@ -3,6 +3,8 @@
 set -u # error on use of undefined variable
 set -e # exit on error
 
+install_path="$HOME/.local/bin"
+
 if command -v stack &> /dev/null ; then
   echo "found stack"
 else
@@ -17,7 +19,6 @@ else
   fi
 fi
 
-install_path="$HOME/.local/bin"
 if [[ -x "$install_path/fpm" ]]; then
   echo "Overwriting existing fpm installation in $install_path"
 fi
