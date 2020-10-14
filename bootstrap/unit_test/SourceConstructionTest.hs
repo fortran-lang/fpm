@@ -31,12 +31,15 @@ test = return $ givenInput
       , then'
         "its object file name is the 'flattened' path of the source file with '.o' appended"
         checkProgramObjectFileName
+      , then' "it knows what modules it uses directly" checkProgramModulesUsed
       ]
   ]
 
 exampleProgram :: RawSource
 exampleProgram = RawSource programSourceFileName' $ unlines
   [ "program some_program"
+  , "  use module1"
+  , "  USE MODULE2"
   , "  implicit none"
   , "  print *, \"Hello, World!\""
   , "end program"
@@ -59,3 +62,7 @@ checkProgramObjectFileName p@(Program{}) =
   assertEquals ("." </> "some_file_somewhere.f90.o")
     $ (programObjectFileName p) "."
 checkProgramObjectFileName _ = fail' "wasn't a Program"
+
+checkProgramModulesUsed :: Source -> Result
+checkProgramModulesUsed p@(Program{}) = assertEquals ["module1", "module2"] $ programModulesUsed p
+checkProgramModulesUsed _ = fail' "wasn't a Program"
