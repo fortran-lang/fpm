@@ -47,7 +47,7 @@ extra-deps:
   subdirs:
     - .
     - hedge-trimmer
-- quickcheck-with-counterexamples-1.1
+- quickcheck-with-counterexamples-1.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -29,12 +29,12 @@ packages:
     git: https://gitlab.com/everythingfunctional/hedge.git
     commit: 597b6475fd0b88369020e0de1de5885546d572f8
 - completed:
-    hackage: quickcheck-with-counterexamples-1.1@sha256:14173d181172e6df51b617404945121fcf8c94ead238056efd9322648c4cff21,1688
+    hackage: quickcheck-with-counterexamples-1.2@sha256:d322d79008602df26f5eb4e1379e5b58bf1a92604df8601e71e200cfc3e847a3,1688
     pantry-tree:
       size: 724
-      sha256: fb7f2d1e413554d40a50748b511d50789378e5ef477c9a68c5df44ee79f1ddef
+      sha256: 0046517e3cc2adebfce19d4aad05a06dcf55ec9e572fa1c661ba9abe81386484
   original:
-    hackage: quickcheck-with-counterexamples-1.1
+    hackage: quickcheck-with-counterexamples-1.2
 snapshots:
 - completed:
     size: 524996
