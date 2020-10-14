@@ -58,3 +58,14 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - fpm
+  fpm-unittest:
+    main:                Trimmer.hs
+    source-dirs:         unit_test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - fpm
+    - hedge
+    - hedge-trimmer
