@@ -46,18 +46,16 @@ programSourceFileName' :: String
 programSourceFileName' = "some" </> "file" </> "somewhere.f90"
 
 checkIsProgram :: Source -> Result
-checkIsProgram s = assertThat $ case s of
-  Program{} -> True
-  _         -> False
+checkIsProgram Program{} = assertThat True
+checkIsProgram _         = assertThat False
 
 checkProgramSourceFileName :: Source -> Result
-checkProgramSourceFileName s = case s of
-  p@(Program{}) ->
-    assertEquals programSourceFileName' $ programSourceFileName p
-  _ -> fail' "wasn't a Program"
+checkProgramSourceFileName p@(Program{}) =
+  assertEquals programSourceFileName' $ programSourceFileName p
+checkProgramSourceFileName _ = fail' "wasn't a Program"
 
 checkProgramObjectFileName :: Source -> Result
-checkProgramObjectFileName s = case s of
-  p@(Program{}) -> assertEquals ("." </> "some_file_somewhere.f90.o")
+checkProgramObjectFileName p@(Program{}) =
+  assertEquals ("." </> "some_file_somewhere.f90.o")
     $ (programObjectFileName p) "."
-  _ -> fail' "wasn't a Program"
+checkProgramObjectFileName _ = fail' "wasn't a Program"
