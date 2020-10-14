@@ -41,6 +41,7 @@ data Source = Program {
 processRawSource :: RawSource -> Source
 processRawSource rawSource =
   let sourceFileName = rawSourceFilename rawSource
+      parsedContents = parseContents rawSource
   in  Program
         { programSourceFileName = sourceFileName
         , programObjectFileName = \buildDirectory ->
@@ -49,25 +50,25 @@ processRawSource rawSource =
                                             sourceFileName
                                           )
                                       <.> "o"
-        , programModulesUsed    = getModulesUsed rawSource
+        , programModulesUsed    = getModulesUsed parsedContents
         }
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
 pathSeparatorsToUnderscores fileName =
   intercalate "_" (splitDirectories fileName)
 
-getModulesUsed :: RawSource -> [String]
-getModulesUsed rawSource =
-  let fileLines    = lines $ rawSourceContents rawSource
-      lineContents = map parseFortranLine fileLines
-  in  contentsToModuleNames lineContents
+parseContents :: RawSource -> [LineContents]
+parseContents rawSource =
+  let fileLines    = lines $ rawSourceContents rawSource in
+  map parseFortranLine fileLines
 
-contentsToModuleNames :: [LineContents] -> [String]
-contentsToModuleNames = mapMaybe contentToMaybeModuleName
- where
-  contentToMaybeModuleName content = case content of
-    ModuleUsed moduleName -> Just moduleName
-    _                     -> Nothing
+getModulesUsed :: [LineContents] -> [String]
+getModulesUsed =
+  mapMaybe contentToMaybeModuleName
+   where
+    contentToMaybeModuleName content = case content of
+      ModuleUsed moduleName -> Just moduleName
+      _                     -> Nothing
 
 readFileLinesIO :: FilePath -> IO [String]
 readFileLinesIO file = do
