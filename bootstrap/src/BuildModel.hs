@@ -52,6 +52,8 @@ data Source =
     , moduleProducesSmod :: Bool
     }
   | Submodule
+    { submoduleSourceFileName :: FilePath
+    }
 
 processRawSource :: RawSource -> Source
 processRawSource rawSource =
@@ -74,7 +76,7 @@ processRawSource rawSource =
             , moduleProducesSmod = hasModuleSubprogramDeclaration parsedContents
             }
           else if hasSubmoduleDeclaration parsedContents
-            then Submodule
+            then Submodule { submoduleSourceFileName = sourceFileName }
             else undefined
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath

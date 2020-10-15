@@ -9,7 +9,9 @@ import           BuildModel                     ( RawSource(..)
                                                 )
 import           Hedge                          ( Result
                                                 , Test
+                                                , assertEquals
                                                 , assertThat
+                                                , fail'
                                                 , givenInput
                                                 , then'
                                                 , whenTransformed
@@ -20,9 +22,13 @@ test :: IO (Test ())
 test = return $ givenInput
   "a submodule"
   exampleSubmodule
-  [ whenTransformed "processed to a source"
-                    processRawSource
-                    [then' "it is a Submodule" checkIsSubmodule]
+  [ whenTransformed
+      "processed to a source"
+      processRawSource
+      [ then' "it is a Submodule" checkIsSubmodule
+      , then' "its source file name is the same as the original"
+              checkSubmoduleSourceFileName
+      ]
   ]
 
 exampleSubmodule :: RawSource
@@ -35,3 +41,8 @@ submoduleSourceFileName' = "some" </> "file" </> "somewhere.f90"
 checkIsSubmodule :: Source -> Result
 checkIsSubmodule Submodule{} = assertThat True
 checkIsSubmodule _           = assertThat False
+
+checkSubmoduleSourceFileName :: Source -> Result
+checkSubmoduleSourceFileName s@(Submodule{}) =
+  assertEquals submoduleSourceFileName' $ submoduleSourceFileName s
+checkSubmoduleSourceFileName _ = fail' "wasn't a Submodule"
