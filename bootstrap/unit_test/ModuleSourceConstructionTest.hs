@@ -28,6 +28,9 @@ test = return $ givenInput
       [ then' "it is a Module" checkIsModule
       , then' "its source file name is the same as the original"
               checkModuleSourceFileName
+      , then'
+        "its object file name is the 'flattened' path of the source file with '.o' appeneded"
+        checkModuleObjectFileName
       ]
   ]
 
@@ -46,3 +49,9 @@ checkModuleSourceFileName :: Source -> Result
 checkModuleSourceFileName m@(Module{}) =
   assertEquals moduleSourceFileName' $ moduleSourceFileName m
 checkModuleSourceFileName _ = fail' "wasn't a Module"
+
+checkModuleObjectFileName :: Source -> Result
+checkModuleObjectFileName m@(Module{}) =
+  assertEquals ("." </> "some_file_somewhere.f90.o")
+    $ (moduleObjectFileName m) "."
+checkModuleObjectFileName _ = fail' "wasn't a Module"

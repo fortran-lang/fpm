@@ -44,25 +44,24 @@ data Source =
     }
   | Module
     { moduleSourceFileName :: FilePath
+    , moduleObjectFileName :: FilePath -> FilePath
     }
 
 processRawSource :: RawSource -> Source
 processRawSource rawSource =
   let sourceFileName = rawSourceFilename rawSource
       parsedContents = parseContents rawSource
+      objectFileName =
+          \bd -> bd </> (pathSeparatorsToUnderscores sourceFileName) <.> "o"
   in  if hasProgramDeclaration parsedContents
-        then Program
-          { programSourceFileName = sourceFileName
-          , programObjectFileName = \buildDirectory ->
-                                      buildDirectory
-                                        </> (pathSeparatorsToUnderscores
-                                              sourceFileName
-                                            )
-                                        <.> "o"
-          , programModulesUsed    = getModulesUsed parsedContents
-          }
+        then Program { programSourceFileName = sourceFileName
+                     , programObjectFileName = objectFileName
+                     , programModulesUsed    = getModulesUsed parsedContents
+                     }
         else if hasModuleDeclaration parsedContents
-          then Module { moduleSourceFileName = sourceFileName }
+          then Module { moduleSourceFileName = sourceFileName
+                      , moduleObjectFileName = objectFileName
+                      }
           else undefined
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
