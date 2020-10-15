@@ -45,6 +45,7 @@ data Source =
   | Module
     { moduleSourceFileName :: FilePath
     , moduleObjectFileName :: FilePath -> FilePath
+    , moduleModulesUsed :: [String]
     }
 
 processRawSource :: RawSource -> Source
@@ -53,14 +54,16 @@ processRawSource rawSource =
       parsedContents = parseContents rawSource
       objectFileName =
           \bd -> bd </> (pathSeparatorsToUnderscores sourceFileName) <.> "o"
+      modulesUsed = getModulesUsed parsedContents
   in  if hasProgramDeclaration parsedContents
         then Program { programSourceFileName = sourceFileName
                      , programObjectFileName = objectFileName
-                     , programModulesUsed    = getModulesUsed parsedContents
+                     , programModulesUsed    = modulesUsed
                      }
         else if hasModuleDeclaration parsedContents
           then Module { moduleSourceFileName = sourceFileName
                       , moduleObjectFileName = objectFileName
+                      , moduleModulesUsed    = modulesUsed
                       }
           else undefined
 

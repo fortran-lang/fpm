@@ -7,7 +7,6 @@ import           BuildModel                     ( RawSource(..)
                                                 , Source(..)
                                                 , processRawSource
                                                 )
-import           System.FilePath                ( (</>) )
 import           Hedge                          ( Result
                                                 , Test
                                                 , assertEquals
@@ -17,6 +16,7 @@ import           Hedge                          ( Result
                                                 , then'
                                                 , whenTransformed
                                                 )
+import           System.FilePath                ( (</>) )
 
 test :: IO (Test ())
 test = return $ givenInput
@@ -64,5 +64,6 @@ checkProgramObjectFileName p@(Program{}) =
 checkProgramObjectFileName _ = fail' "wasn't a Program"
 
 checkProgramModulesUsed :: Source -> Result
-checkProgramModulesUsed p@(Program{}) = assertEquals ["module1", "module2"] $ programModulesUsed p
+checkProgramModulesUsed p@(Program{}) =
+  assertEquals ["module1", "module2"] $ programModulesUsed p
 checkProgramModulesUsed _ = fail' "wasn't a Program"
