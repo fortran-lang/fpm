@@ -25,18 +25,24 @@ import           Text.ParserCombinators.ReadP   ( ReadP
                                                 , string
                                                 )
 
-data LineContents = ProgramDeclaration | ModuleUsed String | Other
+data LineContents =
+    ProgramDeclaration
+  | ModuleDeclaration String
+  | ModuleUsed String
+  | Other
 
 data RawSource = RawSource {
     rawSourceFilename :: FilePath
   , rawSourceContents :: String
 }
 
-data Source = Program {
-    programSourceFileName :: FilePath
-  , programObjectFileName :: FilePath -> FilePath
-  , programModulesUsed :: [String]
-}
+data Source =
+  Program
+    { programSourceFileName :: FilePath
+    , programObjectFileName :: FilePath -> FilePath
+    , programModulesUsed :: [String]
+    }
+  | Module {}
 
 processRawSource :: RawSource -> Source
 processRawSource rawSource =
@@ -53,7 +59,7 @@ processRawSource rawSource =
                                         <.> "o"
           , programModulesUsed    = getModulesUsed parsedContents
           }
-        else undefined
+        else if hasModuleDeclaration parsedContents then Module{} else undefined
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
 pathSeparatorsToUnderscores fileName =
@@ -72,6 +78,15 @@ hasProgramDeclaration parsedContents = case filter f parsedContents of
   f lc = case lc of
     ProgramDeclaration -> True
     _                  -> False
+
+hasModuleDeclaration :: [LineContents] -> Bool
+hasModuleDeclaration parsedContents = case filter f parsedContents of
+  x : _ -> True
+  _     -> False
+ where
+  f lc = case lc of
+    ModuleDeclaration{} -> True
+    _                   -> False
 
 getModulesUsed :: [LineContents] -> [String]
 getModulesUsed = mapMaybe contentToMaybeModuleName
@@ -99,7 +114,8 @@ doFortranLineParse :: ReadP LineContents
 doFortranLineParse = option Other fortranUsefulContents
 
 fortranUsefulContents :: ReadP LineContents
-fortranUsefulContents = programDeclaration <|> useStatement
+fortranUsefulContents =
+  programDeclaration <|> moduleDeclaration <|> useStatement
 
 programDeclaration :: ReadP LineContents
 programDeclaration = do
@@ -108,6 +124,14 @@ programDeclaration = do
   skipAtLeastOneWhiteSpace
   _ <- validIdentifier
   return ProgramDeclaration
+
+moduleDeclaration :: ReadP LineContents
+moduleDeclaration = do
+  skipSpaces
+  _ <- string "module"
+  skipAtLeastOneWhiteSpace
+  moduleName <- validIdentifier
+  return $ ModuleDeclaration moduleName
 
 useStatement :: ReadP LineContents
 useStatement = do
