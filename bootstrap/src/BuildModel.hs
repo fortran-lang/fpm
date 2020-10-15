@@ -46,6 +46,7 @@ data Source =
     { moduleSourceFileName :: FilePath
     , moduleObjectFileName :: FilePath -> FilePath
     , moduleModulesUsed :: [String]
+    , moduleName :: String
     }
 
 processRawSource :: RawSource -> Source
@@ -64,6 +65,7 @@ processRawSource rawSource =
           then Module { moduleSourceFileName = sourceFileName
                       , moduleObjectFileName = objectFileName
                       , moduleModulesUsed    = modulesUsed
+                      , moduleName           = getModuleName parsedContents
                       }
           else undefined
 
@@ -101,6 +103,13 @@ getModulesUsed = mapMaybe contentToMaybeModuleName
     ModuleUsed moduleName -> Just moduleName
     _                     -> Nothing
 
+getModuleName :: [LineContents] -> String
+getModuleName pc = head $ mapMaybe contentToMaybeModuleName pc
+ where
+  contentToMaybeModuleName content = case content of
+    ModuleDeclaration moduleName -> Just moduleName
+    _                            -> Nothing
+
 readFileLinesIO :: FilePath -> IO [String]
 readFileLinesIO file = do
   contents <- readFile file
@@ -137,6 +146,7 @@ moduleDeclaration = do
   _ <- string "module"
   skipAtLeastOneWhiteSpace
   moduleName <- validIdentifier
+  skipSpaceCommentOrEnd
   return $ ModuleDeclaration moduleName
 
 useStatement :: ReadP LineContents
@@ -159,9 +169,17 @@ skipSpaceOrEnd = eof <|> skipAtLeastOneWhiteSpace
 skipSpaceCommaOrEnd :: ReadP ()
 skipSpaceCommaOrEnd = eof <|> skipComma <|> skipAtLeastOneWhiteSpace
 
+skipSpaceCommentOrEnd :: ReadP ()
+skipSpaceCommentOrEnd = eof <|> skipComment <|> skipAtLeastOneWhiteSpace
+
 skipComma :: ReadP ()
 skipComma = do
   _ <- char ','
+  return ()
+
+skipComment :: ReadP ()
+skipComment = do
+  _ <- char '!'
   return ()
 
 whiteSpace :: ReadP Char

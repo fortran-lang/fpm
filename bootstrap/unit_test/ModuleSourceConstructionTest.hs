@@ -32,6 +32,7 @@ test = return $ givenInput
         "its object file name is the 'flattened' path of the source file with '.o' appeneded"
         checkModuleObjectFileName
       , then' "it knows what modules it uses directly" checkModuleModulesUsed
+      , then' "it knows its name"                      checkModuleName
       ]
   ]
 
@@ -61,3 +62,7 @@ checkModuleModulesUsed :: Source -> Result
 checkModuleModulesUsed m@(Module{}) =
   assertEquals ["module1", "module2"] $ moduleModulesUsed m
 checkModuleModulesUsed _ = fail' "wasn't a Module"
+
+checkModuleName :: Source -> Result
+checkModuleName m@(Module{}) = assertEquals "some_module" $ moduleName m
+checkModuleName _            = fail' "wasn't a Module"
