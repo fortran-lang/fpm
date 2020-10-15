@@ -30,6 +30,7 @@ data LineContents =
   | ModuleDeclaration String
   | ModuleUsed String
   | ModuleSubprogramDeclaration
+  | SubmoduleDeclaration
   | Other
 
 data RawSource = RawSource {
@@ -50,6 +51,7 @@ data Source =
     , moduleName :: String
     , moduleProducesSmod :: Bool
     }
+  | Submodule
 
 processRawSource :: RawSource -> Source
 processRawSource rawSource =
@@ -71,7 +73,9 @@ processRawSource rawSource =
             , moduleName           = getModuleName parsedContents
             , moduleProducesSmod = hasModuleSubprogramDeclaration parsedContents
             }
-          else undefined
+          else if hasSubmoduleDeclaration parsedContents
+            then Submodule
+            else undefined
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
 pathSeparatorsToUnderscores fileName =
@@ -99,6 +103,15 @@ hasModuleDeclaration parsedContents = case filter f parsedContents of
   f lc = case lc of
     ModuleDeclaration{} -> True
     _                   -> False
+
+hasSubmoduleDeclaration :: [LineContents] -> Bool
+hasSubmoduleDeclaration parsedContents = case filter f parsedContents of
+  x : _ -> True
+  _     -> False
+ where
+  f lc = case lc of
+    SubmoduleDeclaration -> True
+    _                    -> False
 
 hasModuleSubprogramDeclaration :: [LineContents] -> Bool
 hasModuleSubprogramDeclaration parsedContents = case filter f parsedContents of
@@ -146,6 +159,7 @@ fortranUsefulContents =
   programDeclaration
     <|> moduleSubprogramDeclaration
     <|> moduleDeclaration
+    <|> submoduleDeclaration
     <|> useStatement
 
 programDeclaration :: ReadP LineContents
@@ -164,6 +178,12 @@ moduleDeclaration = do
   moduleName <- validIdentifier
   skipSpaceCommentOrEnd
   return $ ModuleDeclaration moduleName
+
+submoduleDeclaration :: ReadP LineContents
+submoduleDeclaration = do
+  skipSpaces
+  _ <- string "submodule"
+  return $ SubmoduleDeclaration
 
 useStatement :: ReadP LineContents
 useStatement = do
