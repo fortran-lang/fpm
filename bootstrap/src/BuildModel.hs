@@ -29,6 +29,7 @@ data LineContents =
     ProgramDeclaration
   | ModuleDeclaration String
   | ModuleUsed String
+  | ModuleSubprogramDeclaration
   | Other
 
 data RawSource = RawSource {
@@ -47,6 +48,7 @@ data Source =
     , moduleObjectFileName :: FilePath -> FilePath
     , moduleModulesUsed :: [String]
     , moduleName :: String
+    , moduleProducesSmod :: Bool
     }
 
 processRawSource :: RawSource -> Source
@@ -62,11 +64,13 @@ processRawSource rawSource =
                      , programModulesUsed    = modulesUsed
                      }
         else if hasModuleDeclaration parsedContents
-          then Module { moduleSourceFileName = sourceFileName
-                      , moduleObjectFileName = objectFileName
-                      , moduleModulesUsed    = modulesUsed
-                      , moduleName           = getModuleName parsedContents
-                      }
+          then Module
+            { moduleSourceFileName = sourceFileName
+            , moduleObjectFileName = objectFileName
+            , moduleModulesUsed    = modulesUsed
+            , moduleName           = getModuleName parsedContents
+            , moduleProducesSmod = hasModuleSubprogramDeclaration parsedContents
+            }
           else undefined
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
@@ -95,6 +99,15 @@ hasModuleDeclaration parsedContents = case filter f parsedContents of
   f lc = case lc of
     ModuleDeclaration{} -> True
     _                   -> False
+
+hasModuleSubprogramDeclaration :: [LineContents] -> Bool
+hasModuleSubprogramDeclaration parsedContents = case filter f parsedContents of
+  x : _ -> True
+  _     -> False
+ where
+  f lc = case lc of
+    ModuleSubprogramDeclaration -> True
+    _                           -> False
 
 getModulesUsed :: [LineContents] -> [String]
 getModulesUsed = mapMaybe contentToMaybeModuleName
@@ -130,7 +143,10 @@ doFortranLineParse = option Other fortranUsefulContents
 
 fortranUsefulContents :: ReadP LineContents
 fortranUsefulContents =
-  programDeclaration <|> moduleDeclaration <|> useStatement
+  programDeclaration
+    <|> moduleSubprogramDeclaration
+    <|> moduleDeclaration
+    <|> useStatement
 
 programDeclaration :: ReadP LineContents
 programDeclaration = do
@@ -158,6 +174,16 @@ useStatement = do
   skipSpaceCommaOrEnd
   return $ ModuleUsed modName
 
+moduleSubprogramDeclaration :: ReadP LineContents
+moduleSubprogramDeclaration = do
+  skipAnything
+  _ <- string "module"
+  skipAtLeastOneWhiteSpace
+  skipAnything
+  _ <- string "function" <|> string "subroutine"
+  skipAtLeastOneWhiteSpace
+  return $ ModuleSubprogramDeclaration
+
 skipAtLeastOneWhiteSpace :: ReadP ()
 skipAtLeastOneWhiteSpace = do
   _ <- many1 whiteSpace
@@ -180,6 +206,11 @@ skipComma = do
 skipComment :: ReadP ()
 skipComment = do
   _ <- char '!'
+  return ()
+
+skipAnything :: ReadP ()
+skipAnything = do
+  _ <- many (satisfy (const True))
   return ()
 
 whiteSpace :: ReadP Char
