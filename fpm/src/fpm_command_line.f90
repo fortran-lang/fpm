@@ -248,11 +248,11 @@ contains
             elseif(len_trim(cmdarg).eq.0)then
                 write(stdout,'(*(a))')'Fortran Package Manager:'
                 write(stdout,'(*(a))')' '
-                write(stdout,'(*(a))')' subcommand may be one of'
                 call printhelp(help_list_nodash)
             else
                 write(stderr,'(*(a))')'ERROR: unknown subcommand [', &
                  & trim(cmdarg), ']'
+                call printhelp(help_list_dash)
             endif
             call printhelp(help_text)
 
@@ -286,14 +286,21 @@ contains
     end function is_fortran_name
 
     subroutine set_help()
-    help_list_nodash=[character(len=80) :: &
-    '                                                                       ', &
-   ' build      Compile the package placing results in the "build" directory', &
-   ' help       Display help                                                ', &
-   ' list       Display this list of subcommand descriptions                ', &
-   ' new        Create a new Fortran package directory with sample files    ', &
-   ' run        Run the local package application programs                  ', &
-   ' test       Run the test programs                                       ', &
+   help_list_nodash=[character(len=80) :: &
+   'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ] | [--help|--version]     ', &
+   '       where SUBCOMMAND is commonly new|build|run|test                  ', &
+   '                                                                        ', &
+   ' subcommand may be one of                                               ', &
+   '                                                                        ', &
+   '  build     Compile the package placing results in the "build" directory', &
+   '  help      Display help                                                ', &
+   '  list      Display this list of subcommand descriptions                ', &
+   '  new       Create a new Fortran package directory with sample files    ', &
+   '  run       Run the local package application programs                  ', &
+   '  test      Run the test programs                                       ', &
+   '                                                                        ', &
+   ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
+   ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
    ' ']
    help_list_dash = [character(len=80) :: &
     '                                                                       ', &
@@ -305,13 +312,6 @@ contains
    ' test [NAME(s)] [--release] [--list] [-- ARGS]                          ', &
    ' ']
     help_usage=[character(len=80) :: &
-    '                                                                       ', &
-    'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ] | [--help|--version]    ', &
-    '       where SUBCOMMAND is commonly new|build|run|test                 ', &
-    '                                                                       ', &
-    '       Enter "fpm list " or "fpm --list" for a full list of            ', &
-    '       subcommands. Enter "fpm --help" or "fpm SUBCOMMAND --help"      ', &
-    '       for detailed command information.                               ', &
     '' ]
     help_fpm=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -386,7 +386,7 @@ contains
     'SYNOPSIS                                                               ', &
     ' fpm list [-list]                                                      ', &
     '                                                                       ', &
-    ' fpm run --help|--version                                              ', &
+    ' fpm list --help|--version                                             ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     ' Display a short description for each fpm(1) subcommand.               ', &
