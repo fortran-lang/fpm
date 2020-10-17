@@ -200,6 +200,7 @@ contains
                    help_text=[character(len=widest) :: help_text, help_run]
                    help_text=[character(len=widest) :: help_text, help_test]
                    help_text=[character(len=widest) :: help_text, help_help]
+                   help_text=[character(len=widest) :: help_text, help_list]
                    help_text=[character(len=widest) :: help_text, version_text]
                 case default
                    ! note help_intrinsics is returning a fixed-length array
