@@ -287,7 +287,7 @@ contains
 
     subroutine set_help()
    help_list_nodash=[character(len=80) :: &
-   'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ] | [--help|--version]     ', &
+   'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ]|[--list|--help|--version]', &
    '       where SUBCOMMAND is commonly new|build|run|test                  ', &
    '                                                                        ', &
    ' subcommand may be one of                                               ', &
@@ -320,7 +320,7 @@ contains
     'SYNOPSIS                                                               ', &
     '   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                 ', &
     '                                                                       ', &
-    '   fpm --help|--version                                                ', &
+    '   fpm --help|--version|--list                                         ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     '   fpm(1) is a package manager that helps you create Fortran projects  ', &
@@ -360,7 +360,8 @@ contains
     '             in "build/*_debug/". When this flag is present build      ', &
     '             output goes into "build/*_release/" and common compiler   ', &
     '             optimization flags are used.                              ', &
-    '  --list     list candidates instead of building or running them       ', &
+    '  --list     List candidates instead of building or running them.      ', &
+    '             On the fpm command this shows a brief list of subcommands.', &
     '  -- ARGS    Arguments to pass to executables/tests                    ', &
     '  --help     Show help text and exit. Valid for all subcommands.       ', &
     '  --version  Show version information and exit. Valid for all          ', &
