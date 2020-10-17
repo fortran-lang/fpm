@@ -130,14 +130,14 @@ contains
             case(1)
                 write(stderr,'(*(g0,/))')'ERROR: directory name required'
                 write(stderr,'(*(7x,g0,/))') &
-                & 'usage: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
+                & 'USAGE: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
                 stop 1
             case(2)
                 name=trim(unnamed(2))
             case default
                 write(stderr,'(g0)')'ERROR: only one directory name allowed'
                 write(stderr,'(7x,g0)') &
-                & 'usage: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
+                & 'USAGE: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
                 stop 2
             end select
             !! canon_path is not converting ".", etc.
@@ -648,7 +648,7 @@ contains
     help_install=[character(len=80) :: &
     ' fpm(1) subcommand "install"                                           ', &
     '                                                                       ', &
-    ' Usage: fpm install NAME                                               ', &
+    ' USAGE: fpm install NAME                                               ', &
     '' ]
     end subroutine set_help
 
