@@ -215,6 +215,8 @@ subroutine mkdir(dir)
     character(len=*), intent(in) :: dir
     integer                      :: stat
 
+    if (is_dir(dir)) return
+
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
             call execute_command_line('mkdir -p ' // dir, exitstat=stat)
@@ -233,6 +235,11 @@ end subroutine mkdir
 
 
 recursive subroutine list_files(dir, files, recurse)
+    ! Get file & directory names in directory `dir`.
+    !
+    !  - File/directory names return are relative to cwd, ie. preprended with `dir`
+    !  - Includes files starting with `.` except current directory and parent directory
+    !
     character(len=*), intent(in) :: dir
     type(string_t), allocatable, intent(out) :: files(:)
     logical, intent(in), optional :: recurse
@@ -242,8 +249,7 @@ recursive subroutine list_files(dir, files, recurse)
     type(string_t), allocatable :: dir_files(:)
     type(string_t), allocatable :: sub_dir_files(:)
 
-    ! Using `inquire` / exists on directories works with gfortran, but not ifort
-    if (.not. exists(dir)) then
+    if (.not. is_dir(dir)) then
         allocate (files(0))
         return
     end if
@@ -252,7 +258,7 @@ recursive subroutine list_files(dir, files, recurse)
 
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
-            call execute_command_line('ls ' // dir // ' > ' // temp_file, &
+            call execute_command_line('ls -A ' // dir // ' > ' // temp_file, &
                                       exitstat=stat)
         case (OS_WINDOWS)
             call execute_command_line('dir /b ' // windows_path(dir) // ' > ' // temp_file, &
