@@ -143,6 +143,7 @@ character(len=:),allocatable :: littlefile(:)
     call warnwrite(join_path(settings%name, 'fpm.toml'), message)
     ! assumes git(1) is installed and in path
     call run('git init ' // settings%name)
+   
 contains
 
 subroutine warnwrite(fname,data)
