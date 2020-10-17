@@ -52,7 +52,7 @@ logical                       :: IS_OS_WINDOWS
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
        path=cmdpath
     case (OS_WINDOWS) 
-       path=windows_path(path)
+       path=windows_path(cmdpath)
        is_os_windows=.true.
     case default
        write(*,*)'ERROR: unknown OS. Stopping test'
