@@ -571,7 +571,7 @@ contains
     '                                                                       ', &
     ' The default is to create all of the src/, app/, and test/             ', &
     ' directories. If any of the following options are specified            ', &
-    ' then only specified subdirectories are generated:                     ', &
+    ' then only selected subdirectories are generated:                      ', &
     '                                                                       ', &
     ' --lib,--src  create directory src/ and a placeholder module           ', &
     '              named "NAME.f90" for use with subcommand "build".        ', &
