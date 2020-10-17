@@ -416,8 +416,9 @@ contains
     '                                                                ', &
     ' The "new" subcommand creates a directory and runs the command  ', &
     ' "git init" in that directory and makes an example "fpm.toml"   ', &
-    ' file, a src/ directory, and optionally a test/ and app/        ', &
-    ' directory with trivial example Fortran source files.           ', &
+    ' file. and src/ directory and a sample module file. It          ', &
+    ' optionally also creates a test/ and app/ directory with        ', &
+    ' trivial example Fortran program sources.                       ', &
     '                                                                ', &
     ' Remember to update the information in the sample "fpm.toml"    ', &
     ' file with such information as your name and e-mail address.    ', &

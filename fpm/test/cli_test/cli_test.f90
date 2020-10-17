@@ -193,7 +193,8 @@ use fpm_command_line, only: &
         fpm_test_settings, &
         fpm_install_settings, &
         get_command_line_settings
-use fpm, only: cmd_build, cmd_install, cmd_new, cmd_run, cmd_test
+use fpm, only: cmd_build, cmd_install, cmd_run, cmd_test
+use fpm_cmd_new, only: cmd_new 
 class(fpm_cmd_settings), allocatable :: cmd_settings
 ! duplicates the calls as seen in the main program for fpm
 call get_command_line_settings(cmd_settings)
