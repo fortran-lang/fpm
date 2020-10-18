@@ -16,6 +16,7 @@ rev = "649075aceb97f997665a1a4656514fd2e9b4becc"
 
 [dependencies.fortran-intrinsic-manpages]
 git = "https://github.com/urbanjost/M_intrinsics.git"
+rev = "a758ebdd0487e8cab5b4894fbf375f87147c44b5"
 
 [[test]]
 name = "cli-test"
@@ -31,3 +32,5 @@ main = "new_test.f90"
 name = "fpm-test"
 source-dir = "test/fpm_test"
 main = "main.f90"
+
+

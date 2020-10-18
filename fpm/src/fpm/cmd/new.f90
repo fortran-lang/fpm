@@ -15,6 +15,9 @@ type(fpm_new_settings), intent(in) :: settings
 character(len=:),allocatable :: bname          ! baeename of NAME
 character(len=:),allocatable :: message(:)
 character(len=:),allocatable :: littlefile(:)
+character(len=8)             :: date
+
+    call date_and_time(DATE=date)
 
     if(exists(settings%name) .and. .not.settings%backfill )then
         write(stderr,'(*(g0,1x))')&
@@ -53,14 +56,14 @@ character(len=:),allocatable :: littlefile(:)
     call warnwrite(join_path(settings%name, 'README.md'), littlefile)
 
     ! start building NAME/fpm.toml
-    message=[character(len=80) ::             &
-    &'name = "'//bname//'"                 ', &
-    &'version = "0.1.0"                    ', &
-    &'license = "license"                  ', &
-    &'author = "Jane Doe"                  ', &
-    &'maintainer = "jane.doe@example.com"  ', &
-    &'copyright = "2020 Jane Doe"          ', &
-    &'                                     ', &
+    message=[character(len=80) ::                 &
+    &'name = "'//bname//'"                     ', &
+    &'version = "0.1.0"                        ', &
+    &'license = "license"                      ', &
+    &'author = "Jane Doe"                      ', &
+    &'maintainer = "jane.doe@example.com"      ', &
+    &'copyright = "'//date(1:4)//' Jane Doe"   ', &
+    &'                                         ', &
     &'']
 
     if(settings%with_lib)then
