@@ -38,14 +38,9 @@ character(len=8)             :: date
 
     ! change to new directory as a test. System dependent potentially
     call run('cd '//settings%name)
-    !! NOTE: need some system routines to handle filenames like "."
-    !! like realpath() or getcwd().
+    !*! NOTE: need some system routines to handle filenames like "."
+    !*! like realpath() or getcwd().
     bname=basename(settings%name)
-
-    !! weird gfortran bug?? lines truncated to concatenated string length,
-    !! not 80
-    !! hit some weird gfortran bug when littlefile data was an argument
-    !! to warnwrite(3f), ok when a variable
 
     ! create NAME/.gitignore file
     call warnwrite(join_path(settings%name, '.gitignore'), ['build/*'])

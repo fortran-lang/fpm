@@ -140,7 +140,7 @@ contains
                 & 'USAGE: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
                 stop 2
             end select
-            !! canon_path is not converting ".", etc.
+            !*! canon_path is not converting ".", etc.
             name=canon_path(name)
             if( .not.is_fortran_name(basename(name)) )then
                 write(stderr,'(g0)') [ character(len=72) :: &
