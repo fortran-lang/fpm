@@ -11,6 +11,7 @@ character(len=*),parameter     :: cmdpath = 'build/gfortran_debug/app/fpm'
 character(len=:),allocatable   :: path
 character(len=*),parameter     :: scr = 'fpm_scratch_'
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
+! run a variety of "fpm new" variations and verify expected files are generated
 ' new', &
 ' new no-no', &
 ' new '//scr//'A', &
@@ -38,6 +39,23 @@ logical                       :: IS_OS_WINDOWS
    shortdirs=[character(len=80) :: 'A','B','C','D','E','F','G','BB','CC']
    allocate(character(len=80) :: directories(size(shortdirs)))
 
+   !! SEE IF EXPECTED FILES ARE GENERATED
+   !! Issues:
+   !! o  assuming fpm command is in expected path and the new version
+   !! o  DOS versus POSIX filenames
+   is_os_windows=.false.
+    select case (get_os_type()) 
+    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+       call execute_command_line('rm -rf fpm_scratch_*',exitstat=estat,cmdstat=cstat,cmdmsg=message)
+       path=cmdpath
+    case (OS_WINDOWS) 
+       path=windows_path(cmdpath)
+       is_os_windows=.true.
+       call execute_command_line('rmdir fpm_scratch_* /s /q',exitstat=estat,cmdstat=cstat,cmdmsg=message)
+    case default
+       write(*,*)'ERROR: unknown OS. Stopping test'
+       stop 2
+    end select 
    do i=1,size(directories)
       directories(i)=scr//trim(shortdirs(i))
       if( is_dir(trim(directories(i))) ) then
@@ -47,22 +65,6 @@ logical                       :: IS_OS_WINDOWS
          stop
       endif
    enddo
-
-   !! SEE IF EXPECTED FILES ARE GENERATED
-   !! Issues:
-   !! o  assuming fpm command is in expected path and the new version
-   !! o  DOS versus POSIX filenames
-   is_os_windows=.false.
-    select case (get_os_type()) 
-    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
-       path=cmdpath
-    case (OS_WINDOWS) 
-       path=windows_path(cmdpath)
-       is_os_windows=.true.
-    case default
-       write(*,*)'ERROR: unknown OS. Stopping test'
-       stop 2
-    end select 
    ! execute the fpm(1) commands
    do i=1,size(cmds)
       message=''
@@ -133,6 +135,14 @@ logical                       :: IS_OS_WINDOWS
          tally=[tally,.true.]
       endif
    enddo TESTS
+
+   ! clean up scratch files; might want an option to leave them for inspection
+   select case (get_os_type()) 
+   case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+      call execute_command_line('rm -rf fpm_scratch_*',exitstat=estat,cmdstat=cstat,cmdmsg=message)
+   case (OS_WINDOWS) 
+      call execute_command_line('rmdir fpm_scratch_* /s /q',exitstat=estat,cmdstat=cstat,cmdmsg=message)
+   end select 
 
    write(*,'("TALLY=",*(g0))')tally
    if(all(tally))then
