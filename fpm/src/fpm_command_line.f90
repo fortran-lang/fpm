@@ -327,7 +327,7 @@ contains
     '   fpm(1) is a package manager that helps you create Fortran projects  ', &
     '   from source.                                                        ', &
     '                                                                       ', &
-    '   Most significantly fpm(1) lets you pull upon other fpm(1) packages  ', &
+    '   Most significantly fpm(1) lets you draw upon other fpm(1) packages  ', &
     '   in distributed git(1) repositories as if the packages were a basic  ', &
     '   part of your default programming environment, as well as letting    ', &
     '   you share your projects with others in a similar manner.            ', &
@@ -340,7 +340,7 @@ contains
     '   being used you need network connectivity to rebuild from scratch.   ', &
     '                                                                       ', &
     'SUBCOMMANDS                                                            ', &
-    '  Valid fpm subcommands are:                                           ', &
+    '  Valid fpm(1) subcommands are:                                        ', &
     '                                                                       ', &
     '     build [--release] [--list]                                        ', &
     '                     Compile the packages into the "build/" directory. ', &
@@ -361,9 +361,9 @@ contains
     '             in "build/*_debug/". When this flag is present build      ', &
     '             output goes into "build/*_release/" and common compiler   ', &
     '             optimization flags are used.                              ', &
-    '  --list     List candidates instead of building or running them.      ', &
-    '             On the fpm command this shows a brief list of subcommands.', &
-    '  -- ARGS    Arguments to pass to executables/tests                    ', &
+    '  --list     List candidates instead of building or running them. On   ', &
+    '             the fpm(1) command this shows a brief list of subcommands.', &
+    '  -- ARGS    Arguments to pass to executables.                         ', &
     '  --help     Show help text and exit. Valid for all subcommands.       ', &
     '  --version  Show version information and exit. Valid for all          ', &
     '             subcommands.                                              ', &
@@ -542,24 +542,26 @@ contains
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
-    ' "fpm new" creates a new programming project in a new directory.       ', &
+    ' "fpm new" creates and populates a new programming project directory.  ', &
+    ' It                                                                    ', &
+    '   o creates a directory with the specified name                       ', &
+    '   o runs the command "git init" in that directory                     ', &
+    '   o populates the directory with the default project directories      ', &
+    '   o adds sample Fortran source files                                  ', &
+    '   o adds a ".gitignore" file for ignoring the build/ directory        ', &
+    '     (where fpm-generated output will be placed)                       ', &
     '                                                                       ', &
-    ' The "new" subcommand creates a directory with the specified           ', &
-    ' name and runs the command "git init" in that directory and            ', &
-    ' populates it with an example "fpm.toml" file, a src/, test/,          ', &
-    ' and app/ directory with trivial example Fortran source files          ', &
-    ' and a ".gitignore" file for ignoring the build/ directory             ', &
-    ' (where fpm-generated output will be placed):                          ', &
+    ' The basic default file structure is                                   ', &
     '                                                                       ', &
-    '    NAME/                                                              ', &
-    '      fpm.toml                                                         ', &
-    '      .gitignore                                                       ', &
-    '      src/                                                             ', &
-    '          NAME.f90                                                     ', &
-    '      app/                                                             ', &
-    '          main.f90                                                     ', &
-    '      test/                                                            ', &
-    '          main.f90                                                     ', &
+    '     NAME/                                                             ', &
+    '       fpm.toml                                                        ', &
+    '       .gitignore                                                      ', &
+    '       src/                                                            ', &
+    '           NAME.f90                                                    ', &
+    '       app/                                                            ', &
+    '           main.f90                                                    ', &
+    '       test/                                                           ', &
+    '           main.f90                                                    ', &
     '                                                                       ', &
     ' Remember to update the information in the sample "fpm.toml"           ', &
     ' file with your name and e-mail address.                               ', &
