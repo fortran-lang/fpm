@@ -30,7 +30,7 @@ data LineContents =
   | ModuleDeclaration String
   | ModuleUsed String
   | ModuleSubprogramDeclaration
-  | SubmoduleDeclaration
+  | SubmoduleDeclaration String
   | Other
 
 data RawSource = RawSource {
@@ -55,6 +55,7 @@ data Source =
     { submoduleSourceFileName :: FilePath
     , submoduleObjectFileName :: FilePath -> FilePath
     , submoduleModulesUsed :: [String]
+    , submoduleName :: String
     }
 
 processRawSource :: RawSource -> Source
@@ -81,6 +82,7 @@ processRawSource rawSource =
             then Submodule { submoduleSourceFileName = sourceFileName
                            , submoduleObjectFileName = objectFileName
                            , submoduleModulesUsed    = modulesUsed
+                           , submoduleName = getSubmoduleName parsedContents
                            }
             else undefined
 
@@ -117,8 +119,8 @@ hasSubmoduleDeclaration parsedContents = case filter f parsedContents of
   _     -> False
  where
   f lc = case lc of
-    SubmoduleDeclaration -> True
-    _                    -> False
+    SubmoduleDeclaration{} -> True
+    _                      -> False
 
 hasModuleSubprogramDeclaration :: [LineContents] -> Bool
 hasModuleSubprogramDeclaration parsedContents = case filter f parsedContents of
@@ -142,6 +144,13 @@ getModuleName pc = head $ mapMaybe contentToMaybeModuleName pc
   contentToMaybeModuleName content = case content of
     ModuleDeclaration moduleName -> Just moduleName
     _                            -> Nothing
+
+getSubmoduleName :: [LineContents] -> String
+getSubmoduleName pc = head $ mapMaybe contentToMaybeModuleName pc
+ where
+  contentToMaybeModuleName content = case content of
+    SubmoduleDeclaration submoduleName -> Just submoduleName
+    _ -> Nothing
 
 readFileLinesIO :: FilePath -> IO [String]
 readFileLinesIO file = do
@@ -189,8 +198,30 @@ moduleDeclaration = do
 submoduleDeclaration :: ReadP LineContents
 submoduleDeclaration = do
   skipSpaces
-  _ <- string "submodule"
-  return $ SubmoduleDeclaration
+  _       <- string "submodule"
+  parents <- submoduleParents
+  skipSpaces
+  name <- validIdentifier
+  skipSpaceCommentOrEnd
+  return $ SubmoduleDeclaration ((intercalate "@" parents) ++ "@" ++ name)
+
+submoduleParents :: ReadP [String]
+submoduleParents = do
+  skipSpaces
+  _ <- char '('
+  skipSpaces
+  firstParent      <- validIdentifier
+  remainingParents <- many
+    (do
+      skipSpaces
+      _ <- char ':'
+      skipSpaces
+      name <- validIdentifier
+      return name
+    )
+  skipSpaces
+  _ <- char ')'
+  return $ firstParent : remainingParents
 
 useStatement :: ReadP LineContents
 useStatement = do
