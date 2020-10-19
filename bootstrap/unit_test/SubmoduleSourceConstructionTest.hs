@@ -31,12 +31,18 @@ test = return $ givenInput
       , then'
         "its object file name is the 'flattened' path of the source file with '.o' appeneded"
         checkSubmoduleObjectFileName
+      , then' "it knows what modules it uses directly" checkSubmoduleModulesUsed
       ]
   ]
 
 exampleSubmodule :: RawSource
-exampleSubmodule = RawSource submoduleSourceFileName'
-  $ unlines ["submodule (some_module:parent) child", "end submodule"]
+exampleSubmodule = RawSource submoduleSourceFileName' $ unlines
+  [ "submodule (some_module:parent) child"
+  , "  use module1"
+  , "  USE MODULE2"
+  , "  implicit none"
+  , "end submodule"
+  ]
 
 submoduleSourceFileName' :: String
 submoduleSourceFileName' = "some" </> "file" </> "somewhere.f90"
@@ -55,3 +61,8 @@ checkSubmoduleObjectFileName s@(Submodule{}) =
   assertEquals ("." </> "some_file_somewhere.f90.o")
     $ (submoduleObjectFileName s) "."
 checkSubmoduleObjectFileName _ = fail' "wasn't a Submodule"
+
+checkSubmoduleModulesUsed :: Source -> Result
+checkSubmoduleModulesUsed s@(Submodule{}) =
+  assertEquals ["module1", "module2"] $ submoduleModulesUsed s
+checkSubmoduleModulesUsed _ = fail' "wasn't a Submodule"

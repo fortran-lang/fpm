@@ -54,6 +54,7 @@ data Source =
   | Submodule
     { submoduleSourceFileName :: FilePath
     , submoduleObjectFileName :: FilePath -> FilePath
+    , submoduleModulesUsed :: [String]
     }
 
 processRawSource :: RawSource -> Source
@@ -79,6 +80,7 @@ processRawSource rawSource =
           else if hasSubmoduleDeclaration parsedContents
             then Submodule { submoduleSourceFileName = sourceFileName
                            , submoduleObjectFileName = objectFileName
+                           , submoduleModulesUsed    = modulesUsed
                            }
             else undefined
 
