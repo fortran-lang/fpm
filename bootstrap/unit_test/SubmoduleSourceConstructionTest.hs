@@ -28,6 +28,9 @@ test = return $ givenInput
       [ then' "it is a Submodule" checkIsSubmodule
       , then' "its source file name is the same as the original"
               checkSubmoduleSourceFileName
+      , then'
+        "its object file name is the 'flattened' path of the source file with '.o' appeneded"
+        checkSubmoduleObjectFileName
       ]
   ]
 
@@ -46,3 +49,9 @@ checkSubmoduleSourceFileName :: Source -> Result
 checkSubmoduleSourceFileName s@(Submodule{}) =
   assertEquals submoduleSourceFileName' $ submoduleSourceFileName s
 checkSubmoduleSourceFileName _ = fail' "wasn't a Submodule"
+
+checkSubmoduleObjectFileName :: Source -> Result
+checkSubmoduleObjectFileName s@(Submodule{}) =
+  assertEquals ("." </> "some_file_somewhere.f90.o")
+    $ (submoduleObjectFileName s) "."
+checkSubmoduleObjectFileName _ = fail' "wasn't a Submodule"

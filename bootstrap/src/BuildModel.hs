@@ -53,6 +53,7 @@ data Source =
     }
   | Submodule
     { submoduleSourceFileName :: FilePath
+    , submoduleObjectFileName :: FilePath -> FilePath
     }
 
 processRawSource :: RawSource -> Source
@@ -76,7 +77,9 @@ processRawSource rawSource =
             , moduleProducesSmod = hasModuleSubprogramDeclaration parsedContents
             }
           else if hasSubmoduleDeclaration parsedContents
-            then Submodule { submoduleSourceFileName = sourceFileName }
+            then Submodule { submoduleSourceFileName = sourceFileName
+                           , submoduleObjectFileName = objectFileName
+                           }
             else undefined
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
