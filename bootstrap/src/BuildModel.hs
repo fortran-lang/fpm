@@ -94,15 +94,28 @@ processRawSource rawSource =
             else undefined
 
 constructCompileTimeInfo :: Source -> [String] -> FilePath -> CompileTimeInfo
-constructCompileTimeInfo program@(Program{}) availableModules buildDirectory =
+constructCompileTimeInfo p@(Program{}) availableModules buildDirectory =
   CompileTimeInfo
-    { compileTimeInfoSourceFileName     = programSourceFileName program
-    , compileTimeInfoObjectFileProduced = (programObjectFileName program)
+    { compileTimeInfoSourceFileName     = programSourceFileName p
+    , compileTimeInfoObjectFileProduced = (programObjectFileName p)
                                             buildDirectory
     , compileTimeInfoOtherFilesProduced = []
     , compileTimeInfoDirectDependencies = map
       (\mName -> buildDirectory </> mName <.> "mod")
-      (filter (`elem` availableModules) (programModulesUsed program))
+      (filter (`elem` availableModules) (programModulesUsed p))
+    }
+constructCompileTimeInfo m@(Module{}) availableModules buildDirectory =
+  CompileTimeInfo
+    { compileTimeInfoSourceFileName     = moduleSourceFileName m
+    , compileTimeInfoObjectFileProduced = (moduleObjectFileName m)
+                                            buildDirectory
+    , compileTimeInfoOtherFilesProduced =
+      (buildDirectory </> moduleName m <.> "mod") : if moduleProducesSmod m
+        then [buildDirectory </> moduleName m <.> "smod"]
+        else []
+    , compileTimeInfoDirectDependencies = map
+      (\mName -> buildDirectory </> mName <.> "mod")
+      (filter (`elem` availableModules) (moduleModulesUsed m))
     }
 constructCompileTimeInfo _ otherSources buildDirectory = undefined
 

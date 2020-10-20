@@ -1,4 +1,4 @@
-module ProgramToCompileInfoTest
+module ModuleToCompileInfoTest
   ( test
   )
 where
@@ -9,7 +9,6 @@ import           BuildModel                     ( CompileTimeInfo(..)
                                                 )
 import           Hedge                          ( Result
                                                 , Test
-                                                , assertEmpty
                                                 , assertEquals
                                                 , givenInput
                                                 , then'
@@ -19,28 +18,30 @@ import           System.FilePath                ( (</>) )
 
 test :: IO (Test ())
 test = return $ givenInput
-  "a program and available modules"
-  (exampleProgram, availableModules)
+  "a module and available modules"
+  (exampleModule, availableModules)
   [ whenTransformed
       "its compileTimeInfo is determined"
       doCompileTimeTransformation
-      [ then' "it still knows the original source file"    checkSourceFileName
+      [ then' "it stil knows the original source file"     checkSourceFileName
       , then' "it knows what object file will be produced" checkObjectFileName
-      , then' "there are no other files produced" checkOtherFilesProduced
+      , then' "the mod and smod files are also produced" checkOtherFilesProduced
       , then' "the direct dependencies are only the available modules used"
               checkDirectDependencies
       ]
   ]
 
-exampleProgram :: Source
-exampleProgram = Program
-  { programSourceFileName = programSourceFileName'
-  , programObjectFileName = \bd -> bd </> "some_file_somewhere.f90.o"
-  , programModulesUsed    = ["module1", "module2", "module3"]
+exampleModule :: Source
+exampleModule = Module
+  { moduleSourceFileName = moduleSourceFileName'
+  , moduleObjectFileName = \bd -> bd </> "some_file_somewhere.f90.o"
+  , moduleModulesUsed    = ["module1", "module2", "module3"]
+  , moduleName           = "some_module"
+  , moduleProducesSmod   = True
   }
 
-programSourceFileName' :: FilePath
-programSourceFileName' = "some" </> "file" </> "somewhere.f90"
+moduleSourceFileName' :: FilePath
+moduleSourceFileName' = "some" </> "file" </> "somewhere.f90"
 
 availableModules :: [String]
 availableModules = ["module1", "module3"]
@@ -51,7 +52,7 @@ doCompileTimeTransformation (programSource, otherSources) =
 
 checkSourceFileName :: CompileTimeInfo -> Result
 checkSourceFileName cti =
-  assertEquals programSourceFileName' (compileTimeInfoSourceFileName cti)
+  assertEquals moduleSourceFileName' (compileTimeInfoSourceFileName cti)
 
 checkObjectFileName :: CompileTimeInfo -> Result
 checkObjectFileName cti = assertEquals
@@ -59,8 +60,9 @@ checkObjectFileName cti = assertEquals
   (compileTimeInfoObjectFileProduced cti)
 
 checkOtherFilesProduced :: CompileTimeInfo -> Result
-checkOtherFilesProduced cti =
-  assertEmpty (compileTimeInfoOtherFilesProduced cti)
+checkOtherFilesProduced cti = assertEquals
+  ["build_dir" </> "some_module.mod", "build_dir" </> "some_module.smod"]
+  (compileTimeInfoOtherFilesProduced cti)
 
 checkDirectDependencies :: CompileTimeInfo -> Result
 checkDirectDependencies cti = assertEquals
