@@ -20,13 +20,15 @@ import           System.FilePath                ( (</>) )
 test :: IO (Test ())
 test = return $ givenInput
   "a program and other sources"
-  (exampleProgram, exampleSources)
+  (exampleProgram, availableModules)
   [ whenTransformed
       "its compileTimeInfo is determined"
       doCompileTimeTransformation
       [ then' "it still knows the original source file"    checkSourceFileName
       , then' "it knows what object file will be produced" checkObjectFileName
       , then' "there are no other files produced" checkOtherFilesProduced
+      , then' "the direct dependencies are only the available modules used"
+              checkDirectDependencies
       ]
   ]
 
@@ -40,10 +42,10 @@ exampleProgram = Program
 programSourceFileName' :: String
 programSourceFileName' = "some" </> "file" </> "somewhere.f90"
 
-exampleSources :: [Source]
-exampleSources = []
+availableModules :: [String]
+availableModules = ["module1", "module3"]
 
-doCompileTimeTransformation :: (Source, [Source]) -> CompileTimeInfo
+doCompileTimeTransformation :: (Source, [String]) -> CompileTimeInfo
 doCompileTimeTransformation (programSource, otherSources) =
   constructCompileTimeInfo programSource otherSources "build_dir"
 
@@ -59,3 +61,8 @@ checkObjectFileName cti = assertEquals
 checkOtherFilesProduced :: CompileTimeInfo -> Result
 checkOtherFilesProduced cti =
   assertEmpty (compileTimeInfoOtherFilesProduced cti)
+
+checkDirectDependencies :: CompileTimeInfo -> Result
+checkDirectDependencies cti = assertEquals
+  ["build_dir" </> "module1.mod", "build_dir" </> "module3.mod"]
+  (compileTimeInfoDirectDependencies cti)

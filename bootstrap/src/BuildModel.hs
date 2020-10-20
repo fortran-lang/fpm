@@ -62,6 +62,7 @@ data CompileTimeInfo = CompileTimeInfo {
     compileTimeInfoSourceFileName :: FilePath
   , compileTimeInfoObjectFileProduced :: FilePath
   , compileTimeInfoOtherFilesProduced :: [FilePath]
+  , compileTimeInfoDirectDependencies :: [FilePath]
 }
 
 processRawSource :: RawSource -> Source
@@ -92,13 +93,16 @@ processRawSource rawSource =
                            }
             else undefined
 
-constructCompileTimeInfo :: Source -> [Source] -> FilePath -> CompileTimeInfo
-constructCompileTimeInfo program@(Program{}) otherSources buildDirectory =
+constructCompileTimeInfo :: Source -> [String] -> FilePath -> CompileTimeInfo
+constructCompileTimeInfo program@(Program{}) availableModules buildDirectory =
   CompileTimeInfo
     { compileTimeInfoSourceFileName     = programSourceFileName program
     , compileTimeInfoObjectFileProduced = (programObjectFileName program)
                                             buildDirectory
     , compileTimeInfoOtherFilesProduced = []
+    , compileTimeInfoDirectDependencies = map
+      (\mName -> buildDirectory </> mName <.> "mod")
+      (filter (`elem` availableModules) (programModulesUsed program))
     }
 constructCompileTimeInfo _ otherSources buildDirectory = undefined
 
