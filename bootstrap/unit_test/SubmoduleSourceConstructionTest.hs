@@ -32,6 +32,7 @@ test = return $ givenInput
         "its object file name is the 'flattened' path of the source file with '.o' appeneded"
         checkSubmoduleObjectFileName
       , then' "it knows what modules it uses directly" checkSubmoduleModulesUsed
+      , then' "it knows its parent's name"             checkSubmoduleParentName
       , then' "it knows its name"                      checkSubmoduleName
       ]
   ]
@@ -68,7 +69,11 @@ checkSubmoduleModulesUsed s@(Submodule{}) =
   assertEquals ["module1", "module2"] $ submoduleModulesUsed s
 checkSubmoduleModulesUsed _ = fail' "wasn't a Submodule"
 
+checkSubmoduleParentName :: Source -> Result
+checkSubmoduleParentName s@(Submodule{}) =
+  assertEquals "some_module@parent" (submoduleParentName s)
+checkSubmoduleParentName _ = fail' "wasn't a Submodule"
+
 checkSubmoduleName :: Source -> Result
-checkSubmoduleName s@(Submodule{}) =
-  assertEquals "some_module@parent@child" $ submoduleName s
-checkSubmoduleName _ = fail' "wasn't a Submodule"
+checkSubmoduleName s@(Submodule{}) = assertEquals "child" $ submoduleName s
+checkSubmoduleName _               = fail' "wasn't a Submodule"

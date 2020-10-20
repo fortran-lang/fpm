@@ -30,7 +30,7 @@ data LineContents =
   | ModuleDeclaration String
   | ModuleUsed String
   | ModuleSubprogramDeclaration
-  | SubmoduleDeclaration String
+  | SubmoduleDeclaration String String
   | Other
 
 data RawSource = RawSource {
@@ -55,6 +55,7 @@ data Source =
     { submoduleSourceFileName :: FilePath
     , submoduleObjectFileName :: FilePath -> FilePath
     , submoduleModulesUsed :: [String]
+    , submoduleParentName :: String
     , submoduleName :: String
     }
 
@@ -86,11 +87,13 @@ processRawSource rawSource =
             , moduleProducesSmod = hasModuleSubprogramDeclaration parsedContents
             }
           else if hasSubmoduleDeclaration parsedContents
-            then Submodule { submoduleSourceFileName = sourceFileName
-                           , submoduleObjectFileName = objectFileName
-                           , submoduleModulesUsed    = modulesUsed
-                           , submoduleName = getSubmoduleName parsedContents
-                           }
+            then Submodule
+              { submoduleSourceFileName = sourceFileName
+              , submoduleObjectFileName = objectFileName
+              , submoduleModulesUsed    = modulesUsed
+              , submoduleParentName     = getSubmoduleParentName parsedContents
+              , submoduleName           = getSubmoduleName parsedContents
+              }
             else undefined
 
 constructCompileTimeInfo :: Source -> [String] -> FilePath -> CompileTimeInfo
@@ -178,11 +181,20 @@ getModuleName pc = head $ mapMaybe contentToMaybeModuleName pc
     ModuleDeclaration moduleName -> Just moduleName
     _                            -> Nothing
 
+getSubmoduleParentName :: [LineContents] -> String
+getSubmoduleParentName pc = head $ mapMaybe contentToMaybeModuleName pc
+ where
+  contentToMaybeModuleName content = case content of
+    SubmoduleDeclaration submoduleParentName submoduleName ->
+      Just submoduleParentName
+    _ -> Nothing
+
 getSubmoduleName :: [LineContents] -> String
 getSubmoduleName pc = head $ mapMaybe contentToMaybeModuleName pc
  where
   contentToMaybeModuleName content = case content of
-    SubmoduleDeclaration submoduleName -> Just submoduleName
+    SubmoduleDeclaration submoduleParentName submoduleName ->
+      Just submoduleName
     _ -> Nothing
 
 readFileLinesIO :: FilePath -> IO [String]
@@ -236,7 +248,7 @@ submoduleDeclaration = do
   skipSpaces
   name <- validIdentifier
   skipSpaceCommentOrEnd
-  return $ SubmoduleDeclaration ((intercalate "@" parents) ++ "@" ++ name)
+  return $ SubmoduleDeclaration (intercalate "@" parents) name
 
 submoduleParents :: ReadP [String]
 submoduleParents = do
