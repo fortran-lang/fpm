@@ -23,7 +23,9 @@ test = return $ givenInput
   [ whenTransformed
       "its compileTimeInfo is determined"
       doCompileTimeTransformation
-      [then' "it still knows the original source file" checkSourceFileName]
+      [ then' "it still knows the original source file"    checkSourceFileName
+      , then' "it knows what object file will be produced" checkObjectFileName
+      ]
   ]
 
 exampleProgram :: Source
@@ -46,3 +48,8 @@ doCompileTimeTransformation (programSource, otherSources) =
 checkSourceFileName :: CompileTimeInfo -> Result
 checkSourceFileName cti =
   assertEquals programSourceFileName' (compileTimeInfoSourceFileName cti)
+
+checkObjectFileName :: CompileTimeInfo -> Result
+checkObjectFileName cti = assertEquals
+  ("build_dir" </> "some_file_somewhere.f90.o")
+  (compileTimeInfoObjectFileProduced cti)

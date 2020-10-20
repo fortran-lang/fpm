@@ -60,6 +60,7 @@ data Source =
 
 data CompileTimeInfo = CompileTimeInfo {
     compileTimeInfoSourceFileName :: FilePath
+  , compileTimeInfoObjectFileProduced :: FilePath
 }
 
 processRawSource :: RawSource -> Source
@@ -93,7 +94,9 @@ processRawSource rawSource =
 constructCompileTimeInfo :: Source -> [Source] -> FilePath -> CompileTimeInfo
 constructCompileTimeInfo program@(Program{}) otherSources buildDirectory =
   CompileTimeInfo
-    { compileTimeInfoSourceFileName = programSourceFileName program
+    { compileTimeInfoSourceFileName     = programSourceFileName program
+    , compileTimeInfoObjectFileProduced = (programObjectFileName program)
+                                            buildDirectory
     }
 constructCompileTimeInfo _ otherSources buildDirectory = undefined
 
