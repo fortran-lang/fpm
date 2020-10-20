@@ -1,6 +1,5 @@
 module fpm
-
-use fpm_strings, only: string_t, str_ends_with
+use fpm_strings, only: string_t, str_ends_with, operator(.in.)
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
@@ -14,14 +13,132 @@ use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
                        resolve_module_dependencies
 use fpm_manifest, only : get_package_data, default_executable, &
     default_library, package_t, default_test
-use fpm_error, only : error_t
+use fpm_error, only : error_t, fatal_error
 use fpm_manifest_test, only : test_t
-use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
+                                       & stdout=>output_unit, &
+                                       & stderr=>error_unit
+use fpm_manifest_dependency, only: dependency_t
 implicit none
 private
 public :: cmd_build, cmd_install, cmd_run, cmd_test
 
 contains
+
+
+recursive subroutine add_libsources_from_package(sources,package_list,package, &
+                                                  package_root,dev_depends,error)
+    ! Discover library sources in a package, recursively including dependencies
+    !
+    type(srcfile_t), allocatable, intent(inout), target :: sources(:)
+    type(string_t), allocatable, intent(inout) :: package_list(:)
+    type(package_t), intent(in) :: package
+    character(*), intent(in) :: package_root
+    logical, intent(in) :: dev_depends
+    type(error_t), allocatable, intent(out) :: error
+
+    ! Add package library sources
+    if (allocated(package%library)) then
+
+        call add_sources_from_dir(sources, join_path(package_root,package%library%source_dir), &
+                                    FPM_SCOPE_LIB, error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+
+    ! Add library sources from dependencies
+    if (allocated(package%dependency)) then
+
+        call add_dependencies(package%dependency)
+
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+
+    ! Add library sources from dev-dependencies
+    if (dev_depends .and. allocated(package%dev_dependency)) then
+
+        call add_dependencies(package%dev_dependency)
+
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+
+    contains
+
+    subroutine add_dependencies(dependency_list)
+        type(dependency_t), intent(in) :: dependency_list(:)
+
+        integer :: i
+        type(string_t) :: dep_name
+        type(package_t) :: dependency
+
+        character(:), allocatable :: dependency_path
+
+        do i=1,size(dependency_list)
+            
+            if (dependency_list(i)%name .in. package_list) then
+                cycle
+            end if
+
+            if (allocated(dependency_list(i)%git)) then
+
+                dependency_path = join_path('build','dependencies',dependency_list(i)%name)
+
+                if (.not.exists(join_path(dependency_path,'fpm.toml'))) then
+                    call dependency_list(i)%git%checkout(dependency_path, error)
+                    if (allocated(error)) return
+                end if
+
+            else if (allocated(dependency_list(i)%path)) then
+                
+                dependency_path = join_path(package_root,dependency_list(i)%path)
+
+            end if
+
+            call get_package_data(dependency, &
+                    join_path(dependency_path,"fpm.toml"), error)
+
+            if (allocated(error)) then
+                error%message = 'Error while parsing manifest for dependency package at:'//&
+                                new_line('a')//join_path(dependency_path,"fpm.toml")//&
+                                new_line('a')//error%message
+                return
+            end if
+
+            if (.not.allocated(dependency%library) .and. &
+                    exists(join_path(dependency_path,"src"))) then
+                allocate(dependency%library)
+                dependency%library%source_dir = "src"
+            end if
+
+            
+            call add_libsources_from_package(sources,package_list,dependency, &
+                package_root=dependency_path, &
+                dev_depends=.false., error=error)
+            
+            if (allocated(error)) then
+                error%message = 'Error while processing sources for dependency package "'//&
+                                new_line('a')//dependency%name//'"'//&
+                                new_line('a')//error%message
+                return
+            end if
+
+            dep_name%s = dependency_list(i)%name
+            package_list = [package_list, dep_name]
+
+        end do
+
+    end subroutine add_dependencies
+
+end subroutine add_libsources_from_package
 
 
 subroutine build_model(model, settings, package, error)
@@ -33,7 +150,12 @@ subroutine build_model(model, settings, package, error)
     type(error_t), allocatable, intent(out) :: error
     integer :: i
 
+    type(string_t), allocatable :: package_list(:)
+
     model%package_name = package%name
+
+    allocate(package_list(1))
+    package_list(1)%s = package%name
 
     ! #TODO: Choose flags and output directory based on cli settings & manifest inputs
     model%fortran_compiler = 'gfortran'
@@ -96,17 +218,13 @@ subroutine build_model(model, settings, package, error)
 
     endif
 
-    if (allocated(package%library)) then
+    ! Add library sources, including local dependencies
+    call add_libsources_from_package(model%sources,package_list,package, &
+                                      package_root='.',dev_depends=.true.,error=error)
+    if (allocated(error)) then
+        return
+    end if
 
-        call add_sources_from_dir(model%sources, package%library%source_dir, &
-                                    FPM_SCOPE_LIB, error=error)
-
-        if (allocated(error)) then
-            return
-        endif
-
-
-    endif
     if(settings%list)then
         do i=1,size(model%sources)
             write(stderr,'(*(g0,1x))')'fpm::build<INFO>:file expected at',model%sources(i)%file_name, &

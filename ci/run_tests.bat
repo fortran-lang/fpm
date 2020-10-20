@@ -15,6 +15,7 @@ if errorlevel 1 exit 1
 build\gfortran_debug\app\fpm
 if errorlevel 1 exit 1
 
+
 cd ..\test\example_packages\hello_world
 if errorlevel 1 exit 1
 
@@ -22,6 +23,30 @@ if errorlevel 1 exit 1
 if errorlevel 1 exit 1
 
 .\build\gfortran_debug\app\hello_world
+if errorlevel 1 exit 1
+
+
+cd ..\hello_fpm
+if errorlevel 1 exit 1
+
+..\..\..\fpm\build\gfortran_debug\app\fpm build
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\app\hello_fpm
+if errorlevel 1 exit 1
+
+
+cd ..\circular_test
+if errorlevel 1 exit 1
+
+..\..\..\fpm\build\gfortran_debug\app\fpm build
+if errorlevel 1 exit 1
+
+
+cd ..\circular_example
+if errorlevel 1 exit 1
+
+..\..\..\fpm\build\gfortran_debug\app\fpm build
 if errorlevel 1 exit 1
 
 

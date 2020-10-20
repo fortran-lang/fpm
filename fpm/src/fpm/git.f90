@@ -1,5 +1,6 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
+    use fpm_error, only: error_t, fatal_error
     implicit none
 
     public :: git_target_t
@@ -42,6 +43,9 @@ module fpm_git
         character(len=:), allocatable :: object
 
     contains
+
+        !> Fetch and checkout in local directory
+        procedure :: checkout
 
         !> Show information on instance
         procedure :: info
@@ -122,6 +126,54 @@ contains
         self%object = tag
 
     end function git_target_tag
+
+
+    subroutine checkout(self,local_path, error)
+
+        !> Instance of the git target
+        class(git_target_t), intent(in) :: self
+
+        !> Local path to checkout in
+        character(*), intent(in) :: local_path
+
+        !> Error
+        type(error_t), allocatable, intent(out) :: error
+        
+        !> git object ref
+        character(:), allocatable :: object
+
+        !> Stat for execute_command_line
+        integer :: stat
+
+        if (allocated(self%object)) then
+            object = self%object
+        else
+            object = 'HEAD'
+        end if
+
+        call execute_command_line("git init "//local_path, exitstat=stat)
+
+        if (stat /= 0) then
+            call fatal_error(error,'Error while initiating git repository for remote dependency')
+            return
+        end if
+
+        call execute_command_line("git -C "//local_path//" fetch "//self%url//&
+                                        " "//object, exitstat=stat)
+
+        if (stat /= 0) then
+            call fatal_error(error,'Error while fetching git repository for remote dependency')
+            return
+        end if
+
+        call execute_command_line("git -C "//local_path//" checkout -qf FETCH_HEAD", exitstat=stat)
+
+        if (stat /= 0) then
+            call fatal_error(error,'Error while checking out git repository for remote dependency')
+            return
+        end if
+
+    end subroutine checkout 
 
 
     !> Show information on git target
