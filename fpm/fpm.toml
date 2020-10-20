@@ -14,10 +14,6 @@ tag = "v0.2"
 git = "https://github.com/urbanjost/M_CLI2.git"
 rev = "649075aceb97f997665a1a4656514fd2e9b4becc"
 
-[dependencies.fortran-intrinsic-manpages]
-git = "https://github.com/urbanjost/M_intrinsics.git"
-rev = "a758ebdd0487e8cab5b4894fbf375f87147c44b5"
-
 [[test]]
 name = "cli-test"
 source-dir = "test/cli_test"

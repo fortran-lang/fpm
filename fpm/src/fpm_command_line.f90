@@ -3,7 +3,6 @@ use fpm_environment,  only : get_os_type, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
 use M_CLI2,           only : set_args, lget, unnamed, remaining, specified
-use M_intrinsics,     only : help_intrinsics
 use fpm_strings,      only : lower
 use fpm_filesystem,   only : basename, canon_path
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
@@ -203,14 +202,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_list]
                    help_text=[character(len=widest) :: help_text, version_text]
                 case default
-                   ! note help_intrinsics is returning a fixed-length array
-                   ! to avoid compiler issues
                    help_text=[character(len=widest) :: help_text, &
-                   & help_intrinsics( lower( unnamed(i) ) ) ]
-                   if(size(help_text).eq.0)then
-                      help_text=[character(len=widest) :: help_text, &
-                      & 'ERROR: unknown help topic "'//trim(unnamed(i))//'"']
-                   endif
+                   & 'ERROR: unknown help topic "'//trim(unnamed(i))//'"']
                 end select
             enddo
             call printhelp(help_text)
@@ -332,7 +325,7 @@ contains
     '   part of your default programming environment, as well as letting    ', &
     '   you share your projects with others in a similar manner.            ', &
     '                                                                       ', &
-    '   See the fpm(1) repository at https://fortran-lang.org/packages      ', &
+    '   See the fpm(1) repository at https://fortran-lang.org/packages/fpm  ', &
     '   for a listing of registered projects.                               ', &
     '                                                                       ', &
     '   All output goes into the directory "build/" which can generally be  ', &
@@ -493,8 +486,6 @@ contains
     'SYNOPSIS                                                               ', &
     '   fpm help [fpm] [new] [build] [run] [test] [help] [version] [manual] ', &
     '                                                                       ', &
-    '   fpm help [fortran|fortran_manual][FORTRAN_INTRINSIC_NAME]           ', &
-    '                                                                       ', &
     'DESCRIPTION                                                            ', &
     '   The "fpm help" command is an alternative to the --help parameter    ', &
     '   on the fpm(1) command and its subcommands.                          ', &
@@ -508,12 +499,6 @@ contains
     '                                                                       ', &
     '              The default is to display help for the fpm(1) command    ', &
     '              itself.                                                  ', &
-    '   INTRINSIC(s)  In addition, Fortran intrinsics can be described.     ', &
-    '                 The special name "fortran" prints a list of available ', &
-    '                 topics. "fortran_manual" displays all the built-in    ', &
-    '                 fortran documentation. Entries should be in           ', &
-    '                 uppercase to avoid conflicts with fpm(1) topics;      ', &
-    '                 but can be in lowercase if there is no conflict.      ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     '   Sample usage:                                                       ', &
@@ -522,13 +507,6 @@ contains
     '     fpm help version   # show program version                         ', &
     '     fpm help new       # display help for "new" subcommand            ', &
     '     fpm help manual    # All fpm(1) built-in documentation            ', &
-    '                                                                       ', &
-    '   FORTRAN INTRINSICS                                                  ', &
-    '   Additional general Fortran documentation                            ', &
-    '                                                                       ', &
-    '     fpm help SIN COS TAN    # selected Fortran Intrinsic help         ', &
-    '     fpm help fortran        # index of Fortran documentation          ', &
-    '     fpm help fortran_manual # all Fortran documentation               ', &
     '                                                                       ', &
     'SEE ALSO                                                               ', &
     '   The fpm(1) home page at https://github.com/fortran-lang/fpm         ', &
