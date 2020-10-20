@@ -9,6 +9,7 @@ import           BuildModel                     ( Source(..)
                                                 )
 import           Hedge                          ( Result
                                                 , Test
+                                                , assertEmpty
                                                 , assertEquals
                                                 , givenInput
                                                 , then'
@@ -25,6 +26,7 @@ test = return $ givenInput
       doCompileTimeTransformation
       [ then' "it still knows the original source file"    checkSourceFileName
       , then' "it knows what object file will be produced" checkObjectFileName
+      , then' "there are no other files produced" checkOtherFilesProduced
       ]
   ]
 
@@ -53,3 +55,7 @@ checkObjectFileName :: CompileTimeInfo -> Result
 checkObjectFileName cti = assertEquals
   ("build_dir" </> "some_file_somewhere.f90.o")
   (compileTimeInfoObjectFileProduced cti)
+
+checkOtherFilesProduced :: CompileTimeInfo -> Result
+checkOtherFilesProduced cti =
+  assertEmpty (compileTimeInfoOtherFilesProduced cti)
