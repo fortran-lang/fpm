@@ -58,6 +58,10 @@ data Source =
     , submoduleName :: String
     }
 
+data CompileTimeInfo = CompileTimeInfo {
+    compileTimeInfoSourceFileName :: FilePath
+}
+
 processRawSource :: RawSource -> Source
 processRawSource rawSource =
   let sourceFileName = rawSourceFilename rawSource
@@ -85,6 +89,13 @@ processRawSource rawSource =
                            , submoduleName = getSubmoduleName parsedContents
                            }
             else undefined
+
+constructCompileTimeInfo :: Source -> [Source] -> FilePath -> CompileTimeInfo
+constructCompileTimeInfo program@(Program{}) otherSources buildDirectory =
+  CompileTimeInfo
+    { compileTimeInfoSourceFileName = programSourceFileName program
+    }
+constructCompileTimeInfo _ otherSources buildDirectory = undefined
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
 pathSeparatorsToUnderscores fileName =
