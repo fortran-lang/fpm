@@ -96,6 +96,19 @@ processRawSource rawSource =
               }
             else undefined
 
+getAvailableModules :: [Source] -> [String]
+getAvailableModules = mapMaybe maybeModuleName
+ where
+  maybeModuleName m@(Module{}) = Just $ moduleName m
+  maybeModuleName _            = Nothing
+
+getAllObjectFiles :: FilePath -> [Source] -> [FilePath]
+getAllObjectFiles buildDirectory sources = map getObjectFile sources
+ where
+  getObjectFile p@(Program{}  ) = (programObjectFileName p) buildDirectory
+  getObjectFile m@(Module{}   ) = (moduleObjectFileName m) buildDirectory
+  getObjectFile s@(Submodule{}) = (submoduleObjectFileName s) buildDirectory
+
 constructCompileTimeInfo :: Source -> [String] -> FilePath -> CompileTimeInfo
 constructCompileTimeInfo p@(Program{}) availableModules buildDirectory =
   CompileTimeInfo

@@ -616,12 +616,15 @@ fetchDependency name version = do
         putStrLn "Simple dependencies are not yet supported :("
         undefined
       GitVersion versionSpec -> do
-        system
-          ("git init " ++ clonePath)
+        system ("git init " ++ clonePath)
         case gitVersionSpecRef versionSpec of
           Just ref -> do
             system
-              ("git -C " ++ clonePath ++ " fetch " ++ gitVersionSpecUrl versionSpec ++ " "
+              (  "git -C "
+              ++ clonePath
+              ++ " fetch "
+              ++ gitVersionSpecUrl versionSpec
+              ++ " "
               ++ (case ref of
                    Tag    tag    -> tag
                    Branch branch -> branch
@@ -630,9 +633,12 @@ fetchDependency name version = do
               )
           Nothing -> do
             system
-              ("git -C " ++ clonePath ++ " fetch " ++ gitVersionSpecUrl versionSpec)
-        system
-          ("git -C " ++ clonePath ++ " checkout -qf FETCH_HEAD")
+              (  "git -C "
+              ++ clonePath
+              ++ " fetch "
+              ++ gitVersionSpecUrl versionSpec
+              )
+        system ("git -C " ++ clonePath ++ " checkout -qf FETCH_HEAD")
         return (name, clonePath)
       PathVersion versionSpec -> return (name, pathVersionSpecPath versionSpec)
 
