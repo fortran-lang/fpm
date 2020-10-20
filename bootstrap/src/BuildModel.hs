@@ -120,7 +120,23 @@ constructCompileTimeInfo m@(Module{}) availableModules buildDirectory =
       (\mName -> buildDirectory </> mName <.> "mod")
       (filter (`elem` availableModules) (moduleModulesUsed m))
     }
-constructCompileTimeInfo _ otherSources buildDirectory = undefined
+constructCompileTimeInfo s@(Submodule{}) availableModules buildDirectory =
+  CompileTimeInfo
+    { compileTimeInfoSourceFileName     = submoduleSourceFileName s
+    , compileTimeInfoObjectFileProduced = (submoduleObjectFileName s)
+                                            buildDirectory
+    , compileTimeInfoOtherFilesProduced = [ buildDirectory
+                                            </> submoduleParentName s
+                                            ++  "@"
+                                            ++  submoduleName s
+                                            <.> "smod"
+                                          ]
+    , compileTimeInfoDirectDependencies =
+      (buildDirectory </> submoduleParentName s <.> "smod")
+        : (map (\mName -> buildDirectory </> mName <.> "mod")
+               (filter (`elem` availableModules) (submoduleModulesUsed s))
+          )
+    }
 
 pathSeparatorsToUnderscores :: FilePath -> FilePath
 pathSeparatorsToUnderscores fileName =
