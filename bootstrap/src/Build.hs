@@ -38,6 +38,7 @@ import           Development.Shake              ( FilePattern
                                                 , (&?>)
                                                 )
 import           Development.Shake.FilePath     ( exe
+                                                , splitDirectories
                                                 , (</>)
                                                 , (<.>)
                                                 )
@@ -81,24 +82,23 @@ buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory
                        , shakeProgress = progressSimple
                        }
       $ do
-          let
-            infoToRule cti =
-              let
-                obj                = compileTimeInfoObjectFileProduced cti
-                other              = compileTimeInfoOtherFilesProduced cti
-                directDependencies = compileTimeInfoDirectDependencies cti
-                sourceFile         = compileTimeInfoSourceFileName cti
-                fileMatcher f = if f == obj || f `elem` other
-                  then Just (obj : other)
-                  else Nothing
-              in
-                fileMatcher &?> \(objectFile : _) -> do
-                  need (sourceFile : directDependencies)
-                  cmd compiler
-                      ["-c", "-J" ++ buildDirectory]
-                      includeFlags
-                      flags
-                      ["-o", objectFile, sourceFile]
+          let infoToRule cti =
+                let obj                = compileTimeInfoObjectFileProduced cti
+                    other              = compileTimeInfoOtherFilesProduced cti
+                    directDependencies = compileTimeInfoDirectDependencies cti
+                    sourceFile         = compileTimeInfoSourceFileName cti
+                    fileMatcher f =
+                        let realf = foldl1 (</>) (splitDirectories f)
+                        in  if realf == obj || realf `elem` other
+                              then Just (obj : other)
+                              else Nothing
+                in  fileMatcher &?> \(objectFile : _) -> do
+                      need (sourceFile : directDependencies)
+                      cmd compiler
+                          ["-c", "-J" ++ buildDirectory]
+                          includeFlags
+                          flags
+                          ["-o", objectFile, sourceFile]
           want [buildDirectory </> programName <.> exe]
           buildDirectory </> programName <.> exe %> \executable -> do
             liftIO $ print objectFiles
@@ -134,24 +134,23 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags lib
                        , shakeProgress = progressSimple
                        }
       $ do
-          let
-            infoToRule cti =
-              let
-                obj                = compileTimeInfoObjectFileProduced cti
-                other              = compileTimeInfoOtherFilesProduced cti
-                directDependencies = compileTimeInfoDirectDependencies cti
-                sourceFile         = compileTimeInfoSourceFileName cti
-                fileMatcher f = if f == obj || f `elem` other
-                  then Just (obj : other)
-                  else Nothing
-              in
-                fileMatcher &?> \(objectFile : _) -> do
-                  need (sourceFile : directDependencies)
-                  cmd compiler
-                      ["-c", "-J" ++ buildDirectory]
-                      includeFlags
-                      flags
-                      ["-o", objectFile, sourceFile]
+          let infoToRule cti =
+                let obj                = compileTimeInfoObjectFileProduced cti
+                    other              = compileTimeInfoOtherFilesProduced cti
+                    directDependencies = compileTimeInfoDirectDependencies cti
+                    sourceFile         = compileTimeInfoSourceFileName cti
+                    fileMatcher f =
+                        let realf = foldl1 (</>) (splitDirectories f)
+                        in  if realf == obj || realf `elem` other
+                              then Just (obj : other)
+                              else Nothing
+                in  fileMatcher &?> \(objectFile : _) -> do
+                      need (sourceFile : directDependencies)
+                      cmd compiler
+                          ["-c", "-J" ++ buildDirectory]
+                          includeFlags
+                          flags
+                          ["-o", objectFile, sourceFile]
           want [archiveFile]
           archiveFile %> \a -> do
             need objectFiles
