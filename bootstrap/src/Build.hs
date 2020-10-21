@@ -60,12 +60,11 @@ buildProgram
   -> FilePath
   -> [FilePath]
   -> IO ()
-buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory compiler flags programName programSource archives
+buildProgram programDirectory' libraryDirectories sourceExtensions buildDirectory compiler flags programName programSource archives
   = do
+    let programDirectory = foldl1 (</>) (splitDirectories programDirectory')
     let includeFlags = map ("-I" ++) libraryDirectories
     sourceFiles <- getDirectoriesFiles [programDirectory] sourceExtensions
-    print sourceFiles
-    print (programDirectory </> programSource)
     rawSources  <- mapM sourceFileToRawSource sourceFiles
     let sources' = map processRawSource rawSources
     let isThisProgramOrNotProgram p@(Program{}) =
