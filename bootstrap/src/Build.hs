@@ -64,6 +64,8 @@ buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory
   = do
     let includeFlags = map ("-I" ++) libraryDirectories
     sourceFiles <- getDirectoriesFiles [programDirectory] sourceExtensions
+    print sourceFiles
+    print (programDirectory </> programSource)
     rawSources  <- mapM sourceFileToRawSource sourceFiles
     let sources' = map processRawSource rawSources
     let isThisProgramOrNotProgram p@(Program{}) =
@@ -101,7 +103,6 @@ buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory
                           ["-o", objectFile, sourceFile]
           want [buildDirectory </> programName <.> exe]
           buildDirectory </> programName <.> exe %> \executable -> do
-            liftIO $ print objectFiles
             need objectFiles
             cmd compiler objectFiles archives ["-o", executable] flags
           mapM_ infoToRule compileTimeInfo
