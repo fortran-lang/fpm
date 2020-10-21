@@ -22,6 +22,7 @@ import           Development.Shake              ( FilePattern
                                                 , Change(ChangeModtimeAndDigest)
                                                 , cmd
                                                 , getDirectoryFilesIO
+                                                , liftIO
                                                 , need
                                                 , progressSimple
                                                 , shake
@@ -100,6 +101,7 @@ buildProgram programDirectory libraryDirectories sourceExtensions buildDirectory
                       ["-o", objectFile, sourceFile]
           want [buildDirectory </> programName <.> exe]
           buildDirectory </> programName <.> exe %> \executable -> do
+            liftIO $ print objectFiles
             need objectFiles
             cmd compiler objectFiles archives ["-o", executable] flags
           mapM_ infoToRule compileTimeInfo
