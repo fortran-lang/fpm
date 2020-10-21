@@ -308,13 +308,23 @@ useStatement = do
 
 moduleSubprogramDeclaration :: ReadP LineContents
 moduleSubprogramDeclaration = do
-  skipAnything
+  skipSpaces
+  skipProcedureQualifiers
   _ <- string "module"
   skipAtLeastOneWhiteSpace
-  skipAnything
   _ <- string "function" <|> string "subroutine"
   skipAtLeastOneWhiteSpace
   return $ ModuleSubprogramDeclaration
+
+skipProcedureQualifiers :: ReadP ()
+skipProcedureQualifiers = do
+  many skipPossibleQualifier
+  return ()
+
+skipPossibleQualifier :: ReadP ()
+skipPossibleQualifier = do
+  _ <- string "pure" <|> string "elemental" <|> string "impure"
+  skipAtLeastOneWhiteSpace
 
 skipAtLeastOneWhiteSpace :: ReadP ()
 skipAtLeastOneWhiteSpace = do
