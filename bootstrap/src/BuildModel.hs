@@ -1,6 +1,7 @@
 module BuildModel where
 
 import           Control.Applicative            ( (<|>) )
+import           Control.Monad                  ( when )
 import           Data.Char                      ( isAsciiLower
                                                 , isDigit
                                                 , toLower
@@ -30,7 +31,7 @@ data LineContents =
   | ModuleDeclaration String
   | ModuleUsed String
   | ModuleSubprogramDeclaration
-  | SubmoduleDeclaration String String
+  | SubmoduleDeclaration String String String
   | Other
 
 data RawSource = RawSource {
@@ -55,6 +56,7 @@ data Source =
     { submoduleSourceFileName :: FilePath
     , submoduleObjectFileName :: FilePath -> FilePath
     , submoduleModulesUsed :: [String]
+    , submoduleBaseModuleName :: String
     , submoduleParentName :: String
     , submoduleName :: String
     }
@@ -68,33 +70,37 @@ data CompileTimeInfo = CompileTimeInfo {
 
 processRawSource :: RawSource -> Source
 processRawSource rawSource =
-  let sourceFileName = rawSourceFilename rawSource
-      parsedContents = parseContents rawSource
-      objectFileName =
-          \bd -> bd </> (pathSeparatorsToUnderscores sourceFileName) <.> "o"
-      modulesUsed = getModulesUsed parsedContents
-  in  if hasProgramDeclaration parsedContents
-        then Program { programSourceFileName = sourceFileName
-                     , programObjectFileName = objectFileName
-                     , programModulesUsed    = modulesUsed
-                     }
-        else if hasModuleDeclaration parsedContents
-          then Module
-            { moduleSourceFileName = sourceFileName
-            , moduleObjectFileName = objectFileName
-            , moduleModulesUsed    = modulesUsed
-            , moduleName           = getModuleName parsedContents
-            , moduleProducesSmod = hasModuleSubprogramDeclaration parsedContents
+  let
+    sourceFileName = rawSourceFilename rawSource
+    parsedContents = parseContents rawSource
+    objectFileName =
+      \bd -> bd </> (pathSeparatorsToUnderscores sourceFileName) <.> "o"
+    modulesUsed = getModulesUsed parsedContents
+  in
+    if hasProgramDeclaration parsedContents
+      then Program { programSourceFileName = sourceFileName
+                   , programObjectFileName = objectFileName
+                   , programModulesUsed    = modulesUsed
+                   }
+      else if hasModuleDeclaration parsedContents
+        then Module
+          { moduleSourceFileName = sourceFileName
+          , moduleObjectFileName = objectFileName
+          , moduleModulesUsed    = modulesUsed
+          , moduleName           = getModuleName parsedContents
+          , moduleProducesSmod   = hasModuleSubprogramDeclaration parsedContents
+          }
+        else if hasSubmoduleDeclaration parsedContents
+          then Submodule
+            { submoduleSourceFileName = sourceFileName
+            , submoduleObjectFileName = objectFileName
+            , submoduleModulesUsed    = modulesUsed
+            , submoduleBaseModuleName = getSubmoduleBaseModuleName
+                                          parsedContents
+            , submoduleParentName     = getSubmoduleParentName parsedContents
+            , submoduleName           = getSubmoduleName parsedContents
             }
-          else if hasSubmoduleDeclaration parsedContents
-            then Submodule
-              { submoduleSourceFileName = sourceFileName
-              , submoduleObjectFileName = objectFileName
-              , submoduleModulesUsed    = modulesUsed
-              , submoduleParentName     = getSubmoduleParentName parsedContents
-              , submoduleName           = getSubmoduleName parsedContents
-              }
-            else undefined
+          else undefined
 
 getAvailableModules :: [Source] -> [String]
 getAvailableModules = mapMaybe maybeModuleName
@@ -110,8 +116,8 @@ getAllObjectFiles buildDirectory sources = map getObjectFile sources
   getObjectFile s@(Submodule{}) = (submoduleObjectFileName s) buildDirectory
 
 getSourceFileName :: Source -> FilePath
-getSourceFileName p@(Program{}) = programSourceFileName p
-getSourceFileName m@(Module{}) = moduleSourceFileName m
+getSourceFileName p@(Program{}  ) = programSourceFileName p
+getSourceFileName m@(Module{}   ) = moduleSourceFileName m
 getSourceFileName s@(Submodule{}) = submoduleSourceFileName s
 
 constructCompileTimeInfo :: Source -> [String] -> FilePath -> CompileTimeInfo
@@ -144,7 +150,7 @@ constructCompileTimeInfo s@(Submodule{}) availableModules buildDirectory =
     , compileTimeInfoObjectFileProduced = (submoduleObjectFileName s)
                                             buildDirectory
     , compileTimeInfoOtherFilesProduced = [ buildDirectory
-                                            </> submoduleParentName s
+                                            </> submoduleBaseModuleName s
                                             ++  "@"
                                             ++  submoduleName s
                                             <.> "smod"
@@ -215,11 +221,19 @@ getModuleName pc = head $ mapMaybe contentToMaybeModuleName pc
     ModuleDeclaration moduleName -> Just moduleName
     _                            -> Nothing
 
+getSubmoduleBaseModuleName :: [LineContents] -> String
+getSubmoduleBaseModuleName pc = head $ mapMaybe contentToMaybeModuleName pc
+ where
+  contentToMaybeModuleName content = case content of
+    SubmoduleDeclaration baseModuleName submoduleParentName submoduleName ->
+      Just baseModuleName
+    _ -> Nothing
+
 getSubmoduleParentName :: [LineContents] -> String
 getSubmoduleParentName pc = head $ mapMaybe contentToMaybeModuleName pc
  where
   contentToMaybeModuleName content = case content of
-    SubmoduleDeclaration submoduleParentName submoduleName ->
+    SubmoduleDeclaration baseModuleName submoduleParentName submoduleName ->
       Just submoduleParentName
     _ -> Nothing
 
@@ -227,7 +241,7 @@ getSubmoduleName :: [LineContents] -> String
 getSubmoduleName pc = head $ mapMaybe contentToMaybeModuleName pc
  where
   contentToMaybeModuleName content = case content of
-    SubmoduleDeclaration submoduleParentName submoduleName ->
+    SubmoduleDeclaration baseModuleName submoduleParentName submoduleName ->
       Just submoduleName
     _ -> Nothing
 
@@ -271,6 +285,7 @@ moduleDeclaration = do
   _ <- string "module"
   skipAtLeastOneWhiteSpace
   moduleName <- validIdentifier
+  when (moduleName == "procedure") (fail "")
   skipSpaceCommentOrEnd
   return $ ModuleDeclaration moduleName
 
@@ -279,10 +294,13 @@ submoduleDeclaration = do
   skipSpaces
   _       <- string "submodule"
   parents <- submoduleParents
+  let parentName = case parents of
+        (baseModule : []) -> baseModule
+        (multiple       ) -> (head multiple) ++ "@" ++ (last multiple)
   skipSpaces
   name <- validIdentifier
   skipSpaceCommentOrEnd
-  return $ SubmoduleDeclaration (intercalate "@" parents) name
+  return $ SubmoduleDeclaration (head parents) parentName name
 
 submoduleParents :: ReadP [String]
 submoduleParents = do

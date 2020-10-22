@@ -37,6 +37,7 @@ exampleSubmodule = Submodule
   { submoduleSourceFileName = submoduleSourceFileName'
   , submoduleObjectFileName = \bd -> bd </> "some_file_somewhere.f90.o"
   , submoduleModulesUsed    = ["module1", "module2", "module3"]
+  , submoduleBaseModuleName = "base_module"
   , submoduleParentName     = "base_module@parent"
   , submoduleName           = "some_submodule"
   }
@@ -62,7 +63,7 @@ checkObjectFileName cti = assertEquals
 
 checkOtherFilesProduced :: CompileTimeInfo -> Result
 checkOtherFilesProduced cti = assertEquals
-  ["build_dir" </> "base_module@parent@some_submodule.smod"]
+  ["build_dir" </> "base_module@some_submodule.smod"]
   (compileTimeInfoOtherFilesProduced cti)
 
 checkDirectDependencies :: CompileTimeInfo -> Result
