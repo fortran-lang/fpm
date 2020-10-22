@@ -109,6 +109,11 @@ getAllObjectFiles buildDirectory sources = map getObjectFile sources
   getObjectFile m@(Module{}   ) = (moduleObjectFileName m) buildDirectory
   getObjectFile s@(Submodule{}) = (submoduleObjectFileName s) buildDirectory
 
+getSourceFileName :: Source -> FilePath
+getSourceFileName p@(Program{}) = programSourceFileName p
+getSourceFileName m@(Module{}) = moduleSourceFileName m
+getSourceFileName s@(Submodule{}) = submoduleSourceFileName s
+
 constructCompileTimeInfo :: Source -> [String] -> FilePath -> CompileTimeInfo
 constructCompileTimeInfo p@(Program{}) availableModules buildDirectory =
   CompileTimeInfo
