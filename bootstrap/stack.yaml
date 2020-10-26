@@ -42,6 +42,12 @@ packages:
 extra-deps:
 - git: https://github.com/kowainik/tomland.git
   commit: 536a5e6ffb148d0dd4e4c4b120913a6744097676
+- git: https://gitlab.com/everythingfunctional/hedge.git
+  commit: 1c6cba3b5f8e52cf317f2421aaca13a0ddab4e92
+  subdirs:
+    - .
+    - hedge-trimmer
+- quickcheck-with-counterexamples-1.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

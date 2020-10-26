@@ -5,9 +5,6 @@
 
 packages:
 - completed:
-    cabal-file:
-      size: 6802
-      sha256: 85568a0280115b6e9a9f263cf4cfc72ad5a6eaeb2412875816adb82ea6a405bc
     name: tomland
     version: 1.3.0.0
     git: https://github.com/kowainik/tomland.git
@@ -18,6 +15,26 @@ packages:
   original:
     git: https://github.com/kowainik/tomland.git
     commit: 536a5e6ffb148d0dd4e4c4b120913a6744097676
+- completed:
+    subdir: hedge-trimmer
+    name: hedge-trimmer
+    version: 1.0.0.0
+    git: https://gitlab.com/everythingfunctional/hedge.git
+    pantry-tree:
+      size: 226
+      sha256: 19972f5b81c7627d6b66c852dfb7e0e67b3931ed4f418663c152717ce4ea267e
+    commit: 1c6cba3b5f8e52cf317f2421aaca13a0ddab4e92
+  original:
+    subdir: hedge-trimmer
+    git: https://gitlab.com/everythingfunctional/hedge.git
+    commit: 1c6cba3b5f8e52cf317f2421aaca13a0ddab4e92
+- completed:
+    hackage: quickcheck-with-counterexamples-1.2@sha256:d322d79008602df26f5eb4e1379e5b58bf1a92604df8601e71e200cfc3e847a3,1688
+    pantry-tree:
+      size: 724
+      sha256: 0046517e3cc2adebfce19d4aad05a06dcf55ec9e572fa1c661ba9abe81386484
+  original:
+    hackage: quickcheck-with-counterexamples-1.2
 snapshots:
 - completed:
     size: 524996
