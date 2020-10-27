@@ -3,7 +3,6 @@
 
 module Fpm
   ( Arguments(..)
-  , Command(..)
   , getArguments
   , start
   )
@@ -43,6 +42,7 @@ import           Options.Applicative            ( Parser
                                                 , info
                                                 , long
                                                 , metavar
+                                                , optional
                                                 , progDesc
                                                 , strArgument
                                                 , strOption
@@ -67,7 +67,25 @@ import           Toml                           ( TomlCodec
                                                 )
 import qualified Toml
 
-data Arguments = Arguments { command' :: Command, release :: Bool, commandArguments :: String }
+data Arguments =
+    New
+      { newName :: String
+      , newWithExecutable :: Bool
+      , newWithTest :: Bool
+      , newWithLib :: Bool
+      }
+  | Build
+      { buildRelease :: Bool }
+  | Run
+      { runRelease :: Bool
+      , runTarget :: Maybe String
+      , runArgs :: Maybe String
+      }
+  | Test
+      { testRelease :: Bool
+      , testTarget :: Maybe String
+      , testArgs :: Maybe String
+      }
 
 data TomlSettings = TomlSettings {
       tomlSettingsProjectName :: String
@@ -107,8 +125,6 @@ data GitRef = Tag String | Branch String | Commit String deriving Show
 
 data PathVersionSpec = PathVersionSpec { pathVersionSpecPath :: String } deriving Show
 
-data Command = Run String | Test String | Build | New String Bool Bool
-
 data DependencyTree = Dependency {
       dependencyName :: String
     , dependencyPath :: FilePath
@@ -118,22 +134,22 @@ data DependencyTree = Dependency {
 }
 
 start :: Arguments -> IO ()
-start args = case command' args of
-  New projectName withExecutable withTest ->
-    createNewProject projectName withExecutable withTest
+start args = case args of
+  New { newName = name, newWithExecutable = withExecutable, newWithTest = withTest, newWithLib = withLib }
+    -> createNewProject name withExecutable withTest withLib
   _ -> do
     fpmContents <- TIO.readFile "fpm.toml"
     let tomlSettings = Toml.decode settingsCodec fpmContents
     case tomlSettings of
       Left  err           -> print err
       Right tomlSettings' -> do
-        appSettings <- toml2AppSettings tomlSettings' (release args)
+        appSettings <- toml2AppSettings tomlSettings' args
         app args appSettings
 
 app :: Arguments -> AppSettings -> IO ()
-app args settings = case command' args of
-  Build        -> build settings
-  Run whichOne -> do
+app args settings = case args of
+  Build{} -> build settings
+  Run { runTarget = whichOne, runArgs = runArgs } -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
@@ -148,10 +164,16 @@ app args settings = case command' args of
     case canonicalExecutables of
       [] -> putStrLn "No Executables Found"
       _  -> case whichOne of
-        "" -> do
+        Nothing -> do
           exitCodes <- mapM
             system
-            (map (++ " " ++ commandArguments args) canonicalExecutables)
+            (map
+              (++ case runArgs of
+                Nothing      -> ""
+                Just theArgs -> " " ++ theArgs
+              )
+              canonicalExecutables
+            )
           forM_
             exitCodes
             (\exitCode -> when
@@ -161,13 +183,15 @@ app args settings = case command' args of
               )
               (exitWith exitCode)
             )
-        name -> do
+        Just name -> do
           case find (name `isSuffixOf`) canonicalExecutables of
             Nothing        -> putStrLn "Executable Not Found"
             Just specified -> do
-              exitCode <- system (specified ++ " " ++ (commandArguments args))
+              exitCode <- case runArgs of
+                Nothing      -> system specified
+                Just theArgs -> system (specified ++ " " ++ theArgs)
               exitWith exitCode
-  Test whichOne -> do
+  Test { testTarget = whichOne, testArgs = testArgs } -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
@@ -182,10 +206,16 @@ app args settings = case command' args of
     case canonicalExecutables of
       [] -> putStrLn "No Tests Found"
       _  -> case whichOne of
-        "" -> do
+        Nothing -> do
           exitCodes <- mapM
             system
-            (map (++ " " ++ commandArguments args) canonicalExecutables)
+            (map
+              (++ case testArgs of
+                Nothing      -> ""
+                Just theArgs -> " " ++ theArgs
+              )
+              canonicalExecutables
+            )
           forM_
             exitCodes
             (\exitCode -> when
@@ -195,12 +225,15 @@ app args settings = case command' args of
               )
               (exitWith exitCode)
             )
-        name -> do
+        Just name -> do
           case find (name `isSuffixOf`) canonicalExecutables of
             Nothing        -> putStrLn "Test Not Found"
             Just specified -> do
-              exitCode <- system (specified ++ " " ++ (commandArguments args))
+              exitCode <- case testArgs of
+                Nothing      -> system specified
+                Just theArgs -> system (specified ++ " " ++ theArgs)
               exitWith exitCode
+  _ -> putStrLn "Shouldn't be able to get here"
 
 build :: AppSettings -> IO ()
 build settings = do
@@ -302,42 +335,61 @@ getArguments = execParser
   )
 
 arguments :: Parser Arguments
-arguments =
-  Arguments
-    <$> subparser
-          (  command "run"  (info runArguments (progDesc "Run the executable"))
-          <> command "test" (info testArguments (progDesc "Run the tests"))
-          <> command "build"
-                     (info buildArguments (progDesc "Build the executable"))
-          <> command
-               "new"
-               (info newArguments
-                     (progDesc "Create a new project in a new directory")
-               )
-          )
-    <*> switch (long "release" <> help "Build in release mode")
-    <*> strOption
-          (long "args" <> metavar "ARGS" <> value "" <> help
-            "Arguments to pass to executables/tests"
-          )
+arguments = subparser
+  (  command
+      "new"
+      (info (newArguments <**> helper)
+            (progDesc "Create a new project in a new directory")
+      )
+  <> command
+       "build"
+       (info (buildArguments <**> helper) (progDesc "Build the project"))
+  <> command
+       "run"
+       (info (runArguments <**> helper) (progDesc "Run the executable(s)"))
+  <> command "test"
+             (info (testArguments <**> helper) (progDesc "Run the test(s)"))
+  )
 
-runArguments :: Parser Command
-runArguments = Run <$> strArgument
-  (metavar "EXE" <> value "" <> help "Which executable to run")
-
-testArguments :: Parser Command
-testArguments =
-  Test <$> strArgument (metavar "TEST" <> value "" <> help "Which test to run")
-
-buildArguments :: Parser Command
-buildArguments = pure Build
-
-newArguments :: Parser Command
+newArguments :: Parser Arguments
 newArguments =
   New
-    <$> strArgument (metavar "NAME" <> help "Name of new project")
-    <*> switch (long "with-executable" <> help "Include an executable")
-    <*> switch (long "with-test" <> help "Include a test")
+    <$> strArgument
+          (  metavar "NAME"
+          <> help "Name of new project (must be a valid Fortran identifier)"
+          )
+    <*> switch (long "app" <> help "Include an executable")
+    <*> switch (long "test" <> help "Include a test")
+    <*> switch (long "lib" <> help "Include a library")
+
+buildArguments :: Parser Arguments
+buildArguments = Build <$> switch
+  (long "release" <> help "Build with optimizations instead of debugging")
+
+runArguments :: Parser Arguments
+runArguments =
+  Run
+    <$> switch
+          (  long "release"
+          <> help "Build with optimizations instead of debugging"
+          )
+    <*> optional
+          (strArgument
+            (metavar "TARGET" <> help "Name of the executable to run")
+          )
+    <*> optional
+          (strArgument (metavar "ARGS" <> help "Arguments to the executable"))
+
+testArguments :: Parser Arguments
+testArguments =
+  Test
+    <$> switch
+          (  long "release"
+          <> help "Build with optimizations instead of debugging"
+          )
+    <*> optional
+          (strArgument (metavar "TARGET" <> help "Name of the test to run"))
+    <*> optional (strArgument (metavar "ARGS" <> help "Arguments to the test"))
 
 getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
 getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
@@ -437,8 +489,12 @@ pathVersionCodec :: Toml.TomlCodec PathVersionSpec
 pathVersionCodec =
   PathVersionSpec <$> Toml.string "path" .= pathVersionSpecPath
 
-toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
-toml2AppSettings tomlSettings release = do
+toml2AppSettings :: TomlSettings -> Arguments -> IO AppSettings
+toml2AppSettings tomlSettings args = do
+  let release = case args of
+        Build { buildRelease = r } -> r
+        Run { runRelease = r }     -> r
+        Test { testRelease = r }   -> r
   let projectName = tomlSettingsProjectName tomlSettings
   let compiler    = "gfortran"
   librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
@@ -682,19 +738,20 @@ buildDependency buildPrefix compiler flags (Dependency name path sourcePath mBui
                               (map fst transitiveDependencies)
     return $ (buildPath, thisArchive) : transitiveDependencies
 
-createNewProject :: String -> Bool -> Bool -> IO ()
-createNewProject projectName withExecutable withTest = do
+createNewProject :: String -> Bool -> Bool -> Bool -> IO ()
+createNewProject projectName withExecutable withTest withLib = do
   createDirectory projectName
   writeFile (projectName </> "fpm.toml")   (templateFpmToml projectName)
   writeFile (projectName </> "README.md")  (templateReadme projectName)
   writeFile (projectName </> ".gitignore") "build/*\n"
-  createDirectory (projectName </> "src")
-  writeFile (projectName </> "src" </> projectName <.> "f90")
-            (templateModule projectName)
+  when withLib $ do
+    createDirectory (projectName </> "src")
+    writeFile (projectName </> "src" </> projectName <.> "f90")
+              (templateModule projectName)
   when withExecutable $ do
     createDirectory (projectName </> "app")
     writeFile (projectName </> "app" </> "main.f90")
-              (templateProgram projectName)
+              (templateProgram projectName withLib)
   when withTest $ do
     createDirectory (projectName </> "test")
     writeFile (projectName </> "test" </> "main.f90") templateTest
@@ -736,12 +793,11 @@ templateReadme :: String -> String
 templateReadme projectName =
   "# " ++ projectName ++ "\n" ++ "\n" ++ "My cool new project!\n"
 
-templateProgram :: String -> String
-templateProgram projectName =
+templateProgram :: String -> Bool -> String
+templateProgram projectName withLib =
   "program main\n"
-    ++ "  use "
-    ++ projectName
-    ++ ", only: say_hello\n"
+    ++ (if withLib then "  use " ++ projectName ++ ", only: say_hello\n" else ""
+       )
     ++ "\n"
     ++ "  implicit none\n"
     ++ "\n"
