@@ -17,10 +17,11 @@ set -ex
 cd fpm
 fpm build
 fpm run
+rm -rf fpm_scratch_*/
 fpm test
+rm -rf fpm_scratch_*/
 
 f_fpm_path="$(get_abs_filename $(find build -regex 'build/.*/app/fpm'))"
-
 "${f_fpm_path}"
 
 cd ../example_packages/hello_world

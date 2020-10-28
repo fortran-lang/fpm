@@ -20,6 +20,13 @@ source-dir = "test/cli_test"
 main = "cli_test.f90"
 
 [[test]]
+name = "new-test"
+source-dir = "test/new_test"
+main = "new_test.f90"
+
+[[test]]
 name = "fpm-test"
 source-dir = "test/fpm_test"
 main = "main.f90"
+
+

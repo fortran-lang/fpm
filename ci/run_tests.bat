@@ -9,8 +9,10 @@ if errorlevel 1 exit 1
 fpm run
 if errorlevel 1 exit 1
 
+rmdir fpm_scratch_* /s /q
 fpm test
 if errorlevel 1 exit 1
+rmdir fpm_scratch_* /s /q
 
 for /f %%i in ('where /r build fpm.exe') do set fpm_path=%%i
 
