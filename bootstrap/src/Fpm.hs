@@ -16,6 +16,7 @@ import           Control.Monad.Extra            ( concatMapM
                                                 , forM_
                                                 , when
                                                 )
+import Data.Hashable (hash)
 import           Data.List                      ( isSuffixOf
                                                 , find
                                                 , nub
@@ -29,6 +30,7 @@ import           Development.Shake              ( FilePattern
 import           Development.Shake.FilePath     ( (</>)
                                                 , (<.>)
                                                 , exe
+                                                , splitDirectories
                                                 )
 import           Options.Applicative            ( Parser
                                                 , (<**>)
@@ -59,7 +61,7 @@ import           System.Directory               ( createDirectory
 import           System.Exit                    ( ExitCode(..)
                                                 , exitWith
                                                 )
-import           System.Process                 ( runCommand
+import           System.Process                 ( readProcess
                                                 , system
                                                 )
 import           Toml                           ( TomlCodec
@@ -502,36 +504,37 @@ toml2AppSettings tomlSettings args = do
     (tomlSettingsExecutables tomlSettings)
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
-  buildPrefix  <- makeBuildPrefix compiler release
+  let flags = if release
+                                   then
+                                     [ "-Wall"
+                                     , "-Wextra"
+                                     , "-Wimplicit-interface"
+                                     , "-fPIC"
+                                     , "-fmax-errors=1"
+                                     , "-O3"
+                                     , "-march=native"
+                                     , "-ffast-math"
+                                     , "-funroll-loops"
+                                     ]
+                                   else
+                                     [ "-Wall"
+                                     , "-Wextra"
+                                     , "-Wimplicit-interface"
+                                     , "-fPIC"
+                                     , "-fmax-errors=1"
+                                     , "-g"
+                                     , "-fbounds-check"
+                                     , "-fcheck-array-temporaries"
+                                     , "-fbacktrace"
+                                     ]
+  buildPrefix  <- makeBuildPrefix compiler flags
   let dependencies    = tomlSettingsDependencies tomlSettings
   let devDependencies = tomlSettingsDevDependencies tomlSettings
   return AppSettings
     { appSettingsCompiler        = compiler
     , appSettingsProjectName     = projectName
     , appSettingsBuildPrefix     = buildPrefix
-    , appSettingsFlags           = if release
-                                     then
-                                       [ "-Wall"
-                                       , "-Wextra"
-                                       , "-Wimplicit-interface"
-                                       , "-fPIC"
-                                       , "-fmax-errors=1"
-                                       , "-O3"
-                                       , "-march=native"
-                                       , "-ffast-math"
-                                       , "-funroll-loops"
-                                       ]
-                                     else
-                                       [ "-Wall"
-                                       , "-Wextra"
-                                       , "-Wimplicit-interface"
-                                       , "-fPIC"
-                                       , "-fmax-errors=1"
-                                       , "-g"
-                                       , "-fbounds-check"
-                                       , "-fcheck-array-temporaries"
-                                       , "-fbacktrace"
-                                       ]
+    , appSettingsFlags           = flags
     , appSettingsLibrary         = librarySettings
     , appSettingsExecutables     = executableSettings
     , appSettingsTests           = testSettings
@@ -587,11 +590,15 @@ getTestSettings [] = do
     else return []
 getTestSettings tests = return tests
 
-makeBuildPrefix :: String -> Bool -> IO String
-makeBuildPrefix compiler release =
+makeBuildPrefix :: FilePath -> [String] -> IO FilePath
+makeBuildPrefix compiler flags = do
   -- TODO Figure out what other info should be part of this
   --      Probably version, and make sure to not include path to the compiler
-  return $ "build" </> compiler ++ "_" ++ if release then "release" else "debug"
+  versionInfo <- readProcess compiler ["--version"] []
+  let compilerName = last (splitDirectories compiler)
+  let versionHash = hash versionInfo
+  let flagsHash = hash flags
+  return $ "build" </> compilerName ++ "_" ++ show versionHash ++ "_" ++ show flagsHash
 
 {-
     Fetching the dependencies is done on a sort of breadth first approach. All
