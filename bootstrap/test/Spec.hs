@@ -21,6 +21,7 @@ testHelloWorld =
   withCurrentDirectory (example_path </> "hello_world") $ start $ Run
     { runRelease = False
     , runCompiler = "gfortran"
+    , runFlags = []
     , runTarget  = Nothing
     , runArgs    = Nothing
     }
@@ -30,6 +31,7 @@ testHelloComplex =
   withCurrentDirectory (example_path </> "hello_complex") $ start $ Test
     { testRelease = False
     , testCompiler = "gfortran"
+    , testFlags = []
     , testTarget  = Nothing
     , testArgs    = Nothing
     }
@@ -39,6 +41,7 @@ testHelloFpm =
   withCurrentDirectory (example_path </> "hello_fpm") $ start $ Run
     { runRelease = False
     , runCompiler = "gfortran"
+    , runFlags = []
     , runTarget  = Nothing
     , runArgs    = Nothing
     }
@@ -48,6 +51,7 @@ testCircular =
   withCurrentDirectory (example_path </> "circular_example") $ start $ Test
     { testRelease = False
     , testCompiler = "gfortran"
+    , testFlags = []
     , testTarget  = Nothing
     , testArgs    = Nothing
     }
@@ -57,6 +61,7 @@ testWithMakefile =
   withCurrentDirectory (example_path </> "with_makefile") $ start $ Build
     { buildRelease = False
     , buildCompiler = "gfortran"
+    , buildFlags = []
     }
 
 testMakefileComplex :: IO ()
@@ -64,6 +69,7 @@ testMakefileComplex =
   withCurrentDirectory (example_path </> "makefile_complex") $ start $ Run
     { runRelease = False
     , runCompiler = "gfortran"
+    , runFlags = []
     , runTarget  = Nothing
     , runArgs    = Nothing
     }
@@ -73,4 +79,5 @@ testSubmodule =
   withCurrentDirectory (example_path </> "submodules") $ start $ Build
     { buildRelease = False
     , buildCompiler = "gfortran"
+    , buildFlags = []
     }

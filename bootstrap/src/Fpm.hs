@@ -43,6 +43,7 @@ import           Options.Applicative            ( Parser
                                                 , helper
                                                 , info
                                                 , long
+                                                , many
                                                 , metavar
                                                 , optional
                                                 , progDesc
@@ -81,16 +82,19 @@ data Arguments =
   | Build
       { buildRelease :: Bool
       , buildCompiler :: FilePath
+      , buildFlags :: [String]
       }
   | Run
       { runRelease :: Bool
       , runCompiler :: FilePath
+      , runFlags :: [String]
       , runTarget :: Maybe String
       , runArgs :: Maybe String
       }
   | Test
       { testRelease :: Bool
       , testCompiler :: FilePath
+      , testFlags :: [String]
       , testTarget :: Maybe String
       , testArgs :: Maybe String
       }
@@ -384,6 +388,14 @@ buildArguments =
           <> help "specify the compiler to use"
           <> showDefault
           )
+    <*> many
+          (strOption
+            (  long "flag"
+            <> metavar "FLAG"
+            <> help
+                 "specify an addional argument to pass to the compiler (can appear multiple times)"
+            )
+          )
 
 runArguments :: Parser Arguments
 runArguments =
@@ -398,6 +410,14 @@ runArguments =
           <> value "gfortran"
           <> help "specify the compiler to use"
           <> showDefault
+          )
+    <*> many
+          (strOption
+            (  long "flag"
+            <> metavar "FLAG"
+            <> help
+                 "specify an addional argument to pass to the compiler (can appear multiple times)"
+            )
           )
     <*> optional
           (strArgument
@@ -419,6 +439,14 @@ testArguments =
           <> value "gfortran"
           <> help "specify the compiler to use"
           <> showDefault
+          )
+    <*> many
+          (strOption
+            (  long "flag"
+            <> metavar "FLAG"
+            <> help
+                 "specify an addional argument to pass to the compiler (can appear multiple times)"
+            )
           )
     <*> optional
           (strArgument (metavar "TARGET" <> help "Name of the test to run"))
@@ -531,38 +559,44 @@ toml2AppSettings tomlSettings args = do
   let projectName = tomlSettingsProjectName tomlSettings
   let compiler = case args of
         Build { buildCompiler = c } -> c
-        Run { runCompiler = c } -> c
-        Test { testCompiler = c } -> c
+        Run { runCompiler = c }     -> c
+        Test { testCompiler = c }   -> c
+  let specifiedFlags = case args of
+        Build { buildFlags = f } -> f
+        Run { runFlags = f }     -> f
+        Test { testFlags = f }   -> f
   librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   executableSettings <- getExecutableSettings
     (tomlSettingsExecutables tomlSettings)
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
   let flags = if compiler == "gfortran"
-        then if release
-          then
-            [ "-Wall"
-            , "-Wextra"
-            , "-Wimplicit-interface"
-            , "-fPIC"
-            , "-fmax-errors=1"
-            , "-O3"
-            , "-march=native"
-            , "-ffast-math"
-            , "-funroll-loops"
-            ]
-          else
-            [ "-Wall"
-            , "-Wextra"
-            , "-Wimplicit-interface"
-            , "-fPIC"
-            , "-fmax-errors=1"
-            , "-g"
-            , "-fbounds-check"
-            , "-fcheck-array-temporaries"
-            , "-fbacktrace"
-            ]
-        else []
+        then case specifiedFlags of
+          [] -> if release
+            then
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-O3"
+              , "-march=native"
+              , "-ffast-math"
+              , "-funroll-loops"
+              ]
+            else
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-g"
+              , "-fbounds-check"
+              , "-fcheck-array-temporaries"
+              , "-fbacktrace"
+              ]
+          flags -> flags
+        else specifiedFlags
   buildPrefix <- makeBuildPrefix compiler flags
   let dependencies    = tomlSettingsDependencies tomlSettings
   let devDependencies = tomlSettingsDevDependencies tomlSettings
