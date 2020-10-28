@@ -88,6 +88,7 @@ data Arguments =
       { runRelease :: Bool
       , runCompiler :: FilePath
       , runFlags :: [String]
+      , runRunner :: Maybe String
       , runTarget :: Maybe String
       , runArgs :: Maybe String
       }
@@ -95,6 +96,7 @@ data Arguments =
       { testRelease :: Bool
       , testCompiler :: FilePath
       , testFlags :: [String]
+      , testRunner :: Maybe String
       , testTarget :: Maybe String
       , testArgs :: Maybe String
       }
@@ -161,7 +163,7 @@ start args = case args of
 app :: Arguments -> AppSettings -> IO ()
 app args settings = case args of
   Build{} -> build settings
-  Run { runTarget = whichOne, runArgs = runArgs } -> do
+  Run { runTarget = whichOne, runArgs = runArgs, runRunner = runner } -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
@@ -175,76 +177,81 @@ app args settings = case args of
     canonicalExecutables <- mapM makeAbsolute executables
     case canonicalExecutables of
       [] -> putStrLn "No Executables Found"
-      _  -> case whichOne of
-        Nothing -> do
-          exitCodes <- mapM
-            system
-            (map
-              (++ case runArgs of
-                Nothing      -> ""
-                Just theArgs -> " " ++ theArgs
-              )
-              canonicalExecutables
-            )
-          forM_
-            exitCodes
-            (\exitCode -> when
-              (case exitCode of
-                ExitSuccess -> False
-                _           -> True
-              )
-              (exitWith exitCode)
-            )
-        Just name -> do
-          case find (name `isSuffixOf`) canonicalExecutables of
-            Nothing        -> putStrLn "Executable Not Found"
-            Just specified -> do
-              exitCode <- case runArgs of
-                Nothing      -> system specified
-                Just theArgs -> system (specified ++ " " ++ theArgs)
-              exitWith exitCode
-  Test { testTarget = whichOne, testArgs = testArgs } -> do
-    build settings
-    let buildPrefix = appSettingsBuildPrefix settings
-    let
-      executableNames = map
-        (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
-          sourceDir </> name
-        )
-        (appSettingsTests settings)
-    let executables =
-          map (buildPrefix </>) $ map (flip (<.>) exe) executableNames
-    canonicalExecutables <- mapM makeAbsolute executables
-    case canonicalExecutables of
-      [] -> putStrLn "No Tests Found"
-      _  -> case whichOne of
-        Nothing -> do
-          exitCodes <- mapM
-            system
-            (map
-              (++ case testArgs of
-                Nothing      -> ""
-                Just theArgs -> " " ++ theArgs
-              )
-              canonicalExecutables
-            )
-          forM_
-            exitCodes
-            (\exitCode -> when
-              (case exitCode of
-                ExitSuccess -> False
-                _           -> True
-              )
-              (exitWith exitCode)
-            )
-        Just name -> do
-          case find (name `isSuffixOf`) canonicalExecutables of
-            Nothing        -> putStrLn "Test Not Found"
-            Just specified -> do
-              exitCode <- case testArgs of
-                Nothing      -> system specified
-                Just theArgs -> system (specified ++ " " ++ theArgs)
-              exitWith exitCode
+      _ ->
+        let commandPrefix = case runner of
+              Nothing -> ""
+              Just r  -> r ++ " "
+            commandSufix = case runArgs of
+              Nothing -> ""
+              Just a  -> " " ++ a
+        in  case whichOne of
+              Nothing -> do
+                exitCodes <- mapM
+                  system
+                  (map (\exe -> commandPrefix ++ exe ++ commandSufix)
+                       canonicalExecutables
+                  )
+                forM_
+                  exitCodes
+                  (\exitCode -> when
+                    (case exitCode of
+                      ExitSuccess -> False
+                      _           -> True
+                    )
+                    (exitWith exitCode)
+                  )
+              Just name -> do
+                case find (name `isSuffixOf`) canonicalExecutables of
+                  Nothing        -> putStrLn "Executable Not Found"
+                  Just specified -> do
+                    exitCode <- system
+                      (commandPrefix ++ specified ++ commandSufix)
+                    exitWith exitCode
+  Test { testTarget = whichOne, testArgs = testArgs, testRunner = runner } ->
+    do
+      build settings
+      let buildPrefix = appSettingsBuildPrefix settings
+      let
+        executableNames = map
+          (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+            sourceDir </> name
+          )
+          (appSettingsTests settings)
+      let executables =
+            map (buildPrefix </>) $ map (flip (<.>) exe) executableNames
+      canonicalExecutables <- mapM makeAbsolute executables
+      case canonicalExecutables of
+        [] -> putStrLn "No Tests Found"
+        _ ->
+          let commandPrefix = case runner of
+                Nothing -> ""
+                Just r  -> r ++ " "
+              commandSufix = case testArgs of
+                Nothing -> ""
+                Just a  -> " " ++ a
+          in  case whichOne of
+                Nothing -> do
+                  exitCodes <- mapM
+                    system
+                    (map (\exe -> commandPrefix ++ exe ++ commandSufix)
+                         canonicalExecutables
+                    )
+                  forM_
+                    exitCodes
+                    (\exitCode -> when
+                      (case exitCode of
+                        ExitSuccess -> False
+                        _           -> True
+                      )
+                      (exitWith exitCode)
+                    )
+                Just name -> do
+                  case find (name `isSuffixOf`) canonicalExecutables of
+                    Nothing        -> putStrLn "Test Not Found"
+                    Just specified -> do
+                      exitCode <- system
+                        (commandPrefix ++ specified ++ commandSufix)
+                      exitWith exitCode
   _ -> putStrLn "Shouldn't be able to get here"
 
 build :: AppSettings -> IO ()
@@ -420,6 +427,12 @@ runArguments =
             )
           )
     <*> optional
+          (strOption
+            (long "runner" <> metavar "RUNNER" <> help
+              "specify a command to be used to run the executable(s)"
+            )
+          )
+    <*> optional
           (strArgument
             (metavar "TARGET" <> help "Name of the executable to run")
           )
@@ -446,6 +459,12 @@ testArguments =
             <> metavar "FLAG"
             <> help
                  "specify an addional argument to pass to the compiler (can appear multiple times)"
+            )
+          )
+    <*> optional
+          (strOption
+            (long "runner" <> metavar "RUNNER" <> help
+              "specify a command to be used to run the test(s)"
             )
           )
     <*> optional
