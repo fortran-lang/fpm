@@ -17,7 +17,8 @@ import           Control.Monad.Extra            ( concatMapM
                                                 , when
                                                 )
 import           Data.Hashable                  ( hash )
-import           Data.List                      ( isSuffixOf
+import           Data.List                      ( intercalate
+                                                , isSuffixOf
                                                 , find
                                                 , nub
                                                 )
@@ -35,6 +36,7 @@ import           Development.Shake.FilePath     ( (</>)
 import           Options.Applicative            ( Parser
                                                 , (<**>)
                                                 , (<|>)
+                                                , auto
                                                 , command
                                                 , execParser
                                                 , fullDesc
@@ -45,6 +47,7 @@ import           Options.Applicative            ( Parser
                                                 , long
                                                 , many
                                                 , metavar
+                                                , option
                                                 , optional
                                                 , progDesc
                                                 , short
@@ -90,7 +93,7 @@ data Arguments =
       , runFlags :: [String]
       , runRunner :: Maybe String
       , runTarget :: Maybe String
-      , runArgs :: Maybe String
+      , runArgs :: Maybe [String]
       }
   | Test
       { testRelease :: Bool
@@ -98,7 +101,7 @@ data Arguments =
       , testFlags :: [String]
       , testRunner :: Maybe String
       , testTarget :: Maybe String
-      , testArgs :: Maybe String
+      , testArgs :: Maybe [String]
       }
 
 data TomlSettings = TomlSettings {
@@ -183,7 +186,7 @@ app args settings = case args of
               Just r  -> r ++ " "
             commandSufix = case runArgs of
               Nothing -> ""
-              Just a  -> " " ++ a
+              Just a  -> " " ++ (intercalate " " a)
         in  case whichOne of
               Nothing -> do
                 exitCodes <- mapM
@@ -228,7 +231,7 @@ app args settings = case args of
                 Just r  -> r ++ " "
               commandSufix = case testArgs of
                 Nothing -> ""
-                Just a  -> " " ++ a
+                Just a  -> " " ++ (intercalate " " a)
           in  case whichOne of
                 Nothing -> do
                   exitCodes <- mapM
@@ -433,11 +436,19 @@ runArguments =
             )
           )
     <*> optional
-          (strArgument
-            (metavar "TARGET" <> help "Name of the executable to run")
+          (strOption
+            (long "target" <> metavar "TARGET" <> help
+              "Name of the executable to run"
+            )
           )
     <*> optional
-          (strArgument (metavar "ARGS" <> help "Arguments to the executable"))
+          (many
+            (strArgument
+              (  metavar "ARGS"
+              <> help "Arguments to the executable(s) (should follow '--')"
+              )
+            )
+          )
 
 testArguments :: Parser Arguments
 testArguments =
@@ -468,8 +479,18 @@ testArguments =
             )
           )
     <*> optional
-          (strArgument (metavar "TARGET" <> help "Name of the test to run"))
-    <*> optional (strArgument (metavar "ARGS" <> help "Arguments to the test"))
+          (strOption
+            (long "target" <> metavar "TARGET" <> help "Name of the test to run"
+            )
+          )
+    <*> optional
+          (many
+            (strArgument
+              (  metavar "ARGS"
+              <> help "Arguments to the test(s) (should follow '--')"
+              )
+            )
+          )
 
 getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
 getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
