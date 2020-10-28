@@ -320,7 +320,7 @@ logical                            :: list
             stop
         endif
     else
-        !! expand names, duplicates are a problem??
+        !*! expand names, duplicates are a problem??
         allocate(foundit(size(settings%name)))
         foundit=.false.
         FINDIT: do i=1,size(package%executable)
@@ -335,18 +335,15 @@ logical                            :: list
         do i=1,size(settings%name)
             if(.not.foundit(i))then
                 write(stderr,'(*(g0,1x))')'fpm::run<ERROR>:executable',trim(settings%name(i)),'not located'
-            !!elseif(settings%debug)then
-            !!   write(stderr,'(*(g0,1x))')'fpm::run<INFO>:executable',trim(settings%name(i)),'located at',newwords(i),&
-            !!    & merge('exists        ','does not exist',exists(trim(settings%name(i))))
             endif
         enddo
         if(allocated(foundit))deallocate(foundit)
     endif
     do i=1,size(newwords)
-        !! list is a new option for use with xargs, to move files to production area, valgrind, gdb, ls -l, ....
-        !! maybe add as --mask and could do --mask 'echo %xx' or --mask 'cp %XX /usr/local/bin/' an so on
-        !! default if blank would be filename uptodate|needs|updated|doesnotexist creation_date, ...
-        !! or maybe just list filenames so can pipe through xargs, and so on
+        !*! list is a new option for use with xargs, to move files to production area, valgrind, gdb, ls -l, ....
+        !*! maybe add as --mask and could do --mask 'echo %xx' or --mask 'cp %XX /usr/local/bin/' an so on
+        !*! default if blank would be filename uptodate|needs|updated|doesnotexist creation_date, ...
+        !*! or maybe just list filenames so can pipe through xargs, and so on
         if(settings%list)then
             write(stderr,'(*(g0,1x))')'fpm::run<INFO>:executable expected at',newwords(i),&
             & merge('exists        ','does not exist',exists(newwords(i)))
@@ -405,7 +402,7 @@ logical                            :: list
             stop
         endif
     else
-        !! expand names, duplicates are a problem??
+       !*! expand names, duplicates are a problem??
         allocate(foundit(size(settings%name)))
         foundit=.false.
         FINDIT: do i=1,size(package%test)
@@ -420,18 +417,15 @@ logical                            :: list
         do i=1,size(settings%name)
             if(.not.foundit(i))then
                 write(stderr,'(*(g0,1x))')'fpm::run<ERROR>:test',trim(settings%name(i)),'not located'
-            !!elseif(settings%debug)then
-            !!   write(stderr,'(*(g0,1x))')'fpm::run<INFO>:test',trim(settings%name(i)),'located at',newwords(i),&
-            !!    & merge('exists        ','does not exist',exists(trim(settings%name(i))))
             endif
         enddo
         if(allocated(foundit))deallocate(foundit)
     endif
     do i=1,size(newwords)
-        !! list is a new option for use with xargs, to move files to production area, valgrind, gdb, ls -l, ....
-        !! maybe add as --mask and could do --mask 'echo %xx' or --mask 'cp %XX /usr/local/bin/' an so on
-        !! default if blank would be filename uptodate|needs|updated|doesnotexist creation_date, ...
-        !! or maybe just list filenames so can pipe through xargs, and so on
+        !*! list is a new option for use with xargs, to move files to production area, valgrind, gdb, ls -l, ....
+        !*! maybe add as --mask and could do --mask 'echo %xx' or --mask 'cp %XX /usr/local/bin/' an so on
+        !*! default if blank would be filename uptodate|needs|updated|doesnotexist creation_date, ...
+        !*! or maybe just list filenames so can pipe through xargs, and so on
         if(settings%list)then
             write(stderr,'(*(g0,1x))')'fpm::run<INFO>:test expected at',newwords(i),&
             & merge('exists        ','does not exist',exists(newwords(i)))

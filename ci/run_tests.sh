@@ -5,7 +5,9 @@ set -ex
 cd fpm
 fpm build
 fpm run
+rm -rf fpm_scratch_*/
 fpm test
+rm -rf fpm_scratch_*/
 build/gfortran_debug/app/fpm
 
 cd ../example_packages/hello_world
