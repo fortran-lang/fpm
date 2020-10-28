@@ -17,7 +17,8 @@ import           Control.Monad.Extra            ( concatMapM
                                                 , when
                                                 )
 import           Data.Hashable                  ( hash )
-import           Data.List                      ( isSuffixOf
+import           Data.List                      ( intercalate
+                                                , isSuffixOf
                                                 , find
                                                 , nub
                                                 )
@@ -35,6 +36,7 @@ import           Development.Shake.FilePath     ( (</>)
 import           Options.Applicative            ( Parser
                                                 , (<**>)
                                                 , (<|>)
+                                                , auto
                                                 , command
                                                 , execParser
                                                 , fullDesc
@@ -45,6 +47,7 @@ import           Options.Applicative            ( Parser
                                                 , long
                                                 , many
                                                 , metavar
+                                                , option
                                                 , optional
                                                 , progDesc
                                                 , short
@@ -89,14 +92,14 @@ data Arguments =
       , runCompiler :: FilePath
       , runFlags :: [String]
       , runTarget :: Maybe String
-      , runArgs :: Maybe String
+      , runArgs :: Maybe [String]
       }
   | Test
       { testRelease :: Bool
       , testCompiler :: FilePath
       , testFlags :: [String]
       , testTarget :: Maybe String
-      , testArgs :: Maybe String
+      , testArgs :: Maybe [String]
       }
 
 data TomlSettings = TomlSettings {
@@ -182,7 +185,7 @@ app args settings = case args of
             (map
               (++ case runArgs of
                 Nothing      -> ""
-                Just theArgs -> " " ++ theArgs
+                Just theArgs -> " " ++ (intercalate " " theArgs)
               )
               canonicalExecutables
             )
@@ -200,8 +203,9 @@ app args settings = case args of
             Nothing        -> putStrLn "Executable Not Found"
             Just specified -> do
               exitCode <- case runArgs of
-                Nothing      -> system specified
-                Just theArgs -> system (specified ++ " " ++ theArgs)
+                Nothing -> system specified
+                Just theArgs ->
+                  system (specified ++ " " ++ (intercalate " " theArgs))
               exitWith exitCode
   Test { testTarget = whichOne, testArgs = testArgs } -> do
     build settings
@@ -224,7 +228,7 @@ app args settings = case args of
             (map
               (++ case testArgs of
                 Nothing      -> ""
-                Just theArgs -> " " ++ theArgs
+                Just theArgs -> " " ++ (intercalate " " theArgs)
               )
               canonicalExecutables
             )
@@ -242,8 +246,9 @@ app args settings = case args of
             Nothing        -> putStrLn "Test Not Found"
             Just specified -> do
               exitCode <- case testArgs of
-                Nothing      -> system specified
-                Just theArgs -> system (specified ++ " " ++ theArgs)
+                Nothing -> system specified
+                Just theArgs ->
+                  system (specified ++ " " ++ (intercalate " " theArgs))
               exitWith exitCode
   _ -> putStrLn "Shouldn't be able to get here"
 
@@ -420,11 +425,17 @@ runArguments =
             )
           )
     <*> optional
-          (strArgument
-            (metavar "TARGET" <> help "Name of the executable to run")
+          (strOption
+            (long "target" <> metavar "TARGET" <> help
+              "Name of the executable to run"
+            )
           )
     <*> optional
-          (strArgument (metavar "ARGS" <> help "Arguments to the executable"))
+          (many
+            (strArgument
+              (metavar "ARGS" <> help "Arguments to the executable(s) (should follow '--')")
+            )
+          )
 
 testArguments :: Parser Arguments
 testArguments =
@@ -449,8 +460,13 @@ testArguments =
             )
           )
     <*> optional
-          (strArgument (metavar "TARGET" <> help "Name of the test to run"))
-    <*> optional (strArgument (metavar "ARGS" <> help "Arguments to the test"))
+          (strOption (long "target" <> metavar "TARGET" <> help "Name of the test to run"))
+    <*> optional
+          (many
+            (strArgument
+              (metavar "ARGS" <> help "Arguments to the test(s) (should follow '--')")
+            )
+          )
 
 getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
 getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
