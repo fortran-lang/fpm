@@ -16,7 +16,7 @@ import           Control.Monad.Extra            ( concatMapM
                                                 , forM_
                                                 , when
                                                 )
-import Data.Hashable (hash)
+import           Data.Hashable                  ( hash )
 import           Data.List                      ( isSuffixOf
                                                 , find
                                                 , nub
@@ -46,6 +46,8 @@ import           Options.Applicative            ( Parser
                                                 , metavar
                                                 , optional
                                                 , progDesc
+                                                , short
+                                                , showDefault
                                                 , strArgument
                                                 , strOption
                                                 , subparser
@@ -77,14 +79,18 @@ data Arguments =
       , newWithLib :: Bool
       }
   | Build
-      { buildRelease :: Bool }
+      { buildRelease :: Bool
+      , buildCompiler :: FilePath
+      }
   | Run
       { runRelease :: Bool
+      , runCompiler :: FilePath
       , runTarget :: Maybe String
       , runArgs :: Maybe String
       }
   | Test
       { testRelease :: Bool
+      , testCompiler :: FilePath
       , testTarget :: Maybe String
       , testArgs :: Maybe String
       }
@@ -365,8 +371,19 @@ newArguments =
     <*> switch (long "lib" <> help "Include a library")
 
 buildArguments :: Parser Arguments
-buildArguments = Build <$> switch
-  (long "release" <> help "Build with optimizations instead of debugging")
+buildArguments =
+  Build
+    <$> switch
+          (  long "release"
+          <> help "Build with optimizations instead of debugging"
+          )
+    <*> strOption
+          (  long "compiler"
+          <> metavar "COMPILER"
+          <> value "gfortran"
+          <> help "specify the compiler to use"
+          <> showDefault
+          )
 
 runArguments :: Parser Arguments
 runArguments =
@@ -374,6 +391,13 @@ runArguments =
     <$> switch
           (  long "release"
           <> help "Build with optimizations instead of debugging"
+          )
+    <*> strOption
+          (  long "compiler"
+          <> metavar "COMPILER"
+          <> value "gfortran"
+          <> help "specify the compiler to use"
+          <> showDefault
           )
     <*> optional
           (strArgument
@@ -388,6 +412,13 @@ testArguments =
     <$> switch
           (  long "release"
           <> help "Build with optimizations instead of debugging"
+          )
+    <*> strOption
+          (  long "compiler"
+          <> metavar "COMPILER"
+          <> value "gfortran"
+          <> help "specify the compiler to use"
+          <> showDefault
           )
     <*> optional
           (strArgument (metavar "TARGET" <> help "Name of the test to run"))
@@ -498,49 +529,53 @@ toml2AppSettings tomlSettings args = do
         Run { runRelease = r }     -> r
         Test { testRelease = r }   -> r
   let projectName = tomlSettingsProjectName tomlSettings
-  let compiler    = "gfortran"
+  let compiler = case args of
+        Build { buildCompiler = c } -> c
+        Run { runCompiler = c } -> c
+        Test { testCompiler = c } -> c
   librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   executableSettings <- getExecutableSettings
     (tomlSettingsExecutables tomlSettings)
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
-  let flags = if release
-                                   then
-                                     [ "-Wall"
-                                     , "-Wextra"
-                                     , "-Wimplicit-interface"
-                                     , "-fPIC"
-                                     , "-fmax-errors=1"
-                                     , "-O3"
-                                     , "-march=native"
-                                     , "-ffast-math"
-                                     , "-funroll-loops"
-                                     ]
-                                   else
-                                     [ "-Wall"
-                                     , "-Wextra"
-                                     , "-Wimplicit-interface"
-                                     , "-fPIC"
-                                     , "-fmax-errors=1"
-                                     , "-g"
-                                     , "-fbounds-check"
-                                     , "-fcheck-array-temporaries"
-                                     , "-fbacktrace"
-                                     ]
-  buildPrefix  <- makeBuildPrefix compiler flags
+  let flags = if compiler == "gfortran"
+        then if release
+          then
+            [ "-Wall"
+            , "-Wextra"
+            , "-Wimplicit-interface"
+            , "-fPIC"
+            , "-fmax-errors=1"
+            , "-O3"
+            , "-march=native"
+            , "-ffast-math"
+            , "-funroll-loops"
+            ]
+          else
+            [ "-Wall"
+            , "-Wextra"
+            , "-Wimplicit-interface"
+            , "-fPIC"
+            , "-fmax-errors=1"
+            , "-g"
+            , "-fbounds-check"
+            , "-fcheck-array-temporaries"
+            , "-fbacktrace"
+            ]
+        else []
+  buildPrefix <- makeBuildPrefix compiler flags
   let dependencies    = tomlSettingsDependencies tomlSettings
   let devDependencies = tomlSettingsDevDependencies tomlSettings
-  return AppSettings
-    { appSettingsCompiler        = compiler
-    , appSettingsProjectName     = projectName
-    , appSettingsBuildPrefix     = buildPrefix
-    , appSettingsFlags           = flags
-    , appSettingsLibrary         = librarySettings
-    , appSettingsExecutables     = executableSettings
-    , appSettingsTests           = testSettings
-    , appSettingsDependencies    = dependencies
-    , appSettingsDevDependencies = devDependencies
-    }
+  return AppSettings { appSettingsCompiler        = compiler
+                     , appSettingsProjectName     = projectName
+                     , appSettingsBuildPrefix     = buildPrefix
+                     , appSettingsFlags           = flags
+                     , appSettingsLibrary         = librarySettings
+                     , appSettingsExecutables     = executableSettings
+                     , appSettingsTests           = testSettings
+                     , appSettingsDependencies    = dependencies
+                     , appSettingsDevDependencies = devDependencies
+                     }
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
 getLibrarySettings maybeSettings = case maybeSettings of
@@ -596,9 +631,15 @@ makeBuildPrefix compiler flags = do
   --      Probably version, and make sure to not include path to the compiler
   versionInfo <- readProcess compiler ["--version"] []
   let compilerName = last (splitDirectories compiler)
-  let versionHash = hash versionInfo
-  let flagsHash = hash flags
-  return $ "build" </> compilerName ++ "_" ++ show versionHash ++ "_" ++ show flagsHash
+  let versionHash  = hash versionInfo
+  let flagsHash    = hash flags
+  return
+    $   "build"
+    </> compilerName
+    ++  "_"
+    ++  show versionHash
+    ++  "_"
+    ++  show flagsHash
 
 {-
     Fetching the dependencies is done on a sort of breadth first approach. All
