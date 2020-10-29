@@ -33,6 +33,7 @@ import           Development.Shake.FilePath     ( (</>)
                                                 , exe
                                                 , splitDirectories
                                                 )
+import Numeric (showHex)
 import           Options.Applicative            ( Parser
                                                 , (<**>)
                                                 , (<|>)
@@ -681,15 +682,15 @@ makeBuildPrefix compiler flags = do
   --      Probably version, and make sure to not include path to the compiler
   versionInfo <- readProcess compiler ["--version"] []
   let compilerName = last (splitDirectories compiler)
-  let versionHash  = hash versionInfo
-  let flagsHash    = hash flags
+  let versionHash  = abs (hash versionInfo)
+  let flagsHash    = abs (hash flags)
   return
     $   "build"
     </> compilerName
     ++  "_"
-    ++  show versionHash
+    ++  showHex versionHash ""
     ++  "_"
-    ++  show flagsHash
+    ++  showHex flagsHash ""
 
 {-
     Fetching the dependencies is done on a sort of breadth first approach. All
