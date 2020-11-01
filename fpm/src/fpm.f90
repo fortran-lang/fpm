@@ -150,7 +150,6 @@ subroutine build_model(model, settings, package, error)
     type(error_t), allocatable, intent(out) :: error
     integer :: i
 
-    type(srcfile_t), allocatable :: sources(:)
     type(string_t), allocatable :: package_list(:)
 
     model%package_name = package%name

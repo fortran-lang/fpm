@@ -2,7 +2,7 @@
 module test_source_parsing
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: get_temp_filename
-    use fpm_source_parsing, only: parse_f_source, parse_c_source
+    use fpm_sources, only: parse_f_source, parse_c_source
     use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE
     use fpm_strings, only: operator(.in.)
