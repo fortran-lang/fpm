@@ -75,8 +75,10 @@ end type build_target_t
 type :: fpm_model_t
     character(:), allocatable :: package_name
         ! Name of package
+    type(srcfile_t), allocatable :: sources(:)
+        ! Array of sources
     type(build_target_ptr), allocatable :: targets(:)
-        ! Array of sources with module-dependencies resolved
+        ! Array of targets with module-dependencies resolved
     character(:), allocatable :: fortran_compiler
         ! Command line name to invoke fortran compiler
     character(:), allocatable :: fortran_compile_flags

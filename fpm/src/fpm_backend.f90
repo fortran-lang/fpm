@@ -28,13 +28,13 @@ subroutine build_package(model)
     if (.not.exists(model%output_directory)) then
         call mkdir(model%output_directory)
     end if
-
-    if (.not.exists(join_path(model%output_directory,'lib'))) then
-        call mkdir(join_path(model%output_directory,'lib'))
+    if (.not.exists(join_path(model%output_directory,model%package_name))) then
+        call mkdir(join_path(model%output_directory,model%package_name))
     end if
 
     if (model%targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        linking = ' -l'//model%package_name//" -L"//join_path(model%output_directory,'lib')
+        linking = ' -l'//model%package_name//" -L"//&
+                    join_path(model%output_directory,model%package_name)
     else
         linking = " "
     end if

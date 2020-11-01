@@ -20,7 +20,7 @@ subroutine targets_from_sources(model,sources)
 
     if (with_lib) call add_target(model%targets,type = FPM_TARGET_ARCHIVE,&
                             output_file = join_path(model%output_directory,&
-                                      'lib','lib'//model%package_name//'.a'))
+                                   model%package_name,'lib'//model%package_name//'.a'))
 
     do i=1,size(sources)
         
@@ -98,7 +98,7 @@ subroutine targets_from_sources(model,sources)
             object_file = join_path(model%output_directory,'test',object_file)//'.o'
 
         case default
-            object_file = join_path(model%output_directory,'lib',object_file)//'.o'
+            object_file = join_path(model%output_directory,model%package_name,object_file)//'.o'
             
         end select
     

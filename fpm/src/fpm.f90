@@ -170,18 +170,18 @@ subroutine build_model(model, settings, package, error)
             & -fmax-errors=1 &
             & -ffast-math &
             & -funroll-loops ' // &
-            & '-J'//join_path(model%output_directory,'lib')
+            & '-J'//join_path(model%output_directory,model%package_name)
     else
         model%output_directory = 'build/gfortran_debug'
         model%fortran_compile_flags = ' -Wall -Wextra -Wimplicit-interface  -fPIC -fmax-errors=1 -g '// &
                                       '-fbounds-check -fcheck-array-temporaries -fbacktrace '// &
-                                      '-J'//join_path(model%output_directory,'lib')
+                                      '-J'//join_path(model%output_directory,model%package_name)
     endif
     model%link_flags = ''
 
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build_config%auto_executables) then
-        call add_sources_from_dir(sources,'app', FPM_SCOPE_APP, &
+        call add_sources_from_dir(model%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., error=error)
 
         if (allocated(error)) then
@@ -190,7 +190,7 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (is_dir('test') .and. package%build_config%auto_tests) then
-        call add_sources_from_dir(sources,'test', FPM_SCOPE_TEST, &
+        call add_sources_from_dir(model%sources,'test', FPM_SCOPE_TEST, &
                                    with_executables=.true., error=error)
 
         if (allocated(error)) then
@@ -199,7 +199,7 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%executable)) then
-        call add_executable_sources(sources, package%executable, FPM_SCOPE_APP, &
+        call add_executable_sources(model%sources, package%executable, FPM_SCOPE_APP, &
                                      auto_discover=package%build_config%auto_executables, &
                                      error=error)
 
@@ -209,7 +209,7 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%test)) then
-        call add_executable_sources(sources, package%test, FPM_SCOPE_TEST, &
+        call add_executable_sources(model%sources, package%test, FPM_SCOPE_TEST, &
                                      auto_discover=package%build_config%auto_tests, &
                                      error=error)
 
@@ -220,24 +220,22 @@ subroutine build_model(model, settings, package, error)
     endif
 
     ! Add library sources, including local dependencies
-    call add_libsources_from_package(sources,package_list,package, &
+    call add_libsources_from_package(model%sources,package_list,package, &
                                       package_root='.',dev_depends=.true.,error=error)
     if (allocated(error)) then
         return
     end if
 
+    call targets_from_sources(model,model%sources)
+
     if(settings%list)then
-        do i=1,size(sources)
-            write(stderr,'(*(g0,1x))')'fpm::build<INFO>:file expected at',sources(i)%file_name, &
-            & merge('exists        ','does not exist',exists(sources(i)%file_name) )
+        do i=1,size(model%targets)
+            write(stderr,*) model%targets(i)%ptr%output_file
         enddo
         stop
-    else
-
-        call targets_from_sources(model,sources)
-
-        call resolve_module_dependencies(model%targets,error)
     endif
+
+    call resolve_module_dependencies(model%targets,error)
 
 end subroutine build_model
 
