@@ -170,12 +170,12 @@ subroutine build_model(model, settings, package, error)
             & -fmax-errors=1 &
             & -ffast-math &
             & -funroll-loops ' // &
-            & '-J'//join_path(model%output_directory,model%package_name)
+            & '-J'//join_path(model%output_directory,'lib')
     else
         model%output_directory = 'build/gfortran_debug'
         model%fortran_compile_flags = ' -Wall -Wextra -Wimplicit-interface  -fPIC -fmax-errors=1 -g '// &
                                       '-fbounds-check -fcheck-array-temporaries -fbacktrace '// &
-                                      '-J'//join_path(model%output_directory,model%package_name)
+                                      '-J'//join_path(model%output_directory,'lib')
     endif
     model%link_flags = ''
 
@@ -234,7 +234,7 @@ subroutine build_model(model, settings, package, error)
         stop
     else
 
-        call targets_from_sources(model%targets,sources,model%package_name)
+        call targets_from_sources(model,sources)
 
         call resolve_module_dependencies(model%targets,error)
     endif

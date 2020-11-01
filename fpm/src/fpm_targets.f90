@@ -1,18 +1,16 @@
 module fpm_targets
 use fpm_error, only: error_t, fatal_error
-use fpm_model!, only: srcfile_t, build_target_t, FPM_UNIT_PROGRAM, &
-                    ! FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT
+use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
-use fpm_filesystem, only: dirname, join_path
+use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: operator(.in.)
 implicit none
 
 contains
 
-subroutine targets_from_sources(targets,sources,package_name)
-    type(build_target_ptr), allocatable, intent(out), target :: targets(:)
+subroutine targets_from_sources(model,sources)
+    type(fpm_model_t), intent(inout), target :: model
     type(srcfile_t), intent(in) :: sources(:)
-    character(*), intent(in) :: package_name
 
     integer :: i
     type(build_target_t), pointer :: dep
@@ -20,49 +18,96 @@ subroutine targets_from_sources(targets,sources,package_name)
 
     with_lib = any([(sources(i)%unit_scope == FPM_SCOPE_LIB,i=1,size(sources))])
 
-    if (with_lib) call add_target(targets,type = FPM_TARGET_ARCHIVE,&
-                            output_file = package_name//'.a')
+    if (with_lib) call add_target(model%targets,type = FPM_TARGET_ARCHIVE,&
+                            output_file = join_path(model%output_directory,&
+                                      'lib','lib'//model%package_name//'.a'))
 
     do i=1,size(sources)
         
         select case (sources(i)%unit_type)
         case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
-            call add_target(targets,source = sources(i), &
+            call add_target(model%targets,source = sources(i), &
                         type = FPM_TARGET_OBJECT,&
-                        output_file = get_object_name(sources(i)%file_name))
+                        output_file = get_object_name(sources(i)))
             
             if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                 ! Archive depends on object
-                call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                call add_dependency(model%targets(1)%ptr, model%targets(size(model%targets))%ptr)
             end if
 
         case (FPM_UNIT_PROGRAM)
 
-            call add_target(targets,type = FPM_TARGET_OBJECT,&
-                        output_file = get_object_name(sources(i)%file_name), &
+            call add_target(model%targets,type = FPM_TARGET_OBJECT,&
+                        output_file = get_object_name(sources(i)), &
                         source = sources(i) &
                         )
-
-            call add_target(targets,type = FPM_TARGET_EXECUTABLE,&
-                        output_file = join_path('app',sources(i)%exe_name))
-
+            
+            if (sources(i)%unit_scope == FPM_SCOPE_APP) then
+                call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
+                            output_file = join_path(model%output_directory,'app',sources(i)%exe_name))
+            else
+                call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
+                            output_file = join_path(model%output_directory,'test',sources(i)%exe_name))
+            
+            end if
 
             ! Executable depends on object
-            call add_dependency(targets(size(targets))%ptr, targets(size(targets)-1)%ptr)
+            call add_dependency(model%targets(size(model%targets))%ptr, model%targets(size(model%targets)-1)%ptr)
 
             if (with_lib) then
                 ! Executable depends on library
-                call add_dependency(targets(size(targets))%ptr, targets(1)%ptr)
+                call add_dependency(model%targets(size(model%targets))%ptr, model%targets(1)%ptr)
             end if
             
         end select
 
     end do
 
+    contains
+
+    function get_object_name(source) result(object_file)
+        ! Generate object target path from source name and model params
+        !  
+        !
+        type(srcfile_t), intent(in) :: source
+        character(:), allocatable :: object_file
+    
+        integer :: i
+        character(1), parameter :: filesep = '/'
+        character(:), allocatable :: dir
+        
+        object_file = canon_path(source%file_name)
+
+        ! Ignore first directory level
+        object_file = object_file(index(object_file,filesep)+1:)
+        
+        ! Convert any remaining directory separators to underscores
+        i = index(object_file,filesep)
+        do while(i > 0)
+            object_file(i:i) = '_'
+            i = index(object_file,filesep)
+        end do
+
+        select case(source%unit_scope)
+
+        case (FPM_SCOPE_APP)
+            object_file = join_path(model%output_directory,'app',object_file)//'.o'
+
+        case (FPM_SCOPE_TEST)
+            object_file = join_path(model%output_directory,'test',object_file)//'.o'
+
+        case default
+            object_file = join_path(model%output_directory,'lib',object_file)//'.o'
+            
+        end select
+    
+    end function get_object_name
+
 end subroutine targets_from_sources
 
 
+!> Add new target to target list
 subroutine add_target(targets,type,output_file,source)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     integer, intent(in) :: type
@@ -84,47 +129,14 @@ subroutine add_target(targets,type,output_file,source)
 end subroutine add_target
 
 
+!> Add pointer to dependeny in target%dependencies
 subroutine add_dependency(target, dependency)
     type(build_target_t), intent(inout) :: target
     type(build_target_t) , intent(in), target :: dependency
 
-    type(build_target_ptr) :: depend
-
-    depend%ptr => dependency
-
-    ! if (.not.allocated(target%dependencies)) then
-    !     allocate(target%dependencies(0))
-    ! end if
-
-    target%dependencies = [target%dependencies, depend]
-    ! target%dependencies(size(target%dependencies))%ptr => dependency
+    target%dependencies = [target%dependencies, build_target_ptr(dependency)]
 
 end subroutine add_dependency
-
-
-function get_object_name(source_file_name) result(object_file)
-    ! Generate object target path from source name and model params
-    !  
-    !  src/test.f90        ->  <output-dir>/<package-name>/test.o
-    !  src/subdir/test.f90 ->  <output-dir>/<package-name>/subdir_test.o
-    !
-    character(*), intent(in) :: source_file_name
-    character(:), allocatable :: object_file
-
-    integer :: i
-    character(1) :: filesep
-
-    select case(get_os_type())
-    case (OS_WINDOWS)
-        filesep = '\'
-    case default
-        filesep = '/'
-    end select
-
-    ! Exclude first directory level from path
-    object_file = source_file_name(index(source_file_name,filesep)+1:)//'.o'
-
-end function get_object_name
 
 
 subroutine resolve_module_dependencies(targets,error)
