@@ -81,4 +81,5 @@ to run, as can `fpm test`; like `fpm run specific_executable`. Command line
 arguments can also be passed to the executable(s) or test(s) with the option
 `--args "some arguments"`.
 
-See additional instructions in the [Packaging guide](PACKAGING.md).
+See additional instructions in the [Packaging guide](PACKAGING.md) or
+the [manifest reference](manifest-reference.md).
