@@ -1,7 +1,6 @@
 module fpm_sources
 use fpm_error, only: error_t, fatal_error
-use fpm_model, only: srcfile_ptr, srcfile_t, &
-                    FPM_UNIT_PROGRAM, &
+use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, &
                     FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
                     
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, list_files
@@ -11,7 +10,7 @@ use fpm_source_parsing, only: parse_source
 implicit none
 
 private
-public :: add_sources_from_dir, add_executable_sources, resolve_module_dependencies
+public :: add_sources_from_dir, add_executable_sources
 
 contains
 
@@ -170,105 +169,5 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
 
 end subroutine get_executable_source_dirs
 
-
-subroutine resolve_module_dependencies(sources,error)
-    ! After enumerating all source files: resolve file dependencies
-    !  by searching on module names
-    !
-    type(srcfile_t), intent(inout), target :: sources(:)
-    type(error_t), allocatable, intent(out) :: error
-
-    type(srcfile_ptr) :: dep
-
-    integer :: n_depend, i, pass, j
-
-    do i=1,size(sources)
-        
-        do pass=1,2
-
-            n_depend = 0
-
-            do j=1,size(sources(i)%modules_used)
-
-                if (sources(i)%modules_used(j)%s .in. sources(i)%modules_provided) then
-                    ! Dependency satisfied in same file, skip
-                    cycle
-                end if
-            
-                if (sources(i)%unit_scope == FPM_SCOPE_APP .OR. &
-                    sources(i)%unit_scope == FPM_SCOPE_TEST ) then
-                    dep%ptr => &
-                        find_module_dependency(sources,sources(i)%modules_used(j)%s, &
-                                            include_dir = dirname(sources(i)%file_name))
-                else
-                    dep%ptr => &
-                        find_module_dependency(sources,sources(i)%modules_used(j)%s)
-                end if
-
-                if (.not.associated(dep%ptr)) then
-                    call fatal_error(error, &
-                            'Unable to find source for module dependency: "' // &
-                            sources(i)%modules_used(j)%s // &
-                            '" used by "'//sources(i)%file_name//'"')
-                    return
-                end if
-
-                n_depend = n_depend + 1
-
-                if (pass == 2) then
-                    sources(i)%file_dependencies(n_depend) = dep
-                end if
-
-            end do
-
-            if (pass == 1) then
-                allocate(sources(i)%file_dependencies(n_depend))
-            end if
-
-        end do
-
-    end do    
-
-end subroutine resolve_module_dependencies
-
-function find_module_dependency(sources,module_name,include_dir) result(src_ptr)
-    ! Find a module dependency in the library or a dependency library
-    !
-    ! 'include_dir' specifies an allowable non-library search directory
-    !   (Used for executable dependencies)
-    !
-    type(srcfile_t), intent(in), target :: sources(:)
-    character(*), intent(in) :: module_name
-    character(*), intent(in), optional :: include_dir
-    type(srcfile_t), pointer :: src_ptr
-
-    integer :: k, l
-
-    src_ptr => NULL()
-
-    do k=1,size(sources)
-
-        do l=1,size(sources(k)%modules_provided)
-
-            if (module_name == sources(k)%modules_provided(l)%s) then
-                select case(sources(k)%unit_scope)
-                case (FPM_SCOPE_LIB, FPM_SCOPE_DEP)
-                    src_ptr => sources(k)
-                    exit
-                case default
-                    if (present(include_dir)) then
-                        if (dirname(sources(k)%file_name) == include_dir) then
-                            src_ptr => sources(k)
-                            exit
-                        end if
-                    end if
-                end select
-            end if
-
-        end do
-        
-    end do
-
-end function find_module_dependency
 
 end module fpm_sources
