@@ -56,7 +56,8 @@ recursive subroutine build_target(model,target,linking)
     type(build_target_t), intent(inout) :: target
     character(:), allocatable, intent(in) :: linking
 
-    integer :: i
+    integer :: i, j
+    type(build_target_t), pointer :: exe_obj
     character(:), allocatable :: objs
 
     if (target%built) then
@@ -80,12 +81,27 @@ recursive subroutine build_target(model,target,linking)
 
         if (target%target_type == FPM_TARGET_ARCHIVE ) then
 
+            ! Construct object list for archive
             objs = objs//" "//target%dependencies(i)%ptr%output_file
 
         else if (target%target_type == FPM_TARGET_EXECUTABLE .and. &
                  target%dependencies(i)%ptr%target_type ==  FPM_TARGET_OBJECT) then
 
-            objs = " "//target%dependencies(i)%ptr%output_file
+            exe_obj => target%dependencies(i)%ptr
+                
+            ! Construct object list for executable
+            objs = " "//exe_obj%output_file
+                
+            ! Include non-library object dependencies
+            do j=1,size(exe_obj%dependencies)
+
+                if (allocated(exe_obj%dependencies(j)%ptr%source)) then
+                    if (exe_obj%dependencies(j)%ptr%source%unit_scope == exe_obj%source%unit_scope) then
+                        objs = objs//" "//exe_obj%dependencies(j)%ptr%output_file
+                    end if
+                end if
+
+            end do
 
         end if
 
