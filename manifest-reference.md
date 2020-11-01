@@ -226,6 +226,8 @@ The source file containing the program body can be specified in the *main* entry
 Executables can have their own dependencies.
 See [specifying dependencies](#specifying-dependencies) for more details.
 
+> Dependencies supported in Bootstrap fpm only
+
 *Example:*
 
 ```toml
@@ -262,6 +264,8 @@ The source file containing the program body can be specified in the *main* entry
 
 Tests can have their own dependencies.
 See [specifying dependencies](#specifying-dependencies) for more details.
+
+> Dependencies supported in Bootstrap fpm only
 
 *Example:*
 
