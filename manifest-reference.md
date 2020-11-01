@@ -181,7 +181,7 @@ Library targets are exported and useable for other projects.
 ### Library configuration
 
 Defines the exported library target of the project.
-A library is generated if the source directory found in a project.
+A library is generated if the source directory is found in a project.
 The default source directory is ``src`` but can be modifed in the *library* section using the *source-dir* entry.
 Paths for the source directory are given relative to the project root and use ``/`` as path separator on all platforms.
 
@@ -283,7 +283,7 @@ helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
 > Supported in Fortran fpm only
 
 Executables and test can be discovered automatically in their default directories.
-The automatic discovery searches the ``app`` and ``test`` directories for ``program`` definitions and declares them as executable and test targets, respectively.
+The automatic discovery recursively searches the ``app`` and ``test`` directories for ``program`` definitions and declares them as executable and test targets, respectively.
 The automatic discovery is enabled by default.
 
 To disable the automatic discovery of targets set the *auto-executables* and *auto-tests* entry to *false*.
