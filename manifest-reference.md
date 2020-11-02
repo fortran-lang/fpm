@@ -23,7 +23,7 @@ Every manifest file consists of the following sections:
 - [*keywords*](#project-keywords):
   Keywords describing the project
 - [*homepage*](#project-homepage):
-  The projects homepage
+  The project's homepage
 - Build configuration:
   - [*auto-tests*](#automatic-target-discovery):
     Toggle automatic discovery of test executables
