@@ -231,12 +231,12 @@ See [specifying dependencies](#specifying-dependencies) for more details.
 *Example:*
 
 ```toml
-[[executable]]
+[[ executable ]]
 name = "app-name"
 source-dir = "prog"
 main = "program.f90"
 
-[[executable]]
+[[ executable ]]
 name = "app-tool"
 [executable.dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
@@ -270,12 +270,12 @@ See [specifying dependencies](#specifying-dependencies) for more details.
 *Example:*
 
 ```toml
-[[test]]
+[[ test ]]
 name = "test-name"
 source-dir = "testing"
 main = "tester.F90"
 
-[[test]]
+[[ test ]]
 name = "tester"
 [test.dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
