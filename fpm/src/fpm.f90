@@ -249,7 +249,8 @@ subroutine package_defaults(package)
     end if
 
     ! Populate test in case we find the default test directory
-    if (.not.allocated(package%test) .and. exists("test")) then
+    if (.not.allocated(package%test) .and. &
+         exists(join_path("test","main.f90"))) then
         allocate(package%test(1))
         call default_test(package%test(1), package%name)
     endif
