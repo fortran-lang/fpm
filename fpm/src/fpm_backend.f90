@@ -33,8 +33,7 @@ subroutine build_package(model)
     end if
 
     if (model%targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        linking = ' -l'//model%package_name//" -L"//&
-                    join_path(model%output_directory,model%package_name)
+        linking = " "//model%targets(1)%ptr%output_file
     else
         linking = " "
     end if
