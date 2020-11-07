@@ -305,6 +305,7 @@ subroutine cmd_run(settings,test)
     logical, intent(in) :: test
 
     integer :: i, j
+    logical :: found(size(settings%name))
     type(error_t), allocatable :: error
     type(package_t) :: package
     type(fpm_model_t) :: model
@@ -328,6 +329,7 @@ subroutine cmd_run(settings,test)
     end if
 
     ! Enumerate executable targets to run
+    found(:) = .false.
     allocate(executables(0))
     do i=1,size(model%targets)
 
@@ -352,6 +354,7 @@ subroutine cmd_run(settings,test)
 
                         if (trim(settings%name(j))==exe_source%exe_name) then
                             
+                            found(j) = .true.
                             exe_cmd%s = exe_target%output_file
                             executables = [executables, exe_cmd]
 
@@ -366,6 +369,45 @@ subroutine cmd_run(settings,test)
         end if
 
     end do
+
+    ! Check all names are valid
+    if (any(.not.found)) then
+
+        write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
+        do j=1,size(settings%name)
+            if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
+        end do
+        write(stderr,'(A)') 'not found.'
+        write(stderr,*)
+
+        j = 1
+        write(stderr,*) 'Available names:'
+        do i=1,size(model%targets)
+
+            exe_target => model%targets(i)%ptr
+    
+            if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
+                allocated(exe_target%dependencies)) then
+
+                exe_source => exe_target%dependencies(1)%ptr%source
+
+                if (exe_source%unit_scope == &
+                    merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then 
+
+                    write(stderr,'(A17)',advance=(merge("yes","no ",modulo(j,4)==0))) basename(exe_target%output_file)
+
+                    j = j + 1
+
+                end if
+
+            end if
+
+        end do
+
+        write(stderr,*)
+        stop 1
+
+    end if
 
     ! NB. To be replaced after incremental rebuild is implemented
     if (.not.settings%list .and. &
