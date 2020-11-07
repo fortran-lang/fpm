@@ -1,0 +1,34 @@
+= fpm-list(1)
+:doctype: manpage
+
+
+== Name
+fpm-list - List summary of fpm subcommands
+
+
+== Synopsis
+*fpm* *list* [--list]
+
+
+== Description
+
+NOTE: This command is only available in Fortran fpm
+
+Display a short description for each subcommand available in fpm.
+
+
+== Options
+
+*--list*::
+Display a list of command options as well.
+
+
+== Examples
+
+1. Display a short list of fpm subcommands
+
+   fpm list
+
+
+== See also
+fpm(1)

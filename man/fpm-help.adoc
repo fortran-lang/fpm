@@ -1,0 +1,31 @@
+= fpm-help(1)
+:doctype: manpage
+
+
+== Name
+fpm-help - Get help for a fpm command
+
+
+== Synopsis
+*fpm* *help* [_subcommand_]
+
+
+== Description
+Print help message for a given command.
+
+NOTE: This command is only available in Fortran fpm
+
+
+== Examples
+
+1. Get help for a command:
+
+   fpm help build
+
+2. Help is also available with the *--help* flag:
+
+   fpm build --help
+
+
+== See also
+fpm(1)

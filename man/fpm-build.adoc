@@ -1,0 +1,52 @@
+= fpm-build(1)
+:doctype: manpage
+
+
+== Name
+fpm-build - Build a project with fpm
+
+
+== Synopsis
+*fpm* *build* [--release] [--list] [--help] [--version]
+
+
+== Description
+Compile project and all of its dependencies.
+
+
+== Options
+
+=== Compilation Options
+
+*--release*::
+Build with high optimization instead of full debug options.
+
+=== General Options
+
+*--list*::
+List candidates instead of building or running them
+
+NOTE: Only supported in Fortran fpm
+
+*--help*::
+Show help and exit
+
+*--version*::
+Print program version information and exit
+
+NOTE: Only supported in Fortran fpm
+
+
+== Examples
+
+1. Build a project and all of its dependencies:
+
+   fpm build
+
+2. Build a project with optimizations:
+
+   fpm build --release
+
+
+== See also
+fpm(1)
