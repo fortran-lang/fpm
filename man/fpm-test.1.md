@@ -1,0 +1,49 @@
+% fpm-test(1)
+
+# NAME
+fpm-test - Run unit and integration tests of a project
+
+
+# SYNOPSIS
+**fpm** **test** [_options_] [_target_...] [-- _args_]
+
+
+# DESCRIPTION
+
+Run unit or integration tests of the current project.
+The target name corresponds to a test defined in the package manifest.
+Multiple tests can be selected.
+
+All arguments following the two dashes (--) are passed to the selected test.
+
+NOTE: The Bootstrap fpm version does not support passing arguments with two dashes.
+
+# OPTIONS
+
+**--runner** _CMD_
+:   A command to prefi the program execution paths with.
+
+**--release**
+:   Use targets with high optimization instead of full debug options.
+
+**--list**
+:   List all possible targets instead of running them
+
+
+# EXAMPLES
+
+1. Run all unit tests and integration tests of the current project
+
+   fpm test
+
+2. Run only a selected test with additional arguments
+
+   fpm test validator-test -- ./examples/nested-1000.json
+
+3. Run a test using `gdb(1)` to debug
+
+   fpm run --runner gdb
+
+
+# SEE ALSO
+fpm(1)
