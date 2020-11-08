@@ -114,16 +114,32 @@ subroutine add_target(targets,type,output_file,source)
     character(*), intent(in) :: output_file
     type(srcfile_t), intent(in), optional :: source
 
+    integer :: i
     type(build_target_ptr), allocatable :: temp(:)
     type(build_target_t), pointer :: new_target
+
+    if (.not.allocated(targets)) allocate(targets(0))
+
+    ! Check for duplicate outputs
+    do i=1,size(targets)
+
+        if (targets(i)%ptr%output_file == output_file) then
+
+            write(*,*) 'Error while building target list: duplicate output object "',&
+                        output_file,'"'
+            if (present(source)) write(*,*) ' Source file: "',source%file_name,'"'
+            stop 1
+
+        end if
+
+    end do
 
     allocate(new_target)
     new_target%target_type = type
     new_target%output_file = output_file
     if (present(source)) new_target%source = source
     allocate(new_target%dependencies(0))
-
-    if (.not.allocated(targets)) allocate(targets(0))
+    
     targets = [targets, build_target_ptr(new_target)]
 
 end subroutine add_target
