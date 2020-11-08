@@ -6,10 +6,13 @@
 !>[build]
 !>auto-executables = bool
 !>auto-tests = bool
+!>link = ["lib"]
 !>```
 module fpm_manifest_build_config
     use fpm_error, only : error_t, syntax_error, fatal_error
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_strings, only : string_t
+    use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
+        & len
     implicit none
     private
 
@@ -24,6 +27,9 @@ module fpm_manifest_build_config
 
         !> Automatic discovery of tests
         logical :: auto_tests
+
+        !> Libraries to link against
+        type(string_t), allocatable :: link(:)
 
     contains
 
@@ -48,8 +54,9 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        !> Status 
-        integer :: stat
+        integer :: stat, ilink, nlink
+        type(toml_array), pointer :: children
+        character(len=:), allocatable :: link
 
         call check(table, error)
         if (allocated(error)) return
@@ -66,6 +73,31 @@ contains
         if (stat /= toml_stat%success) then
             call fatal_error(error,"Error while reading value for 'auto-tests' in fpm.toml, expecting logical")
             return
+        end if
+
+        call get_value(table, "link", children, requested=.false.)
+        if (associated(children)) then
+            nlink = len(children)
+            allocate(self%link(nlink))
+            do ilink = 1, nlink
+                call get_value(children, ilink, link, stat=stat)
+                if (stat /= toml_stat%success) then
+                    call fatal_error(error, "Entry in link field cannot be read")
+                    exit
+                end if
+                call move_alloc(link, self%link(ilink)%s)
+            end do
+            if (allocated(error)) return
+        else
+            call get_value(table, "link", link, stat=stat)
+            if (stat /= toml_stat%success) then
+                call fatal_error(error, "Entry in link field cannot be read")
+                return
+            end if
+            if (allocated(self%link)) then
+                allocate(self%link(1))
+                call move_alloc(link, self%link(1)%s)
+            end if
         end if
 
     end subroutine new_build_config
@@ -91,7 +123,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("auto-executables", "auto-tests")
+            case("auto-executables", "auto-tests", "link")
                 continue
 
             case default

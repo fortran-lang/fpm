@@ -87,6 +87,8 @@ type :: fpm_model_t
         ! Command line flags pass for linking
     character(:), allocatable :: output_directory
         ! Base directory for build
+    type(string_t), allocatable :: link_libraries(:)
+        ! Native libraries to link against
 end type fpm_model_t
 
 end module fpm_model

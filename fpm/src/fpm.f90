@@ -153,6 +153,9 @@ subroutine build_model(model, settings, package, error)
     type(string_t), allocatable :: package_list(:)
 
     model%package_name = package%name
+    if (allocated(package%build_config%link)) then
+        model%link_libraries = package%build_config%link
+    end if
 
     allocate(package_list(1))
     package_list(1)%s = package%name
