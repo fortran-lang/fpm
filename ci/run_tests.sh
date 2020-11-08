@@ -69,3 +69,7 @@ cd ../submodules
 cd ../program_with_module
 "${f_fpm_path}" build
 ./build/gfortran_debug/app/Program_with_module
+
+cd ../link_external
+"${f_fpm_path}" build
+./build/gfortran_debug/app/link_external
