@@ -330,7 +330,7 @@ subroutine cmd_run(settings,test)
     end if
 
     ! Enumerate executable targets to run
-    col_width = 10
+    col_width = -1
     found(:) = .false.
     allocate(executables(0))
     do i=1,size(model%targets)
@@ -373,6 +373,16 @@ subroutine cmd_run(settings,test)
         end if
 
     end do
+
+    ! Check if any apps/tests were found
+    if (col_width < 0) then
+        if (test) then
+            write(stderr,*) 'No tests to run'
+        else
+            write(stderr,*) 'No executables to run'
+        end if
+        stop
+    end if
 
     ! Check all names are valid
     if (any(.not.found)) then
