@@ -298,6 +298,7 @@ The list of library dependencies is exported to dependent packages.
 To link against the zlib compression library use
 
 ```toml
+[build]
 link = "z"
 ```
 
