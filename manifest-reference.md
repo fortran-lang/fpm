@@ -29,6 +29,8 @@ Every manifest file consists of the following sections:
     Toggle automatic discovery of test executables
   - [*auto-executables*](#automatic-target-discovery):
     Toggle automatic discovery of executables
+  - [*link*](#link-external-libraries):
+    Link with external dependencies
 - Target sections:
   - [*library*](#library-configuration)
     Configuration of the library target
@@ -279,6 +281,32 @@ main = "tester.F90"
 name = "tester"
 [test.dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
+```
+
+
+## Link external libraries
+
+> Supported in Fortran fpm only
+
+To declare link time dependencies on external libraries a list of native libraries can be specified in the *link* entry.
+Specify either one library as string or a list of strings in case several libraries should be linked.
+When possible the project should only link one native library.
+The list of library dependencies is exported to dependent packages.
+
+*Example:*
+
+To link against the zlib compression library use
+
+```toml
+link = "z"
+```
+
+To dependent on LAPACK also BLAS should be linked.
+In this case the order of the libraries matters:
+
+```toml
+[build]
+link = ["blas", "lapack"]
 ```
 
 
