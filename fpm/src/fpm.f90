@@ -304,7 +304,8 @@ subroutine cmd_run(settings,test)
     class(fpm_run_settings), intent(in) :: settings
     logical, intent(in) :: test
 
-    integer :: i, j
+    integer, parameter :: LINE_WIDTH = 80
+    integer :: i, j, col_width, nCol
     logical :: found(size(settings%name))
     type(error_t), allocatable :: error
     type(package_t) :: package
@@ -329,6 +330,7 @@ subroutine cmd_run(settings,test)
     end if
 
     ! Enumerate executable targets to run
+    col_width = 10
     found(:) = .false.
     allocate(executables(0))
     do i=1,size(model%targets)
@@ -342,6 +344,8 @@ subroutine cmd_run(settings,test)
 
             if (exe_source%unit_scope == &
                 merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then 
+
+                col_width = max(col_width,len(basename(exe_target%output_file))+2)
 
                 if (size(settings%name) == 0) then
 
@@ -381,6 +385,7 @@ subroutine cmd_run(settings,test)
         write(stderr,*)
 
         j = 1
+        nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Available names:'
         do i=1,size(model%targets)
 
@@ -394,8 +399,8 @@ subroutine cmd_run(settings,test)
                 if (exe_source%unit_scope == &
                     merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then 
 
-                    write(stderr,'(A17)',advance=(merge("yes","no ",modulo(j,4)==0))) basename(exe_target%output_file)
-
+                    write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
+                                        & [character(len=col_width) :: basename(exe_target%output_file)]
                     j = j + 1
 
                 end if
