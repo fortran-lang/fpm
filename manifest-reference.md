@@ -41,6 +41,8 @@ Every manifest file consists of the following sections:
     Project library dependencies
   - [*dev-dependencies*](#development-dependencies):
     Dependencies only needed for tests
+- [*extra*](#additional-information):
+  Free manifest section for additional information
 
 [TOML]: https://toml.io/
 
@@ -359,3 +361,11 @@ rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"
 ### Development dependencies
 
 Development dependencies allow to declare *dev-dependencies* in the manifest root, which are available to all tests but not exported with the project.
+
+
+## Additional information
+
+The manifest also allows to specify additional information in the *extra* section.
+This section is not subject to any constraints by fpm and not used by fpm for any purpose.
+Third party tools can store additional information here.
+Also, the fpm registry can use this section to stage new entries for the manifest.

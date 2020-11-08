@@ -26,6 +26,8 @@
 !  [dev-dependencies]
 !  [[executable]]
 !  [[test]]
+!  [build]
+!  [extra]
 !  ```
 module fpm_manifest_package
     use fpm_manifest_build_config, only: build_config_t, new_build_config
@@ -209,7 +211,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
-                    & "library")
+                    & "library", "extra")
                 continue
 
             end select
