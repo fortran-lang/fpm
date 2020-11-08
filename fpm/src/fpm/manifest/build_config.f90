@@ -94,7 +94,7 @@ contains
                 call fatal_error(error, "Entry in link field cannot be read")
                 return
             end if
-            if (allocated(self%link)) then
+            if (allocated(link)) then
                 allocate(self%link(1))
                 call move_alloc(link, self%link(1)%s)
             end if
@@ -148,7 +148,7 @@ contains
         !> Verbosity of the printout
         integer, intent(in), optional :: verbosity
 
-        integer :: pr
+        integer :: pr, ilink
         character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
 
         if (present(verbosity)) then
@@ -160,12 +160,14 @@ contains
         if (pr < 1) return
 
         write(unit, fmt) "Build configuration"
-        ! if (allocated(self%auto_executables)) then
-            write(unit, fmt) " - auto-discovery (apps) ", merge("enabled ", "disabled", self%auto_executables)
-        ! end if
-        ! if (allocated(self%auto_tests)) then
-            write(unit, fmt) " - auto-discovery (tests) ", merge("enabled ", "disabled", self%auto_tests)
-        ! end if
+        write(unit, fmt) " - auto-discovery (apps) ", merge("enabled ", "disabled", self%auto_executables)
+        write(unit, fmt) " - auto-discovery (tests) ", merge("enabled ", "disabled", self%auto_tests)
+        if (allocated(self%link)) then
+            write(unit, fmt) " - link against"
+            do ilink = 1, size(self%link)
+                write(unit, fmt) "   - " // self%link(ilink)%s
+            end do
+        end if
 
     end subroutine info
 
