@@ -34,7 +34,7 @@ import           Development.Shake.FilePath     ( (</>)
                                                 , exe
                                                 , splitDirectories
                                                 )
-import Numeric (showHex)
+import           Numeric                        ( showHex )
 import           Options.Applicative            ( Parser
                                                 , (<**>)
                                                 , (<|>)
@@ -435,7 +435,9 @@ runArguments =
     <*> optional
           (many
             (strArgument
-              (metavar "ARGS" <> help "Arguments to the executable(s) (should follow '--')")
+              (  metavar "ARGS"
+              <> help "Arguments to the executable(s) (should follow '--')"
+              )
             )
           )
 
@@ -462,11 +464,16 @@ testArguments =
             )
           )
     <*> optional
-          (strOption (long "target" <> metavar "TARGET" <> help "Name of the test to run"))
+          (strOption
+            (long "target" <> metavar "TARGET" <> help "Name of the test to run"
+            )
+          )
     <*> optional
           (many
             (strArgument
-              (metavar "ARGS" <> help "Arguments to the test(s) (should follow '--')")
+              (  metavar "ARGS"
+              <> help "Arguments to the test(s) (should follow '--')"
+              )
             )
           )
 
@@ -591,8 +598,8 @@ toml2AppSettings tomlSettings args = do
     (tomlSettingsExecutables tomlSettings)
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
-  flags <- defineFlags specifiedFlags compiler release
-  buildPrefix <- makeBuildPrefix compiler flags
+  flags        <- defineFlags specifiedFlags compiler release
+  buildPrefix  <- makeBuildPrefix compiler flags
   let dependencies    = tomlSettingsDependencies tomlSettings
   let devDependencies = tomlSettingsDevDependencies tomlSettings
   return AppSettings { appSettingsCompiler        = compiler
@@ -608,11 +615,55 @@ toml2AppSettings tomlSettings args = do
 
 defineFlags :: [String] -> FilePath -> Bool -> IO [String]
 defineFlags [] compiler release
-  | "gfortran" `isInfixOf` compiler = return $ if release then [ "-Wall", "-Wextra", "-Wimplicit-interface", "-fPIC", "-fmax-errors=1", "-O3", "-march=native", "-ffast-math", "-funroll-loops"] else [ "-Wall", "-Wextra", "-Wimplicit-interface", "-fPIC", "-fmax-errors=1", "-g", "-fbounds-check", "-fcheck-array-temporaries", "-fbacktrace"]
-  | "caf" `isInfixOf` compiler = return $ if release then [ "-Wall", "-Wextra", "-Wimplicit-interface", "-fPIC", "-fmax-errors=1", "-O3", "-march=native", "-ffast-math", "-funroll-loops"] else [ "-Wall", "-Wextra", "-Wimplicit-interface", "-fPIC", "-fmax-errors=1", "-g", "-fbounds-check", "-fcheck-array-temporaries", "-fbacktrace"]
+  | "gfortran" `isInfixOf` compiler = return $ if release
+    then
+      [ "-Wall"
+      , "-Wextra"
+      , "-Wimplicit-interface"
+      , "-fPIC"
+      , "-fmax-errors=1"
+      , "-O3"
+      , "-march=native"
+      , "-ffast-math"
+      , "-funroll-loops"
+      ]
+    else
+      [ "-Wall"
+      , "-Wextra"
+      , "-Wimplicit-interface"
+      , "-fPIC"
+      , "-fmax-errors=1"
+      , "-g"
+      , "-fbounds-check"
+      , "-fcheck-array-temporaries"
+      , "-fbacktrace"
+      ]
+  | "caf" `isInfixOf` compiler = return $ if release
+    then
+      [ "-Wall"
+      , "-Wextra"
+      , "-Wimplicit-interface"
+      , "-fPIC"
+      , "-fmax-errors=1"
+      , "-O3"
+      , "-march=native"
+      , "-ffast-math"
+      , "-funroll-loops"
+      ]
+    else
+      [ "-Wall"
+      , "-Wextra"
+      , "-Wimplicit-interface"
+      , "-fPIC"
+      , "-fmax-errors=1"
+      , "-g"
+      , "-fbounds-check"
+      , "-fcheck-array-temporaries"
+      , "-fbacktrace"
+      ]
   | otherwise = do
-      putStrLn $ "Sorry, compiler is currently unsupported: " ++ compiler
-      exitWith (ExitFailure 1)
+    putStrLn $ "Sorry, compiler is currently unsupported: " ++ compiler
+    exitWith (ExitFailure 1)
 defineFlags specifiedFlags _ _ = return specifiedFlags
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
