@@ -18,6 +18,7 @@ import           Control.Monad.Extra            ( concatMapM
                                                 )
 import           Data.Hashable                  ( hash )
 import           Data.List                      ( intercalate
+                                                , isInfixOf
                                                 , isSuffixOf
                                                 , find
                                                 , nub
@@ -590,33 +591,7 @@ toml2AppSettings tomlSettings args = do
     (tomlSettingsExecutables tomlSettings)
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
-  let flags = if compiler == "gfortran"
-        then case specifiedFlags of
-          [] -> if release
-            then
-              [ "-Wall"
-              , "-Wextra"
-              , "-Wimplicit-interface"
-              , "-fPIC"
-              , "-fmax-errors=1"
-              , "-O3"
-              , "-march=native"
-              , "-ffast-math"
-              , "-funroll-loops"
-              ]
-            else
-              [ "-Wall"
-              , "-Wextra"
-              , "-Wimplicit-interface"
-              , "-fPIC"
-              , "-fmax-errors=1"
-              , "-g"
-              , "-fbounds-check"
-              , "-fcheck-array-temporaries"
-              , "-fbacktrace"
-              ]
-          flags -> flags
-        else specifiedFlags
+  flags <- defineFlags specifiedFlags compiler release
   buildPrefix <- makeBuildPrefix compiler flags
   let dependencies    = tomlSettingsDependencies tomlSettings
   let devDependencies = tomlSettingsDevDependencies tomlSettings
@@ -630,6 +605,15 @@ toml2AppSettings tomlSettings args = do
                      , appSettingsDependencies    = dependencies
                      , appSettingsDevDependencies = devDependencies
                      }
+
+defineFlags :: [String] -> FilePath -> Bool -> IO [String]
+defineFlags [] compiler release
+  | "gfortran" `isInfixOf` compiler = return $ if release then [ "-Wall", "-Wextra", "-Wimplicit-interface", "-fPIC", "-fmax-errors=1", "-O3", "-march=native", "-ffast-math", "-funroll-loops"] else [ "-Wall", "-Wextra", "-Wimplicit-interface", "-fPIC", "-fmax-errors=1", "-g", "-fbounds-check", "-fcheck-array-temporaries", "-fbacktrace"]
+  | "caf" `isInfixOf` compiler = return $ if release then [ "-Wall", "-Wextra", "-Wimplicit-interface", "-fPIC", "-fmax-errors=1", "-O3", "-march=native", "-ffast-math", "-funroll-loops"] else [ "-Wall", "-Wextra", "-Wimplicit-interface", "-fPIC", "-fmax-errors=1", "-g", "-fbounds-check", "-fcheck-array-temporaries", "-fbacktrace"]
+  | otherwise = do
+      putStrLn $ "Sorry, compiler is currently unsupported: " ++ compiler
+      exitWith (ExitFailure 1)
+defineFlags specifiedFlags _ _ = return specifiedFlags
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
 getLibrarySettings maybeSettings = case maybeSettings of
