@@ -582,6 +582,9 @@ toml2AppSettings tomlSettings args = do
         Build { buildFlags = f } -> f
         Run { runFlags = f }     -> f
         Test { testFlags = f }   -> f
+  when (release && (length specifiedFlags > 0)) $ do
+    putStrLn "--release and --flag are mutually exclusive"
+    exitWith (ExitFailure 1)
   librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   executableSettings <- getExecutableSettings
     (tomlSettingsExecutables tomlSettings)
