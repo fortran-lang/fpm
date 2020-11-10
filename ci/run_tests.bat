@@ -132,3 +132,13 @@ if errorlevel 1 exit 1
 
 .\build\gfortran_debug\app\Program_with_module
 if errorlevel 1 exit 1
+
+
+cd ..\link_executable
+if errorlevel 1 exit 1
+
+%fpm_path% build
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\app\gomp_test
+if errorlevel 1 exit 1

@@ -155,6 +155,9 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
                  canon_path(executables(i)%source_dir) ) then
                 
                 sources(j)%exe_name = executables(i)%name
+                if (allocated(executables(i)%link)) then
+                    exe_source%link_libraries = executables(i)%link
+                end if
                 cycle exe_loop
 
             end if
@@ -164,6 +167,9 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
         ! Add if not already discovered (auto_discovery off)
         exe_source = parse_source(join_path(executables(i)%source_dir,executables(i)%main),error)
         exe_source%exe_name = executables(i)%name
+        if (allocated(executables(i)%link)) then
+            exe_source%link_libraries = executables(i)%link
+        end if
         exe_source%unit_scope = scope
         
         if (allocated(error)) return

@@ -7,11 +7,13 @@
 !>name = "string"
 !>source-dir = "path"
 !>main = "file"
+!>link = ["lib"]
 !>[executable.dependencies]
 !>```
 module fpm_manifest_executable
     use fpm_manifest_dependency, only : dependency_t, new_dependencies
     use fpm_error, only : error_t, syntax_error
+    use fpm_strings, only : string_t
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     implicit none
     private
@@ -33,6 +35,9 @@ module fpm_manifest_executable
 
         !> Dependency meta data for this executable
         type(dependency_t), allocatable :: dependency(:)
+
+        !> Libraries to link against
+        type(string_t), allocatable :: link(:)
 
     contains
 
@@ -76,6 +81,9 @@ contains
             if (allocated(error)) return
         end if
 
+        call get_value(table, "link", self%link, error)
+        if (allocated(error)) return
+
     end subroutine new_executable
 
 
@@ -110,7 +118,7 @@ contains
             case("name")
                 name_present = .true.
 
-            case("source-dir", "main", "dependencies")
+            case("source-dir", "main", "dependencies", "link")
                 continue
 
             end select

@@ -3,7 +3,7 @@ use fpm_error, only: error_t, fatal_error
 use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
 use fpm_filesystem, only: dirname, join_path, canon_path
-use fpm_strings, only: operator(.in.)
+use fpm_strings, only: string_t, operator(.in.)
 implicit none
 
 contains
@@ -45,9 +45,11 @@ subroutine targets_from_sources(model,sources)
             
             if (sources(i)%unit_scope == FPM_SCOPE_APP) then
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
+                            link_libraries = sources(i)%link_libraries, &
                             output_file = join_path(model%output_directory,'app',sources(i)%exe_name))
             else
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
+                            link_libraries = sources(i)%link_libraries, &
                             output_file = join_path(model%output_directory,'test',sources(i)%exe_name))
             
             end if
@@ -108,11 +110,12 @@ end subroutine targets_from_sources
 
 
 !> Add new target to target list
-subroutine add_target(targets,type,output_file,source)
+subroutine add_target(targets,type,output_file,source,link_libraries)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     integer, intent(in) :: type
     character(*), intent(in) :: output_file
     type(srcfile_t), intent(in), optional :: source
+    type(string_t), intent(in), optional :: link_libraries(:)
 
     integer :: i
     type(build_target_ptr), allocatable :: temp(:)
@@ -138,6 +141,7 @@ subroutine add_target(targets,type,output_file,source)
     new_target%target_type = type
     new_target%output_file = output_file
     if (present(source)) new_target%source = source
+    if (present(link_libraries)) new_target%link_libraries = link_libraries
     allocate(new_target%dependencies(0))
     
     targets = [targets, build_target_ptr(new_target)]

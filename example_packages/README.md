@@ -17,5 +17,6 @@ the features demonstrated in each package and which versions of fpm are supporte
 | program_with_module | App-only; module+program in single source file                |            Y            |  Y  |
 | submodules          | Lib-only; submodules (3 levels)                               |            N            |  Y  |
 | link_external       | Link external library                                         |            N            |  Y  |
+| link_executable     | Link external library to a single executable                  |            N            |  Y  |
 | with_c              | Compile with `c` source files                                 |            N            |  Y  |
 | with_makefile       | External build command (makefile)                             |            Y            |  N  |

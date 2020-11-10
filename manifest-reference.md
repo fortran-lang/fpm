@@ -233,7 +233,7 @@ See [specifying dependencies](#specifying-dependencies) for more details.
 Executables can also specify their own external library dependencies.
 See [external libraries](#link-external-libraries) for more details.
 
-> Currently not supported in any version
+> Linking against libraries is supported in Fortran fpm only
 
 *Example:*
 
@@ -278,7 +278,7 @@ See [specifying dependencies](#specifying-dependencies) for more details.
 Tests can also specify their own external library dependencies.
 See [external libraries](#link-external-libraries) for more details.
 
-> Currently not supported in any version
+> Linking against libraries is supported in Fortran fpm only
 
 *Example:*
 

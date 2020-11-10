@@ -11,8 +11,7 @@
 module fpm_manifest_build_config
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only : string_t
-    use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
-        & len
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     implicit none
     private
 
@@ -54,9 +53,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        integer :: stat, ilink, nlink
-        type(toml_array), pointer :: children
-        character(len=:), allocatable :: link
+        integer :: stat
 
         call check(table, error)
         if (allocated(error)) return
@@ -75,30 +72,8 @@ contains
             return
         end if
 
-        call get_value(table, "link", children, requested=.false.)
-        if (associated(children)) then
-            nlink = len(children)
-            allocate(self%link(nlink))
-            do ilink = 1, nlink
-                call get_value(children, ilink, link, stat=stat)
-                if (stat /= toml_stat%success) then
-                    call fatal_error(error, "Entry in link field cannot be read")
-                    exit
-                end if
-                call move_alloc(link, self%link(ilink)%s)
-            end do
-            if (allocated(error)) return
-        else
-            call get_value(table, "link", link, stat=stat)
-            if (stat /= toml_stat%success) then
-                call fatal_error(error, "Entry in link field cannot be read")
-                return
-            end if
-            if (allocated(link)) then
-                allocate(self%link(1))
-                call move_alloc(link, self%link(1)%s)
-            end if
-        end if
+        call get_value(table, "link", self%link, error)
+        if (allocated(error)) return
 
     end subroutine new_build_config
 

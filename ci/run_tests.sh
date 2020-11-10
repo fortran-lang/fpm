@@ -73,3 +73,7 @@ cd ../program_with_module
 cd ../link_external
 "${f_fpm_path}" build
 ./build/gfortran_debug/app/link_external
+
+cd ../link_executable
+"${f_fpm_path}" build
+./build/gfortran_debug/app/gomp_test

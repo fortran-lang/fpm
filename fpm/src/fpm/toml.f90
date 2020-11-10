@@ -13,6 +13,7 @@
 !> For more details on the library used see: https://toml-f.github.io/toml-f
 module fpm_toml
     use fpm_error, only : error_t, fatal_error, file_not_found_error
+    use fpm_strings, only : string_t
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, len
     implicit none
@@ -21,6 +22,11 @@ module fpm_toml
     public :: read_package_file
     public :: toml_table, toml_array, toml_key, toml_stat, get_value, set_value
     public :: new_table, add_table, add_array, len
+
+
+    interface get_value
+        module procedure :: get_child_value_string_list
+    end interface get_value
 
 
 contains
@@ -60,6 +66,52 @@ contains
         end if
 
     end subroutine read_package_file
+
+
+    subroutine get_child_value_string_list(table, key, list, error)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Key to read from
+        character(len=*), intent(in) :: key
+
+        !> List of strings to read
+        type(string_t), allocatable, intent(out) :: list(:)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: stat, ilist, nlist
+        type(toml_array), pointer :: children
+        character(len=:), allocatable :: str
+
+        call get_value(table, key, children, requested=.false.)
+        if (associated(children)) then
+            nlist = len(children)
+            allocate(list(nlist))
+            do ilist = 1, nlist
+                call get_value(children, ilist, str, stat=stat)
+                if (stat /= toml_stat%success) then
+                    call fatal_error(error, "Entry in "//key//" field cannot be read")
+                    exit
+                end if
+                call move_alloc(str, list(ilist)%s)
+            end do
+            if (allocated(error)) return
+        else
+            call get_value(table, key, str, stat=stat)
+            if (stat /= toml_stat%success) then
+                call fatal_error(error, "Entry in "//key//" field cannot be read")
+                return
+            end if
+            if (allocated(str)) then
+                allocate(list(1))
+                call move_alloc(str, list(1)%s)
+            end if
+        end if
+
+    end subroutine get_child_value_string_list
 
 
 end module fpm_toml
