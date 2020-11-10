@@ -105,6 +105,7 @@ buildProgram programDirectory' libraryDirectories sourceExtensions buildDirector
           want [buildDirectory </> programName <.> exe]
           buildDirectory </> programName <.> exe %> \executable -> do
             need objectFiles
+            need archives
             cmd compiler objectFiles archives ["-o", executable] flags
           mapM_ infoToRule compileTimeInfo
 

@@ -38,6 +38,8 @@ subroutine build_package(model)
         linking = " "
     end if
 
+    linking = linking//" "//model%link_flags
+
     do i=1,size(model%targets)
         
         call build_target(model,model%targets(i)%ptr,linking)
