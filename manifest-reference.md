@@ -230,6 +230,11 @@ See [specifying dependencies](#specifying-dependencies) for more details.
 
 > Dependencies supported in Bootstrap fpm only
 
+Executables can also specify their own external library dependencies.
+See [external libraries](#link-external-libraries) for more details.
+
+> Currently not supported in any version
+
 *Example:*
 
 ```toml
@@ -240,6 +245,7 @@ main = "program.f90"
 
 [[ executable ]]
 name = "app-tool"
+link = "z"
 [executable.dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
 ```
@@ -269,6 +275,11 @@ See [specifying dependencies](#specifying-dependencies) for more details.
 
 > Dependencies supported in Bootstrap fpm only
 
+Tests can also specify their own external library dependencies.
+See [external libraries](#link-external-libraries) for more details.
+
+> Currently not supported in any version
+
 *Example:*
 
 ```toml
@@ -279,6 +290,7 @@ main = "tester.F90"
 
 [[ test ]]
 name = "tester"
+link = ["blas", "lapack"]
 [test.dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
 ```
