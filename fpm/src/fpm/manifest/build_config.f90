@@ -1,12 +1,12 @@
 !> Implementation of the build configuration data.
-!
-!  A build table can currently have the following fields
-!
-!  ```toml
-!  [build]
-!  auto-executables = <bool>
-!  auto-tests = <bool>
-!  ```
+!>
+!> A build table can currently have the following fields
+!>
+!>```toml
+!>[build]
+!>auto-executables = bool
+!>auto-tests = bool
+!>```
 module fpm_manifest_build_config
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value

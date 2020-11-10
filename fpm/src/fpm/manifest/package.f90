@@ -1,32 +1,32 @@
 !> Define the package data containing the meta data from the configuration file.
-!
-!  The package data defines a Fortran type corresponding to the respective
-!  TOML document, after creating it from a package file no more interaction
-!  with the TOML document is required.
-!
-!  Every configuration type provides it custom constructor (prefixed with `new_`)
-!  and knows how to deserialize itself from a TOML document.
-!  To ensure we find no untracked content in the package file all keywords are
-!  checked and possible entries have to be explicitly allowed in the `check`
-!  function.
-!  If entries are mutally exclusive or interdependent inside the current table
-!  the `check` function is required to enforce this schema on the data structure.
-!
-!  The package file root allows the following keywords
-!
-!  ```toml
-!  name = "string"
-!  version = "string"
-!  license = "string"
-!  author = "string"
-!  maintainer = "string"
-!  copyright = "string
-!  [library]
-!  [dependencies]
-!  [dev-dependencies]
-!  [[executable]]
-!  [[test]]
-!  ```
+!>
+!> The package data defines a Fortran type corresponding to the respective
+!> TOML document, after creating it from a package file no more interaction
+!> with the TOML document is required.
+!>
+!> Every configuration type provides it custom constructor (prefixed with `new_`)
+!> and knows how to deserialize itself from a TOML document.
+!> To ensure we find no untracked content in the package file all keywords are
+!> checked and possible entries have to be explicitly allowed in the `check`
+!> function.
+!> If entries are mutally exclusive or interdependent inside the current table
+!> the `check` function is required to enforce this schema on the data structure.
+!>
+!> The package file root allows the following keywords
+!>
+!>```toml
+!>name = "string"
+!>version = "string"
+!>license = "string"
+!>author = "string"
+!>maintainer = "string"
+!>copyright = "string"
+!>[library]
+!>[dependencies]
+!>[dev-dependencies]
+!>[[ executable ]]
+!>[[ test ]]
+!>```
 module fpm_manifest_package
     use fpm_manifest_build_config, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_t, new_dependencies

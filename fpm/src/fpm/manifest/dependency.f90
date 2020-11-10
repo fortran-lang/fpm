@@ -1,27 +1,27 @@
 !> Implementation of the meta data for dependencies.
-!
-!  A dependency table can currently have the following fields
-!
-!  ```toml
-!  [dependencies]
-!  "dep1" = { git = "url" }
-!  "dep2" = { git = "url", branch = "name" }
-!  "dep3" = { git = "url", tag = "name" }
-!  "dep4" = { git = "url", rev = "sha1" }
-!  "dep0" = { path = "path" }
-!  ```
-!
-!  To reduce the amount of boilerplate code this module provides two constructors
-!  for dependency types, one basic for an actual dependency (inline) table
-!  and another to collect all dependency objects from a dependencies table,
-!  which is handling the allocation of the objects and is forwarding the
-!  individual dependency tables to their respective constructors.
-!  The usual entry point should be the constructor for the super table.
-!
-!  This objects contains a target to retrieve required `fpm` projects to
-!  build the target declaring the dependency.
-!  Resolving a dependency will result in obtaining a new package configuration
-!  data for the respective project.
+!>
+!> A dependency table can currently have the following fields
+!>
+!>```toml
+!>[dependencies]
+!>"dep1" = { git = "url" }
+!>"dep2" = { git = "url", branch = "name" }
+!>"dep3" = { git = "url", tag = "name" }
+!>"dep4" = { git = "url", rev = "sha1" }
+!>"dep0" = { path = "path" }
+!>```
+!>
+!> To reduce the amount of boilerplate code this module provides two constructors
+!> for dependency types, one basic for an actual dependency (inline) table
+!> and another to collect all dependency objects from a dependencies table,
+!> which is handling the allocation of the objects and is forwarding the
+!> individual dependency tables to their respective constructors.
+!> The usual entry point should be the constructor for the super table.
+!>
+!> This objects contains a target to retrieve required `fpm` projects to
+!> build the target declaring the dependency.
+!> Resolving a dependency will result in obtaining a new package configuration
+!> data for the respective project.
 module fpm_manifest_dependency
     use fpm_error, only : error_t, syntax_error
     use fpm_git, only : git_target_t, git_target_tag, git_target_branch, &
