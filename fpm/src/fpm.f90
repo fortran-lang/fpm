@@ -5,12 +5,12 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_environment, only: run
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
-use fpm_model, only: srcfile_ptr, srcfile_t, fpm_model_t, &
+use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
 
-use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
-                       resolve_module_dependencies
+use fpm_sources, only: add_executable_sources, add_sources_from_dir
+use fpm_targets, only: targets_from_sources, resolve_module_dependencies
 use fpm_manifest, only : get_package_data, default_executable, &
     default_library, package_t, default_test
 use fpm_error, only : error_t, fatal_error
@@ -225,15 +225,16 @@ subroutine build_model(model, settings, package, error)
         return
     end if
 
+    call targets_from_sources(model,model%sources)
+
     if(settings%list)then
-        do i=1,size(model%sources)
-            write(stderr,'(*(g0,1x))')'fpm::build<INFO>:file expected at',model%sources(i)%file_name, &
-            & merge('exists        ','does not exist',exists(model%sources(i)%file_name) )
+        do i=1,size(model%targets)
+            write(stderr,*) model%targets(i)%ptr%output_file
         enddo
         stop
-    else
-        call resolve_module_dependencies(model%sources,error)
     endif
+
+    call resolve_module_dependencies(model%targets,error)
 
 end subroutine build_model
 
