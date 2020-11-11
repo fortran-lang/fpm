@@ -5,13 +5,13 @@ set -e # exit on error
 
 install_path="$HOME/.local/bin"
 
-if command -v stack &> /dev/null ; then
+if command -v stack 1> /dev/null 2>&1 ; then
   echo "found stack"
 else
   echo "Haskell stack not found."
   echo "Installing Haskell stack to."
   curl -sSL https://get.haskellstack.org/ | sh
-  if command -v stack &> /dev/null ; then
+  if command -v stack 1> /dev/null 2>&1 ; then
     echo "Haskell stack installation successful."
   else
     echo "Haskell stack installation unsuccessful."
