@@ -321,6 +321,7 @@ subroutine cmd_run(settings,test)
         error stop 1
     end if
 
+
     call package_defaults(package)
 
     call build_model(model, settings%fpm_build_settings, package, error)

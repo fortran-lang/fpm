@@ -1,14 +1,14 @@
 !> Implementation of the meta data for an executables.
-!
-!  An executable table can currently have the following fields
-!
-!  ```toml
-!  [[executable]]
-!  name = "string"
-!  source-dir = "path"
-!  main = "file"
-!  [executable.dependencies]
-!  ```
+!>
+!> An executable table can currently have the following fields
+!>
+!>```toml
+!>[[ executable ]]
+!>name = "string"
+!>source-dir = "path"
+!>main = "file"
+!>[executable.dependencies]
+!>```
 module fpm_manifest_executable
     use fpm_manifest_dependency, only : dependency_t, new_dependencies
     use fpm_error, only : error_t, syntax_error

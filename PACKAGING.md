@@ -456,7 +456,7 @@ copyright = "2020 Jane Programmer"
 [library]
 source-dir="src"
 
-[[executable]]
+[[ executable ]]
 name="math_constants"
 source-dir="app"
 main="main.f90"
@@ -487,12 +487,12 @@ copyright = "2020 Jane Programmer"
 [library]
 source-dir="src"
 
-[[executable]]
+[[ executable ]]
 name="math_constants"
 source-dir="app"
 main="main.f90"
 
-[[test]]
+[[ test ]]
 name="runTests"
 source-dir="test"
 main="main.f90"
@@ -546,12 +546,12 @@ source-dir="src"
 [dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
 
-[[executable]]
+[[ executable ]]
 name="math_constants"
 source-dir="app"
 main="main.f90"
 
-[[test]]
+[[ test ]]
 name="runTests"
 source-dir="test"
 main="main.f90"
@@ -601,14 +601,14 @@ copyright = "2020 Jane Programmer"
 [library]
 source-dir="src"
 
-[[executable]]
+[[ executable ]]
 name="math_constants"
 source-dir="app"
 main="main.f90"
 [executable.dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
 
-[[test]]
+[[ test ]]
 name="runTests"
 source-dir="test"
 main="main.f90"
@@ -633,12 +633,12 @@ source-dir="src"
 [dev-dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
 
-[[executable]]
+[[ executable ]]
 name="math_constants"
 source-dir="app"
 main="main.f90"
 
-[[test]]
+[[ test ]]
 name="runTests"
 source-dir="test"
 main="main.f90"

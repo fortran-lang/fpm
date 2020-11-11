@@ -1,18 +1,18 @@
 !> Implementation of the meta data for a test.
-!
-!  The test data structure is effectively a decorated version of an executable
-!  and shares most of its properties, except for the defaults and can be
-!  handled under most circumstances just like any other executable.
-!
-!  A test table can currently have the following fields
-!
-!  ```toml
-!  [[test]]
-!  name = "string"
-!  source-dir = "path"
-!  main = "file"
-!  [test.dependencies]
-!  ```
+!>
+!> The test data structure is effectively a decorated version of an executable
+!> and shares most of its properties, except for the defaults and can be
+!> handled under most circumstances just like any other executable.
+!>
+!> A test table can currently have the following fields
+!>
+!>```toml
+!>[[ test ]]
+!>name = "string"
+!>source-dir = "path"
+!>main = "file"
+!>[test.dependencies]
+!>```
 module fpm_manifest_test
     use fpm_manifest_dependency, only : dependency_t, new_dependencies
     use fpm_manifest_executable, only : executable_t
