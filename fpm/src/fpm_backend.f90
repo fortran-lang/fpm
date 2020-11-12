@@ -4,10 +4,10 @@ module fpm_backend
 
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir
-use fpm_model, only: fpm_model_t, srcfile_t, FPM_UNIT_MODULE, &
+use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, FPM_UNIT_MODULE, &
                      FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                      FPM_UNIT_CSOURCE, FPM_UNIT_PROGRAM, &
-                     FPM_SCOPE_TEST
+                     FPM_SCOPE_TEST, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
                      
 use fpm_strings, only: split
 
@@ -32,127 +32,103 @@ subroutine build_package(model)
         call mkdir(join_path(model%output_directory,model%package_name))
     end if
 
-    linking = ""
-    do i=1,size(model%sources)
-
-        if (model%sources(i)%unit_type == FPM_UNIT_MODULE .or. &
-            model%sources(i)%unit_type == FPM_UNIT_SUBMODULE .or. &
-            model%sources(i)%unit_type == FPM_UNIT_SUBPROGRAM .or. &
-            model%sources(i)%unit_type == FPM_UNIT_CSOURCE) then
-        
-            call build_source(model,model%sources(i),linking)
-
-        end if
-        
-    end do
-
-    if (any([(model%sources(i)%unit_type == FPM_UNIT_PROGRAM,i=1,size(model%sources))])) then
-        if (.not.exists(join_path(model%output_directory,'test'))) then
-            call mkdir(join_path(model%output_directory,'test'))
-        end if
-        if (.not.exists(join_path(model%output_directory,'app'))) then
-            call mkdir(join_path(model%output_directory,'app'))
-        end if
+    if (model%targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
+        linking = " "//model%targets(1)%ptr%output_file
+    else
+        linking = " "
     end if
 
-    do i=1,size(model%sources)
+    linking = linking//" "//model%link_flags
 
-        if (model%sources(i)%unit_type == FPM_UNIT_PROGRAM) then
-            
-            base = basename(model%sources(i)%file_name,suffix=.false.)
-            
-            if (model%sources(i)%unit_scope == FPM_SCOPE_TEST) then
-                subdir = 'test'
-            else
-                subdir = 'app'
-            end if
-            
-            call run("gfortran -c " // model%sources(i)%file_name // ' '//model%fortran_compile_flags &
-                      // " -o " // join_path(model%output_directory,subdir,base) // ".o")
-
-            call run("gfortran " // join_path(model%output_directory, subdir, base) // ".o "// &
-                     linking //" " //model%link_flags // " -o " // &
-                      join_path(model%output_directory,subdir,model%sources(i)%exe_name) )
-
-        end if
-
+    do i=1,size(model%targets)
+        
+        call build_target(model,model%targets(i)%ptr,linking)
+        
     end do
 
 end subroutine build_package
 
 
 
-recursive subroutine build_source(model,source_file,linking)
+recursive subroutine build_target(model,target,linking)
     ! Compile Fortran source, called recursively on it dependents
     !  
     type(fpm_model_t), intent(in) :: model
-    type(srcfile_t), intent(inout) :: source_file
-    character(:), allocatable, intent(inout) :: linking
+    type(build_target_t), intent(inout) :: target
+    character(:), allocatable, intent(in) :: linking
 
-    integer :: i
-    character(:), allocatable :: object_file
+    integer :: i, j
+    type(build_target_t), pointer :: exe_obj
+    character(:), allocatable :: objs
 
-    if (source_file%built) then
+    if (target%built) then
         return
     end if
 
-    if (source_file%touched) then
-        write(*,*) '(!) Circular dependency found with: ',source_file%file_name
+    if (target%touched) then
+        write(*,*) '(!) Circular dependency found with: ',target%output_file
         stop
     else
-        source_file%touched = .true.
+        target%touched = .true.
     end if
 
-    do i=1,size(source_file%file_dependencies)
+    objs = " "
 
-        if (associated(source_file%file_dependencies(i)%ptr)) then
-            call build_source(model,source_file%file_dependencies(i)%ptr,linking)
+    do i=1,size(target%dependencies)
+
+        if (associated(target%dependencies(i)%ptr)) then
+            call build_target(model,target%dependencies(i)%ptr,linking)
+        end if
+
+        if (target%target_type == FPM_TARGET_ARCHIVE ) then
+
+            ! Construct object list for archive
+            objs = objs//" "//target%dependencies(i)%ptr%output_file
+
+        else if (target%target_type == FPM_TARGET_EXECUTABLE .and. &
+                 target%dependencies(i)%ptr%target_type ==  FPM_TARGET_OBJECT) then
+
+            exe_obj => target%dependencies(i)%ptr
+                
+            ! Construct object list for executable
+            objs = " "//exe_obj%output_file
+                
+            ! Include non-library object dependencies
+            do j=1,size(exe_obj%dependencies)
+
+                if (allocated(exe_obj%dependencies(j)%ptr%source)) then
+                    if (exe_obj%dependencies(j)%ptr%source%unit_scope == exe_obj%source%unit_scope) then
+                        objs = objs//" "//exe_obj%dependencies(j)%ptr%output_file
+                    end if
+                end if
+
+            end do
+
         end if
 
     end do
-
-    object_file = get_object_name(model,source_file%file_name)
     
-    if (.not.exists(dirname(object_file))) then
-        call mkdir(dirname(object_file))
+    if (.not.exists(dirname(target%output_file))) then
+        call mkdir(dirname(target%output_file))
     end if
 
-    call run("gfortran -c " // source_file%file_name // model%fortran_compile_flags &
-              // " -o " // object_file)
-    linking = linking // " " // object_file
+    select case(target%target_type)
 
-    source_file%built = .true.
+    case (FPM_TARGET_OBJECT)
+        call run("gfortran -c " // target%source%file_name // model%fortran_compile_flags &
+              // " -o " // target%output_file)
 
-end subroutine build_source
+    case (FPM_TARGET_EXECUTABLE)
+        call run("gfortran " // objs // model%fortran_compile_flags &
+              //linking// " -o " // target%output_file)
 
+    case (FPM_TARGET_ARCHIVE)
+        call run("ar -rs " // target%output_file // objs)
 
-function get_object_name(model,source_file_name) result(object_file)
-    ! Generate object target path from source name and model params
-    !  
-    !  src/test.f90        ->  <output-dir>/<package-name>/test.o
-    !  src/subdir/test.f90 ->  <output-dir>/<package-name>/subdir_test.o
-    !
-    type(fpm_model_t), intent(in) :: model
-    character(*), intent(in) :: source_file_name
-    character(:), allocatable :: object_file
-
-    integer :: i
-    character(1) :: filesep
-
-    select case(get_os_type())
-    case (OS_WINDOWS)
-        filesep = '\'
-    case default
-        filesep = '/'
     end select
 
-    ! Exclude first directory level from path
-    object_file = source_file_name(index(source_file_name,filesep)+1:)
+    target%built = .true.
 
-    ! Construct full target path
-    object_file = join_path(model%output_directory, model%package_name, &
-                        object_file//'.o')
-
-end function get_object_name
+end subroutine build_target
 
 end module fpm_backend

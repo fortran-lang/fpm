@@ -1,12 +1,12 @@
 !> Implementation of the meta data for libraries.
-!
-!  A library table can currently have the following fields
-!
-!  ```toml
-!  [library]
-!  source-dir = "path"
-!  build-script = "file"
-!  ```
+!>
+!> A library table can currently have the following fields
+!>
+!>```toml
+!>[library]
+!>source-dir = "path"
+!>build-script = "file"
+!>```
 module fpm_manifest_library
     use fpm_error, only : error_t, syntax_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value

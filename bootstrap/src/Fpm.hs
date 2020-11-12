@@ -8,7 +8,8 @@ module Fpm
   )
 where
 
-import           Build                          ( buildLibrary
+import           Build                          ( CompilerSettings(..)
+                                                , buildLibrary
                                                 , buildProgram
                                                 , buildWithScript
                                                 )
@@ -18,6 +19,7 @@ import           Control.Monad.Extra            ( concatMapM
                                                 )
 import           Data.Hashable                  ( hash )
 import           Data.List                      ( intercalate
+                                                , isInfixOf
                                                 , isSuffixOf
                                                 , find
                                                 , nub
@@ -33,6 +35,7 @@ import           Development.Shake.FilePath     ( (</>)
                                                 , exe
                                                 , splitDirectories
                                                 )
+import           Numeric                        ( showHex )
 import           Options.Applicative            ( Parser
                                                 , (<**>)
                                                 , (<|>)
@@ -114,10 +117,9 @@ data TomlSettings = TomlSettings {
 }
 
 data AppSettings = AppSettings {
-      appSettingsCompiler :: String
+      appSettingsCompiler :: CompilerSettings
     , appSettingsProjectName :: String
     , appSettingsBuildPrefix :: String
-    , appSettingsFlags :: [String]
     , appSettingsLibrary :: (Maybe Library)
     , appSettingsExecutables :: [Executable]
     , appSettingsTests :: [Executable]
@@ -259,16 +261,14 @@ app args settings = case args of
 
 build :: AppSettings -> IO ()
 build settings = do
-  let compiler    = appSettingsCompiler settings
-  let projectName = appSettingsProjectName settings
-  let buildPrefix = appSettingsBuildPrefix settings
-  let flags       = appSettingsFlags settings
-  let executables = appSettingsExecutables settings
-  let tests       = appSettingsTests settings
+  let compilerSettings = appSettingsCompiler settings
+  let projectName      = appSettingsProjectName settings
+  let buildPrefix      = appSettingsBuildPrefix settings
+  let executables      = appSettingsExecutables settings
+  let tests            = appSettingsTests settings
   mainDependencyTrees <- fetchDependencies (appSettingsDependencies settings)
   builtDependencies   <- buildDependencies buildPrefix
-                                           compiler
-                                           flags
+                                           compilerSettings
                                            mainDependencyTrees
   (executableDepends, maybeTree) <- case appSettingsLibrary settings of
     Just librarySettings -> do
@@ -284,15 +284,13 @@ build settings = do
         Just script -> buildWithScript script
                                        "."
                                        (buildPrefix </> projectName)
-                                       compiler
-                                       flags
+                                       compilerSettings
                                        projectName
                                        (map fst builtDependencies)
         Nothing -> buildLibrary librarySourceDir'
                                 [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
                                 (buildPrefix </> projectName)
-                                compiler
-                                flags
+                                compilerSettings
                                 projectName
                                 (map fst builtDependencies)
       return
@@ -306,14 +304,13 @@ build settings = do
       do
         localDependencies <-
           fetchExecutableDependencies maybeTree dependencies
-            >>= buildDependencies buildPrefix compiler flags
+            >>= buildDependencies buildPrefix compilerSettings
         buildProgram
           sourceDir
           ((map fst executableDepends) ++ (map fst localDependencies))
           [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
           (buildPrefix </> sourceDir)
-          compiler
-          flags
+          compilerSettings
           name
           mainFile
           ((map snd executableDepends) ++ (map snd localDependencies))
@@ -321,13 +318,13 @@ build settings = do
     executables
   devDependencies <-
     fetchExecutableDependencies maybeTree (appSettingsDevDependencies settings)
-      >>= buildDependencies buildPrefix compiler flags
+      >>= buildDependencies buildPrefix compilerSettings
   mapM_
     (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name, executableDependencies = dependencies } ->
       do
         localDependencies <-
           fetchExecutableDependencies maybeTree dependencies
-            >>= buildDependencies buildPrefix compiler flags
+            >>= buildDependencies buildPrefix compilerSettings
         buildProgram
           sourceDir
           (  (map fst executableDepends)
@@ -336,8 +333,7 @@ build settings = do
           )
           [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
           (buildPrefix </> sourceDir)
-          compiler
-          flags
+          compilerSettings
           name
           mainFile
           (  (map snd executableDepends)
@@ -605,13 +601,33 @@ toml2AppSettings tomlSettings args = do
         Build { buildFlags = f } -> f
         Run { runFlags = f }     -> f
         Test { testFlags = f }   -> f
+  when (release && (length specifiedFlags > 0)) $ do
+    putStrLn "--release and --flag are mutually exclusive"
+    exitWith (ExitFailure 1)
   librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   executableSettings <- getExecutableSettings
     (tomlSettingsExecutables tomlSettings)
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
-  let flags = if compiler == "gfortran"
-        then case specifiedFlags of
+  compilerSettings <- defineCompilerSettings specifiedFlags compiler release
+  buildPrefix <- makeBuildPrefix (compilerSettingsCompiler compilerSettings)
+                                 (compilerSettingsFlags compilerSettings)
+  let dependencies    = tomlSettingsDependencies tomlSettings
+  let devDependencies = tomlSettingsDevDependencies tomlSettings
+  return AppSettings { appSettingsCompiler        = compilerSettings
+                     , appSettingsProjectName     = projectName
+                     , appSettingsBuildPrefix     = buildPrefix
+                     , appSettingsLibrary         = librarySettings
+                     , appSettingsExecutables     = executableSettings
+                     , appSettingsTests           = testSettings
+                     , appSettingsDependencies    = dependencies
+                     , appSettingsDevDependencies = devDependencies
+                     }
+
+defineCompilerSettings :: [String] -> FilePath -> Bool -> IO CompilerSettings
+defineCompilerSettings specifiedFlags compiler release
+  | "gfortran" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
           [] -> if release
             then
               [ "-Wall"
@@ -635,21 +651,47 @@ toml2AppSettings tomlSettings args = do
               , "-fcheck-array-temporaries"
               , "-fbacktrace"
               ]
-          flags -> flags
-        else specifiedFlags
-  buildPrefix <- makeBuildPrefix compiler flags
-  let dependencies    = tomlSettingsDependencies tomlSettings
-  let devDependencies = tomlSettingsDevDependencies tomlSettings
-  return AppSettings { appSettingsCompiler        = compiler
-                     , appSettingsProjectName     = projectName
-                     , appSettingsBuildPrefix     = buildPrefix
-                     , appSettingsFlags           = flags
-                     , appSettingsLibrary         = librarySettings
-                     , appSettingsExecutables     = executableSettings
-                     , appSettingsTests           = testSettings
-                     , appSettingsDependencies    = dependencies
-                     , appSettingsDevDependencies = devDependencies
-                     }
+          fs -> fs
+    in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                  , compilerSettingsFlags       = flags
+                                  , compilerSettingsModuleFlag  = "-J"
+                                  , compilerSettingsIncludeFlag = "-I"
+                                  }
+  | "caf" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-O3"
+              , "-march=native"
+              , "-ffast-math"
+              , "-funroll-loops"
+              ]
+            else
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-g"
+              , "-fbounds-check"
+              , "-fcheck-array-temporaries"
+              , "-fbacktrace"
+              ]
+          fs -> fs
+    in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                  , compilerSettingsFlags       = flags
+                                  , compilerSettingsModuleFlag  = "-J"
+                                  , compilerSettingsIncludeFlag = "-I"
+                                  }
+  | otherwise
+  = do
+    putStrLn $ "Sorry, compiler is currently unsupported: " ++ compiler
+    exitWith (ExitFailure 1)
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
 getLibrarySettings maybeSettings = case maybeSettings of
@@ -705,15 +747,15 @@ makeBuildPrefix compiler flags = do
   --      Probably version, and make sure to not include path to the compiler
   versionInfo <- readProcess compiler ["--version"] []
   let compilerName = last (splitDirectories compiler)
-  let versionHash  = hash versionInfo
-  let flagsHash    = hash flags
+  let versionHash  = abs (hash versionInfo)
+  let flagsHash    = abs (hash flags)
   return
     $   "build"
     </> compilerName
     ++  "_"
-    ++  show versionHash
+    ++  showHex versionHash ""
     ++  "_"
-    ++  show flagsHash
+    ++  showHex flagsHash ""
 
 {-
     Fetching the dependencies is done on a sort of breadth first approach. All
@@ -825,37 +867,31 @@ fetchDependency name version = do
     the transitive dependencies have been built before trying to build this one
 -}
 buildDependencies
-  :: String
-  -> String
-  -> [String]
-  -> [DependencyTree]
-  -> IO [(FilePath, FilePath)]
-buildDependencies buildPrefix compiler flags dependencies = do
-  built <- concatMapM (buildDependency buildPrefix compiler flags) dependencies
+  :: String -> CompilerSettings -> [DependencyTree] -> IO [(FilePath, FilePath)]
+buildDependencies buildPrefix compilerSettings dependencies = do
+  built <- concatMapM (buildDependency buildPrefix compilerSettings)
+                      dependencies
   return $ reverse (nub (reverse built))
 
 buildDependency
-  :: String -> String -> [String] -> DependencyTree -> IO [(FilePath, FilePath)]
-buildDependency buildPrefix compiler flags (Dependency name path sourcePath mBuildScript dependencies)
+  :: String -> CompilerSettings -> DependencyTree -> IO [(FilePath, FilePath)]
+buildDependency buildPrefix compilerSettings (Dependency name path sourcePath mBuildScript dependencies)
   = do
     transitiveDependencies <- buildDependencies buildPrefix
-                                                compiler
-                                                flags
+                                                compilerSettings
                                                 dependencies
     let buildPath = buildPrefix </> name
     thisArchive <- case mBuildScript of
       Just script -> buildWithScript script
                                      path
                                      buildPath
-                                     compiler
-                                     flags
+                                     compilerSettings
                                      name
                                      (map fst transitiveDependencies)
       Nothing -> buildLibrary sourcePath
                               [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
                               buildPath
-                              compiler
-                              flags
+                              compilerSettings
                               name
                               (map fst transitiveDependencies)
     return $ (buildPath, thisArchive) : transitiveDependencies
