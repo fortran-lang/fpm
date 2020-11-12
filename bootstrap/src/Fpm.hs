@@ -3,13 +3,13 @@
 
 module Fpm
   ( Arguments(..)
-  , Command(..)
   , getArguments
   , start
   )
 where
 
-import           Build                          ( buildLibrary
+import           Build                          ( CompilerSettings(..)
+                                                , buildLibrary
                                                 , buildProgram
                                                 , buildWithScript
                                                 )
@@ -17,7 +17,10 @@ import           Control.Monad.Extra            ( concatMapM
                                                 , forM_
                                                 , when
                                                 )
-import           Data.List                      ( isSuffixOf
+import           Data.Hashable                  ( hash )
+import           Data.List                      ( intercalate
+                                                , isInfixOf
+                                                , isSuffixOf
                                                 , find
                                                 , nub
                                                 )
@@ -30,10 +33,13 @@ import           Development.Shake              ( FilePattern
 import           Development.Shake.FilePath     ( (</>)
                                                 , (<.>)
                                                 , exe
+                                                , splitDirectories
                                                 )
+import           Numeric                        ( showHex )
 import           Options.Applicative            ( Parser
                                                 , (<**>)
                                                 , (<|>)
+                                                , auto
                                                 , command
                                                 , execParser
                                                 , fullDesc
@@ -42,8 +48,13 @@ import           Options.Applicative            ( Parser
                                                 , helper
                                                 , info
                                                 , long
+                                                , many
                                                 , metavar
+                                                , option
+                                                , optional
                                                 , progDesc
+                                                , short
+                                                , showDefault
                                                 , strArgument
                                                 , strOption
                                                 , subparser
@@ -59,7 +70,7 @@ import           System.Directory               ( createDirectory
 import           System.Exit                    ( ExitCode(..)
                                                 , exitWith
                                                 )
-import           System.Process                 ( runCommand
+import           System.Process                 ( readProcess
                                                 , system
                                                 )
 import           Toml                           ( TomlCodec
@@ -67,7 +78,32 @@ import           Toml                           ( TomlCodec
                                                 )
 import qualified Toml
 
-data Arguments = Arguments { command' :: Command, release :: Bool, commandArguments :: String }
+data Arguments =
+    New
+      { newName :: String
+      , newWithExecutable :: Bool
+      , newWithTest :: Bool
+      , newWithLib :: Bool
+      }
+  | Build
+      { buildRelease :: Bool
+      , buildCompiler :: FilePath
+      , buildFlags :: [String]
+      }
+  | Run
+      { runRelease :: Bool
+      , runCompiler :: FilePath
+      , runFlags :: [String]
+      , runTarget :: Maybe String
+      , runArgs :: Maybe [String]
+      }
+  | Test
+      { testRelease :: Bool
+      , testCompiler :: FilePath
+      , testFlags :: [String]
+      , testTarget :: Maybe String
+      , testArgs :: Maybe [String]
+      }
 
 data TomlSettings = TomlSettings {
       tomlSettingsProjectName :: String
@@ -79,10 +115,9 @@ data TomlSettings = TomlSettings {
 }
 
 data AppSettings = AppSettings {
-      appSettingsCompiler :: String
+      appSettingsCompiler :: CompilerSettings
     , appSettingsProjectName :: String
     , appSettingsBuildPrefix :: String
-    , appSettingsFlags :: [String]
     , appSettingsLibrary :: (Maybe Library)
     , appSettingsExecutables :: [Executable]
     , appSettingsTests :: [Executable]
@@ -107,8 +142,6 @@ data GitRef = Tag String | Branch String | Commit String deriving Show
 
 data PathVersionSpec = PathVersionSpec { pathVersionSpecPath :: String } deriving Show
 
-data Command = Run String | Test String | Build | New String Bool Bool
-
 data DependencyTree = Dependency {
       dependencyName :: String
     , dependencyPath :: FilePath
@@ -118,22 +151,22 @@ data DependencyTree = Dependency {
 }
 
 start :: Arguments -> IO ()
-start args = case command' args of
-  New projectName withExecutable withTest ->
-    createNewProject projectName withExecutable withTest
+start args = case args of
+  New { newName = name, newWithExecutable = withExecutable, newWithTest = withTest, newWithLib = withLib }
+    -> createNewProject name withExecutable withTest withLib
   _ -> do
     fpmContents <- TIO.readFile "fpm.toml"
     let tomlSettings = Toml.decode settingsCodec fpmContents
     case tomlSettings of
       Left  err           -> print err
       Right tomlSettings' -> do
-        appSettings <- toml2AppSettings tomlSettings' (release args)
+        appSettings <- toml2AppSettings tomlSettings' args
         app args appSettings
 
 app :: Arguments -> AppSettings -> IO ()
-app args settings = case command' args of
-  Build        -> build settings
-  Run whichOne -> do
+app args settings = case args of
+  Build{} -> build settings
+  Run { runTarget = whichOne, runArgs = runArgs } -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
@@ -148,10 +181,16 @@ app args settings = case command' args of
     case canonicalExecutables of
       [] -> putStrLn "No Executables Found"
       _  -> case whichOne of
-        "" -> do
+        Nothing -> do
           exitCodes <- mapM
             system
-            (map (++ " " ++ commandArguments args) canonicalExecutables)
+            (map
+              (++ case runArgs of
+                Nothing      -> ""
+                Just theArgs -> " " ++ (intercalate " " theArgs)
+              )
+              canonicalExecutables
+            )
           forM_
             exitCodes
             (\exitCode -> when
@@ -161,13 +200,16 @@ app args settings = case command' args of
               )
               (exitWith exitCode)
             )
-        name -> do
+        Just name -> do
           case find (name `isSuffixOf`) canonicalExecutables of
             Nothing        -> putStrLn "Executable Not Found"
             Just specified -> do
-              exitCode <- system (specified ++ " " ++ (commandArguments args))
+              exitCode <- case runArgs of
+                Nothing -> system specified
+                Just theArgs ->
+                  system (specified ++ " " ++ (intercalate " " theArgs))
               exitWith exitCode
-  Test whichOne -> do
+  Test { testTarget = whichOne, testArgs = testArgs } -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
@@ -182,10 +224,16 @@ app args settings = case command' args of
     case canonicalExecutables of
       [] -> putStrLn "No Tests Found"
       _  -> case whichOne of
-        "" -> do
+        Nothing -> do
           exitCodes <- mapM
             system
-            (map (++ " " ++ commandArguments args) canonicalExecutables)
+            (map
+              (++ case testArgs of
+                Nothing      -> ""
+                Just theArgs -> " " ++ (intercalate " " theArgs)
+              )
+              canonicalExecutables
+            )
           forM_
             exitCodes
             (\exitCode -> when
@@ -195,25 +243,27 @@ app args settings = case command' args of
               )
               (exitWith exitCode)
             )
-        name -> do
+        Just name -> do
           case find (name `isSuffixOf`) canonicalExecutables of
             Nothing        -> putStrLn "Test Not Found"
             Just specified -> do
-              exitCode <- system (specified ++ " " ++ (commandArguments args))
+              exitCode <- case testArgs of
+                Nothing -> system specified
+                Just theArgs ->
+                  system (specified ++ " " ++ (intercalate " " theArgs))
               exitWith exitCode
+  _ -> putStrLn "Shouldn't be able to get here"
 
 build :: AppSettings -> IO ()
 build settings = do
-  let compiler    = appSettingsCompiler settings
-  let projectName = appSettingsProjectName settings
-  let buildPrefix = appSettingsBuildPrefix settings
-  let flags       = appSettingsFlags settings
-  let executables = appSettingsExecutables settings
-  let tests       = appSettingsTests settings
+  let compilerSettings = appSettingsCompiler settings
+  let projectName      = appSettingsProjectName settings
+  let buildPrefix      = appSettingsBuildPrefix settings
+  let executables      = appSettingsExecutables settings
+  let tests            = appSettingsTests settings
   mainDependencyTrees <- fetchDependencies (appSettingsDependencies settings)
   builtDependencies   <- buildDependencies buildPrefix
-                                           compiler
-                                           flags
+                                           compilerSettings
                                            mainDependencyTrees
   (executableDepends, maybeTree) <- case appSettingsLibrary settings of
     Just librarySettings -> do
@@ -229,15 +279,13 @@ build settings = do
         Just script -> buildWithScript script
                                        "."
                                        (buildPrefix </> projectName)
-                                       compiler
-                                       flags
+                                       compilerSettings
                                        projectName
                                        (map fst builtDependencies)
         Nothing -> buildLibrary librarySourceDir'
                                 [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
                                 (buildPrefix </> projectName)
-                                compiler
-                                flags
+                                compilerSettings
                                 projectName
                                 (map fst builtDependencies)
       return
@@ -251,14 +299,13 @@ build settings = do
       do
         localDependencies <-
           fetchExecutableDependencies maybeTree dependencies
-            >>= buildDependencies buildPrefix compiler flags
+            >>= buildDependencies buildPrefix compilerSettings
         buildProgram
           sourceDir
           ((map fst executableDepends) ++ (map fst localDependencies))
           [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
           (buildPrefix </> sourceDir)
-          compiler
-          flags
+          compilerSettings
           name
           mainFile
           ((map snd executableDepends) ++ (map snd localDependencies))
@@ -266,13 +313,13 @@ build settings = do
     executables
   devDependencies <-
     fetchExecutableDependencies maybeTree (appSettingsDevDependencies settings)
-      >>= buildDependencies buildPrefix compiler flags
+      >>= buildDependencies buildPrefix compilerSettings
   mapM_
     (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name, executableDependencies = dependencies } ->
       do
         localDependencies <-
           fetchExecutableDependencies maybeTree dependencies
-            >>= buildDependencies buildPrefix compiler flags
+            >>= buildDependencies buildPrefix compilerSettings
         buildProgram
           sourceDir
           (  (map fst executableDepends)
@@ -281,8 +328,7 @@ build settings = do
           )
           [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
           (buildPrefix </> sourceDir)
-          compiler
-          flags
+          compilerSettings
           name
           mainFile
           (  (map snd executableDepends)
@@ -302,42 +348,128 @@ getArguments = execParser
   )
 
 arguments :: Parser Arguments
-arguments =
-  Arguments
-    <$> subparser
-          (  command "run"  (info runArguments (progDesc "Run the executable"))
-          <> command "test" (info testArguments (progDesc "Run the tests"))
-          <> command "build"
-                     (info buildArguments (progDesc "Build the executable"))
-          <> command
-               "new"
-               (info newArguments
-                     (progDesc "Create a new project in a new directory")
-               )
-          )
-    <*> switch (long "release" <> help "Build in release mode")
-    <*> strOption
-          (long "args" <> metavar "ARGS" <> value "" <> help
-            "Arguments to pass to executables/tests"
-          )
+arguments = subparser
+  (  command
+      "new"
+      (info (newArguments <**> helper)
+            (progDesc "Create a new project in a new directory")
+      )
+  <> command
+       "build"
+       (info (buildArguments <**> helper) (progDesc "Build the project"))
+  <> command
+       "run"
+       (info (runArguments <**> helper) (progDesc "Run the executable(s)"))
+  <> command "test"
+             (info (testArguments <**> helper) (progDesc "Run the test(s)"))
+  )
 
-runArguments :: Parser Command
-runArguments = Run <$> strArgument
-  (metavar "EXE" <> value "" <> help "Which executable to run")
-
-testArguments :: Parser Command
-testArguments =
-  Test <$> strArgument (metavar "TEST" <> value "" <> help "Which test to run")
-
-buildArguments :: Parser Command
-buildArguments = pure Build
-
-newArguments :: Parser Command
+newArguments :: Parser Arguments
 newArguments =
   New
-    <$> strArgument (metavar "NAME" <> help "Name of new project")
-    <*> switch (long "with-executable" <> help "Include an executable")
-    <*> switch (long "with-test" <> help "Include a test")
+    <$> strArgument
+          (  metavar "NAME"
+          <> help "Name of new project (must be a valid Fortran identifier)"
+          )
+    <*> switch (long "app" <> help "Include an executable")
+    <*> switch (long "test" <> help "Include a test")
+    <*> switch (long "lib" <> help "Include a library")
+
+buildArguments :: Parser Arguments
+buildArguments =
+  Build
+    <$> switch
+          (  long "release"
+          <> help "Build with optimizations instead of debugging"
+          )
+    <*> strOption
+          (  long "compiler"
+          <> metavar "COMPILER"
+          <> value "gfortran"
+          <> help "specify the compiler to use"
+          <> showDefault
+          )
+    <*> many
+          (strOption
+            (  long "flag"
+            <> metavar "FLAG"
+            <> help
+                 "specify an addional argument to pass to the compiler (can appear multiple times)"
+            )
+          )
+
+runArguments :: Parser Arguments
+runArguments =
+  Run
+    <$> switch
+          (  long "release"
+          <> help "Build with optimizations instead of debugging"
+          )
+    <*> strOption
+          (  long "compiler"
+          <> metavar "COMPILER"
+          <> value "gfortran"
+          <> help "specify the compiler to use"
+          <> showDefault
+          )
+    <*> many
+          (strOption
+            (  long "flag"
+            <> metavar "FLAG"
+            <> help
+                 "specify an addional argument to pass to the compiler (can appear multiple times)"
+            )
+          )
+    <*> optional
+          (strOption
+            (long "target" <> metavar "TARGET" <> help
+              "Name of the executable to run"
+            )
+          )
+    <*> optional
+          (many
+            (strArgument
+              (  metavar "ARGS"
+              <> help "Arguments to the executable(s) (should follow '--')"
+              )
+            )
+          )
+
+testArguments :: Parser Arguments
+testArguments =
+  Test
+    <$> switch
+          (  long "release"
+          <> help "Build with optimizations instead of debugging"
+          )
+    <*> strOption
+          (  long "compiler"
+          <> metavar "COMPILER"
+          <> value "gfortran"
+          <> help "specify the compiler to use"
+          <> showDefault
+          )
+    <*> many
+          (strOption
+            (  long "flag"
+            <> metavar "FLAG"
+            <> help
+                 "specify an addional argument to pass to the compiler (can appear multiple times)"
+            )
+          )
+    <*> optional
+          (strOption
+            (long "target" <> metavar "TARGET" <> help "Name of the test to run"
+            )
+          )
+    <*> optional
+          (many
+            (strArgument
+              (  metavar "ARGS"
+              <> help "Arguments to the test(s) (should follow '--')"
+              )
+            )
+          )
 
 getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
 getDirectoriesFiles dirs exts = getDirectoryFilesIO "" newPatterns
@@ -437,51 +569,112 @@ pathVersionCodec :: Toml.TomlCodec PathVersionSpec
 pathVersionCodec =
   PathVersionSpec <$> Toml.string "path" .= pathVersionSpecPath
 
-toml2AppSettings :: TomlSettings -> Bool -> IO AppSettings
-toml2AppSettings tomlSettings release = do
+toml2AppSettings :: TomlSettings -> Arguments -> IO AppSettings
+toml2AppSettings tomlSettings args = do
+  let release = case args of
+        Build { buildRelease = r } -> r
+        Run { runRelease = r }     -> r
+        Test { testRelease = r }   -> r
   let projectName = tomlSettingsProjectName tomlSettings
-  let compiler    = "gfortran"
+  let compiler = case args of
+        Build { buildCompiler = c } -> c
+        Run { runCompiler = c }     -> c
+        Test { testCompiler = c }   -> c
+  let specifiedFlags = case args of
+        Build { buildFlags = f } -> f
+        Run { runFlags = f }     -> f
+        Test { testFlags = f }   -> f
+  when (release && (length specifiedFlags > 0)) $ do
+    putStrLn "--release and --flag are mutually exclusive"
+    exitWith (ExitFailure 1)
   librarySettings    <- getLibrarySettings $ tomlSettingsLibrary tomlSettings
   executableSettings <- getExecutableSettings
     (tomlSettingsExecutables tomlSettings)
     projectName
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
-  buildPrefix  <- makeBuildPrefix compiler release
+  compilerSettings <- defineCompilerSettings specifiedFlags compiler release
+  buildPrefix <- makeBuildPrefix (compilerSettingsCompiler compilerSettings)
+                                 (compilerSettingsFlags compilerSettings)
   let dependencies    = tomlSettingsDependencies tomlSettings
   let devDependencies = tomlSettingsDevDependencies tomlSettings
-  return AppSettings
-    { appSettingsCompiler        = compiler
-    , appSettingsProjectName     = projectName
-    , appSettingsBuildPrefix     = buildPrefix
-    , appSettingsFlags           = if release
-                                     then
-                                       [ "-Wall"
-                                       , "-Wextra"
-                                       , "-Wimplicit-interface"
-                                       , "-fPIC"
-                                       , "-fmax-errors=1"
-                                       , "-O3"
-                                       , "-march=native"
-                                       , "-ffast-math"
-                                       , "-funroll-loops"
-                                       ]
-                                     else
-                                       [ "-Wall"
-                                       , "-Wextra"
-                                       , "-Wimplicit-interface"
-                                       , "-fPIC"
-                                       , "-fmax-errors=1"
-                                       , "-g"
-                                       , "-fbounds-check"
-                                       , "-fcheck-array-temporaries"
-                                       , "-fbacktrace"
-                                       ]
-    , appSettingsLibrary         = librarySettings
-    , appSettingsExecutables     = executableSettings
-    , appSettingsTests           = testSettings
-    , appSettingsDependencies    = dependencies
-    , appSettingsDevDependencies = devDependencies
-    }
+  return AppSettings { appSettingsCompiler        = compilerSettings
+                     , appSettingsProjectName     = projectName
+                     , appSettingsBuildPrefix     = buildPrefix
+                     , appSettingsLibrary         = librarySettings
+                     , appSettingsExecutables     = executableSettings
+                     , appSettingsTests           = testSettings
+                     , appSettingsDependencies    = dependencies
+                     , appSettingsDevDependencies = devDependencies
+                     }
+
+defineCompilerSettings :: [String] -> FilePath -> Bool -> IO CompilerSettings
+defineCompilerSettings specifiedFlags compiler release
+  | "gfortran" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-O3"
+              , "-march=native"
+              , "-ffast-math"
+              , "-funroll-loops"
+              ]
+            else
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-g"
+              , "-fbounds-check"
+              , "-fcheck-array-temporaries"
+              , "-fbacktrace"
+              ]
+          fs -> fs
+    in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                  , compilerSettingsFlags       = flags
+                                  , compilerSettingsModuleFlag  = "-J"
+                                  , compilerSettingsIncludeFlag = "-I"
+                                  }
+  | "caf" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-O3"
+              , "-march=native"
+              , "-ffast-math"
+              , "-funroll-loops"
+              ]
+            else
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-g"
+              , "-fbounds-check"
+              , "-fcheck-array-temporaries"
+              , "-fbacktrace"
+              ]
+          fs -> fs
+    in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                  , compilerSettingsFlags       = flags
+                                  , compilerSettingsModuleFlag  = "-J"
+                                  , compilerSettingsIncludeFlag = "-I"
+                                  }
+  | otherwise
+  = do
+    putStrLn $ "Sorry, compiler is currently unsupported: " ++ compiler
+    exitWith (ExitFailure 1)
 
 getLibrarySettings :: Maybe Library -> IO (Maybe Library)
 getLibrarySettings maybeSettings = case maybeSettings of
@@ -531,11 +724,21 @@ getTestSettings [] = do
     else return []
 getTestSettings tests = return tests
 
-makeBuildPrefix :: String -> Bool -> IO String
-makeBuildPrefix compiler release =
+makeBuildPrefix :: FilePath -> [String] -> IO FilePath
+makeBuildPrefix compiler flags = do
   -- TODO Figure out what other info should be part of this
   --      Probably version, and make sure to not include path to the compiler
-  return $ "build" </> compiler ++ "_" ++ if release then "release" else "debug"
+  versionInfo <- readProcess compiler ["--version"] []
+  let compilerName = last (splitDirectories compiler)
+  let versionHash  = abs (hash versionInfo)
+  let flagsHash    = abs (hash flags)
+  return
+    $   "build"
+    </> compilerName
+    ++  "_"
+    ++  showHex versionHash ""
+    ++  "_"
+    ++  showHex flagsHash ""
 
 {-
     Fetching the dependencies is done on a sort of breadth first approach. All
@@ -647,54 +850,49 @@ fetchDependency name version = do
     the transitive dependencies have been built before trying to build this one
 -}
 buildDependencies
-  :: String
-  -> String
-  -> [String]
-  -> [DependencyTree]
-  -> IO [(FilePath, FilePath)]
-buildDependencies buildPrefix compiler flags dependencies = do
-  built <- concatMapM (buildDependency buildPrefix compiler flags) dependencies
+  :: String -> CompilerSettings -> [DependencyTree] -> IO [(FilePath, FilePath)]
+buildDependencies buildPrefix compilerSettings dependencies = do
+  built <- concatMapM (buildDependency buildPrefix compilerSettings)
+                      dependencies
   return $ reverse (nub (reverse built))
 
 buildDependency
-  :: String -> String -> [String] -> DependencyTree -> IO [(FilePath, FilePath)]
-buildDependency buildPrefix compiler flags (Dependency name path sourcePath mBuildScript dependencies)
+  :: String -> CompilerSettings -> DependencyTree -> IO [(FilePath, FilePath)]
+buildDependency buildPrefix compilerSettings (Dependency name path sourcePath mBuildScript dependencies)
   = do
     transitiveDependencies <- buildDependencies buildPrefix
-                                                compiler
-                                                flags
+                                                compilerSettings
                                                 dependencies
     let buildPath = buildPrefix </> name
     thisArchive <- case mBuildScript of
       Just script -> buildWithScript script
                                      path
                                      buildPath
-                                     compiler
-                                     flags
+                                     compilerSettings
                                      name
                                      (map fst transitiveDependencies)
       Nothing -> buildLibrary sourcePath
                               [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
                               buildPath
-                              compiler
-                              flags
+                              compilerSettings
                               name
                               (map fst transitiveDependencies)
     return $ (buildPath, thisArchive) : transitiveDependencies
 
-createNewProject :: String -> Bool -> Bool -> IO ()
-createNewProject projectName withExecutable withTest = do
+createNewProject :: String -> Bool -> Bool -> Bool -> IO ()
+createNewProject projectName withExecutable withTest withLib = do
   createDirectory projectName
   writeFile (projectName </> "fpm.toml")   (templateFpmToml projectName)
   writeFile (projectName </> "README.md")  (templateReadme projectName)
   writeFile (projectName </> ".gitignore") "build/*\n"
-  createDirectory (projectName </> "src")
-  writeFile (projectName </> "src" </> projectName <.> "f90")
-            (templateModule projectName)
+  when withLib $ do
+    createDirectory (projectName </> "src")
+    writeFile (projectName </> "src" </> projectName <.> "f90")
+              (templateModule projectName)
   when withExecutable $ do
     createDirectory (projectName </> "app")
     writeFile (projectName </> "app" </> "main.f90")
-              (templateProgram projectName)
+              (templateProgram projectName withLib)
   when withTest $ do
     createDirectory (projectName </> "test")
     writeFile (projectName </> "test" </> "main.f90") templateTest
@@ -736,12 +934,11 @@ templateReadme :: String -> String
 templateReadme projectName =
   "# " ++ projectName ++ "\n" ++ "\n" ++ "My cool new project!\n"
 
-templateProgram :: String -> String
-templateProgram projectName =
+templateProgram :: String -> Bool -> String
+templateProgram projectName withLib =
   "program main\n"
-    ++ "  use "
-    ++ projectName
-    ++ ", only: say_hello\n"
+    ++ (if withLib then "  use " ++ projectName ++ ", only: say_hello\n" else ""
+       )
     ++ "\n"
     ++ "  implicit none\n"
     ++ "\n"

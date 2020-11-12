@@ -1,6 +1,7 @@
 {-# LANGUAGE MultiWayIf #-}
 module Build
-  ( buildLibrary
+  ( CompilerSettings(..)
+  , buildLibrary
   , buildProgram
   , buildWithScript
   )
@@ -50,22 +51,28 @@ import           System.Directory               ( createDirectoryIfMissing
                                                 , withCurrentDirectory
                                                 )
 
+data CompilerSettings = CompilerSettings {
+      compilerSettingsCompiler :: FilePath
+    , compilerSettingsFlags :: [String]
+    , compilerSettingsModuleFlag :: String
+    , compilerSettingsIncludeFlag :: String
+}
+
 buildProgram
   :: FilePath
   -> [FilePath]
   -> [FilePattern]
   -> FilePath
-  -> FilePath
-  -> [String]
+  -> CompilerSettings
   -> String
   -> FilePath
   -> [FilePath]
   -> IO ()
-buildProgram programDirectory' libraryDirectories sourceExtensions buildDirectory' compiler flags programName programSource archives
+buildProgram programDirectory' libraryDirectories sourceExtensions buildDirectory' (CompilerSettings { compilerSettingsCompiler = compiler, compilerSettingsFlags = flags, compilerSettingsModuleFlag = moduleFlag, compilerSettingsIncludeFlag = includeFlag }) programName programSource archives
   = do
     let programDirectory = foldl1 (</>) (splitDirectories programDirectory')
-    let buildDirectory = foldl1 (</>) (splitDirectories buildDirectory')
-    let includeFlags = map ("-I" ++) libraryDirectories
+    let buildDirectory   = foldl1 (</>) (splitDirectories buildDirectory')
+    let includeFlags     = map (includeFlag ++) libraryDirectories
     sourceFiles <- getDirectoriesFiles [programDirectory] sourceExtensions
     rawSources  <- mapM sourceFileToRawSource sourceFiles
     let sources' = map processRawSource rawSources
@@ -98,7 +105,7 @@ buildProgram programDirectory' libraryDirectories sourceExtensions buildDirector
                 in  fileMatcher &?> \(objectFile : _) -> do
                       need (sourceFile : directDependencies)
                       cmd compiler
-                          ["-c", "-J" ++ buildDirectory]
+                          ["-c", moduleFlag ++ buildDirectory]
                           includeFlags
                           flags
                           ["-o", objectFile, sourceFile]
@@ -113,14 +120,13 @@ buildLibrary
   :: FilePath
   -> [FilePattern]
   -> FilePath
-  -> FilePath
-  -> [String]
+  -> CompilerSettings
   -> String
   -> [FilePath]
   -> IO (FilePath)
-buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags libraryName otherLibraryDirectories
+buildLibrary libraryDirectory sourceExtensions buildDirectory (CompilerSettings { compilerSettingsCompiler = compiler, compilerSettingsFlags = flags, compilerSettingsModuleFlag = moduleFlag, compilerSettingsIncludeFlag = includeFlag }) libraryName otherLibraryDirectories
   = do
-    let includeFlags = map ("-I" ++) otherLibraryDirectories
+    let includeFlags = map (includeFlag ++) otherLibraryDirectories
     sourceFiles <- getDirectoriesFiles [libraryDirectory] sourceExtensions
     rawSources  <- mapM sourceFileToRawSource sourceFiles
     let sources          = map processRawSource rawSources
@@ -150,7 +156,7 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory compiler flags lib
                 in  fileMatcher &?> \(objectFile : _) -> do
                       need (sourceFile : directDependencies)
                       cmd compiler
-                          ["-c", "-J" ++ buildDirectory]
+                          ["-c", moduleFlag ++ buildDirectory]
                           includeFlags
                           flags
                           ["-o", objectFile, sourceFile]
@@ -165,18 +171,19 @@ buildWithScript
   :: String
   -> FilePath
   -> FilePath
-  -> FilePath
-  -> [String]
+  -> CompilerSettings
   -> String
   -> [FilePath]
   -> IO (FilePath)
-buildWithScript script projectDirectory buildDirectory compiler flags libraryName otherLibraryDirectories
+buildWithScript script projectDirectory buildDirectory (CompilerSettings { compilerSettingsCompiler = compiler, compilerSettingsFlags = flags, compilerSettingsModuleFlag = moduleFlag, compilerSettingsIncludeFlag = includeFlag }) libraryName otherLibraryDirectories
   = do
     absoluteBuildDirectory <- makeAbsolute buildDirectory
     createDirectoryIfMissing True absoluteBuildDirectory
     absoluteLibraryDirectories <- mapM makeAbsolute otherLibraryDirectories
-    setEnv "FC"     compiler
-    setEnv "FFLAGS" (intercalate " " flags)
+    setEnv "FC"           compiler
+    setEnv "FFLAGS"       (intercalate " " flags)
+    setEnv "FINCLUDEFLAG" includeFlag
+    setEnv "FMODUELFLAG"  moduleFlag
     setEnv "BUILD_DIR" $ unWindowsPath absoluteBuildDirectory
     setEnv "INCLUDE_DIRS"
            (intercalate " " (map unWindowsPath absoluteLibraryDirectories))

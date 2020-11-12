@@ -1,13 +1,13 @@
 program new_test
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-use fpm_filesystem,  only : is_dir, list_files, exists, windows_path
+use fpm_filesystem,  only : is_dir, list_files, exists, windows_path, join_path
 use fpm_strings,     only : string_t, operator(.in.)
-use fpm_environment, only : run, get_os_type 
+use fpm_environment, only : run, get_os_type
 use fpm_environment, only : OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_WINDOWS
 implicit none
 type(string_t), allocatable    :: file_names(:)
 integer                        :: i, j, k
-character(len=*),parameter     :: cmdpath = 'build/gfortran_debug/app/fpm'
+character(len=:),allocatable   :: cmdpath
 character(len=:),allocatable   :: path
 character(len=*),parameter     :: scr = 'fpm_scratch_'
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
@@ -35,6 +35,8 @@ character(len=:),allocatable  :: expected(:)
 logical,allocatable           :: tally(:)
 logical                       :: IS_OS_WINDOWS
    write(*,'(g0:,1x)')'TEST new SUBCOMMAND (draft):'
+
+   cmdpath = get_command_path()
    allocate(tally(0))
    shortdirs=[character(len=80) :: 'A','B','C','D','E','F','G','BB','CC']
    allocate(character(len=80) :: directories(size(shortdirs)))
@@ -44,18 +46,18 @@ logical                       :: IS_OS_WINDOWS
    !! o  assuming fpm command is in expected path and the new version
    !! o  DOS versus POSIX filenames
    is_os_windows=.false.
-    select case (get_os_type()) 
+    select case (get_os_type())
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
        call execute_command_line('rm -rf fpm_scratch_*',exitstat=estat,cmdstat=cstat,cmdmsg=message)
        path=cmdpath
-    case (OS_WINDOWS) 
+    case (OS_WINDOWS)
        path=windows_path(cmdpath)
        is_os_windows=.true.
        call execute_command_line('rmdir fpm_scratch_* /s /q',exitstat=estat,cmdstat=cstat,cmdmsg=message)
     case default
        write(*,*)'ERROR: unknown OS. Stopping test'
        stop 2
-    end select 
+    end select
    do i=1,size(directories)
       directories(i)=scr//trim(shortdirs(i))
       if( is_dir(trim(directories(i))) ) then
@@ -121,7 +123,7 @@ logical                       :: IS_OS_WINDOWS
          endif
 
          do j=1,size(expected)
-            
+
             expected(j)=scr//expected(j)
             if(is_os_windows) expected(j)=windows_path(expected(j))
             if( .not.(trim(expected(j)).in.file_names) )then
@@ -137,12 +139,12 @@ logical                       :: IS_OS_WINDOWS
    enddo TESTS
 
    ! clean up scratch files; might want an option to leave them for inspection
-   select case (get_os_type()) 
+   select case (get_os_type())
    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
       call execute_command_line('rm -rf fpm_scratch_*',exitstat=estat,cmdstat=cstat,cmdmsg=message)
-   case (OS_WINDOWS) 
+   case (OS_WINDOWS)
       call execute_command_line('rmdir fpm_scratch_* /s /q',exitstat=estat,cmdstat=cstat,cmdmsg=message)
-   end select 
+   end select
 
    write(*,'("TALLY=",*(g0))')tally
    if(all(tally))then
@@ -151,5 +153,19 @@ logical                       :: IS_OS_WINDOWS
       write(*,*)'FAILED: PASSED=',count(tally),' FAILED=',count(.not.tally)
       stop 5
    endif
+contains
+  function get_command_path() result(command_path)
+    character(len=:), allocatable :: command_path
 
+    type(string_t), allocatable :: files(:)
+    integer :: i
+
+    call list_files("build", files)
+    do i = 1, size(files)
+      if (index(files(i)%s, "gfortran") > 0) then
+        command_path = join_path(files(i)%s, "app", "fpm")
+        return
+      end if
+    end do
+  end function
 end program new_test
