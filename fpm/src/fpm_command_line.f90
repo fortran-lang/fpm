@@ -36,18 +36,12 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
 end type
 
-type, extends(fpm_cmd_settings)  :: fpm_run_settings
+type, extends(fpm_build_settings)  :: fpm_run_settings
     character(len=ibug),allocatable :: name(:)
-    logical                      :: release=.false.
-    logical                      :: list=.false.
     character(len=:),allocatable :: args
 end type
 
-type, extends(fpm_cmd_settings)  :: fpm_test_settings
-    character(len=ibug),allocatable :: name(:)
-    logical                      :: release=.false.
-    logical                      :: list=.false.
-    character(len=:),allocatable :: args
+type, extends(fpm_run_settings)  :: fpm_test_settings
 end type
 
 type, extends(fpm_cmd_settings)  :: fpm_install_settings

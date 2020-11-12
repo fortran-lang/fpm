@@ -7,7 +7,8 @@ use fpm_environment, only: run
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
-                    FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
+                    FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
+                    FPM_TARGET_EXECUTABLE
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, resolve_module_dependencies
@@ -21,7 +22,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
 use fpm_manifest_dependency, only: dependency_t
 implicit none
 private
-public :: cmd_build, cmd_install, cmd_run, cmd_test
+public :: cmd_build, cmd_install, cmd_run
 
 contains
 
@@ -148,7 +149,6 @@ subroutine build_model(model, settings, package, error)
     type(fpm_build_settings), intent(in) :: settings
     type(package_t), intent(in) :: package
     type(error_t), allocatable, intent(out) :: error
-    integer :: i
 
     type(string_t), allocatable :: package_list(:)
 
@@ -227,17 +227,40 @@ subroutine build_model(model, settings, package, error)
 
     call targets_from_sources(model,model%sources)
 
-    if(settings%list)then
-        do i=1,size(model%targets)
-            write(stderr,*) model%targets(i)%ptr%output_file
-        enddo
-        stop
-    endif
-
     call resolve_module_dependencies(model%targets,error)
 
 end subroutine build_model
 
+!> Apply package defaults
+subroutine package_defaults(package)
+    type(package_t), intent(inout) :: package
+
+    ! Populate library in case we find the default src directory
+    if (.not.allocated(package%library) .and. exists("src")) then
+        allocate(package%library)
+        call default_library(package%library)
+    end if
+
+    ! Populate executable in case we find the default app
+    if (.not.allocated(package%executable) .and. &
+        exists(join_path('app',"main.f90"))) then
+        allocate(package%executable(1))
+        call default_executable(package%executable(1), package%name)
+    end if
+
+    ! Populate test in case we find the default test directory
+    if (.not.allocated(package%test) .and. &
+         exists(join_path("test","main.f90"))) then
+        allocate(package%test(1))
+        call default_test(package%test(1), package%name)
+    endif
+
+    if (.not.(allocated(package%library) .or. allocated(package%executable))) then
+        print '(a)', "Neither library nor executable found, there is nothing to do"
+        error stop 1
+    end if
+
+end subroutine
 
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
@@ -245,29 +268,15 @@ type(package_t) :: package
 type(fpm_model_t) :: model
 type(error_t), allocatable :: error
 
+integer :: i
+
 call get_package_data(package, "fpm.toml", error)
 if (allocated(error)) then
     print '(a)', error%message
     error stop 1
 end if
 
-! Populate library in case we find the default src directory
-if (.not.allocated(package%library) .and. exists("src")) then
-    allocate(package%library)
-    call default_library(package%library)
-end if
-
-! Populate executable in case we find the default app
-if (.not.allocated(package%executable) .and. &
-     exists(join_path('app',"main.f90"))) then
-    allocate(package%executable(1))
-    call default_executable(package%executable(1), package%name)
-end if
-
-if (.not.(allocated(package%library) .or. allocated(package%executable))) then
-    print '(a)', "Neither library nor executable found, there is nothing to do"
-    error stop 1
-end if
+call package_defaults(package)
 
 call build_model(model, settings, package, error)
 if (allocated(error)) then
@@ -275,7 +284,13 @@ if (allocated(error)) then
     error stop 1
 end if
 
-call build_package(model)
+if(settings%list)then
+    do i=1,size(model%targets)
+        write(stderr,*) model%targets(i)%ptr%output_file
+    enddo
+else
+    call build_package(model)
+endif
 
 end subroutine
 
@@ -285,167 +300,154 @@ type(fpm_install_settings), intent(in) :: settings
     error stop 8
 end subroutine cmd_install
 
-subroutine cmd_run(settings)
-type(fpm_run_settings), intent(in) :: settings
-character(len=:),allocatable       :: release_name, cmd, fname
-integer                            :: i, j
-type(package_t)                    :: package
-type(error_t), allocatable         :: error
-character(len=:),allocatable       :: newwords(:)
-logical,allocatable                :: foundit(:)
-logical                            :: list
+subroutine cmd_run(settings,test)
+    class(fpm_run_settings), intent(in) :: settings
+    logical, intent(in) :: test
+
+    integer, parameter :: LINE_WIDTH = 80
+    integer :: i, j, col_width, nCol
+    logical :: found(size(settings%name))
+    type(error_t), allocatable :: error
+    type(package_t) :: package
+    type(fpm_model_t) :: model
+    type(string_t) :: exe_cmd
+    type(string_t), allocatable :: executables(:)
+    type(build_target_t), pointer :: exe_target
+    type(srcfile_t), pointer :: exe_source
+
     call get_package_data(package, "fpm.toml", error)
     if (allocated(error)) then
         print '(a)', error%message
+        error stop 1
+    end if
+
+
+    call package_defaults(package)
+
+    call build_model(model, settings%fpm_build_settings, package, error)
+    if (allocated(error)) then
+        print '(a)', error%message
+        error stop 1
+    end if
+
+    ! Enumerate executable targets to run
+    col_width = -1
+    found(:) = .false.
+    allocate(executables(0))
+    do i=1,size(model%targets)
+
+        exe_target => model%targets(i)%ptr
+
+        if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
+             allocated(exe_target%dependencies)) then
+
+            exe_source => exe_target%dependencies(1)%ptr%source
+
+            if (exe_source%unit_scope == &
+                merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then 
+
+                col_width = max(col_width,len(basename(exe_target%output_file))+2)
+
+                if (size(settings%name) == 0) then
+
+                    exe_cmd%s = exe_target%output_file
+                    executables = [executables, exe_cmd]
+
+                else
+
+                    do j=1,size(settings%name)
+
+                        if (trim(settings%name(j))==exe_source%exe_name) then
+                            
+                            found(j) = .true.
+                            exe_cmd%s = exe_target%output_file
+                            executables = [executables, exe_cmd]
+
+                        end if
+
+                    end do
+
+                end if
+                
+            end if
+
+        end if
+
+    end do
+
+    ! Check if any apps/tests were found
+    if (col_width < 0) then
+        if (test) then
+            write(stderr,*) 'No tests to run'
+        else
+            write(stderr,*) 'No executables to run'
+        end if
         stop
-    endif
-    release_name=trim(merge('gfortran_release','gfortran_debug  ',settings%release))
-    newwords=[character(len=0) ::]
-    ! Populate executable in case we find the default app directory
-    if (.not.allocated(package%executable) .and. exists("app")) then
-        allocate(package%executable(1))
-        call default_executable(package%executable(1), package%name)
-    endif
-    if(size(settings%name).eq.0)then
-        if ( .not.allocated(package%executable) ) then
-            write(stderr,'(*(g0,1x))')'fpm::run<INFO>:no executables found in fpm.toml and no default app/ directory'
-            stop
-        endif
-        allocate(foundit(size(package%executable)))
-        do i=1,size(package%executable)
-            fname=join_path('build',release_name,package%executable(i)%source_dir,package%executable(i)%name)
-            newwords=[character(len=max(len(newwords),len(fname))) :: newwords,fname]
-        enddo
-        if(size(newwords).lt.1)then
-            write(stderr,'(*(g0,1x))')'fpm::run<INFO>:no executables found in fpm.toml'
-            stop
-        endif
-    else
-        ! expand names, duplicates are a problem??
-        allocate(foundit(size(settings%name)))
-        foundit=.false.
-        FINDIT: do i=1,size(package%executable)
-            do j=1,size(settings%name)
-                if(settings%name(j).eq.package%executable(i)%name)then
-                    fname=join_path('build',release_name,package%executable(i)%source_dir,package%executable(i)%name)
-                    newwords=[character(len=max(len(newwords),len(fname))) :: newwords,fname]
-                    foundit(j)=.true.
-                endif
-            enddo
-        enddo FINDIT
-        do i=1,size(settings%name)
-            if(.not.foundit(i))then
-                write(stderr,'(*(g0,1x))')'fpm::run<ERROR>:executable',trim(settings%name(i)),'not located'
-            endif
-        enddo
-        if(allocated(foundit))deallocate(foundit)
-    endif
-    do i=1,size(newwords)
-        ! list is a new option for use with xargs, to move files to production area, valgrind, gdb, ls -l, ....
-        ! maybe add as --mask and could do --mask 'echo %xx' or --mask 'cp %XX /usr/local/bin/' an so on
-        ! default if blank would be filename uptodate|needs|updated|doesnotexist creation_date, ...
-        ! or maybe just list filenames so can pipe through xargs, and so on
-        if(settings%list)then
-            write(stderr,'(*(g0,1x))')'fpm::run<INFO>:executable expected at',newwords(i),&
-            & merge('exists        ','does not exist',exists(newwords(i)))
-            cycle
-        endif
-        cmd=newwords(i) // ' ' // settings%args
-        if(exists(newwords(i)))then
-            call run(cmd)
-        else ! try to build -- once build works conditionally this should be an unconditional call
-            call cmd_build(fpm_build_settings(release=settings%release,list=.false.))
-            if(exists(newwords(i)))then
-                call run(cmd)
+    end if
+
+    ! Check all names are valid
+    if (any(.not.found)) then
+
+        write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
+        do j=1,size(settings%name)
+            if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
+        end do
+        write(stderr,'(A)') 'not found.'
+        write(stderr,*)
+
+        j = 1
+        nCol = LINE_WIDTH/col_width
+        write(stderr,*) 'Available names:'
+        do i=1,size(model%targets)
+
+            exe_target => model%targets(i)%ptr
+    
+            if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
+                allocated(exe_target%dependencies)) then
+
+                exe_source => exe_target%dependencies(1)%ptr%source
+
+                if (exe_source%unit_scope == &
+                    merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then 
+
+                    write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
+                                        & [character(len=col_width) :: basename(exe_target%output_file)]
+                    j = j + 1
+
+                end if
+
+            end if
+
+        end do
+
+        write(stderr,*)
+        stop 1
+
+    end if
+
+    ! NB. To be replaced after incremental rebuild is implemented
+    if (.not.settings%list .and. &
+         any([(.not.exists(executables(i)%s),i=1,size(executables))])) then
+
+        call build_package(model)
+
+    end if
+
+    do i=1,size(executables)
+        if (settings%list) then
+            write(stderr,*) executables(i)%s
+        else
+            
+            if (exists(executables(i)%s)) then
+                call run(executables(i)%s//" "//settings%args)
             else
-                write(stderr,*)'fpm::run<ERROR>',cmd,' not found'
-            endif
-        endif
-    enddo
-    deallocate(newwords)
+                write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
+                stop 1
+            end if
+
+        end if
+    end do
+
 end subroutine cmd_run
-
-
-subroutine cmd_test(settings)
-type(fpm_test_settings), intent(in) :: settings
-character(len=:),allocatable       :: release_name, cmd, fname
-integer                            :: i, j
-type(package_t)                    :: package
-type(error_t), allocatable         :: error
-character(len=:),allocatable       :: newwords(:)
-logical,allocatable                :: foundit(:)
-logical                            :: list
-    call get_package_data(package, "fpm.toml", error)
-    if (allocated(error)) then
-        print '(a)', error%message
-        stop
-    endif
-    release_name=trim(merge('gfortran_release','gfortran_debug  ',settings%release))
-    newwords=[character(len=0) ::]
-
-    ! Populate test in case we find the default test directory
-    if (.not.allocated(package%test) .and. exists("test")) then
-        allocate(package%test(1))
-        call default_test(package%test(1), package%name)
-    endif
-    if(size(settings%name).eq.0)then
-        if ( .not.allocated(package%test) ) then
-            write(stderr,'(*(g0,1x))')'fpm::run<INFO>:no tests found in fpm.toml and no default test/ directory'
-            stop
-        endif
-        allocate(foundit(size(package%test)))
-        do i=1,size(package%test)
-            fname=join_path('build',release_name,package%test(i)%source_dir,package%test(i)%name)
-            newwords=[character(len=max(len(newwords),len(fname))) :: newwords,fname]
-        enddo
-        if(size(newwords).lt.1)then
-            write(stderr,'(*(g0,1x))')'fpm::run<INFO>:no tests found in fpm.toml'
-            stop
-        endif
-    else
-        ! expand names, duplicates are a problem??
-        allocate(foundit(size(settings%name)))
-        foundit=.false.
-        FINDIT: do i=1,size(package%test)
-            do j=1,size(settings%name)
-                if(settings%name(j).eq.package%test(i)%name)then
-                    fname=join_path('build',release_name,package%test(i)%source_dir,package%test(i)%name)
-                    newwords=[character(len=max(len(newwords),len(fname))) :: newwords,fname]
-                    foundit(j)=.true.
-                endif
-            enddo
-        enddo FINDIT
-        do i=1,size(settings%name)
-            if(.not.foundit(i))then
-                write(stderr,'(*(g0,1x))')'fpm::run<ERROR>:test',trim(settings%name(i)),'not located'
-            endif
-        enddo
-        if(allocated(foundit))deallocate(foundit)
-    endif
-    do i=1,size(newwords)
-        ! list is a new option for use with xargs, to move files to production area, valgrind, gdb, ls -l, ....
-        ! maybe add as --mask and could do --mask 'echo %xx' or --mask 'cp %XX /usr/local/bin/' an so on
-        ! default if blank would be filename uptodate|needs|updated|doesnotexist creation_date, ...
-        ! or maybe just list filenames so can pipe through xargs, and so on
-        if(settings%list)then
-            write(stderr,'(*(g0,1x))')'fpm::run<INFO>:test expected at',newwords(i),&
-            & merge('exists        ','does not exist',exists(newwords(i)))
-            cycle
-        endif
-        cmd=newwords(i) // ' ' // settings%args
-        if(exists(newwords(i)))then
-            call run(cmd)
-        else ! try to build -- once build works conditionally this should be an unconditional call
-            call cmd_build(fpm_build_settings(release=settings%release,list=.false.))
-            if(exists(newwords(i)))then
-                call run(cmd)
-            else
-                write(stderr,*)'fpm::run<ERROR>',cmd,' not found'
-            endif
-        endif
-    enddo
-    deallocate(newwords)
-end subroutine cmd_test
-
 
 end module fpm

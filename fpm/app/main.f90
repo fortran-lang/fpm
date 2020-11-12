@@ -7,7 +7,7 @@ use fpm_command_line, only: &
         fpm_test_settings, &
         fpm_install_settings, &
         get_command_line_settings
-use fpm, only: cmd_build, cmd_install, cmd_run, cmd_test
+use fpm, only: cmd_build, cmd_install, cmd_run
 use fpm_cmd_new, only: cmd_new
 
 implicit none
@@ -22,9 +22,9 @@ type is (fpm_new_settings)
 type is (fpm_build_settings)
     call cmd_build(settings)
 type is (fpm_run_settings)
-    call cmd_run(settings)
+    call cmd_run(settings,test=.false.)
 type is (fpm_test_settings)
-    call cmd_test(settings)
+    call cmd_run(settings,test=.true.)
 type is (fpm_install_settings)
     call cmd_install(settings)
 end select

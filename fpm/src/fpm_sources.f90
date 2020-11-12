@@ -51,13 +51,14 @@ function parse_source(source_file_path,error) result(source)
 end function parse_source
 
 
-subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
+subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse,error)
     ! Enumerate sources in a directory
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     character(*), intent(in) :: directory
     integer, intent(in) :: scope
     logical, intent(in), optional :: with_executables
+    logical, intent(in), optional :: recurse
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i
@@ -68,7 +69,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,error)
     type(srcfile_t), allocatable :: dir_sources(:)
 
     ! Scan directory for sources
-    call list_files(directory, file_names,recurse=.true.)
+    call list_files(directory, file_names,recurse=merge(recurse,.true.,present(recurse)))
 
     if (allocated(sources)) then
         allocate(existing_src_files(size(sources)))
@@ -135,8 +136,8 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
-        call add_sources_from_dir(sources,exe_dirs(i)%s, &
-                     scope, with_executables=auto_discover,error=error)
+        call add_sources_from_dir(sources,exe_dirs(i)%s, scope, &
+                     with_executables=auto_discover, recurse=.false., error=error)
 
         if (allocated(error)) then
             return
