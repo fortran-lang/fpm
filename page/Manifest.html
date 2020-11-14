@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="Fortran Package Manager">
+    
+    <meta name="author" content="fortran-lang/fpm contributors" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>Manifest reference &ndash; Fortran-lang/fpm</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">Fortran-lang/fpm </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li><a href='../page/index.html'>Packaging and contributing</a></li>
+      
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+          </ul>
+        
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  <div class="row">
+    <h1>Manifest reference</h1>
+    <div class="row">
+    <div class="col-lg-12">
+    <div class="well well-sm" style="min-height: 40px;">
+      <ul class="list-inline" style="margin-bottom:0px; display:inline">
+         
+         
+<!--
+        
+-->
+      </ul>
+        <ol class="breadcrumb in-well">
+      
+         <li><a href='../page/index.html'>Packaging and contributing</a></li>
+      
+         <li class="active">Manifest reference</li>
+      </ol>
+    </div>
+    </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-9 col-md-push-3" id='text'>
+      <h1 id="fortran-package-manager-fpm-manifest-reference">Fortran package manager (fpm) manifest reference</h1>
+<p>The <code>fpm.toml</code> file for each project is called its <em>manifest</em>.
+It is written using the <a href="https://toml.io/">TOML</a> format.
+Every manifest file consists of the following sections:</p>
+<ul>
+<li><a href="#project-name"><em>name</em></a>:
+  The name of the project</li>
+<li><a href="#project-version"><em>version</em></a>:
+  The version of the project</li>
+<li><a href="#project-license"><em>license</em></a>:
+  The project license</li>
+<li><a href="#project-maintainer"><em>maintainer</em></a>:
+  Maintainer of the project</li>
+<li><a href="#project-author"><em>author</em></a>:
+  Author of the project</li>
+<li><a href="#project-copyright"><em>copyright</em></a>:
+  Copyright of the project</li>
+<li><a href="#project-description"><em>description</em></a>:
+  Description of the project</li>
+<li><a href="#project-categories"><em>categories</em></a>:
+  Categories associated with the project</li>
+<li><a href="#project-keywords"><em>keywords</em></a>:
+  Keywords describing the project</li>
+<li><a href="#project-homepage"><em>homepage</em></a>:
+  The project&rsquo;s homepage</li>
+<li>Build configuration:</li>
+<li><a href="#automatic-target-discovery"><em>auto-tests</em></a>:
+    Toggle automatic discovery of test executables</li>
+<li><a href="#automatic-target-discovery"><em>auto-executables</em></a>:
+    Toggle automatic discovery of executables</li>
+<li><a href="#link-external-libraries"><em>link</em></a>:
+    Link with external dependencies</li>
+<li>Target sections:</li>
+<li><a href="#library-configuration"><em>library</em></a>
+    Configuration of the library target</li>
+<li><a href="#executable-targets"><em>executable</em></a>
+    Configuration of the executable targets</li>
+<li><a href="#test-targets"><em>test</em></a>
+    Configuration of the test targets</li>
+<li>Dependency sections:</li>
+<li><a href="#specifying-dependencies"><em>dependencies</em></a>:
+    Project library dependencies</li>
+<li><a href="#development-dependencies"><em>dev-dependencies</em></a>:
+    Dependencies only needed for tests</li>
+</ul>
+<h2 id="project-name">Project name</h2>
+<p>The project name identifies the package and is used to refer to it.
+It is used when listing the project as dependency for another package and the default name of the library and executable target.
+Therefore, the project name must always be present.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;hello_world&quot;</span>
+</code></pre></div>
+
+<h2 id="project-version">Project version</h2>
+<p>The version number of the project is specified as string.
+A standardized way to manage and specify versions is the <a href="https://semver.org">Semantic Versioning</a> scheme.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">version</span> <span class="o">=</span> <span class="s">&quot;1.0.0&quot;</span>
+</code></pre></div>
+
+<h2 id="project-license">Project license</h2>
+<p>The project license field contains the license identifier.
+A standardized way to specify licensing information are <a href="https://spdx.org/licenses/">SPDX</a> identifiers.</p>
+<p><em>Examples:</em></p>
+<p>Projects licensed under the <a href="https://www.gnu.org/licenses/lgpl-3.0-standalone.html">GNU Lesser General Public License</a>, either version 3 or any later version, is specified as</p>
+<div class="codehilite"><pre><span></span><code><span class="n">license</span> <span class="o">=</span> <span class="s">&quot;LGPL-3.0-or-later&quot;</span>
+</code></pre></div>
+
+<p>Dual licensed project under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache license, version 2.0</a> or the <a href="https://opensource.org/licenses/MIT">MIT license</a> are specified as</p>
+<div class="codehilite"><pre><span></span><code><span class="n">license</span> <span class="o">=</span> <span class="s">&quot;Apache-2.0 OR MIT&quot;</span>
+</code></pre></div>
+
+<h2 id="project-maintainer">Project maintainer</h2>
+<p>Information on the project maintainer and means to reach out to them.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">maintainer</span> <span class="o">=</span> <span class="s">&quot;jane.doe@example.com&quot;</span>
+</code></pre></div>
+
+<h2 id="project-author">Project author</h2>
+<p>Information on the project author.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">author</span> <span class="o">=</span> <span class="s">&quot;Jane Doe&quot;</span>
+</code></pre></div>
+
+<h2 id="project-copyright">Project copyright</h2>
+<p>A statement clarifying the copyright status of the project.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">copyright</span> <span class="o">=</span> <span class="s">&quot;Copyright 2020 Jane Doe&quot;</span>
+</code></pre></div>
+
+<h2 id="project-description">Project description</h2>
+<p>The decription provides a short summary on the project.
+It should be plain text and not using any markup formatting.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">description</span> <span class="o">=</span> <span class="s">&quot;A short summary on this project&quot;</span>
+</code></pre></div>
+
+<h2 id="project-categories">Project categories</h2>
+<p>The project can be associated with different categories.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">categories</span> <span class="o">=</span> <span class="k">[&quot;io&quot;]</span>
+</code></pre></div>
+
+<h2 id="project-keywords">Project keywords</h2>
+<p>The keywords field is an array of strings describing the project.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">keywords</span> <span class="o">=</span> <span class="k">[&quot;hdf5&quot;, &quot;mpi&quot;]</span>
+</code></pre></div>
+
+<h2 id="project-homepage">Project homepage</h2>
+<p>URL to the webpage of the project.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="n">homepage</span> <span class="o">=</span> <span class="s">&quot;https://stdlib.fortran-lang.org&quot;</span>
+</code></pre></div>
+
+<h2 id="project-targets">Project targets</h2>
+<p>Every fpm project can define library, executable and test targets.
+Library targets are exported and useable for other projects.</p>
+<h3 id="library-configuration">Library configuration</h3>
+<p>Defines the exported library target of the project.
+A library is generated if the source directory is found in a project.
+The default source directory is <code>src</code> but can be modifed in the <em>library</em> section using the <em>source-dir</em> entry.
+Paths for the source directory are given relative to the project root and use <code>/</code> as path separator on all platforms.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="k">[library]</span>
+<span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;lib&quot;</span>
+</code></pre></div>
+
+<h4 id="custom-build-script">Custom build script</h4>
+<blockquote>
+<p>Supported in Bootstrap fpm only</p>
+</blockquote>
+<p>Projects with custom build scripts can specify those in the <em>build-script</em> entry.
+The custom build script will be executeted when the library build step is reached.</p>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="k">[library]</span>
+<span class="n">build-script</span> <span class="o">=</span> <span class="s">&quot;build.sh&quot;</span>
+</code></pre></div>
+
+<p>Build scripts written in <code>make</code> are automatically detected and executed with <code>make</code></p>
+<div class="codehilite"><pre><span></span><code><span class="k">[library]</span>
+<span class="n">build-script</span> <span class="o">=</span> <span class="s">&quot;Makefile&quot;</span>
+</code></pre></div>
+
+<h3 id="executable-targets">Executable targets</h3>
+<p>Executable targets are Fortran programs defined as <em>executable</em> sections.
+If no executable section is specified the <code>app</code> directory is searched for program definitions.
+For explicitly specified executables the <em>name</em> entry must always be specified.
+The source directory for each executable can be adjusted in the <em>source-dir</em> entry.
+Paths for the source directory are given relative to the project root and use <code>/</code> as path separator on all platforms.
+The source file containing the program body can be specified in the <em>main</em> entry.</p>
+<p>Executables can have their own dependencies.
+See <a href="#specifying-dependencies">specifying dependencies</a> for more details.</p>
+<blockquote>
+<p>Dependencies supported in Bootstrap fpm only</p>
+</blockquote>
+<p>Executables can also specify their own external library dependencies.
+See <a href="#link-external-libraries">external libraries</a> for more details.</p>
+<blockquote>
+<p>Linking against libraries is supported in Fortran fpm only</p>
+</blockquote>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="k">[[ executable ]]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;app-name&quot;</span>
+<span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;prog&quot;</span>
+<span class="n">main</span> <span class="o">=</span> <span class="s">&quot;program.f90&quot;</span>
+
+<span class="k">[[ executable ]]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;app-tool&quot;</span>
+<span class="n">link</span> <span class="o">=</span> <span class="s">&quot;z&quot;</span>
+<span class="k">[executable.dependencies]</span>
+<span class="n">helloff</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span> <span class="p">}</span>
+</code></pre></div>
+
+<p>Specifying many separate executables can be done by using inline tables for brevity instead</p>
+<div class="codehilite"><pre><span></span><code><span class="n">executable</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">{</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;a-prog&quot;</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;app-tool&quot;</span><span class="p">,</span> <span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;tool&quot;</span> <span class="p">},</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<h3 id="test-targets">Test targets</h3>
+<p>Test targets are Fortran programs defined as <em>test</em> sections.
+They follow similar rules as the executable targets.
+If no test section is specified the <code>test</code> directory is searched for program definitions.
+For explicitly specified tests the <em>name</em> entry must always be specified.
+The source directory for each test can be adjusted in the <em>source-dir</em> entry.
+Paths for the source directory are given relative to the project root and use <code>/</code> as path separator on all platforms.
+The source file containing the program body can be specified in the <em>main</em> entry.</p>
+<p>Tests can have their own dependencies.
+See <a href="#specifying-dependencies">specifying dependencies</a> for more details.</p>
+<blockquote>
+<p>Dependencies supported in Bootstrap fpm only</p>
+</blockquote>
+<p>Tests can also specify their own external library dependencies.
+See <a href="#link-external-libraries">external libraries</a> for more details.</p>
+<blockquote>
+<p>Linking against libraries is supported in Fortran fpm only</p>
+</blockquote>
+<p><em>Example:</em></p>
+<div class="codehilite"><pre><span></span><code><span class="k">[[ test ]]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;test-name&quot;</span>
+<span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;testing&quot;</span>
+<span class="n">main</span> <span class="o">=</span> <span class="s">&quot;tester.F90&quot;</span>
+
+<span class="k">[[ test ]]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;tester&quot;</span>
+<span class="n">link</span> <span class="o">=</span> <span class="k">[&quot;blas&quot;, &quot;lapack&quot;]</span>
+<span class="k">[test.dependencies]</span>
+<span class="n">helloff</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span> <span class="p">}</span>
+</code></pre></div>
+
+<h2 id="link-external-libraries">Link external libraries</h2>
+<blockquote>
+<p>Supported in Fortran fpm only</p>
+</blockquote>
+<p>To declare link time dependencies on external libraries a list of native libraries can be specified in the <em>link</em> entry.
+Specify either one library as string or a list of strings in case several libraries should be linked.
+When possible the project should only link one native library.
+The list of library dependencies is exported to dependent packages.</p>
+<p><em>Example:</em></p>
+<p>To link against the zlib compression library use</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
+<span class="n">link</span> <span class="o">=</span> <span class="s">&quot;z&quot;</span>
+</code></pre></div>
+
+<p>To dependent on LAPACK also BLAS should be linked.
+In this case the order of the libraries matters:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
+<span class="n">link</span> <span class="o">=</span> <span class="k">[&quot;blas&quot;, &quot;lapack&quot;]</span>
+</code></pre></div>
+
+<h2 id="automatic-target-discovery">Automatic target discovery</h2>
+<blockquote>
+<p>Supported in Fortran fpm only</p>
+</blockquote>
+<p>Executables and test can be discovered automatically in their default directories.
+The automatic discovery recursively searches the <code>app</code> and <code>test</code> directories for <code>program</code> definitions and declares them as executable and test targets, respectively.
+The automatic discovery is enabled by default.</p>
+<p>To disable the automatic discovery of targets set the <em>auto-executables</em> and <em>auto-tests</em> entry to <em>false</em>.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
+<span class="n">auto-executables</span> <span class="o">=</span> <span class="kc">false</span>
+<span class="n">auto-tests</span> <span class="o">=</span> <span class="kc">false</span>
+</code></pre></div>
+
+<h2 id="specifying-dependencies">Specifying dependencies</h2>
+<p>Dependencies can be declared in the <em>dependencies</em> table in the manifest root or the <a href="#executable-targets"><em>executable</em></a> or <a href="#test-targets"><em>test</em></a> sections.
+When declared in the manifest root the dependencies are exported with the project.</p>
+<h3 id="local-dependencies">Local dependencies</h3>
+<p>To declare local dependencies use the <em>path</em> entry.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="n">my-utils</span> <span class="o">=</span> <span class="p">{</span> <span class="n">path</span> <span class="o">=</span> <span class="s">&quot;utils&quot;</span> <span class="p">}</span>
+</code></pre></div>
+
+<p>Local dependency paths are given relative to the project root and use <code>/</code> as path separator on all platforms.</p>
+<h3 id="dependencies-from-version-control-systems">Dependencies from version control systems</h3>
+<p>Dependencies can be specified by the projects git repository.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="n">toml-f</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span> <span class="p">}</span>
+</code></pre></div>
+
+<p>To use a specific upstream branch declare the <em>branch</em> name with</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="n">toml-f</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span> <span class="n">branch</span> <span class="o">=</span> <span class="s">&quot;master&quot;</span> <span class="p">}</span>
+</code></pre></div>
+
+<p>Alternatively, reference tags by using the <em>tag</em> entry</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="n">toml-f</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> <span class="s">&quot;v0.2.1&quot;</span> <span class="p">}</span>
+</code></pre></div>
+
+<p>To pin a specific revision specify the commit hash in the <em>rev</em> entry</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="n">toml-f</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span> <span class="n">rev</span> <span class="o">=</span> <span class="s">&quot;2f5eaba&quot;</span> <span class="p">}</span>
+</code></pre></div>
+
+<p>For more verbose layout use normal tables rather than inline tables to specify dependencies</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="k">[dependencies.toml-f]</span>
+<span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span>
+<span class="n">rev</span> <span class="o">=</span> <span class="s">&quot;2f5eaba864ff630ba0c3791126a3f811b6e437f3&quot;</span>
+</code></pre></div>
+
+<h3 id="development-dependencies">Development dependencies</h3>
+<p>Development dependencies allow to declare <em>dev-dependencies</em> in the manifest root, which are available to all tests but not exported with the project.</p>
+    </div>
+    
+    <div class="col-md-3 col-md-pull-9">
+      <hr class="visible-xs visible-sm">
+        <div class="well toc">
+          <ul class="nav nav-stacked nav-pills">
+            <li role="presentation" class="title"><a href='../page/index.html'>Packaging and contributing</a></li>
+          </ul>
+          <hr>
+          <ul class="nav nav-stacked nav-pills">
+            
+            <li role="presentation">
+            <a href='../page/./Contributing.html'>Contributing Guidelines</a>
+            
+            </li>
+            
+            <li role="presentation">
+            <a href='../page/./License.html'>License</a>
+            
+            </li>
+            
+            <li role="presentation" class="disabled">
+            <a href='../page/./Manifest.html'>Manifest reference</a>
+            
+            </li>
+            
+            <li role="presentation">
+            <a href='../page/./Packaging.html'>Packaging with fpm</a>
+            
+            </li>
+            
+          </ul>
+        </div>
+    </div>
+    
+  </div>
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+             on 2020-11-14 16:09  
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+    
+  </body>
+</html>
