@@ -22,8 +22,8 @@ contains
 subroutine build_package(model)
     type(fpm_model_t), intent(inout) :: model
 
-    integer :: i
-    character(:), allocatable :: base, linking, subdir
+    integer :: i, ilib
+    character(:), allocatable :: base, linking, subdir, link_flags
 
     if (.not.exists(model%output_directory)) then
         call mkdir(model%output_directory)
@@ -57,9 +57,9 @@ recursive subroutine build_target(model,target,linking)
     type(build_target_t), intent(inout) :: target
     character(:), allocatable, intent(in) :: linking
 
-    integer :: i, j
+    integer :: i, j, ilib
     type(build_target_t), pointer :: exe_obj
-    character(:), allocatable :: objs
+    character(:), allocatable :: objs, link_flags
 
     if (target%built) then
         return
@@ -119,8 +119,15 @@ recursive subroutine build_target(model,target,linking)
               // " -o " // target%output_file)
 
     case (FPM_TARGET_EXECUTABLE)
+        link_flags = linking
+        if (allocated(target%link_libraries)) then
+            do ilib = 1, size(target%link_libraries)
+                link_flags = link_flags // " -l" // target%link_libraries(ilib)%s
+            end do
+        end if
+
         call run("gfortran " // objs // model%fortran_compile_flags &
-              //linking// " -o " // target%output_file)
+              //link_flags// " -o " // target%output_file)
 
     case (FPM_TARGET_ARCHIVE)
         call run("ar -rs " // target%output_file // objs)

@@ -29,6 +29,8 @@ Every manifest file consists of the following sections:
     Toggle automatic discovery of test executables
   - [*auto-executables*](#automatic-target-discovery):
     Toggle automatic discovery of executables
+  - [*link*](#link-external-libraries):
+    Link with external dependencies
 - Target sections:
   - [*library*](#library-configuration)
     Configuration of the library target
@@ -228,6 +230,11 @@ See [specifying dependencies](#specifying-dependencies) for more details.
 
 > Dependencies supported in Bootstrap fpm only
 
+Executables can also specify their own external library dependencies.
+See [external libraries](#link-external-libraries) for more details.
+
+> Linking against libraries is supported in Fortran fpm only
+
 *Example:*
 
 ```toml
@@ -238,6 +245,7 @@ main = "program.f90"
 
 [[ executable ]]
 name = "app-tool"
+link = "z"
 [executable.dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
 ```
@@ -267,6 +275,11 @@ See [specifying dependencies](#specifying-dependencies) for more details.
 
 > Dependencies supported in Bootstrap fpm only
 
+Tests can also specify their own external library dependencies.
+See [external libraries](#link-external-libraries) for more details.
+
+> Linking against libraries is supported in Fortran fpm only
+
 *Example:*
 
 ```toml
@@ -277,8 +290,36 @@ main = "tester.F90"
 
 [[ test ]]
 name = "tester"
+link = ["blas", "lapack"]
 [test.dependencies]
 helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
+```
+
+
+## Link external libraries
+
+> Supported in Fortran fpm only
+
+To declare link time dependencies on external libraries a list of native libraries can be specified in the *link* entry.
+Specify either one library as string or a list of strings in case several libraries should be linked.
+When possible the project should only link one native library.
+The list of library dependencies is exported to dependent packages.
+
+*Example:*
+
+To link against the zlib compression library use
+
+```toml
+[build]
+link = "z"
+```
+
+To dependent on LAPACK also BLAS should be linked.
+In this case the order of the libraries matters:
+
+```toml
+[build]
+link = ["blas", "lapack"]
 ```
 
 

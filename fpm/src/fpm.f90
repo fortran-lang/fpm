@@ -27,11 +27,12 @@ public :: cmd_build, cmd_install, cmd_run
 contains
 
 
-recursive subroutine add_libsources_from_package(sources,package_list,package, &
+recursive subroutine add_libsources_from_package(sources,link_libraries,package_list,package, &
                                                   package_root,dev_depends,error)
     ! Discover library sources in a package, recursively including dependencies
     !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
+    type(string_t), allocatable, intent(inout) :: link_libraries(:)
     type(string_t), allocatable, intent(inout) :: package_list(:)
     type(package_t), intent(in) :: package
     character(*), intent(in) :: package_root
@@ -121,7 +122,7 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
             end if
 
             
-            call add_libsources_from_package(sources,package_list,dependency, &
+            call add_libsources_from_package(sources,link_libraries,package_list,dependency, &
                 package_root=dependency_path, &
                 dev_depends=.false., error=error)
             
@@ -134,6 +135,9 @@ recursive subroutine add_libsources_from_package(sources,package_list,package, &
 
             dep_name%s = dependency_list(i)%name
             package_list = [package_list, dep_name]
+            if (allocated(dependency%build_config%link)) then
+                link_libraries = [link_libraries, dependency%build_config%link]
+            end if
 
         end do
 
@@ -150,9 +154,15 @@ subroutine build_model(model, settings, package, error)
     type(package_t), intent(in) :: package
     type(error_t), allocatable, intent(out) :: error
 
+    integer :: i
     type(string_t), allocatable :: package_list(:)
 
     model%package_name = package%name
+    if (allocated(package%build_config%link)) then
+        model%link_libraries = package%build_config%link
+    else
+        allocate(model%link_libraries(0))
+    end if
 
     allocate(package_list(1))
     package_list(1)%s = package%name
@@ -219,13 +229,17 @@ subroutine build_model(model, settings, package, error)
     endif
 
     ! Add library sources, including local dependencies
-    call add_libsources_from_package(model%sources,package_list,package, &
+    call add_libsources_from_package(model%sources,model%link_libraries,package_list,package, &
                                       package_root='.',dev_depends=.true.,error=error)
     if (allocated(error)) then
         return
     end if
 
     call targets_from_sources(model,model%sources)
+
+    do i = 1, size(model%link_libraries)
+        model%link_flags = model%link_flags // " -l" // model%link_libraries(i)%s
+    end do
 
     call resolve_module_dependencies(model%targets,error)
 

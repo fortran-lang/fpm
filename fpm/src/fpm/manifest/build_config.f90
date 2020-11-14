@@ -6,9 +6,11 @@
 !>[build]
 !>auto-executables = bool
 !>auto-tests = bool
+!>link = ["lib"]
 !>```
 module fpm_manifest_build_config
     use fpm_error, only : error_t, syntax_error, fatal_error
+    use fpm_strings, only : string_t
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     implicit none
     private
@@ -24,6 +26,9 @@ module fpm_manifest_build_config
 
         !> Automatic discovery of tests
         logical :: auto_tests
+
+        !> Libraries to link against
+        type(string_t), allocatable :: link(:)
 
     contains
 
@@ -48,7 +53,6 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        !> Status 
         integer :: stat
 
         call check(table, error)
@@ -67,6 +71,9 @@ contains
             call fatal_error(error,"Error while reading value for 'auto-tests' in fpm.toml, expecting logical")
             return
         end if
+
+        call get_value(table, "link", self%link, error)
+        if (allocated(error)) return
 
     end subroutine new_build_config
 
@@ -91,7 +98,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("auto-executables", "auto-tests")
+            case("auto-executables", "auto-tests", "link")
                 continue
 
             case default
@@ -116,7 +123,7 @@ contains
         !> Verbosity of the printout
         integer, intent(in), optional :: verbosity
 
-        integer :: pr
+        integer :: pr, ilink
         character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
 
         if (present(verbosity)) then
@@ -128,12 +135,14 @@ contains
         if (pr < 1) return
 
         write(unit, fmt) "Build configuration"
-        ! if (allocated(self%auto_executables)) then
-            write(unit, fmt) " - auto-discovery (apps) ", merge("enabled ", "disabled", self%auto_executables)
-        ! end if
-        ! if (allocated(self%auto_tests)) then
-            write(unit, fmt) " - auto-discovery (tests) ", merge("enabled ", "disabled", self%auto_tests)
-        ! end if
+        write(unit, fmt) " - auto-discovery (apps) ", merge("enabled ", "disabled", self%auto_executables)
+        write(unit, fmt) " - auto-discovery (tests) ", merge("enabled ", "disabled", self%auto_tests)
+        if (allocated(self%link)) then
+            write(unit, fmt) " - link against"
+            do ilink = 1, size(self%link)
+                write(unit, fmt) "   - " // self%link(ilink)%s
+            end do
+        end if
 
     end subroutine info
 

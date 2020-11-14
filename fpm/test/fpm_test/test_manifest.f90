@@ -51,7 +51,10 @@ contains
             & new_unittest("test-empty", test_test_empty, should_fail=.true.), &
             & new_unittest("test-typeerror", test_test_typeerror, should_fail=.true.), &
             & new_unittest("test-noname", test_test_noname, should_fail=.true.), &
-            & new_unittest("test-wrongkey", test_test_wrongkey, should_fail=.true.)]
+            & new_unittest("test-wrongkey", test_test_wrongkey, should_fail=.true.), &
+            & new_unittest("test-link-string", test_link_string), &
+            & new_unittest("test-link-array", test_link_array), &
+            & new_unittest("test-link-error", test_invalid_link, should_fail=.true.)]
 
     end subroutine collect_manifest
 
@@ -848,6 +851,70 @@ contains
         call new_test(test, table, error)
 
     end subroutine test_test_wrongkey
+
+
+    !> Test link options
+    subroutine test_link_string(error)
+        use fpm_manifest_build_config
+        use fpm_toml, only : set_value, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        integer :: stat
+        type(build_config_t) :: build
+
+        table = toml_table()
+        call set_value(table, "link", "z", stat=stat)
+
+        call new_build_config(build, table, error)
+
+    end subroutine test_link_string
+
+
+    !> Test link options
+    subroutine test_link_array(error)
+        use fpm_manifest_build_config
+        use fpm_toml, only : add_array, set_value, toml_table, toml_array
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_array), pointer :: children
+        integer :: stat
+        type(build_config_t) :: build
+
+        table = toml_table()
+        call add_array(table, "link", children, stat=stat)
+        call set_value(children, 1, "blas", stat=stat)
+        call set_value(children, 2, "lapack", stat=stat)
+
+        call new_build_config(build, table, error)
+
+    end subroutine test_link_array
+
+
+    !> Test link options
+    subroutine test_invalid_link(error)
+        use fpm_manifest_build_config
+        use fpm_toml, only : add_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_table), pointer :: child
+        integer :: stat
+        type(build_config_t) :: build
+
+        table = toml_table()
+        call add_table(table, "link", child, stat=stat)
+
+        call new_build_config(build, table, error)
+
+    end subroutine test_invalid_link
 
 
 end module test_manifest

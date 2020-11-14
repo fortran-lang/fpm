@@ -1,0 +1,8 @@
+name = "link_executable"
+build.auto-executables = false
+
+[[executable]]
+name = "gomp_test"
+source-dir = "app"
+main = "main.f90"
+link = ["gomp"]

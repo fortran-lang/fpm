@@ -51,6 +51,8 @@ type srcfile_t
         ! Modules USEd by this source file (lowerstring)
     type(string_t), allocatable :: include_dependencies(:)
         ! Files INCLUDEd by this source file
+    type(string_t), allocatable :: link_libraries(:)
+        ! Native libraries to link against
 end type srcfile_t
 
 type build_target_ptr
@@ -66,6 +68,8 @@ type build_target_t
     type(build_target_ptr), allocatable :: dependencies(:)
         ! Resolved build dependencies
     integer :: target_type = FPM_TARGET_UNKNOWN
+    type(string_t), allocatable :: link_libraries(:)
+        ! Native libraries to link against
 
     logical :: built = .false.
     logical :: touched = .false.
@@ -87,6 +91,8 @@ type :: fpm_model_t
         ! Command line flags pass for linking
     character(:), allocatable :: output_directory
         ! Base directory for build
+    type(string_t), allocatable :: link_libraries(:)
+        ! Native libraries to link against
 end type fpm_model_t
 
 end module fpm_model

@@ -11,6 +11,7 @@
 !>name = "string"
 !>source-dir = "path"
 !>main = "file"
+!>link = ["lib"]
 !>[test.dependencies]
 !>```
 module fpm_manifest_test
@@ -69,6 +70,9 @@ contains
             if (allocated(error)) return
         end if
 
+        call get_value(table, "link", self%link, error)
+        if (allocated(error)) return
+
     end subroutine new_test
 
 
@@ -103,7 +107,7 @@ contains
             case("name")
                 name_present = .true.
 
-            case("source-dir", "main", "dependencies")
+            case("source-dir", "main", "dependencies", "link")
                 continue
 
             end select

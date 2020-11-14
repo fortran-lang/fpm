@@ -1,0 +1,4 @@
+name = "link_external"
+
+[build]
+link = "blas"
