@@ -109,7 +109,7 @@ contains
 
             allocate(fpm_run_settings :: cmd_settings)
             cmd_settings=fpm_run_settings( name=names, list=lget('list'), &
-            & release=lget('release'), args=remaining ,runner=sget('runner'))
+            & release=lget('release'), args=remaining ,runner=sget('runner') )
 
         case('build')
             call set_args( '--release:r F --list:l F --',help_build,version_text )
