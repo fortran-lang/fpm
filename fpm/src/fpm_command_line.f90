@@ -2,7 +2,7 @@ module fpm_command_line
 use fpm_environment,  only : get_os_type, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
-use M_CLI2,           only : set_args, lget, unnamed, remaining, specified
+use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use fpm_strings,      only : lower
 use fpm_filesystem,   only : basename, canon_path
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
@@ -39,6 +39,7 @@ end type
 type, extends(fpm_build_settings)  :: fpm_run_settings
     character(len=ibug),allocatable :: name(:)
     character(len=:),allocatable :: args
+    character(len=:),allocatable :: runner
 end type
 
 type, extends(fpm_run_settings)  :: fpm_test_settings
@@ -97,7 +98,7 @@ contains
         select case(trim(cmdarg))
 
         case('run')
-            call set_args('--list F --release F --',help_run,version_text)
+            call set_args('--list:l F --release:r F --runner:c " " --',help_run,version_text)
 
             if( size(unnamed) .gt. 1 )then
                 names=unnamed(2:)
@@ -107,17 +108,17 @@ contains
 
             allocate(fpm_run_settings :: cmd_settings)
             cmd_settings=fpm_run_settings( name=names, list=lget('list'), &
-            & release=lget('release'), args=remaining )
+            & release=lget('release'), args=remaining ,runner=sget('runner') )
 
         case('build')
-            call set_args( '--release F --list F --',help_build,version_text )
+            call set_args( '--release:r F --list:l F --',help_build,version_text )
 
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings( release=lget('release'), &
                                              & list=lget('list') )
 
         case('new')
-            call set_args(' --src F --lib F --app F --test F --backfill F', &
+            call set_args(' --src:s F --lib:l F --app:a F --test:t F --backfill:b F', &
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
@@ -203,17 +204,17 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('--release F ', help_install, version_text)
+            call set_args('--release:r F ', help_install, version_text)
 
             allocate(fpm_install_settings :: cmd_settings)
         case('list')
-            call set_args(' --list F', help_list, version_text)
+            call set_args(' --list:l F', help_list, version_text)
             call printhelp(help_list_nodash)
             if(lget('list'))then
                call printhelp(help_list_dash)
             endif
         case('test')
-            call set_args('--list F --release F --',help_test,version_text)
+            call set_args('--list:l F --release:r F --runner:c " " --',help_test,version_text)
 
             if( size(unnamed) .gt. 1 )then
                 names=unnamed(2:)
@@ -223,11 +224,11 @@ contains
 
             allocate(fpm_test_settings :: cmd_settings)
             cmd_settings=fpm_test_settings( name=names, list=lget('list'), &
-            & release=lget('release'), args=remaining )
+            & release=lget('release'), args=remaining ,runner=sget('runner') )
 
         case default
 
-            call set_args(' --list F', help_fpm, version_text)
+            call set_args(' --list:l F', help_fpm, version_text)
             ! Note: will not get here if --version or --usage or --help
             ! is present on commandline
             help_text=help_usage
@@ -296,8 +297,8 @@ contains
    ' help [NAME(s)]                                                         ', &
    ' new NAME [--lib|--src] [--app] [--test] [--backfill]                   ', &
    ' list [--list]                                                          ', &
-   ' run [NAME(s)] [--release] [--list] [-- ARGS]                           ', &
-   ' test [NAME(s)] [--release] [--list] [-- ARGS]                          ', &
+   ' run [NAME(s)] [--release] [--runner "CMD"] [--list] [-- ARGS]          ', &
+   ' test [NAME(s)] [--release] [--runner "CMD"] [--list] [-- ARGS]         ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -334,10 +335,10 @@ contains
     '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
     '                     Create a new Fortran package directory            ', &
     '                     with sample files                                 ', &
-    '     run [NAME(s)] [--release] [--list] [-- ARGS]                      ', &
+    '     run [NAME(s)] [--release] [--list] [--runner "CMD"][-- ARGS]      ', &
     '                     Run the local package binaries. defaults to all   ', &
     '                     binaries for that release.                        ', &
-    '     test [NAME(s)] [--release] [--list] [-- ARGS]                     ', &
+    '     test [NAME(s)] [--release] [--list] [--runner "CMD"] [-- ARGS]    ', &
     '                     Run the tests                                     ', &
     '     help [NAME(s)]  Alternate method for displaying subcommand help   ', &
     '     list [--list]   Display brief descriptions of all subcommands.    ', &
@@ -350,6 +351,7 @@ contains
     '             optimization flags are used.                              ', &
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
+    '  --runner   A command to prefix the program execution paths with.     ', &
     '  -- ARGS    Arguments to pass to executables.                         ', &
     '  --help     Show help text and exit. Valid for all subcommands.       ', &
     '  --version  Show version information and exit. Valid for all          ', &
@@ -398,7 +400,7 @@ contains
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm run [NAME(s)] [--release] [-- ARGS]                               ', &
+    ' fpm run [NAME(s)] [--release] [--runner "CMD"] [-- ARGS]              ', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
     '                                                                       ', &
@@ -412,12 +414,17 @@ contains
     ' --release  selects the optimized build instead of the debug           ', &
     '            build.                                                     ', &
     ' --list     list candidates instead of building or running them        ', &
+    ' --runner   A command to prefix the program execution paths with.      ', &
+    '            For use with utilities like valgrind(1), time(1), and      ', &
+    '            other utilities that launch executables; commands that     ', &
+    '            inspect the files like ldd(1), file(1), and ls(1); and     ', &
+    '            that copy or change the files like strip(1) and install(1).', &
     ' -- ARGS    optional arguments to pass to the program(s).              ', &
     '            The same arguments are passed to all names                 ', &
     '            specified.                                                 ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
-    ' run fpm(1) project applications                                       ', &
+    ' fpm(1) "run" project applications                                     ', &
     '                                                                       ', &
     '  # run default programs in /app or as specified in "fpm.toml"         ', &
     '  fpm run                                                              ', &
@@ -427,6 +434,9 @@ contains
     '                                                                       ', &
     '  # run production version of two applications                         ', &
     '  fpm run prg1 prg2 --release                                          ', &
+    '                                                                       ', &
+    '  # install executables in directory (assuming install(1) exists)      ', &
+    '  fpm run -c ''install -b -m 0711 -p -t /usr/local/bin''                 ', &
     '                                                                       ', &
     'SEE ALSO                                                               ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
@@ -589,7 +599,7 @@ contains
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm test [NAME(s)] [--release] [--list] [-- ARGS]                     ', &
+    ' fpm test [NAME(s)] [--release] [--list] [--runner "CMD"] [-- ARGS]    ', &
     '                                                                       ', &
     ' fpm test --help|--version                                             ', &
     '                                                                       ', &
@@ -603,6 +613,11 @@ contains
     ' --release  selects the optimized build instead of the debug           ', &
     '            build.                                                     ', &
     ' --list     list candidates instead of building or running them        ', &
+    ' --runner   A command to prefix the program execution paths with.      ', &
+    '            For use with utilities like valgrind(1), time(1), and      ', &
+    '            other utilities that launch executables; commands that     ', &
+    '            inspect the files like ldd(1), file(1), and ls(1); and that', &
+    '            copy or change the files like strip(1) and install(1).     ', &
     ' -- ARGS    optional arguments to pass to the test program(s).         ', &
     '            The same arguments are passed to all test names            ', &
     '            specified.                                                 ', &

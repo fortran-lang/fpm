@@ -453,7 +453,11 @@ subroutine cmd_run(settings,test)
         else
             
             if (exists(executables(i)%s)) then
-                call run(executables(i)%s//" "//settings%args)
+	        if(settings%runner .ne. ' ')then
+                   call run(settings%runner//' '//executables(i)%s//" "//settings%args)
+		else
+                   call run(executables(i)%s//" "//settings%args)
+		endif
             else
                 write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
                 stop 1
