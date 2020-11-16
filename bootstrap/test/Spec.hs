@@ -22,6 +22,7 @@ testHelloWorld =
     { runRelease = False
     , runCompiler = "gfortran"
     , runFlags = []
+    , runRunner = Nothing
     , runTarget  = Nothing
     , runArgs    = Nothing
     }
@@ -32,6 +33,7 @@ testHelloComplex =
     { testRelease = False
     , testCompiler = "gfortran"
     , testFlags = []
+    , testRunner = Nothing
     , testTarget  = Nothing
     , testArgs    = Nothing
     }
@@ -42,6 +44,7 @@ testHelloFpm =
     { runRelease = False
     , runCompiler = "gfortran"
     , runFlags = []
+    , runRunner = Nothing
     , runTarget  = Nothing
     , runArgs    = Nothing
     }
@@ -52,6 +55,7 @@ testCircular =
     { testRelease = False
     , testCompiler = "gfortran"
     , testFlags = []
+    , testRunner = Nothing
     , testTarget  = Nothing
     , testArgs    = Nothing
     }
@@ -70,6 +74,7 @@ testMakefileComplex =
     { runRelease = False
     , runCompiler = "gfortran"
     , runFlags = []
+    , runRunner = Nothing
     , runTarget  = Nothing
     , runArgs    = Nothing
     }
