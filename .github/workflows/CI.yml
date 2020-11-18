@@ -25,6 +25,7 @@ jobs:
           STACK_CACHE_VERSION: ""
           BOOTSTRAP_FILE: "/home/runner/.local/bin/fpm"
           XSUFFIX: ""
+          RELEASE_CMD: "fpm run --flag --static --runner cp"
         - os: macos-latest
           STACK_CACHE: |
            /Users/runner/.stack/snapshots
@@ -32,6 +33,7 @@ jobs:
           STACK_CACHE_VERSION: "v2"
           BOOTSTRAP_FILE: "/Users/runner/.local/bin/fpm"
           XSUFFIX: ""
+          RELEASE_CMD: "fpm run --runner cp"
         - os: windows-latest
           STACK_CACHE: |
            C:\Users\runneradmin\AppData\Roaming\stack
@@ -39,6 +41,7 @@ jobs:
           STACK_CACHE_VERSION: "v2"
           BOOTSTRAP_FILE: C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe
           XSUFFIX: ".exe"
+          RELEASE_CMD: "fpm run --flag --static --runner copy"
 
     env:
       FC: gfortran
@@ -118,20 +121,14 @@ jobs:
         cd fpm
         fpm run -- "--version" | grep $(echo ${{ github.ref }} | cut -d/ -f3)
 
-    - name: Stage file for upload (Linux / macOS)
+    - name: Stage release files for upload
       if: github.event_name == 'release' && (contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos'))
       run: |
         cd fpm
-        fpm run --flag --static --runner cp -- fpm-${{ matrix.os }}-x86_64-debug
-
-    - name: Stage file for upload (Windows)
-      if: github.event_name == 'release' && contains(matrix.os, 'windows')
-      shell: cmd
-      run: |
-        cd fpm
-        fpm run --flag --static --runner copy -- fpm-${{ matrix.os }}-x86_64-debug
+        ${{ matrix.RELEASE_CMD }} -- fpm-${{ matrix.os }}-x86_64-debug
+        ${{ matrix.RELEASE_CMD }} --release -- fpm-${{ matrix.os }}-x86_64-release
          
-    - name: Upload dev trunk binary release
+    - name: Upload debug binary
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
       with:
@@ -141,8 +138,19 @@ jobs:
         tag: ${{ github.ref }}
         overwrite: true
         prerelease: true
-  
-    - name: Upload dev trunk binary release (bootstrap fpm)
+
+    - name: Upload release binary
+      if: github.event_name == 'release'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: fpm/fpm-${{ matrix.os }}-x86_64-release
+        asset_name: fpm-${{ matrix.os }}-x86_64-release${{ matrix.XSUFFIX }}
+        tag: ${{ github.ref }}
+        overwrite: true
+        prerelease: true
+
+    - name: Upload bootstrap fpm binary
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
       with:
