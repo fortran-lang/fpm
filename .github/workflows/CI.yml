@@ -122,14 +122,14 @@ jobs:
       if: github.event_name == 'release' && (contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos'))
       run: |
         cd fpm
-        fpm run --runner cp -- fpm-${{ matrix.os }}-x86_64-debug
+        fpm run --flag --static --runner cp -- fpm-${{ matrix.os }}-x86_64-debug
 
     - name: Stage file for upload (Windows)
       if: github.event_name == 'release' && contains(matrix.os, 'windows')
       shell: cmd
       run: |
         cd fpm
-        fpm run --runner copy -- fpm-${{ matrix.os }}-x86_64-debug
+        fpm run --flag --static --runner copy -- fpm-${{ matrix.os }}-x86_64-debug
          
     - name: Upload dev trunk binary release
       if: github.event_name == 'release'
