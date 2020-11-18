@@ -1,6 +1,6 @@
 name: CI
 
-on: [push, pull_request]
+on: [push, pull_request, release]
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
@@ -23,16 +23,22 @@ jobs:
         - os: ubuntu-latest
           STACK_CACHE: "/home/runner/.stack/"
           STACK_CACHE_VERSION: ""
+          BOOTSTRAP_FILE: "/home/runner/.local/bin/fpm"
+          XSUFFIX: ""
         - os: macos-latest
           STACK_CACHE: |
            /Users/runner/.stack/snapshots
            /Users/runner/.stack/setup-exe-src
           STACK_CACHE_VERSION: "v2"
+          BOOTSTRAP_FILE: "/Users/runner/.local/bin/fpm"
+          XSUFFIX: ""
         - os: windows-latest
           STACK_CACHE: |
            C:\Users\runneradmin\AppData\Roaming\stack
            C:\Users\runneradmin\AppData\Local\Programs\stack
           STACK_CACHE_VERSION: "v2"
+          BOOTSTRAP_FILE: C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe
+          XSUFFIX: ".exe"
 
     env:
       FC: gfortran
@@ -104,3 +110,45 @@ jobs:
       if: contains(matrix.os, 'windows')
       run: |
         ci\run_tests.bat
+
+    # ----- Upload binaries if creating a release -----
+    - name: Check that fpm --version matches release tag
+      if: github.event_name == 'release' && contains(matrix.os, 'ubuntu')
+      run: |
+        cd fpm
+        fpm run -- "--version" | grep $(echo ${{ github.ref }} | cut -d/ -f3)
+
+    - name: Stage file for upload (Linux / macOS)
+      if: github.event_name == 'release' && (contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos'))
+      run: |
+        cd fpm
+        fpm run --runner cp -- fpm-${{ matrix.os }}-x86_64-debug
+
+    - name: Stage file for upload (Windows)
+      if: github.event_name == 'release' && contains(matrix.os, 'windows')
+      shell: cmd
+      run: |
+        cd fpm
+        fpm run --runner copy -- fpm-${{ matrix.os }}-x86_64-debug
+         
+    - name: Upload dev trunk binary release
+      if: github.event_name == 'release'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: fpm/fpm-${{ matrix.os }}-x86_64-debug
+        asset_name: fpm-${{ matrix.os }}-x86_64-debug${{ matrix.XSUFFIX }}
+        tag: ${{ github.ref }}
+        overwrite: true
+        prerelease: true
+  
+    - name: Upload dev trunk binary release (bootstrap fpm)
+      if: github.event_name == 'release'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ matrix.BOOTSTRAP_FILE }}
+        asset_name: fpm-bootstrap-${{ matrix.os }}-x86_64-debug${{ matrix.XSUFFIX }}
+        tag: ${{ github.ref }}
+        overwrite: true
+        prerelease: true
