@@ -29,6 +29,7 @@ jobs:
           STACK_CACHE_VERSION: ""
           BOOTSTRAP_FILE: "/home/runner/.local/bin/fpm"
           XSUFFIX: ""
+          CHECK_VERSION_CMD: grep $(echo ${{ github.ref }} | cut -dv -f2)
           RELEASE_CMD: "fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner cp"
         - os: macos-latest
           STACK_CACHE: |
@@ -37,6 +38,7 @@ jobs:
           STACK_CACHE_VERSION: "v2"
           BOOTSTRAP_FILE: "/Users/runner/.local/bin/fpm"
           XSUFFIX: ""
+          CHECK_VERSION_CMD: grep $(echo ${{ github.ref }} | cut -dv -f2)
           RELEASE_CMD: "fpm run --flag -g --flag -fbacktrace --flag -O3 --runner cp"
         - os: windows-latest
           STACK_CACHE: |
@@ -45,6 +47,7 @@ jobs:
           STACK_CACHE_VERSION: "v2"
           BOOTSTRAP_FILE: C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe
           XSUFFIX: ".exe"
+          CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",("${{ github.ref }}" -Split "v")[1],"*")) {echo $_} else {Throw} }
           RELEASE_CMD: "fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner copy"
 
     env:
@@ -120,10 +123,10 @@ jobs:
 
     # ----- Upload binaries if creating a release -----
     - name: Check that fpm --version matches release tag
-      if: github.event_name == 'release' && contains(matrix.os, 'ubuntu')
+      if: github.event_name == 'release'
       run: |
         cd fpm
-        fpm run -- "--version" | grep $(echo ${{ github.ref }} | cut -dv -f2)
+        fpm run -- "--version" | ${{ matrix.CHECK_VERSION_CMD }}
 
     - name: Stage release files for upload
       if: github.event_name == 'release'
