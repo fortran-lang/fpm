@@ -63,7 +63,7 @@ with the following contents and initialized as a git repository.
 
 * `fpm.toml` – with your project’s name and some default standard meta-data
 * `README.md` – with your project’s name
-* `.gitgnore`
+* `.gitignore`
 * `src/project_name.f90` – with a simple hello world subroutine
 * `app/main.f90` (if `--with-executable` flag used) – a program that calls the subroutine
 * `test/main.f90` (if `--with-test` flag used) – an empty test program

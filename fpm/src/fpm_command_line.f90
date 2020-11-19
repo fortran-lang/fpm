@@ -99,7 +99,7 @@ contains
         select case(trim(cmdarg))
 
         case('run')
-            call set_args('--list:l F --release:r F --runner:c " " --',help_run,version_text)
+            call set_args('--list F --release F --runner " " --',help_run,version_text)
 
             if( size(unnamed) .gt. 1 )then
                 names=unnamed(2:)
@@ -112,14 +112,14 @@ contains
             & release=lget('release'), args=remaining ,runner=sget('runner') )
 
         case('build')
-            call set_args( '--release:r F --list:l F --',help_build,version_text )
+            call set_args( '--release F --list F --',help_build,version_text )
 
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings( release=lget('release'), &
                                              & list=lget('list') )
 
         case('new')
-            call set_args(' --src:s F --lib:l F --app:a F --test:t F --backfill:b F', &
+            call set_args(' --src F --lib F --app F --test F --backfill F', &
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
@@ -205,17 +205,17 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('--release:r F ', help_install, version_text)
+            call set_args('--release F ', help_install, version_text)
 
             allocate(fpm_install_settings :: cmd_settings)
         case('list')
-            call set_args(' --list:l F', help_list, version_text)
+            call set_args(' --list F', help_list, version_text)
             call printhelp(help_list_nodash)
             if(lget('list'))then
                call printhelp(help_list_dash)
             endif
         case('test')
-            call set_args('--list:l F --release:r F --runner:c " " --',help_test,version_text)
+            call set_args('--list F --release F --runner " " --',help_test,version_text)
 
             if( size(unnamed) .gt. 1 )then
                 names=unnamed(2:)
@@ -230,7 +230,7 @@ contains
 
         case default
 
-            call set_args(' --list:l F', help_fpm, version_text)
+            call set_args(' --list F', help_fpm, version_text)
             ! Note: will not get here if --version or --usage or --help
             ! is present on commandline
             help_text=help_usage

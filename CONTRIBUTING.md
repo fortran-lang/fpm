@@ -77,7 +77,7 @@ decisions. This is the workflow that we follow:
    one person disagrees.
    At this stage, the scope of the fix/feature, its behavior, and API if
    applicable should be defined.
-   Only when you have community concensus on these items you should proceed to
+   Only when you have community consensus on these items you should proceed to
    writing code and opening a PR.
    **When actively working on code towards a PR, please assign yourself to the
    issue on GitHub.**

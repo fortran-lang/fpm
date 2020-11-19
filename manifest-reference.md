@@ -131,7 +131,7 @@ copyright = "Copyright 2020 Jane Doe"
 
 ## Project description
 
-The decription provides a short summary on the project.
+The description provides a short summary on the project.
 It should be plain text and not using any markup formatting.
 
 *Example:*
@@ -184,7 +184,7 @@ Library targets are exported and useable for other projects.
 
 Defines the exported library target of the project.
 A library is generated if the source directory is found in a project.
-The default source directory is ``src`` but can be modifed in the *library* section using the *source-dir* entry.
+The default source directory is ``src`` but can be modified in the *library* section using the *source-dir* entry.
 Paths for the source directory are given relative to the project root and use ``/`` as path separator on all platforms.
 
 *Example:*
@@ -199,7 +199,7 @@ source-dir = "lib"
 > Supported in Bootstrap fpm only
 
 Projects with custom build scripts can specify those in the *build-script* entry.
-The custom build script will be executeted when the library build step is reached.
+The custom build script will be executed when the library build step is reached.
 
 *Example:*
 
