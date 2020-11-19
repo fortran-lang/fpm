@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request, release]
+on: 
+  push:
+  pull_request:
+  release:
+    types: [published]
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
@@ -119,7 +123,7 @@ jobs:
       if: github.event_name == 'release' && contains(matrix.os, 'ubuntu')
       run: |
         cd fpm
-        fpm run -- "--version" | grep $(echo ${{ github.ref }} | cut -d/ -f3)
+        fpm run -- "--version" | grep $(echo ${{ github.ref }} | cut -dv -f2)
 
     - name: Stage release files for upload
       if: github.event_name == 'release'
@@ -127,7 +131,7 @@ jobs:
         cd fpm
         ${{ matrix.RELEASE_CMD }} -- fpm-${{ matrix.os }}-x86_64
          
-    - name: Upload debug binary
+    - name: Upload fpm binary
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
       with:
