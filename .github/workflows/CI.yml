@@ -29,8 +29,9 @@ jobs:
           STACK_CACHE_VERSION: ""
           BOOTSTRAP_FILE: "/home/runner/.local/bin/fpm"
           XSUFFIX: ""
-          CHECK_VERSION_CMD: grep $(echo ${{ github.ref }} | cut -dv -f2)
-          RELEASE_CMD: "fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner cp"
+          GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
+          CHECK_VERSION_CMD: grep $(cat fpm_version)
+          RELEASE_CMD: "fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner cp -- fpm-v$(cat fpm_version)-linux-x86_64"
         - os: macos-latest
           STACK_CACHE: |
            /Users/runner/.stack/snapshots
@@ -38,8 +39,9 @@ jobs:
           STACK_CACHE_VERSION: "v2"
           BOOTSTRAP_FILE: "/Users/runner/.local/bin/fpm"
           XSUFFIX: ""
-          CHECK_VERSION_CMD: grep $(echo ${{ github.ref }} | cut -dv -f2)
-          RELEASE_CMD: "fpm run --flag -g --flag -fbacktrace --flag -O3 --runner cp"
+          GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
+          CHECK_VERSION_CMD: grep $(cat fpm_version)
+          RELEASE_CMD: "fpm run --flag -g --flag -fbacktrace --flag -O3 --runner cp -- fpm-v$(cat fpm_version)-macos-x86_64"
         - os: windows-latest
           STACK_CACHE: |
            C:\Users\runneradmin\AppData\Roaming\stack
@@ -47,8 +49,9 @@ jobs:
           STACK_CACHE_VERSION: "v2"
           BOOTSTRAP_FILE: C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe
           XSUFFIX: ".exe"
-          CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",("${{ github.ref }}" -Split "v")[1],"*")) {echo $_} else {Throw} }
-          RELEASE_CMD: "fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner copy"
+          GET_VERSION_CMD: ("${{ github.ref }}" -Split "v")[1]
+          CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
+          RELEASE_CMD: fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner copy -- (-join("fpm-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
 
     env:
       FC: gfortran
@@ -126,32 +129,36 @@ jobs:
       if: github.event_name == 'release'
       run: |
         cd fpm
+        ${{ matrix.GET_VERSION_CMD }} > fpm_version
         fpm run -- "--version" | ${{ matrix.CHECK_VERSION_CMD }}
 
     - name: Stage release files for upload
       if: github.event_name == 'release'
       run: |
         cd fpm
-        ${{ matrix.RELEASE_CMD }} -- fpm-${{ matrix.os }}-x86_64
+        ${{ matrix.RELEASE_CMD }}
+    
+    - name: Make executable
+      if: github.event_name == 'release' && (contains(matrix.os, 'linux') || contains(matrix.os, 'macos'))
+      run: chmod u+x fpm/fpm-v*
          
     - name: Upload fpm binary
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm/fpm-${{ matrix.os }}-x86_64
-        asset_name: fpm-${{ matrix.os }}-x86_64${{ matrix.XSUFFIX }}
+        file: fpm/fpm-v*
+        file_glob: true
         tag: ${{ github.ref }}
         overwrite: true
-        prerelease: true
 
-    - name: Upload bootstrap fpm binary
-      if: github.event_name == 'release'
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ matrix.BOOTSTRAP_FILE }}
-        asset_name: fpm-bootstrap-${{ matrix.os }}-x86_64${{ matrix.XSUFFIX }}
-        tag: ${{ github.ref }}
-        overwrite: true
-        prerelease: true
+    # - name: Upload bootstrap fpm binary
+    #   if: github.event_name == 'release'
+    #   uses: svenstaro/upload-release-action@v2
+    #   with:
+    #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #     file: ${{ matrix.BOOTSTRAP_FILE }}
+    #     asset_name: fpm-bootstrap-${{ matrix.os }}-x86_64${{ matrix.XSUFFIX }}
+    #     tag: ${{ github.ref }}
+    #     overwrite: true
+    #     prerelease: true
