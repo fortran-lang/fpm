@@ -31,6 +31,8 @@ jobs:
           CHECK_VERSION_CMD: grep $(cat fpm_version)
           RELEASE_CMD: "fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner cp -- fpm-v$(cat fpm_version)-linux-x86_64"
           BOOTSTRAP_RELEASE_CMD: cp /home/runner/.local/bin/fpm fpm-bootstrap-v$(cat fpm_version)-linux-x86_64
+          HASH_CMD: ls fpm-*|xargs -i{} sh -c 'sha256sum $1 > $1.sha256' -- {}
+
         - os: macos-latest
           STACK_CACHE: |
            /Users/runner/.stack/snapshots
@@ -40,6 +42,8 @@ jobs:
           CHECK_VERSION_CMD: grep $(cat fpm_version)
           RELEASE_CMD: "fpm run --flag -g --flag -fbacktrace --flag -O3 --runner cp -- fpm-v$(cat fpm_version)-macos-x86_64"
           BOOTSTRAP_RELEASE_CMD: cp /Users/runner/.local/bin/fpm fpm-bootstrap-v$(cat fpm_version)-macos-x86_64
+          HASH_CMD: ls fpm-*|xargs -I{} sh -c 'shasum -a 256 $1 > $1.sha256' -- {}
+
         - os: windows-latest
           STACK_CACHE: |
            C:\Users\runneradmin\AppData\Roaming\stack
@@ -49,6 +53,7 @@ jobs:
           CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
           RELEASE_CMD: fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner copy -- (-join("fpm-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
           BOOTSTRAP_RELEASE_CMD: copy C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe (-join("fpm-bootstrap-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
+          HASH_CMD: Get-ChildItem -File -Filter "fpm-*" | Foreach-Object {echo (Get-FileHash -Algorithm SHA256 $PSItem | Select-Object hash | Format-Table -HideTableHeaders | Out-String) > (-join($PSItem,".sha256"))}
 
     env:
       FC: gfortran
@@ -135,27 +140,18 @@ jobs:
         cd fpm
         ${{ matrix.RELEASE_CMD }}
         ${{ matrix.BOOTSTRAP_RELEASE_CMD }}
+        ${{ matrix.HASH_CMD }}
     
     - name: Make executable
       if: github.event_name == 'release' && (contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos'))
       run: chmod u+x fpm/fpm-v*
          
-    - name: Upload fpm binary
+    - name: Upload assets
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm/fpm-v*
-        file_glob: true
-        tag: ${{ github.ref }}
-        overwrite: true
-
-    - name: Upload bootstrap fpm binary
-      if: github.event_name == 'release'
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm/fpm-bootstrap-v*
+        file: fpm/fpm-*
         file_glob: true
         tag: ${{ github.ref }}
         overwrite: true
