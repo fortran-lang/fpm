@@ -7,7 +7,7 @@ use fpm_model, only: srcfile_t, fpm_model_t, &
                     FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
                     
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, read_lines, list_files
-use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.)
+use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.), fnv_1a
 use fpm_manifest_executable, only: executable_t
 implicit none
 
@@ -232,6 +232,8 @@ function parse_f_source(f_filename,error) result(f_source)
     open(newunit=fh,file=f_filename,status='old')
     file_lines = read_lines(fh)
     close(fh)
+
+    f_source%digest = fnv_1a(file_lines)
 
     do pass = 1,2
         n_use = 0
@@ -512,6 +514,8 @@ function parse_c_source(c_filename,error) result(c_source)
     file_lines = read_lines(fh)
     close(fh)
 
+    c_source%digest = fnv_1a(file_lines)
+    
     do pass = 1,2
         n_include = 0
         file_loop: do i=1,size(file_lines)

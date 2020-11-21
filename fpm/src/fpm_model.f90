@@ -1,5 +1,6 @@
 module fpm_model
 ! Definition and validation of the backend model
+use iso_fortran_env, only: int64
 use fpm_strings, only: string_t
 implicit none
 
@@ -53,6 +54,8 @@ type srcfile_t
         ! Files INCLUDEd by this source file
     type(string_t), allocatable :: link_libraries(:)
         ! Native libraries to link against
+    integer(int64) :: digest
+        ! Current hash
 end type srcfile_t
 
 type build_target_ptr
