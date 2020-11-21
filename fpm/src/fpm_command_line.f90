@@ -54,9 +54,12 @@ character(len=ibug),allocatable :: names(:)
 
 character(len=:), allocatable :: version_text(:)
 character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
-                 & help_test(:), help_build(:), help_usage(:), &
+                 & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:)
+character(len=20),parameter :: manual(*)=[ character(len=20) ::&
+ & 'fpm','new','build','run','test',&
+ & 'runner','list','help','version']
 
 character(len=:), allocatable :: charbug
 contains
@@ -163,43 +166,44 @@ contains
                  & backfill=lget('backfill') )
             endif
 
-        case('help')
+        case('help','manual')
             call set_args(' ',help_help,version_text)
             if(size(unnamed).lt.2)then
-                unnamed=['help', 'fpm ']
+                if(unnamed(1).eq.'help')then
+                   unnamed=['   ', 'fpm']
+                else
+                   unnamed=manual
+                endif
+            elseif(unnamed(2).eq.'manual')then
+                unnamed=manual
             endif
             widest=256
             allocate(character(len=widest) :: help_text(0))
             do i=2,size(unnamed)
                 select case(unnamed(i))
+                case('       ' )
+                case('fpm    ' )
+                   help_text=[character(len=widest) :: help_text, help_fpm]
+                case('new    ' )
+                   help_text=[character(len=widest) :: help_text, help_new]
                 case('build  ' )
                    help_text=[character(len=widest) :: help_text, help_build]
                 case('run    ' )
                    help_text=[character(len=widest) :: help_text, help_run]
-                case('help   ' )
-                   help_text=[character(len=widest) :: help_text, help_help]
                 case('test   ' )
                    help_text=[character(len=widest) :: help_text, help_test]
-                case('new    ' )
-                   help_text=[character(len=widest) :: help_text, help_new]
-                case('fpm    ' )
-                   help_text=[character(len=widest) :: help_text, help_fpm]
+                case('runner' )
+                   help_text=[character(len=widest) :: help_text, help_runner]
                 case('list   ' )
                    help_text=[character(len=widest) :: help_text, help_list]
-                case('version' )
-                   help_text=[character(len=widest) :: help_text, version_text]
-                case('manual ' )
-                   help_text=[character(len=widest) :: help_text, help_fpm]
-                   help_text=[character(len=widest) :: help_text, help_new]
-                   help_text=[character(len=widest) :: help_text, help_build]
-                   help_text=[character(len=widest) :: help_text, help_run]
-                   help_text=[character(len=widest) :: help_text, help_test]
+                case('help   ' )
                    help_text=[character(len=widest) :: help_text, help_help]
-                   help_text=[character(len=widest) :: help_text, help_list]
+                case('version' )
                    help_text=[character(len=widest) :: help_text, version_text]
                 case default
                    help_text=[character(len=widest) :: help_text, &
-                   & 'ERROR: unknown help topic "'//trim(unnamed(i))//'"']
+                   & '<ERROR> unknown help topic "'//trim(unnamed(i))//'"']
+                   !!& '<ERROR> unknown help topic "'//trim(unnamed(i)).'not found in:',manual]
                 end select
             enddo
             call printhelp(help_text)
@@ -224,7 +228,7 @@ contains
             endif
 
             allocate(fpm_test_settings :: cmd_settings)
-	    charbug=sget('runner')
+            charbug=sget('runner')
             cmd_settings=fpm_test_settings( name=names, list=lget('list'), &
             & release=lget('release'), args=remaining ,runner=charbug )
 
@@ -303,6 +307,64 @@ contains
    ' test [NAME(s)] [--release] [--runner "CMD"] [--list] [-- ARGS]         ', &
    ' ']
     help_usage=[character(len=80) :: &
+    '' ]
+    help_runner=[character(len=80) :: &
+   'NAME                                                                            ', &
+   '   --runner(1) - a shared option for specifying an application to launch        ', &
+   '                 executables.                                                   ', &
+   '                                                                                ', &
+   'SYNOPSIS                                                                        ', &
+   '   fpm run|test --runner CMD ...                                                ', &
+   '                                                                                ', &
+   'DESCRIPTION                                                                     ', &
+   '   The --runner option allows specifying a program to launch                    ', &
+   '   executables selected via the fpm(1) subcommands "run" and "test". This       ', &
+   '   gives easy recourse to utilities such as debuggers and other tools           ', &
+   '   that wrap other executables.                                                 ', &
+   '                                                                                ', &
+   '   These external commands are not part of fpm(1) itself as they vary           ', &
+   '   from platform to platform or require independent installation.               ', &
+   '                                                                                ', &
+   'OPTION                                                                          ', &
+   ' --runner ''CMD''  quoted command used to launch the fpm(1) executables.          ', &
+   '               Available for both the "run" and "test" subcommands.             ', &
+   '                                                                                ', &
+   'EXAMPLES                                                                        ', &
+   '   Use cases for ''fpm run|test --runner "CMD"'' include employing                ', &
+   '   the following common GNU/Linux and Unix commands:                            ', &
+   '                                                                                ', &
+   ' INTERROGATE                                                                    ', &
+   '    + nm - list symbols from object files                                       ', &
+   '    + size - list section sizes and total size.                                 ', &
+   '    + ldd - print shared object dependencies                                    ', &
+   '    + ls - list directory contents                                              ', &
+   '    + stat - display file or file system status                                 ', &
+   '    + file - determine file type                                                ', &
+   ' PERFORMANCE AND DEBUGGING                                                      ', &
+   '    + gdb - The GNU Debugger                                                    ', &
+   '    + valgrind - a suite of tools for debugging and profiling                   ', &
+   '    + time - time a simple command or give resource usage                       ', &
+   '    + timeout - run a command with a time limit                                 ', &
+   ' COPY                                                                           ', &
+   '    + install - copy files and set attributes                                   ', &
+   '    + tar - an archiving utility                                                ', &
+   ' ALTER                                                                          ', &
+   '    + rm - remove files or directories                                          ', &
+   '    + chmod - change permissions of a file                                      ', &
+   '    + strip - remove unnecessary information from strippable files              ', &
+   '                                                                                ', &
+   ' For example                                                                    ', &
+   '                                                                                ', &
+   '  fpm test --runner gdb                                                         ', &
+   '  fpm run --runner "tar cvfz $HOME/bundle.tgz"                                  ', &
+   '  fpm run --runner ldd                                                          ', &
+   '  fpm run --runner strip                                                        ', &
+   '  fpm run --runner ''cp -t /usr/local/bin''                                       ', &
+   '                                                                                ', &
+   '  # bash(1) alias example:                                                      ', &
+   '  alias fpm-install="ffpm run --release --runner \                              ', &
+   '  ''install -vbp -m 0711 -t ~/.local/bin''"                                       ', &
+   '  fpm-install                                                           ', &
     '' ]
     help_fpm=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -417,11 +479,7 @@ contains
     '            build.                                                     ', &
     ' --list     list candidates instead of building or running them        ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
-    '               For use with utilities like valgrind(1), time(1), and   ', &
-    '               other utilities that launch executables; commands that  ', &
-    '               inspect the files like ldd(1), file(1), and ls(1); and  ', &
-    '               ones that copy or change files like strip(1) and        ', &
-    '               install(1).                                             ', &
+    '               see "fpm help runner" for further details.              ', &
     ' -- ARGS    optional arguments to pass to the program(s).              ', &
     '            The same arguments are passed to all names                 ', &
     '            specified.                                                 ', &
@@ -439,7 +497,7 @@ contains
     '  fpm run prg1 prg2 --release                                          ', &
     '                                                                       ', &
     '  # install executables in directory (assuming install(1) exists)      ', &
-    '  fpm run -c ''install -b -m 0711 -p -t /usr/local/bin''                 ', &
+    '  fpm run --runner ''install -b -m 0711 -p -t /usr/local/bin''         ', &
     '                                                                       ', &
     'SEE ALSO                                                               ', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
@@ -492,6 +550,7 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     '   fpm help [fpm] [new] [build] [run] [test] [help] [version] [manual] ', &
+    '   [runner]                                                            ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     '   The "fpm help" command is an alternative to the --help parameter    ', &
@@ -617,11 +676,7 @@ contains
     '            build.                                                     ', &
     ' --list     list candidates instead of building or running them        ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
-    '               For use with utilities like valgrind(1), time(1), and   ', &
-    '               other utilities that launch executables; commands that  ', &
-    '               inspect the files like ldd(1), file(1), and ls(1); and  ', &
-    '               ones that copy or change files like strip(1) and        ', &
-    '               install(1).                                             ', &
+    '               see "fpm help runner" for further details.              ', &
     ' -- ARGS    optional arguments to pass to the test program(s).         ', &
     '            The same arguments are passed to all test names            ', &
     '            specified.                                                 ', &
