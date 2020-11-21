@@ -4,8 +4,8 @@ module fpm_backend
 
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir
-use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, FPM_UNIT_MODULE, &
-                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
+use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, build_target_ptr, &
+                      FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                      FPM_UNIT_CSOURCE, FPM_UNIT_PROGRAM, &
                      FPM_SCOPE_TEST, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
                      
@@ -24,6 +24,9 @@ subroutine build_package(model)
 
     integer :: i, ilib
     character(:), allocatable :: base, linking, subdir, link_flags
+    type(build_target_ptr), allocatable :: queue(:)
+
+    allocate(queue(0))
 
     if (.not.exists(model%output_directory)) then
         call mkdir(model%output_directory)
@@ -42,26 +45,32 @@ subroutine build_package(model)
 
     do i=1,size(model%targets)
         
-        call build_target(model,model%targets(i)%ptr,linking)
+        call schedule_target(queue,model%targets(i)%ptr)
         
+    end do
+
+    do i=1,size(queue)
+
+        call build_target(model,queue(i)%ptr,linking)
+
     end do
 
 end subroutine build_package
 
 
 
-recursive subroutine build_target(model,target,linking)
+recursive subroutine schedule_target(queue,target)
     ! Compile Fortran source, called recursively on it dependents
     !  
-    type(fpm_model_t), intent(in) :: model
-    type(build_target_t), intent(inout) :: target
-    character(:), allocatable, intent(in) :: linking
+    type(build_target_ptr), intent(inout), allocatable :: queue(:)
+    type(build_target_t), intent(inout), target :: target
 
-    integer :: i, j, ilib
+    integer :: i, j, fh, stat
     type(build_target_t), pointer :: exe_obj
-    character(:), allocatable :: objs, link_flags
+    type(build_target_ptr) :: q_ptr
+    character(:), allocatable :: link_flags
 
-    if (target%built) then
+    if (target%enqueued .or. target%skip) then
         return
     end if
 
@@ -72,18 +81,47 @@ recursive subroutine build_target(model,target,linking)
         target%touched = .true.
     end if
 
-    objs = " "
+    if (.not.allocated(target%digest_cached) .and. &
+         exists(target%output_file) .and. &
+         exists(target%output_file//'.digest')) then
+
+        allocate(target%digest_cached)
+        open(newunit=fh,file=target%output_file//'.digest',status='old')
+        read(fh,*,iostat=stat) target%digest_cached
+        close(fh)
+
+        if (stat /= 0) then
+            write(*,*) 'Internal error: unable to read cached source hash'
+            write(*,*) target%output_file//'.digest',' stat = ', stat
+            error stop
+        end if
+
+    end if
+
+    if (allocated(target%source)) then
+        if (allocated(target%digest_cached)) then
+            if (target%digest_cached == target%source%digest) target%skip = .true.
+        end if
+    else
+        target%skip = .true.
+    end if
+
+    target%link_objects = " "
 
     do i=1,size(target%dependencies)
 
-        if (associated(target%dependencies(i)%ptr)) then
-            call build_target(model,target%dependencies(i)%ptr,linking)
+        call schedule_target(queue,target%dependencies(i)%ptr)
+
+        if (.not.target%dependencies(i)%ptr%skip) then
+
+            target%skip = .false.
+
         end if
 
         if (target%target_type == FPM_TARGET_ARCHIVE ) then
 
             ! Construct object list for archive
-            objs = objs//" "//target%dependencies(i)%ptr%output_file
+            target%link_objects = target%link_objects//" "//target%dependencies(i)%ptr%output_file
 
         else if (target%target_type == FPM_TARGET_EXECUTABLE .and. &
                  target%dependencies(i)%ptr%target_type ==  FPM_TARGET_OBJECT) then
@@ -91,14 +129,14 @@ recursive subroutine build_target(model,target,linking)
             exe_obj => target%dependencies(i)%ptr
                 
             ! Construct object list for executable
-            objs = " "//exe_obj%output_file
+            target%link_objects = " "//exe_obj%output_file
                 
             ! Include non-library object dependencies
             do j=1,size(exe_obj%dependencies)
 
                 if (allocated(exe_obj%dependencies(j)%ptr%source)) then
                     if (exe_obj%dependencies(j)%ptr%source%unit_scope == exe_obj%source%unit_scope) then
-                        objs = objs//" "//exe_obj%dependencies(j)%ptr%output_file
+                        target%link_objects = target%link_objects//" "//exe_obj%dependencies(j)%ptr%output_file
                     end if
                 end if
 
@@ -108,6 +146,31 @@ recursive subroutine build_target(model,target,linking)
 
     end do
     
+    if ( target%skip ) then
+
+        return
+
+    end if
+
+    q_ptr%ptr => target
+    queue = [queue, q_ptr]
+    target%enqueued = .true.
+
+    ! target%built = .true.
+
+end subroutine schedule_target
+
+
+
+
+subroutine build_target(model,target,linking)
+    type(fpm_model_t), intent(in) :: model
+    type(build_target_t), intent(inout), target :: target
+    character(*), intent(in) :: linking
+
+    integer :: ilib, fh
+    character(:), allocatable :: link_flags
+
     if (.not.exists(dirname(target%output_file))) then
         call mkdir(dirname(target%output_file))
     end if
@@ -126,15 +189,19 @@ recursive subroutine build_target(model,target,linking)
             end do
         end if
 
-        call run("gfortran " // objs // model%fortran_compile_flags &
+        call run("gfortran " // target%link_objects // model%fortran_compile_flags &
               //link_flags// " -o " // target%output_file)
 
     case (FPM_TARGET_ARCHIVE)
-        call run("ar -rs " // target%output_file // objs)
+        call run("ar -rs " // target%output_file // target%link_objects)
 
     end select
 
-    target%built = .true.
+    if (allocated(target%source)) then
+        open(newunit=fh,file=target%output_file//'.digest',status='unknown')
+        write(fh,*) target%source%digest
+        close(fh)
+    end if
 
 end subroutine build_target
 

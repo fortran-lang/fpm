@@ -74,8 +74,13 @@ type build_target_t
     type(string_t), allocatable :: link_libraries(:)
         ! Native libraries to link against
 
-    logical :: built = .false.
+    character(:), allocatable :: link_objects
     logical :: touched = .false.
+    logical :: enqueued = .false.
+    logical :: skip = .false.
+
+    integer(int64), allocatable :: digest_cached
+        ! Previous hash
 
 end type build_target_t
 
