@@ -20,6 +20,10 @@ To report a bug report or suggest a feature, please read our
 ### Binary download
 `x86-64` binaries are available [to download](https://github.com/fortran-lang/fpm/releases) for Windows, MacOS and Linux.
 
+__Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
+
+_e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
+
 ### Build from source
 
 #### Install Haskell

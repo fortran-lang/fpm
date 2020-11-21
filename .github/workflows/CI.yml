@@ -142,10 +142,6 @@ jobs:
         ${{ matrix.BOOTSTRAP_RELEASE_CMD }}
         ${{ matrix.HASH_CMD }}
     
-    - name: Make executable
-      if: github.event_name == 'release' && (contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos'))
-      run: chmod u+x fpm/fpm-v*
-         
     - name: Upload assets
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
