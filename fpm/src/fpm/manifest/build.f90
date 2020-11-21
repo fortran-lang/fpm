@@ -8,7 +8,7 @@
 !>auto-tests = bool
 !>link = ["lib"]
 !>```
-module fpm_manifest_build_config
+module fpm_manifest_build
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only : string_t
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
@@ -146,4 +146,4 @@ contains
 
     end subroutine info
 
-end module fpm_manifest_build_config
+end module fpm_manifest_build

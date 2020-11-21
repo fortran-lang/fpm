@@ -11,18 +11,18 @@
 !>[executable.dependencies]
 !>```
 module fpm_manifest_executable
-    use fpm_manifest_dependency, only : dependency_t, new_dependencies
+    use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
     use fpm_error, only : error_t, syntax_error
     use fpm_strings, only : string_t
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     implicit none
     private
 
-    public :: executable_t, new_executable
+    public :: executable_config_t, new_executable
 
 
     !> Configuation meta data for an executable
-    type :: executable_t
+    type :: executable_config_t
 
         !> Name of the resulting executable
         character(len=:), allocatable :: name
@@ -34,7 +34,7 @@ module fpm_manifest_executable
         character(len=:), allocatable :: main
 
         !> Dependency meta data for this executable
-        type(dependency_t), allocatable :: dependency(:)
+        type(dependency_config_t), allocatable :: dependency(:)
 
         !> Libraries to link against
         type(string_t), allocatable :: link(:)
@@ -44,7 +44,7 @@ module fpm_manifest_executable
         !> Print information on this instance
         procedure :: info
 
-    end type executable_t
+    end type executable_config_t
 
 
 contains
@@ -54,7 +54,7 @@ contains
     subroutine new_executable(self, table, error)
 
         !> Instance of the executable configuration
-        type(executable_t), intent(out) :: self
+        type(executable_config_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -136,7 +136,7 @@ contains
     subroutine info(self, unit, verbosity)
 
         !> Instance of the executable configuration
-        class(executable_t), intent(in) :: self
+        class(executable_config_t), intent(in) :: self
 
         !> Unit for IO
         integer, intent(in) :: unit
