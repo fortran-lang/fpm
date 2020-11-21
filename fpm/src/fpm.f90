@@ -11,7 +11,7 @@ use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
                     FPM_TARGET_EXECUTABLE
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
-use fpm_targets, only: targets_from_sources, resolve_module_dependencies
+use fpm_targets, only: targets_from_sources, resolve_module_dependencies, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, default_executable, &
     default_library, package_t, default_test
 use fpm_error, only : error_t, fatal_error
@@ -240,6 +240,10 @@ subroutine build_model(model, settings, package, error)
     do i = 1, size(model%link_libraries)
         model%link_flags = model%link_flags // " -l" // model%link_libraries(i)%s
     end do
+
+    if (model%targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
+        model%library_file = model%targets(1)%ptr%output_file
+    end if
 
     call resolve_module_dependencies(model%targets,error)
 

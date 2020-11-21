@@ -22,11 +22,9 @@ contains
 subroutine build_package(model)
     type(fpm_model_t), intent(inout) :: model
 
-    integer :: i, ilib
-    character(:), allocatable :: base, linking, subdir, link_flags
+    integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
-
-    allocate(queue(0))
+    integer, allocatable :: region_ptr(:)
 
     if (.not.exists(model%output_directory)) then
         call mkdir(model%output_directory)
@@ -35,43 +33,45 @@ subroutine build_package(model)
         call mkdir(join_path(model%output_directory,model%package_name))
     end if
 
-    if (model%targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        linking = " "//model%targets(1)%ptr%output_file
-    else
-        linking = " "
-    end if
-
-    linking = linking//" "//model%link_flags
-
     do i=1,size(model%targets)
         
-        call schedule_target(queue,model%targets(i)%ptr)
+        call schedule_target(model%targets(i)%ptr)
         
     end do
 
-    do i=1,size(queue)
+    call get_build_queue(queue, region_ptr, model%targets)
 
-        call build_target(model,queue(i)%ptr,linking)
+    do i=1,size(region_ptr)-1
+
+        !$OMP PARALLEL DO DEFAULT(SHARED)
+        do j=region_ptr(i),(region_ptr(i+1)-1)
+
+            call build_target(model,queue(j)%ptr)
+
+        end do
+        !$OMP END PARALLEL DO
 
     end do
 
+    
 end subroutine build_package
 
 
 
-recursive subroutine schedule_target(queue,target)
-    ! Compile Fortran source, called recursively on it dependents
+recursive subroutine schedule_target(target)
+    ! 
     !  
-    type(build_target_ptr), intent(inout), allocatable :: queue(:)
     type(build_target_t), intent(inout), target :: target
 
     integer :: i, j, fh, stat
     type(build_target_t), pointer :: exe_obj
-    type(build_target_ptr) :: q_ptr
-    character(:), allocatable :: link_flags
 
-    if (target%enqueued .or. target%skip) then
+    if (target%scheduled .or. target%skip) then
         return
+    end if
+
+    if (.not.exists(dirname(target%output_file))) then
+        call mkdir(dirname(target%output_file))
     end if
 
     if (target%touched) then
@@ -102,19 +102,20 @@ recursive subroutine schedule_target(queue,target)
         if (allocated(target%digest_cached)) then
             if (target%digest_cached == target%source%digest) target%skip = .true.
         end if
-    else
+    elseif (exists(target%output_file)) then
         target%skip = .true.
     end if
 
     target%link_objects = " "
-
+    target%region = 1
     do i=1,size(target%dependencies)
 
-        call schedule_target(queue,target%dependencies(i)%ptr)
+        call schedule_target(target%dependencies(i)%ptr)
 
         if (.not.target%dependencies(i)%ptr%skip) then
 
             target%skip = .false.
+            target%region = max(target%region,target%dependencies(i)%ptr%region+1)
 
         end if
 
@@ -146,34 +147,62 @@ recursive subroutine schedule_target(queue,target)
 
     end do
     
-    if ( target%skip ) then
-
-        return
-
-    end if
-
-    q_ptr%ptr => target
-    queue = [queue, q_ptr]
-    target%enqueued = .true.
-
-    ! target%built = .true.
+    target%scheduled = .not.target%skip
 
 end subroutine schedule_target
 
 
+subroutine get_build_queue(queue, region_ptr, targets)
+    type(build_target_ptr), allocatable, intent(out) :: queue(:)
+    integer, allocatable :: region_ptr(:)
+    type(build_target_ptr), intent(in) :: targets(:)
+
+    integer :: i, j
+    integer :: nRegion, n_scheduled
+
+    nRegion = 0
+    n_scheduled = 0
+    do i=1,size(targets)
+
+        if (targets(i)%ptr%scheduled) then
+            n_scheduled = n_scheduled + 1
+        end if
+        nRegion = max(nRegion, targets(i)%ptr%region)
+
+    end do
+
+    allocate(queue(n_scheduled))
+    allocate(region_ptr(nRegion+1))
+
+    n_scheduled = 1
+    region_ptr(n_scheduled) = 1
+    do i=1,nRegion
+
+        do j=1,size(targets)
+
+            if (targets(j)%ptr%scheduled) then
+                if (targets(j)%ptr%region == i) then
+
+                    queue(n_scheduled)%ptr => targets(j)%ptr
+                    n_scheduled = n_scheduled + 1
+                end if
+            end if
+
+        end do
+
+        region_ptr(i+1) = n_scheduled
+
+    end do
+
+end subroutine get_build_queue
 
 
-subroutine build_target(model,target,linking)
+subroutine build_target(model,target)
     type(fpm_model_t), intent(in) :: model
-    type(build_target_t), intent(inout), target :: target
-    character(*), intent(in) :: linking
+    type(build_target_t), intent(in), target :: target
 
     integer :: ilib, fh
     character(:), allocatable :: link_flags
-
-    if (.not.exists(dirname(target%output_file))) then
-        call mkdir(dirname(target%output_file))
-    end if
 
     select case(target%target_type)
 
@@ -182,7 +211,12 @@ subroutine build_target(model,target,linking)
               // " -o " // target%output_file)
 
     case (FPM_TARGET_EXECUTABLE)
-        link_flags = linking
+        if (allocated(model%library_file)) then
+            link_flags = " "//model%library_file//" "//model%link_flags
+        else
+            link_flags = " "//model%link_flags
+        end if
+        
         if (allocated(target%link_libraries)) then
             do ilib = 1, size(target%link_libraries)
                 link_flags = link_flags // " -l" // target%link_libraries(ilib)%s

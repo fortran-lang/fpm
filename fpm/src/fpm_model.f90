@@ -75,10 +75,16 @@ type build_target_t
         ! Native libraries to link against
 
     character(:), allocatable :: link_objects
+        ! Objects needed to link this target
     logical :: touched = .false.
-    logical :: enqueued = .false.
+        ! Flag set when first visited to check for circular dependencies
+    logical :: scheduled = .false.
+        ! Flag set if build target is scheduled for building
     logical :: skip = .false.
+        ! Flag set if build target will be skipped (not built)
 
+    integer :: region
+        ! Targets in the same region are guaranteed independent
     integer(int64), allocatable :: digest_cached
         ! Previous hash
 
@@ -97,6 +103,8 @@ type :: fpm_model_t
         ! Command line flags passed to fortran for compilation
     character(:), allocatable :: link_flags
         ! Command line flags pass for linking
+    character(:), allocatable :: library_file
+        ! Output file for library archive
     character(:), allocatable :: output_directory
         ! Base directory for build
     type(string_t), allocatable :: link_libraries(:)
