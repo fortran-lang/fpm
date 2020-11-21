@@ -1,9 +1,10 @@
 module fpm_strings
+use iso_fortran_env, only: int64
 implicit none
 
 private
 public :: f_string, lower, split, str_ends_with, string_t
-public :: string_array_contains, operator(.in.)
+public :: string_array_contains, operator(.in.), fnv_1a
 
 type string_t
     character(len=:), allocatable :: s
@@ -12,6 +13,11 @@ end type
 interface operator(.in.)
     module procedure string_array_contains
 end interface
+
+interface fnv_1a
+    procedure :: fnv_1a_char
+    procedure :: fnv_1a_string_t
+end interface fnv_1a
 
 contains
 
@@ -46,6 +52,46 @@ function f_string(c_string)
     end do
   
 end function f_string
+
+
+!> Hash a character(*) string of default kind 
+pure function fnv_1a_char(input, seed) result(hash)
+    character(*), intent(in) :: input
+    integer(int64), intent(in), optional :: seed
+    integer(int64) :: hash
+
+    integer :: i
+    integer(int64), parameter :: FNV_OFFSET_32 = 2166136261_int64
+    integer(int64), parameter :: FNV_PRIME_32 = 16777619_int64
+
+    if (present(seed)) then
+        hash = seed
+    else
+        hash = FNV_OFFSET_32
+    end if
+
+    do i=1,len(input)
+        hash = ieor(hash,iachar(input(i:i),int64)) * FNV_PRIME_32
+    end do
+
+end function fnv_1a_char
+
+
+!> Hash a string_t array of default kind 
+pure function fnv_1a_string_t(input, seed) result(hash)
+    type(string_t), intent(in) :: input(:)
+    integer(int64), intent(in), optional :: seed
+    integer(int64) :: hash
+
+    integer :: i
+
+    hash = fnv_1a(input(1)%s,seed)
+
+    do i=2,size(input)
+        hash = fnv_1a(input(i)%s,hash)
+    end do
+
+end function fnv_1a_string_t
 
 
 elemental pure function lower(str,begin,end) result (string)
