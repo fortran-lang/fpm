@@ -58,8 +58,8 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_text(:), help_install(:), help_help(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
- & 'fpm','new','build','run','test',&
- & 'runner','list','help','version']
+&  ' ',     'fpm',     'new',   'build',  'run',     &
+&  'test',  'runner',  'list',  'help',   'version'  ]
 
 character(len=:), allocatable :: charbug
 contains
@@ -432,7 +432,10 @@ contains
     '    fpm run myprogram --release -- -x 10 -y 20 --title "my title"      ', &
     '                                                                       ', &
     'SEE ALSO                                                               ', &
-    '   The fpm(1) home page at https://github.com/fortran-lang/fpm         ', &
+    ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
+    ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
+    ' + The fpm(1) TOML file format is described at                                  ', &
+    '     https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md      ', &
     '']
     help_list=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -455,9 +458,6 @@ contains
     '                                                                       ', &
     '  fpm list                                                             ', &
     '  fpm --list                                                           ', &
-    '                                                                       ', &
-    'SEE ALSO                                                               ', &
-    ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
     help_run=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -498,9 +498,6 @@ contains
     '                                                                       ', &
     '  # install executables in directory (assuming install(1) exists)      ', &
     '  fpm run --runner ''install -b -m 0711 -p -t /usr/local/bin''         ', &
-    '                                                                       ', &
-    'SEE ALSO                                                               ', &
-    ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
     help_build=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -539,9 +536,6 @@ contains
     '                                                                       ', &
     '  fpm build           # build with debug options                       ', &
     '  fpm build --release # build with high optimization                   ', &
-    '                                                                       ', &
-    'SEE ALSO                                                               ', &
-    ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
 
     help_help=[character(len=80) :: &
@@ -574,8 +568,6 @@ contains
     '     fpm help new       # display help for "new" subcommand            ', &
     '     fpm help manual    # All fpm(1) built-in documentation            ', &
     '                                                                       ', &
-    'SEE ALSO                                                               ', &
-    '   The fpm(1) home page at https://github.com/fortran-lang/fpm         ', &
     '' ]
     help_new=[character(len=80) ::                                             &
     'NAME                                                                   ', &
@@ -650,11 +642,6 @@ contains
     '   fpm build                                                           ', &
     '   fpm run            # run example application program                ', &
     '   fpm test           # run example test program                       ', &
-    '                                                                       ', &
-    'SEE ALSO                                                               ', &
-    ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
-    '                                                                       ', &
-    ' Registered packages are at https://fortran-lang.org/packages          ', &
     '' ]
     help_test=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -691,9 +678,6 @@ contains
     ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &
     '                                                                       ', &
     ' fpm test tst1 tst2 --release # production version of two tests        ', &
-    '                                                                       ', &
-    'SEE ALSO                                                               ', &
-    ' The fpm(1) home page at https://github.com/fortran-lang/fpm           ', &
     '' ]
     help_install=[character(len=80) :: &
     ' fpm(1) subcommand "install"                                           ', &
