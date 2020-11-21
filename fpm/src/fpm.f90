@@ -439,13 +439,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    ! NB. To be replaced after incremental rebuild is implemented
-    if (.not.settings%list .and. &
-         any([(.not.exists(executables(i)%s),i=1,size(executables))])) then
-
-        call build_package(model)
-
-    end if
+    call build_package(model)
 
     do i=1,size(executables)
         if (settings%list) then
