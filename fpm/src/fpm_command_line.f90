@@ -314,7 +314,7 @@ contains
    '                 executables.                                                   ', &
    '                                                                                ', &
    'SYNOPSIS                                                                        ', &
-   '   fpm run|test --runner CMD ...                                                ', &
+   '   fpm run|test --runner CMD ... -- SUFFIX_OPTIONS                              ', &
    '                                                                                ', &
    'DESCRIPTION                                                                     ', &
    '   The --runner option allows specifying a program to launch                    ', &
@@ -329,6 +329,8 @@ contains
    ' --runner ''CMD''  quoted command used to launch the fpm(1) executables.          ', &
    '               Available for both the "run" and "test" subcommands.             ', &
    '                                                                                ', &
+   ' -- SUFFIX_OPTIONS  additional options to suffix the command CMD and executable ', &
+   '                    file names with.                                            ', &
    'EXAMPLES                                                                        ', &
    '   Use cases for ''fpm run|test --runner "CMD"'' include employing                ', &
    '   the following common GNU/Linux and Unix commands:                            ', &
@@ -360,6 +362,10 @@ contains
    '  fpm run --runner ldd                                                          ', &
    '  fpm run --runner strip                                                        ', &
    '  fpm run --runner ''cp -t /usr/local/bin''                                       ', &
+   '                                                                                ', &
+   '  # options after executable name can be specified after the -- option          ', &
+   '  fpm --runner cp run -- /usr/local/bin/                                        ', &
+   '  # generates commands of the form "cp $FILENAME /usr/local/bin/"               ', &
    '                                                                                ', &
    '  # bash(1) alias example:                                                      ', &
    '  alias fpm-install="ffpm run --release --runner \                              ', &

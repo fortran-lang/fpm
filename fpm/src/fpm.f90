@@ -85,7 +85,7 @@ recursive subroutine add_libsources_from_package(sources,link_libraries,package_
         character(:), allocatable :: dependency_path
 
         do i=1,size(dependency_list)
-            
+
             if (dependency_list(i)%name .in. package_list) then
                 cycle
             end if
@@ -100,7 +100,7 @@ recursive subroutine add_libsources_from_package(sources,link_libraries,package_
                 end if
 
             else if (allocated(dependency_list(i)%path)) then
-                
+
                 dependency_path = join_path(package_root,dependency_list(i)%path)
 
             end if
@@ -121,11 +121,11 @@ recursive subroutine add_libsources_from_package(sources,link_libraries,package_
                 dependency%library%source_dir = "src"
             end if
 
-            
+
             call add_libsources_from_package(sources,link_libraries,package_list,dependency, &
                 package_root=dependency_path, &
                 dev_depends=.false., error=error)
-            
+
             if (allocated(error)) then
                 error%message = 'Error while processing sources for dependency package "'//&
                                 new_line('a')//dependency%name//'"'//&
@@ -358,7 +358,7 @@ subroutine cmd_run(settings,test)
             exe_source => exe_target%dependencies(1)%ptr%source
 
             if (exe_source%unit_scope == &
-                merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then 
+                merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then
 
                 col_width = max(col_width,len(basename(exe_target%output_file))+2)
 
@@ -372,7 +372,7 @@ subroutine cmd_run(settings,test)
                     do j=1,size(settings%name)
 
                         if (trim(settings%name(j))==exe_source%exe_name) then
-                            
+
                             found(j) = .true.
                             exe_cmd%s = exe_target%output_file
                             executables = [executables, exe_cmd]
@@ -382,7 +382,7 @@ subroutine cmd_run(settings,test)
                     end do
 
                 end if
-                
+
             end if
 
         end if
@@ -415,14 +415,14 @@ subroutine cmd_run(settings,test)
         do i=1,size(model%targets)
 
             exe_target => model%targets(i)%ptr
-    
+
             if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
                 allocated(exe_target%dependencies)) then
 
                 exe_source => exe_target%dependencies(1)%ptr%source
 
                 if (exe_source%unit_scope == &
-                    merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then 
+                    merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then
 
                     write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
                                         & [character(len=col_width) :: basename(exe_target%output_file)]
@@ -451,13 +451,13 @@ subroutine cmd_run(settings,test)
         if (settings%list) then
             write(stderr,*) executables(i)%s
         else
-            
+
             if (exists(executables(i)%s)) then
-	        if(settings%runner .ne. ' ')then
+                if(settings%runner .ne. ' ')then
                    call run(settings%runner//' '//executables(i)%s//" "//settings%args)
-		else
+                else
                    call run(executables(i)%s//" "//settings%args)
-		endif
+                endif
             else
                 write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
                 stop 1
