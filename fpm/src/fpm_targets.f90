@@ -13,8 +13,15 @@ subroutine targets_from_sources(model,sources)
     type(srcfile_t), intent(in) :: sources(:)
 
     integer :: i
+    character(:), allocatable :: xsuffix
     type(build_target_t), pointer :: dep
     logical :: with_lib
+
+    if (get_os_type() == OS_WINDOWS) then
+        xsuffix = '.exe'
+    else
+        xsuffix = ''
+    end if
 
     with_lib = any([(sources(i)%unit_scope == FPM_SCOPE_LIB,i=1,size(sources))])
 
@@ -46,11 +53,13 @@ subroutine targets_from_sources(model,sources)
             if (sources(i)%unit_scope == FPM_SCOPE_APP) then
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
                             link_libraries = sources(i)%link_libraries, &
-                            output_file = join_path(model%output_directory,'app',sources(i)%exe_name))
+                            output_file = join_path(model%output_directory,'app', &
+                            sources(i)%exe_name//xsuffix))
             else
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
                             link_libraries = sources(i)%link_libraries, &
-                            output_file = join_path(model%output_directory,'test',sources(i)%exe_name))
+                            output_file = join_path(model%output_directory,'test', &
+                            sources(i)%exe_name//xsuffix))
             
             end if
 
