@@ -73,18 +73,18 @@ type build_target_t
     integer :: target_type = FPM_TARGET_UNKNOWN
     type(string_t), allocatable :: link_libraries(:)
         ! Native libraries to link against
-
-    character(:), allocatable :: link_objects
+    type(string_t), allocatable :: link_objects(:)
         ! Objects needed to link this target
+
     logical :: touched = .false.
         ! Flag set when first visited to check for circular dependencies
-    logical :: scheduled = .false.
-        ! Flag set if build target is scheduled for building
+    logical :: sorted = .false.
+        ! Flag set if build target is sorted for building
     logical :: skip = .false.
         ! Flag set if build target will be skipped (not built)
 
-    integer :: region
-        ! Targets in the same region are guaranteed independent
+    integer :: schedule
+        ! Targets in the same schedule group are guaranteed to be independent
     integer(int64), allocatable :: digest_cached
         ! Previous hash
 

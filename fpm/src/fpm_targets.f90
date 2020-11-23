@@ -258,4 +258,62 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
 
 end function find_module_dependency
 
+
+!> For link targets, enumerate any dependency objects required for linking
+subroutine resolve_target_linking(targets)
+    type(build_target_ptr), intent(inout), target :: targets(:)
+
+    integer :: i,j,k
+    type(string_t) :: link_object
+
+    do i=1,size(targets)
+
+        associate(target => targets(i)%ptr)
+
+            allocate(target%link_objects(0))
+
+            do j=1,size(target%dependencies)
+            
+                if (target%target_type == FPM_TARGET_ARCHIVE ) then
+            
+                    ! Construct object list for archive
+                    link_object%s = target%dependencies(j)%ptr%output_file
+                    target%link_objects = [target%link_objects, link_object]
+            
+                else if (target%target_type == FPM_TARGET_EXECUTABLE .and. &
+                        target%dependencies(j)%ptr%target_type ==  FPM_TARGET_OBJECT) then
+                    
+                    associate(exe_obj => target%dependencies(j)%ptr)
+
+                        ! Construct object list for executable
+                        link_object%s = exe_obj%output_file
+                        target%link_objects = [target%link_objects, link_object]
+                            
+                        ! Include non-library object dependencies
+                        do k=1,size(exe_obj%dependencies)
+                
+                            if (allocated(exe_obj%dependencies(k)%ptr%source)) then
+                                if (exe_obj%dependencies(k)%ptr%source%unit_scope == &
+                                     exe_obj%source%unit_scope) then
+
+                                    link_object%s = exe_obj%dependencies(k)%ptr%output_file
+                                    target%link_objects = [target%link_objects, link_object]
+
+                                end if
+                            end if
+                
+                        end do
+
+                    end associate
+            
+                end if
+
+            end do
+        end associate
+
+    end do
+
+end subroutine resolve_target_linking
+
+
 end module fpm_targets

@@ -4,7 +4,7 @@ implicit none
 
 private
 public :: f_string, lower, split, str_ends_with, string_t
-public :: string_array_contains, operator(.in.), fnv_1a
+public :: string_array_contains, string_cat, operator(.in.), fnv_1a
 
 type string_t
     character(len=:), allocatable :: s
@@ -140,6 +140,32 @@ logical function string_array_contains(search_string,array)
 
 end function string_array_contains
 
+!> Concatenate an array of type(string_t) into 
+!>  a single character
+function string_cat(strings,delim) result(cat)
+    type(string_t), intent(in) :: strings(:)
+    character(*), intent(in), optional :: delim
+    character(:), allocatable :: cat
+
+    integer :: i,n
+    character(:), allocatable :: delim_str
+
+    if (size(strings) < 1) return
+
+    if (present(delim)) then
+        delim_str = delim
+    else
+        delim_str = ''
+    end if
+
+    cat = strings(1)%s
+    do i=2,size(strings)
+
+        cat = cat//delim_str//strings(i)%s
+        
+    end do
+
+end function string_cat
 
 subroutine split(input_line,array,delimiters,order,nulls)
     ! parse string on delimiter characters and store tokens into an allocatable array"

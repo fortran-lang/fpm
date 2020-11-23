@@ -8,10 +8,11 @@ use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists,
 use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
-                    FPM_TARGET_EXECUTABLE
+                    FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
-use fpm_targets, only: targets_from_sources, resolve_module_dependencies, FPM_TARGET_ARCHIVE
+use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
+                        resolve_target_linking
 use fpm_manifest, only : get_package_data, default_executable, &
     default_library, package_t, default_test
 use fpm_error, only : error_t, fatal_error
@@ -246,6 +247,8 @@ subroutine build_model(model, settings, package, error)
     end if
 
     call resolve_module_dependencies(model%targets,error)
+
+    call resolve_target_linking(model%targets)
 
 end subroutine build_model
 
