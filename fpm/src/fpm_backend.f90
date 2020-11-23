@@ -209,10 +209,13 @@ subroutine build_target(model,target)
               // " -o " // target%output_file)
 
     case (FPM_TARGET_EXECUTABLE)
+
+        link_flags = string_cat(target%link_objects," ") 
+
         if (allocated(model%library_file)) then
-            link_flags = " "//model%library_file//" "//model%link_flags
+            link_flags = link_flags//" "//model%library_file//" "//model%link_flags
         else
-            link_flags = " "//model%link_flags
+            link_flags = link_flags//" "//model%link_flags
         end if
         
         if (allocated(target%link_libraries)) then
@@ -220,9 +223,9 @@ subroutine build_target(model,target)
                 link_flags = link_flags // " -l" // string_cat(target%link_libraries," -l")
             end if
         end if
-
-        call run("gfortran " // string_cat(target%link_objects," ") // model%fortran_compile_flags &
-              //link_flags// " -o " // target%output_file)
+        
+        call run("gfortran " // model%fortran_compile_flags &
+              //" "//link_flags// " -o " // target%output_file)
 
     case (FPM_TARGET_ARCHIVE)
         call run("ar -rs " // target%output_file // " " // string_cat(target%link_objects," "))

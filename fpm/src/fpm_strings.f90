@@ -150,7 +150,10 @@ function string_cat(strings,delim) result(cat)
     integer :: i,n
     character(:), allocatable :: delim_str
 
-    if (size(strings) < 1) return
+    if (size(strings) < 1) then
+        cat = ''
+        return
+    end if
 
     if (present(delim)) then
         delim_str = delim
