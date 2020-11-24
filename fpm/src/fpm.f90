@@ -10,6 +10,7 @@ use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
                     FPM_TARGET_EXECUTABLE
 
+use fpm_dependency, only : update_dep_lock, dependency_walker_t
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, resolve_module_dependencies
 use fpm_manifest, only : get_package_data, package_config_t

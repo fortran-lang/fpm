@@ -14,19 +14,27 @@
 module fpm_toml
     use fpm_error, only : error_t, fatal_error, file_not_found_error
     use fpm_strings, only : string_t
+    use fpm_versioning, only : version_t, new_version
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
-        & set_value, toml_parse, toml_error, new_table, add_table, add_array, len
+        & set_value, toml_parse, toml_error, toml_serializer, new_table, &
+        & add_table, add_array, len
     implicit none
     private
 
     public :: read_package_file
     public :: toml_table, toml_array, toml_key, toml_stat, get_value, set_value
     public :: new_table, add_table, add_array, len
+    public :: toml_serializer, toml_parse, toml_error
 
 
     interface get_value
         module procedure :: get_child_value_string_list
+        module procedure :: get_child_value_version
     end interface get_value
+
+    interface set_value
+        module procedure :: set_child_value_version
+    end interface set_value
 
 
 contains
@@ -112,6 +120,62 @@ contains
         end if
 
     end subroutine get_child_value_string_list
+
+
+    !> Retrieve a TOML value as version data
+    subroutine get_child_value_version(table, key, version, error)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Key to read from
+        character(len=*), intent(in) :: key
+
+        !> Version number
+        type(version_t), intent(out) :: version
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: str
+        integer :: stat
+
+        call get_value(table, key, str)
+        if (allocated(str)) then
+            call new_version(version, str, error)
+        else
+            call fatal_error(error, "Wrong type for "//key//", string value required")
+        end if
+
+    end subroutine get_child_value_version
+
+
+    !> Store version data as TOML string
+    subroutine set_child_value_version(table, key, version, error)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Key to read from
+        character(len=*), intent(in) :: key
+
+        !> Version number
+        type(version_t), intent(in) :: version
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: str
+        integer :: stat
+
+        call version%to_string(str)
+        call set_value(table, key, str, stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, "Cannot set "//key//" value to version "//str)
+            return
+        end if
+
+    end subroutine set_child_value_version
 
 
 end module fpm_toml

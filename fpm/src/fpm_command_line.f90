@@ -17,6 +17,7 @@ public :: fpm_cmd_settings, &
           fpm_new_settings, &
           fpm_run_settings, &
           fpm_test_settings, &
+          fpm_update_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
@@ -48,6 +49,16 @@ end type
 type, extends(fpm_cmd_settings)  :: fpm_install_settings
 end type
 
+!> Settings for interacting and updating with project dependencies
+type, extends(fpm_cmd_settings)  :: fpm_update_settings
+    !> Dependencies to be updated
+    character(len=ibug),allocatable :: name(:)
+    !> Force updates of all packages
+    logical :: force_update = .false.
+    !> Rerender all dependencies
+    logical :: clean = .false.
+end type
+
 character(len=:),allocatable :: name
 character(len=:),allocatable :: os_type
 character(len=ibug),allocatable :: names(:)
@@ -55,7 +66,7 @@ character(len=ibug),allocatable :: names(:)
 character(len=:), allocatable :: version_text(:)
 character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
-                 & help_text(:), help_install(:), help_help(:), &
+                 & help_text(:), help_install(:), help_help(:), help_update(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',     'new',   'build',  'run',     &
@@ -196,6 +207,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_runner]
                 case('list   ' )
                    help_text=[character(len=widest) :: help_text, help_list]
+                case('update ' )
+                   help_text=[character(len=widest) :: help_text, help_update]
                 case('help   ' )
                    help_text=[character(len=widest) :: help_text, help_help]
                 case('version' )
@@ -231,6 +244,19 @@ contains
             charbug=sget('runner')
             cmd_settings=fpm_test_settings( name=names, list=lget('list'), &
             & release=lget('release'), args=remaining ,runner=charbug )
+
+        case('update')
+            call set_args('--all F --clean F', help_update, version_text)
+
+            if( size(unnamed) .gt. 1 )then
+                names=unnamed(2:)
+            else
+                names=[character(len=len(names)) :: ]
+            endif
+
+            allocate(fpm_update_settings :: cmd_settings)
+            cmd_settings=fpm_update_settings(&
+              name=names, force_update=lget('all'), clean=lget('clean'))
 
         case default
 
@@ -684,6 +710,22 @@ contains
     ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &
     '                                                                       ', &
     ' fpm test tst1 tst2 --release # production version of two tests        ', &
+    '' ]
+    help_update=[character(len=80) :: &
+    'NAME', &
+    ' update(1) - manage project dependencies', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm update [--list] [NAME(s)]', &
+    '', &
+    'DESCRIPTION', &
+    ' Manage and update project dependencies', &
+    '', &
+    'OPTIONS', &
+    ' --all      update all dependencies', &
+    '', &
+    'SEE ALSO', &
+    ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
     '' ]
     help_install=[character(len=80) :: &
     ' fpm(1) subcommand "install"                                           ', &
