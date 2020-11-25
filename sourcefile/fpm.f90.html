@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 9.3% of total for source files.">268 statements</a>
+    title=" 9.4% of total for source files.">272 statements</a>
      </li> 
      
      
@@ -349,7 +349,7 @@
 <a name="ln-84"></a>        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependency_path</span>
 <a name="ln-85"></a>
 <a name="ln-86"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">dependency_list</span><span class="p">)</span>
-<a name="ln-87"></a>            
+<a name="ln-87"></a>
 <a name="ln-88"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">dependency_list</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">package_list</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-89"></a><span class="k">                cycle</span>
 <a name="ln-90"></a><span class="k">            end if</span>
@@ -364,7 +364,7 @@
 <a name="ln-99"></a><span class="k">                end if</span>
 <a name="ln-100"></a>
 <a name="ln-101"></a><span class="k">            else if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency_list</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">path</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-102"></a><span class="k">                </span>
+<a name="ln-102"></a>
 <a name="ln-103"></a><span class="k">                </span><span class="n">dependency_path</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">package_root</span><span class="p">,</span><span class="n">dependency_list</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">path</span><span class="p">)</span>
 <a name="ln-104"></a>
 <a name="ln-105"></a>            <span class="k">end if</span>
@@ -385,11 +385,11 @@
 <a name="ln-120"></a>                <span class="n">dependency</span><span class="p">%</span><span class="n">library</span><span class="p">%</span><span class="n">source_dir</span> <span class="o">=</span> <span class="s2">&quot;src&quot;</span>
 <a name="ln-121"></a>            <span class="k">end if</span>
 <a name="ln-122"></a>
-<a name="ln-123"></a><span class="k">            </span>
+<a name="ln-123"></a>
 <a name="ln-124"></a><span class="k">            call </span><span class="n">add_libsources_from_package</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">link_libraries</span><span class="p">,</span><span class="n">package_list</span><span class="p">,</span><span class="n">dependency</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-125"></a>                <span class="n">package_root</span><span class="o">=</span><span class="n">dependency_path</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-126"></a>                <span class="n">dev_depends</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-127"></a>            
+<a name="ln-127"></a>
 <a name="ln-128"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-129"></a><span class="k">                </span><span class="n">error</span><span class="p">%</span><span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Error while processing sources for dependency package &quot;&#39;</span><span class="o">//</span><span class="p">&amp;</span>
 <a name="ln-130"></a>                                <span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">//</span><span class="n">dependency</span><span class="p">%</span><span class="n">name</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="o">//</span><span class="p">&amp;</span>
@@ -587,7 +587,7 @@
 <a name="ln-322"></a><span class="k">            </span><span class="n">exe_source</span> <span class="o">=&gt;</span> <span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span>
 <a name="ln-323"></a>
 <a name="ln-324"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="p">&amp;</span>
-<a name="ln-325"></a>                <span class="nb">merge</span><span class="p">(</span><span class="n">FPM_SCOPE_TEST</span><span class="p">,</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span><span class="n">test</span><span class="p">))</span> <span class="k">then </span>
+<a name="ln-325"></a>                <span class="nb">merge</span><span class="p">(</span><span class="n">FPM_SCOPE_TEST</span><span class="p">,</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span><span class="n">test</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-326"></a>
 <a name="ln-327"></a><span class="k">                </span><span class="n">col_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">col_width</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="p">))</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
 <a name="ln-328"></a>
@@ -601,7 +601,7 @@
 <a name="ln-336"></a><span class="k">                    do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
 <a name="ln-337"></a>
 <a name="ln-338"></a>                        <span class="k">if</span> <span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">j</span><span class="p">))</span><span class="o">==</span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-339"></a><span class="k">                            </span>
+<a name="ln-339"></a>
 <a name="ln-340"></a><span class="k">                            </span><span class="n">found</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
 <a name="ln-341"></a>                            <span class="n">exe_cmd</span><span class="p">%</span><span class="n">s</span> <span class="o">=</span> <span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span>
 <a name="ln-342"></a>                            <span class="n">executables</span> <span class="o">=</span> <span class="p">[</span><span class="n">executables</span><span class="p">,</span> <span class="n">exe_cmd</span><span class="p">]</span>
@@ -611,7 +611,7 @@
 <a name="ln-346"></a><span class="k">                    end do</span>
 <a name="ln-347"></a>
 <a name="ln-348"></a><span class="k">                end if</span>
-<a name="ln-349"></a><span class="k">                </span>
+<a name="ln-349"></a>
 <a name="ln-350"></a><span class="k">            end if</span>
 <a name="ln-351"></a>
 <a name="ln-352"></a><span class="k">        end if</span>
@@ -644,14 +644,14 @@
 <a name="ln-379"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span>
 <a name="ln-380"></a>
 <a name="ln-381"></a>            <span class="n">exe_target</span> <span class="o">=&gt;</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
-<a name="ln-382"></a>    
+<a name="ln-382"></a>
 <a name="ln-383"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
 <a name="ln-384"></a>                <span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-385"></a>
 <a name="ln-386"></a><span class="k">                </span><span class="n">exe_source</span> <span class="o">=&gt;</span> <span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span>
 <a name="ln-387"></a>
 <a name="ln-388"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="p">&amp;</span>
-<a name="ln-389"></a>                    <span class="nb">merge</span><span class="p">(</span><span class="n">FPM_SCOPE_TEST</span><span class="p">,</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span><span class="n">test</span><span class="p">))</span> <span class="k">then </span>
+<a name="ln-389"></a>                    <span class="nb">merge</span><span class="p">(</span><span class="n">FPM_SCOPE_TEST</span><span class="p">,</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span><span class="n">test</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-390"></a>
 <a name="ln-391"></a><span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="s2">&quot;no &quot;</span><span class="p">,</span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">nCol</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)))</span> <span class="p">&amp;</span>
 <a name="ln-392"></a>                                        <span class="p">&amp;</span> <span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">col_width</span><span class="p">)</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)]</span>
@@ -680,20 +680,24 @@
 <a name="ln-415"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-416"></a><span class="k">            write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span>
 <a name="ln-417"></a>        <span class="k">else</span>
-<a name="ln-418"></a><span class="k">            </span>
+<a name="ln-418"></a>
 <a name="ln-419"></a><span class="k">            if</span> <span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-420"></a><span class="k">                call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">)</span>
-<a name="ln-421"></a>            <span class="k">else</span>
-<a name="ln-422"></a><span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;fpm::run&lt;ERROR&gt;&#39;</span><span class="p">,</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39; not found&#39;</span>
-<a name="ln-423"></a>                <span class="k">stop </span><span class="mi">1</span>
-<a name="ln-424"></a>            <span class="k">end if</span>
-<a name="ln-425"></a>
-<a name="ln-426"></a><span class="k">        end if</span>
-<a name="ln-427"></a><span class="k">    end do</span>
-<a name="ln-428"></a>
-<a name="ln-429"></a><span class="k">end subroutine </span><span class="n">cmd_run</span>
-<a name="ln-430"></a>
-<a name="ln-431"></a><span class="k">end module </span><span class="n">fpm</span>
+<a name="ln-420"></a><span class="k">                if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="k">then</span>
+<a name="ln-421"></a><span class="k">                   call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">)</span>
+<a name="ln-422"></a>                <span class="k">else</span>
+<a name="ln-423"></a><span class="k">                   call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">)</span>
+<a name="ln-424"></a>                <span class="n">endif</span>
+<a name="ln-425"></a>            <span class="k">else</span>
+<a name="ln-426"></a><span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;fpm::run&lt;ERROR&gt;&#39;</span><span class="p">,</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39; not found&#39;</span>
+<a name="ln-427"></a>                <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-428"></a>            <span class="k">end if</span>
+<a name="ln-429"></a>
+<a name="ln-430"></a><span class="k">        end if</span>
+<a name="ln-431"></a><span class="k">    end do</span>
+<a name="ln-432"></a>
+<a name="ln-433"></a><span class="k">end subroutine </span><span class="n">cmd_run</span>
+<a name="ln-434"></a>
+<a name="ln-435"></a><span class="k">end module </span><span class="n">fpm</span>
 </pre></div>
 
     </section>
@@ -712,7 +716,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-25 09:29  
+             on 2020-11-25 15:24  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
