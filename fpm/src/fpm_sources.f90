@@ -8,7 +8,7 @@ use fpm_model, only: srcfile_t, fpm_model_t, &
                     
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, read_lines, list_files
 use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.)
-use fpm_manifest_executable, only: executable_t
+use fpm_manifest_executable, only: executable_config_t
 implicit none
 
 private
@@ -123,7 +123,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     !  in [[executable]] entries and apply any customisations
     !  
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
-    class(executable_t), intent(in) :: executables(:)
+    class(executable_config_t), intent(in) :: executables(:)
     integer, intent(in) :: scope
     logical, intent(in) :: auto_discover
     type(error_t), allocatable, intent(out) :: error
@@ -189,7 +189,7 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
     ! Build a list of unique source directories
     !  from executables specified in manifest
     type(string_t), allocatable, intent(inout) :: exe_dirs(:)
-    class(executable_t), intent(in) :: executables(:)
+    class(executable_config_t), intent(in) :: executables(:)
 
     type(string_t) :: dirs_temp(size(executables))
 

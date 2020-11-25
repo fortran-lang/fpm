@@ -28,11 +28,11 @@
 !>[[ test ]]
 !>```
 module fpm_manifest_package
-    use fpm_manifest_build_config, only: build_config_t, new_build_config
-    use fpm_manifest_dependency, only : dependency_t, new_dependencies
-    use fpm_manifest_executable, only : executable_t, new_executable
-    use fpm_manifest_library, only : library_t, new_library
-    use fpm_manifest_test, only : test_t, new_test
+    use fpm_manifest_build, only: build_config_t, new_build_config
+    use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
+    use fpm_manifest_executable, only : executable_config_t, new_executable
+    use fpm_manifest_library, only : library_config_t, new_library
+    use fpm_manifest_test, only : test_config_t, new_test
     use fpm_error, only : error_t, fatal_error, syntax_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & len
@@ -40,42 +40,42 @@ module fpm_manifest_package
     implicit none
     private
 
-    public :: package_t, new_package
+    public :: package_config_t, new_package
 
 
     !> Package meta data
-    type :: package_t
+    type :: package_config_t
 
         !> Name of the package
         character(len=:), allocatable :: name
 
         !> Build configuration data
-        type(build_config_t) :: build_config
+        type(build_config_t) :: build
 
         !> Package version
         type(version_t) :: version
 
         !> Library meta data
-        type(library_t), allocatable :: library
+        type(library_config_t), allocatable :: library
 
         !> Executable meta data
-        type(executable_t), allocatable :: executable(:)
+        type(executable_config_t), allocatable :: executable(:)
 
         !> Dependency meta data
-        type(dependency_t), allocatable :: dependency(:)
+        type(dependency_config_t), allocatable :: dependency(:)
 
         !> Development dependency meta data
-        type(dependency_t), allocatable :: dev_dependency(:)
+        type(dependency_config_t), allocatable :: dev_dependency(:)
 
         !> Test meta data
-        type(test_t), allocatable :: test(:)
+        type(test_config_t), allocatable :: test(:)
 
     contains
 
         !> Print information on this instance
         procedure :: info
 
-    end type package_t
+    end type package_config_t
 
 
 contains
@@ -85,7 +85,7 @@ contains
     subroutine new_package(self, table, error)
 
         !> Instance of the package configuration
-        type(package_t), intent(out) :: self
+        type(package_config_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -112,7 +112,7 @@ contains
             call fatal_error(error, "Type mismatch for build entry, must be a table")
             return
         end if
-        call new_build_config(self%build_config, child, error)
+        call new_build_config(self%build, child, error)
 
         if (allocated(error)) return
         
@@ -227,7 +227,7 @@ contains
     subroutine info(self, unit, verbosity)
 
         !> Instance of the package configuration
-        class(package_t), intent(in) :: self
+        class(package_config_t), intent(in) :: self
 
         !> Unit for IO
         integer, intent(in) :: unit
@@ -252,7 +252,7 @@ contains
             write(unit, fmt) "- name", self%name
         end if
 
-        call self%build_config%info(unit, pr - 1)
+        call self%build%info(unit, pr - 1)
 
         if (allocated(self%library)) then
             write(unit, fmt) "- target", "archive"

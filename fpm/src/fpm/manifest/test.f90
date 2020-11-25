@@ -15,25 +15,25 @@
 !>[test.dependencies]
 !>```
 module fpm_manifest_test
-    use fpm_manifest_dependency, only : dependency_t, new_dependencies
-    use fpm_manifest_executable, only : executable_t
+    use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
+    use fpm_manifest_executable, only : executable_config_t
     use fpm_error, only : error_t, syntax_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     implicit none
     private
 
-    public :: test_t, new_test
+    public :: test_config_t, new_test
 
 
     !> Configuation meta data for an test
-    type, extends(executable_t) :: test_t
+    type, extends(executable_config_t) :: test_config_t
 
     contains
 
         !> Print information on this instance
         procedure :: info
 
-    end type test_t
+    end type test_config_t
 
 
 contains
@@ -43,7 +43,7 @@ contains
     subroutine new_test(self, table, error)
 
         !> Instance of the test configuration
-        type(test_t), intent(out) :: self
+        type(test_config_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -125,7 +125,7 @@ contains
     subroutine info(self, unit, verbosity)
 
         !> Instance of the test configuration
-        class(test_t), intent(in) :: self
+        class(test_config_t), intent(in) :: self
 
         !> Unit for IO
         integer, intent(in) :: unit
