@@ -83,7 +83,7 @@ type build_target_t
     logical :: skip = .false.
         ! Flag set if build target will be skipped (not built)
 
-    integer :: schedule
+    integer :: schedule = -1
         ! Targets in the same schedule group are guaranteed to be independent
     integer(int64), allocatable :: digest_cached
         ! Previous hash
