@@ -173,7 +173,7 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/new_package.html#variable-child~2">child</a>
+      <a class="list-group-item" href="../proc/new_package.html#variable-child~3">child</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-children">children</a>
       
@@ -183,7 +183,7 @@
       
       <a class="list-group-item" href="../proc/new_package.html#variable-node~2">node</a>
       
-      <a class="list-group-item" href="../proc/new_package.html#variable-stat~9">stat</a>
+      <a class="list-group-item" href="../proc/new_package.html#variable-stat~10">stat</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-version~2">version</a>
       
@@ -256,7 +256,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-self~12"></span>type(<a href='../type/package_t.html'>package_t</a>),</td>
+  <td><span class="anchor" id="variable-self~14"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -271,7 +271,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-table~6"></span>type(toml_table),</td>
+  <td><span class="anchor" id="variable-table~8"></span>type(toml_table),</td>
   <td>intent(inout)</td>
   <td></td>
   
@@ -286,7 +286,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~17"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~19"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -317,7 +317,7 @@ public subroutine new_package(self, table, error)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/new_package.html#variable-child~2">child</a>
+      <a class="list-group-item" href="../proc/new_package.html#variable-child~3">child</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-children">children</a>
       
@@ -327,7 +327,7 @@ public subroutine new_package(self, table, error)
       
       <a class="list-group-item" href="../proc/new_package.html#variable-node~2">node</a>
       
-      <a class="list-group-item" href="../proc/new_package.html#variable-stat~9">stat</a>
+      <a class="list-group-item" href="../proc/new_package.html#variable-stat~10">stat</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-version~2">version</a>
       
@@ -387,7 +387,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-child~2"></span>type(toml_table),</td>
+  <td><span class="anchor" id="variable-child~3"></span>type(toml_table),</td>
   
   <td>public,</td>
   <td>pointer</td><td>::</td>
@@ -457,7 +457,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat~9"></span>integer,</td>
+  <td><span class="anchor" id="variable-stat~10"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -505,7 +505,7 @@ public subroutine new_package(self, table, error)
     <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">new_package</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 
         <span class="c">!&gt; Instance of the package configuration</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
 
         <span class="c">!&gt; Instance of the TOML data structure</span>
         <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
@@ -532,7 +532,7 @@ public subroutine new_package(self, table, error)
 <span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Type mismatch for build entry, must be a table&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 <span class="k">        end if</span>
-<span class="k">        call </span><span class="n">new_build_config</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">build_config</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<span class="k">        call </span><span class="n">new_build_config</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">build</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 <span class="k">        </span>
@@ -614,7 +614,7 @@ public subroutine new_package(self, table, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

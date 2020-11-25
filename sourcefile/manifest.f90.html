@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.6% of total for source files.">45 statements</a>
+    title=" 2.5% of total for source files.">73 statements</a>
      </li> 
      
      
@@ -272,93 +272,141 @@
 <a name="ln-7"></a><span class="c">!&gt; Additionally, the required data types for users of this module are reexported</span>
 <a name="ln-8"></a><span class="c">!&gt; to hide the actual implementation details.</span>
 <a name="ln-9"></a><span class="k">module </span><span class="n">fpm_manifest</span>
-<a name="ln-10"></a>    <span class="k">use </span><span class="n">fpm_manifest_build_config</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">build_config_t</span>
-<a name="ln-11"></a>    <span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">executable_t</span>
-<a name="ln-12"></a>    <span class="k">use </span><span class="n">fpm_manifest_library</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">library_t</span>
-<a name="ln-13"></a>    <span class="k">use </span><span class="n">fpm_manifest_package</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">package_t</span><span class="p">,</span> <span class="n">new_package</span>
+<a name="ln-10"></a>    <span class="k">use </span><span class="n">fpm_manifest_build</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">build_config_t</span>
+<a name="ln-11"></a>    <span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">executable_config_t</span>
+<a name="ln-12"></a>    <span class="k">use </span><span class="n">fpm_manifest_library</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">library_config_t</span>
+<a name="ln-13"></a>    <span class="k">use </span><span class="n">fpm_manifest_package</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">new_package</span>
 <a name="ln-14"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span><span class="p">,</span> <span class="n">file_not_found_error</span>
 <a name="ln-15"></a>    <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">read_package_file</span>
-<a name="ln-16"></a>    <span class="k">use </span><span class="n">fpm_manifest_test</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">test_t</span>
-<a name="ln-17"></a>    <span class="k">implicit none</span>
-<a name="ln-18"></a><span class="k">    private</span>
-<a name="ln-19"></a>
-<a name="ln-20"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">get_package_data</span><span class="p">,</span> <span class="n">default_executable</span><span class="p">,</span> <span class="n">default_library</span><span class="p">,</span> <span class="n">default_test</span>
-<a name="ln-21"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">package_t</span>
-<a name="ln-22"></a>
+<a name="ln-16"></a>    <span class="k">use </span><span class="n">fpm_manifest_test</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">test_config_t</span>
+<a name="ln-17"></a>    <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">exists</span>
+<a name="ln-18"></a>    <span class="k">implicit none</span>
+<a name="ln-19"></a><span class="k">    private</span>
+<a name="ln-20"></a>
+<a name="ln-21"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">get_package_data</span><span class="p">,</span> <span class="n">default_executable</span><span class="p">,</span> <span class="n">default_library</span><span class="p">,</span> <span class="n">default_test</span>
+<a name="ln-22"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">package_config_t</span>
 <a name="ln-23"></a>
-<a name="ln-24"></a><span class="k">contains</span>
-<a name="ln-25"></a>
+<a name="ln-24"></a>
+<a name="ln-25"></a><span class="k">contains</span>
 <a name="ln-26"></a>
-<a name="ln-27"></a>    <span class="c">!&gt; Populate library in case we find the default src directory</span>
-<a name="ln-28"></a>    <span class="k">subroutine </span><span class="n">default_library</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
-<a name="ln-29"></a>
-<a name="ln-30"></a>        <span class="c">!&gt; Instance of the library meta data</span>
-<a name="ln-31"></a>        <span class="k">type</span><span class="p">(</span><span class="n">library_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-32"></a>
-<a name="ln-33"></a>        <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span> <span class="o">=</span> <span class="s2">&quot;src&quot;</span>
-<a name="ln-34"></a>
-<a name="ln-35"></a>    <span class="k">end subroutine </span><span class="n">default_library</span>
-<a name="ln-36"></a>
+<a name="ln-27"></a>
+<a name="ln-28"></a>    <span class="c">!&gt; Populate library in case we find the default src directory</span>
+<a name="ln-29"></a>    <span class="k">subroutine </span><span class="n">default_library</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+<a name="ln-30"></a>
+<a name="ln-31"></a>        <span class="c">!&gt; Instance of the library meta data</span>
+<a name="ln-32"></a>        <span class="k">type</span><span class="p">(</span><span class="n">library_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-33"></a>
+<a name="ln-34"></a>        <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span> <span class="o">=</span> <span class="s2">&quot;src&quot;</span>
+<a name="ln-35"></a>
+<a name="ln-36"></a>    <span class="k">end subroutine </span><span class="n">default_library</span>
 <a name="ln-37"></a>
-<a name="ln-38"></a>    <span class="c">!&gt; Populate executable in case we find the default app directory</span>
-<a name="ln-39"></a>    <span class="k">subroutine </span><span class="n">default_executable</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a name="ln-40"></a>
-<a name="ln-41"></a>        <span class="c">!&gt; Instance of the executable meta data</span>
-<a name="ln-42"></a>        <span class="k">type</span><span class="p">(</span><span class="n">executable_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-43"></a>
-<a name="ln-44"></a>        <span class="c">!&gt; Name of the package</span>
-<a name="ln-45"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
-<a name="ln-46"></a>
-<a name="ln-47"></a>        <span class="n">self</span><span class="p">%</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-<a name="ln-48"></a>        <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span> <span class="o">=</span> <span class="s2">&quot;app&quot;</span>
-<a name="ln-49"></a>        <span class="n">self</span><span class="p">%</span><span class="n">main</span> <span class="o">=</span> <span class="s2">&quot;main.f90&quot;</span>
-<a name="ln-50"></a>
-<a name="ln-51"></a>    <span class="k">end subroutine </span><span class="n">default_executable</span>
-<a name="ln-52"></a>
-<a name="ln-53"></a>    <span class="c">!&gt; Populate test in case we find the default test/ directory</span>
-<a name="ln-54"></a>    <span class="k">subroutine </span><span class="n">default_test</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a name="ln-55"></a>
-<a name="ln-56"></a>        <span class="c">!&gt; Instance of the executable meta data</span>
-<a name="ln-57"></a>        <span class="k">type</span><span class="p">(</span><span class="n">test_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-58"></a>
-<a name="ln-59"></a>        <span class="c">!&gt; Name of the package</span>
-<a name="ln-60"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
-<a name="ln-61"></a>
-<a name="ln-62"></a>        <span class="n">self</span><span class="p">%</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-<a name="ln-63"></a>        <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
-<a name="ln-64"></a>        <span class="n">self</span><span class="p">%</span><span class="n">main</span> <span class="o">=</span> <span class="s2">&quot;main.f90&quot;</span>
-<a name="ln-65"></a>
-<a name="ln-66"></a>    <span class="k">end subroutine </span><span class="n">default_test</span>
-<a name="ln-67"></a>
+<a name="ln-38"></a>
+<a name="ln-39"></a>    <span class="c">!&gt; Populate executable in case we find the default app directory</span>
+<a name="ln-40"></a>    <span class="k">subroutine </span><span class="n">default_executable</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a name="ln-41"></a>
+<a name="ln-42"></a>        <span class="c">!&gt; Instance of the executable meta data</span>
+<a name="ln-43"></a>        <span class="k">type</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-44"></a>
+<a name="ln-45"></a>        <span class="c">!&gt; Name of the package</span>
+<a name="ln-46"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a name="ln-47"></a>
+<a name="ln-48"></a>        <span class="n">self</span><span class="p">%</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<a name="ln-49"></a>        <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span> <span class="o">=</span> <span class="s2">&quot;app&quot;</span>
+<a name="ln-50"></a>        <span class="n">self</span><span class="p">%</span><span class="n">main</span> <span class="o">=</span> <span class="s2">&quot;main.f90&quot;</span>
+<a name="ln-51"></a>
+<a name="ln-52"></a>    <span class="k">end subroutine </span><span class="n">default_executable</span>
+<a name="ln-53"></a>
+<a name="ln-54"></a>    <span class="c">!&gt; Populate test in case we find the default test/ directory</span>
+<a name="ln-55"></a>    <span class="k">subroutine </span><span class="n">default_test</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a name="ln-56"></a>
+<a name="ln-57"></a>        <span class="c">!&gt; Instance of the executable meta data</span>
+<a name="ln-58"></a>        <span class="k">type</span><span class="p">(</span><span class="n">test_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-59"></a>
+<a name="ln-60"></a>        <span class="c">!&gt; Name of the package</span>
+<a name="ln-61"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a name="ln-62"></a>
+<a name="ln-63"></a>        <span class="n">self</span><span class="p">%</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<a name="ln-64"></a>        <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
+<a name="ln-65"></a>        <span class="n">self</span><span class="p">%</span><span class="n">main</span> <span class="o">=</span> <span class="s2">&quot;main.f90&quot;</span>
+<a name="ln-66"></a>
+<a name="ln-67"></a>    <span class="k">end subroutine </span><span class="n">default_test</span>
 <a name="ln-68"></a>
-<a name="ln-69"></a>    <span class="c">!&gt; Obtain package meta data from a configuation file</span>
-<a name="ln-70"></a>    <span class="k">subroutine </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="k">file</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-71"></a>
-<a name="ln-72"></a>        <span class="c">!&gt; Parsed package meta data</span>
-<a name="ln-73"></a>        <span class="k">type</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
-<a name="ln-74"></a>
-<a name="ln-75"></a>        <span class="c">!&gt; Name of the package configuration file</span>
-<a name="ln-76"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">file</span>
-<a name="ln-77"></a>
-<a name="ln-78"></a>        <span class="c">!&gt; Error status of the operation</span>
-<a name="ln-79"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-80"></a>
-<a name="ln-81"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">table</span>
-<a name="ln-82"></a>
-<a name="ln-83"></a>        <span class="k">call </span><span class="n">read_package_file</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="k">file</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-84"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-85"></a>
-<a name="ln-86"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">table</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-87"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Unclassified error while reading: &#39;&quot;</span><span class="o">//</span><span class="k">file</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
-<a name="ln-88"></a>            <span class="k">return</span>
-<a name="ln-89"></a><span class="k">        end if</span>
-<a name="ln-90"></a>
-<a name="ln-91"></a><span class="k">        call </span><span class="n">new_package</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-92"></a>
-<a name="ln-93"></a>    <span class="k">end subroutine </span><span class="n">get_package_data</span>
+<a name="ln-69"></a>
+<a name="ln-70"></a>    <span class="c">!&gt; Obtain package meta data from a configuation file</span>
+<a name="ln-71"></a>    <span class="k">subroutine </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="k">file</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">apply_defaults</span><span class="p">)</span>
+<a name="ln-72"></a>
+<a name="ln-73"></a>        <span class="c">!&gt; Parsed package meta data</span>
+<a name="ln-74"></a>        <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+<a name="ln-75"></a>
+<a name="ln-76"></a>        <span class="c">!&gt; Name of the package configuration file</span>
+<a name="ln-77"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">file</span>
+<a name="ln-78"></a>
+<a name="ln-79"></a>        <span class="c">!&gt; Error status of the operation</span>
+<a name="ln-80"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-81"></a>
+<a name="ln-82"></a>        <span class="c">!&gt; Apply package defaults (uses file system operations)</span>
+<a name="ln-83"></a>        <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">apply_defaults</span>
+<a name="ln-84"></a>
+<a name="ln-85"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">table</span>
+<a name="ln-86"></a>
+<a name="ln-87"></a>        <span class="k">call </span><span class="n">read_package_file</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="k">file</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-88"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-89"></a>
+<a name="ln-90"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">table</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-91"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Unclassified error while reading: &#39;&quot;</span><span class="o">//</span><span class="k">file</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+<a name="ln-92"></a>            <span class="k">return</span>
+<a name="ln-93"></a><span class="k">        end if</span>
 <a name="ln-94"></a>
-<a name="ln-95"></a>
-<a name="ln-96"></a><span class="k">end module </span><span class="n">fpm_manifest</span>
+<a name="ln-95"></a><span class="k">        call </span><span class="n">new_package</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-96"></a>
+<a name="ln-97"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">apply_defaults</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-98"></a><span class="k">            if</span> <span class="p">(</span><span class="n">apply_defaults</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-99"></a><span class="k">                call </span><span class="n">package_defaults</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-100"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-101"></a><span class="k">            end if</span>
+<a name="ln-102"></a><span class="k">        end if</span>
+<a name="ln-103"></a>
+<a name="ln-104"></a><span class="k">    end subroutine </span><span class="n">get_package_data</span>
+<a name="ln-105"></a>
+<a name="ln-106"></a>
+<a name="ln-107"></a>    <span class="c">!&gt; Apply package defaults</span>
+<a name="ln-108"></a>    <span class="k">subroutine </span><span class="n">package_defaults</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-109"></a>
+<a name="ln-110"></a>        <span class="c">!&gt; Parsed package meta data</span>
+<a name="ln-111"></a>        <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+<a name="ln-112"></a>
+<a name="ln-113"></a>        <span class="c">!&gt; Error status of the operation</span>
+<a name="ln-114"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-115"></a>
+<a name="ln-116"></a>        <span class="c">! Populate library in case we find the default src directory</span>
+<a name="ln-117"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">library</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">exists</span><span class="p">(</span><span class="s2">&quot;src&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-118"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">library</span><span class="p">)</span>
+<a name="ln-119"></a>            <span class="k">call </span><span class="n">default_library</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">library</span><span class="p">)</span>
+<a name="ln-120"></a>        <span class="k">end if</span>
+<a name="ln-121"></a>
+<a name="ln-122"></a>        <span class="c">! Populate executable in case we find the default app</span>
+<a name="ln-123"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-124"></a>            <span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="s2">&quot;main.f90&quot;</span><span class="p">)))</span> <span class="k">then</span>
+<a name="ln-125"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-126"></a>            <span class="k">call </span><span class="n">default_executable</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">package</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-127"></a>        <span class="k">end if</span>
+<a name="ln-128"></a>
+<a name="ln-129"></a>        <span class="c">! Populate test in case we find the default test directory</span>
+<a name="ln-130"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-131"></a>            <span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span><span class="s2">&quot;main.f90&quot;</span><span class="p">)))</span> <span class="k">then</span>
+<a name="ln-132"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-133"></a>            <span class="k">call </span><span class="n">default_test</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">package</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-134"></a>        <span class="n">endif</span>
+<a name="ln-135"></a>
+<a name="ln-136"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">library</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">)))</span> <span class="k">then</span>
+<a name="ln-137"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Neither library nor executable found, there is nothing to do&quot;</span><span class="p">)</span>
+<a name="ln-138"></a>            <span class="k">return</span>
+<a name="ln-139"></a><span class="k">        end if</span>
+<a name="ln-140"></a>
+<a name="ln-141"></a><span class="k">    end subroutine </span><span class="n">package_defaults</span>
+<a name="ln-142"></a>
+<a name="ln-143"></a>
+<a name="ln-144"></a><span class="k">end module </span><span class="n">fpm_manifest</span>
 </pre></div>
 
     </section>
@@ -377,7 +425,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.3% of total for modules and submodules.">180 statements</a>
+    title=" 6.2% of total for modules and submodules.">180 statements</a>
      </li> 
      
      
@@ -180,7 +180,7 @@
   <div id="types-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../module/fpm_manifest_package.html#type-package_t">package_t</a>
+      <a class="list-group-item" href="../module/fpm_manifest_package.html#type-package_config_t">package_config_t</a>
       
     </div>
   </div>
@@ -250,7 +250,7 @@
       <li class="list-group-item">
   <ul class="list-inline">
     
-    <li><a href='../module/fpm_manifest_build_config.html'>fpm_manifest_build_config</a></li>
+    <li><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></li>
     
     <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
     
@@ -301,7 +301,7 @@
   <div id="types-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../module/fpm_manifest_package.html#type-package_t">package_t</a>
+      <a class="list-group-item" href="../module/fpm_manifest_package.html#type-package_config_t">package_config_t</a>
       
     </div>
   </div>
@@ -349,7 +349,7 @@
    
      
 <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="type-package_t"></span><h3>type, public :: <a href='../type/package_t.html'>package_t</a>
+  <div class="panel-heading codesum"><span class="anchor" id="type-package_config_t"></span><h3>type, public :: <a href='../type/package_config_t.html'>package_config_t</a>
     
   </h3></div>
   <div class="panel-body">
@@ -375,11 +375,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-build_config"></span>type(<a href='../type/build_config_t.html'>build_config_t</a>),</td>
+  <td><span class="anchor" id="variable-build"></span>type(<a href='../type/build_config_t.html'>build_config_t</a>),</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>build_config</strong></td><td></td><td></td><td><p>Build configuration data</p></td>
+  <td><strong>build</strong></td><td></td><td></td><td><p>Build configuration data</p></td>
   
 </tr>
 
@@ -389,7 +389,7 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-dependency~2"></span>type(<a href='../type/dependency_t.html'>dependency_t</a>),</td>
+  <td><span class="anchor" id="variable-dependency~2"></span>type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -403,7 +403,7 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-dev_dependency"></span>type(<a href='../type/dependency_t.html'>dependency_t</a>),</td>
+  <td><span class="anchor" id="variable-dev_dependency"></span>type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -417,7 +417,7 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-executable"></span>type(<a href='../type/executable_t.html'>executable_t</a>),</td>
+  <td><span class="anchor" id="variable-executable"></span>type(<a href='../type/executable_config_t.html'>executable_config_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -431,7 +431,7 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-library"></span>type(<a href='../type/library_t.html'>library_t</a>),</td>
+  <td><span class="anchor" id="variable-library"></span>type(<a href='../type/library_config_t.html'>library_config_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -459,7 +459,7 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-test"></span>type(<a href='../type/test_t.html'>test_t</a>),</td>
+  <td><span class="anchor" id="variable-test"></span>type(<a href='../type/test_config_t.html'>test_config_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -492,7 +492,7 @@
       <table class="table table-striped varlist">
       <tbody>
       
-       <tr><td>procedure, public :: <strong><a href='../type/package_t.html#boundprocedure-info~4'>info</a></strong>  </td>
+       <tr><td>procedure, public :: <strong><a href='../type/package_config_t.html#boundprocedure-info~6'>info</a></strong>  </td>
        <td><p>Print information on this instance</p></td></tr>
       
        </tbody>
@@ -551,7 +551,7 @@ public subroutine <a href='../proc/new_package.html'>new_package</a>(self, table
   
 <tr>
   
-  <td><span class="anchor" ></span>type(<a href='../type/package_t.html'>package_t</a>),</td>
+  <td><span class="anchor" ></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -621,7 +621,7 @@ public subroutine <a href='../proc/new_package.html'>new_package</a>(self, table
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

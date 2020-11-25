@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.3% of total for source files.">180 statements</a>
+    title=" 6.2% of total for source files.">180 statements</a>
      </li> 
      
      
@@ -293,11 +293,11 @@
 <a name="ln-28"></a><span class="c">!&gt;[[ test ]]</span>
 <a name="ln-29"></a><span class="c">!&gt;```</span>
 <a name="ln-30"></a><span class="k">module </span><span class="n">fpm_manifest_package</span>
-<a name="ln-31"></a>    <span class="k">use </span><span class="n">fpm_manifest_build_config</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">build_config_t</span><span class="p">,</span> <span class="n">new_build_config</span>
-<a name="ln-32"></a>    <span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">dependency_t</span><span class="p">,</span> <span class="n">new_dependencies</span>
-<a name="ln-33"></a>    <span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">executable_t</span><span class="p">,</span> <span class="n">new_executable</span>
-<a name="ln-34"></a>    <span class="k">use </span><span class="n">fpm_manifest_library</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">library_t</span><span class="p">,</span> <span class="n">new_library</span>
-<a name="ln-35"></a>    <span class="k">use </span><span class="n">fpm_manifest_test</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">test_t</span><span class="p">,</span> <span class="n">new_test</span>
+<a name="ln-31"></a>    <span class="k">use </span><span class="n">fpm_manifest_build</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">build_config_t</span><span class="p">,</span> <span class="n">new_build_config</span>
+<a name="ln-32"></a>    <span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">dependency_config_t</span><span class="p">,</span> <span class="n">new_dependencies</span>
+<a name="ln-33"></a>    <span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">executable_config_t</span><span class="p">,</span> <span class="n">new_executable</span>
+<a name="ln-34"></a>    <span class="k">use </span><span class="n">fpm_manifest_library</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">library_config_t</span><span class="p">,</span> <span class="n">new_library</span>
+<a name="ln-35"></a>    <span class="k">use </span><span class="n">fpm_manifest_test</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">test_config_t</span><span class="p">,</span> <span class="n">new_test</span>
 <a name="ln-36"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span><span class="p">,</span> <span class="n">syntax_error</span>
 <a name="ln-37"></a>    <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_array</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_stat</span><span class="p">,</span> <span class="n">get_value</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-38"></a>        <span class="p">&amp;</span> <span class="nb">len</span>
@@ -305,42 +305,42 @@
 <a name="ln-40"></a>    <span class="k">implicit none</span>
 <a name="ln-41"></a><span class="k">    private</span>
 <a name="ln-42"></a>
-<a name="ln-43"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">package_t</span><span class="p">,</span> <span class="n">new_package</span>
+<a name="ln-43"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">new_package</span>
 <a name="ln-44"></a>
 <a name="ln-45"></a>
 <a name="ln-46"></a>    <span class="c">!&gt; Package meta data</span>
-<a name="ln-47"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">package_t</span>
+<a name="ln-47"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">package_config_t</span>
 <a name="ln-48"></a>
 <a name="ln-49"></a>        <span class="c">!&gt; Name of the package</span>
 <a name="ln-50"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
 <a name="ln-51"></a>
 <a name="ln-52"></a>        <span class="c">!&gt; Build configuration data</span>
-<a name="ln-53"></a>        <span class="k">type</span><span class="p">(</span><span class="n">build_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">build_config</span>
+<a name="ln-53"></a>        <span class="k">type</span><span class="p">(</span><span class="n">build_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">build</span>
 <a name="ln-54"></a>
 <a name="ln-55"></a>        <span class="c">!&gt; Package version</span>
 <a name="ln-56"></a>        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">version</span>
 <a name="ln-57"></a>
 <a name="ln-58"></a>        <span class="c">!&gt; Library meta data</span>
-<a name="ln-59"></a>        <span class="k">type</span><span class="p">(</span><span class="n">library_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">library</span>
+<a name="ln-59"></a>        <span class="k">type</span><span class="p">(</span><span class="n">library_config_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">library</span>
 <a name="ln-60"></a>
 <a name="ln-61"></a>        <span class="c">!&gt; Executable meta data</span>
-<a name="ln-62"></a>        <span class="k">type</span><span class="p">(</span><span class="n">executable_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">executable</span><span class="p">(:)</span>
+<a name="ln-62"></a>        <span class="k">type</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">executable</span><span class="p">(:)</span>
 <a name="ln-63"></a>
 <a name="ln-64"></a>        <span class="c">!&gt; Dependency meta data</span>
-<a name="ln-65"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependency</span><span class="p">(:)</span>
+<a name="ln-65"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependency</span><span class="p">(:)</span>
 <a name="ln-66"></a>
 <a name="ln-67"></a>        <span class="c">!&gt; Development dependency meta data</span>
-<a name="ln-68"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dev_dependency</span><span class="p">(:)</span>
+<a name="ln-68"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dev_dependency</span><span class="p">(:)</span>
 <a name="ln-69"></a>
 <a name="ln-70"></a>        <span class="c">!&gt; Test meta data</span>
-<a name="ln-71"></a>        <span class="k">type</span><span class="p">(</span><span class="n">test_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">test</span><span class="p">(:)</span>
+<a name="ln-71"></a>        <span class="k">type</span><span class="p">(</span><span class="n">test_config_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">test</span><span class="p">(:)</span>
 <a name="ln-72"></a>
 <a name="ln-73"></a>    <span class="k">contains</span>
 <a name="ln-74"></a>
 <a name="ln-75"></a>        <span class="c">!&gt; Print information on this instance</span>
 <a name="ln-76"></a>        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
 <a name="ln-77"></a>
-<a name="ln-78"></a>    <span class="k">end type </span><span class="n">package_t</span>
+<a name="ln-78"></a>    <span class="k">end type </span><span class="n">package_config_t</span>
 <a name="ln-79"></a>
 <a name="ln-80"></a>
 <a name="ln-81"></a><span class="k">contains</span>
@@ -350,7 +350,7 @@
 <a name="ln-85"></a>    <span class="k">subroutine </span><span class="n">new_package</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 <a name="ln-86"></a>
 <a name="ln-87"></a>        <span class="c">!&gt; Instance of the package configuration</span>
-<a name="ln-88"></a>        <span class="k">type</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-88"></a>        <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
 <a name="ln-89"></a>
 <a name="ln-90"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
 <a name="ln-91"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
@@ -377,7 +377,7 @@
 <a name="ln-112"></a><span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Type mismatch for build entry, must be a table&quot;</span><span class="p">)</span>
 <a name="ln-113"></a>            <span class="k">return</span>
 <a name="ln-114"></a><span class="k">        end if</span>
-<a name="ln-115"></a><span class="k">        call </span><span class="n">new_build_config</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">build_config</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-115"></a><span class="k">        call </span><span class="n">new_build_config</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">build</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 <a name="ln-116"></a>
 <a name="ln-117"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 <a name="ln-118"></a><span class="k">        </span>
@@ -492,7 +492,7 @@
 <a name="ln-227"></a>    <span class="k">subroutine </span><span class="n">info</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">)</span>
 <a name="ln-228"></a>
 <a name="ln-229"></a>        <span class="c">!&gt; Instance of the package configuration</span>
-<a name="ln-230"></a>        <span class="k">class</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-230"></a>        <span class="k">class</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
 <a name="ln-231"></a>
 <a name="ln-232"></a>        <span class="c">!&gt; Unit for IO</span>
 <a name="ln-233"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">unit</span>
@@ -517,7 +517,7 @@
 <a name="ln-252"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- name&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">name</span>
 <a name="ln-253"></a>        <span class="k">end if</span>
 <a name="ln-254"></a>
-<a name="ln-255"></a><span class="k">        call </span><span class="n">self</span><span class="p">%</span><span class="n">build_config</span><span class="p">%</span><span class="n">info</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">pr</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<a name="ln-255"></a><span class="k">        call </span><span class="n">self</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">info</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">pr</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 <a name="ln-256"></a>
 <a name="ln-257"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">library</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-258"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- target&quot;</span><span class="p">,</span> <span class="s2">&quot;archive&quot;</span>
@@ -582,7 +582,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

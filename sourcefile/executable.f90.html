@@ -276,18 +276,18 @@
 <a name="ln-11"></a><span class="c">!&gt;[executable.dependencies]</span>
 <a name="ln-12"></a><span class="c">!&gt;```</span>
 <a name="ln-13"></a><span class="k">module </span><span class="n">fpm_manifest_executable</span>
-<a name="ln-14"></a>    <span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">dependency_t</span><span class="p">,</span> <span class="n">new_dependencies</span>
+<a name="ln-14"></a>    <span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">dependency_config_t</span><span class="p">,</span> <span class="n">new_dependencies</span>
 <a name="ln-15"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">syntax_error</span>
 <a name="ln-16"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">string_t</span>
 <a name="ln-17"></a>    <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_stat</span><span class="p">,</span> <span class="n">get_value</span>
 <a name="ln-18"></a>    <span class="k">implicit none</span>
 <a name="ln-19"></a><span class="k">    private</span>
 <a name="ln-20"></a>
-<a name="ln-21"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">executable_t</span><span class="p">,</span> <span class="n">new_executable</span>
+<a name="ln-21"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">executable_config_t</span><span class="p">,</span> <span class="n">new_executable</span>
 <a name="ln-22"></a>
 <a name="ln-23"></a>
 <a name="ln-24"></a>    <span class="c">!&gt; Configuation meta data for an executable</span>
-<a name="ln-25"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">executable_t</span>
+<a name="ln-25"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">executable_config_t</span>
 <a name="ln-26"></a>
 <a name="ln-27"></a>        <span class="c">!&gt; Name of the resulting executable</span>
 <a name="ln-28"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
@@ -299,7 +299,7 @@
 <a name="ln-34"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">main</span>
 <a name="ln-35"></a>
 <a name="ln-36"></a>        <span class="c">!&gt; Dependency meta data for this executable</span>
-<a name="ln-37"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependency</span><span class="p">(:)</span>
+<a name="ln-37"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependency</span><span class="p">(:)</span>
 <a name="ln-38"></a>
 <a name="ln-39"></a>        <span class="c">!&gt; Libraries to link against</span>
 <a name="ln-40"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="nb">link</span><span class="p">(:)</span>
@@ -309,7 +309,7 @@
 <a name="ln-44"></a>        <span class="c">!&gt; Print information on this instance</span>
 <a name="ln-45"></a>        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
 <a name="ln-46"></a>
-<a name="ln-47"></a>    <span class="k">end type </span><span class="n">executable_t</span>
+<a name="ln-47"></a>    <span class="k">end type </span><span class="n">executable_config_t</span>
 <a name="ln-48"></a>
 <a name="ln-49"></a>
 <a name="ln-50"></a><span class="k">contains</span>
@@ -319,7 +319,7 @@
 <a name="ln-54"></a>    <span class="k">subroutine </span><span class="n">new_executable</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 <a name="ln-55"></a>
 <a name="ln-56"></a>        <span class="c">!&gt; Instance of the executable configuration</span>
-<a name="ln-57"></a>        <span class="k">type</span><span class="p">(</span><span class="n">executable_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-57"></a>        <span class="k">type</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
 <a name="ln-58"></a>
 <a name="ln-59"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
 <a name="ln-60"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
@@ -401,7 +401,7 @@
 <a name="ln-136"></a>    <span class="k">subroutine </span><span class="n">info</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">)</span>
 <a name="ln-137"></a>
 <a name="ln-138"></a>        <span class="c">!&gt; Instance of the executable configuration</span>
-<a name="ln-139"></a>        <span class="k">class</span><span class="p">(</span><span class="n">executable_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-139"></a>        <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
 <a name="ln-140"></a>
 <a name="ln-141"></a>        <span class="c">!&gt; Unit for IO</span>
 <a name="ln-142"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">unit</span>
@@ -467,7 +467,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

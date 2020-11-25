@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>package_t &ndash; Fortran-lang/fpm </title>
+    <title>library_config_t &ndash; Fortran-lang/fpm </title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,7 +110,7 @@
     
   
   <div class="row">
-    <h1>package_t
+    <h1>library_config_t
     <small>Derived Type</small>
     
     </h1>
@@ -128,24 +128,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 8.6% of total for derived types.</p>Including implementation: 66 statements, 12.3% of total for derived types.">12 statements</a>
+    title="<p> 4.3% of total for derived types.</p>Including implementation: 26 statements,  4.8% of total for derived types.">6 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/package.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/library.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/package.f90.html'>package.f90</a></li>
+     <li><a href='../sourcefile/library.f90.html'>library.f90</a></li>
     
-     <li><a href='../module/fpm_manifest_package.html'>fpm_manifest_package</a></li>
+     <li><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></li>
     
   
-     <li class="active">package_t</li>
+     <li class="active">library_config_t</li>
   </ol>
 </div>
 </div>
@@ -173,21 +173,9 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/package_t.html#variable-build_config">build_config</a>
+      <a class="list-group-item" href="../type/library_config_t.html#variable-build_script">build_script</a>
       
-      <a class="list-group-item" href="../type/package_t.html#variable-dependency~2">dependency</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-dev_dependency">dev_dependency</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-executable">executable</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-library">library</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-name~5">name</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-test">test</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-version">version</a>
+      <a class="list-group-item" href="../type/library_config_t.html#variable-source_dir~2">source_dir</a>
       
     </div>
   </div>
@@ -215,7 +203,7 @@
   <div id="boundprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/package_t.html#boundprocedure-info~4">info</a>
+      <a class="list-group-item" href="../type/library_config_t.html#boundprocedure-info~7">info</a>
       
     </div>
   </div>
@@ -227,7 +215,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../type/package_t.html#src">package_t</a>
+    <a class="list-group-item" href="../type/library_config_t.html#src">library_config_t</a>
   </div>
 </div>
 
@@ -238,8 +226,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: package_t</h2>
-    <p>Package meta data</p>
+      <h2>type, public :: library_config_t</h2>
+    <p>Configuration meta data for a library</p>
     
     
     
@@ -257,21 +245,9 @@
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/package_t.html#variable-build_config">build_config</a>
+      <a class="list-group-item" href="../type/library_config_t.html#variable-build_script">build_script</a>
       
-      <a class="list-group-item" href="../type/package_t.html#variable-dependency~2">dependency</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-dev_dependency">dev_dependency</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-executable">executable</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-library">library</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-name~5">name</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-test">test</a>
-      
-      <a class="list-group-item" href="../type/package_t.html#variable-version">version</a>
+      <a class="list-group-item" href="../type/library_config_t.html#variable-source_dir~2">source_dir</a>
       
     </div>
   </div>
@@ -299,7 +275,7 @@
   <div id="boundprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/package_t.html#boundprocedure-info~4">info</a>
+      <a class="list-group-item" href="../type/library_config_t.html#boundprocedure-info~7">info</a>
       
     </div>
   </div>
@@ -311,7 +287,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../type/package_t.html#src">package_t</a>
+    <a class="list-group-item" href="../type/library_config_t.html#src">library_config_t</a>
   </div>
 </div>
 
@@ -339,25 +315,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-build_config"></span>type(<a href='../type/build_config_t.html'>build_config_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>build_config</strong></td><td></td><td></td><td><p>Build configuration data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-dependency~2"></span>type(<a href='../type/dependency_t.html'>dependency_t</a>),</td>
+  <td><span class="anchor" id="variable-build_script"></span>character(len=:),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>dependency</strong>(:)</td><td></td><td></td><td><p>Dependency meta data</p></td>
+  <td><strong>build_script</strong></td><td></td><td></td><td><p>Alternative build script to be invoked</p></td>
   
 </tr>
 
@@ -367,81 +329,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-dev_dependency"></span>type(<a href='../type/dependency_t.html'>dependency_t</a>),</td>
+  <td><span class="anchor" id="variable-source_dir~2"></span>character(len=:),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>dev_dependency</strong>(:)</td><td></td><td></td><td><p>Development dependency meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-executable"></span>type(<a href='../type/executable_t.html'>executable_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>executable</strong>(:)</td><td></td><td></td><td><p>Executable meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-library"></span>type(<a href='../type/library_t.html'>library_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>library</strong></td><td></td><td></td><td><p>Library meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-name~5"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>name</strong></td><td></td><td></td><td><p>Name of the package</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-test"></span>type(<a href='../type/test_t.html'>test_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>test</strong>(:)</td><td></td><td></td><td><p>Test meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-version"></span>type(<a href='../type/version_t.html'>version_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>version</strong></td><td></td><td></td><td><p>Package version</p></td>
+  <td><strong>source_dir</strong></td><td></td><td></td><td><p>Source path prefix</p></td>
   
 </tr>
 
@@ -462,7 +354,7 @@
     
      
 <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~4"></span><h3>procedure, public :: <strong>info</strong>  
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~7"></span><h3>procedure, public :: <strong>info</strong>  
     
   </h3></div>
   
@@ -511,12 +403,12 @@ private subroutine info(self, unit, verbosity)
   
 <tr>
   
-  <td><span class="anchor" ></span>class(<a href='../type/package_t.html'>package_t</a>),</td>
+  <td><span class="anchor" ></span>class(<a href='../type/library_config_t.html'>library_config_t</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the package configuration</p></td>
+  <td><strong>self</strong></td><td><p>Instance of the library configuration</p></td>
   
 </tr>
 
@@ -571,38 +463,20 @@ private subroutine info(self, unit, verbosity)
     
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="highlight"><pre><span></span>    <span class="k">type</span> <span class="kd">::</span> <span class="n">package_t</span>
+    <div class="highlight"><pre><span></span>    <span class="k">type</span> <span class="kd">::</span> <span class="n">library_config_t</span>
 
-        <span class="c">!&gt; Name of the package</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
+        <span class="c">!&gt; Source path prefix</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">source_dir</span>
 
-        <span class="c">!&gt; Build configuration data</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">build_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">build_config</span>
-
-        <span class="c">!&gt; Package version</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">version</span>
-
-        <span class="c">!&gt; Library meta data</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">library_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">library</span>
-
-        <span class="c">!&gt; Executable meta data</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">executable_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">executable</span><span class="p">(:)</span>
-
-        <span class="c">!&gt; Dependency meta data</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">dependency_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependency</span><span class="p">(:)</span>
-
-        <span class="c">!&gt; Development dependency meta data</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">dependency_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dev_dependency</span><span class="p">(:)</span>
-
-        <span class="c">!&gt; Test meta data</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">test_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">test</span><span class="p">(:)</span>
+        <span class="c">!&gt; Alternative build script to be invoked</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">build_script</span>
 
     <span class="k">contains</span>
 
         <span class="c">!&gt; Print information on this instance</span>
         <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
 
-    <span class="k">end type </span><span class="n">package_t</span>
+    <span class="k">end type </span><span class="n">library_config_t</span>
 </pre></div>
 
     </section>
@@ -623,7 +497,7 @@ private subroutine info(self, unit, verbosity)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

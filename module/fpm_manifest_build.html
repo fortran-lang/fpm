@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>test_t &ndash; Fortran-lang/fpm </title>
+    <title>fpm_manifest_build &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,8 +110,8 @@
     
   
   <div class="row">
-    <h1>test_t
-    <small>Derived Type</small>
+    <h1>fpm_manifest_build 
+    <small>Module</small>
     
     </h1>
     
@@ -128,24 +128,22 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 2.9% of total for derived types.</p>Including implementation: 39 statements,  7.3% of total for derived types.">4 statements</a>
+    title=" 2.6% of total for modules and submodules.">75 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/test.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/build.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/test.f90.html'>test.f90</a></li>
-    
-     <li><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></li>
+     <li><a href='../sourcefile/build.f90.html'>build.f90</a></li>
     
   
-     <li class="active">test_t</li>
+     <li class="active">fpm_manifest_build</li>
   </ol>
 </div>
 </div>
@@ -168,33 +166,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
-  <div id="vars-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-dependency">dependency</a>
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-link">link</a>
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-main">main</a>
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-name~3">name</a>
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-source_dir">source_dir</a>
-      
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
 
 
 
@@ -205,11 +176,11 @@
 
 
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#boundprocs-0">Type-Bound Procedures</a></h3></div>
-  <div id="boundprocs-0" class="panel-collapse collapse">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-0">Derived Types</a></h3></div>
+  <div id="types-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/test_t.html#boundprocedure-info~6">info</a>
+      <a class="list-group-item" href="../module/fpm_manifest_build.html#type-build_config_t">build_config_t</a>
       
     </div>
   </div>
@@ -219,11 +190,22 @@
 
 
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../type/test_t.html#src">test_t</a>
+    <div id="subs-0" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/fpm_manifest_build.html#proc-new_build_config">new_build_config</a>
+      
+    </div>
   </div>
 </div>
+
+
+
+
+
+
+
 
 
 
@@ -232,11 +214,43 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public, extends(<a href='../type/executable_t.html'>executable_t</a>) :: test_t</h2>
-    <p>Configuation meta data for an test</p>
+    <p>Implementation of the build configuration data.</p>
+<p>A build table can currently have the following fields</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
+<span class="n">auto-executables</span> <span class="o">=</span> <span class="n">bool</span>
+<span class="n">auto-tests</span> <span class="o">=</span> <span class="n">bool</span>
+<span class="n">link</span> <span class="o">=</span> <span class="k">[&quot;lib&quot;]</span>
+</code></pre></div>
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+    
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+    
+    <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      </ul>
+    </div>
+    
+
     
     
-    
+
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
@@ -246,33 +260,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
-  <div id="vars-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-dependency">dependency</a>
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-link">link</a>
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-main">main</a>
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-name~3">name</a>
-      
-      <a class="list-group-item" href="../type/test_t.html#variable-source_dir">source_dir</a>
-      
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
 
 
 
@@ -283,11 +270,11 @@
 
 
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#boundprocs-1">Type-Bound Procedures</a></h3></div>
-  <div id="boundprocs-1" class="panel-collapse collapse">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-1">Derived Types</a></h3></div>
+  <div id="types-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/test_t.html#boundprocedure-info~6">info</a>
+      <a class="list-group-item" href="../module/fpm_manifest_build.html#type-build_config_t">build_config_t</a>
       
     </div>
   </div>
@@ -297,11 +284,22 @@
 
 
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../type/test_t.html#src">test_t</a>
+    <div id="subs-1" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/fpm_manifest_build.html#proc-new_build_config">new_build_config</a>
+      
+    </div>
   </div>
 </div>
+
+
+
+
+
+
+
 
 
 
@@ -309,8 +307,31 @@
     <br class="visible-xs visible-sm hidden-md">
 
     
+
+    
+    
+    
+    
+    
+
+    
+    
+    
     <section>
-    <h2>Components</h2>
+     <h2>Derived Types</h2>
+   
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="type-build_config_t"></span><h3>type, public :: <a href='../type/build_config_t.html'>build_config_t</a>
+    
+  </h3></div>
+  <div class="panel-body">
+    
+    
+    <p>Configuration data for build</p>
+    
+     
+     <h4>Components</h4>
     
 <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Visibility</th>
@@ -327,11 +348,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-dependency"></span>type(<a href='../type/dependency_t.html'>dependency_t</a>),</td>
+  <td><span class="anchor" id="variable-auto_executables"></span>logical,</td>
   
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>dependency</strong>(:)</td><td></td><td></td><td><p>Dependency meta data for this executable</p></td>
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>auto_executables</strong></td><td></td><td></td><td><p>Automatic discovery of executables</p></td>
   
 </tr>
 
@@ -341,7 +362,21 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-link"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td><span class="anchor" id="variable-auto_tests"></span>logical,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>auto_tests</strong></td><td></td><td></td><td><p>Automatic discovery of tests</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-link~2"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -349,94 +384,56 @@
   
 </tr>
 
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-main"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>main</strong></td><td></td><td></td><td><p>Name of the source file declaring the main program</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-name~3"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>name</strong></td><td></td><td></td><td><p>Name of the resulting executable</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-source_dir"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>source_dir</strong></td><td></td><td></td><td><p>Source directory for collecting the executable</p></td>
-  
-</tr>
-
 </tbody>
 </table>
 
-    </section>
-    <br>
-    
-    
-    
-    
-    
-    
      
-    <section>
-    <h2>Type-Bound Procedures</h2>
-    
      
-<div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~6"></span><h3>procedure, public :: <strong>info</strong>  
-    
-  </h3></div>
-  
-  <div class="panel-body">
-    
-
-
-    <p>Print information on this instance</p>
-  </div>
-  
-  <ul class="list-group">
-    
-      <li class="list-group-item">
-      
-        
           
+     
+     <h4>Type-Bound Procedures</h4>
+      <table class="table table-striped varlist">
+      <tbody>
+      
+       <tr><td>procedure, public :: <strong><a href='../type/build_config_t.html#boundprocedure-info~3'>info</a></strong>  </td>
+       <td><p>Print information on this instance</p></td></tr>
+      
+       </tbody>
+       </table>
+     
+  </div>
+</div>
+
+     
+    </section>
+  <br>
     
-    <h3>
-private subroutine info(self, unit, verbosity)
+    
+    
+
+    
+    <section>
+    <h2>Subroutines</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-new_build_config"></span><h3>
+public subroutine <a href='../proc/new_build_config.html'>new_build_config</a>(self, table, error)
     
     
    
-</h3>
+</h3></div>
+  <div class="panel-body">
+       
     
 
 
 
-<p>Write information on instance</p>
+
+
+
+
+<p>Construct a new build configuration from a TOML data structure</p>
     
     <h4>Arguments</h4>
     
@@ -457,12 +454,12 @@ private subroutine info(self, unit, verbosity)
   
 <tr>
   
-  <td><span class="anchor" ></span>class(<a href='../type/test_t.html'>test_t</a>),</td>
-  <td>intent(in)</td>
+  <td><span class="anchor" ></span>type(<a href='../type/build_config_t.html'>build_config_t</a>),</td>
+  <td>intent(out)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the test configuration</p></td>
+  <td><strong>self</strong></td><td><p>Instance of the build configuration</p></td>
   
 </tr>
 
@@ -472,12 +469,12 @@ private subroutine info(self, unit, verbosity)
   
 <tr>
   
-  <td><span class="anchor" ></span>integer,</td>
-  <td>intent(in)</td>
+  <td><span class="anchor" ></span>type(toml_table),</td>
+  <td>intent(inout)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>unit</strong></td><td><p>Unit for IO</p></td>
+  <td><strong>table</strong></td><td><p>Instance of the TOML data structure</p></td>
   
 </tr>
 
@@ -487,12 +484,12 @@ private subroutine info(self, unit, verbosity)
   
 <tr>
   
-  <td><span class="anchor" ></span>integer,</td>
-  <td>intent(in),</td>
-  <td>optional</td>
+  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
   
-  <td></td><td>::</td>
-  <td><strong>verbosity</strong></td><td><p>Verbosity of the printout</p></td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>error</strong></td><td><p>Error handling</p></td>
   
 </tr>
 
@@ -503,37 +500,19 @@ private subroutine info(self, unit, verbosity)
     
     
 
-        
-      
-      </li>
-    
-  </ul>
-</div>
+  </div>
+  </div>
 
     
-    </section>
+    </section>    
+    <br>
     
-    
-    
-    <section>
-    <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="highlight"><pre><span></span>    <span class="k">type</span><span class="p">,</span> <span class="k">extends</span><span class="p">(</span><span class="n">executable_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">test_t</span>
-
-    <span class="k">contains</span>
-
-        <span class="c">!&gt; Print information on this instance</span>
-        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
-
-    <span class="k">end type </span><span class="n">test_t</span>
-</pre></div>
-
-    </section>
     
     
     </div>
   </div>
 
-
+  
     <hr>    
     </div> <!-- /container -->
     <footer>
@@ -545,7 +524,7 @@ private subroutine info(self, unit, verbosity)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

@@ -273,7 +273,7 @@
 <a name="ln-8"></a>                    
 <a name="ln-9"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">basename</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">list_files</span>
 <a name="ln-10"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">lower</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">str_ends_with</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.)</span>
-<a name="ln-11"></a><span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">executable_t</span>
+<a name="ln-11"></a><span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">executable_config_t</span>
 <a name="ln-12"></a><span class="k">implicit none</span>
 <a name="ln-13"></a>
 <a name="ln-14"></a><span class="k">private</span>
@@ -388,7 +388,7 @@
 <a name="ln-123"></a>    <span class="c">!  in [[executable]] entries and apply any customisations</span>
 <a name="ln-124"></a>    <span class="c">!  </span>
 <a name="ln-125"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
-<a name="ln-126"></a>    <span class="k">class</span><span class="p">(</span><span class="n">executable_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
+<a name="ln-126"></a>    <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
 <a name="ln-127"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">scope</span>
 <a name="ln-128"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">auto_discover</span>
 <a name="ln-129"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
@@ -454,7 +454,7 @@
 <a name="ln-189"></a>    <span class="c">! Build a list of unique source directories</span>
 <a name="ln-190"></a>    <span class="c">!  from executables specified in manifest</span>
 <a name="ln-191"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exe_dirs</span><span class="p">(:)</span>
-<a name="ln-192"></a>    <span class="k">class</span><span class="p">(</span><span class="n">executable_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
+<a name="ln-192"></a>    <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
 <a name="ln-193"></a>
 <a name="ln-194"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dirs_temp</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">))</span>
 <a name="ln-195"></a>
@@ -874,7 +874,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

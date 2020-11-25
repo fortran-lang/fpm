@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.8% of total for procedures.">95 statements</a>
+    title=" 5.7% of total for procedures.">94 statements</a>
      </li> 
      
      
@@ -189,9 +189,9 @@
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-found">found</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-i~10">i</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-i~17">i</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-j~4">j</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-j~5">j</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-model~4">model</a>
       
@@ -328,9 +328,9 @@ public subroutine cmd_run(settings, test)
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-found">found</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-i~10">i</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-i~17">i</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-j~4">j</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-j~5">j</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-model~4">model</a>
       
@@ -506,7 +506,7 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~10"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~17"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -520,7 +520,7 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
-  <td><span class="anchor" id="variable-j~4"></span>integer,</td>
+  <td><span class="anchor" id="variable-j~5"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -562,7 +562,7 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
-  <td><span class="anchor" id="variable-package~2"></span>type(<a href='../type/package_t.html'>package_t</a>),</td>
+  <td><span class="anchor" id="variable-package~2"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -601,23 +601,20 @@ public subroutine cmd_run(settings, test)
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">col_width</span><span class="p">,</span> <span class="n">nCol</span>
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">found</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">))</span>
     <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">error</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">package_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
     <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exe_cmd</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">exe_target</span>
     <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">exe_source</span>
 
-    <span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+    <span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">        print</span> <span class="s1">&#39;(a)&#39;</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
         <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
     <span class="k">end if</span>
 
-
-<span class="k">    call </span><span class="n">package_defaults</span><span class="p">(</span><span class="n">package</span><span class="p">)</span>
-
-    <span class="k">call </span><span class="n">build_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">settings</span><span class="p">%</span><span class="n">fpm_build_settings</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<span class="k">    call </span><span class="n">build_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">settings</span><span class="p">%</span><span class="n">fpm_build_settings</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">        print</span> <span class="s1">&#39;(a)&#39;</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
         <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
@@ -763,7 +760,7 @@ public subroutine cmd_run(settings, test)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

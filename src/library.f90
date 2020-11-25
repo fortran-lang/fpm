@@ -13,11 +13,11 @@ module fpm_manifest_library
     implicit none
     private
 
-    public :: library_t, new_library
+    public :: library_config_t, new_library
 
 
     !> Configuration meta data for a library
-    type :: library_t
+    type :: library_config_t
 
         !> Source path prefix
         character(len=:), allocatable :: source_dir
@@ -30,7 +30,7 @@ module fpm_manifest_library
         !> Print information on this instance
         procedure :: info
 
-    end type library_t
+    end type library_config_t
 
 
 contains
@@ -40,7 +40,7 @@ contains
     subroutine new_library(self, table, error)
 
         !> Instance of the library configuration
-        type(library_t), intent(out) :: self
+        type(library_config_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -93,7 +93,7 @@ contains
     subroutine info(self, unit, verbosity)
 
         !> Instance of the library configuration
-        class(library_t), intent(in) :: self
+        class(library_config_t), intent(in) :: self
 
         !> Unit for IO
         integer, intent(in) :: unit

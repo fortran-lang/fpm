@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>dependency_t &ndash; Fortran-lang/fpm </title>
+    <title>test_config_t &ndash; Fortran-lang/fpm </title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,7 +110,7 @@
     
   
   <div class="row">
-    <h1>dependency_t
+    <h1>test_config_t
     <small>Derived Type</small>
     
     </h1>
@@ -128,24 +128,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 5.0% of total for derived types.</p>Including implementation: 31 statements,  5.8% of total for derived types.">7 statements</a>
+    title="<p> 2.9% of total for derived types.</p>Including implementation: 39 statements,  7.3% of total for derived types.">4 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/dependency.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/test.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/dependency.f90.html'>dependency.f90</a></li>
+     <li><a href='../sourcefile/test.f90.html'>test.f90</a></li>
     
-     <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+     <li><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></li>
     
   
-     <li class="active">dependency_t</li>
+     <li class="active">test_config_t</li>
   </ol>
 </div>
 </div>
@@ -173,11 +173,15 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/dependency_t.html#variable-git">git</a>
+      <a class="list-group-item" href="../type/test_config_t.html#variable-dependency">dependency</a>
       
-      <a class="list-group-item" href="../type/dependency_t.html#variable-name~4">name</a>
+      <a class="list-group-item" href="../type/test_config_t.html#variable-link">link</a>
       
-      <a class="list-group-item" href="../type/dependency_t.html#variable-path">path</a>
+      <a class="list-group-item" href="../type/test_config_t.html#variable-main">main</a>
+      
+      <a class="list-group-item" href="../type/test_config_t.html#variable-name~3">name</a>
+      
+      <a class="list-group-item" href="../type/test_config_t.html#variable-source_dir">source_dir</a>
       
     </div>
   </div>
@@ -205,7 +209,7 @@
   <div id="boundprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/dependency_t.html#boundprocedure-info~3">info</a>
+      <a class="list-group-item" href="../type/test_config_t.html#boundprocedure-info~2">info</a>
       
     </div>
   </div>
@@ -217,7 +221,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../type/dependency_t.html#src">dependency_t</a>
+    <a class="list-group-item" href="../type/test_config_t.html#src">test_config_t</a>
   </div>
 </div>
 
@@ -228,8 +232,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: dependency_t</h2>
-    <p>Configuration meta data for a dependency</p>
+      <h2>type, public, extends(<a href='../type/executable_config_t.html'>executable_config_t</a>) :: test_config_t</h2>
+    <p>Configuation meta data for an test</p>
     
     
     
@@ -247,11 +251,15 @@
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/dependency_t.html#variable-git">git</a>
+      <a class="list-group-item" href="../type/test_config_t.html#variable-dependency">dependency</a>
       
-      <a class="list-group-item" href="../type/dependency_t.html#variable-name~4">name</a>
+      <a class="list-group-item" href="../type/test_config_t.html#variable-link">link</a>
       
-      <a class="list-group-item" href="../type/dependency_t.html#variable-path">path</a>
+      <a class="list-group-item" href="../type/test_config_t.html#variable-main">main</a>
+      
+      <a class="list-group-item" href="../type/test_config_t.html#variable-name~3">name</a>
+      
+      <a class="list-group-item" href="../type/test_config_t.html#variable-source_dir">source_dir</a>
       
     </div>
   </div>
@@ -279,7 +287,7 @@
   <div id="boundprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/dependency_t.html#boundprocedure-info~3">info</a>
+      <a class="list-group-item" href="../type/test_config_t.html#boundprocedure-info~2">info</a>
       
     </div>
   </div>
@@ -291,7 +299,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../type/dependency_t.html#src">dependency_t</a>
+    <a class="list-group-item" href="../type/test_config_t.html#src">test_config_t</a>
   </div>
 </div>
 
@@ -319,11 +327,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-git"></span>type(<a href='../type/git_target_t.html'>git_target_t</a>),</td>
+  <td><span class="anchor" id="variable-dependency"></span>type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>git</strong></td><td></td><td></td><td><p>Git descriptor</p></td>
+  <td><strong>dependency</strong>(:)</td><td></td><td></td><td><p>Dependency meta data for this executable</p></td>
   
 </tr>
 
@@ -333,11 +341,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-name~4"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-link"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>name</strong></td><td></td><td></td><td><p>Name of the dependency</p></td>
+  <td><strong>link</strong>(:)</td><td></td><td></td><td><p>Libraries to link against</p></td>
   
 </tr>
 
@@ -347,11 +355,39 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-path"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-main"></span>character(len=:),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>path</strong></td><td></td><td></td><td><p>Local target</p></td>
+  <td><strong>main</strong></td><td></td><td></td><td><p>Name of the source file declaring the main program</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-name~3"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>name</strong></td><td></td><td></td><td><p>Name of the resulting executable</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-source_dir"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>source_dir</strong></td><td></td><td></td><td><p>Source directory for collecting the executable</p></td>
   
 </tr>
 
@@ -372,7 +408,7 @@
     
      
 <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~3"></span><h3>procedure, public :: <strong>info</strong>  
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~2"></span><h3>procedure, public :: <strong>info</strong>  
     
   </h3></div>
   
@@ -421,12 +457,12 @@ private subroutine info(self, unit, verbosity)
   
 <tr>
   
-  <td><span class="anchor" ></span>class(<a href='../type/dependency_t.html'>dependency_t</a>),</td>
+  <td><span class="anchor" ></span>class(<a href='../type/test_config_t.html'>test_config_t</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the dependency configuration</p></td>
+  <td><strong>self</strong></td><td><p>Instance of the test configuration</p></td>
   
 </tr>
 
@@ -481,23 +517,14 @@ private subroutine info(self, unit, verbosity)
     
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="highlight"><pre><span></span>    <span class="k">type</span> <span class="kd">::</span> <span class="n">dependency_t</span>
-
-        <span class="c">!&gt; Name of the dependency</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
-
-        <span class="c">!&gt; Local target</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">path</span>
-
-        <span class="c">!&gt; Git descriptor</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">git</span>
+    <div class="highlight"><pre><span></span>    <span class="k">type</span><span class="p">,</span> <span class="k">extends</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">test_config_t</span>
 
     <span class="k">contains</span>
 
         <span class="c">!&gt; Print information on this instance</span>
         <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
 
-    <span class="k">end type </span><span class="n">dependency_t</span>
+    <span class="k">end type </span><span class="n">test_config_t</span>
 </pre></div>
 
     </section>
@@ -518,7 +545,7 @@ private subroutine info(self, unit, verbosity)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

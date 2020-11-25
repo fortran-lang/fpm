@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.8% of total for procedures.">13 statements</a>
+    title=" 1.2% of total for procedures.">20 statements</a>
      </li> 
      
      
@@ -173,7 +173,7 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/get_package_data.html#variable-table">table</a>
+      <a class="list-group-item" href="../proc/get_package_data.html#variable-table~2">table</a>
       
     </div>
   </div>
@@ -213,7 +213,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine get_package_data(package, file, error)
+public subroutine get_package_data(package, file, error, apply_defaults)
     
     
    
@@ -244,7 +244,7 @@ public subroutine get_package_data(package, file, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-package~3"></span>type(<a href='../type/package_t.html'>package_t</a>),</td>
+  <td><span class="anchor" id="variable-package~3"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -274,12 +274,27 @@ public subroutine get_package_data(package, file, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~9"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~13"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
   <td>allocatable</td><td>::</td>
   <td><strong>error</strong></td><td><p>Error status of the operation</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-apply_defaults"></span>logical,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>apply_defaults</strong></td><td><p>Apply package defaults (uses file system operations)</p></td>
   
 </tr>
 
@@ -305,7 +320,7 @@ public subroutine get_package_data(package, file, error)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/get_package_data.html#variable-table">table</a>
+      <a class="list-group-item" href="../proc/get_package_data.html#variable-table~2">table</a>
       
     </div>
   </div>
@@ -363,7 +378,7 @@ public subroutine get_package_data(package, file, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-table"></span>type(toml_table),</td>
+  <td><span class="anchor" id="variable-table~2"></span>type(toml_table),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -394,16 +409,19 @@ public subroutine get_package_data(package, file, error)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="k">file</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="k">file</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">apply_defaults</span><span class="p">)</span>
 
         <span class="c">!&gt; Parsed package meta data</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
 
         <span class="c">!&gt; Name of the package configuration file</span>
         <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">file</span>
 
         <span class="c">!&gt; Error status of the operation</span>
         <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+
+        <span class="c">!&gt; Apply package defaults (uses file system operations)</span>
+        <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">apply_defaults</span>
 
         <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">table</span>
 
@@ -417,7 +435,14 @@ public subroutine get_package_data(package, file, error)
 
 <span class="k">        call </span><span class="n">new_package</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 
-    <span class="k">end subroutine </span><span class="n">get_package_data</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">apply_defaults</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">            if</span> <span class="p">(</span><span class="n">apply_defaults</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                call </span><span class="n">package_defaults</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<span class="k">            end if</span>
+<span class="k">        end if</span>
+
+<span class="k">    end subroutine </span><span class="n">get_package_data</span>
 </pre></div>
 
     </section>
@@ -439,7 +464,7 @@ public subroutine get_package_data(package, file, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

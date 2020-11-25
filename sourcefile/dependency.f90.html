@@ -295,11 +295,11 @@
 <a name="ln-30"></a>    <span class="k">implicit none</span>
 <a name="ln-31"></a><span class="k">    private</span>
 <a name="ln-32"></a>
-<a name="ln-33"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">dependency_t</span><span class="p">,</span> <span class="n">new_dependency</span><span class="p">,</span> <span class="n">new_dependencies</span>
+<a name="ln-33"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">dependency_config_t</span><span class="p">,</span> <span class="n">new_dependency</span><span class="p">,</span> <span class="n">new_dependencies</span>
 <a name="ln-34"></a>
 <a name="ln-35"></a>
 <a name="ln-36"></a>    <span class="c">!&gt; Configuration meta data for a dependency</span>
-<a name="ln-37"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">dependency_t</span>
+<a name="ln-37"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">dependency_config_t</span>
 <a name="ln-38"></a>
 <a name="ln-39"></a>        <span class="c">!&gt; Name of the dependency</span>
 <a name="ln-40"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
@@ -315,7 +315,7 @@
 <a name="ln-50"></a>        <span class="c">!&gt; Print information on this instance</span>
 <a name="ln-51"></a>        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
 <a name="ln-52"></a>
-<a name="ln-53"></a>    <span class="k">end type </span><span class="n">dependency_t</span>
+<a name="ln-53"></a>    <span class="k">end type </span><span class="n">dependency_config_t</span>
 <a name="ln-54"></a>
 <a name="ln-55"></a>
 <a name="ln-56"></a><span class="k">contains</span>
@@ -325,7 +325,7 @@
 <a name="ln-60"></a>    <span class="k">subroutine </span><span class="n">new_dependency</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 <a name="ln-61"></a>
 <a name="ln-62"></a>        <span class="c">!&gt; Instance of the dependency configuration</span>
-<a name="ln-63"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-63"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
 <a name="ln-64"></a>
 <a name="ln-65"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
 <a name="ln-66"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
@@ -441,7 +441,7 @@
 <a name="ln-176"></a>    <span class="k">subroutine </span><span class="n">new_dependencies</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 <a name="ln-177"></a>
 <a name="ln-178"></a>        <span class="c">!&gt; Instance of the dependency configuration</span>
-<a name="ln-179"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">deps</span><span class="p">(:)</span>
+<a name="ln-179"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">deps</span><span class="p">(:)</span>
 <a name="ln-180"></a>
 <a name="ln-181"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
 <a name="ln-182"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
@@ -475,7 +475,7 @@
 <a name="ln-210"></a>    <span class="k">subroutine </span><span class="n">info</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">)</span>
 <a name="ln-211"></a>
 <a name="ln-212"></a>        <span class="c">!&gt; Instance of the dependency configuration</span>
-<a name="ln-213"></a>        <span class="k">class</span><span class="p">(</span><span class="n">dependency_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-213"></a>        <span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
 <a name="ln-214"></a>
 <a name="ln-215"></a>        <span class="c">!&gt; Unit for IO</span>
 <a name="ln-216"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">unit</span>
@@ -529,7 +529,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-11-17 08:54  
+             on 2020-11-25 09:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
