@@ -17,7 +17,16 @@ To report a bug report or suggest a feature, please read our
 
 ## Getting started
 
-### Install Haskell
+### Binary download
+`x86-64` binaries are available [to download](https://github.com/fortran-lang/fpm/releases) for Windows, MacOS and Linux.
+
+__Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
+
+_e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
+
+### Build from source
+
+#### Install Haskell
 
 To install **Haskell Stack**, follow these
 [instructions](https://docs.haskellstack.org/en/stable/install_and_upgrade/),
@@ -25,14 +34,14 @@ users without superuser (admin) permissions should follow the
 [manual installation](https://docs.haskellstack.org/en/stable/install_and_upgrade/#manual-download_2)
 procedure.
 
-### Download this repository
+#### Download this repository
 
 ```bash
 $ git clone https://github.com/fortran-lang/fpm
 $ cd fpm/
 ```
 
-### Build and test fpm
+#### Build and test fpm
 
 Bootstrap *fpm* using:
 

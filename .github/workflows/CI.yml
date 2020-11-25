@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request]
+on: 
+  push:
+  pull_request:
+  release:
+    types: [published]
 
 env:
   CI: "ON" # We can detect this in the build system and other vendors implement it
@@ -23,16 +27,33 @@ jobs:
         - os: ubuntu-latest
           STACK_CACHE: "/home/runner/.stack/"
           STACK_CACHE_VERSION: ""
+          GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
+          CHECK_VERSION_CMD: grep $(cat fpm_version)
+          RELEASE_CMD: "fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner cp -- fpm-v$(cat fpm_version)-linux-x86_64"
+          BOOTSTRAP_RELEASE_CMD: cp /home/runner/.local/bin/fpm fpm-bootstrap-v$(cat fpm_version)-linux-x86_64
+          HASH_CMD: ls fpm-*|xargs -i{} sh -c 'sha256sum $1 > $1.sha256' -- {}
+
         - os: macos-latest
           STACK_CACHE: |
            /Users/runner/.stack/snapshots
            /Users/runner/.stack/setup-exe-src
           STACK_CACHE_VERSION: "v2"
+          GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
+          CHECK_VERSION_CMD: grep $(cat fpm_version)
+          RELEASE_CMD: "fpm run --flag -g --flag -fbacktrace --flag -O3 --runner cp -- fpm-v$(cat fpm_version)-macos-x86_64"
+          BOOTSTRAP_RELEASE_CMD: cp /Users/runner/.local/bin/fpm fpm-bootstrap-v$(cat fpm_version)-macos-x86_64
+          HASH_CMD: ls fpm-*|xargs -I{} sh -c 'shasum -a 256 $1 > $1.sha256' -- {}
+
         - os: windows-latest
           STACK_CACHE: |
            C:\Users\runneradmin\AppData\Roaming\stack
            C:\Users\runneradmin\AppData\Local\Programs\stack
           STACK_CACHE_VERSION: "v2"
+          GET_VERSION_CMD: ("${{ github.ref }}" -Split "v")[1]
+          CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
+          RELEASE_CMD: fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner copy -- (-join("fpm-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
+          BOOTSTRAP_RELEASE_CMD: copy C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe (-join("fpm-bootstrap-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
+          HASH_CMD: Get-ChildItem -File -Filter "fpm-*" | Foreach-Object {echo (Get-FileHash -Algorithm SHA256 $PSItem | Select-Object hash | Format-Table -HideTableHeaders | Out-String) > (-join($PSItem,".sha256"))}
 
     env:
       FC: gfortran
@@ -104,3 +125,29 @@ jobs:
       if: contains(matrix.os, 'windows')
       run: |
         ci\run_tests.bat
+
+    # ----- Upload binaries if creating a release -----
+    - name: Check that fpm --version matches release tag
+      if: github.event_name == 'release'
+      run: |
+        cd fpm
+        ${{ matrix.GET_VERSION_CMD }} > fpm_version
+        fpm run -- "--version" | ${{ matrix.CHECK_VERSION_CMD }}
+
+    - name: Stage release files for upload
+      if: github.event_name == 'release'
+      run: |
+        cd fpm
+        ${{ matrix.RELEASE_CMD }}
+        ${{ matrix.BOOTSTRAP_RELEASE_CMD }}
+        ${{ matrix.HASH_CMD }}
+    
+    - name: Upload assets
+      if: github.event_name == 'release'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: fpm/fpm-*
+        file_glob: true
+        tag: ${{ github.ref }}
+        overwrite: true
