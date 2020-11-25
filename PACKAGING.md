@@ -177,7 +177,7 @@ Based on the output of `fpm build`, *fpm* first ran `gfortran` to emit the
 binary object (`math_constants.o`) and module (`math_constants.mod`) files.
 Then it ran `ar` to create a static library archive `math_constants.a`.
 `build/debug/library` is thus both your include and library path, should you
-want to compile and link an exteranl program with this library.
+want to compile and link an external program with this library.
 
 For modules in the top-level (`src`) directory, *fpm* requires that:
 
@@ -585,7 +585,7 @@ And now, `fpm run` will output the following:
 ```
 
 Additionally, any users of your library will now automatically depend on your
-dependencies too. So if you don’t need that depedency for the library, like in
+dependencies too. So if you don’t need that dependency for the library, like in
 the above example, then you can specify it for the specific executable like
 below. Then fpm will still fetch and compile it when building your executable,
 but users of your library won’t have to.
@@ -677,7 +677,7 @@ the build script:
 * `FC` – The Fortran compiler to be used.
 * `FFLAGS` – The flags that should be passed to the Fortran compiler.
 * `BUILD_DIR` – Where the compiled files should be placed.
-* `INCLUDE_DIRS` – The folders where any dependencies can be found, space seperated.
+* `INCLUDE_DIRS` – The folders where any dependencies can be found, space separated.
 It is then the responsibility of the build script to generate the appropriate
 include flags.
 
