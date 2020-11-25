@@ -30,11 +30,11 @@ module fpm_manifest_dependency
     implicit none
     private
 
-    public :: dependency_t, new_dependency, new_dependencies
+    public :: dependency_config_t, new_dependency, new_dependencies
 
 
     !> Configuration meta data for a dependency
-    type :: dependency_t
+    type :: dependency_config_t
 
         !> Name of the dependency
         character(len=:), allocatable :: name
@@ -50,7 +50,7 @@ module fpm_manifest_dependency
         !> Print information on this instance
         procedure :: info
 
-    end type dependency_t
+    end type dependency_config_t
 
 
 contains
@@ -60,7 +60,7 @@ contains
     subroutine new_dependency(self, table, error)
 
         !> Instance of the dependency configuration
-        type(dependency_t), intent(out) :: self
+        type(dependency_config_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -176,7 +176,7 @@ contains
     subroutine new_dependencies(deps, table, error)
 
         !> Instance of the dependency configuration
-        type(dependency_t), allocatable, intent(out) :: deps(:)
+        type(dependency_config_t), allocatable, intent(out) :: deps(:)
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -210,7 +210,7 @@ contains
     subroutine info(self, unit, verbosity)
 
         !> Instance of the dependency configuration
-        class(dependency_t), intent(in) :: self
+        class(dependency_config_t), intent(in) :: self
 
         !> Unit for IO
         integer, intent(in) :: unit

@@ -36,9 +36,9 @@ contains
             & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
             & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
             & new_unittest("executable-wrongkey", test_executable_wrongkey, should_fail=.true.), &
-            & new_unittest("build-config-valid", test_build_config_valid), &
-            & new_unittest("build-config-empty", test_build_config_empty), &
-            & new_unittest("build-config-invalid-values", test_build_config_invalid_values, should_fail=.true.), &
+            & new_unittest("build-config-valid", test_build_valid), &
+            & new_unittest("build-config-empty", test_build_empty), &
+            & new_unittest("build-config-invalid-values", test_build_invalid_values, should_fail=.true.), &
             & new_unittest("library-empty", test_library_empty), &
             & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
             & new_unittest("package-simple", test_package_simple), &
@@ -65,7 +65,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(package_t) :: package
+        type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-valid-manifest.toml'
         integer :: unit
 
@@ -143,7 +143,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(package_t) :: package
+        type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-invalid-manifest.toml'
         integer :: unit
 
@@ -168,7 +168,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(package_t) :: package
+        type(package_config_t) :: package
 
         allocate(package%library)
         call default_library(package%library)
@@ -186,7 +186,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(package_t) :: package
+        type(package_config_t) :: package
         character(len=*), parameter :: name = "default"
 
         allocate(package%executable(1))
@@ -212,7 +212,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(dependency_t) :: dependency
+        type(dependency_config_t) :: dependency
 
         call new_table(table)
         table%key = "example"
@@ -232,7 +232,7 @@ contains
 
         type(toml_table) :: table
         integer :: stat
-        type(dependency_t) :: dependency
+        type(dependency_config_t) :: dependency
 
         call new_table(table)
         table%key = 'example'
@@ -254,7 +254,7 @@ contains
 
         type(toml_table) :: table
         integer :: stat
-        type(dependency_t) :: dependency
+        type(dependency_config_t) :: dependency
 
         call new_table(table)
         table%key = 'example'
@@ -275,7 +275,7 @@ contains
 
         type(toml_table) :: table
         integer :: stat
-        type(dependency_t) :: dependency
+        type(dependency_config_t) :: dependency
 
         call new_table(table)
         table%key = 'example'
@@ -297,7 +297,7 @@ contains
 
         type(toml_table) :: table
         integer :: stat
-        type(dependency_t) :: dependency
+        type(dependency_config_t) :: dependency
 
         call new_table(table)
         table%key = 'example'
@@ -320,7 +320,7 @@ contains
 
         type(toml_table) :: table
         integer :: stat
-        type(dependency_t) :: dependency
+        type(dependency_config_t) :: dependency
 
         call new_table(table)
         table%key = 'example'
@@ -340,7 +340,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(dependency_t), allocatable :: dependencies(:)
+        type(dependency_config_t), allocatable :: dependencies(:)
 
         call new_table(table)
 
@@ -365,7 +365,7 @@ contains
         type(toml_table) :: table
         type(toml_array), pointer :: children
         integer :: stat
-        type(dependency_t), allocatable :: dependencies(:)
+        type(dependency_config_t), allocatable :: dependencies(:)
 
         call new_table(table)
         call add_array(table, 'dep1', children, stat)
@@ -384,7 +384,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(executable_t) :: executable
+        type(executable_config_t) :: executable
 
         call new_table(table)
 
@@ -404,7 +404,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(executable_t) :: executable
+        type(executable_config_t) :: executable
 
         call new_table(table)
         call add_table(table, 'name', child, stat)
@@ -425,7 +425,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(executable_t) :: executable
+        type(executable_config_t) :: executable
 
         call new_table(table)
         call add_table(table, 'dependencies', child, stat)
@@ -446,7 +446,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(executable_t) :: executable
+        type(executable_config_t) :: executable
 
         call new_table(table)
         call add_table(table, 'wrong-field', child, stat)
@@ -457,12 +457,12 @@ contains
 
 
     !> Try to read values from the [build] table
-    subroutine test_build_config_valid(error)
+    subroutine test_build_valid(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(package_t) :: package
+        type(package_config_t) :: package
         character(:), allocatable :: temp_file
         integer :: unit
 
@@ -480,26 +480,26 @@ contains
 
         if (allocated(error)) return
 
-        if (package%build_config%auto_executables) then
+        if (package%build%auto_executables) then
             call test_failed(error, "Wong value of 'auto-executables' read, expecting .false.")
             return
         end if
 
-        if (package%build_config%auto_tests) then
+        if (package%build%auto_tests) then
             call test_failed(error, "Wong value of 'auto-tests' read, expecting .false.")
             return
         end if
 
-    end subroutine test_build_config_valid
+    end subroutine test_build_valid
 
 
     !> Try to read values from an empty [build] table
-    subroutine test_build_config_empty(error)
+    subroutine test_build_empty(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(package_t) :: package
+        type(package_config_t) :: package
         character(:), allocatable :: temp_file
         integer :: unit
 
@@ -516,26 +516,26 @@ contains
 
         if (allocated(error)) return
 
-        if (.not.package%build_config%auto_executables) then
+        if (.not.package%build%auto_executables) then
             call test_failed(error, "Wong default value of 'auto-executables' read, expecting .true.")
             return
         end if
 
-        if (.not.package%build_config%auto_tests) then
+        if (.not.package%build%auto_tests) then
             call test_failed(error, "Wong default value of 'auto-tests' read, expecting .true.")
             return
         end if
 
-    end subroutine test_build_config_empty
+    end subroutine test_build_empty
 
 
     !> Try to read values from a [build] table with invalid values
-    subroutine test_build_config_invalid_values(error)
+    subroutine test_build_invalid_values(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(package_t) :: package
+        type(package_config_t) :: package
         character(:), allocatable :: temp_file
         integer :: unit
 
@@ -550,7 +550,7 @@ contains
 
         call get_package_data(package, temp_file, error)
 
-    end subroutine test_build_config_invalid_values
+    end subroutine test_build_invalid_values
 
 
     !> Libraries can be created from empty tables
@@ -562,7 +562,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(library_t) :: library
+        type(library_config_t) :: library
 
         call new_table(table)
 
@@ -587,7 +587,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(library_t) :: library
+        type(library_config_t) :: library
 
         call new_table(table)
         call add_table(table, 'not-allowed', child, stat)
@@ -610,7 +610,7 @@ contains
         type(toml_table), pointer :: child, child2
         type(toml_array), pointer :: children
         integer :: stat
-        type(package_t) :: package
+        type(package_config_t) :: package
 
         call new_table(table)
         call set_value(table, 'name', '"example"', stat)
@@ -645,7 +645,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(package_t) :: package
+        type(package_config_t) :: package
 
         call new_table(table)
 
@@ -665,7 +665,7 @@ contains
         type(toml_table) :: table
         type(toml_array), pointer :: child
         integer :: stat
-        type(package_t) :: package
+        type(package_config_t) :: package
 
         call new_table(table)
         call add_array(table, "name", child, stat)
@@ -686,7 +686,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(package_t) :: package
+        type(package_config_t) :: package
 
         call new_table(table)
         call add_table(table, "library", child, stat)
@@ -709,7 +709,7 @@ contains
         type(toml_table) :: table
         type(toml_array), pointer :: children, children2
         integer :: stat
-        type(package_t) :: package
+        type(package_config_t) :: package
 
         call new_table(table)
         call set_value(table, 'name', '"example"', stat)
@@ -732,7 +732,7 @@ contains
         type(toml_table) :: table
         type(toml_array), pointer :: children, children2
         integer :: stat
-        type(package_t) :: package
+        type(package_config_t) :: package
 
         call new_table(table)
         call set_value(table, 'name', '"example"', stat)
@@ -755,7 +755,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(test_t) :: test
+        type(test_config_t) :: test
 
         call new_table(table)
         call set_value(table, 'name', '"example"', stat)
@@ -781,7 +781,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(test_t) :: test
+        type(test_config_t) :: test
 
         call new_table(table)
 
@@ -801,7 +801,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(test_t) :: test
+        type(test_config_t) :: test
 
         call new_table(table)
         call add_table(table, 'name', child, stat)
@@ -822,7 +822,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(test_t) :: test
+        type(test_config_t) :: test
 
         call new_table(table)
         call add_table(table, 'dependencies', child, stat)
@@ -843,7 +843,7 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         integer :: stat
-        type(test_t) :: test
+        type(test_config_t) :: test
 
         call new_table(table)
         call add_table(table, 'not-supported', child, stat)
@@ -855,7 +855,7 @@ contains
 
     !> Test link options
     subroutine test_link_string(error)
-        use fpm_manifest_build_config
+        use fpm_manifest_build
         use fpm_toml, only : set_value, toml_table
 
         !> Error handling
@@ -875,7 +875,7 @@ contains
 
     !> Test link options
     subroutine test_link_array(error)
-        use fpm_manifest_build_config
+        use fpm_manifest_build
         use fpm_toml, only : add_array, set_value, toml_table, toml_array
 
         !> Error handling
@@ -898,7 +898,7 @@ contains
 
     !> Test link options
     subroutine test_invalid_link(error)
-        use fpm_manifest_build_config
+        use fpm_manifest_build
         use fpm_toml, only : add_table, toml_table
 
         !> Error handling
