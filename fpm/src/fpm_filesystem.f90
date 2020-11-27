@@ -31,10 +31,18 @@ function basename(path,suffix) result (base)
 
     if (with_suffix) then
         call split(path,file_parts,delimiters='\/')
-        base = trim(file_parts(size(file_parts)))
+        if(size(file_parts).gt.0)then
+           base = trim(file_parts(size(file_parts)))
+        else
+           base = ''
+        endif
     else
         call split(path,file_parts,delimiters='\/.')
-        base = trim(file_parts(size(file_parts)-1))
+        if(size(file_parts).gt.0)then
+           base = trim(file_parts(size(file_parts)-1))
+        else
+           base = ''
+        endif
     end if
 
 end function basename
@@ -44,7 +52,7 @@ function canon_path(path) result(canon)
     ! Canonicalize path for comparison
     !  Handles path string redundancies
     !  Does not test existence of path
-    ! 
+    !
     ! To be replaced by realpath/_fullname in stdlib_os
     !
     character(*), intent(in) :: path
@@ -98,7 +106,7 @@ function canon_path(path) result(canon)
             end if
 
         end if
-        
+
 
         temp(j:j) = nixpath(i:i)
         j = j + 1
@@ -123,23 +131,23 @@ function dirname(path) result (dir)
 end function dirname
 
 
-logical function is_dir(dir) 
-    character(*), intent(in) :: dir 
-    integer :: stat 
+logical function is_dir(dir)
+    character(*), intent(in) :: dir
+    integer :: stat
 
-    select case (get_os_type()) 
+    select case (get_os_type())
 
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
-        call execute_command_line("test -d " // dir , exitstat=stat) 
+        call execute_command_line("test -d " // dir , exitstat=stat)
 
-    case (OS_WINDOWS) 
-        call execute_command_line('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', exitstat=stat) 
+    case (OS_WINDOWS)
+        call execute_command_line('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', exitstat=stat)
 
-    end select 
+    end select
 
-    is_dir = (stat == 0) 
+    is_dir = (stat == 0)
 
-end function is_dir 
+end function is_dir
 
 
 function join_path(a1,a2,a3,a4,a5) result(path)
@@ -286,7 +294,7 @@ recursive subroutine list_files(dir, files, recurse)
             do i=1,size(files)
                 if (is_dir(files(i)%s)) then
 
-                    call list_files(files(i)%s, dir_files, recurse=.true.) 
+                    call list_files(files(i)%s, dir_files, recurse=.true.)
                     sub_dir_files = [sub_dir_files, dir_files]
 
                 end if
@@ -318,7 +326,7 @@ function get_temp_filename() result(tempfile)
 
     type(c_ptr) :: c_tempfile_ptr
     character(len=1), pointer :: c_tempfile(:)
-    
+
     interface
 
         function c_tempnam(dir,pfx) result(tmp) bind(c,name="tempnam")
@@ -360,7 +368,7 @@ function windows_path(path) result(winpath)
         winpath(idx:idx) = '\'
         idx = index(winpath,'/')
     end do
-    
+
 end function windows_path
 
 
@@ -379,7 +387,7 @@ function unix_path(path) result(nixpath)
         nixpath(idx:idx) = '/'
         idx = index(nixpath,'\')
     end do
-    
+
 end function unix_path
 
 end module fpm_filesystem

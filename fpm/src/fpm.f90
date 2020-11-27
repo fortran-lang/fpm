@@ -25,7 +25,6 @@ public :: cmd_build, cmd_install, cmd_run
 
 contains
 
-
 recursive subroutine add_libsources_from_package(sources,link_libraries,package_list,package, &
                                                   package_root,dev_depends,error)
     ! Discover library sources in a package, recursively including dependencies
@@ -152,9 +151,15 @@ subroutine build_model(model, settings, package, error)
     type(fpm_build_settings), intent(in) :: settings
     type(package_config_t), intent(in) :: package
     type(error_t), allocatable, intent(out) :: error
+    type(string_t), allocatable :: package_list(:)
 
     integer :: i
-    type(string_t), allocatable :: package_list(:)
+    character(len=:),allocatable :: module_path_switch
+
+    if(settings%verbose)then
+       write(*,*)'<INFO>BUILD_NAME:',settings%build_name
+       write(*,*)'<INFO>COMPILER:  ',settings%compiler
+    endif
 
     model%package_name = package%name
     if (allocated(package%build%link)) then
@@ -166,25 +171,206 @@ subroutine build_model(model, settings, package, error)
     allocate(package_list(1))
     package_list(1)%s = package%name
 
-    ! #TODO: Choose flags and output directory based on cli settings & manifest inputs
-    model%fortran_compiler = 'gfortran'
+   model%fortran_compiler=settings%compiler
 
-    if(settings%release)then
-        model%output_directory = 'build/gfortran_release'
-        model%fortran_compile_flags=' &
-            & -O3 &
-            & -Wimplicit-interface &
-            & -fPIC &
-            & -fmax-errors=1 &
-            & -ffast-math &
-            & -funroll-loops ' // &
-            & '-J'//join_path(model%output_directory,model%package_name)
-    else
-        model%output_directory = 'build/gfortran_debug'
-        model%fortran_compile_flags = ' -Wall -Wextra -Wimplicit-interface  -fPIC -fmax-errors=1 -g '// &
-                                      '-fbounds-check -fcheck-array-temporaries -fbacktrace '// &
-                                      '-J'//join_path(model%output_directory,model%package_name)
-    endif
+   model%output_directory = join_path('build',model%fortran_compiler//'_'//settings%build_name)
+
+   if(settings%compiler.eq.'')then
+       model%fortran_compiler = 'gfortran'
+   else
+       model%fortran_compiler = settings%compiler
+   endif
+
+! #TODO: Choose flags and output directory based on cli settings & manifest inputs
+! special reserved names "debug" and "release" are for supported compilers with no user-specified compile or load flags
+
+! vendor            Fortran   C         Module output   Module include OpenMP    Free for OSS
+!                   compiler  compiler  directory       directory
+! Gnu               gfortran   gcc     -J              -I            -fopenmp   X
+! Intel             ifort      icc     -module         -I            -qopenmp   X
+! Intel(Windows)    ifort      icc     /module:path    /I            /Qopenmp   X
+! Intel oneAPI      ifx        icx     -module         -I            -qopenmp   X
+! PGI               pgfortran  pgcc    -module         -I            -mp        X
+! NVIDIA            nvfortran  nvc     -module         -I            -mp        X
+! LLVM flang        flang      clang   -module         -I            -mp        X
+! LFortran          lfortran   ---     ?               ?             ?          X
+! Lahey/Futjitsu    lfc        ?       -M              -I            -openmp    ?
+! NAG               nagfor     ?       -mdir           -I            -openmp    x
+! Cray              crayftn    craycc  -J              -I            -homp      ?
+! IBM               xlf90      ?       -qmoddir        -I            -qsmp      X
+! Oracle/Sun        ?          ?       -moddir=        -M            -xopenmp   ?
+! Silverfrost FTN95 ftn95      ?       ?               /MOD_PATH     ?          ?
+! Elbrus            ?          lcc     -J              -I            -fopenmp   ?
+! Hewlett Packard   ?          ?       ?               ?             ?          discontinued
+! Watcom            ?          ?       ?               ?             ?          discontinued
+! PathScale         ?          ?       -module         -I            -mp        discontinued
+! G95               ?          ?       -fmod=          -I            -fopenmp   discontinued
+! Open64            ?          ?       -module         -I            -mp        discontinued
+! Unisys            ?          ?       ?               ?             ?          discontinued
+
+    select case(settings%build_name//'_'//settings%compiler)
+
+    case('release_gfortran')   ! -J
+       model%fortran_compile_flags=' &
+       & -O3&
+       & -Wimplicit-interface&
+       & -fPIC&
+       & -fmax-errors=1&
+       & -ffast-math&
+       & -funroll-loops&
+       & '
+    case('debug_gfortran')
+       model%fortran_compile_flags = '&
+       & -Wall &
+       & -Wextra &
+       &-Wimplicit-interface  &
+       &-fPIC -fmax-errors=1 &
+       &-g &
+       &-fbounds-check &
+       &-fcheck-array-temporaries &
+       &-fbacktrace '
+
+    case('release_f95')   ! -J
+       model%fortran_compile_flags=' &
+       & -O3&
+       & -Wimplicit-interface&
+       & -fPIC&
+       & -std=f95 &
+       & -fmax-errors=1&
+       & -ffast-math&
+       & -funroll-loops&
+       & '
+    case('debug_f95')
+       model%fortran_compile_flags = '&
+       & -Wall &
+       & -Wextra &
+       &-Wimplicit-interface  &
+       &-fPIC -fmax-errors=1 &
+       &-g &
+       &-std=f95 &
+       &-fbounds-check &
+       &-fcheck-array-temporaries &
+       &-fbacktrace '
+
+    case('release_gnu')   ! -J
+       model%fortran_compile_flags=' &
+       & -O3&
+       & -Wimplicit-interface&
+       & -fPIC&
+       & -fmax-errors=1&
+       & -ffast-math&
+       & -funroll-loops&
+       & -std=f2018 &
+       & -Wno-maybe-uninitialized -Wno-uninitialized &
+       & '
+       model%fortran_compiler = 'gfortran'
+    case('debug_gnu')
+       model%fortran_compile_flags = '&
+       & -Wall &
+       & -Wextra &
+       & -Wimplicit-interface  &
+       & -fPIC -fmax-errors=1 &
+       & -g &
+       & -fbounds-check &
+       & -fcheck-array-temporaries &
+       & -std=f2018 &
+       & -Wno-maybe-uninitialized -Wno-uninitialized &
+       & -fbacktrace '
+       model%fortran_compiler = 'gfortran'
+
+    case('release_nvfortran')
+       model%fortran_compile_flags = ' &
+       & -Mbackslash&
+       & '
+    case('debug_nvfortran')
+       model%fortran_compile_flags = '&
+       & -Minform=inform &
+       & -Mbackslash &
+       & -traceback&
+       & '
+
+    case('release_ifort')
+       model%fortran_compile_flags = ' &
+       & -fp-model precise &
+       & -pc 64 &
+       & -align all &
+       & -error-limit 1 &
+       & -reentrancy threaded &
+       & -nogen-interfaces &
+       & -assume byterecl &
+       & -assume nounderscore'
+    case('debug_ifort')
+       model%fortran_compile_flags = '&
+       & -warn all &
+       & -check all &
+       & -error-limit 1 &
+       & -O0 &
+       & -g &
+       & -assume byterecl &
+       & -traceback '
+    case('release_ifx')
+       model%fortran_compile_flags = ' '
+    case('debug_ifx')
+       model%fortran_compile_flags = ' '
+
+    case('release_pgfortran','release_pgf90','release_pgf95')  ! Portland Group F90/F95 compilers
+       model%fortran_compile_flags = ' '
+    case('debug_pgfortran','debug_pgf90','debug_pgf95')  ! Portland Group F90/F95 compilers
+       model%fortran_compile_flags = ' '
+
+    case('release_flang')
+       model%fortran_compile_flags = ' '
+    case('debug_flang')
+       model%fortran_compile_flags = ' '
+
+    case('release_lfc')
+       model%fortran_compile_flags = ' '
+    case('debug_lfc')
+       model%fortran_compile_flags = ' '
+
+    case('release_nagfor')
+       model%fortran_compile_flags = ' '
+    case('debug_nagfor')
+       model%fortran_compile_flags = ' '
+
+    case('release_crayftn')
+       model%fortran_compile_flags = ' '
+    case('debug_crayftn')
+       model%fortran_compile_flags = ' '
+
+    case('release_xlf90')
+       model%fortran_compile_flags = ' '
+    case('debug_xlf90')
+       model%fortran_compile_flags = ' '
+
+    case default
+       model%fortran_compile_flags = ' '
+       write(*,*)'<WARNING> unknown compiler (',settings%compiler,')'
+       write(*,*)'          and build name   (',settings%build_name,')'
+       write(*,*)'          combination.'
+       write(*,*)'          known compilers are gfortran, nvfortran, ifort'
+    end select
+
+    select case(settings%compiler)
+    case('gfortran')  ; module_path_switch=' -J '
+    case('gnu')       ; module_path_switch=' -J '
+    case('nvfortran') ; module_path_switch=' -module '
+    case('ifort')     ; module_path_switch=' -module '
+    case('ifx')       ; module_path_switch=' -module '
+    case('pgfortran') ; module_path_switch=' -module '
+    case('flang')     ; module_path_switch=' -module '
+    case('lfc')       ; module_path_switch=' -M '
+    case('crayftn')   ; module_path_switch=' -J '
+    case('nagfor')    ; module_path_switch=' -mdir '
+    case('xlf90')     ; module_path_switch=' -qmoddir '
+    case default
+        module_path_switch=' -module '
+        write(*,*)'UNKNOWN COMPILER NAME ',settings%compiler
+    end select
+
+    model%fortran_compile_flags = model%fortran_compile_flags//' '//&
+    & module_path_switch//join_path(model%output_directory,model%package_name)
+
     model%link_flags = ''
 
     ! Add sources from executable directories

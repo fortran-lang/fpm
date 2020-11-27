@@ -5,7 +5,7 @@ use fpm_model, only: srcfile_t, fpm_model_t, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-                    
+
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, read_lines, list_files
 use fpm_strings, only: lower, split, str_ends_with, string_t, operator(.in.)
 use fpm_manifest_executable, only: executable_config_t
@@ -119,9 +119,9 @@ end subroutine add_sources_from_dir
 
 
 subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
-    ! Include sources from any directories specified 
+    ! Include sources from any directories specified
     !  in [[executable]] entries and apply any customisations
-    !  
+    !
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
     class(executable_config_t), intent(in) :: executables(:)
     integer, intent(in) :: scope
@@ -153,7 +153,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
             if (basename(sources(j)%file_name,suffix=.true.) == executables(i)%main .and.&
                  canon_path(dirname(sources(j)%file_name)) == &
                  canon_path(executables(i)%source_dir) ) then
-                
+
                 sources(j)%exe_name = executables(i)%name
                 if (allocated(executables(i)%link)) then
                     exe_source%link_libraries = executables(i)%link
@@ -171,7 +171,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
             exe_source%link_libraries = executables(i)%link
         end if
         exe_source%unit_scope = scope
-        
+
         if (allocated(error)) return
 
         if (.not.allocated(sources)) then
@@ -215,7 +215,7 @@ end subroutine get_executable_source_dirs
 
 
 function parse_f_source(f_filename,error) result(f_source)
-    ! Rudimentary scan of Fortran source file and 
+    ! Rudimentary scan of Fortran source file and
     !  extract program unit name and use/include dependencies
     !
     character(*), intent(in) :: f_filename
@@ -313,7 +313,7 @@ function parse_f_source(f_filename,error) result(f_source)
                 if (index(adjustl(file_lines(i)%s(ic+7:)),'"') == 1 .or. &
                     index(adjustl(file_lines(i)%s(ic+7:)),"'") == 1 ) then
 
-    
+
                     n_include = n_include + 1
 
                     if (pass == 2) then
@@ -400,7 +400,7 @@ function parse_f_source(f_filename,error) result(f_source)
                     if (index(temp_string,':') > 0) then
 
                         temp_string = temp_string(index(temp_string,':')+1:)
-                        
+
                     end if
 
                     if (.not.validate_name(temp_string)) then
@@ -467,7 +467,7 @@ function parse_f_source(f_filename,error) result(f_source)
                 (name(i:i) >= '0' .and. name(i:i) <= '9').or. &
                 (lower(name(i:i)) >= 'a' .and. lower(name(i:i)) <= 'z').or. &
                 name(i:i) == '_') ) then
-                    
+
                 valid = .false.
                 return
             end if
@@ -483,7 +483,7 @@ end function parse_f_source
 
 
 function parse_c_source(c_filename,error) result(c_source)
-    ! Rudimentary scan of c source file and 
+    ! Rudimentary scan of c source file and
     !  extract include dependencies
     !
     character(*), intent(in) :: c_filename
@@ -519,7 +519,7 @@ function parse_c_source(c_filename,error) result(c_source)
             ! Process 'INCLUDE' statements
             if (index(adjustl(lower(file_lines(i)%s)),'#include') == 1 .and. &
                 index(file_lines(i)%s,'"') > 0) then
-                            
+
                 n_include = n_include + 1
 
                 if (pass == 2) then
@@ -555,7 +555,7 @@ function split_n(string,delims,n,stat) result(substring)
     ! n=0  will return the last item
     ! n=-1 will return the penultimate item etc.
     !
-    ! stat = 1 on return if the index 
+    ! stat = 1 on return if the index
     !  is not found
     !
     character(*), intent(in) :: string

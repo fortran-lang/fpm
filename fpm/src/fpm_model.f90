@@ -33,7 +33,7 @@ integer, parameter :: FPM_TARGET_ARCHIVE = 2
 integer, parameter :: FPM_TARGET_OBJECT = 3
 
 type srcfile_t
-    ! Type for encapsulating a source file 
+    ! Type for encapsulating a source file
     !  and it's metadata
     character(:), allocatable :: file_name
         ! File path relative to cwd
