@@ -23,14 +23,14 @@ subroutine targets_from_sources(model,sources)
                                    model%package_name,'lib'//model%package_name//'.a'))
 
     do i=1,size(sources)
-
+        
         select case (sources(i)%unit_type)
         case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
             call add_target(model%targets,source = sources(i), &
                         type = FPM_TARGET_OBJECT,&
                         output_file = get_object_name(sources(i)))
-
+            
             if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                 ! Archive depends on object
                 call add_dependency(model%targets(1)%ptr, model%targets(size(model%targets))%ptr)
@@ -42,7 +42,7 @@ subroutine targets_from_sources(model,sources)
                         output_file = get_object_name(sources(i)), &
                         source = sources(i) &
                         )
-
+            
             if (sources(i)%unit_scope == FPM_SCOPE_APP) then
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
                             link_libraries = sources(i)%link_libraries, &
@@ -51,7 +51,7 @@ subroutine targets_from_sources(model,sources)
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
                             link_libraries = sources(i)%link_libraries, &
                             output_file = join_path(model%output_directory,'test',sources(i)%exe_name))
-
+            
             end if
 
             ! Executable depends on object
@@ -61,7 +61,7 @@ subroutine targets_from_sources(model,sources)
                 ! Executable depends on library
                 call add_dependency(model%targets(size(model%targets))%ptr, model%targets(1)%ptr)
             end if
-
+            
         end select
 
     end do
@@ -70,20 +70,20 @@ subroutine targets_from_sources(model,sources)
 
     function get_object_name(source) result(object_file)
         ! Generate object target path from source name and model params
-        !
+        !  
         !
         type(srcfile_t), intent(in) :: source
         character(:), allocatable :: object_file
-
+    
         integer :: i
         character(1), parameter :: filesep = '/'
         character(:), allocatable :: dir
-
+        
         object_file = canon_path(source%file_name)
 
         ! Ignore first directory level
         object_file = object_file(index(object_file,filesep)+1:)
-
+        
         ! Convert any remaining directory separators to underscores
         i = index(object_file,filesep)
         do while(i > 0)
@@ -101,9 +101,9 @@ subroutine targets_from_sources(model,sources)
 
         case default
             object_file = join_path(model%output_directory,model%package_name,object_file)//'.o'
-
+            
         end select
-
+    
     end function get_object_name
 
 end subroutine targets_from_sources
@@ -143,7 +143,7 @@ subroutine add_target(targets,type,output_file,source,link_libraries)
     if (present(source)) new_target%source = source
     if (present(link_libraries)) new_target%link_libraries = link_libraries
     allocate(new_target%dependencies(0))
-
+    
     targets = [targets, build_target_ptr(new_target)]
 
 end subroutine add_target
@@ -171,7 +171,7 @@ subroutine resolve_module_dependencies(targets,error)
     integer :: i, j
 
     do i=1,size(targets)
-
+        
         if (.not.allocated(targets(i)%ptr%source)) cycle
 
             do j=1,size(targets(i)%ptr%source%modules_used)
@@ -180,7 +180,7 @@ subroutine resolve_module_dependencies(targets,error)
                     ! Dependency satisfied in same file, skip
                     cycle
                 end if
-
+            
                 if (targets(i)%ptr%source%unit_scope == FPM_SCOPE_APP .OR. &
                     targets(i)%ptr%source%unit_scope == FPM_SCOPE_TEST ) then
                     dep%ptr => &
@@ -203,7 +203,7 @@ subroutine resolve_module_dependencies(targets,error)
 
             end do
 
-    end do
+    end do    
 
 end subroutine resolve_module_dependencies
 
@@ -244,7 +244,7 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
             end if
 
         end do
-
+        
     end do
 
 end function find_module_dependency

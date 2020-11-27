@@ -8,7 +8,7 @@ use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, FPM_UNIT_MODULE, &
                      FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                      FPM_UNIT_CSOURCE, FPM_UNIT_PROGRAM, &
                      FPM_SCOPE_TEST, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
-
+                     
 use fpm_strings, only: split
 
 implicit none
@@ -41,9 +41,9 @@ subroutine build_package(model)
     linking = linking//" "//model%link_flags
 
     do i=1,size(model%targets)
-
+        
         call build_target(model,model%targets(i)%ptr,linking)
-
+        
     end do
 
 end subroutine build_package
@@ -52,7 +52,7 @@ end subroutine build_package
 
 recursive subroutine build_target(model,target,linking)
     ! Compile Fortran source, called recursively on it dependents
-    !
+    !  
     type(fpm_model_t), intent(in) :: model
     type(build_target_t), intent(inout) :: target
     character(:), allocatable, intent(in) :: linking
@@ -89,10 +89,10 @@ recursive subroutine build_target(model,target,linking)
                  target%dependencies(i)%ptr%target_type ==  FPM_TARGET_OBJECT) then
 
             exe_obj => target%dependencies(i)%ptr
-
+                
             ! Construct object list for executable
             objs = " "//exe_obj%output_file
-
+                
             ! Include non-library object dependencies
             do j=1,size(exe_obj%dependencies)
 
@@ -107,7 +107,7 @@ recursive subroutine build_target(model,target,linking)
         end if
 
     end do
-
+    
     if (.not.exists(dirname(target%output_file))) then
         call mkdir(dirname(target%output_file))
     end if
