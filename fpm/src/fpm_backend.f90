@@ -42,13 +42,12 @@ subroutine build_package(model)
     do i=1,size(schedule_ptr)-1
 
         ! Build targets in schedule region i
-        !$OMP PARALLEL DO DEFAULT(SHARED)
+        !$omp parallel do default(shared)
         do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
 
             call build_target(model,queue(j)%ptr)
 
         end do
-        !$OMP END PARALLEL DO
 
     end do
     
@@ -56,7 +55,7 @@ end subroutine build_package
 
 
 !> Topologically sort a target for scheduling by 
-!>  recursing over it's dependencies.
+!>  recursing over its dependencies.
 !> 
 !> Checks disk-cached source hashes to determine if objects are
 !>  up-to-date. Up-to-date sources are tagged as skipped.
