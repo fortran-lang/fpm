@@ -8,7 +8,8 @@ use fpm_command_line, only: &
         fpm_install_settings, &
         fpm_update_settings, &
         get_command_line_settings
-use fpm, only: cmd_build, cmd_install, cmd_run
+use fpm, only: cmd_build, cmd_run
+use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
 use fpm_cmd_update, only : cmd_update
 

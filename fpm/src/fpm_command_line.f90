@@ -73,7 +73,12 @@ end type
 type, extends(fpm_run_settings)  :: fpm_test_settings
 end type
 
-type, extends(fpm_cmd_settings)  :: fpm_install_settings
+type, extends(fpm_build_settings) :: fpm_install_settings
+    character(len=:), allocatable :: prefix
+    character(len=:), allocatable :: bindir
+    character(len=:), allocatable :: libdir
+    character(len=:), allocatable :: includedir
+    logical :: no_rebuild
 end type
 
 !> Settings for interacting and updating with project dependencies
@@ -106,6 +111,7 @@ contains
         character(len=4096)           :: cmdarg
         integer                       :: i
         integer                       :: widest
+        type(fpm_install_settings), allocatable :: install_settings
 
         call set_help()
         ! text for --version switch,
@@ -293,12 +299,24 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('&
-            & --release F&
-            & --verbose F&
-            &', help_install, version_text)
+            call set_args('--release F --no-rebuild F --prefix " " &
+                & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
+                & --libdir "lib" --bindir "bin" --includedir "include"', &
+                help_install, version_text)
 
-            allocate(fpm_install_settings :: cmd_settings)
+            call check_build_vals()
+
+            allocate(install_settings)
+            install_settings = fpm_install_settings(&
+                build_name=val_build,&
+                compiler=val_compiler, &
+                no_rebuild=lget('no-rebuild'))
+            call get_char_arg(install_settings%prefix, 'prefix')
+            call get_char_arg(install_settings%libdir, 'libdir')
+            call get_char_arg(install_settings%bindir, 'bindir')
+            call get_char_arg(install_settings%includedir, 'includedir')
+            call move_alloc(install_settings, cmd_settings)
+
         case('list')
             call set_args('&
             & --list F&
@@ -893,10 +911,31 @@ contains
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
     '' ]
     help_install=[character(len=80) :: &
-    ' fpm(1) subcommand "install"                                           ', &
-    '                                                                       ', &
-    '<USAGE> fpm install NAME                                               ', &
+    'NAME', &
+    ' fpm-install(1) - install fpm projects', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm install [--release] [--no-rebuild] [--prefix DIR]', &
+    '             [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
+    '', &
+    'DESCRIPTION', &
+    ' Subcommand to install fpm projects.', &
+    '', &
+    'OPTIONS', &
+    ' --release         selects the optimized build instead of the debug build', &
+    ' --no-rebuild      do not rebuild project before installation', &
+    ' --prefix DIR      path to installation directory (requires write access)', &
+    ' --bindir DIR      subdirectory to place executables in', &
+    ' --libdir DIR      subdirectory to place libraries and archies in', &
+    ' --includedir DIR  subdirectory to place headers and module files in', &
     '' ]
     end subroutine set_help
+
+    subroutine get_char_arg(var, arg)
+      character(len=:), allocatable, intent(out) :: var
+      character(len=*), intent(in) :: arg
+      var = sget(arg)
+      if (len_trim(var) == 0) deallocate(var)
+    end subroutine get_char_arg
 
 end module fpm_command_line
