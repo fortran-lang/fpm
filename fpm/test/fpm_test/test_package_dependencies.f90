@@ -32,8 +32,10 @@ contains
           & new_unittest("refetch-git-rev", test_refetch_git_rev), &
           & new_unittest("refetch-git-broken", test_refetch_git_broken), &
           & new_unittest("refetch-policy", test_refetch_policy), &
-          & new_unittest("refetch-policy", test_nofetch_policy), &
-          & new_unittest("nofetch-git-rev", test_nofetch_git_rev) &
+          & new_unittest("nofetch-policy", test_nofetch_policy), &
+          & new_unittest("nofetch-git-rev", test_nofetch_git_rev), &
+          & new_unittest("check-update-cache", test_check_update_deps), &
+          & new_unittest("check-missing-cache", test_check_missing_deps, should_fail=.true.) &
           & ]
 
     end subroutine collect_package_dependencies
@@ -226,6 +228,41 @@ contains
             "Matching revision are not updated")
 
     end subroutine test_nofetch_git_rev
+
+
+    subroutine test_check_update_deps(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_table), pointer :: ptr
+        type(dependency_config_t) :: dependency
+        type(dependency_walker_t) :: config
+
+        table = toml_table()
+        call add_table(table, dep1, ptr)
+        config = new_dependency_walker(prefix="build", update=[dep1])
+        call check_update_deps(config, table, error)
+
+    end subroutine test_check_update_deps
+
+
+    subroutine test_check_missing_deps(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_table), pointer :: ptr
+        type(dependency_config_t) :: dependency
+        type(dependency_walker_t) :: config
+
+        table = toml_table()
+        config = new_dependency_walker(prefix="build", update=[dep1])
+        call check_update_deps(config, table, error)
+
+    end subroutine test_check_missing_deps
 
 
 end module test_package_dependencies

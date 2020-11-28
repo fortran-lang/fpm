@@ -11,7 +11,7 @@ module fpm_cmd_update
   use fpm_toml, only : toml_table, toml_parse, toml_serializer, toml_error, &
     toml_key, add_table, set_value, get_value
   use fpm_dependency, only : update_dep_lock, dependency_walker_t, &
-    new_dependency_walker
+    new_dependency_walker, check_update_deps
   implicit none
   private
   public :: cmd_update
@@ -24,6 +24,7 @@ contains
     !> Representation of the command line options for this command
     type(fpm_update_settings), intent(in) :: settings
 
+    type(toml_table), allocatable :: table
     type(package_config_t) :: package
     type(dependency_walker_t) :: config
     type(error_t), allocatable :: error
@@ -48,10 +49,52 @@ contains
           verbosity=merge(2, 1, settings%verbose))
     end if
 
-    call update_dep_lock(config, package, error)
+    call update_dep_lock(config, table, package, error)
     call handle_error(error)
 
+    call check_update_deps(config, table, error)
+    call handle_error(error)
+
+    call report_dependencies(config, table)
+
   end subroutine cmd_update
+
+  subroutine report_dependencies(config, table)
+    !> Instance of the dependency handler
+    class(dependency_walker_t), intent(in) :: config
+    !> Table to collect all dependencies
+    type(toml_table), intent(inout) :: table
+
+    integer :: ii, unused
+    character(len=:), allocatable :: version, path
+    type(toml_key), allocatable :: list(:)
+    type(toml_table), pointer :: dep
+    logical :: required
+
+    call table%get_keys(list)
+
+    unused = 0
+    do ii = 1, size(list)
+      call get_value(table, list(ii)%key, dep)
+      call get_value(dep, "required", required, .false.)
+      call get_value(dep, "version", version)
+      call get_value(dep, "path", path)
+      if (.not.required) unused = unused + 1
+      if (config%verbosity > 1) then
+        write(config%unit, '("#", *(1x, a:))', advance='no') &
+            list(ii)%key, "version", version, "at", path
+        if (.not.required) then
+          write(config%unit, '(*(1x, a:))', advance='no') "(unused)"
+        end if
+        write(config%unit, '(a))')
+      end if
+    end do
+    if (unused > 0 .and. config%verbosity > 0) then
+      write(config%unit, '("#", 1x, i0, *(1x, a:))') &
+        unused, "unused dependencies present"
+    end if
+
+  end subroutine report_dependencies
 
   !> Error handling for this command
   subroutine handle_error(error)
