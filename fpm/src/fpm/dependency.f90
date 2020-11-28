@@ -99,6 +99,9 @@ module fpm_dependency
     integer :: verbosity = 1
     !> Dependencies to update
     type(update_name), allocatable :: update(:)
+  contains
+    !> Determine whether or not a refetch is required
+    procedure :: require_refetch
   end type dependency_walker_t
 
 contains
@@ -349,7 +352,7 @@ contains
       manifest = join_path(project_dir, fpm_manifest_file)
       fetch = .not.exists(manifest)
       if (check_require_refetch(config%policy)) then
-        fetch = fetch .or. require_refetch(config, table, dependency)
+        fetch = fetch .or. config%require_refetch(table, dependency)
       end if
       if (fetch) then
         call dependency%git%checkout(project_dir, error)
@@ -455,6 +458,10 @@ contains
 
     ! If the dependency is not registered yet, we have to fetch it
     fetch = .not.table%has_key(dependency%name)
+    if (fetch .and. config%verbosity > 1) then
+      write(config%unit, '("#", *(1x, a))') &
+        "Fetch:", dependency%name, "(uncached)"
+    end if
     if (fetch) return
 
     call get_value(table, dependency%name, ptr)

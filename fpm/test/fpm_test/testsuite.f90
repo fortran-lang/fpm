@@ -1,13 +1,40 @@
 !> Define some procedures to automate collecting and launching of tests
 module testsuite
-    use fpm_error, only : error_t, test_failed => fatal_error
+    use fpm_error, only : error_t, fatal_error
     implicit none
     private
 
+    !> Single precision real numbers
+    integer, parameter :: sp = selected_real_kind(6)
+    !> Double precision real numbers
+    integer, parameter :: dp = selected_real_kind(15)
+    !> Char length for integers
+    integer, parameter :: i1 = selected_int_kind(2)
+    !> Short length for integers
+    integer, parameter :: i2 = selected_int_kind(4)
+    !> Length of default integers
+    integer, parameter :: i4 = selected_int_kind(9)
+    !> Long length for integers
+    integer, parameter :: i8 = selected_int_kind(18)
+
     public :: run_testsuite, run_selected, new_unittest, new_testsuite, test_failed
     public :: select_test, select_suite
-    public :: check_string
+    public :: check, check_string
     public :: unittest_t, testsuite_t, error_t
+
+
+   interface check
+      module procedure :: check_stat
+      module procedure :: check_logical
+      module procedure :: check_float_sp
+      module procedure :: check_float_dp
+      module procedure :: check_int_i1
+      module procedure :: check_int_i2
+      module procedure :: check_int_i4
+      module procedure :: check_int_i8
+      module procedure :: check_bool
+      module procedure :: check_string
+   end interface check
 
 
     abstract interface
@@ -255,32 +282,363 @@ contains
     end function new_testsuite
 
 
-    !> Check a deferred length character variable against a reference value
-    subroutine check_string(error, actual, expected, name)
+    subroutine check_stat(error, stat, message, more)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        !> Actual string value
+        !> Status of operation
+        integer, intent(in) :: stat
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        if (stat /= 0) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Non-zero exit code encountered", more)
+            end if
+        end if
+
+    end subroutine check_stat
+
+
+    subroutine check_logical(error, expression, message, more)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Result of logical operator
+        logical, intent(in) :: expression
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        if (.not.expression) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Condition not fullfilled", more)
+            end if
+        end if
+
+    end subroutine check_logical
+
+
+    subroutine check_float_dp(error, actual, expected, message, more, thr, rel)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Found floating point value
+        real(dp), intent(in) :: actual
+
+        !> Expected floating point value
+        real(dp), intent(in) :: expected
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        !> Allowed threshold for matching floating point values
+        real(dp), intent(in), optional :: thr
+
+        !> Check for relative errors instead
+        logical, intent(in), optional :: rel
+
+        logical :: relative
+        real(dp) :: diff, threshold
+
+        if (present(thr)) then
+            threshold = thr
+        else
+            threshold = epsilon(expected)
+        end if
+
+        if (present(rel)) then
+            relative = rel
+        else
+            relative = .false.
+        end if
+
+        if (relative) then
+            diff = abs(actual - expected) / expected
+        else
+            diff = abs(actual - expected)
+        end if
+
+        if (diff > threshold) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Floating point value missmatch", more)
+            end if
+        end if
+
+    end subroutine check_float_dp
+
+
+    subroutine check_float_sp(error, actual, expected, message, more, thr, rel)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Found floating point value
+        real(sp), intent(in) :: actual
+
+        !> Expected floating point value
+        real(sp), intent(in) :: expected
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        !> Allowed threshold for matching floating point values
+        real(sp), intent(in), optional :: thr
+
+        !> Check for relative errors instead
+        logical, intent(in), optional :: rel
+
+        logical :: relative
+        real(sp) :: diff, threshold
+
+        if (present(thr)) then
+            threshold = thr
+        else
+            threshold = epsilon(expected)
+        end if
+
+        if (present(rel)) then
+            relative = rel
+        else
+            relative = .false.
+        end if
+
+        if (relative) then
+            diff = abs(actual - expected) / expected
+        else
+            diff = abs(actual - expected)
+        end if
+
+        if (diff > threshold) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Floating point value missmatch", more)
+            end if
+        end if
+
+    end subroutine check_float_sp
+
+
+    subroutine check_int_i1(error, actual, expected, message, more)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Found integer value
+        integer(i1), intent(in) :: actual
+
+        !> Expected integer value
+        integer(i1), intent(in) :: expected
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        if (expected /= actual) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Integer value missmatch", more)
+            end if
+        end if
+
+    end subroutine check_int_i1
+
+
+    subroutine check_int_i2(error, actual, expected, message, more)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Found integer value
+        integer(i2), intent(in) :: actual
+
+        !> Expected integer value
+        integer(i2), intent(in) :: expected
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        if (expected /= actual) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Integer value missmatch", more)
+            end if
+        end if
+
+    end subroutine check_int_i2
+
+
+    subroutine check_int_i4(error, actual, expected, message, more)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Found integer value
+        integer(i4), intent(in) :: actual
+
+        !> Expected integer value
+        integer(i4), intent(in) :: expected
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        if (expected /= actual) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Integer value missmatch", more)
+            end if
+        end if
+
+    end subroutine check_int_i4
+
+
+    subroutine check_int_i8(error, actual, expected, message, more)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Found integer value
+        integer(i8), intent(in) :: actual
+
+        !> Expected integer value
+        integer(i8), intent(in) :: expected
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        if (expected /= actual) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Integer value missmatch", more)
+            end if
+        end if
+
+    end subroutine check_int_i8
+
+
+    subroutine check_bool(error, actual, expected, message, more)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Found boolean value
+        logical, intent(in) :: actual
+
+        !> Expected boolean value
+        logical, intent(in) :: expected
+
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        if (expected .neqv. actual) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Logical value missmatch", more)
+            end if
+        end if
+
+    end subroutine check_bool
+
+
+    subroutine check_string(error, actual, expected, message, more)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Found boolean value
         character(len=:), allocatable, intent(in) :: actual
 
-        !> Expected string value
+        !> Expected boolean value
         character(len=*), intent(in) :: expected
 
-        !> Name of the string to check
-        character(len=*), intent(in) :: name
+        !> A detailed message describing the error
+        character(len=*), intent(in), optional :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
 
         if (.not.allocated(actual)) then
-            call test_failed(error, name//" is not set correctly")
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Character variable not allocated", more)
+            end if
             return
         end if
 
-        if (actual /= expected) then
-            call test_failed(error, name//" is "//actual// &
-                & " but should be "//expected)
+        if (expected /= actual) then
+            if (present(message)) then
+                call test_failed(error, message, more)
+            else
+                call test_failed(error, "Character value missmatch", more)
+            end if
         end if
 
     end subroutine check_string
+
+
+    subroutine test_failed(error, message, more)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> A detailed message describing the error
+        character(len=*), intent(in) :: message
+
+        !> Another line of error message
+        character(len=*), intent(in), optional :: more
+
+        allocate(error)
+
+        if (present(more)) then
+            error%message = message // new_line('a') // more
+        else
+            error%message = message
+        end if
+
+    end subroutine test_failed
 
 
 end module testsuite
