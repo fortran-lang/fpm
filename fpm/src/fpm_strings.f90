@@ -44,7 +44,7 @@ function f_string(c_string)
     do i=1,n
       f_string(i:i) = c_string(i)
     end do
-
+  
 end function f_string
 
 
@@ -100,7 +100,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
     ! Author: John S. Urban
     ! License: Public Domain
 
-
+    
     !  given a line of structure " par1 par2 par3 ... parn " store each par(n) into a separate variable in array.
     !    o by default adjacent delimiters in the input string do not create an empty string in the output array
     !    o no quoting of delimiters is supported
@@ -109,7 +109,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
     character(len=*),optional,intent(in)     :: order       ! order of output array sequential|[reverse|right]
     character(len=*),optional,intent(in)     :: nulls       ! return strings composed of delimiters or not ignore|return|ignoreend
     character(len=:),allocatable,intent(out) :: array(:)    ! output array of tokens
-
+    
     integer                       :: n                      ! max number of strings INPUT_LINE could split into if all delimiter
     integer,allocatable           :: ibegin(:)              ! positions in input string where tokens start
     integer,allocatable           :: iterm(:)               ! positions in input string where tokens end
@@ -126,7 +126,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
     integer                       :: inotnull               ! count strings not composed of delimiters
     integer                       :: ireturn                ! number of tokens returned
     integer                       :: imax                   ! length of longest token
-
+    
     ! decide on value for optional DELIMITERS parameter
     if (present(delimiters)) then                                     ! optional delimiter list was present
         if(delimiters.ne.'')then                                       ! if DELIMITERS was specified and not null use it

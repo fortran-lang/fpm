@@ -115,10 +115,10 @@ contains
         call new_build_config(self%build, child, error)
 
         if (allocated(error)) return
-
+        
         call get_value(table, "version", version, "0")
         call new_version(self%version, version, error)
-
+        
         if (allocated(error)) return
 
         call get_value(table, "dependencies", child, requested=.false.)

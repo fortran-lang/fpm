@@ -138,7 +138,7 @@ contains
 
         !> Error
         type(error_t), allocatable, intent(out) :: error
-
+        
         !> git object ref
         character(:), allocatable :: object
 
@@ -173,7 +173,7 @@ contains
             return
         end if
 
-    end subroutine checkout
+    end subroutine checkout 
 
 
     !> Show information on git target

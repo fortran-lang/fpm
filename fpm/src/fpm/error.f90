@@ -82,9 +82,9 @@ contains
 
         allocate(error)
         error%message = 'Parse error: '//message//new_line('a')
-
+        
         error%message = error%message//file_name
-
+        
         if (present(line_num)) then
 
             write(temp_string,'(I0)') line_num
@@ -115,9 +115,9 @@ contains
 
                     error%message = error%message//new_line('a')
                     error%message = error%message//'   | '//repeat(' ',line_col-1)//'^'
-
+                
                 end if
-
+                
             end if
 
         end if
