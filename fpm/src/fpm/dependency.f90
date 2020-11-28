@@ -104,14 +104,14 @@ module fpm_dependency
 contains
 
   !> Constructor for dependency walker
-  pure function new_dependency_walker(prefix, update, force_update, clean, &
+  pure function new_dependency_walker(prefix, update, update_all, clean, &
       verbosity) result(self)
     !> Prefix for storing dependencies
     character(len=*), intent(in) :: prefix
     !> Dependencies to update
     character(len=*), intent(in), optional :: update(:)
     !> Update all existing packages
-    logical, intent(in), optional :: force_update
+    logical, intent(in), optional :: update_all
     !> Rerender all dependencies
     logical, intent(in), optional :: clean
     !> Print level while walking the dependency tree
@@ -131,8 +131,8 @@ contains
       allocate(self%update(0))
     end if
     self%policy = merge(update_policy%update, update_policy%fetch, present(update))
-    if (present(force_update)) then
-      if (force_update) self%policy = update_policy%force_update
+    if (present(update_all)) then
+      if (update_all) self%policy = update_policy%force_update
     end if
     if (present(clean)) then
       self%clean = clean
@@ -183,7 +183,69 @@ contains
     call table%accept(ser)
     close(unit)
 
+    call check_update_deps(config, table, error)
+    if (allocated(error)) return
+
+    call report_dependencies(config, table)
+
   end subroutine update_dep_lock
+
+  subroutine report_dependencies(config, table)
+    !> Instance of the dependency handler
+    class(dependency_walker_t), intent(in) :: config
+    !> Table to collect all dependencies
+    type(toml_table), intent(inout) :: table
+
+    integer :: ii, unused
+    character(len=:), allocatable :: version, path
+    type(toml_key), allocatable :: list(:)
+    type(toml_table), pointer :: dep
+    logical :: required
+
+    call table%get_keys(list)
+
+    unused = 0
+    do ii = 1, size(list)
+      call get_value(table, list(ii)%key, dep)
+      call get_value(dep, "required", required, .false.)
+      call get_value(dep, "version", version)
+      call get_value(dep, "path", path)
+      if (.not.required) unused = unused + 1
+      if (config%verbosity > 1) then
+        write(config%unit, '("#", *(1x, a:))', advance='no') &
+            list(ii)%key, "version", version, "at", path
+        if (.not.required) then
+          write(config%unit, '(*(1x, a:))', advance='no') "(unused)"
+        end if
+        write(config%unit, '(a))')
+      end if
+    end do
+    if (unused > 0 .and. config%verbosity > 0) then
+      write(config%unit, '("#", 1x, i0, *(1x, a:))') &
+        unused, "unused dependencies present"
+    end if
+
+  end subroutine report_dependencies
+
+  subroutine check_update_deps(config, table, error)
+    !> Instance of the dependency handler
+    class(dependency_walker_t), intent(in) :: config
+    !> Table to collect all dependencies
+    type(toml_table), intent(inout) :: table
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ii
+
+    do ii = 1, size(config%update)
+      if (.not.table%has_key(config%update(ii)%dep)) then
+        call fatal_error(error, "Dependency '"//config%update(ii)%dep//&
+            "' is not a dependency of this project and cannot be updated")
+        exit
+      end if
+    end do
+
+  end subroutine check_update_deps
 
   !> Update dependencies for root project
   subroutine get_project_deps(config, table, package, root, error)

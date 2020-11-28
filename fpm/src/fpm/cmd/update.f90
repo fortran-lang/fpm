@@ -36,12 +36,17 @@ contains
       call mkdir(fpm_build_dir)
     end if
 
-    config = new_dependency_walker(&
-        prefix=join_path(fpm_build_dir, fpm_dependency_dir), &
-        update=settings%name, &
-        clean=settings%clean, &
-        force_update=settings%force_update, &
-        verbosity=2)
+    if (settings%fetch_only) then
+      config = new_dependency_walker(&
+          prefix=join_path(fpm_build_dir, fpm_dependency_dir), &
+          verbosity=merge(2, 1, settings%verbose))
+    else
+      config = new_dependency_walker(&
+          prefix=join_path(fpm_build_dir, fpm_dependency_dir), &
+          update=settings%name, &
+          update_all=size(settings%name) == 0, &
+          verbosity=merge(2, 1, settings%verbose))
+    end if
 
     call update_dep_lock(config, package, error)
     call handle_error(error)

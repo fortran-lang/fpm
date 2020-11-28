@@ -51,12 +51,9 @@ end type
 
 !> Settings for interacting and updating with project dependencies
 type, extends(fpm_cmd_settings)  :: fpm_update_settings
-    !> Dependencies to be updated
     character(len=ibug),allocatable :: name(:)
-    !> Force updates of all packages
-    logical :: force_update = .false.
-    !> Rerender all dependencies
-    logical :: clean = .false.
+    logical :: fetch_only
+    logical :: verbose
 end type
 
 character(len=:),allocatable :: name
@@ -70,7 +67,7 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',     'new',   'build',  'run',     &
-&  'test',  'runner',  'list',  'help',   'version'  ]
+&  'test',  'runner',  'update','list',   'help',   'version'  ]
 
 character(len=:), allocatable :: charbug
 contains
@@ -246,7 +243,8 @@ contains
             & release=lget('release'), args=remaining ,runner=charbug )
 
         case('update')
-            call set_args('--all F --clean F', help_update, version_text)
+            call set_args('--fetch-only F --verbose F', &
+                help_update, version_text)
 
             if( size(unnamed) .gt. 1 )then
                 names=unnamed(2:)
@@ -256,7 +254,7 @@ contains
 
             allocate(fpm_update_settings :: cmd_settings)
             cmd_settings=fpm_update_settings(&
-              name=names, force_update=lget('all'), clean=lget('clean'))
+                name=names, fetch_only=lget('fetch-only'), verbose=lget('verbose'))
 
         case default
 
@@ -716,13 +714,15 @@ contains
     ' update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
-    ' fpm update [--list] [NAME(s)]', &
+    ' fpm update [--fetch-only] [--list] [NAME(s)]', &
     '', &
     'DESCRIPTION', &
-    ' Manage and update project dependencies', &
+    ' Manage and update project dependencies. If no dependency names are', &
+    ' provided all the dependencies are updated automatically.', &
     '', &
     'OPTIONS', &
-    ' --all      update all dependencies', &
+    ' --fetch-only  Only fetch dependencies, do not update existing projects', &
+    ' --verbose     Show additional printout', &
     '', &
     'SEE ALSO', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
