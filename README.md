@@ -24,7 +24,44 @@ __Note:__ On Linux and MacOS, you will need to enable executable permission befo
 
 _e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
 
-### Build from source
+For other platforms and architectures have a look at the [bootstrapping instructions](#bootstrapping-fpm).
+
+### Creating a new project
+
+Creating a new *fpm* project is as simple as running the command
+`fpm new project_name`. This will create a new folder in your current directory
+with the following contents and initialized as a git repository.
+
+* `fpm.toml` – with your project’s name and some default standard meta-data
+* `README.md` – with your project’s name
+* `.gitignore`
+* `src/project_name.f90` – with a simple hello world subroutine
+* `app/main.f90` (if `--with-executable` flag used) – a program that calls the subroutine
+* `test/main.f90` (if `--with-test` flag used) – an empty test program
+
+### Building your Fortran project with fpm
+
+*fpm* understands the basic commands:
+
+* `fpm build` – build your library, executables and tests
+* `fpm run` – run executables
+* `fpm test` – run tests
+
+The command `fpm run` can optionally accept the name of the specific executable
+to run, as can `fpm test`; like `fpm run specific_executable`. Command line
+arguments can also be passed to the executable(s) or test(s) with the option
+`--args "some arguments"`.
+
+See additional instructions in the [Packaging guide](PACKAGING.md) or
+the [manifest reference](manifest-reference.md).
+
+<details>
+<summary><b>Bootstrapping instructions</b></summary>
+
+### Bootstrapping instructions
+
+This guide explains the process of building *fpm* on a platform for the first time.
+If your platform and architecture are already supported, download the binary from the [release page](https://github.com/fortran-lang/fpm/releases) instead.
 
 #### Install Haskell
 
@@ -64,31 +101,26 @@ $ stack install
 
 On Linux, the above command installs `fpm` to `${HOME}/.local/bin/`.
 
-### Creating a new project
+Now you can build the Fortran *fpm* version with
 
-Creating a new *fpm* project is as simple as running the command
-`fpm new project_name`. This will create a new folder in your current directory
-with the following contents and initialized as a git repository.
+```bash
+$ cd fpm/
+$ fpm build
+```
 
-* `fpm.toml` – with your project’s name and some default standard meta-data
-* `README.md` – with your project’s name
-* `.gitignore`
-* `src/project_name.f90` – with a simple hello world subroutine
-* `app/main.f90` (if `--with-executable` flag used) – a program that calls the subroutine
-* `test/main.f90` (if `--with-test` flag used) – an empty test program
+Test that everything is working as expected
 
-### Building your Fortran project with fpm
+```bash
+$ fpm test
+```
 
-*fpm* understands the basic commands:
+Finally, install the Fortran *fpm* version with
 
-* `fpm build` – build your library, executables and tests
-* `fpm run` – run executables
-* `fpm test` – run tests
+```bash
+$ fpm run --runner cp -- ~/.local/bin
+```
 
-The command `fpm run` can optionally accept the name of the specific executable
-to run, as can `fpm test`; like `fpm run specific_executable`. Command line
-arguments can also be passed to the executable(s) or test(s) with the option
-`--args "some arguments"`.
+Or choose another location if you do not want to overwrite the bootstrapping version.
+From now on you can rebuild *fpm* with your Fortran *fpm* version.
 
-See additional instructions in the [Packaging guide](PACKAGING.md) or
-the [manifest reference](manifest-reference.md).
+</details>
