@@ -7,7 +7,7 @@ module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, os_is_unix
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : join_path, mkdir, exists
+  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path
   implicit none
   private
 
@@ -71,7 +71,8 @@ module fpm_installer
 contains
 
   !> Create a new instance of an installer
-  subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity)
+  subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, &
+          copy)
     !> Instance of the installer
     type(installer_t), intent(out) :: self
     !> Path to installation directory
@@ -84,13 +85,19 @@ contains
     character(len=*), intent(in), optional :: includedir
     !> Verbosity of the installer
     integer, intent(in), optional :: verbosity
+    !> Copy command
+    character(len=*), intent(in), optional :: copy
 
     self%os = get_os_type()
 
-    if (os_is_unix(self%os)) then
-      self%copy = default_copy_unix
+    if (present(copy)) then
+      self%copy = copy
     else
-      self%copy = default_copy_win
+      if (os_is_unix(self%os)) then
+        self%copy = default_copy_unix
+      else
+        self%copy = default_copy_win
+      end if
     end if
 
     if (present(includedir)) then
@@ -189,6 +196,11 @@ contains
     character(len=:), allocatable :: install_dest
 
     install_dest = join_path(self%prefix, destination)
+    if (os_is_unix(self%os)) then
+      install_dest = unix_path(install_dest)
+    else
+      install_dest = windows_path(install_dest)
+    end if
     call self%make_dir(install_dest, error)
     if (allocated(error)) return
 

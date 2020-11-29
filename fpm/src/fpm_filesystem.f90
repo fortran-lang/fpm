@@ -6,7 +6,7 @@ module fpm_filesystem
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files,&
-            mkdir, exists, get_temp_filename, windows_path, getline, delete_file
+            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
