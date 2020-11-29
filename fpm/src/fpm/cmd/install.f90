@@ -38,7 +38,8 @@ contains
 
     call new_installer(installer, prefix=settings%prefix, &
       bindir=settings%bindir, libdir=settings%libdir, &
-      includedir=settings%includedir)
+      includedir=settings%includedir, &
+      verbosity=merge(2, 1, settings%verbose))
 
     if (allocated(package%library) .and. package%install%library) then
       dir = join_path(model%output_directory, model%package_name)

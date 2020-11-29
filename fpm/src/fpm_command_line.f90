@@ -299,7 +299,7 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('--release F --no-rebuild F --prefix " " &
+            call set_args('--release F --no-rebuild F --verbose F --prefix " " &
                 & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
                 & --libdir "lib" --bindir "bin" --includedir "include"', &
                 help_install, version_text)
@@ -310,7 +310,8 @@ contains
             install_settings = fpm_install_settings(&
                 build_name=val_build,&
                 compiler=val_compiler, &
-                no_rebuild=lget('no-rebuild'))
+                no_rebuild=lget('no-rebuild'), &
+                verbose=lget('verbose'))
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
             call get_char_arg(install_settings%bindir, 'bindir')
@@ -917,6 +918,7 @@ contains
     'SYNOPSIS', &
     ' fpm install [--release] [--no-rebuild] [--prefix DIR]', &
     '             [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
+    '             [--verbose]', &
     '', &
     'DESCRIPTION', &
     ' Subcommand to install fpm projects.', &
@@ -928,6 +930,7 @@ contains
     ' --bindir DIR      subdirectory to place executables in', &
     ' --libdir DIR      subdirectory to place libraries and archies in', &
     ' --includedir DIR  subdirectory to place headers and module files in', &
+    ' --verbose         print more information', &
     '' ]
     end subroutine set_help
 

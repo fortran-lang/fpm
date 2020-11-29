@@ -1,3 +1,8 @@
+!> Implementation of an installer object.
+!>
+!> The installer provides a way to install objects to their respective directories
+!> in the installation prefix, a generic install command allows to install
+!> to any directory within the prefix.
 module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, os_is_unix
@@ -9,158 +14,229 @@ module fpm_installer
   public :: installer_t, new_installer
 
 
+  !> Declaration of the installer type
   type :: installer_t
+    !> Path to installation directory
     character(len=:), allocatable :: prefix
+    !> Binary dir relative to the installation prefix
     character(len=:), allocatable :: bindir
+    !> Library directory relative to the installation prefix
     character(len=:), allocatable :: libdir
+    !> Include directory relative to the installation prefix
     character(len=:), allocatable :: includedir
+    !> Output unit for informative printout
     integer :: unit = output_unit
+    !> Verbosity of the installer
     integer :: verbosity = 1
+    !> Command to copy objects into the installation prefix
     character(len=:), allocatable :: copy
     !> Cached operating system
     integer :: os
   contains
+    !> Install an executable in its correct subdirectory
     procedure :: install_executable
+    !> Install a library in its correct subdirectory
     procedure :: install_library
+    !> Install a header/module in its correct subdirectory
     procedure :: install_header
-    procedure :: install_source
+    !> Install a generic file into a subdirectory in the installation prefix
     procedure :: install
+    !> Run an installation command, type-bound for unit testing purposes
     procedure :: run
+    !> Create a new directory in the prefix, type-bound for unit testing purposes
     procedure :: make_dir
   end type installer_t
 
+  !> Default name of the binary subdirectory
   character(len=*), parameter :: default_bindir = "bin"
+
+  !> Default name of the library subdirectory
   character(len=*), parameter :: default_libdir = "lib"
+
+  !> Default name of the include subdirectory
   character(len=*), parameter :: default_includedir = "include"
+
+  !> Default name of the installation prefix on Unix platforms
   character(len=*), parameter :: default_prefix_unix = "/usr/local/bin"
+
+  !> Default name of the installation prefix on Windows platforms
   character(len=*), parameter :: default_prefix_win = "C:\"
-  character(len=*), parameter :: default_copy_unix = "cp -v"
+
+  !> Copy command on Unix platforms
+  character(len=*), parameter :: default_copy_unix = "cp"
+
+  !> Copy command on Windows platforms
   character(len=*), parameter :: default_copy_win = "copy"
 
 contains
 
-   subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity)
-     type(installer_t), intent(out) :: self
-     character(len=*), intent(in), optional :: prefix
-     character(len=*), intent(in), optional :: bindir
-     character(len=*), intent(in), optional :: libdir
-     character(len=*), intent(in), optional :: includedir
-     integer, intent(in), optional :: verbosity
+  !> Create a new instance of an installer
+  subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity)
+    !> Instance of the installer
+    type(installer_t), intent(out) :: self
+    !> Path to installation directory
+    character(len=*), intent(in), optional :: prefix
+    !> Binary dir relative to the installation prefix
+    character(len=*), intent(in), optional :: bindir
+    !> Library directory relative to the installation prefix
+    character(len=*), intent(in), optional :: libdir
+    !> Include directory relative to the installation prefix
+    character(len=*), intent(in), optional :: includedir
+    !> Verbosity of the installer
+    integer, intent(in), optional :: verbosity
 
-     self%os = get_os_type()
+    self%os = get_os_type()
 
-     if (os_is_unix(self%os)) then
-       self%copy = default_copy_unix
-     else
-       self%copy = default_copy_win
-     end if
+    if (os_is_unix(self%os)) then
+      self%copy = default_copy_unix
+    else
+      self%copy = default_copy_win
+    end if
 
-     if (present(includedir)) then
-       self%includedir = includedir
-     else
-       self%includedir = default_includedir
-     end if
+    if (present(includedir)) then
+      self%includedir = includedir
+    else
+      self%includedir = default_includedir
+    end if
 
-     if (present(prefix)) then
-       self%prefix = prefix
-     else
-       if (os_is_unix(self%os)) then
-         self%prefix = default_prefix_unix
-       else
-         self%prefix = default_prefix_win
+    if (present(prefix)) then
+      self%prefix = prefix
+    else
+      if (os_is_unix(self%os)) then
+        self%prefix = default_prefix_unix
+      else
+        self%prefix = default_prefix_win
+      end if
+    end if
+
+    if (present(bindir)) then
+      self%bindir = bindir
+    else
+      self%bindir = default_bindir
+    end if
+
+    if (present(libdir)) then
+      self%libdir = libdir
+    else
+      self%libdir = default_libdir
+    end if
+
+    if (present(verbosity)) then
+      self%verbosity = verbosity
+    else
+      self%verbosity = 1
+    end if
+
+  end subroutine new_installer
+
+  !> Install an executable in its correct subdirectory
+  subroutine install_executable(self, executable, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the executable
+    character(len=*), intent(in) :: executable
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call self%install(executable, self%bindir, error)
+  end subroutine install_executable
+
+  !> Install a library in its correct subdirectory
+  subroutine install_library(self, library, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the library
+    character(len=*), intent(in) :: library
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call self%install(library, self%libdir, error)
+  end subroutine install_library
+
+  !> Install a header/module in its correct subdirectory
+  subroutine install_header(self, header, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the header
+    character(len=*), intent(in) :: header
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call self%install(header, self%includedir, error)
+  end subroutine install_header
+
+  !> Install a generic file into a subdirectory in the installation prefix
+  subroutine install(self, source, destination, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Path to the original file
+    character(len=*), intent(in) :: source
+    !> Path to the destination inside the prefix
+    character(len=*), intent(in) :: destination
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    character(len=:), allocatable :: install_dest
+
+    install_dest = join_path(self%prefix, destination)
+    call self%make_dir(install_dest, error)
+    if (allocated(error)) return
+
+    if (self%verbosity > 0) then
+      if (exists(install_dest)) then
+        write(self%unit, '("# Update:", 1x, a, 1x, "->", 1x, a)') &
+          source, install_dest
+      else
+        write(self%unit, '("# Install:", 1x, a, 1x, "->", 1x, a)') &
+          source, install_dest
+      end if
+    end if
+
+    if (os_is_unix(self%os)) then
+      call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
+    else
+      call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
+    end if
+    if (allocated(error)) return
+
+  end subroutine install
+
+  !> Create a new directory in the prefix
+  subroutine make_dir(self, dir, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Directory to be created
+    character(len=*), intent(in) :: dir
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    if (.not.exists(dir)) then
+       if (self%verbosity > 1) then
+          write(self%unit, '("# Dir:", 1x, a)') dir
        end if
-     end if
+       call mkdir(dir)
+    end if
+  end subroutine make_dir
 
-     if (present(bindir)) then
-       self%bindir = bindir
-     else
-       self%bindir = default_bindir
-     end if
+  !> Run an installation command
+  subroutine run(self, command, error)
+    !> Instance of the installer
+    class(installer_t), intent(inout) :: self
+    !> Command to be launched
+    character(len=*), intent(in) :: command
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+    integer :: stat
 
-     if (present(libdir)) then
-       self%libdir = libdir
-     else
-       self%libdir = default_libdir
-     end if
+    if (self%verbosity > 1) then
+      write(self%unit, '("# Run:", 1x, a)') command
+    end if
+    call execute_command_line(command, exitstat=stat)
 
-     if (present(verbosity)) then
-       self%verbosity = verbosity
-     else
-       self%verbosity = 1
-     end if
-
-   end subroutine new_installer
-
-   subroutine install_executable(self, executable, error)
-     class(installer_t), intent(inout) :: self
-     character(len=*), intent(in) :: executable
-     type(error_t), allocatable, intent(out) :: error
-
-     call self%install(executable, self%bindir, error)
-   end subroutine install_executable
-
-   subroutine install_library(self, library, error)
-     class(installer_t), intent(inout) :: self
-     character(len=*), intent(in) :: library
-     type(error_t), allocatable, intent(out) :: error
-
-     call self%install(library, self%libdir, error)
-   end subroutine install_library
-
-   subroutine install_header(self, header, error)
-     class(installer_t), intent(inout) :: self
-     character(len=*), intent(in) :: header
-     type(error_t), allocatable, intent(out) :: error
-
-     call self%install(header, self%includedir, error)
-   end subroutine install_header
-
-   subroutine install_source(self, source, error)
-     class(installer_t), intent(inout) :: self
-     character(len=*), intent(in) :: source
-     type(error_t), allocatable, intent(out) :: error
-   end subroutine install_source
-
-   subroutine install(self, source, destination, error)
-     class(installer_t), intent(inout) :: self
-     character(len=*), intent(in) :: source
-     character(len=*), intent(in) :: destination
-     type(error_t), allocatable, intent(out) :: error
-
-     character(len=:), allocatable :: install_dest
-
-     install_dest = join_path(self%prefix, destination)
-     call self%make_dir(install_dest, error)
-     if (allocated(error)) return
-
-     if (os_is_unix(self%os)) then
-       call self%run(self%copy//" "//source//" "//install_dest, error)
-     else
-       call self%run(self%copy//" "//source//" "//install_dest, error)
-     end if
-     if (allocated(error)) return
-
-   end subroutine install
-
-   subroutine make_dir(self, dir, error)
-     class(installer_t), intent(inout) :: self
-     character(len=*), intent(in) :: dir
-     type(error_t), allocatable, intent(out) :: error
-     if (.not.exists(dir)) call mkdir(dir)
-   end subroutine make_dir
-
-   subroutine run(self, command, error)
-     class(installer_t), intent(inout) :: self
-     character(len=*), intent(in) :: command
-     type(error_t), allocatable, intent(out) :: error
-     integer :: stat
-
-     call execute_command_line(command, exitstat=stat)
-
-     if (stat /= 0) then
-       call fatal_error(error, "Failed in command: '"//command//"'")
-       return
-     end if
-   end subroutine run
+    if (stat /= 0) then
+      call fatal_error(error, "Failed in command: '"//command//"'")
+      return
+    end if
+  end subroutine run
 
 end module fpm_installer

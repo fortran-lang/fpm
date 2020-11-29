@@ -57,7 +57,10 @@ contains
             & new_unittest("link-array", test_link_array), &
             & new_unittest("link-error", test_invalid_link, should_fail=.true.), &
             & new_unittest("example-simple", test_example_simple), &
-            & new_unittest("example-empty", test_example_empty, should_fail=.true.)]
+            & new_unittest("example-empty", test_example_empty, should_fail=.true.), &
+            & new_unittest("install-library", test_install_library), &
+            & new_unittest("install-empty", test_install_empty), &
+            & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.)]
 
     end subroutine collect_manifest
 
@@ -991,6 +994,71 @@ contains
         call new_build_config(build, table, error)
 
     end subroutine test_invalid_link
+
+
+    subroutine test_install_library(error)
+        use fpm_manifest_install
+        use fpm_toml, only : toml_table, set_value
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(install_config_t) :: install
+
+        table = toml_table()
+        call set_value(table, "library", .true.)
+
+        call new_install_config(install, table, error)
+        if (allocated(error)) return
+
+        if (.not.install%library) then
+            call test_failed(error, "Library entry should be true")
+            return
+        end if
+
+    end subroutine test_install_library
+
+
+    subroutine test_install_empty(error)
+        use fpm_manifest_install
+        use fpm_toml, only : toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(install_config_t) :: install
+
+        table = toml_table()
+
+        call new_install_config(install, table, error)
+        if (allocated(error)) return
+
+        if (install%library) then
+            call test_failed(error, "Library default should be false")
+            return
+        end if
+
+    end subroutine test_install_empty
+
+
+    subroutine test_install_wrongkey(error)
+        use fpm_manifest_install
+        use fpm_toml, only : toml_table, set_value
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(install_config_t) :: install
+
+        table = toml_table()
+        call set_value(table, "prefix", "/some/install/path")
+
+        call new_install_config(install, table, error)
+
+    end subroutine test_install_wrongkey
 
 
 end module test_manifest

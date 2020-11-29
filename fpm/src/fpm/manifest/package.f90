@@ -322,6 +322,8 @@ contains
 
         call self%build%info(unit, pr - 1)
 
+        call self%install%info(unit, pr - 1)
+
         if (allocated(self%library)) then
             write(unit, fmt) "- target", "archive"
             call self%library%info(unit, pr - 1)
