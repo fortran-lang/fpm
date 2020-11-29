@@ -15,12 +15,20 @@ rm -rf fpm_scratch_*/
 fpm test $@
 rm -rf fpm_scratch_*/
 
-# Build example packages
 f_fpm_path="$(fpm run $@ --runner echo)"
+
+# Let fpm build itself
+"${f_fpm_path}" build
+
+# Install fpm into local directory
+"${f_fpm_path}" install --prefix "$PWD/_dist" --no-rebuild
+
+# Build example packages
 cd ../example_packages/
 rm -rf ./*/build
 
 cd hello_world
+
 "${f_fpm_path}" build
 ./build/gfortran_debug/app/hello_world
 "${f_fpm_path}" run

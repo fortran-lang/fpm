@@ -26,6 +26,12 @@ echo %fpm_path%
 %fpm_path%
 if errorlevel 1 exit 1
 
+%fpm_path% build
+if errorlevel 1 exit 1
+
+%fpm_path% install --prefix "%CD%\_dist" --no-rebuild
+if errorlevel 1 exit 1
+
 cd ..\example_packages\hello_world
 if errorlevel 1 exit 1
 

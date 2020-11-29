@@ -137,8 +137,18 @@ contains
     character(len=*), intent(in) :: executable
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    integer :: ll
+
+    if (.not.os_is_unix(self%os)) then
+        ll = len(executable)
+        if (executable(max(1, ll-3):ll) /= ".exe") then
+            call self%install(executable//".exe", self%bindir, error)
+            return
+        end if
+    end if
 
     call self%install(executable, self%bindir, error)
+
   end subroutine install_executable
 
   !> Install a library in its correct subdirectory
