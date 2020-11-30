@@ -57,7 +57,7 @@ module fpm_installer
   character(len=*), parameter :: default_includedir = "include"
 
   !> Default name of the installation prefix on Unix platforms
-  character(len=*), parameter :: default_prefix_unix = "/usr/local/bin"
+  character(len=*), parameter :: default_prefix_unix = "/usr/local"
 
   !> Default name of the installation prefix on Windows platforms
   character(len=*), parameter :: default_prefix_win = "C:\"
@@ -214,11 +214,7 @@ contains
       end if
     end if
 
-    if (os_is_unix(self%os)) then
-      call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
-    else
-      call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
-    end if
+    call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
     if (allocated(error)) return
 
   end subroutine install

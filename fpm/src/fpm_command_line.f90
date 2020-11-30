@@ -100,7 +100,7 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',     'new',   'build',  'run',     &
-&  'test',  'runner',  'update','list',   'help',   'version'  ]
+&  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
 character(len=:), allocatable :: val_runner, val_build, val_compiler
 
@@ -276,6 +276,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_new]
                 case('build  ' )
                    help_text=[character(len=widest) :: help_text, help_build]
+                case('install' )
+                   help_text=[character(len=widest) :: help_text, help_install]
                 case('run    ' )
                    help_text=[character(len=widest) :: help_text, help_run]
                 case('test   ' )
@@ -578,6 +580,7 @@ contains
     '  + test  Run the tests.                                               ', &
     '  + help  Alternate method for displaying subcommand help.             ', &
     '  + list  Display brief descriptions of all subcommands.               ', &
+    '  + install Install project                                            ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                       ', &
@@ -588,6 +591,7 @@ contains
     '              [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]    ', &
     '     help [NAME(s)]                                                    ', &
     '     list [--list]                                                     ', &
+    '     install [--release] [--no-rebuild] [--prefix PATH] [options]      ', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
     '  --release  Builds or runs in release mode (versus debug mode). fpm(1)', &
@@ -616,6 +620,7 @@ contains
     '    fpm run                                                            ', &
     '    fpm new --help                                                     ', &
     '    fpm run myprogram --release -- -x 10 -y 20 --title "my title"      ', &
+    '    fpm install --prefix ~/.local                                      ', &
     '                                                                       ', &
     'SEE ALSO                                                               ', &
     '                                                                       ', &
@@ -928,9 +933,13 @@ contains
     ' --no-rebuild      do not rebuild project before installation', &
     ' --prefix DIR      path to installation directory (requires write access)', &
     ' --bindir DIR      subdirectory to place executables in', &
-    ' --libdir DIR      subdirectory to place libraries and archies in', &
+    ' --libdir DIR      subdirectory to place libraries and archives in', &
     ' --includedir DIR  subdirectory to place headers and module files in', &
     ' --verbose         print more information', &
+    '', &
+    'EXAMPLES', &
+    ' Install release version of project:', &
+    '    fpm install --release --prefix ~/.local', &
     '' ]
     end subroutine set_help
 
