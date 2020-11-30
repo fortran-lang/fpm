@@ -12,7 +12,7 @@ tag = "v0.2.1"
 
 [dependencies.M_CLI2]
 git = "https://github.com/urbanjost/M_CLI2.git"
-rev = "a77fabf52a781613609f6a8c80ca5d5f8f30f97c"
+rev = "e59fb2bfcf36199f1af506f937b3849180454a0f"
 
 [[test]]
 name = "cli-test"
