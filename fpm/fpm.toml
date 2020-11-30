@@ -12,7 +12,7 @@ tag = "v0.2.1"
 
 [dependencies.M_CLI2]
 git = "https://github.com/urbanjost/M_CLI2.git"
-rev = "598e44164eee383b8a0775aa75b7d1bb100481c3"
+rev = "a77fabf52a781613609f6a8c80ca5d5f8f30f97c"
 
 [[test]]
 name = "cli-test"
@@ -28,5 +28,3 @@ main = "new_test.f90"
 name = "fpm-test"
 source-dir = "test/fpm_test"
 main = "main.f90"
-
-

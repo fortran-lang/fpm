@@ -38,7 +38,7 @@ function basename(path,suffix) result (base)
         endif
     else
         call split(path,file_parts,delimiters='\/.')
-        if(size(file_parts).gt.0)then
+        if(size(file_parts).ge.2)then
            base = trim(file_parts(size(file_parts)-1))
         else
            base = ''

@@ -20,6 +20,7 @@ public :: fpm_cmd_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
+    logical                      :: verbose=.true.
 end type
 
 integer,parameter :: ibug=4096
@@ -29,14 +30,12 @@ type, extends(fpm_cmd_settings)  :: fpm_new_settings
     logical                      :: with_test=.false.
     logical                      :: with_lib=.true.
     logical                      :: backfill=.true.
-    logical                      :: verbose=.true.
 end type
 
 type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: build_name
-    logical                      :: verbose=.true.
 end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
@@ -46,11 +45,9 @@ type, extends(fpm_build_settings)  :: fpm_run_settings
 end type
 
 type, extends(fpm_run_settings)  :: fpm_test_settings
-integer :: gfortran_bug=0
 end type
 
 type, extends(fpm_cmd_settings)  :: fpm_install_settings
-    logical                      :: verbose=.true.
 end type
 
 character(len=:),allocatable :: name
@@ -113,10 +110,9 @@ contains
             & --target " " &
             & --list F &
             & --release F&
-            & --verbose F&
             & --runner " " &
-            & --fc "'//basename(get_env('FPM_FC',get_env('FC','gfortran')))//'" &
-            & --compiler "'//basename(get_env('FPM_FC',get_env('FC','gfortran')))//'" &
+            & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
+            & --verbose F&
             & --',help_test,version_text)
 
             call check_build_vals()
@@ -147,9 +143,8 @@ contains
             call set_args( '&
             & --release F &
             & --list F &
+            & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --verbose F&
-            & --fc "'//basename(get_env('FPM_FC',get_env('FC','gfortran')))//'" &
-            & --compiler "'//basename(get_env('FPM_FC',get_env('FC','gfortran')))//'" &
             & --',help_test,version_text)
 
             call check_build_vals()
@@ -172,23 +167,23 @@ contains
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
-                write(stderr,'(*(g0,/))')'ERROR: directory name required'
+                write(stderr,'(*(g0,/))')'<ERROR> directory name required'
                 write(stderr,'(*(7x,g0,/))') &
-                & 'USAGE: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
+                & '<USAGE> fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
                 stop 1
             case(2)
                 name=trim(unnamed(2))
             case default
-                write(stderr,'(g0)')'ERROR: only one directory name allowed'
+                write(stderr,'(g0)')'<ERROR> only one directory name allowed'
                 write(stderr,'(7x,g0)') &
-                & 'USAGE: fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
+                & '<USAGE> fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
                 stop 2
             end select
             !*! canon_path is not converting ".", etc.
             name=canon_path(name)
             if( .not.is_fortran_name(basename(name)) )then
                 write(stderr,'(g0)') [ character(len=72) :: &
-                & 'ERROR: the new directory basename must be an allowed ', &
+                & '<ERROR>the new directory basename must be an allowed ', &
                 & '       Fortran name. It must be composed of 1 to 63 ASCII', &
                 & '       characters and start with a letter and be composed', &
                 & '       entirely of alphanumeric characters [a-zA-Z0-9]', &
@@ -217,7 +212,9 @@ contains
             endif
 
         case('help','manual')
-            call set_args(' ',help_help,version_text)
+            call set_args('&
+            & --verbose F &
+            & ',help_help,version_text)
             if(size(unnamed).lt.2)then
                 if(unnamed(1).eq.'help')then
                    unnamed=['   ', 'fpm']
@@ -268,6 +265,7 @@ contains
         case('list')
             call set_args('&
             & --list F&
+            & --verbose F&
             &', help_list, version_text)
             call printhelp(help_list_nodash)
             if(lget('list'))then
@@ -279,8 +277,7 @@ contains
             & --list F&
             & --release F&
             & --runner " " &
-            & --fc "'//basename(get_env('FPM_FC',get_env('FC','gfortran')))//'" &
-            & --compiler "'//basename(get_env('FPM_FC',get_env('FC','gfortran')))//'" &
+            & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --verbose F&
             & --',help_test,version_text)
 
@@ -310,7 +307,10 @@ contains
 
         case default
 
-            call set_args(' --list F', help_fpm, version_text)
+            call set_args('&
+            & --list F&
+            & --verbose F&
+            ', help_fpm, version_text)
             ! Note: will not get here if --version or --usage or --help
             ! is present on commandline
             help_text=help_usage
@@ -321,7 +321,7 @@ contains
                 write(stdout,'(*(a))')' '
                 call printhelp(help_list_nodash)
             else
-                write(stderr,'(*(a))')'ERROR: unknown subcommand [', &
+                write(stderr,'(*(a))')'<ERROR> unknown subcommand [', &
                  & trim(cmdarg), ']'
                 call printhelp(help_list_dash)
             endif
@@ -331,31 +331,13 @@ contains
     contains
 
     subroutine check_build_vals()
-    integer :: oneword
-    ! take basename of first word on FC; as other products
-    ! such as CMake allow FC to include optional compiler options
-    ! and others allow full pathnames to the decoder
-    val_compiler=''
-    val_compiler=sget('fc')
-    if(specified('compiler') )val_compiler=sget('compiler')
-    oneword=index(adjustl(val_compiler)//' ',' ')-1
-    val_compiler=val_compiler(:oneword)
-    if(val_compiler.eq.'') then
-       val_compiler='gfortran'
-    else
-       val_compiler=basename(val_compiler)
-    endif
-    if( specified('fc').and.specified('compiler') )then
-        write(stdout,'(a)')&
-        &'<WARNING> --fc and --compiler are aliases and should not both ', &
-        &'          be specified. Using '//val_compiler
-    endif
 
-    if(.not.is_fortran_name(val_compiler))then
-        stop '<ERROR> compiler names must be simple names'
-    endif
-
-    val_build=trim(merge('release','debug  ',lget('release')))
+        val_compiler=sget('compiler')
+        if(val_compiler.eq.'') then
+            val_compiler='gfortran'
+        endif
+   
+        val_build=trim(merge('release','debug  ',lget('release')))
 
     end subroutine check_build_vals
 
@@ -414,12 +396,14 @@ contains
    ' ']
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
-   ' build [-fc compiler] [--release] [--list]                                      ', &
+   ' build [--compiler COMPILER_NAME] [--release] [--list]                          ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [--lib|--src] [--app] [--test] [--backfill]                           ', &
    ' list [--list]                                                                  ', &
-   ' run [NAME(s)] [--release] [--runner "CMD"] [--list] [--fc compiler] [-- ARGS]  ', &
-   ' test [NAME(s)] [--release] [--runner "CMD"] [--list][--fc compiler]  [-- ARGS] ', &
+   ' run  [NAME(s)] [--release] [--runner "CMD"] [--list]                           ', &
+   '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
+   ' test [NAME(s)] [--release] [--runner "CMD"] [--list]                           ', &
+   '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -515,20 +499,22 @@ contains
     'SUBCOMMANDS                                                            ', &
     '  Valid fpm(1) subcommands are:                                        ', &
     '                                                                       ', &
-    '     build [--release] [--list] [-fc COMPILER]                         ', &
-    '                     Compile the packages into the "build/" directory. ', &
+    '  + build Compile the packages into the "build/" directory.            ', &
+    '  + new   Create a new Fortran package directory with sample files.    ', &
+    '  + run   Run the local package binaries. defaults to all binaries for ', &
+    '          that release.                                                ', &
+    '  + test  Run the tests.                                               ', &
+    '  + help  Alternate method for displaying subcommand help              ', &
+    '  + list  Display brief descriptions of all subcommands.               ', &
+    '                                                                       ', &
+    '  Their syntax is                                                      ', &
+    '                                                                       ', &
+    '     build [--release] [--list] [-compiler COMPILER_NAME]              ', &
     '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
-    '                     Create a new Fortran package directory            ', &
-    '                     with sample files                                 ', &
-    '     run [NAME(s)] [--release] [--list] [--runner "CMD"]               ', &
-    '                   [--fc COMPILER] [-- ARGS]                           ', &
-    '                     Run the local package binaries. defaults to all   ', &
-    '                     binaries for that release.                        ', &
-    '     test [NAME(s)] [--release] [--list] [--runner "CMD"]              ', &
-    '                    [--fc COMPILER] [-- ARGS]                          ', &
-    '                     Run the tests                                     ', &
-    '     help [NAME(s)]  Alternate method for displaying subcommand help   ', &
-    '     list [--list]   Display brief descriptions of all subcommands.    ', &
+    '     run|test [NAME(s)] [--release] [--list] [--runner "CMD"]          ', &
+    '              [--compiler COMPILER_NAME] [-- ARGS]                     ', &
+    '     help [NAME(s)]                                                    ', &
+    '     list [--list]                                                     ', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
     '  --release  Builds or runs in release mode (versus debug mode). fpm(1)', &
@@ -539,11 +525,14 @@ contains
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
-    '  --fc COMPILER  Compiler name.                                        ', &
+    '  --compiler COMPILER_NAME  Compiler name. The environment variable    ', &
+    '                            FPM_COMPILER sets the default.             ', &
     '  -- ARGS    Arguments to pass to executables.                         ', &
-    '  --help     Show help text and exit. Valid for all subcommands.       ', &
-    '  --version  Show version information and exit. Valid for all          ', &
-    '             subcommands.                                              ', &
+    '                                                                       ', &
+    'VALID FOR ALL SUBCOMMANDS                                              ', &
+    '  --help     Show help text and exit                                   ', &
+    '  --verbose  Display additional information when available             ', &
+    '  --version  Show version information and exit.                        ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     '   sample commands:                                                    ', &
@@ -559,7 +548,7 @@ contains
     ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
     ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
     ' + The fpm(1) TOML file format is described at                                  ', &
-    '     https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md      ', &
+    '   https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md        ', &
     '']
     help_list=[character(len=80) :: &
     'NAME                                                                   ', &
@@ -588,7 +577,7 @@ contains
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm run [[--target] NAME(s)][--release][-fc compiler ]                ', &
+    ' fpm run [[--target] NAME(s)][--release][--compiler COMPILER_NAME]     ', &
     '         [--runner "CMD"] [--list][-- ARGS]                            ', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
@@ -602,11 +591,9 @@ contains
     '                   or the programs listed in the "fpm.toml" file.      ', &
     ' --release  selects the optimized build instead of the debug           ', &
     '            build.                                                     ', &
-    ' --fc COMPILER  Specify a compiler name. The default can be set by the ', &
-    '                environment variable FPM_FC. If not set, the           ', &
-    '                environment variable FC is used to set the default.    ', &
-    '                If that is not set the name "gfortran" becomes the     ', &
-    '                default. "--compiler" is an alias for "--fc".          ', &
+    ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
+    '                           "gfortran" unless set by the environment    ', &
+    '                           variable FPM_COMPILER.                      ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
     ' --list     list candidates instead of building or running them        ', &
@@ -622,7 +609,7 @@ contains
 
     '  # run default programs in /app or as specified in "fpm.toml"         ', &
     '  # using the compiler command "f90".                                  ', &
-    '  fpm run -fc f90                                                      ', &
+    '  fpm run -compiler f90                                                ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
     '  fpm run mytest -- -x 10 -y 20 --title "my title line"                ', &
@@ -638,7 +625,7 @@ contains
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm build [--release][-fc COMPILER] [-list]                           ', &
+    ' fpm build [--release][-compiler COMPILER_NAME] [-list]                ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -661,11 +648,9 @@ contains
     'OPTIONS                                                                ', &
     ' --release  build in build/*_release instead of build/*_debug with     ', &
     '            high optimization instead of full debug options.           ', &
-    ' --fc COMPILER  Specify a compiler name. The default can be set by the ', &
-    '                environment variable FPM_FC. If not set, the           ', &
-    '                environment variable FC is used to set the default.    ', &
-    '                If that is not set the name "gfortran" becomes the     ', &
-    '                default. "--compiler" is an alias for "--fc".          ', &
+    ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
+    '                           "gfortran" unless set by the environment    ', &
+    '                           variable FPM_COMPILER.                      ', &
     ' --list     list candidates instead of building or running them        ', &
     ' --help     print this help and exit                                   ', &
     ' --version  print program version information and exit                 ', &
@@ -787,7 +772,7 @@ contains
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm test [[--target] NAME(s)][--release][-fc compiler ]               ', &
+    ' fpm test [[--target] NAME(s)][--release][-compiler COMPILER_NAME ]    ', &
     '          [--runner "CMD"] [--list][-- ARGS]                           ', &
     '                                                                       ', &
     ' fpm test --help|--version                                             ', &
@@ -801,11 +786,9 @@ contains
     '                   or the tests listed in the "fpm.toml" file.         ', &
     ' --release  selects the optimized build instead of the debug           ', &
     '            build.                                                     ', &
-    ' --fc COMPILER  Specify a compiler name. The default can be set by the ', &
-    '                environment variable FPM_FC. If not set, the           ', &
-    '                environment variable FC is used to set the default.    ', &
-    '                If that is not set the name "gfortran" becomes the     ', &
-    '                default. "--compiler" is an alias for "--fc".          ', &
+    ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
+    '                           "gfortran" unless set by the environment    ', &
+    '                           variable FPM_COMPILER.                      ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
     ' --list     list candidates instead of building or running them        ', &
@@ -820,7 +803,7 @@ contains
     ' fpm test                                                              ', &
     '                                                                       ', &
     ' # run using compiler command "f90"                                    ', &
-    ' fpm test -fc f90                                                      ', &
+    ' fpm test -compiler f90                                                ', &
     '                                                                       ', &
     ' # run a specific test and pass arguments to the command               ', &
     ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &
@@ -830,7 +813,7 @@ contains
     help_install=[character(len=80) :: &
     ' fpm(1) subcommand "install"                                           ', &
     '                                                                       ', &
-    ' USAGE: fpm install NAME                                               ', &
+    '<USAGE> fpm install NAME                                               ', &
     '' ]
     end subroutine set_help
 
