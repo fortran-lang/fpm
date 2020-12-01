@@ -155,7 +155,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
 
     select case (ilen)
 
-    case (:0)                                                      ! command was totally blank
+    case (0)                                                      ! command was totally blank
 
     case default                                                   ! there is at least one non-delimiter in INPUT_LINE if get here
         icol=1                                                      ! initialize pointer into input line
