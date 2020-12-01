@@ -24,45 +24,7 @@ __Note:__ On Linux and MacOS, you will need to enable executable permission befo
 
 _e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
 
-### Build from source
-
-#### Install Haskell
-
-To install **Haskell Stack**, follow these
-[instructions](https://docs.haskellstack.org/en/stable/install_and_upgrade/),
-users without superuser (admin) permissions should follow the
-[manual installation](https://docs.haskellstack.org/en/stable/install_and_upgrade/#manual-download_2)
-procedure.
-
-#### Download this repository
-
-```bash
-$ git clone https://github.com/fortran-lang/fpm
-$ cd fpm/
-```
-
-#### Build and test fpm
-
-Bootstrap *fpm* using:
-
-```bash
-$ cd bootstrap/
-$ stack build
-```
-
-To test:
-
-```bash
-$ stack test
-```
-
-To install:
-
-```bash
-$ stack install
-```
-
-On Linux, the above command installs `fpm` to `${HOME}/.local/bin/`.
+For other platforms and architectures have a look at the [bootstrapping instructions](#bootstrapping-instructions).
 
 ### Creating a new project
 
@@ -88,7 +50,52 @@ with the following contents and initialized as a git repository.
 The command `fpm run` can optionally accept the name of the specific executable
 to run, as can `fpm test`; like `fpm run specific_executable`. Command line
 arguments can also be passed to the executable(s) or test(s) with the option
-`--args "some arguments"`.
+`-- some arguments`.
 
 See additional instructions in the [Packaging guide](PACKAGING.md) or
 the [manifest reference](manifest-reference.md).
+
+
+### Bootstrapping instructions
+
+This guide explains the process of building *fpm* on a platform for the first time.
+If your platform and architecture are already supported, download the binary from the [release page](https://github.com/fortran-lang/fpm/releases) instead.
+
+#### Download this repository
+
+```bash
+$ git clone https://github.com/fortran-lang/fpm
+$ cd fpm/
+```
+
+#### Build a bootstrap version of fpm
+
+You can use the install script to perform the build of the Haskell version of *fpm* with:
+
+```bash
+$ ./install.sh
+```
+
+On Linux, the above command installs `fpm` to `${HOME}/.local/bin/`.
+
+Now you can build the Fortran *fpm* version with
+
+```bash
+$ cd fpm/
+$ fpm build
+```
+
+Test that everything is working as expected
+
+```bash
+$ fpm test
+```
+
+Finally, install the Fortran *fpm* version with
+
+```bash
+$ fpm run --runner cp -- ~/.local/bin
+```
+
+Or choose another location if you do not want to overwrite the bootstrapping version.
+From now on you can rebuild *fpm* with your Fortran *fpm* version.
