@@ -27,6 +27,7 @@ jobs:
         - os: ubuntu-latest
           STACK_CACHE: "/home/runner/.stack/"
           STACK_CACHE_VERSION: ""
+          TEST_SCRIPT: ci/run_tests.sh
           GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
           CHECK_VERSION_CMD: grep $(cat fpm_version)
           RELEASE_CMD: "cp -- fpm-v$(cat fpm_version)-linux-x86_64"
@@ -39,6 +40,7 @@ jobs:
            /Users/runner/.stack/snapshots
            /Users/runner/.stack/setup-exe-src
           STACK_CACHE_VERSION: "v2"
+          TEST_SCRIPT: ci/run_tests.sh
           GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
           CHECK_VERSION_CMD: grep $(cat fpm_version)
           RELEASE_CMD: "cp -- fpm-v$(cat fpm_version)-macos-x86_64"
@@ -51,6 +53,7 @@ jobs:
            C:\Users\runneradmin\AppData\Roaming\stack
            C:\Users\runneradmin\AppData\Local\Programs\stack
           STACK_CACHE_VERSION: "v2"
+          TEST_SCRIPT: ci\run_tests.bat
           GET_VERSION_CMD: ("${{ github.ref }}" -Split "v")[1]
           CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
           RELEASE_CMD: copy -- (-join("fpm-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
@@ -119,17 +122,11 @@ jobs:
         cd bootstrap
         stack test
 
-    - name: Build and run Fortran fpm (Linux / macOS)
-      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
-      run: |
-        ci/run_tests.sh
-        ci/run_tests.sh ${{ matrix.RELEASE_FLAGS }}
+    - name: Build and test Fortran fpm
+      run: ${{ matrix.TEST_SCRIPT }}
 
-    - name: Build and run Fortran fpm (Windows)
-      if: contains(matrix.os, 'windows')
-      run: |
-        ci\run_tests.bat
-        ci\run_tests.bat ${{ matrix.RELEASE_FLAGS }}
+    - name: Build and test Fortran fpm (release version)
+      run: ${{ matrix.TEST_SCRIPT }} ${{ matrix.RELEASE_FLAGS }}
 
     # ----- Upload binaries if creating a release -----
     - name: Check that fpm --version matches release tag
