@@ -1,5 +1,5 @@
 name = "fpm"
-version = "0.1.0"
+version = "0.1.1"
 license = "MIT"
 author = "fpm maintainers"
 maintainer = ""
@@ -12,7 +12,7 @@ tag = "v0.2.1"
 
 [dependencies.M_CLI2]
 git = "https://github.com/urbanjost/M_CLI2.git"
-rev = "893cac0ce374bf07a70ffb9556439c7390e58131"
+rev = "e59fb2bfcf36199f1af506f937b3849180454a0f"
 
 [[test]]
 name = "cli-test"

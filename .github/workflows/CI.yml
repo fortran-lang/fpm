@@ -27,33 +27,39 @@ jobs:
         - os: ubuntu-latest
           STACK_CACHE: "/home/runner/.stack/"
           STACK_CACHE_VERSION: ""
+          TEST_SCRIPT: ci/run_tests.sh
           GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
           CHECK_VERSION_CMD: grep $(cat fpm_version)
-          RELEASE_CMD: "fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner cp -- fpm-v$(cat fpm_version)-linux-x86_64"
+          RELEASE_CMD: "cp -- fpm-v$(cat fpm_version)-linux-x86_64"
           BOOTSTRAP_RELEASE_CMD: cp /home/runner/.local/bin/fpm fpm-bootstrap-v$(cat fpm_version)-linux-x86_64
           HASH_CMD: ls fpm-*|xargs -i{} sh -c 'sha256sum $1 > $1.sha256' -- {}
+          RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
 
         - os: macos-latest
           STACK_CACHE: |
            /Users/runner/.stack/snapshots
            /Users/runner/.stack/setup-exe-src
           STACK_CACHE_VERSION: "v2"
+          TEST_SCRIPT: ci/run_tests.sh
           GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
           CHECK_VERSION_CMD: grep $(cat fpm_version)
-          RELEASE_CMD: "fpm run --flag -g --flag -fbacktrace --flag -O3 --runner cp -- fpm-v$(cat fpm_version)-macos-x86_64"
+          RELEASE_CMD: "cp -- fpm-v$(cat fpm_version)-macos-x86_64"
           BOOTSTRAP_RELEASE_CMD: cp /Users/runner/.local/bin/fpm fpm-bootstrap-v$(cat fpm_version)-macos-x86_64
           HASH_CMD: ls fpm-*|xargs -I{} sh -c 'shasum -a 256 $1 > $1.sha256' -- {}
+          RELEASE_FLAGS: --flag -g --flag -fbacktrace --flag -O3
 
         - os: windows-latest
           STACK_CACHE: |
            C:\Users\runneradmin\AppData\Roaming\stack
            C:\Users\runneradmin\AppData\Local\Programs\stack
           STACK_CACHE_VERSION: "v2"
+          TEST_SCRIPT: ci\run_tests.bat
           GET_VERSION_CMD: ("${{ github.ref }}" -Split "v")[1]
           CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
-          RELEASE_CMD: fpm run --flag --static --flag -g --flag -fbacktrace --flag -O3 --runner copy -- (-join("fpm-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
+          RELEASE_CMD: copy -- (-join("fpm-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
           BOOTSTRAP_RELEASE_CMD: copy C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe (-join("fpm-bootstrap-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
           HASH_CMD: Get-ChildItem -File -Filter "fpm-*" | Foreach-Object {echo (Get-FileHash -Algorithm SHA256 $PSItem | Select-Object hash | Format-Table -HideTableHeaders | Out-String) > (-join($PSItem,".sha256"))}
+          RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
 
     env:
       FC: gfortran
@@ -116,15 +122,11 @@ jobs:
         cd bootstrap
         stack test
 
-    - name: Build and run Fortran fpm (Linux / macOS)
-      if: contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
-      run: |
-        ci/run_tests.sh
+    - name: Build and test Fortran fpm
+      run: ${{ matrix.TEST_SCRIPT }}
 
-    - name: Build and run Fortran fpm (Windows)
-      if: contains(matrix.os, 'windows')
-      run: |
-        ci\run_tests.bat
+    - name: Build and test Fortran fpm (release version)
+      run: ${{ matrix.TEST_SCRIPT }} ${{ matrix.RELEASE_FLAGS }}
 
     # ----- Upload binaries if creating a release -----
     - name: Check that fpm --version matches release tag
@@ -138,7 +140,7 @@ jobs:
       if: github.event_name == 'release'
       run: |
         cd fpm
-        ${{ matrix.RELEASE_CMD }}
+        fpm run ${{ matrix.RELEASE_FLAGS }} --runner ${{ matrix.RELEASE_CMD }}
         ${{ matrix.BOOTSTRAP_RELEASE_CMD }}
         ${{ matrix.HASH_CMD }}
     
