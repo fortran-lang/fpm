@@ -9,6 +9,7 @@
 module fpm_manifest
     use fpm_manifest_build, only: build_config_t
     use fpm_manifest_executable, only : executable_config_t
+    use fpm_manifest_dependency, only : dependency_config_t
     use fpm_manifest_library, only : library_config_t
     use fpm_manifest_package, only : package_config_t, new_package
     use fpm_error, only : error_t, fatal_error, file_not_found_error
@@ -19,7 +20,7 @@ module fpm_manifest
     private
 
     public :: get_package_data, default_executable, default_library, default_test
-    public :: package_config_t
+    public :: package_config_t, dependency_config_t
 
 
 contains

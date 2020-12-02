@@ -3,6 +3,7 @@ use fpm_strings, only: string_t, str_ends_with, operator(.in.)
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
+use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: run
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
@@ -171,6 +172,10 @@ subroutine build_model(model, settings, package, error)
     else
         allocate(model%link_libraries(0))
     end if
+
+    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
+    call model%deps%add(package, error)
+    if (allocated(error)) return
 
     allocate(package_list(1))
     package_list(1)%s = package%name

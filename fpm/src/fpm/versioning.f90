@@ -4,7 +4,7 @@ module fpm_versioning
     implicit none
     private
 
-    public :: version_t, new_version
+    public :: version_t, new_version, char
 
 
     type :: version_t
@@ -45,6 +45,11 @@ module fpm_versioning
 
     !> Arbitrary internal limit of the version parser
     integer, parameter :: max_limit = 3
+
+
+    interface char
+        module procedure :: as_string
+    end interface char
 
 
     interface new_version
@@ -243,6 +248,19 @@ contains
         end if
 
     end subroutine to_string
+
+
+    function as_string(self) result(string)
+
+        !> Version number
+        class(version_t), intent(in) :: self
+
+        !> Character representation of the version
+        character(len=:), allocatable :: string
+
+        call self%to_string(string)
+
+    end function as_string
 
 
     !> Check to version numbers for equality

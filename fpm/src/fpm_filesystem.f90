@@ -6,7 +6,7 @@ module fpm_filesystem
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files,&
-            mkdir, exists, get_temp_filename, windows_path
+            mkdir, exists, get_temp_filename, windows_path, getline
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -389,5 +389,47 @@ function unix_path(path) result(nixpath)
     end do
     
 end function unix_path
+
+
+subroutine getline(unit, line, iostat, iomsg)
+
+    !> Formatted IO unit
+    integer, intent(in) :: unit
+
+    !> Line to read
+    character(len=:), allocatable, intent(out) :: line
+
+    !> Status of operation
+    integer, intent(out) :: iostat
+
+    !> Error message
+    character(len=:), allocatable, optional :: iomsg
+
+    character(len=LINE_BUFFER_LEN) :: buffer
+    character(len=LINE_BUFFER_LEN) :: msg
+    integer :: size
+    integer :: stat
+
+    allocate(character(len=0) :: line)
+    do
+        read(unit, '(a)', advance='no', iostat=stat, iomsg=msg, size=size) &
+            & buffer
+        if (stat > 0) exit
+        line = line // buffer(:size)
+        if (stat < 0) then
+            if (is_iostat_eor(stat)) then
+                stat = 0
+            end if
+            exit
+        end if
+    end do
+
+    if (stat /= 0) then
+        if (present(iomsg)) iomsg = trim(msg)
+    end if
+    iostat = stat
+
+end subroutine getline
+
 
 end module fpm_filesystem
