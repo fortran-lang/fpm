@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 6.4% of total for derived types.</p>Including implementation: 9 statements,  1.7% of total for derived types.">9 statements</a>
+    title="<p> 8.8% of total for derived types.</p>Including implementation: 13 statements,  2.4% of total for derived types.">13 statements</a>
      </li> 
      
      
@@ -173,13 +173,21 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/build_target_t.html#variable-built">built</a>
-      
       <a class="list-group-item" href="../type/build_target_t.html#variable-dependencies">dependencies</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-digest_cached">digest_cached</a>
       
       <a class="list-group-item" href="../type/build_target_t.html#variable-link_libraries">link_libraries</a>
       
+      <a class="list-group-item" href="../type/build_target_t.html#variable-link_objects">link_objects</a>
+      
       <a class="list-group-item" href="../type/build_target_t.html#variable-output_file">output_file</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-schedule">schedule</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-skip">skip</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-sorted">sorted</a>
       
       <a class="list-group-item" href="../type/build_target_t.html#variable-source">source</a>
       
@@ -243,13 +251,21 @@
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/build_target_t.html#variable-built">built</a>
-      
       <a class="list-group-item" href="../type/build_target_t.html#variable-dependencies">dependencies</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-digest_cached">digest_cached</a>
       
       <a class="list-group-item" href="../type/build_target_t.html#variable-link_libraries">link_libraries</a>
       
+      <a class="list-group-item" href="../type/build_target_t.html#variable-link_objects">link_objects</a>
+      
       <a class="list-group-item" href="../type/build_target_t.html#variable-output_file">output_file</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-schedule">schedule</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-skip">skip</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-sorted">sorted</a>
       
       <a class="list-group-item" href="../type/build_target_t.html#variable-source">source</a>
       
@@ -311,11 +327,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-built"></span>logical,</td>
+  <td><span class="anchor" id="variable-dependencies"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
   
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>built</strong></td><td> =</td><td>.false.</td><td></td>
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>dependencies</strong>(:)</td><td></td><td></td><td></td>
   
 </tr>
 
@@ -325,11 +341,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-dependencies"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td><span class="anchor" id="variable-digest_cached"></span>integer(kind=int64),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>dependencies</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>digest_cached</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -353,11 +369,67 @@
   
 <tr>
   
+  <td><span class="anchor" id="variable-link_objects"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>link_objects</strong>(:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-output_file"></span>character(len=:),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
   <td><strong>output_file</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-schedule"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>schedule</strong></td><td> =</td><td>-1</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-skip"></span>logical,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>skip</strong></td><td> =</td><td>.false.</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-sorted"></span>logical,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>sorted</strong></td><td> =</td><td>.false.</td><td></td>
   
 </tr>
 
@@ -429,9 +501,20 @@
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">target_type</span> <span class="o">=</span> <span class="n">FPM_TARGET_UNKNOWN</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_libraries</span><span class="p">(:)</span>
         <span class="c">! Native libraries to link against</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_objects</span><span class="p">(:)</span>
+        <span class="c">! Objects needed to link this target</span>
 
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">built</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">touched</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+        <span class="c">! Flag set when first visited to check for circular dependencies</span>
+    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">sorted</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+        <span class="c">! Flag set if build target is sorted for building</span>
+    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">skip</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+        <span class="c">! Flag set if build target will be skipped (not built)</span>
+
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">schedule</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="c">! Targets in the same schedule group are guaranteed to be independent</span>
+    <span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">digest_cached</span>
+        <span class="c">! Previous hash</span>
 
 <span class="k">end type </span><span class="n">build_target_t</span>
 </pre></div>
@@ -454,7 +537,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-01 17:08  
+             on 2020-12-02 14:22  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

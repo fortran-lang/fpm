@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>build_package &ndash; Fortran-lang/fpm</title>
+    <title>schedule_targets &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,7 +110,7 @@
     
   
   <div class="row">
-    <h1>build_package
+    <h1>schedule_targets
       <small>Subroutine</small>
     
     </h1>
@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.0% of total for procedures.">18 statements</a>
+    title=" 1.7% of total for procedures.">30 statements</a>
      </li> 
      
      
@@ -145,7 +145,7 @@
      <li><a href='../module/fpm_backend.html'>fpm_backend</a></li>
     
   
-     <li class="active">build_package</li>
+     <li class="active">schedule_targets</li>
   </ol>
 </div>
 </div>
@@ -173,13 +173,13 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-i~13">i</a>
+      <a class="list-group-item" href="../proc/schedule_targets.html#variable-i~14">i</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-j~4">j</a>
+      <a class="list-group-item" href="../proc/schedule_targets.html#variable-j~5">j</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-queue">queue</a>
+      <a class="list-group-item" href="../proc/schedule_targets.html#variable-n_schedule">n_schedule</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-schedule_ptr">schedule_ptr</a>
+      <a class="list-group-item" href="../proc/schedule_targets.html#variable-n_sorted">n_sorted</a>
       
     </div>
   </div>
@@ -207,7 +207,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/build_package.html#src">build_package</a>
+    <a class="list-group-item" href="../proc/schedule_targets.html#src">schedule_targets</a>
   </div>
 </div>
 
@@ -219,7 +219,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine build_package(model)
+public subroutine schedule_targets(queue, schedule_ptr, targets)
     
     
    
@@ -229,7 +229,9 @@ public subroutine build_package(model)
 
 
     
-    <p>Top-level routine to build package described by <code>model</code></p>
+    <p>Construct a build schedule from the sorted targets.</p>
+<p>The schedule is broken into regions, described by <code>schedule_ptr</code>,
+  where targets in each region can be compiled in parallel.</p>
     
 
     <h3>Arguments</h3>
@@ -250,12 +252,42 @@ public subroutine build_package(model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
-  <td>intent(inout)</td>
+  <td><span class="anchor" id="variable-queue~2"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>queue</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-schedule_ptr~2"></span>integer,</td>
+  <td></td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>schedule_ptr</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-targets~2"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>model</strong></td><td></td>
+  <td><strong>targets</strong>(:)</td><td></td>
   
 </tr>
 
@@ -281,13 +313,13 @@ public subroutine build_package(model)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-i~13">i</a>
+      <a class="list-group-item" href="../proc/schedule_targets.html#variable-i~14">i</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-j~4">j</a>
+      <a class="list-group-item" href="../proc/schedule_targets.html#variable-j~5">j</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-queue">queue</a>
+      <a class="list-group-item" href="../proc/schedule_targets.html#variable-n_schedule">n_schedule</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-schedule_ptr">schedule_ptr</a>
+      <a class="list-group-item" href="../proc/schedule_targets.html#variable-n_sorted">n_sorted</a>
       
     </div>
   </div>
@@ -315,7 +347,7 @@ public subroutine build_package(model)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/build_package.html#src">build_package</a>
+    <a class="list-group-item" href="../proc/schedule_targets.html#src">schedule_targets</a>
   </div>
 </div>
 
@@ -345,7 +377,7 @@ public subroutine build_package(model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~13"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~14"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -359,7 +391,7 @@ public subroutine build_package(model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-j~4"></span>integer,</td>
+  <td><span class="anchor" id="variable-j~5"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -373,11 +405,11 @@ public subroutine build_package(model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-queue"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td><span class="anchor" id="variable-n_schedule"></span>integer,</td>
   
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>queue</strong>(:)</td><td></td><td></td><td></td>
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>n_schedule</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -387,11 +419,11 @@ public subroutine build_package(model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-schedule_ptr"></span>integer,</td>
+  <td><span class="anchor" id="variable-n_sorted"></span>integer,</td>
   
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>schedule_ptr</strong>(:)</td><td></td><td></td><td></td>
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>n_sorted</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -418,42 +450,50 @@ public subroutine build_package(model)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">build_package</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">schedule_targets</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="n">schedule_ptr</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">queue</span><span class="p">(:)</span>
+    <span class="kt">integer</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">schedule_ptr</span><span class="p">(:)</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
 
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">queue</span><span class="p">(:)</span>
-    <span class="kt">integer</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">schedule_ptr</span><span class="p">(:)</span>
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">n_schedule</span><span class="p">,</span> <span class="n">n_sorted</span>
 
-    <span class="c">! Need to make output directory for include (mod) files</span>
-    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">)))</span> <span class="k">then</span>
-<span class="k">        call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">))</span>
-    <span class="k">end if</span>
+    <span class="n">n_schedule</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c">! Number of schedule regions</span>
+    <span class="n">n_sorted</span> <span class="o">=</span> <span class="mi">0</span>     <span class="c">! Total number of targets to build</span>
+    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
-    <span class="c">! Perform depth-first topological sort of targets</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span>
-        
-        <span class="k">call </span><span class="n">sort_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
-        
+        <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">sorted</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            </span><span class="n">n_sorted</span> <span class="o">=</span> <span class="n">n_sorted</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">end if</span>
+<span class="k">        </span><span class="n">n_schedule</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">n_schedule</span><span class="p">,</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">schedule</span><span class="p">)</span>
+
     <span class="k">end do</span>
 
-    <span class="c">! Construct build schedule queue</span>
-    <span class="k">call </span><span class="n">schedule_targets</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="n">schedule_ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span>
+<span class="k">    allocate</span><span class="p">(</span><span class="n">queue</span><span class="p">(</span><span class="n">n_sorted</span><span class="p">))</span>
+    <span class="k">allocate</span><span class="p">(</span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">n_schedule</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
 
-    <span class="c">! Loop over parallel schedule regions</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">schedule_ptr</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="c">! Construct the target queue and schedule region pointer</span>
+    <span class="n">n_sorted</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">schedule_ptr</span><span class="p">(</span><span class="n">n_sorted</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n_schedule</span>
 
-        <span class="c">! Build targets in schedule region i</span>
-        <span class="c">!$omp parallel do default(shared)</span>
-        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">i</span><span class="p">),(</span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
-            <span class="k">call </span><span class="n">build_target</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">sorted</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">schedule</span> <span class="o">==</span> <span class="n">i</span><span class="p">)</span> <span class="k">then</span>
 
-        <span class="k">end do</span>
+<span class="k">                    </span><span class="n">queue</span><span class="p">(</span><span class="n">n_sorted</span><span class="p">)%</span><span class="n">ptr</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span>
+                    <span class="n">n_sorted</span> <span class="o">=</span> <span class="n">n_sorted</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">end if</span>
+<span class="k">            end if</span>
 
-<span class="k">    end do</span>
-<span class="k">    </span>
-<span class="k">end subroutine </span><span class="n">build_package</span>
+<span class="k">        end do</span>
+
+<span class="k">        </span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">n_sorted</span>
+
+    <span class="k">end do</span>
+
+<span class="k">end subroutine </span><span class="n">schedule_targets</span>
 </pre></div>
 
     </section>

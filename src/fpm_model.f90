@@ -1,5 +1,6 @@
 module fpm_model
 ! Definition and validation of the backend model
+use iso_fortran_env, only: int64
 use fpm_strings, only: string_t
 implicit none
 
@@ -53,6 +54,8 @@ type srcfile_t
         ! Files INCLUDEd by this source file
     type(string_t), allocatable :: link_libraries(:)
         ! Native libraries to link against
+    integer(int64) :: digest
+        ! Current hash
 end type srcfile_t
 
 type build_target_ptr
@@ -70,9 +73,20 @@ type build_target_t
     integer :: target_type = FPM_TARGET_UNKNOWN
     type(string_t), allocatable :: link_libraries(:)
         ! Native libraries to link against
+    type(string_t), allocatable :: link_objects(:)
+        ! Objects needed to link this target
 
-    logical :: built = .false.
     logical :: touched = .false.
+        ! Flag set when first visited to check for circular dependencies
+    logical :: sorted = .false.
+        ! Flag set if build target is sorted for building
+    logical :: skip = .false.
+        ! Flag set if build target will be skipped (not built)
+
+    integer :: schedule = -1
+        ! Targets in the same schedule group are guaranteed to be independent
+    integer(int64), allocatable :: digest_cached
+        ! Previous hash
 
 end type build_target_t
 
@@ -89,6 +103,8 @@ type :: fpm_model_t
         ! Command line flags passed to fortran for compilation
     character(:), allocatable :: link_flags
         ! Command line flags pass for linking
+    character(:), allocatable :: library_file
+        ! Output file for library archive
     character(:), allocatable :: output_directory
         ! Base directory for build
     type(string_t), allocatable :: link_libraries(:)

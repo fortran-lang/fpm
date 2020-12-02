@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>syntax_error &ndash; Fortran-lang/fpm</title>
+    <title>fnv_1a &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,7 +110,7 @@
     
   
   <div class="row">
-    <h1>syntax_error
+    <h1>fnv_1a
    <small>Interface</small>
     
     </h1>
@@ -128,24 +128,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.2% of total for procedures.</p>Including implementation: 9 statements,  0.5% of total for procedures.">3 statements</a>
+    title="<p> 0.2% of total for procedures.</p>Including implementation: 30 statements,  1.7% of total for procedures.">4 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/error.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_strings.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/error.f90.html'>error.f90</a></li>
+     <li><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
     
-     <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+     <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     
   
-     <li class="active">syntax_error</li>
+     <li class="active">fnv_1a</li>
   </ol>
 </div>
 </div>
@@ -190,7 +190,9 @@
   <div id="modprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/syntax_error.html#moduleprocedure-fatal_error">fatal_error</a>
+      <a class="list-group-item" href="../interface/fnv_1a.html#moduleprocedure-fnv_1a_char">fnv_1a_char</a>
+      
+      <a class="list-group-item" href="../interface/fnv_1a.html#moduleprocedure-fnv_1a_string_t">fnv_1a_string_t</a>
       
     </div>
   </div>
@@ -204,11 +206,11 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>public interface syntax_error</h2>
-   <p>Alias syntax errors to fatal errors for now</p>
+      <h2>public interface fnv_1a</h2>
+   
      
      
-    <br>
+    
 
      <section class="visible-xs visible-sm hidden-md">
        
@@ -239,7 +241,9 @@
   <div id="modprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/syntax_error.html#moduleprocedure-fatal_error">fatal_error</a>
+      <a class="list-group-item" href="../interface/fnv_1a.html#moduleprocedure-fnv_1a_char">fnv_1a_char</a>
+      
+      <a class="list-group-item" href="../interface/fnv_1a.html#moduleprocedure-fnv_1a_string_t">fnv_1a_string_t</a>
       
     </div>
   </div>
@@ -260,8 +264,8 @@
    
     
   <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-fatal_error"></span><h3>
-public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, message)
+  <div class="panel-heading codesum"><span class="anchor" id="proc-fnv_1a_char"></span><h3>
+private pure function fnv_1a_char(input, seed) result(hash)
     
     
    
@@ -272,11 +276,7 @@ public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, mess
 
 
 
-
-
-
-
-<p>Generic fatal runtime error</p>
+<p>Hash a character(*) string of default kind </p>
     
     <h4>Arguments</h4>
     
@@ -297,12 +297,12 @@ public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, mess
   
 <tr>
   
-  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
-  <td>intent(out),</td>
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
   <td></td>
   
-  <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td><p>Instance of the error data</p></td>
+  <td></td><td>::</td>
+  <td><strong>input</strong></td><td></td>
   
 </tr>
 
@@ -312,12 +312,12 @@ public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, mess
   
 <tr>
   
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
+  <td><span class="anchor" ></span>integer(kind=int64),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>message</strong></td><td><p>Error message</p></td>
+  <td><strong>seed</strong></td><td></td>
   
 </tr>
 
@@ -326,6 +326,94 @@ public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, mess
 
       
     
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=int64)
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-fnv_1a_string_t"></span><h3>
+private pure function fnv_1a_string_t(input, seed) result(hash)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+<p>Hash a string_t array of default kind </p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>input</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=int64),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>seed</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=int64)
+  </small></h4>
+  
     
 
   </div>

@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.1% of total for modules and submodules.">175 statements</a>
+    title=" 7.5% of total for modules and submodules.">226 statements</a>
      </li> 
      
      
@@ -178,6 +178,8 @@
   <div id="inters-0" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../module/fpm_strings.html#interface-fnv_1a">fnv_1a</a>
+      
       <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28.in.%29">operator(.in.)</a>
       
     </div>
@@ -213,6 +215,8 @@
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-string_array_contains">string_array_contains</a>
       
+      <a class="list-group-item" href="../module/fpm_strings.html#proc-string_cat">string_cat</a>
+      
     </div>
   </div>
 </div>
@@ -245,9 +249,28 @@
     
     <div class="col-md-9" id='text'>
     
-      
+      <br>
     
   
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      </ul>
+    </div>
+    
 
     
     
@@ -272,6 +295,8 @@
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#inters-1">Interfaces</a></h3></div>
   <div id="inters-1" class="panel-collapse collapse">
     <div class="list-group">
+      
+      <a class="list-group-item" href="../module/fpm_strings.html#interface-fnv_1a">fnv_1a</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28.in.%29">operator(.in.)</a>
       
@@ -307,6 +332,8 @@
       <a class="list-group-item" href="../module/fpm_strings.html#proc-str_ends_with">str_ends_with</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-string_array_contains">string_array_contains</a>
+      
+      <a class="list-group-item" href="../module/fpm_strings.html#proc-string_cat">string_cat</a>
       
     </div>
   </div>
@@ -347,6 +374,173 @@
     <section>
    <h2>Interfaces</h2>
    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-fnv_1a"></span><h3>public interface <a href='../interface/fnv_1a.html'>fnv_1a</a>
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+  
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private pure function fnv_1a_char(input, seed) result(hash)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>Hash a character(*) string of default kind </p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>input</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=int64),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>seed</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=int64)
+  </small></h4>
+  
+    
+
+    </li>
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private pure function fnv_1a_string_t(input, seed) result(hash)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>Hash a string_t array of default kind </p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>input</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=int64),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>seed</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=int64)
+  </small></h4>
+  
+    
+
+    </li>
+  
+  
+  </ul>
+</div>
+
+    
      
 <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="interface-operator%28.in.%29"></span><h3>public interface <a href='../interface/operator%28.in.%29.html'>operator(.in.)</a>
@@ -796,6 +990,90 @@ public function <a href='../proc/string_array_contains.html'>string_array_contai
   </div>
 
     
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-string_cat"></span><h3>
+public function <a href='../proc/string_cat.html'>string_cat</a>(strings, delim) result(cat)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>Concatenate an array of type(string_t) into 
+  a single character</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>strings</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>delim</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=:),
+  allocatable</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
     </section>
     <br>
     
@@ -935,7 +1213,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-01 17:08  
+             on 2020-12-02 14:22  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

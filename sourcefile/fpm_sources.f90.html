@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="12.1% of total for source files.">349 statements</a>
+    title="11.6% of total for source files.">351 statements</a>
      </li> 
      
      
@@ -272,7 +272,7 @@
 <a name="ln-7"></a>                    <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="n">FPM_SCOPE_DEP</span><span class="p">,</span> <span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span>
 <a name="ln-8"></a>                    
 <a name="ln-9"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">basename</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">list_files</span>
-<a name="ln-10"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">lower</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">str_ends_with</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.)</span>
+<a name="ln-10"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">lower</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">str_ends_with</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.),</span> <span class="n">fnv_1a</span>
 <a name="ln-11"></a><span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">executable_config_t</span>
 <a name="ln-12"></a><span class="k">implicit none</span>
 <a name="ln-13"></a>
@@ -498,364 +498,368 @@
 <a name="ln-233"></a>    <span class="n">file_lines</span> <span class="o">=</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
 <a name="ln-234"></a>    <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
 <a name="ln-235"></a>
-<a name="ln-236"></a>    <span class="k">do pass</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
-<a name="ln-237"></a>        <span class="n">n_use</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-238"></a>        <span class="n">n_include</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-239"></a>        <span class="n">n_mod</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-240"></a>        <span class="n">file_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
-<a name="ln-241"></a>
-<a name="ln-242"></a>            <span class="c">! Skip lines that are continued: not statements</span>
-<a name="ln-243"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-244"></a><span class="k">                </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
-<a name="ln-245"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">ic</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-246"></a><span class="k">                    </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-247"></a>                <span class="k">end if</span>
-<a name="ln-248"></a><span class="k">                </span><span class="n">temp_string</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">ic</span><span class="p">))</span>
-<a name="ln-249"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-250"></a><span class="k">                    cycle</span>
-<a name="ln-251"></a><span class="k">                end if</span>
-<a name="ln-252"></a><span class="k">            end if</span>
-<a name="ln-253"></a>
-<a name="ln-254"></a>            <span class="c">! Process &#39;USE&#39; statements</span>
-<a name="ln-255"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;use &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-256"></a>                <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;use::&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-257"></a>
-<a name="ln-258"></a><span class="k">                if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-236"></a>    <span class="n">f_source</span><span class="p">%</span><span class="n">digest</span> <span class="o">=</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
+<a name="ln-237"></a>
+<a name="ln-238"></a>    <span class="k">do pass</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
+<a name="ln-239"></a>        <span class="n">n_use</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-240"></a>        <span class="n">n_include</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-241"></a>        <span class="n">n_mod</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-242"></a>        <span class="n">file_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
+<a name="ln-243"></a>
+<a name="ln-244"></a>            <span class="c">! Skip lines that are continued: not statements</span>
+<a name="ln-245"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-246"></a><span class="k">                </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+<a name="ln-247"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">ic</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-248"></a><span class="k">                    </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-249"></a>                <span class="k">end if</span>
+<a name="ln-250"></a><span class="k">                </span><span class="n">temp_string</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">ic</span><span class="p">))</span>
+<a name="ln-251"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-252"></a><span class="k">                    cycle</span>
+<a name="ln-253"></a><span class="k">                end if</span>
+<a name="ln-254"></a><span class="k">            end if</span>
+<a name="ln-255"></a>
+<a name="ln-256"></a>            <span class="c">! Process &#39;USE&#39; statements</span>
+<a name="ln-257"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;use &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-258"></a>                <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;use::&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-259"></a>
-<a name="ln-260"></a><span class="k">                    </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-261"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-262"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-263"></a>                                <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-264"></a>                                <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">))</span>
-<a name="ln-265"></a>                        <span class="k">return</span>
-<a name="ln-266"></a><span class="k">                    end if</span>
-<a name="ln-267"></a>
-<a name="ln-268"></a><span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-269"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-270"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-271"></a>                                 <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-272"></a>                                 <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-273"></a>                        <span class="k">return</span>
-<a name="ln-274"></a><span class="k">                    end if</span>
-<a name="ln-275"></a><span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
-<a name="ln-276"></a>
-<a name="ln-277"></a>                <span class="k">else</span>
+<a name="ln-260"></a><span class="k">                if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-261"></a>
+<a name="ln-262"></a><span class="k">                    </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-263"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-264"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-265"></a>                                <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-266"></a>                                <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">))</span>
+<a name="ln-267"></a>                        <span class="k">return</span>
+<a name="ln-268"></a><span class="k">                    end if</span>
+<a name="ln-269"></a>
+<a name="ln-270"></a><span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-271"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-272"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-273"></a>                                 <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-274"></a>                                 <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-275"></a>                        <span class="k">return</span>
+<a name="ln-276"></a><span class="k">                    end if</span>
+<a name="ln-277"></a><span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
 <a name="ln-278"></a>
-<a name="ln-279"></a><span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-280"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-281"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-282"></a>                                <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-283"></a>                                <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-284"></a>                        <span class="k">return</span>
-<a name="ln-285"></a><span class="k">                    end if</span>
-<a name="ln-286"></a><span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
-<a name="ln-287"></a>
-<a name="ln-288"></a>                <span class="k">end if</span>
+<a name="ln-279"></a>                <span class="k">else</span>
+<a name="ln-280"></a>
+<a name="ln-281"></a><span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-282"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-283"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-284"></a>                                <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-285"></a>                                <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-286"></a>                        <span class="k">return</span>
+<a name="ln-287"></a><span class="k">                    end if</span>
+<a name="ln-288"></a><span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
 <a name="ln-289"></a>
-<a name="ln-290"></a><span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-291"></a><span class="k">                    cycle</span>
-<a name="ln-292"></a><span class="k">                end if</span>
-<a name="ln-293"></a>
-<a name="ln-294"></a><span class="k">                if</span> <span class="p">(</span><span class="nb">any</span><span class="p">([(</span><span class="nb">index</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">INTRINSIC_MODULE_NAMES</span><span class="p">(</span><span class="n">j</span><span class="p">)))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-295"></a>                            <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">INTRINSIC_MODULE_NAMES</span><span class="p">))]))</span> <span class="k">then</span>
-<a name="ln-296"></a><span class="k">                    cycle</span>
-<a name="ln-297"></a><span class="k">                end if</span>
-<a name="ln-298"></a>
-<a name="ln-299"></a><span class="k">                </span><span class="n">n_use</span> <span class="o">=</span> <span class="n">n_use</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-290"></a>                <span class="k">end if</span>
+<a name="ln-291"></a>
+<a name="ln-292"></a><span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-293"></a><span class="k">                    cycle</span>
+<a name="ln-294"></a><span class="k">                end if</span>
+<a name="ln-295"></a>
+<a name="ln-296"></a><span class="k">                if</span> <span class="p">(</span><span class="nb">any</span><span class="p">([(</span><span class="nb">index</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">INTRINSIC_MODULE_NAMES</span><span class="p">(</span><span class="n">j</span><span class="p">)))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-297"></a>                            <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">INTRINSIC_MODULE_NAMES</span><span class="p">))]))</span> <span class="k">then</span>
+<a name="ln-298"></a><span class="k">                    cycle</span>
+<a name="ln-299"></a><span class="k">                end if</span>
 <a name="ln-300"></a>
-<a name="ln-301"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-301"></a><span class="k">                </span><span class="n">n_use</span> <span class="o">=</span> <span class="n">n_use</span> <span class="o">+</span> <span class="mi">1</span>
 <a name="ln-302"></a>
-<a name="ln-303"></a><span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">mod_name</span>
+<a name="ln-303"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-304"></a>
-<a name="ln-305"></a>                <span class="k">end if</span>
+<a name="ln-305"></a><span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">mod_name</span>
 <a name="ln-306"></a>
-<a name="ln-307"></a><span class="k">            end if</span>
+<a name="ln-307"></a>                <span class="k">end if</span>
 <a name="ln-308"></a>
-<a name="ln-309"></a>            <span class="c">! Process &#39;INCLUDE&#39; statements</span>
-<a name="ln-310"></a>            <span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;include&#39;</span><span class="p">)</span>
-<a name="ln-311"></a>            <span class="k">if</span> <span class="p">(</span> <span class="n">ic</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">then</span>
-<a name="ln-312"></a><span class="k">                </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="s1">&#39;include&#39;</span><span class="p">)</span>
-<a name="ln-313"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-314"></a>                    <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">then</span>
-<a name="ln-315"></a>
-<a name="ln-316"></a><span class="k">    </span>
-<a name="ln-317"></a><span class="k">                    </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-318"></a>
-<a name="ln-319"></a>                    <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-320"></a><span class="k">                        </span><span class="n">f_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="p">&amp;</span>
-<a name="ln-321"></a>                         <span class="p">&amp;</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s2">&quot;&#39;&quot;</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-322"></a>                        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-323"></a><span class="k">                            call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-324"></a>                                  <span class="s1">&#39;unable to find include file name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-325"></a>                                  <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-326"></a>                            <span class="k">return</span>
-<a name="ln-327"></a><span class="k">                        end if</span>
-<a name="ln-328"></a><span class="k">                    end if</span>
-<a name="ln-329"></a><span class="k">                end if</span>
-<a name="ln-330"></a><span class="k">            end if</span>
-<a name="ln-331"></a>
-<a name="ln-332"></a>            <span class="c">! Extract name of module if is module</span>
-<a name="ln-333"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;module &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-334"></a>
-<a name="ln-335"></a><span class="k">                </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">))</span>
-<a name="ln-336"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-337"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-338"></a>                          <span class="s1">&#39;unable to find module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-339"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-340"></a>                    <span class="k">return</span>
-<a name="ln-341"></a><span class="k">                end if</span>
-<a name="ln-342"></a>
-<a name="ln-343"></a><span class="k">                if</span> <span class="p">(</span><span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;procedure&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-344"></a>                    <span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;subroutine&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-345"></a>                    <span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-346"></a>                    <span class="c">! Ignore these cases</span>
-<a name="ln-347"></a>                    <span class="k">cycle</span>
-<a name="ln-348"></a><span class="k">                end if</span>
-<a name="ln-349"></a>
-<a name="ln-350"></a><span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-351"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-352"></a>                          <span class="s1">&#39;empty or invalid name for module&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-353"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">mod_name</span><span class="p">))</span>
-<a name="ln-354"></a>                    <span class="k">return</span>
-<a name="ln-355"></a><span class="k">                end if</span>
-<a name="ln-356"></a>
-<a name="ln-357"></a><span class="k">                </span><span class="n">n_mod</span> <span class="o">=</span> <span class="n">n_mod</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-309"></a><span class="k">            end if</span>
+<a name="ln-310"></a>
+<a name="ln-311"></a>            <span class="c">! Process &#39;INCLUDE&#39; statements</span>
+<a name="ln-312"></a>            <span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;include&#39;</span><span class="p">)</span>
+<a name="ln-313"></a>            <span class="k">if</span> <span class="p">(</span> <span class="n">ic</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">then</span>
+<a name="ln-314"></a><span class="k">                </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="s1">&#39;include&#39;</span><span class="p">)</span>
+<a name="ln-315"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-316"></a>                    <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">then</span>
+<a name="ln-317"></a>
+<a name="ln-318"></a><span class="k">    </span>
+<a name="ln-319"></a><span class="k">                    </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-320"></a>
+<a name="ln-321"></a>                    <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-322"></a><span class="k">                        </span><span class="n">f_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="p">&amp;</span>
+<a name="ln-323"></a>                         <span class="p">&amp;</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s2">&quot;&#39;&quot;</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-324"></a>                        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-325"></a><span class="k">                            call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-326"></a>                                  <span class="s1">&#39;unable to find include file name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-327"></a>                                  <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-328"></a>                            <span class="k">return</span>
+<a name="ln-329"></a><span class="k">                        end if</span>
+<a name="ln-330"></a><span class="k">                    end if</span>
+<a name="ln-331"></a><span class="k">                end if</span>
+<a name="ln-332"></a><span class="k">            end if</span>
+<a name="ln-333"></a>
+<a name="ln-334"></a>            <span class="c">! Extract name of module if is module</span>
+<a name="ln-335"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;module &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-336"></a>
+<a name="ln-337"></a><span class="k">                </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">))</span>
+<a name="ln-338"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-339"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-340"></a>                          <span class="s1">&#39;unable to find module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-341"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-342"></a>                    <span class="k">return</span>
+<a name="ln-343"></a><span class="k">                end if</span>
+<a name="ln-344"></a>
+<a name="ln-345"></a><span class="k">                if</span> <span class="p">(</span><span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;procedure&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-346"></a>                    <span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;subroutine&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-347"></a>                    <span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-348"></a>                    <span class="c">! Ignore these cases</span>
+<a name="ln-349"></a>                    <span class="k">cycle</span>
+<a name="ln-350"></a><span class="k">                end if</span>
+<a name="ln-351"></a>
+<a name="ln-352"></a><span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-353"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-354"></a>                          <span class="s1">&#39;empty or invalid name for module&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-355"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">mod_name</span><span class="p">))</span>
+<a name="ln-356"></a>                    <span class="k">return</span>
+<a name="ln-357"></a><span class="k">                end if</span>
 <a name="ln-358"></a>
-<a name="ln-359"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-360"></a><span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">)</span> <span class="o">=</span> <span class="n">string_t</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
-<a name="ln-361"></a>                <span class="k">end if</span>
-<a name="ln-362"></a>
-<a name="ln-363"></a><span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_MODULE</span>
+<a name="ln-359"></a><span class="k">                </span><span class="n">n_mod</span> <span class="o">=</span> <span class="n">n_mod</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-360"></a>
+<a name="ln-361"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-362"></a><span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">)</span> <span class="o">=</span> <span class="n">string_t</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
+<a name="ln-363"></a>                <span class="k">end if</span>
 <a name="ln-364"></a>
-<a name="ln-365"></a>            <span class="k">end if</span>
+<a name="ln-365"></a><span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_MODULE</span>
 <a name="ln-366"></a>
-<a name="ln-367"></a>            <span class="c">! Extract name of submodule if is submodule</span>
-<a name="ln-368"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;submodule&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-369"></a>
-<a name="ln-370"></a><span class="k">                </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-371"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-372"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-373"></a>                          <span class="s1">&#39;unable to get submodule name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-374"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-375"></a>                    <span class="k">return</span>
-<a name="ln-376"></a><span class="k">                end if</span>
-<a name="ln-377"></a><span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-378"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-379"></a>                          <span class="s1">&#39;empty or invalid name for submodule&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-380"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">mod_name</span><span class="p">))</span>
-<a name="ln-381"></a>                    <span class="k">return</span>
-<a name="ln-382"></a><span class="k">                end if</span>
-<a name="ln-383"></a>
-<a name="ln-384"></a><span class="k">                </span><span class="n">n_mod</span> <span class="o">=</span> <span class="n">n_mod</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-367"></a>            <span class="k">end if</span>
+<a name="ln-368"></a>
+<a name="ln-369"></a>            <span class="c">! Extract name of submodule if is submodule</span>
+<a name="ln-370"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;submodule&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-371"></a>
+<a name="ln-372"></a><span class="k">                </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-373"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-374"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-375"></a>                          <span class="s1">&#39;unable to get submodule name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-376"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-377"></a>                    <span class="k">return</span>
+<a name="ln-378"></a><span class="k">                end if</span>
+<a name="ln-379"></a><span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-380"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-381"></a>                          <span class="s1">&#39;empty or invalid name for submodule&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-382"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">mod_name</span><span class="p">))</span>
+<a name="ln-383"></a>                    <span class="k">return</span>
+<a name="ln-384"></a><span class="k">                end if</span>
 <a name="ln-385"></a>
-<a name="ln-386"></a>                <span class="n">temp_string</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-387"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-388"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-389"></a>                          <span class="s1">&#39;unable to get submodule ancestry&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-390"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-391"></a>                    <span class="k">return</span>
-<a name="ln-392"></a><span class="k">                end if</span>
-<a name="ln-393"></a>
-<a name="ln-394"></a><span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_SUBMODULE</span>
+<a name="ln-386"></a><span class="k">                </span><span class="n">n_mod</span> <span class="o">=</span> <span class="n">n_mod</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-387"></a>
+<a name="ln-388"></a>                <span class="n">temp_string</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-389"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-390"></a><span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-391"></a>                          <span class="s1">&#39;unable to get submodule ancestry&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-392"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-393"></a>                    <span class="k">return</span>
+<a name="ln-394"></a><span class="k">                end if</span>
 <a name="ln-395"></a>
-<a name="ln-396"></a>                <span class="n">n_use</span> <span class="o">=</span> <span class="n">n_use</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-396"></a><span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_SUBMODULE</span>
 <a name="ln-397"></a>
-<a name="ln-398"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-398"></a>                <span class="n">n_use</span> <span class="o">=</span> <span class="n">n_use</span> <span class="o">+</span> <span class="mi">1</span>
 <a name="ln-399"></a>
-<a name="ln-400"></a><span class="k">                    if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-400"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-401"></a>
-<a name="ln-402"></a><span class="k">                        </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">temp_string</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:)</span>
-<a name="ln-403"></a>                        
-<a name="ln-404"></a>                    <span class="k">end if</span>
-<a name="ln-405"></a>
-<a name="ln-406"></a><span class="k">                    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-407"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-408"></a>                          <span class="s1">&#39;empty or invalid name for submodule parent&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-409"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">temp_string</span><span class="p">))</span>
-<a name="ln-410"></a>                        <span class="k">return</span>
-<a name="ln-411"></a><span class="k">                    end if</span>
-<a name="ln-412"></a>
-<a name="ln-413"></a><span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span>
+<a name="ln-402"></a><span class="k">                    if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-403"></a>
+<a name="ln-404"></a><span class="k">                        </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">temp_string</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:)</span>
+<a name="ln-405"></a>                        
+<a name="ln-406"></a>                    <span class="k">end if</span>
+<a name="ln-407"></a>
+<a name="ln-408"></a><span class="k">                    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-409"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-410"></a>                          <span class="s1">&#39;empty or invalid name for submodule parent&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-411"></a>                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">temp_string</span><span class="p">))</span>
+<a name="ln-412"></a>                        <span class="k">return</span>
+<a name="ln-413"></a><span class="k">                    end if</span>
 <a name="ln-414"></a>
-<a name="ln-415"></a>                    <span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
+<a name="ln-415"></a><span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span>
 <a name="ln-416"></a>
-<a name="ln-417"></a>                <span class="k">end if</span>
+<a name="ln-417"></a>                    <span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
 <a name="ln-418"></a>
-<a name="ln-419"></a><span class="k">            end if</span>
+<a name="ln-419"></a>                <span class="k">end if</span>
 <a name="ln-420"></a>
-<a name="ln-421"></a>            <span class="c">! Detect if contains a program</span>
-<a name="ln-422"></a>            <span class="c">!  (no modules allowed after program def)</span>
-<a name="ln-423"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;program&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-424"></a>
-<a name="ln-425"></a><span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_PROGRAM</span>
+<a name="ln-421"></a><span class="k">            end if</span>
+<a name="ln-422"></a>
+<a name="ln-423"></a>            <span class="c">! Detect if contains a program</span>
+<a name="ln-424"></a>            <span class="c">!  (no modules allowed after program def)</span>
+<a name="ln-425"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;program&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-426"></a>
-<a name="ln-427"></a>            <span class="k">end if</span>
+<a name="ln-427"></a><span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_PROGRAM</span>
 <a name="ln-428"></a>
-<a name="ln-429"></a><span class="k">        end do </span><span class="n">file_loop</span>
+<a name="ln-429"></a>            <span class="k">end if</span>
 <a name="ln-430"></a>
-<a name="ln-431"></a>        <span class="c">! Default to subprogram unit type</span>
-<a name="ln-432"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-433"></a><span class="k">            </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_SUBPROGRAM</span>
-<a name="ln-434"></a>        <span class="k">end if</span>
-<a name="ln-435"></a>
-<a name="ln-436"></a><span class="k">        if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-437"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">))</span>
-<a name="ln-438"></a>            <span class="k">allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">))</span>
-<a name="ln-439"></a>            <span class="k">allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">))</span>
-<a name="ln-440"></a>        <span class="k">end if</span>
-<a name="ln-441"></a>
-<a name="ln-442"></a><span class="k">    end do</span>
+<a name="ln-431"></a><span class="k">        end do </span><span class="n">file_loop</span>
+<a name="ln-432"></a>
+<a name="ln-433"></a>        <span class="c">! Default to subprogram unit type</span>
+<a name="ln-434"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-435"></a><span class="k">            </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_SUBPROGRAM</span>
+<a name="ln-436"></a>        <span class="k">end if</span>
+<a name="ln-437"></a>
+<a name="ln-438"></a><span class="k">        if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-439"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">))</span>
+<a name="ln-440"></a>            <span class="k">allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">))</span>
+<a name="ln-441"></a>            <span class="k">allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">))</span>
+<a name="ln-442"></a>        <span class="k">end if</span>
 <a name="ln-443"></a>
-<a name="ln-444"></a><span class="k">    contains</span>
+<a name="ln-444"></a><span class="k">    end do</span>
 <a name="ln-445"></a>
-<a name="ln-446"></a><span class="k">    function </span><span class="n">validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
-<a name="ln-447"></a>        <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
-<a name="ln-448"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">valid</span>
-<a name="ln-449"></a>
-<a name="ln-450"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-446"></a><span class="k">    contains</span>
+<a name="ln-447"></a>
+<a name="ln-448"></a><span class="k">    function </span><span class="n">validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
+<a name="ln-449"></a>        <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a name="ln-450"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">valid</span>
 <a name="ln-451"></a>
-<a name="ln-452"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-453"></a><span class="k">            </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-454"></a>            <span class="k">return</span>
-<a name="ln-455"></a><span class="k">        end if</span>
-<a name="ln-456"></a>
-<a name="ln-457"></a><span class="k">        if</span> <span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="s1">&#39;a&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-458"></a>            <span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">))</span> <span class="o">&gt;</span> <span class="s1">&#39;z&#39;</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-459"></a>
-<a name="ln-460"></a><span class="k">            </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-461"></a>            <span class="k">return</span>
-<a name="ln-462"></a><span class="k">        end if</span>
-<a name="ln-463"></a>
-<a name="ln-464"></a><span class="k">        do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-452"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-453"></a>
+<a name="ln-454"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-455"></a><span class="k">            </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-456"></a>            <span class="k">return</span>
+<a name="ln-457"></a><span class="k">        end if</span>
+<a name="ln-458"></a>
+<a name="ln-459"></a><span class="k">        if</span> <span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="s1">&#39;a&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-460"></a>            <span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">))</span> <span class="o">&gt;</span> <span class="s1">&#39;z&#39;</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-461"></a>
+<a name="ln-462"></a><span class="k">            </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-463"></a>            <span class="k">return</span>
+<a name="ln-464"></a><span class="k">        end if</span>
 <a name="ln-465"></a>
-<a name="ln-466"></a>            <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.(</span> <span class="p">&amp;</span>
-<a name="ln-467"></a>                <span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="s1">&#39;0&#39;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="s1">&#39;9&#39;</span><span class="p">).</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-468"></a>                <span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="s1">&#39;a&#39;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="s1">&#39;z&#39;</span><span class="p">).</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-469"></a>                <span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="p">)</span> <span class="k">then</span>
-<a name="ln-470"></a><span class="k">                    </span>
-<a name="ln-471"></a><span class="k">                </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-472"></a>                <span class="k">return</span>
-<a name="ln-473"></a><span class="k">            end if</span>
-<a name="ln-474"></a>
-<a name="ln-475"></a><span class="k">        end do</span>
+<a name="ln-466"></a><span class="k">        do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-467"></a>
+<a name="ln-468"></a>            <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.(</span> <span class="p">&amp;</span>
+<a name="ln-469"></a>                <span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="s1">&#39;0&#39;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="s1">&#39;9&#39;</span><span class="p">).</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-470"></a>                <span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="s1">&#39;a&#39;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="s1">&#39;z&#39;</span><span class="p">).</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-471"></a>                <span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="p">)</span> <span class="k">then</span>
+<a name="ln-472"></a><span class="k">                    </span>
+<a name="ln-473"></a><span class="k">                </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-474"></a>                <span class="k">return</span>
+<a name="ln-475"></a><span class="k">            end if</span>
 <a name="ln-476"></a>
-<a name="ln-477"></a><span class="k">        </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a name="ln-478"></a>        <span class="k">return</span>
-<a name="ln-479"></a>
-<a name="ln-480"></a><span class="k">    end function </span><span class="n">validate_name</span>
+<a name="ln-477"></a><span class="k">        end do</span>
+<a name="ln-478"></a>
+<a name="ln-479"></a><span class="k">        </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a name="ln-480"></a>        <span class="k">return</span>
 <a name="ln-481"></a>
-<a name="ln-482"></a><span class="k">end function </span><span class="n">parse_f_source</span>
+<a name="ln-482"></a><span class="k">    end function </span><span class="n">validate_name</span>
 <a name="ln-483"></a>
-<a name="ln-484"></a>
-<a name="ln-485"></a><span class="k">function </span><span class="n">parse_c_source</span><span class="p">(</span><span class="n">c_filename</span><span class="p">,</span><span class="n">error</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">c_source</span><span class="p">)</span>
-<a name="ln-486"></a>    <span class="c">! Rudimentary scan of c source file and </span>
-<a name="ln-487"></a>    <span class="c">!  extract include dependencies</span>
-<a name="ln-488"></a>    <span class="c">!</span>
-<a name="ln-489"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">c_filename</span>
-<a name="ln-490"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">c_source</span>
-<a name="ln-491"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-492"></a>
-<a name="ln-493"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">fh</span><span class="p">,</span> <span class="n">n_include</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="k">pass</span><span class="p">,</span> <span class="nb">stat</span>
-<a name="ln-494"></a><span class="nb">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_lines</span><span class="p">(:)</span>
-<a name="ln-495"></a>
-<a name="ln-496"></a>    <span class="n">c_source</span><span class="p">%</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">c_filename</span>
+<a name="ln-484"></a><span class="k">end function </span><span class="n">parse_f_source</span>
+<a name="ln-485"></a>
+<a name="ln-486"></a>
+<a name="ln-487"></a><span class="k">function </span><span class="n">parse_c_source</span><span class="p">(</span><span class="n">c_filename</span><span class="p">,</span><span class="n">error</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">c_source</span><span class="p">)</span>
+<a name="ln-488"></a>    <span class="c">! Rudimentary scan of c source file and </span>
+<a name="ln-489"></a>    <span class="c">!  extract include dependencies</span>
+<a name="ln-490"></a>    <span class="c">!</span>
+<a name="ln-491"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">c_filename</span>
+<a name="ln-492"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">c_source</span>
+<a name="ln-493"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-494"></a>
+<a name="ln-495"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">fh</span><span class="p">,</span> <span class="n">n_include</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="k">pass</span><span class="p">,</span> <span class="nb">stat</span>
+<a name="ln-496"></a><span class="nb">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_lines</span><span class="p">(:)</span>
 <a name="ln-497"></a>
-<a name="ln-498"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">c_filename</span><span class="p">),</span> <span class="s2">&quot;.c&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-498"></a>    <span class="n">c_source</span><span class="p">%</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">c_filename</span>
 <a name="ln-499"></a>
-<a name="ln-500"></a><span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_CSOURCE</span>
+<a name="ln-500"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">c_filename</span><span class="p">),</span> <span class="s2">&quot;.c&quot;</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-501"></a>
-<a name="ln-502"></a>    <span class="n">elseif</span> <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">c_filename</span><span class="p">),</span> <span class="s2">&quot;.h&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-502"></a><span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_CSOURCE</span>
 <a name="ln-503"></a>
-<a name="ln-504"></a><span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_CHEADER</span>
+<a name="ln-504"></a>    <span class="n">elseif</span> <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">c_filename</span><span class="p">),</span> <span class="s2">&quot;.h&quot;</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-505"></a>
-<a name="ln-506"></a>    <span class="k">end if</span>
+<a name="ln-506"></a><span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_CHEADER</span>
 <a name="ln-507"></a>
-<a name="ln-508"></a><span class="k">    allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<a name="ln-509"></a>    <span class="k">allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<a name="ln-510"></a>
-<a name="ln-511"></a>    <span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">c_filename</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span>
-<a name="ln-512"></a>    <span class="n">file_lines</span> <span class="o">=</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
-<a name="ln-513"></a>    <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
-<a name="ln-514"></a>
-<a name="ln-515"></a>    <span class="k">do pass</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
-<a name="ln-516"></a>        <span class="n">n_include</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-517"></a>        <span class="n">file_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
-<a name="ln-518"></a>
-<a name="ln-519"></a>            <span class="c">! Process &#39;INCLUDE&#39; statements</span>
-<a name="ln-520"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;#include&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-521"></a>                <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-522"></a><span class="k">                            </span>
-<a name="ln-523"></a><span class="k">                </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-524"></a>
-<a name="ln-525"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-526"></a>
-<a name="ln-527"></a><span class="k">                    </span><span class="n">c_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="p">&amp;</span>
-<a name="ln-528"></a>                     <span class="p">&amp;</span>   <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-529"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-530"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">c_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-531"></a>                            <span class="s1">&#39;unable to get c include file&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-532"></a>                            <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span><span class="p">))</span>
-<a name="ln-533"></a>                        <span class="k">return</span>
-<a name="ln-534"></a><span class="k">                    end if</span>
-<a name="ln-535"></a>
-<a name="ln-536"></a><span class="k">                end if</span>
-<a name="ln-537"></a>
-<a name="ln-538"></a><span class="k">            end if</span>
+<a name="ln-508"></a>    <span class="k">end if</span>
+<a name="ln-509"></a>
+<a name="ln-510"></a><span class="k">    allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<a name="ln-511"></a>    <span class="k">allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<a name="ln-512"></a>
+<a name="ln-513"></a>    <span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">c_filename</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span>
+<a name="ln-514"></a>    <span class="n">file_lines</span> <span class="o">=</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+<a name="ln-515"></a>    <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+<a name="ln-516"></a>
+<a name="ln-517"></a>    <span class="n">c_source</span><span class="p">%</span><span class="n">digest</span> <span class="o">=</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
+<a name="ln-518"></a>    
+<a name="ln-519"></a>    <span class="k">do pass</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
+<a name="ln-520"></a>        <span class="n">n_include</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-521"></a>        <span class="n">file_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
+<a name="ln-522"></a>
+<a name="ln-523"></a>            <span class="c">! Process &#39;INCLUDE&#39; statements</span>
+<a name="ln-524"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;#include&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-525"></a>                <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-526"></a><span class="k">                            </span>
+<a name="ln-527"></a><span class="k">                </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-528"></a>
+<a name="ln-529"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-530"></a>
+<a name="ln-531"></a><span class="k">                    </span><span class="n">c_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="p">&amp;</span>
+<a name="ln-532"></a>                     <span class="p">&amp;</span>   <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-533"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-534"></a><span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">c_filename</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-535"></a>                            <span class="s1">&#39;unable to get c include file&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-536"></a>                            <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span><span class="p">))</span>
+<a name="ln-537"></a>                        <span class="k">return</span>
+<a name="ln-538"></a><span class="k">                    end if</span>
 <a name="ln-539"></a>
-<a name="ln-540"></a><span class="k">        end do </span><span class="n">file_loop</span>
+<a name="ln-540"></a><span class="k">                end if</span>
 <a name="ln-541"></a>
-<a name="ln-542"></a>        <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-543"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">))</span>
-<a name="ln-544"></a>        <span class="k">end if</span>
+<a name="ln-542"></a><span class="k">            end if</span>
+<a name="ln-543"></a>
+<a name="ln-544"></a><span class="k">        end do </span><span class="n">file_loop</span>
 <a name="ln-545"></a>
-<a name="ln-546"></a><span class="k">    end do</span>
-<a name="ln-547"></a>
-<a name="ln-548"></a><span class="k">end function </span><span class="n">parse_c_source</span>
+<a name="ln-546"></a>        <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-547"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">))</span>
+<a name="ln-548"></a>        <span class="k">end if</span>
 <a name="ln-549"></a>
-<a name="ln-550"></a>
-<a name="ln-551"></a><span class="k">function </span><span class="n">split_n</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">delims</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="nb">stat</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">substring</span><span class="p">)</span>
-<a name="ln-552"></a>    <span class="c">! Split a string on one or more delimeters</span>
-<a name="ln-553"></a>    <span class="c">!  and return the nth substring if it exists</span>
-<a name="ln-554"></a>    <span class="c">!</span>
-<a name="ln-555"></a>    <span class="c">! n=0  will return the last item</span>
-<a name="ln-556"></a>    <span class="c">! n=-1 will return the penultimate item etc.</span>
-<a name="ln-557"></a>    <span class="c">!</span>
-<a name="ln-558"></a>    <span class="c">! stat = 1 on return if the index </span>
-<a name="ln-559"></a>    <span class="c">!  is not found</span>
-<a name="ln-560"></a>    <span class="c">!</span>
-<a name="ln-561"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
-<a name="ln-562"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">delims</span>
-<a name="ln-563"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">n</span>
-<a name="ln-564"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
-<a name="ln-565"></a><span class="nb">    </span><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">substring</span>
-<a name="ln-566"></a>
-<a name="ln-567"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-<a name="ln-568"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">string_parts</span><span class="p">(:)</span>
-<a name="ln-569"></a>
-<a name="ln-570"></a>    <span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">string_parts</span><span class="p">,</span><span class="n">delims</span><span class="p">)</span>
-<a name="ln-571"></a>
-<a name="ln-572"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">n</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-573"></a><span class="k">        </span><span class="n">i</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">string_parts</span><span class="p">)</span> <span class="o">+</span> <span class="n">n</span>
-<a name="ln-574"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-575"></a><span class="k">            </span><span class="nb">stat</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="ln-576"></a>            <span class="k">return</span>
-<a name="ln-577"></a><span class="k">        end if</span>
-<a name="ln-578"></a><span class="k">    else</span>
-<a name="ln-579"></a><span class="k">        </span><span class="n">i</span> <span class="o">=</span> <span class="n">n</span>
-<a name="ln-580"></a>    <span class="k">end if</span>
-<a name="ln-581"></a>
-<a name="ln-582"></a><span class="k">    if</span> <span class="p">(</span><span class="n">i</span><span class="o">&gt;</span><span class="n">size</span><span class="p">(</span><span class="n">string_parts</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-583"></a><span class="k">        </span><span class="nb">stat</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="ln-584"></a>        <span class="k">return</span>
-<a name="ln-585"></a><span class="k">    end if</span>
-<a name="ln-586"></a>
-<a name="ln-587"></a><span class="k">    </span><span class="n">substring</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">string_parts</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
-<a name="ln-588"></a>    <span class="nb">stat</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-589"></a>
-<a name="ln-590"></a><span class="k">end function </span><span class="n">split_n</span>
-<a name="ln-591"></a>
-<a name="ln-592"></a>
-<a name="ln-593"></a><span class="k">end module </span><span class="n">fpm_sources</span>
+<a name="ln-550"></a><span class="k">    end do</span>
+<a name="ln-551"></a>
+<a name="ln-552"></a><span class="k">end function </span><span class="n">parse_c_source</span>
+<a name="ln-553"></a>
+<a name="ln-554"></a>
+<a name="ln-555"></a><span class="k">function </span><span class="n">split_n</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">delims</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="nb">stat</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">substring</span><span class="p">)</span>
+<a name="ln-556"></a>    <span class="c">! Split a string on one or more delimeters</span>
+<a name="ln-557"></a>    <span class="c">!  and return the nth substring if it exists</span>
+<a name="ln-558"></a>    <span class="c">!</span>
+<a name="ln-559"></a>    <span class="c">! n=0  will return the last item</span>
+<a name="ln-560"></a>    <span class="c">! n=-1 will return the penultimate item etc.</span>
+<a name="ln-561"></a>    <span class="c">!</span>
+<a name="ln-562"></a>    <span class="c">! stat = 1 on return if the index </span>
+<a name="ln-563"></a>    <span class="c">!  is not found</span>
+<a name="ln-564"></a>    <span class="c">!</span>
+<a name="ln-565"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
+<a name="ln-566"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">delims</span>
+<a name="ln-567"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">n</span>
+<a name="ln-568"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
+<a name="ln-569"></a><span class="nb">    </span><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">substring</span>
+<a name="ln-570"></a>
+<a name="ln-571"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-572"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">string_parts</span><span class="p">(:)</span>
+<a name="ln-573"></a>
+<a name="ln-574"></a>    <span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">string_parts</span><span class="p">,</span><span class="n">delims</span><span class="p">)</span>
+<a name="ln-575"></a>
+<a name="ln-576"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">n</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-577"></a><span class="k">        </span><span class="n">i</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">string_parts</span><span class="p">)</span> <span class="o">+</span> <span class="n">n</span>
+<a name="ln-578"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-579"></a><span class="k">            </span><span class="nb">stat</span> <span class="o">=</span> <span class="mi">1</span>
+<a name="ln-580"></a>            <span class="k">return</span>
+<a name="ln-581"></a><span class="k">        end if</span>
+<a name="ln-582"></a><span class="k">    else</span>
+<a name="ln-583"></a><span class="k">        </span><span class="n">i</span> <span class="o">=</span> <span class="n">n</span>
+<a name="ln-584"></a>    <span class="k">end if</span>
+<a name="ln-585"></a>
+<a name="ln-586"></a><span class="k">    if</span> <span class="p">(</span><span class="n">i</span><span class="o">&gt;</span><span class="n">size</span><span class="p">(</span><span class="n">string_parts</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-587"></a><span class="k">        </span><span class="nb">stat</span> <span class="o">=</span> <span class="mi">1</span>
+<a name="ln-588"></a>        <span class="k">return</span>
+<a name="ln-589"></a><span class="k">    end if</span>
+<a name="ln-590"></a>
+<a name="ln-591"></a><span class="k">    </span><span class="n">substring</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">string_parts</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
+<a name="ln-592"></a>    <span class="nb">stat</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-593"></a>
+<a name="ln-594"></a><span class="k">end function </span><span class="n">split_n</span>
+<a name="ln-595"></a>
+<a name="ln-596"></a>
+<a name="ln-597"></a><span class="k">end module </span><span class="n">fpm_sources</span>
 </pre></div>
 
     </section>
@@ -874,7 +878,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-01 17:08  
+             on 2020-12-02 14:22  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
