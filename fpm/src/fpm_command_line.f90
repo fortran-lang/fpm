@@ -504,7 +504,7 @@ contains
     '  + run   Run the local package binaries. defaults to all binaries for ', &
     '          that release.                                                ', &
     '  + test  Run the tests.                                               ', &
-    '  + help  Alternate method for displaying subcommand help              ', &
+    '  + help  Alternate method for displaying subcommand help.             ', &
     '  + list  Display brief descriptions of all subcommands.               ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
