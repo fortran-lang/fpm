@@ -13,8 +13,15 @@ subroutine targets_from_sources(model,sources)
     type(srcfile_t), intent(in) :: sources(:)
 
     integer :: i
+    character(:), allocatable :: xsuffix
     type(build_target_t), pointer :: dep
     logical :: with_lib
+
+    if (get_os_type() == OS_WINDOWS) then
+        xsuffix = '.exe'
+    else
+        xsuffix = ''
+    end if
 
     with_lib = any([(sources(i)%unit_scope == FPM_SCOPE_LIB,i=1,size(sources))])
 
@@ -46,11 +53,13 @@ subroutine targets_from_sources(model,sources)
             if (sources(i)%unit_scope == FPM_SCOPE_APP) then
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
                             link_libraries = sources(i)%link_libraries, &
-                            output_file = join_path(model%output_directory,'app',sources(i)%exe_name))
+                            output_file = join_path(model%output_directory,'app', &
+                            sources(i)%exe_name//xsuffix))
             else
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
                             link_libraries = sources(i)%link_libraries, &
-                            output_file = join_path(model%output_directory,'test',sources(i)%exe_name))
+                            output_file = join_path(model%output_directory,'test', &
+                            sources(i)%exe_name//xsuffix))
             
             end if
 
@@ -248,5 +257,63 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
     end do
 
 end function find_module_dependency
+
+
+!> For link targets, enumerate any dependency objects required for linking
+subroutine resolve_target_linking(targets)
+    type(build_target_ptr), intent(inout), target :: targets(:)
+
+    integer :: i,j,k
+    type(string_t) :: link_object
+
+    do i=1,size(targets)
+
+        associate(target => targets(i)%ptr)
+
+            allocate(target%link_objects(0))
+
+            do j=1,size(target%dependencies)
+            
+                if (target%target_type == FPM_TARGET_ARCHIVE ) then
+            
+                    ! Construct object list for archive
+                    link_object%s = target%dependencies(j)%ptr%output_file
+                    target%link_objects = [target%link_objects, link_object]
+            
+                else if (target%target_type == FPM_TARGET_EXECUTABLE .and. &
+                        target%dependencies(j)%ptr%target_type ==  FPM_TARGET_OBJECT) then
+                    
+                    associate(exe_obj => target%dependencies(j)%ptr)
+
+                        ! Construct object list for executable
+                        link_object%s = exe_obj%output_file
+                        target%link_objects = [target%link_objects, link_object]
+                            
+                        ! Include non-library object dependencies
+                        do k=1,size(exe_obj%dependencies)
+                
+                            if (allocated(exe_obj%dependencies(k)%ptr%source)) then
+                                if (exe_obj%dependencies(k)%ptr%source%unit_scope == &
+                                     exe_obj%source%unit_scope) then
+
+                                    link_object%s = exe_obj%dependencies(k)%ptr%output_file
+                                    target%link_objects = [target%link_objects, link_object]
+
+                                end if
+                            end if
+                
+                        end do
+
+                    end associate
+            
+                end if
+
+            end do
+        end associate
+
+    end do
+
+end subroutine resolve_target_linking
+
 
 end module fpm_targets
