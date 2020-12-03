@@ -803,7 +803,7 @@ contains
     ' fpm test                                                              ', &
     '                                                                       ', &
     ' # run using compiler command "f90"                                    ', &
-    ' fpm test -compiler f90                                                ', &
+    ' fpm test --compiler f90                                               ', &
     '                                                                       ', &
     ' # run a specific test and pass arguments to the command               ', &
     ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &
