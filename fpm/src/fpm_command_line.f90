@@ -349,7 +349,7 @@ contains
            if(ii .gt. 0 .and. len(lines).gt. 0) then
                write(stdout,'(g0)')(trim(lines(iii)), iii=1, ii)
            else
-               write(stdout,'(a)')'<WARNING: *printhelp* output requested is empty'
+               write(stdout,'(a)')'<WARNING> *printhelp* output requested is empty'
            endif
         endif
     end subroutine printhelp
