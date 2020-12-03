@@ -400,7 +400,7 @@ contains
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [--lib|--src] [--app] [--test] [--backfill]                           ', &
    ' list [--list]                                                                  ', &
-   ' run  [NAME(s)] [--release] [--runner "CMD"] [--list]                           ', &
+   ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
