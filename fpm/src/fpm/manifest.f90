@@ -15,7 +15,7 @@ module fpm_manifest
     use fpm_error, only : error_t, fatal_error, file_not_found_error
     use fpm_toml, only : toml_table, read_package_file
     use fpm_manifest_test, only : test_config_t
-    use fpm_filesystem, only: join_path, exists
+    use fpm_filesystem, only: join_path, exists, basename
     implicit none
     private
 
@@ -84,6 +84,7 @@ contains
         logical, intent(in), optional :: apply_defaults
 
         type(toml_table), allocatable :: table
+        character(len=:), allocatable :: root
 
         call read_package_file(table, file, error)
         if (allocated(error)) return
@@ -98,7 +99,9 @@ contains
 
         if (present(apply_defaults)) then
             if (apply_defaults) then
-                call package_defaults(package, error)
+                root = basename(file)
+                if (root == file) root = "."
+                call package_defaults(package, root, error)
                 if (allocated(error)) return
             end if
         end if
@@ -107,30 +110,34 @@ contains
 
 
     !> Apply package defaults
-    subroutine package_defaults(package, error)
+    subroutine package_defaults(package, root, error)
 
         !> Parsed package meta data
         type(package_config_t), intent(inout) :: package
+
+        !> Current working directory
+        character(len=*), intent(in) :: root
 
         !> Error status of the operation
         type(error_t), allocatable, intent(out) :: error
 
         ! Populate library in case we find the default src directory
-        if (.not.allocated(package%library) .and. exists("src")) then
+        if (.not.allocated(package%library) .and. &
+            & exists(join_path(root, "src"))) then
             allocate(package%library)
             call default_library(package%library)
         end if
 
         ! Populate executable in case we find the default app
         if (.not.allocated(package%executable) .and. &
-            exists(join_path('app',"main.f90"))) then
+            & exists(join_path(root, "app", "main.f90"))) then
             allocate(package%executable(1))
             call default_executable(package%executable(1), package%name)
         end if
 
         ! Populate test in case we find the default test directory
         if (.not.allocated(package%test) .and. &
-            exists(join_path("test","main.f90"))) then
+            & exists(join_path(root, "test", "main.f90"))) then
             allocate(package%test(1))
             call default_test(package%test(1), package%name)
         endif

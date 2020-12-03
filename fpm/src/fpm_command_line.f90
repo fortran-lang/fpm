@@ -80,6 +80,7 @@ type, extends(fpm_cmd_settings)  :: fpm_update_settings
     character(len=ibug),allocatable :: name(:)
     logical :: fetch_only
     logical :: verbose
+    logical :: clean
 end type
 
 character(len=:),allocatable :: name
@@ -340,7 +341,7 @@ contains
             & verbose=lget('verbose') )
 
         case('update')
-            call set_args('--fetch-only F --verbose F', &
+            call set_args('--fetch-only F --verbose F --clean F', &
                 help_update, version_text)
 
             if( size(unnamed) .gt. 1 )then
@@ -350,8 +351,9 @@ contains
             endif
 
             allocate(fpm_update_settings :: cmd_settings)
-            cmd_settings=fpm_update_settings(&
-                name=names, fetch_only=lget('fetch-only'), verbose=lget('verbose'))
+            cmd_settings=fpm_update_settings(name=names, &
+                fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
+                clean=lget('clean'))
 
         case default
 
@@ -858,10 +860,10 @@ contains
     '' ]
     help_update=[character(len=80) :: &
     'NAME', &
-    ' update(1) - manage project dependencies', &
+    ' fpm-update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
-    ' fpm update [--fetch-only] [--list] [NAME(s)]', &
+    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
     '', &
     'DESCRIPTION', &
     ' Manage and update project dependencies. If no dependency names are', &
@@ -869,6 +871,7 @@ contains
     '', &
     'OPTIONS', &
     ' --fetch-only  Only fetch dependencies, do not update existing projects', &
+    ' --clean       Do not use previous dependency cache', &
     ' --verbose     Show additional printout', &
     '', &
     'SEE ALSO', &

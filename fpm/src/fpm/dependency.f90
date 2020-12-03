@@ -38,13 +38,8 @@
 !> again, remote dependencies turn into local dependencies by fetching.
 !> Therefore we will update remote dependencies by simply refetching them.
 !>
-!> For remote dependencies we have to refetch if the information in the manifest
-!> changes like:
-!>
-!> - different upstream URL
-!> - changed revision
-!>
-!> or the upstream HEAD has changed (works similar for branches _and_ tags).
+!> For remote dependencies we have to refetch if the revision in the manifest
+!> changes or the upstream HEAD has changed (for branches _and_ tags).
 !>
 !> @Note For our purpose a tag is just a fancy branch name. Tags can be delete and
 !>       modified afterwards, therefore they do not differ too much from branches
@@ -62,10 +57,11 @@
 module fpm_dependency
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : exists, join_path
+  use fpm_filesystem, only : exists, join_path, mkdir
   use fpm_git, only : git_target_revision, git_target_default, git_revision
   use fpm_manifest, only : package_config_t, dependency_config_t, &
     get_package_data
+  use fpm_strings, only : string_t, operator(.in.)
   use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
     toml_parse, get_value, set_value, add_table
   use fpm_versioning, only : version_t, new_version, char
@@ -73,6 +69,8 @@ module fpm_dependency
   private
 
   public :: dependency_tree_t, new_dependency_tree
+  public :: dependency_node_t, new_dependency_node
+  public :: resize
 
 
   !> Overloaded reallocation interface
@@ -87,8 +85,12 @@ module fpm_dependency
     type(version_t), allocatable :: version
     !> Installation prefix of this dependencies
     character(len=:), allocatable :: proj_dir
+    !> Checked out revision of the version control system
+    character(len=:), allocatable :: revision
     !> Dependency is handled
     logical :: done = .false.
+    !> Dependency should be updated
+    logical :: update = .false.
   contains
     !> Update dependency from project manifest
     procedure :: register
@@ -104,8 +106,6 @@ module fpm_dependency
     integer :: unit = output_unit
     !> Verbosity of printout
     integer :: verbosity = 1
-    !> Depth
-    integer :: depth = 0
     !> Installation prefix for dependencies
     character(len=:), allocatable :: dep_dir
     !> Number of currently registered dependencies
@@ -132,8 +132,12 @@ module fpm_dependency
     procedure, private :: resolve_dependencies
     !> Resolve dependencies
     procedure, private :: resolve_dependency
-    !> Find a dependency
-    procedure :: find
+    !> Find a dependency in the tree
+    generic :: find => find_dependency, find_name
+    !> Find a dependency from an dependency configuration
+    procedure, private :: find_dependency
+    !> Find a dependency by its name
+    procedure, private :: find_name
     !> Depedendncy resolution finished
     procedure :: finished
     !> Reading of dependency tree
@@ -152,6 +156,10 @@ module fpm_dependency
     procedure, private :: dump_to_unit
     !> Write dependency tree to TOML data structure
     procedure, private :: dump_to_toml
+    !> Update dependency tree
+    generic :: update => update_dependency
+    !> Update a list of dependencies
+    procedure, private :: update_dependency
   end type dependency_tree_t
 
   !> Common output format for writing to the command line
@@ -182,13 +190,31 @@ contains
   end subroutine new_dependency_tree
 
   !> Create a new dependency node from a configuration
-  pure subroutine new_dependency_node(self, dependency)
+  pure subroutine new_dependency_node(self, dependency, version, proj_dir, update)
     !> Instance of the dependency node
     type(dependency_node_t), intent(out) :: self
     !> Dependency configuration data
     type(dependency_config_t), intent(in) :: dependency
+    !> Version of the dependency
+    type(version_t), intent(in), optional :: version
+    !> Installation prefix of the dependency
+    character(len=*), intent(in), optional :: proj_dir
+    !> Dependency should be updated
+    logical, intent(in), optional :: update
 
     self%dependency_config_t = dependency
+
+    if (present(version)) then
+      self%version = version
+    end if
+
+    if (present(proj_dir)) then
+      self%proj_dir = proj_dir
+    end if
+
+    if (present(update)) then
+      self%update = update
+    end if
 
   end subroutine new_dependency_node
 
@@ -211,6 +237,10 @@ contains
     if (allocated(self%cache)) then
       call self%load(self%cache, error)
       if (allocated(error)) return
+    end if
+
+    if (.not.exists(self%dep_dir)) then
+      call mkdir(self%dep_dir)
     end if
 
     root = "."
@@ -335,6 +365,49 @@ contains
 
   end subroutine add_dependency
 
+  !> Update dependency tree
+  subroutine update_dependency(self, name, error)
+    !> Instance of the dependency tree
+    class(dependency_tree_t), intent(inout) :: self
+    !> Name of the dependency to update
+    character(len=*), intent(in) :: name
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: id
+    type(package_config_t) :: package
+    character(len=:), allocatable :: manifest, proj_dir, revision
+
+    id = self%find(name)
+
+    if (id <= 0) then
+      call fatal_error(error, "Cannot update dependency '"//name//"'")
+      return
+    end if
+
+    associate(dep => self%dep(id))
+      if (allocated(dep%git) .and. dep%update) then
+        if (self%verbosity > 1) then
+          write(self%unit, out_fmt) "Update:", dep%name
+        end if
+        proj_dir = join_path(self%dep_dir, dep%name)
+        call dep%git%checkout(proj_dir, error)
+        if (allocated(error)) return
+
+        call git_revision(proj_dir, revision, error)
+        if (allocated(error)) return
+
+        manifest = join_path(proj_dir, "fpm.toml")
+        call get_package_data(package, manifest, error)
+        if (allocated(error)) return
+
+        call dep%register(package, proj_dir, .true., revision, error)
+        if (allocated(error)) return
+      end if
+    end associate
+
+  end subroutine update_dependency
+
   !> Resolve all dependencies in the tree
   subroutine resolve_dependencies(self, root, error)
     !> Instance of the dependency tree
@@ -346,12 +419,10 @@ contains
 
     integer :: ii
 
-    self%depth = self%depth+1
     do ii = 1, self%ndep
       call self%resolve(self%dep(ii), root, error)
       if (allocated(error)) exit
     end do
-    self%depth = self%depth-1
 
     if (allocated(error)) return
 
@@ -374,6 +445,7 @@ contains
 
     if (dependency%done) return
 
+    fetch = .false.
     if (allocated(dependency%proj_dir)) then
       proj_dir = dependency%proj_dir
     else
@@ -387,16 +459,19 @@ contains
           if (allocated(error)) return
         end if
 
-        call git_revision(proj_dir, revision, error)
-        if (allocated(error)) return
       end if
+    end if
+
+    if (allocated(dependency%git)) then
+      call git_revision(proj_dir, revision, error)
+      if (allocated(error)) return
     end if
 
     manifest = join_path(proj_dir, "fpm.toml")
     call get_package_data(package, manifest, error)
     if (allocated(error)) return
 
-    call dependency%register(package, proj_dir, revision, error)
+    call dependency%register(package, proj_dir, fetch, revision, error)
     if (allocated(error)) return
 
     if (self%verbosity > 1) then
@@ -411,11 +486,26 @@ contains
   end subroutine resolve_dependency
 
   !> Find a dependency in the dependency tree
-  pure function find(self, dependency) result(pos)
+  pure function find_dependency(self, dependency) result(pos)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(in) :: self
     !> Dependency configuration to add
-    type(dependency_config_t), intent(in) :: dependency
+    class(dependency_config_t), intent(in) :: dependency
+    !> Index of the dependency
+    integer :: pos
+
+    integer :: ii
+
+    pos = self%find(dependency%name)
+
+  end function find_dependency
+
+  !> Find a dependency in the dependency tree
+  pure function find_name(self, name) result(pos)
+    !> Instance of the dependency tree
+    class(dependency_tree_t), intent(in) :: self
+    !> Dependency configuration to add
+    character(len=*), intent(in) :: name
     !> Index of the dependency
     integer :: pos
 
@@ -423,13 +513,13 @@ contains
 
     pos = 0
     do ii = 1, self%ndep
-      if (dependency%name == self%dep(ii)%name) then
+      if (name == self%dep(ii)%name) then
         pos = ii
         exit
       end if
     end do
 
-  end function find
+  end function find_name
 
   !> Check if we are done with the dependency resolution
   pure function finished(self)
@@ -444,11 +534,13 @@ contains
   end function finished
 
   !> Update dependency from project manifest
-  subroutine register(self, package, root, revision, error)
+  subroutine register(self, package, root, fetch, revision, error)
     !> Instance of the dependency node
     class(dependency_node_t), intent(inout) :: self
     !> Package configuration data
     type(package_config_t), intent(in) :: package
+    !> Project has been fetched
+    logical, intent(in) :: fetch
     !> Root directory of the project
     character(len=*), intent(in) :: root
     !> Git revision of the project
@@ -457,7 +549,9 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     character(len=:), allocatable :: url
+    logical :: update
 
+    update = .false.
     if (self%name /= package%name) then
       call fatal_error(error, "Dependency name '"//package%name// &
         & "' found, but expected '"//self%name//"' instead")
@@ -467,10 +561,18 @@ contains
     self%proj_dir = root
 
     if (allocated(self%git).and.present(revision)) then
-      url = self%git%url
-      self%git = git_target_revision(url, revision)
+      self%revision = revision
+      if (.not.fetch) then
+        ! git object is HEAD always allows an update
+        update = .not.allocated(self%git%object)
+        if (.not.update) then
+          ! allow update in case the revision does not match the requested object
+          update = revision /= self%git%object
+        end if
+      end if
     end if
 
+    self%update = update
     self%done = .true.
 
   end subroutine register
@@ -530,7 +632,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     integer :: ndep, ii
-    character(len=:), allocatable :: version, url, rev, proj_dir
+    character(len=:), allocatable :: version, url, obj, rev, proj_dir
     type(toml_key), allocatable :: list(:)
     type(toml_table), pointer :: ptr
     type(dependency_config_t) :: dep
@@ -547,6 +649,7 @@ contains
       call get_value(ptr, "version", version)
       call get_value(ptr, "proj-dir", proj_dir)
       call get_value(ptr, "git", url)
+      call get_value(ptr, "obj", obj)
       call get_value(ptr, "rev", rev)
       if (.not.allocated(proj_dir)) cycle
       self%ndep = self%ndep + 1
@@ -564,10 +667,13 @@ contains
           if (allocated(error)) exit
         end if
         if (allocated(url)) then
-          if (allocated(rev)) then
-            dep%git = git_target_revision(url, rev)
+          if (allocated(obj)) then
+            dep%git = git_target_revision(url, obj)
           else
             dep%git = git_target_default(url)
+          end if
+          if (allocated(rev)) then
+            dep%revision = rev
           end if
         else
           dep%path = proj_dir
@@ -637,12 +743,17 @@ contains
           call fatal_error(error, "Cannot create entry for "//dep%name)
           exit
         end if
-        call set_value(ptr, "version", char(dep%version))
+        if (allocated(dep%version)) then
+          call set_value(ptr, "version", char(dep%version))
+        end if
         call set_value(ptr, "proj-dir", dep%proj_dir)
         if (allocated(dep%git)) then
           call set_value(ptr, "git", dep%git%url)
           if (allocated(dep%git%object)) then
-            call set_value(ptr, "rev", dep%git%object)
+            call set_value(ptr, "obj", dep%git%object)
+          end if
+          if (allocated(dep%revision)) then
+            call set_value(ptr, "rev", dep%revision)
           end if
         end if
       end associate

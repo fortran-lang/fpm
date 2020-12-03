@@ -6,7 +6,7 @@ module fpm_filesystem
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files,&
-            mkdir, exists, get_temp_filename, windows_path, getline
+            mkdir, exists, get_temp_filename, windows_path, getline, delete_file
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -430,6 +430,18 @@ subroutine getline(unit, line, iostat, iomsg)
     iostat = stat
 
 end subroutine getline
+
+
+subroutine delete_file(file)
+    character(len=*), intent(in) :: file
+    logical :: exist
+    integer :: unit
+    inquire(file=file, exist=exist)
+    if (exist) then
+        open(file=file, newunit=unit)
+        close(unit, status="delete")
+    end if
+end subroutine delete_file
 
 
 end module fpm_filesystem
