@@ -402,7 +402,7 @@ contains
    ' list [--list]                                                                  ', &
    ' run  [NAME(s)] [--release] [--runner "CMD"] [--list]                           ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
-   ' test [NAME(s)] [--release] [--runner "CMD"] [--list]                           ', &
+   ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' ']
     help_usage=[character(len=80) :: &
