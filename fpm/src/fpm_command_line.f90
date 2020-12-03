@@ -772,7 +772,7 @@ contains
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm test [[--target] NAME(s)][--release][-compiler COMPILER_NAME ]    ', &
+    ' fpm test [[--target] NAME(s)][--release][--compiler COMPILER_NAME ]   ', &
     '          [--runner "CMD"] [--list][-- ARGS]                           ', &
     '                                                                       ', &
     ' fpm test --help|--version                                             ', &
