@@ -625,7 +625,7 @@ contains
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm build [--release][-compiler COMPILER_NAME] [-list]                ', &
+    ' fpm build [--release][--compiler COMPILER_NAME] [-list]               ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
