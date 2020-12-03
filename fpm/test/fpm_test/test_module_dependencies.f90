@@ -1,14 +1,15 @@
 !> Define tests for the `fpm_sources` module (module dependency checking)
 module test_module_dependencies
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
-    use fpm_targets, only: targets_from_sources, resolve_module_dependencies
+    use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
+                            resolve_target_linking
     use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, build_target_ptr, &
                 FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                 FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
                 FPM_TARGET_EXECUTABLE, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE
-    use fpm_strings, only: string_t
+    use fpm_strings, only: string_t, operator(.in.)
     implicit none
     private
 
@@ -71,14 +72,17 @@ contains
         if (allocated(error)) then
             return
         end if
-
+        
         if (size(model%targets) /= 3) then
             call test_failed(error,'Incorrect number of model%targets - expecting three')
             return
         end if
 
+        call resolve_target_linking(model%targets)
+
         call check_target(model%targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
-                          deps = [model%targets(2),model%targets(3)],error=error)
+                          deps = [model%targets(2),model%targets(3)], &
+                          links = model%targets(2:3), error=error)
         
         if (allocated(error)) return
 
@@ -146,8 +150,10 @@ contains
             return
         end if
 
+        call resolve_target_linking(model%targets)
+
         call check_target(model%targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=1, &
-                          deps=[model%targets(2)],error=error)
+                          deps=[model%targets(2)],links=[model%targets(2)],error=error)
         
         if (allocated(error)) return
 
@@ -162,7 +168,8 @@ contains
         if (allocated(error)) return
 
         call check_target(model%targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=2, &
-                            deps=[model%targets(1),model%targets(3)],error=error)
+                            deps=[model%targets(1),model%targets(3)], &
+                            links=[model%targets(3)], error=error)
 
         if (allocated(error)) return
 
@@ -202,20 +209,22 @@ contains
             return
         end if
 
+        call resolve_target_linking(model%targets)
+
         call check_target(model%targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                           source=sources(1),error=error)
         
         if (allocated(error)) return
 
         call check_target(model%targets(2)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
-                          deps=[model%targets(1)],error=error)
+                          deps=[model%targets(1)],links=[model%targets(1)],error=error)
         
         if (allocated(error)) return
         
     end subroutine test_program_with_module
 
     
-    !> Check program using a module in same directory
+    !> Check program using modules in same directory
     subroutine test_program_own_module_use(error)
 
         !> Error handling
@@ -233,7 +242,7 @@ contains
         integer, intent(in) :: exe_scope
         type(error_t), allocatable, intent(out) :: error
 
-        type(srcfile_t) :: sources(2)
+        type(srcfile_t) :: sources(3)
         type(fpm_model_t) :: model
         character(:), allocatable :: scope_str
 
@@ -241,13 +250,17 @@ contains
 
         scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
 
-        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod.f90", &
+        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod1.f90", &
                                     scope = exe_scope, &
-                                    provides=[string_t('app_mod')])
+                                    provides=[string_t('app_mod1')])
         
-        sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
+        sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod2.f90", &
+                                    scope = exe_scope, &
+                                    provides=[string_t('app_mod2')],uses=[string_t('app_mod1')])
+
+        sources(3) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=exe_scope, &
-                                    uses=[string_t('app_mod')])
+                                    uses=[string_t('app_mod2')])
 
         call targets_from_sources(model,sources)
         call resolve_module_dependencies(model%targets,error)
@@ -256,11 +269,12 @@ contains
             return
         end if
 
-        if (size(model%targets) /= 3) then
+        if (size(model%targets) /= 4) then
             call test_failed(error,scope_str//'Incorrect number of model%targets - expecting three')
             return
         end if
 
+        call resolve_target_linking(model%targets)
 
         call check_target(model%targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                           source=sources(1),error=error)
@@ -272,11 +286,16 @@ contains
         
         if (allocated(error)) return
 
-        call check_target(model%targets(3)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
-                           deps=[model%targets(2)],error=error)
+        call check_target(model%targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
+                          source=sources(3),deps=[model%targets(2)],error=error)
+        
+        if (allocated(error)) return
+
+        call check_target(model%targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
+                           deps=[model%targets(3)],links=model%targets(1:3), error=error)
 
         if (allocated(error)) return
-        
+
     end subroutine test_scope
     end subroutine test_program_own_module_use
 
@@ -414,12 +433,13 @@ contains
 
 
     !> Helper to check an expected output target
-    subroutine check_target(target,type,n_depends,deps,source,error)
+    subroutine check_target(target,type,n_depends,deps,links,source,error)
         type(build_target_t), intent(in) :: target
         integer, intent(in) :: type
         integer, intent(in) :: n_depends
         type(srcfile_t), intent(in), optional :: source
         type(build_target_ptr), intent(in), optional :: deps(:)
+        type(build_target_ptr), intent(in), optional :: links(:)
         type(error_t), intent(out), allocatable :: error
 
         integer :: i
@@ -445,6 +465,34 @@ contains
                 end if
 
             end do
+
+        end if
+
+        if (present(links)) then
+
+            do i=1,size(links)
+
+                if (.not.(links(i)%ptr%output_file .in. target%link_objects)) then
+                    call test_failed(error,'Missing object ('//links(i)%ptr%output_file//&
+                                    ') for executable "'//target%output_file//'"')
+                    return
+                end if
+
+            end do
+
+            if (size(links) > size(target%link_objects)) then
+
+                call test_failed(error,'There are missing link objects for target "'&
+                                 //target%output_file//'"')
+                return
+                
+            elseif (size(links) < size(target%link_objects)) then
+
+                call test_failed(error,'There are more link objects than expected for target "'&
+                                 //target%output_file//'"')
+                return
+
+            end if
 
         end if
 
