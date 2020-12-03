@@ -349,7 +349,7 @@ contains
            if(ii .gt. 0 .and. len(lines).gt. 0) then
                write(stdout,'(g0)')(trim(lines(iii)), iii=1, ii)
            else
-               write(stdout,'(a)')'<WARNING: *printhelp* output requested is empty'
+               write(stdout,'(a)')'<WARNING> *printhelp* output requested is empty'
            endif
         endif
     end subroutine printhelp
@@ -400,9 +400,9 @@ contains
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [--lib|--src] [--app] [--test] [--backfill]                           ', &
    ' list [--list]                                                                  ', &
-   ' run  [NAME(s)] [--release] [--runner "CMD"] [--list]                           ', &
+   ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
-   ' test [NAME(s)] [--release] [--runner "CMD"] [--list]                           ', &
+   ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' ']
     help_usage=[character(len=80) :: &
@@ -509,10 +509,10 @@ contains
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                       ', &
-    '     build [--release] [--list] [-compiler COMPILER_NAME]              ', &
+    '     build [--release] [--list] [--compiler COMPILER_NAME]             ', &
     '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
-    '     run|test [NAME(s)] [--release] [--list] [--runner "CMD"]          ', &
-    '              [--compiler COMPILER_NAME] [-- ARGS]                     ', &
+    '     run|test [[--target] NAME(s)] [--release] [--list]                ', &
+    '              [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]    ', &
     '     help [NAME(s)]                                                    ', &
     '     list [--list]                                                     ', &
     '                                                                       ', &
@@ -609,7 +609,7 @@ contains
 
     '  # run default programs in /app or as specified in "fpm.toml"         ', &
     '  # using the compiler command "f90".                                  ', &
-    '  fpm run -compiler f90                                                ', &
+    '  fpm run --compiler f90                                               ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
     '  fpm run mytest -- -x 10 -y 20 --title "my title line"                ', &
@@ -625,7 +625,7 @@ contains
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm build [--release][-compiler COMPILER_NAME] [-list]                ', &
+    ' fpm build [--release][--compiler COMPILER_NAME] [-list]               ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -772,7 +772,7 @@ contains
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm test [[--target] NAME(s)][--release][-compiler COMPILER_NAME ]    ', &
+    ' fpm test [[--target] NAME(s)][--release][--compiler COMPILER_NAME ]   ', &
     '          [--runner "CMD"] [--list][-- ARGS]                           ', &
     '                                                                       ', &
     ' fpm test --help|--version                                             ', &
@@ -803,7 +803,7 @@ contains
     ' fpm test                                                              ', &
     '                                                                       ', &
     ' # run using compiler command "f90"                                    ', &
-    ' fpm test -compiler f90                                                ', &
+    ' fpm test --compiler f90                                               ', &
     '                                                                       ', &
     ' # run a specific test and pass arguments to the command               ', &
     ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &

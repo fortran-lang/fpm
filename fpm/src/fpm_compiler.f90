@@ -8,7 +8,7 @@ subroutine add_compile_flag_defaults(build_name,compiler,model)
 ! Choose compile flags based on cli settings & manifest inputs
 character(len=*),intent(in) :: build_name, compiler
 
-type(fpm_model_t) :: model
+type(fpm_model_t), intent(inout) :: model
 ! could just be a function to return a string instead of passing model 
 ! but likely to change other components like matching C compiler
      
