@@ -511,8 +511,8 @@ contains
     '                                                                       ', &
     '     build [--release] [--list] [--compiler COMPILER_NAME]             ', &
     '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
-    '     run|test [NAME(s)] [--release] [--list] [--runner "CMD"]          ', &
-    '              [--compiler COMPILER_NAME] [-- ARGS]                     ', &
+    '     run|test [[--target] NAME(s)] [--release] [--list]                ', &
+    '              [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]    ', &
     '     help [NAME(s)]                                                    ', &
     '     list [--list]                                                     ', &
     '                                                                       ', &
