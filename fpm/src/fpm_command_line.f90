@@ -509,7 +509,7 @@ contains
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                       ', &
-    '     build [--release] [--list] [-compiler COMPILER_NAME]              ', &
+    '     build [--release] [--list] [--compiler COMPILER_NAME]             ', &
     '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
     '     run|test [NAME(s)] [--release] [--list] [--runner "CMD"]          ', &
     '              [--compiler COMPILER_NAME] [-- ARGS]                     ', &
