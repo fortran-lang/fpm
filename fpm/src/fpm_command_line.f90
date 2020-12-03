@@ -609,7 +609,7 @@ contains
 
     '  # run default programs in /app or as specified in "fpm.toml"         ', &
     '  # using the compiler command "f90".                                  ', &
-    '  fpm run -compiler f90                                                ', &
+    '  fpm run --compiler f90                                               ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
     '  fpm run mytest -- -x 10 -y 20 --title "my title line"                ', &
