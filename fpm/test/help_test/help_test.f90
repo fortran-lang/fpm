@@ -7,9 +7,10 @@ character(len=:),allocatable   :: path
 integer                        :: estat, cstat
 character(len=256)             :: message
 logical,allocatable            :: tally(:)
-character(len=:),allocatable   :: book1(:), book2(:)
-!intel_bug!character(len=:),allocatable   :: page1(:)
-character(len=:),allocatable   :: page1(:)
+!intel-bug!character(len=:),allocatable   :: book1(:), book2(:)
+character(len=132),allocatable   :: book1(:), book2(:)
+!intel-bug!character(len=:),allocatable   :: page1(:)
+character(len=132),allocatable   :: page1(:)
 integer                        :: lines
 integer                        :: chars
 ! run a variety of "fpm help" variations and verify expected files are generated
@@ -187,7 +188,7 @@ subroutine swallow(FILENAME,pageout)
 implicit none
 character(len=*),intent(in)              :: FILENAME   ! file to read
 !intel-bug!character(len=:),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
-character(len=:),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
+character(len=132),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
 character(len=1),allocatable             :: text(:)    ! array to hold file in memory
 
    call slurp(FILENAME,text) ! allocate character array and copy file into it
@@ -206,7 +207,7 @@ function page(array)  result (table)
 
 character(len=1),intent(in)  :: array(:)
 !intel-bug!character(len=:),allocatable :: table(:)
-character(len=:),allocatable :: table(:)
+character(len=132),allocatable :: table(:)
 integer                      :: i
 integer                      :: linelength
 integer                      :: length
@@ -238,7 +239,7 @@ character(len=1),parameter   :: cr=char(13)
 
    if(allocated(table))deallocate(table)
    !intel-bug!allocate(character(len=linelength) :: table(lines))
-   allocate(character(len=linelength) :: table(lines))
+   allocate(character(len=132) :: table(lines))
    table=' '
    linecount=1
    position=1
