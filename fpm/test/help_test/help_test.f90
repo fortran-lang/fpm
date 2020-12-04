@@ -54,9 +54,13 @@ character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build'
       endif
       !!write(*,*)findloc(page1,'NAME').eq.1
       be=count(.not.tally)
-      tally=[tally,count(page1.eq.'NAME').eq.1]
-      tally=[tally,count(page1.eq.'SYNOPSIS').eq.1]
-      tally=[tally,count(page1.eq.'DESCRIPTION').eq.1]
+      !!mingw bug this returns 0
+      !!tally=[tally,count(page1.eq.'NAME').eq.1]
+      !!tally=[tally,count(page1.eq.'SYNOPSIS').eq.1]
+      !!tally=[tally,count(page1.eq.'DESCRIPTION').eq.1]
+      tally=[tally,bugcount(page1,'NAME').eq.1]
+      tally=[tally,bugcount(page1,'SYNOPSIS').eq.1]
+      tally=[tally,bugcount(page1,'DESCRIPTION').eq.1]
       af=count(.not.tally)
       if(be.ne.af)then
          write(*,*)'<ERROR>missing expected sections in ',names(i)
@@ -121,6 +125,17 @@ character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build'
    endif
    write(*,'(g0:,1x)')'<INFO>TEST help SUBCOMMAND COMPLETE'
 contains
+
+function bugcount(page,string)
+character(len=*),intent(in) :: page(:)
+character(len=*),intent(in) :: string
+integer :: bugcount
+integer :: i
+bugcount=0
+   do i = 1,size(page)
+      if(page(i).eq.string)bugcount=bugcount+1
+   enddo
+end function bugcount
 
 subroutine wipe(filename)
 character(len=*),intent(in) :: filename
