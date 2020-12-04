@@ -1,15 +1,15 @@
 program help_test
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 implicit none
-integer                        :: i, j
+integer                        :: i
 integer                        :: be, af
 character(len=:),allocatable   :: path
 integer                        :: estat, cstat
 character(len=256)             :: message
 logical,allocatable            :: tally(:)
-character(len=1),allocatable   :: book1(:), book2(:)
+character(len=:),allocatable   :: book1(:), book2(:)
 !intel_bug!character(len=:),allocatable   :: page1(:)
-character(len=132),allocatable   :: page1(:)
+character(len=:),allocatable   :: page1(:)
 integer                        :: lines
 integer                        :: chars
 ! run a variety of "fpm help" variations and verify expected files are generated
@@ -55,13 +55,9 @@ character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build'
       endif
       !!write(*,*)findloc(page1,'NAME').eq.1
       be=count(.not.tally)
-      !!mingw bug this returns 0
-      !!tally=[tally,count(page1.eq.'NAME').eq.1]
-      !!tally=[tally,count(page1.eq.'SYNOPSIS').eq.1]
-      !!tally=[tally,count(page1.eq.'DESCRIPTION').eq.1]
-      tally=[tally,bugcount(page1,'NAME').eq.1]
-      tally=[tally,bugcount(page1,'SYNOPSIS').eq.1]
-      tally=[tally,bugcount(page1,'DESCRIPTION').eq.1]
+      tally=[tally,count(page1.eq.'NAME').eq.1]
+      tally=[tally,count(page1.eq.'SYNOPSIS').eq.1]
+      tally=[tally,count(page1.eq.'DESCRIPTION').eq.1]
       af=count(.not.tally)
       if(be.ne.af)then
          write(*,*)'<ERROR>missing expected sections in ',names(i)
@@ -69,7 +65,7 @@ character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build'
          write(*,*)count(page1.eq.'NAME')
          write(*,*)count(page1.eq.'SYNOPSIS')
          write(*,*)count(page1.eq.'DESCRIPTION')
-         write(*,'(a)')(trim(page1(j)),j=1,size(page1))
+         write(*,'(a)')page1
       endif
       write(*,*)'<INFO>have completed ',count(tally),' tests'
       call wipe('fpm_scratch_help.txt')
@@ -87,26 +83,31 @@ character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build'
    enddo
 
    ! compare book written in fragments with manual
-   call slurp('fpm_scratch_help.txt',book1)
-   call slurp('fpm_scratch_manual.txt',book2)
+   call swallow('fpm_scratch_help.txt',book1)
+   call swallow('fpm_scratch_manual.txt',book2)
+   ! get rid of lines from run() which is not on stderr at the moment
+   book1=pack(book1,index(book1,' + build/').eq.0)
+   book2=pack(book1,index(book2,' + build/').eq.0)
    write(*,*)'<INFO>book1 ',size(book1), len(book1)
    write(*,*)'<INFO>book2 ',size(book2), len(book2)
-   !if(size(book1).ne.size(book2))then
-   !      write(*,*)'<ERROR>manual and appended pages are not the same size'
-   !      tally=[tally,.false.]
-   !else
-   !   if(all(book1.ne.book2))then
-   !      tally=[tally,.false.]
-   !      write(*,*)'<ERROR>manual and appended pages are not the same'
-   !   else
-   !      write(*,*)'<INFO>manual and appended pages are the same'
-   !      tally=[tally,.true.]
-   !   endif
-   !endif
+   if(size(book1).ne.size(book2))then
+         write(*,*)'<ERROR>manual and appended pages are not the same size'
+         tally=[tally,.false.]
+   else
+      if(all(book1.ne.book2))then
+         tally=[tally,.false.]
+         write(*,*)'<ERROR>manual and appended pages are not the same'
+      else
+         write(*,*)'<INFO>manual and appended pages are the same'
+         tally=[tally,.true.]
+      endif
+   endif
 
    ! overall size of manual
-   chars=size(book2)
-   lines=max(count(char(10).eq.book2),count(char(13).eq.book2))
+   !chars=size(book2)
+   !lines=max(count(char(10).eq.book2),count(char(13).eq.book2))
+   chars=size(book2)*len(book2)
+   lines=size(book2)
    if( (chars.lt.13000) .or. (lines.lt.350) )then
       write(*,*)'<ERROR>manual is suspiciously small, bytes=',chars,' lines=',lines
       tally=[tally,.false.]
@@ -126,17 +127,6 @@ character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build'
    endif
    write(*,'(g0:,1x)')'<INFO>TEST help SUBCOMMAND COMPLETE'
 contains
-
-function bugcount(page,string)
-character(len=*),intent(in) :: page(:)
-character(len=*),intent(in) :: string
-integer :: bugcount
-integer :: i
-bugcount=0
-   do i = 1,size(page)
-      if(page(i).eq.string)bugcount=bugcount+1
-   enddo
-end function bugcount
 
 subroutine wipe(filename)
 character(len=*),intent(in) :: filename
@@ -197,7 +187,7 @@ subroutine swallow(FILENAME,pageout)
 implicit none
 character(len=*),intent(in)              :: FILENAME   ! file to read
 !intel-bug!character(len=:),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
-character(len=132),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
+character(len=:),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
 character(len=1),allocatable             :: text(:)    ! array to hold file in memory
 
    call slurp(FILENAME,text) ! allocate character array and copy file into it
@@ -216,7 +206,7 @@ function page(array)  result (table)
 
 character(len=1),intent(in)  :: array(:)
 !intel-bug!character(len=:),allocatable :: table(:)
-character(len=132),allocatable :: table(:)
+character(len=:),allocatable :: table(:)
 integer                      :: i
 integer                      :: linelength
 integer                      :: length
@@ -248,7 +238,7 @@ character(len=1),parameter   :: cr=char(13)
 
    if(allocated(table))deallocate(table)
    !intel-bug!allocate(character(len=linelength) :: table(lines))
-   allocate(character(len=132) :: table(lines))
+   allocate(character(len=linelength) :: table(lines))
    table=' '
    linecount=1
    position=1
