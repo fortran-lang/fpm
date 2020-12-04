@@ -237,7 +237,6 @@ character(len=1),parameter   :: nl=char(10)
          linecount=linecount+1
          position=1
       elseif(linelength.ne.0)then
-         write(*,*)'<INFO>',linecount,position,array(i)
          table(linecount)(position:position)=array(i)
          position=position+1
       endif
