@@ -43,6 +43,28 @@ character(len=:),allocatable :: module_path_switch
 
     select case(build_name//'_'//compiler)
 
+    case('release_caf') 
+       module_path_switch='-J '
+       fflags='&
+       & -O3&
+       & -Wimplicit-interface&
+       & -fPIC&
+       & -fmax-errors=1&
+       & -ffast-math&
+       & -funroll-loops&
+       &'
+    case('debug_caf')
+       module_path_switch='-J '
+       fflags = '&
+       & -Wall&
+       & -Wextra&
+       & -Wimplicit-interface&
+       & -fPIC -fmax-errors=1&
+       & -g&
+       & -fbounds-check&
+       & -fcheck-array-temporaries&
+       & -fbacktrace&
+       &'
     case('release_gfortran') 
        module_path_switch='-J '
        fflags='&

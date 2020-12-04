@@ -1,7 +1,7 @@
 program help_test
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 implicit none
-integer                        :: i
+integer                        :: i, j
 integer                        :: be, af
 character(len=:),allocatable   :: path
 integer                        :: estat, cstat
@@ -54,13 +54,17 @@ character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build'
       endif
       !!write(*,*)findloc(page1,'NAME').eq.1
       be=count(.not.tally)
-      tally=[tally,merge(.true.,.false.,count(page1.eq.'NAME').eq.1)]
-      tally=[tally,merge(.true.,.false.,count(page1.eq.'SYNOPSIS').eq.1)]
-      tally=[tally,merge(.true.,.false.,count(page1.eq.'DESCRIPTION').eq.1)]
+      tally=[tally,count(page1.eq.'NAME').eq.1]
+      tally=[tally,count(page1.eq.'SYNOPSIS').eq.1]
+      tally=[tally,count(page1.eq.'DESCRIPTION').eq.1]
       af=count(.not.tally)
       if(be.ne.af)then
          write(*,*)'<ERROR>missing expected sections in ',names(i)
-         write(*,'(a)')page1
+         write(*,*)page1(1) ! assuming at least size 1 for debugging mingw
+         write(*,*)count(page1.eq.'NAME')
+         write(*,*)count(page1.eq.'SYNOPSIS')
+         write(*,*)count(page1.eq.'DESCRIPTION')
+         write(*,'(a)')(trim(page1(j)),j=1,size(page1))
       endif
       write(*,*)'<INFO>have completed ',count(tally),' tests'
       call wipe('fpm_scratch_help.txt')
