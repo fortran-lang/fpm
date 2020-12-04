@@ -1,7 +1,7 @@
 program help_test
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 implicit none
-integer                        :: i, j, k
+integer                        :: i, j
 integer                        :: be, af
 character(len=:),allocatable   :: path
 integer                        :: estat, cstat
@@ -131,7 +131,7 @@ implicit none
 !$@(#) M_io::slurp(3f): allocate text array and read file filename into it
 character(*),intent(in)                  :: filename    ! filename to shlep
 character(len=1),allocatable,intent(out) :: text(:)     ! array to hold file
-integer                                  :: nchars, igetunit, ios, i, icount
+integer                                  :: nchars, igetunit, ios
 character(len=256)                       :: message
 character(len=4096)                      :: local_filename
    ios=0
