@@ -145,7 +145,7 @@ contains
             & --list F &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --verbose F&
-            & --',help_test,version_text)
+            & --',help_build,version_text)
 
             call check_build_vals()
 
