@@ -52,6 +52,7 @@ character(len=:),allocatable :: module_path_switch
        & -fmax-errors=1&
        & -ffast-math&
        & -funroll-loops&
+       & -fcoarray=single&
        &'
     case('debug_gfortran')
        module_path_switch='-J '
@@ -64,6 +65,7 @@ character(len=:),allocatable :: module_path_switch
        & -fbounds-check&
        & -fcheck-array-temporaries&
        & -fbacktrace&
+       & -fcoarray=single&
        &'
 
     case('release_f95')
