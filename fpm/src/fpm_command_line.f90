@@ -467,8 +467,8 @@ contains
    '  # generates commands of the form "cp $FILENAME /usr/local/bin/"               ', &
    '                                                                                ', &
    '  # bash(1) alias example:                                                      ', &
-   '  alias fpm-install="ffpm run --release --runner \                              ', &
-   '  ''install -vbp -m 0711 -t ~/.local/bin''"                                       ', &
+   '  alias fpm-install=\                                                           ', &
+   '  "fpm run --release --runner ''install -vbp -m 0711 -t ~/.local/bin''"           ', &
    '  fpm-install                                                           ', &
     '' ]
     help_fpm=[character(len=80) :: &
