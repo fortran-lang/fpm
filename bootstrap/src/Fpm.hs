@@ -639,6 +639,7 @@ defineCompilerSettings specifiedFlags compiler release
               , "-march=native"
               , "-ffast-math"
               , "-funroll-loops"
+              , "-fcoarray=single"
               ]
             else
               [ "-Wall"
@@ -650,6 +651,7 @@ defineCompilerSettings specifiedFlags compiler release
               , "-fbounds-check"
               , "-fcheck-array-temporaries"
               , "-fbacktrace"
+              , "-fcoarray=single"
               ]
           fs -> fs
     in  return $ CompilerSettings { compilerSettingsCompiler    = compiler

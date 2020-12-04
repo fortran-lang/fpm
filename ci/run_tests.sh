@@ -1,30 +1,26 @@
 #!/bin/bash
-
-get_abs_filename() {
-  # $1 : relative filename
-  filename=$1
-  parentdir=$(dirname "${filename}")
-
-  if [ -d "${filename}" ]; then
-      echo "$(cd "${filename}" && pwd)"
-  elif [ -d "${parentdir}" ]; then
-    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
-  fi
-}
-
 set -ex
 
-cd fpm
-fpm build
-fpm run
+cd $(dirname $0)/../fpm
+
+fpm build $@
+
+# Run fpm executable
+fpm run $@
+fpm run $@ -- --version
+fpm run $@ -- --help
+
+# Run tests
 rm -rf fpm_scratch_*/
-fpm test
+fpm test $@
 rm -rf fpm_scratch_*/
 
-f_fpm_path="$(get_abs_filename $(find build -regex 'build/.*/app/fpm'))"
-"${f_fpm_path}"
+# Build example packages
+f_fpm_path="$(fpm run $@ --runner echo)"
+cd ../example_packages/
+rm -rf ./*/build
 
-cd ../example_packages/hello_world
+cd hello_world
 "${f_fpm_path}" build
 ./build/gfortran_debug/app/hello_world
 
@@ -77,3 +73,6 @@ cd ../link_external
 cd ../link_executable
 "${f_fpm_path}" build
 ./build/gfortran_debug/app/gomp_test
+
+# Cleanup
+rm -rf ./*/build

@@ -12,7 +12,7 @@ module test_module_dependencies
     implicit none
     private
 
-    public :: collect_module_dependencies
+    public :: collect_module_dependencies, operator(.in.)
 
     interface operator(.in.)
         module procedure target_in

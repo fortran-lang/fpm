@@ -8,11 +8,13 @@ use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists,
 use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
-                    FPM_TARGET_EXECUTABLE
+                    FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_compiler, only: add_compile_flag_defaults
 
+
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
-use fpm_targets, only: targets_from_sources, resolve_module_dependencies
+use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
+                        resolve_target_linking
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only : error_t, fatal_error
 use fpm_manifest_test, only : test_config_t
@@ -238,7 +240,13 @@ subroutine build_model(model, settings, package, error)
         model%link_flags = model%link_flags // " -l" // model%link_libraries(i)%s
     end do
 
+    if (model%targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
+        model%library_file = model%targets(1)%ptr%output_file
+    end if
+
     call resolve_module_dependencies(model%targets,error)
+
+    call resolve_target_linking(model%targets)
 
 end subroutine build_model
 
@@ -401,13 +409,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    ! NB. To be replaced after incremental rebuild is implemented
-    if (.not.settings%list .and. &
-         any([(.not.exists(executables(i)%s),i=1,size(executables))])) then
-
-        call build_package(model)
-
-    end if
+    call build_package(model)
 
     do i=1,size(executables)
         if (settings%list) then
