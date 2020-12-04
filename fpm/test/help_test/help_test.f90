@@ -226,6 +226,7 @@ integer                      :: position
 integer                      :: sz
 !!character(len=1),parameter   :: nl=new_line('A')
 character(len=1),parameter   :: nl=char(10)
+character(len=1),parameter   :: cr=char(13)
    lines=0
    linelength=0
    length=0
@@ -248,19 +249,14 @@ character(len=1),parameter   :: nl=char(10)
    if(allocated(table))deallocate(table)
    !intel-bug!allocate(character(len=linelength) :: table(lines))
    allocate(character(len=132) :: table(lines))
-   !!-----------------------------------------------------------
    table=' '
-   !!possible bug in mingw. null filled instead of space padded?
-   do i=1,lines
-      table(i)=repeat(' ',len(table))
-   enddo
-   !!-----------------------------------------------------------
    linecount=1
    position=1
    do i=1,sz
       if(array(i).eq.nl)then
          linecount=linecount+1
          position=1
+      elseif(array(i).eq.cr)then
       elseif(linelength.ne.0)then
          table(linecount)(position:position)=array(i)
          position=position+1
