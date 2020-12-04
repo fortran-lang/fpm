@@ -14,21 +14,21 @@ integer                        :: chars
 ! run a variety of "fpm help" variations and verify expected files are generated
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ! build manual as pieces using various help commands
-'ffpm --help        > fpm_scratch_help.txt',&
-'ffpm help new     >> fpm_scratch_help.txt',&
-'ffpm build --help >> fpm_scratch_help.txt',&
-'ffpm help run     >> fpm_scratch_help.txt',&
-'ffpm help test    >> fpm_scratch_help.txt',&
-'ffpm help runner  >> fpm_scratch_help.txt',&
-'ffpm help list    >> fpm_scratch_help.txt',&
-'ffpm help help    >> fpm_scratch_help.txt',&
-'ffpm --version    >> fpm_scratch_help.txt',&
+'fpm --help        > fpm_scratch_help.txt',&
+'fpm help new     >> fpm_scratch_help.txt',&
+'fpm build --help >> fpm_scratch_help.txt',&
+'fpm help run     >> fpm_scratch_help.txt',&
+'fpm help test    >> fpm_scratch_help.txt',&
+'fpm help runner  >> fpm_scratch_help.txt',&
+'fpm help list    >> fpm_scratch_help.txt',&
+'fpm help help    >> fpm_scratch_help.txt',&
+'fpm --version    >> fpm_scratch_help.txt',&
 ! generate manual
-'ffpm help manual   > fpm_scratch_manual.txt']
+'fpm help manual   > fpm_scratch_manual.txt']
 
-!'ffpm              >> fpm_scratch_help.txt',&
-!'ffpm --list       >> fpm_scratch_help.txt',&
-!'ffpm list --list  >> fpm_scratch_help.txt',&
+!'fpm              >> fpm_scratch_help.txt',&
+!'fpm --list       >> fpm_scratch_help.txt',&
+!'fpm list --list  >> fpm_scratch_help.txt',&
 character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build','run','test','runner','list','help']
 
    write(*,'(g0:,1x)')'TEST help SUBCOMMAND STARTED'
@@ -40,7 +40,7 @@ character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','build'
    ! check that output has NAME SYNOPSIS DESCRIPTION
    do i=1,size(names)
       write(*,*)'check '//names(i)//' for NAME SYNOPSIS DESCRIPTION'
-      path= 'ffpm help '//names(i)//' >fpm_scratch_help.txt'
+      path= 'fpm help '//names(i)//' >fpm_scratch_help.txt'
       message=''
       call execute_command_line(path,exitstat=estat,cmdstat=cstat,cmdmsg=message)
       write(*,'(*(g0))')'CMD=',path,' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
