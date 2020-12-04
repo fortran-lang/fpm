@@ -65,6 +65,7 @@ character(len=:),allocatable :: module_path_switch
        & -fbounds-check&
        & -fcheck-array-temporaries&
        & -fbacktrace&
+       & -fcoarray=single&
        &'
 
     case('release_f95')
