@@ -30,125 +30,6 @@ public :: build_model, cmd_build, cmd_install, cmd_run
 contains
 
 
-recursive subroutine add_libsources_from_package(sources,link_libraries,package_list,package, &
-                                                  package_root,dev_depends,error)
-    ! Discover library sources in a package, recursively including dependencies
-    !
-    type(srcfile_t), allocatable, intent(inout), target :: sources(:)
-    type(string_t), allocatable, intent(inout) :: link_libraries(:)
-    type(string_t), allocatable, intent(inout) :: package_list(:)
-    type(package_config_t), intent(in) :: package
-    character(*), intent(in) :: package_root
-    logical, intent(in) :: dev_depends
-    type(error_t), allocatable, intent(out) :: error
-
-    ! Add package library sources
-    if (allocated(package%library)) then
-
-        call add_sources_from_dir(sources, join_path(package_root,package%library%source_dir), &
-                                    FPM_SCOPE_LIB, error=error)
-
-        if (allocated(error)) then
-            return
-        end if
-
-    end if
-
-    ! Add library sources from dependencies
-    if (allocated(package%dependency)) then
-
-        call add_dependencies(package%dependency)
-
-        if (allocated(error)) then
-            return
-        end if
-
-    end if
-
-    ! Add library sources from dev-dependencies
-    if (dev_depends .and. allocated(package%dev_dependency)) then
-
-        call add_dependencies(package%dev_dependency)
-
-        if (allocated(error)) then
-            return
-        end if
-
-    end if
-
-    contains
-
-    subroutine add_dependencies(dependency_list)
-        type(dependency_config_t), intent(in) :: dependency_list(:)
-
-        integer :: i
-        type(string_t) :: dep_name
-        type(package_config_t) :: dependency
-
-        character(:), allocatable :: dependency_path
-
-        do i=1,size(dependency_list)
-
-            if (dependency_list(i)%name .in. package_list) then
-                cycle
-            end if
-
-            if (allocated(dependency_list(i)%git)) then
-
-                dependency_path = join_path('build','dependencies',dependency_list(i)%name)
-
-                if (.not.exists(join_path(dependency_path,'fpm.toml'))) then
-                    call dependency_list(i)%git%checkout(dependency_path, error)
-                    if (allocated(error)) return
-                end if
-
-            else if (allocated(dependency_list(i)%path)) then
-
-                dependency_path = join_path(package_root,dependency_list(i)%path)
-
-            end if
-
-            call get_package_data(dependency, &
-                    join_path(dependency_path,"fpm.toml"), error)
-
-            if (allocated(error)) then
-                error%message = 'Error while parsing manifest for dependency package at:'//&
-                                new_line('a')//join_path(dependency_path,"fpm.toml")//&
-                                new_line('a')//error%message
-                return
-            end if
-
-            if (.not.allocated(dependency%library) .and. &
-                    exists(join_path(dependency_path,"src"))) then
-                allocate(dependency%library)
-                dependency%library%source_dir = "src"
-            end if
-
-
-            call add_libsources_from_package(sources,link_libraries,package_list,dependency, &
-                package_root=dependency_path, &
-                dev_depends=.false., error=error)
-
-            if (allocated(error)) then
-                error%message = 'Error while processing sources for dependency package "'//&
-                                new_line('a')//dependency%name//'"'//&
-                                new_line('a')//error%message
-                return
-            end if
-
-            dep_name%s = dependency_list(i)%name
-            package_list = [package_list, dep_name]
-            if (allocated(dependency%build%link)) then
-                link_libraries = [link_libraries, dependency%build%link]
-            end if
-
-        end do
-
-    end subroutine add_dependencies
-
-end subroutine add_libsources_from_package
-
-
 subroutine build_model(model, settings, package, error)
     ! Constructs a valid fpm model from command line settings and toml manifest
     !
@@ -159,6 +40,8 @@ subroutine build_model(model, settings, package, error)
     type(string_t), allocatable :: package_list(:)
 
     integer :: i
+    type(package_config_t) :: dependency
+    character(len=:), allocatable :: manifest, lib_dir
 
     if(settings%verbose)then
        write(*,*)'<INFO>BUILD_NAME:',settings%build_name
@@ -233,12 +116,27 @@ subroutine build_model(model, settings, package, error)
 
     endif
 
-    ! Add library sources, including local dependencies
-    call add_libsources_from_package(model%sources,model%link_libraries,package_list,package, &
-                                      package_root='.',dev_depends=.true.,error=error)
-    if (allocated(error)) then
-        return
-    end if
+    do i = 1, model%deps%ndep
+        associate(dep => model%deps%dep(i))
+            manifest = join_path(dep%proj_dir, "fpm.toml")
+
+            call get_package_data(dependency, manifest, error, &
+                apply_defaults=.true.)
+            if (allocated(error)) exit
+
+            if (allocated(dependency%library)) then
+                lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
+                call add_sources_from_dir(model%sources, lib_dir, FPM_SCOPE_LIB, &
+                    error=error)
+                if (allocated(error)) exit
+            end if
+
+            if (allocated(dependency%build%link)) then
+                model%link_libraries = [model%link_libraries, dependency%build%link]
+            end if
+        end associate
+    end do
+    if (allocated(error)) return
 
     call targets_from_sources(model,model%sources)
 

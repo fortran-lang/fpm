@@ -156,8 +156,8 @@ contains
             return
         end if
 
-        call execute_command_line("git -C "//local_path//" fetch "//self%url//&
-                                        " "//object, exitstat=stat)
+        call execute_command_line("git -C "//local_path//" fetch --depth=1 "// &
+                                  self%url//" "//object, exitstat=stat)
 
         if (stat /= 0) then
             call fatal_error(error,'Error while fetching git repository for remote dependency')

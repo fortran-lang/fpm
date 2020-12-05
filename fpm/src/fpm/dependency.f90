@@ -376,9 +376,10 @@ contains
 
     integer :: id
     type(package_config_t) :: package
-    character(len=:), allocatable :: manifest, proj_dir, revision
+    character(len=:), allocatable :: manifest, proj_dir, revision, root
 
     id = self%find(name)
+    root = "."
 
     if (id <= 0) then
       call fatal_error(error, "Cannot update dependency '"//name//"'")
@@ -394,14 +395,15 @@ contains
         call dep%git%checkout(proj_dir, error)
         if (allocated(error)) return
 
-        call git_revision(proj_dir, revision, error)
-        if (allocated(error)) return
+        ! Unset dependency and remove updatable attribute
+        dep%done = .false.
+        dep%update = .false.
 
-        manifest = join_path(proj_dir, "fpm.toml")
-        call get_package_data(package, manifest, error)
-        if (allocated(error)) return
-
-        call dep%register(package, proj_dir, .true., revision, error)
+        ! Now decent into the dependency tree, level for level
+        do while(.not.self%finished())
+          call self%resolve(root, error)
+          if (allocated(error)) exit
+        end do
         if (allocated(error)) return
       end if
     end associate
