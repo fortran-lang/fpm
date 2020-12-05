@@ -489,9 +489,6 @@ contains
     '   part of your default programming environment, as well as letting    ', &
     '   you share your projects with others in a similar manner.            ', &
     '                                                                       ', &
-    '   See the fpm(1) repository at https://fortran-lang.org/packages/fpm  ', &
-    '   for a listing of registered projects.                               ', &
-    '                                                                       ', &
     '   All output goes into the directory "build/" which can generally be  ', &
     '   removed and rebuilt if required. Note that if external packages are ', &
     '   being used you need network connectivity to rebuild from scratch.   ', &
@@ -545,6 +542,7 @@ contains
     '    fpm run myprogram --release -- -x 10 -y 20 --title "my title"      ', &
     '                                                                       ', &
     'SEE ALSO                                                               ', &
+    '                                                                       ', &
     ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
     ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
     ' + The fpm(1) TOML file format is described at                                  ', &
