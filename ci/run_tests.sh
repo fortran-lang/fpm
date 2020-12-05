@@ -23,6 +23,7 @@ rm -rf ./*/build
 cd hello_world
 "${f_fpm_path}" build
 ./build/gfortran_debug/app/hello_world
+"${f_fpm_path}" run
 
 cd ../hello_fpm
 "${f_fpm_path}" build
@@ -36,6 +37,7 @@ cd ../circular_example
 
 cd ../hello_complex
 "${f_fpm_path}" build
+"${f_fpm_path}" test
 ./build/gfortran_debug/app/say_Hello
 ./build/gfortran_debug/app/say_goodbye
 ./build/gfortran_debug/test/greet_test
