@@ -171,7 +171,7 @@ subroutine build_model(model, settings, package, error)
     model%fortran_compiler = 'gfortran'
 
     if(settings%release)then
-        model%output_directory = 'build/gfortran_release'
+        model%output_directory = join_path('build','gfortran_release')
         model%fortran_compile_flags=' &
             & -O3 &
             & -Wimplicit-interface &
@@ -181,7 +181,7 @@ subroutine build_model(model, settings, package, error)
             & -funroll-loops ' // &
             & '-J'//join_path(model%output_directory,model%package_name)
     else
-        model%output_directory = 'build/gfortran_debug'
+        model%output_directory = join_path('build','gfortran_debug')
         model%fortran_compile_flags = ' -Wall -Wextra -Wimplicit-interface  -fPIC -fmax-errors=1 -g '// &
                                       '-fbounds-check -fcheck-array-temporaries -fbacktrace '// &
                                       '-J'//join_path(model%output_directory,model%package_name)
