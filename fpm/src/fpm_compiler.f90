@@ -1,5 +1,5 @@
 module fpm_compiler
-use fpm_model, only: fpm_model_t 
+use fpm_model, only: fpm_model_t
 use fpm_filesystem, only: join_path
 public  add_compile_flag_defaults
 
@@ -9,9 +9,9 @@ subroutine add_compile_flag_defaults(build_name,compiler,model)
 character(len=*),intent(in) :: build_name, compiler
 
 type(fpm_model_t), intent(inout) :: model
-! could just be a function to return a string instead of passing model 
+! could just be a function to return a string instead of passing model
 ! but likely to change other components like matching C compiler
-     
+
 character(len=:),allocatable :: fflags
 character(len=:),allocatable :: module_path_switch
 
@@ -43,7 +43,7 @@ character(len=:),allocatable :: module_path_switch
 
     select case(build_name//'_'//compiler)
 
-    case('release_caf') 
+    case('release_caf')
        module_path_switch='-J '
        fflags='&
        & -O3&
@@ -65,7 +65,7 @@ character(len=:),allocatable :: module_path_switch
        & -fcheck-array-temporaries&
        & -fbacktrace&
        &'
-    case('release_gfortran') 
+    case('release_gfortran')
        module_path_switch='-J '
        fflags='&
        & -O3&
@@ -137,6 +137,7 @@ character(len=:),allocatable :: module_path_switch
        & -fp-model precise&
        & -pc 64&
        & -align all&
+       & -coarray&
        & -error-limit 1&
        & -reentrancy threaded&
        & -nogen-interfaces&
@@ -147,7 +148,8 @@ character(len=:),allocatable :: module_path_switch
        module_path_switch='-module '
        fflags = '&
        & -warn all&
-       & -check all&
+       & -check:all:noarg_temp_created&
+       & -coarray&
        & -error-limit 1&
        & -O0&
        & -g&
