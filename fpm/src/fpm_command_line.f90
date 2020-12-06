@@ -79,7 +79,6 @@ end type
 type, extends(fpm_cmd_settings)  :: fpm_update_settings
     character(len=ibug),allocatable :: name(:)
     logical :: fetch_only
-    logical :: verbose
     logical :: clean
 end type
 
@@ -440,6 +439,7 @@ contains
    '  new       Create a new Fortran package directory with sample files    ', &
    '  run       Run the local package application programs                  ', &
    '  test      Run the test programs                                       ', &
+   '  update    Update and manage project dependencies                      ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
@@ -449,6 +449,7 @@ contains
    ' build [--compiler COMPILER_NAME] [--release] [--list]                          ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [--lib|--src] [--app] [--test] [--backfill]                           ', &
+   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
@@ -548,6 +549,7 @@ contains
     '                                                                       ', &
     '  + build Compile the packages into the "build/" directory.            ', &
     '  + new   Create a new Fortran package directory with sample files.    ', &
+    '  + update  Update the project dependencies.                           ', &
     '  + run   Run the local package binaries. defaults to all binaries for ', &
     '          that release.                                                ', &
     '  + test  Run the tests.                                               ', &
@@ -558,6 +560,7 @@ contains
     '                                                                       ', &
     '     build [--release] [--list] [--compiler COMPILER_NAME]             ', &
     '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
+    '     update [NAME(s)] [--fetch-only] [--clean]                         ', &
     '     run|test [[--target] NAME(s)] [--release] [--list]                ', &
     '              [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]    ', &
     '     help [NAME(s)]                                                    ', &

@@ -39,6 +39,8 @@ contains
     call deps%add(package, error)
     call handle_error(error)
 
+    if (settings%fetch_only) return
+
     if (size(settings%name) == 0) then
       do ii = 1, deps%ndep
         call deps%update(deps%dep(ii)%name, error)
