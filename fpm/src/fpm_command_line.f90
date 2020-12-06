@@ -480,6 +480,7 @@ contains
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
+   ' install [--release] [--no-rebuild] [--prefix PATH] [options]                   ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -926,20 +927,37 @@ contains
     '             [--verbose]', &
     '', &
     'DESCRIPTION', &
-    ' Subcommand to install fpm projects.', &
+    ' Subcommand to install fpm projects. Running install will export the', &
+    ' current project to the selected prefix, this will by default install all', &
+    ' executables (test are excluded) which are part of the projects.', &
+    ' Libraries and module files are only installed for projects requiring the', &
+    ' installation of those components in the package manifest.', &
     '', &
     'OPTIONS', &
     ' --release         selects the optimized build instead of the debug build', &
     ' --no-rebuild      do not rebuild project before installation', &
-    ' --prefix DIR      path to installation directory (requires write access)', &
-    ' --bindir DIR      subdirectory to place executables in', &
+    ' --prefix DIR      path to installation directory (requires write access),', &
+    '                   the default prefix on Unix systems is $HOME/.local', &
+    '                   and %APPDATA%\local on Windows', &
+    ' --bindir DIR      subdirectory to place executables in (default: bin)', &
     ' --libdir DIR      subdirectory to place libraries and archives in', &
+    '                   (default: lib)', &
     ' --includedir DIR  subdirectory to place headers and module files in', &
+    '                   (default: include)', &
     ' --verbose         print more information', &
     '', &
     'EXAMPLES', &
-    ' Install release version of project:', &
-    '    fpm install --release --prefix ~/.local', &
+    ' 1. Install release version of project:', &
+    '', &
+    '    fpm install --release', &
+    '', &
+    ' 2. Install the project without rebuilding the executables:', &
+    '', &
+    '    fpm install --no-rebuild', &
+    '', &
+    ' 3. Install executables to a custom prefix into the exe directory:', &
+    '', &
+    '    fpm install --prefix $PWD --bindir exe', &
     '' ]
     end subroutine set_help
 
