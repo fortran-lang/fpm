@@ -68,6 +68,11 @@ data CompileTimeInfo = CompileTimeInfo {
   , compileTimeInfoDirectDependencies :: [FilePath]
 }
 
+data AvailableModule = AvailableModule {
+    availableModuleName :: String
+  , availableModuleFile :: FilePath
+}
+
 processRawSource :: RawSource -> Source
 processRawSource rawSource =
   let
@@ -102,11 +107,14 @@ processRawSource rawSource =
             }
           else undefined
 
-getAvailableModules :: [Source] -> [String]
-getAvailableModules = mapMaybe maybeModuleName
+getAvailableModules :: [Source] -> FilePath -> [AvailableModule]
+getAvailableModules sources buildDirectory = mapMaybe maybeModule sources
  where
-  maybeModuleName m@(Module{}) = Just $ moduleName m
-  maybeModuleName _            = Nothing
+  maybeModule m@(Module{}) =
+      let mName = moduleName m
+          modFile = buildDirectory </> mName <.> "mod"
+      in Just $ AvailableModule { availableModuleName = mName, availableModuleFile = modFile }
+  maybeModule _            = Nothing
 
 getAllObjectFiles :: FilePath -> [Source] -> [FilePath]
 getAllObjectFiles buildDirectory sources = map getObjectFile sources
@@ -120,7 +128,7 @@ getSourceFileName p@(Program{}  ) = programSourceFileName p
 getSourceFileName m@(Module{}   ) = moduleSourceFileName m
 getSourceFileName s@(Submodule{}) = submoduleSourceFileName s
 
-constructCompileTimeInfo :: Source -> [String] -> FilePath -> CompileTimeInfo
+constructCompileTimeInfo :: Source -> [AvailableModule] -> FilePath -> CompileTimeInfo
 constructCompileTimeInfo p@(Program{}) availableModules buildDirectory =
   CompileTimeInfo
     { compileTimeInfoSourceFileName     = programSourceFileName p
@@ -128,8 +136,8 @@ constructCompileTimeInfo p@(Program{}) availableModules buildDirectory =
                                             buildDirectory
     , compileTimeInfoOtherFilesProduced = []
     , compileTimeInfoDirectDependencies = map
-      (\mName -> buildDirectory </> mName <.> "mod")
-      (filter (`elem` availableModules) (programModulesUsed p))
+      (\am -> availableModuleFile am)
+      (filter (\am -> (availableModuleName am) `elem` (programModulesUsed p)) availableModules)
     }
 constructCompileTimeInfo m@(Module{}) availableModules buildDirectory =
   CompileTimeInfo
@@ -141,8 +149,8 @@ constructCompileTimeInfo m@(Module{}) availableModules buildDirectory =
         then [buildDirectory </> moduleName m <.> "smod"]
         else []
     , compileTimeInfoDirectDependencies = map
-      (\mName -> buildDirectory </> mName <.> "mod")
-      (filter (`elem` availableModules) (moduleModulesUsed m))
+      (\am -> availableModuleFile am)
+      (filter (\am -> (availableModuleName am) `elem` (moduleModulesUsed m)) availableModules)
     }
 constructCompileTimeInfo s@(Submodule{}) availableModules buildDirectory =
   CompileTimeInfo
@@ -157,8 +165,8 @@ constructCompileTimeInfo s@(Submodule{}) availableModules buildDirectory =
                                           ]
     , compileTimeInfoDirectDependencies =
       (buildDirectory </> submoduleParentName s <.> "smod")
-        : (map (\mName -> buildDirectory </> mName <.> "mod")
-               (filter (`elem` availableModules) (submoduleModulesUsed s))
+        : (map (\am -> availableModuleFile am)
+               (filter (\am -> (availableModuleName am) `elem` (submoduleModulesUsed s)) availableModules)
           )
     }
 

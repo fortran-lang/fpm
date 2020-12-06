@@ -3,7 +3,8 @@ module SubmoduleToCompileInfoTest
   )
 where
 
-import           BuildModel                     ( CompileTimeInfo(..)
+import           BuildModel                     ( AvailableModule(..)
+                                                , CompileTimeInfo(..)
                                                 , Source(..)
                                                 , constructCompileTimeInfo
                                                 )
@@ -45,10 +46,12 @@ exampleSubmodule = Submodule
 submoduleSourceFileName' :: FilePath
 submoduleSourceFileName' = "some" </> "file" </> "somewhere.f90"
 
-availableModules :: [String]
-availableModules = ["module1", "module3"]
+availableModules :: [AvailableModule]
+availableModules = [ AvailableModule {availableModuleName = "module1", availableModuleFile = "build_dir" </> "module1.mod"}
+                   , AvailableModule {availableModuleName = "module3", availableModuleFile = "build_dir" </> "module3.mod"}
+                   ]
 
-doCompileTimeTransformation :: (Source, [String]) -> CompileTimeInfo
+doCompileTimeTransformation :: (Source, [AvailableModule]) -> CompileTimeInfo
 doCompileTimeTransformation (programSource, otherSources) =
   constructCompileTimeInfo programSource otherSources "build_dir"
 
