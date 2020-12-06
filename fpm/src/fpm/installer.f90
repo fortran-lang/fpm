@@ -7,7 +7,8 @@ module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, os_is_unix
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path
+  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, &
+    env_variable
   implicit none
   private
 
@@ -109,11 +110,7 @@ contains
     if (present(prefix)) then
       self%prefix = prefix
     else
-      if (os_is_unix(self%os)) then
-        self%prefix = default_prefix_unix
-      else
-        self%prefix = default_prefix_win
-      end if
+      call set_default_prefix(self%prefix, self%os)
     end if
 
     if (present(bindir)) then
@@ -135,6 +132,33 @@ contains
     end if
 
   end subroutine new_installer
+
+  !> Set the default prefix for the installation
+  subroutine set_default_prefix(prefix, os)
+    !> Installation prefix
+    character(len=:), allocatable :: prefix
+    !> Platform identifier
+    integer, intent(in), optional :: os
+
+    character(len=:), allocatable :: home
+
+    if (os_is_unix(os)) then
+      call env_variable(home, "HOME")
+      if (allocated(home)) then
+        prefix = join_path(home, ".local")
+      else
+        prefix = default_prefix_unix
+      end if
+    else
+      call env_variable(home, "APPDATA")
+      if (allocated(home)) then
+        prefix = join_path(home, "local")
+      else
+        prefix = default_prefix_win
+      end if
+    end if
+
+  end subroutine set_default_prefix
 
   !> Install an executable in its correct subdirectory
   subroutine install_executable(self, executable, error)
