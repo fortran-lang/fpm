@@ -14,7 +14,8 @@ type(fpm_model_t), intent(inout) :: model
 
 character(len=:),allocatable :: fflags  ! optional flags that might be overridden by user
 character(len=:),allocatable :: modpath 
-character(len=:),allocatable :: mandatory ! flags required for fpm to function properly
+character(len=:),allocatable :: mandatory ! flags required for fpm to function properly;
+                                          ! ie. add module path and module include directory as appropriate
 
 ! special reserved names "debug" and "release" are for supported compilers with no user-specified compile or load flags
 
@@ -56,7 +57,7 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -ffast-math&
        & -funroll-loops&
        &'
-       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -J '//modpath//' -I '//modpath 
     case('debug_caf')
        fflags = '&
        & -Wall&
@@ -68,7 +69,7 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -fcheck-array-temporaries&
        & -fbacktrace&
        &'
-       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -J '//modpath//' -I '//modpath 
     case('release_gfortran')
        fflags='&
        & -O3&
@@ -79,7 +80,7 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -funroll-loops&
        & -fcoarray=single&
        &'
-       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -J '//modpath//' -I '//modpath 
     case('debug_gfortran')
        fflags = '&
        & -Wall&
@@ -92,7 +93,7 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -fbacktrace&
        & -fcoarray=single&
        &'
-       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -J '//modpath//' -I '//modpath 
 
     case('release_f95')
        fflags='&
@@ -103,7 +104,7 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -ffast-math&
        & -funroll-loops&
        &'
-       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -J '//modpath//' -I '//modpath 
     case('debug_f95')
        fflags = '&
        & -Wall&
@@ -116,13 +117,13 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -Wno-maybe-uninitialized -Wno-uninitialized&
        & -fbacktrace&
        &'
-       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -J '//modpath//' -I '//modpath 
 
     case('release_nvfortran')
        fflags = '&
        & -Mbackslash&
        &'
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
     case('debug_nvfortran')
        fflags = '&
        & -Minform=inform&
@@ -133,7 +134,7 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -Mchkstk&
        & -traceback&
        &'
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
 
     case('release_ifort')
        fflags = '&
@@ -147,7 +148,7 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -assume byterecl&
        & -assume nounderscore&
        &'
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
     case('debug_ifort')
        fflags = '&
        & -warn all&
@@ -159,42 +160,42 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -assume byterecl&
        & -traceback&
        &'
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
     case('release_ifx')
        fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
     case('debug_ifx')
        fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
 
     case('release_pgfortran','release_pgf90','release_pgf95')  ! Portland Group F90/F95 compilers
        fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
     case('debug_pgfortran','debug_pgf90','debug_pgf95')  ! Portland Group F90/F95 compilers
        fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
 
     case('release_flang')
        fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
     case('debug_flang')
        fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
 
     case('release_lfc')
        fflags = ' '
-       mandatory=' -M '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -M '//modpath//' -I '//modpath 
     case('debug_lfc')
        fflags = ' '
-       mandatory=' -M '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -M '//modpath//' -I '//modpath 
 
     case('release_nagfor')
        fflags = ' &
        & -O4&
        & -coarray=single&
        & -PIC&
-       '
-       mandatory=' -mdir '//modpath//' -I '//modpath !! add module path as apprpriate
+       &'
+       mandatory=' -mdir '//modpath//' -I '//modpath !
     case('debug_nagfor')
        fflags = '&
        & -g&
@@ -203,25 +204,25 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -gline&
        & -coarray=single&
        & -PIC&
-       '
-       mandatory=' -mdir '//modpath//' -I '//modpath !! add module path as apprpriate
+       &'
+       mandatory=' -mdir '//modpath//' -I '//modpath !
     case('release_crayftn')
        fflags = ' '
-       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -J '//modpath//' -I '//modpath 
     case('debug_crayftn')
        fflags = ' '
-       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -J '//modpath//' -I '//modpath 
 
     case('release_xlf90')
        fflags = ' '
-       mandatory=' -qmoddir '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -qmoddir '//modpath//' -I '//modpath 
     case('debug_xlf90')
        fflags = ' '
-       mandatory=' -qmoddir '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -qmoddir '//modpath//' -I '//modpath 
 
     case default
        fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
+       mandatory=' -module '//modpath//' -I '//modpath 
        write(*,*)'<WARNING> unknown compiler (',compiler,')'
        write(*,*)'          and build name (',build_name,')'
        write(*,*)'          combination.'

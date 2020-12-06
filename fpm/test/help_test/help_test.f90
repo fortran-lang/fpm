@@ -1,16 +1,18 @@
 program help_test
+! note hardcoded len=512 instead of len=: in this test is a work-around a gfortran bug in old
+!      pre-v8.3 versions
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 implicit none
 integer                        :: i, j
 integer                        :: be, af
 character(len=:),allocatable   :: path
 integer                        :: estat, cstat
-character(len=256)             :: message
+character(len=512)             :: message
 logical,allocatable            :: tally(:)
 !intel-bug!character(len=:),allocatable   :: book1(:), book2(:)
-character(len=132),allocatable   :: book1(:), book2(:), book3(:)
+character(len=512),allocatable   :: book1(:), book2(:), book3(:)
 !intel-bug!character(len=:),allocatable   :: page1(:)
-character(len=132),allocatable   :: page1(:)
+character(len=512),allocatable   :: page1(:)
 integer                        :: lines
 integer                        :: chars
 ! run a variety of "fpm help" variations and verify expected files are generated
@@ -142,22 +144,22 @@ character(len=:),allocatable :: add
    ! overall size of manual
    !chars=size(book2)
    !lines=max(count(char(10).eq.book2),count(char(13).eq.book2))
-   chars=size(book2)*len(book2)
+   chars=sum(len_trim(book2)) ! SUM TRIMMED LENGTH
    lines=size(book2)
-   if( (chars.lt.13000) .or. (lines.lt.350) )then
+   if( (chars.lt.12000) .or. (lines.lt.350) )then
       write(*,*)'<ERROR>"debug" manual is suspiciously small, bytes=',chars,' lines=',lines
       tally=[tally,.false.]
    else
-      write(*,*)'<INFO>"debug" manual size is bytes=',chars,' lines=',lines
+      write(*,*)'<INFO>"debug" manual size in bytes=',chars,' lines=',lines
       tally=[tally,.true.]
    endif
-   chars=size(book3)*len(book3)
+   chars=sum(len_trim(book3)) ! SUM TRIMMED LENGTH
    lines=size(book3)
-   if( (chars.lt.13000) .or. (lines.lt.350) )then
+   if( (chars.lt.12000) .or. (lines.lt.350) )then
       write(*,*)'<ERROR>"release" manual is suspiciously small, bytes=',chars,' lines=',lines
       tally=[tally,.false.]
    else
-      write(*,*)'<INFO>"release" manual size is bytes=',chars,' lines=',lines
+      write(*,*)'<INFO>"release" manual size in bytes=',chars,' lines=',lines
       tally=[tally,.true.]
    endif
 
@@ -178,7 +180,7 @@ subroutine wipe(filename)
 character(len=*),intent(in) :: filename
 integer :: ios
 integer :: lun
-character(len=256) :: message
+character(len=512) :: message
 open(file=filename,newunit=lun,iostat=ios,iomsg=message)
 if(ios.eq.0)then
    close(unit=lun,iostat=ios,status='delete',iomsg=message)
@@ -196,7 +198,7 @@ implicit none
 character(*),intent(in)                  :: filename    ! filename to shlep
 character(len=1),allocatable,intent(out) :: text(:)     ! array to hold file
 integer                                  :: nchars, igetunit, ios
-character(len=256)                       :: message
+character(len=512)                       :: message
 character(len=4096)                      :: local_filename
    ios=0
    nchars=0
@@ -233,7 +235,7 @@ subroutine swallow(FILENAME,pageout)
 implicit none
 character(len=*),intent(in)              :: FILENAME   ! file to read
 !intel-bug!character(len=:),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
-character(len=132),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
+character(len=512),allocatable,intent(out) :: pageout(:) ! page to hold file in memory
 character(len=1),allocatable             :: text(:)    ! array to hold file in memory
 
    call slurp(FILENAME,text) ! allocate character array and copy file into it
@@ -252,7 +254,7 @@ function page(array)  result (table)
 
 character(len=1),intent(in)  :: array(:)
 !intel-bug!character(len=:),allocatable :: table(:)
-character(len=132),allocatable :: table(:)
+character(len=512),allocatable :: table(:)
 integer                      :: i
 integer                      :: linelength
 integer                      :: length
@@ -284,7 +286,7 @@ character(len=1),parameter   :: cr=char(13)
 
    if(allocated(table))deallocate(table)
    !intel-bug!allocate(character(len=linelength) :: table(lines))
-   allocate(character(len=132) :: table(lines))
+   allocate(character(len=512) :: table(lines))
    table=' '
    linecount=1
    position=1
