@@ -1,4 +1,4 @@
-!> Interface to TOML processing library.
+!># Interface to TOML processing library
 !>
 !> This module acts as a proxy to the `toml-f` public Fortran API and allows
 !> to selectively expose components from the library to `fpm`.
@@ -10,7 +10,8 @@
 !> This module allows to implement features necessary for `fpm`, which are
 !> not yet available in upstream `toml-f`.
 !>
-!> For more details on the library used see: https://toml-f.github.io/toml-f
+!> For more details on the library used see the
+!> [TOML-Fortran](https://toml-f.github.io/toml-f) developer pages.
 module fpm_toml
     use fpm_error, only : error_t, fatal_error, file_not_found_error
     use fpm_strings, only : string_t
