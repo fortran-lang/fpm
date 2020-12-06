@@ -186,11 +186,21 @@ character(len=:),allocatable :: module_path_switch
 
     case('release_nagfor')
        module_path_switch='-mdir '
-       fflags = ' '
+       fflags = ' &
+       & -O4&
+       & -coarray=single&
+       & -PIC&
+       '
     case('debug_nagfor')
        module_path_switch='-mdir '
-       fflags = ' '
-
+       fflags = '&
+       & -g&
+       & -C=all&
+       & -O0&
+       & -gline&
+       & -coarray=single&
+       & -PIC&
+       '
     case('release_crayftn')
        module_path_switch='-J '
        fflags = ' '
