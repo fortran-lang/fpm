@@ -12,8 +12,9 @@ type(fpm_model_t), intent(inout) :: model
 ! could just be a function to return a string instead of passing model
 ! but likely to change other components like matching C compiler
 
-character(len=:),allocatable :: fflags
-character(len=:),allocatable :: module_path_switch
+character(len=:),allocatable :: fflags  ! optional flags that might be overridden by user
+character(len=:),allocatable :: modpath 
+character(len=:),allocatable :: mandatory ! flags required for fpm to function properly
 
 ! special reserved names "debug" and "release" are for supported compilers with no user-specified compile or load flags
 
@@ -40,11 +41,13 @@ character(len=:),allocatable :: module_path_switch
 ! G95               ?          ?       -fmod=          -I            -fopenmp   discontinued
 ! Open64            ?          ?       -module         -I            -mp        discontinued
 ! Unisys            ?          ?       ?               ?             ?          discontinued
+    modpath=join_path(model%output_directory,model%package_name)
+    fflags=''
+    mandatory=''
 
     select case(build_name//'_'//compiler)
 
     case('release_caf')
-       module_path_switch='-J '
        fflags='&
        & -O3&
        & -Wimplicit-interface&
@@ -53,8 +56,8 @@ character(len=:),allocatable :: module_path_switch
        & -ffast-math&
        & -funroll-loops&
        &'
+       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_caf')
-       module_path_switch='-J '
        fflags = '&
        & -Wall&
        & -Wextra&
@@ -65,8 +68,8 @@ character(len=:),allocatable :: module_path_switch
        & -fcheck-array-temporaries&
        & -fbacktrace&
        &'
+       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
     case('release_gfortran')
-       module_path_switch='-J '
        fflags='&
        & -O3&
        & -Wimplicit-interface&
@@ -76,8 +79,8 @@ character(len=:),allocatable :: module_path_switch
        & -funroll-loops&
        & -fcoarray=single&
        &'
+       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_gfortran')
-       module_path_switch='-J '
        fflags = '&
        & -Wall&
        & -Wextra&
@@ -89,9 +92,9 @@ character(len=:),allocatable :: module_path_switch
        & -fbacktrace&
        & -fcoarray=single&
        &'
+       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case('release_f95')
-       module_path_switch='-J '
        fflags='&
        & -O3&
        & -Wimplicit-interface&
@@ -100,8 +103,8 @@ character(len=:),allocatable :: module_path_switch
        & -ffast-math&
        & -funroll-loops&
        &'
+       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_f95')
-       module_path_switch='-J '
        fflags = '&
        & -Wall&
        & -Wextra&
@@ -113,14 +116,14 @@ character(len=:),allocatable :: module_path_switch
        & -Wno-maybe-uninitialized -Wno-uninitialized&
        & -fbacktrace&
        &'
+       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case('release_nvfortran')
-       module_path_switch='-module '
        fflags = '&
        & -Mbackslash&
        &'
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_nvfortran')
-       module_path_switch='-module '
        fflags = '&
        & -Minform=inform&
        & -Mbackslash&
@@ -130,9 +133,9 @@ character(len=:),allocatable :: module_path_switch
        & -Mchkstk&
        & -traceback&
        &'
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case('release_ifort')
-       module_path_switch='-module '
        fflags = '&
        & -fp-model precise&
        & -pc 64&
@@ -144,8 +147,8 @@ character(len=:),allocatable :: module_path_switch
        & -assume byterecl&
        & -assume nounderscore&
        &'
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_ifort')
-       module_path_switch='-module '
        fflags = '&
        & -warn all&
        & -check:all:noarg_temp_created&
@@ -156,43 +159,43 @@ character(len=:),allocatable :: module_path_switch
        & -assume byterecl&
        & -traceback&
        &'
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
     case('release_ifx')
-       module_path_switch='-module '
        fflags = ' '
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_ifx')
-       module_path_switch='-module '
        fflags = ' '
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case('release_pgfortran','release_pgf90','release_pgf95')  ! Portland Group F90/F95 compilers
-       module_path_switch='-module '
        fflags = ' '
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_pgfortran','debug_pgf90','debug_pgf95')  ! Portland Group F90/F95 compilers
-       module_path_switch='-module '
        fflags = ' '
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case('release_flang')
-       module_path_switch='-module '
        fflags = ' '
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_flang')
-       module_path_switch='-module '
        fflags = ' '
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case('release_lfc')
-       module_path_switch='-M '
        fflags = ' '
+       mandatory=' -M '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_lfc')
-       module_path_switch='-M '
        fflags = ' '
+       mandatory=' -M '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case('release_nagfor')
-       module_path_switch='-mdir '
        fflags = ' &
        & -O4&
        & -coarray=single&
        & -PIC&
        '
+       mandatory=' -mdir '//modpath//' -I '//modpath !! add module path as apprpriate
     case('debug_nagfor')
-       module_path_switch='-mdir '
        fflags = '&
        & -g&
        & -C=all&
@@ -201,34 +204,32 @@ character(len=:),allocatable :: module_path_switch
        & -coarray=single&
        & -PIC&
        '
+       mandatory=' -mdir '//modpath//' -I '//modpath !! add module path as apprpriate
     case('release_crayftn')
-       module_path_switch='-J '
        fflags = ' '
+       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_crayftn')
-       module_path_switch='-J '
        fflags = ' '
+       mandatory=' -J '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case('release_xlf90')
-       module_path_switch='-qmoddir '
        fflags = ' '
+       mandatory=' -qmoddir '//modpath//' -I '//modpath ! add module path as apprpriate
     case('debug_xlf90')
-       module_path_switch='-qmoddir '
        fflags = ' '
+       mandatory=' -qmoddir '//modpath//' -I '//modpath ! add module path as apprpriate
 
     case default
-       module_path_switch='-module '
        fflags = ' '
+       mandatory=' -module '//modpath//' -I '//modpath ! add module path as apprpriate
        write(*,*)'<WARNING> unknown compiler (',compiler,')'
-       write(*,*)'          and build name   (',build_name,')'
+       write(*,*)'          and build name (',build_name,')'
        write(*,*)'          combination.'
        write(*,*)'          known compilers are gfortran, nvfortran, ifort'
     end select
 
-! NOTE THAT MODULE_PATH_SWITCH IS ASSUMED TO CONTAIN REQUIRED TRAILING SPACE IF NEEDED
-! so that values that do not require a space such as -moddir= will work
-    model%fortran_compile_flags = fflags//' '//&
-    & module_path_switch//join_path(model%output_directory,model%package_name)
-
+    model%fortran_compile_flags = fflags//' '//mandatory
+     
 end subroutine add_compile_flag_defaults
 
 end module fpm_compiler
