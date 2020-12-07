@@ -204,7 +204,7 @@ subroutine build_target(model,target)
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        call run("gfortran -c " // target%source%file_name // model%fortran_compile_flags &
+        call run(model%fortran_compiler//" -c " // target%source%file_name // model%fortran_compile_flags &
               // " -o " // target%output_file)
 
     case (FPM_TARGET_EXECUTABLE)
@@ -223,7 +223,7 @@ subroutine build_target(model,target)
             end if
         end if
         
-        call run("gfortran " // model%fortran_compile_flags &
+        call run(model%fortran_compiler// " " // model%fortran_compile_flags &
               //" "//link_flags// " -o " // target%output_file)
 
     case (FPM_TARGET_ARCHIVE)

@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>find_module_dependency &ndash; Fortran-lang/fpm</title>
+    <title>get_env &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,7 +110,7 @@
     
   
   <div class="row">
-    <h1>find_module_dependency
+    <h1>get_env
       <small>Function</small>
     
     </h1>
@@ -128,24 +128,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.4% of total for procedures.">27 statements</a>
+    title=" 1.4% of total for procedures.">26 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_targets.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_environment.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></li>
+     <li><a href='../sourcefile/fpm_environment.f90.html'>fpm_environment.f90</a></li>
     
-     <li><a href='../module/fpm_targets.html'>fpm_targets</a></li>
+     <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
     
   
-     <li class="active">find_module_dependency</li>
+     <li class="active">get_env</li>
   </ol>
 </div>
 </div>
@@ -173,9 +173,11 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/find_module_dependency.html#variable-k">k</a>
+      <a class="list-group-item" href="../proc/get_env.html#variable-howbig">howbig</a>
       
-      <a class="list-group-item" href="../proc/find_module_dependency.html#variable-l">l</a>
+      <a class="list-group-item" href="../proc/get_env.html#variable-length">length</a>
+      
+      <a class="list-group-item" href="../proc/get_env.html#variable-stat~6">stat</a>
       
     </div>
   </div>
@@ -203,7 +205,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/find_module_dependency.html#src">find_module_dependency</a>
+    <a class="list-group-item" href="../proc/get_env.html#src">get_env</a>
   </div>
 </div>
 
@@ -215,7 +217,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public function find_module_dependency(targets, module_name, include_dir) result(target_ptr)
+public function get_env(NAME, DEFAULT) result(VALUE)
     
     
    
@@ -224,6 +226,9 @@ public function find_module_dependency(targets, module_name, include_dir) result
   
 
 
+    
+    <p>!print <em>, NAME, &rdquo; is not defined in the environment. Strange&hellip;&rdquo;
+!print </em>, &ldquo;This processor doesn&rsquo;t support environment variables. Boooh!&rdquo;</p>
     
 
     <h3>Arguments</h3>
@@ -244,27 +249,12 @@ public function find_module_dependency(targets, module_name, include_dir) result
   
 <tr>
   
-  <td><span class="anchor" id="variable-targets~2"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>target</td><td>::</td>
-  <td><strong>targets</strong>(:)</td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-module_name"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-name"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>module_name</strong></td><td></td>
+  <td><strong>NAME</strong></td><td></td>
   
 </tr>
 
@@ -274,12 +264,12 @@ public function find_module_dependency(targets, module_name, include_dir) result
   
 <tr>
   
-  <td><span class="anchor" id="variable-include_dir"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-default"></span>character(len=*),</td>
   <td>intent(in),</td>
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>include_dir</strong></td><td></td>
+  <td><strong>DEFAULT</strong></td><td></td>
   
 </tr>
 
@@ -293,8 +283,8 @@ public function find_module_dependency(targets, module_name, include_dir) result
     
     
     
-   <h3>Return Value <small><span class="anchor" id="variable-target_ptr"></span>type(<a href='../type/build_target_t.html'>build_target_t</a>),
-  pointer</small></h3>
+   <h3>Return Value <small><span class="anchor" id="variable-value"></span>character(len=:),
+  allocatable</small></h3>
     
     
     
@@ -314,9 +304,11 @@ public function find_module_dependency(targets, module_name, include_dir) result
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/find_module_dependency.html#variable-k">k</a>
+      <a class="list-group-item" href="../proc/get_env.html#variable-howbig">howbig</a>
       
-      <a class="list-group-item" href="../proc/find_module_dependency.html#variable-l">l</a>
+      <a class="list-group-item" href="../proc/get_env.html#variable-length">length</a>
+      
+      <a class="list-group-item" href="../proc/get_env.html#variable-stat~6">stat</a>
       
     </div>
   </div>
@@ -344,7 +336,7 @@ public function find_module_dependency(targets, module_name, include_dir) result
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/find_module_dependency.html#src">find_module_dependency</a>
+    <a class="list-group-item" href="../proc/get_env.html#src">get_env</a>
   </div>
 </div>
 
@@ -374,11 +366,11 @@ public function find_module_dependency(targets, module_name, include_dir) result
   
 <tr>
   
-  <td><span class="anchor" id="variable-k"></span>integer,</td>
+  <td><span class="anchor" id="variable-howbig"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>k</strong></td><td></td><td></td><td></td>
+  <td><strong>howbig</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -388,11 +380,25 @@ public function find_module_dependency(targets, module_name, include_dir) result
   
 <tr>
   
-  <td><span class="anchor" id="variable-l"></span>integer,</td>
+  <td><span class="anchor" id="variable-length"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>l</strong></td><td></td><td></td><td></td>
+  <td><strong>length</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-stat~6"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>stat</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -419,47 +425,37 @@ public function find_module_dependency(targets, module_name, include_dir) result
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">find_module_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">module_name</span><span class="p">,</span><span class="n">include_dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">target_ptr</span><span class="p">)</span>
-    <span class="c">! Find a module dependency in the library or a dependency library</span>
-    <span class="c">!</span>
-    <span class="c">! &#39;include_dir&#39; specifies an allowable non-library search directory</span>
-    <span class="c">!   (Used for executable dependencies)</span>
-    <span class="c">!</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
-    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">module_name</span>
-    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">include_dir</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">target_ptr</span>
-
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span>
-
-    <span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="nb">NULL</span><span class="p">()</span>
-
-    <span class="k">do </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
-
-<span class="k">        do </span><span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="p">(</span><span class="n">module_name</span> <span class="o">==</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                select case</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span><span class="p">)</span>
-                <span class="k">case</span> <span class="p">(</span><span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="n">FPM_SCOPE_DEP</span><span class="p">)</span>
-                    <span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span>
-                    <span class="k">exit</span>
-<span class="k">                case </span><span class="n">default</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">include_dir</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">                        if</span> <span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">)</span> <span class="o">==</span> <span class="n">include_dir</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                            </span><span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span>
-                            <span class="k">exit</span>
-<span class="k">                        end if</span>
-<span class="k">                    end if</span>
-<span class="k">                end select</span>
-<span class="k">            end if</span>
-
-<span class="k">        end do</span>
-<span class="k">        </span>
-<span class="k">    end do</span>
-
-<span class="k">end function </span><span class="n">find_module_dependency</span>
+    <div class="highlight"><pre><span></span>    <span class="k">function </span><span class="n">get_env</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="n">DEFAULT</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="k">VALUE</span><span class="p">)</span>
+    <span class="k">implicit none</span>
+<span class="k">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">NAME</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">DEFAULT</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="k">VALUE</span>
+<span class="k">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">howbig</span>
+    <span class="kt">integer</span>                              <span class="kd">::</span> <span class="nb">stat</span>
+<span class="nb">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">length</span>
+        <span class="c">! get length required to hold value</span>
+        <span class="n">length</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">NAME</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="k">           call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">howbig</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+           <span class="k">select case</span> <span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
+           <span class="k">case</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+               <span class="c">!*!print *, NAME, &quot; is not defined in the environment. Strange...&quot;</span>
+               <span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+           <span class="k">case</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+               <span class="c">!*!print *, &quot;This processor doesn&#39;t support environment variables. Boooh!&quot;</span>
+               <span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+           <span class="k">case </span><span class="n">default</span>
+               <span class="c">! make string to hold value of sufficient size</span>
+               <span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">howbig</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="kd">::</span> <span class="k">VALUE</span><span class="p">)</span>
+               <span class="c">! get value</span>
+               <span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="k">VALUE</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+               <span class="k">if</span><span class="p">(</span><span class="nb">stat</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+           <span class="k">end select</span>
+<span class="k">        else</span>
+<span class="k">           VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+        <span class="n">endif</span>
+        <span class="k">if</span><span class="p">(</span><span class="k">VALUE</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">DEFAULT</span><span class="p">))</span><span class="k">VALUE</span><span class="o">=</span><span class="n">DEFAULT</span>
+     <span class="k">end function </span><span class="n">get_env</span>
 </pre></div>
 
     </section>
