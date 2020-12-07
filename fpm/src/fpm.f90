@@ -9,6 +9,8 @@ use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                     FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
                     FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
+use fpm_compiler, only: add_compile_flag_defaults
+
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
@@ -153,11 +155,17 @@ subroutine build_model(model, settings, package, error)
     type(fpm_build_settings), intent(in) :: settings
     type(package_config_t), intent(in) :: package
     type(error_t), allocatable, intent(out) :: error
-
-    integer :: i
     type(string_t), allocatable :: package_list(:)
 
+    integer :: i
+
+    if(settings%verbose)then
+       write(*,*)'<INFO>BUILD_NAME:',settings%build_name
+       write(*,*)'<INFO>COMPILER:  ',settings%compiler
+    endif
+
     model%package_name = package%name
+
     if (allocated(package%build%link)) then
         model%link_libraries = package%build%link
     else
@@ -167,25 +175,17 @@ subroutine build_model(model, settings, package, error)
     allocate(package_list(1))
     package_list(1)%s = package%name
 
-    ! #TODO: Choose flags and output directory based on cli settings & manifest inputs
-    model%fortran_compiler = 'gfortran'
 
-    if(settings%release)then
-        model%output_directory = join_path('build','gfortran_release')
-        model%fortran_compile_flags=' &
-            & -O3 &
-            & -Wimplicit-interface &
-            & -fPIC &
-            & -fmax-errors=1 &
-            & -ffast-math &
-            & -funroll-loops ' // &
-            & '-J'//join_path(model%output_directory,model%package_name)
+    if(settings%compiler.eq.'')then
+        model%fortran_compiler = 'gfortran'
     else
-        model%output_directory = join_path('build','gfortran_debug')
-        model%fortran_compile_flags = ' -Wall -Wextra -Wimplicit-interface  -fPIC -fmax-errors=1 -g '// &
-                                      '-fbounds-check -fcheck-array-temporaries -fbacktrace '// &
-                                      '-J'//join_path(model%output_directory,model%package_name)
+        model%fortran_compiler = settings%compiler
     endif
+
+    model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
+
+    call add_compile_flag_defaults(settings%build_name, basename(model%fortran_compiler), model)
+
     model%link_flags = ''
 
     ! Add sources from executable directories

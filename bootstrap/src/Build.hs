@@ -7,7 +7,8 @@ module Build
   )
 where
 
-import           BuildModel                     ( CompileTimeInfo(..)
+import           BuildModel                     ( AvailableModule(..)
+                                                , CompileTimeInfo(..)
                                                 , RawSource(..)
                                                 , Source(..)
                                                 , constructCompileTimeInfo
@@ -45,6 +46,7 @@ import           Development.Shake.FilePath     ( exe
                                                 , (<.>)
                                                 )
 import           System.Environment             ( setEnv )
+import           System.FilePath                ( takeBaseName )
 import           System.Process                 ( system )
 import           System.Directory               ( createDirectoryIfMissing
                                                 , makeAbsolute
@@ -70,6 +72,7 @@ buildProgram
   -> IO ()
 buildProgram programDirectory' libraryDirectories sourceExtensions buildDirectory' (CompilerSettings { compilerSettingsCompiler = compiler, compilerSettingsFlags = flags, compilerSettingsModuleFlag = moduleFlag, compilerSettingsIncludeFlag = includeFlag }) programName programSource archives
   = do
+    libraryModules <- findAvailableModules libraryDirectories
     let programDirectory = foldl1 (</>) (splitDirectories programDirectory')
     let buildDirectory   = foldl1 (</>) (splitDirectories buildDirectory')
     let includeFlags     = map (includeFlag ++) libraryDirectories
@@ -80,7 +83,7 @@ buildProgram programDirectory' libraryDirectories sourceExtensions buildDirector
           programSourceFileName p == programDirectory </> programSource
         isThisProgramOrNotProgram _ = True
     let sources          = filter isThisProgramOrNotProgram sources'
-    let availableModules = getAvailableModules sources
+    let availableModules = (getAvailableModules sources buildDirectory) ++ libraryModules
     let compileTimeInfo = map
           (\s -> constructCompileTimeInfo s availableModules buildDirectory)
           sources
@@ -126,11 +129,12 @@ buildLibrary
   -> IO (FilePath)
 buildLibrary libraryDirectory sourceExtensions buildDirectory (CompilerSettings { compilerSettingsCompiler = compiler, compilerSettingsFlags = flags, compilerSettingsModuleFlag = moduleFlag, compilerSettingsIncludeFlag = includeFlag }) libraryName otherLibraryDirectories
   = do
+    otherModules <- findAvailableModules otherLibraryDirectories
     let includeFlags = map (includeFlag ++) otherLibraryDirectories
     sourceFiles <- getDirectoriesFiles [libraryDirectory] sourceExtensions
     rawSources  <- mapM sourceFileToRawSource sourceFiles
     let sources          = map processRawSource rawSources
-    let availableModules = getAvailableModules sources
+    let availableModules = (getAvailableModules sources buildDirectory) ++ otherModules
     let compileTimeInfo = map
           (\s -> constructCompileTimeInfo s availableModules buildDirectory)
           sources
@@ -227,3 +231,9 @@ removeDriveLetter path | ':' `elem` path = (tail . dropWhile (/= ':')) path
 
 changeSeparators :: String -> String
 changeSeparators = replace "\\" "/"
+
+findAvailableModules :: [FilePath] -> IO [AvailableModule]
+findAvailableModules directories = do
+    moduleFiles <- getDirectoriesFiles directories ["*.mod"]
+    let availableModules = map (\mf -> AvailableModule { availableModuleName = takeBaseName mf, availableModuleFile = mf }) moduleFiles
+    return availableModules

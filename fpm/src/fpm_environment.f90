@@ -3,6 +3,7 @@ module fpm_environment
     private
     public :: get_os_type
     public :: run
+    public :: get_env
 
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
@@ -114,4 +115,37 @@ contains
             error stop
         end if
     end subroutine run
+
+    function get_env(NAME,DEFAULT) result(VALUE)
+    implicit none
+    character(len=*),intent(in)          :: NAME
+    character(len=*),intent(in),optional :: DEFAULT
+    character(len=:),allocatable         :: VALUE
+    integer                              :: howbig
+    integer                              :: stat
+    integer                              :: length
+        ! get length required to hold value
+        length=0
+        if(NAME.ne.'')then
+           call get_environment_variable(NAME, length=howbig,status=stat,trim_name=.true.)
+           select case (stat)
+           case (1)
+               !*!print *, NAME, " is not defined in the environment. Strange..."
+               VALUE=''
+           case (2)
+               !*!print *, "This processor doesn't support environment variables. Boooh!"
+               VALUE=''
+           case default
+               ! make string to hold value of sufficient size
+               allocate(character(len=max(howbig,1)) :: VALUE)
+               ! get value
+               call get_environment_variable(NAME,VALUE,status=stat,trim_name=.true.)
+               if(stat.ne.0)VALUE=''
+           end select
+        else
+           VALUE=''
+        endif
+        if(VALUE.eq.''.and.present(DEFAULT))VALUE=DEFAULT
+     end function get_env
+
 end module fpm_environment
