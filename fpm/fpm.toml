@@ -29,4 +29,7 @@ name = "fpm-test"
 source-dir = "test/fpm_test"
 main = "main.f90"
 
-
+[[test]]
+name = "help-test"
+source-dir = "test/help_test"
+main = "help_test.f90"
