@@ -1,3 +1,19 @@
+!># Parsing of package source files
+!>
+!> This module exposes two functions, `[[parse_f_source]]` and `[[parse_c_source]]`,
+!> which perform a rudimentary parsing of fortran and c source files
+!> in order to extract information required for module dependency tracking.
+!>
+!> Both functions additionally calculate and store a file digest (hash) which
+!> is used by the backend ([[fpm_backend]]) to skip compilation of unmodified sources.
+!> 
+!> Both functions return an instance of the [[srcfile_t]] type. 
+!>
+!> For more information, please read the documentation for each function:
+!>
+!> - `[[parse_f_source]]`
+!> - `[[parse_c_source]]`
+!>
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error
 use fpm_strings, only: string_t, split, lower, str_ends_with, fnv_1a
@@ -18,13 +34,37 @@ character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
                               'ieee_arithmetic', &
                               'ieee_exceptions', &
                               'ieee_features  ']
-                              
+
 contains
 
+!> Parsing of free-form fortran source files
+!> 
+!> The following statements are recognised and parsed:
+!>
+!> - `Module`/`submodule`/`program` declaration
+!> - Module `use` statement
+!> - `include` statement
+!>
+!>### Parsing limitations
+!>
+!> __Statements must not continued onto another line
+!>  except for an `only:` list in the `use` statement.__
+!>
+!> This is supported:
+!>
+!>```fortran
+!> use my_module, only: &
+!>      my_var, my_function, my_subroutine
+!>```
+!>
+!> This is __NOT supported:__
+!>
+!>```fortran
+!> use &
+!>    my_module
+!>```
+!>
 function parse_f_source(f_filename,error) result(f_source)
-    ! Rudimentary scan of Fortran source file and 
-    !  extract program unit name and use/include dependencies
-    !
     character(*), intent(in) :: f_filename
     type(srcfile_t) :: f_source
     type(error_t), allocatable, intent(out) :: error
@@ -291,10 +331,13 @@ function parse_f_source(f_filename,error) result(f_source)
 end function parse_f_source
 
 
+!> Parsing of c source files
+!> 
+!> The following statements are recognised and parsed:
+!>
+!> - `#include` preprocessor statement
+!>
 function parse_c_source(c_filename,error) result(c_source)
-    ! Rudimentary scan of c source file and 
-    !  extract include dependencies
-    !
     character(*), intent(in) :: c_filename
     type(srcfile_t) :: c_source
     type(error_t), allocatable, intent(out) :: error
@@ -358,17 +401,17 @@ function parse_c_source(c_filename,error) result(c_source)
 
 end function parse_c_source
 
-
+!> Split a string on one or more delimeters
+!>  and return the nth substring if it exists
+!>
+!> n=0  will return the last item
+!> n=-1 will return the penultimate item etc.
+!>
+!> stat = 1 on return if the index 
+!>  is not found
+!>
 function split_n(string,delims,n,stat) result(substring)
-    ! Split a string on one or more delimeters
-    !  and return the nth substring if it exists
-    !
-    ! n=0  will return the last item
-    ! n=-1 will return the penultimate item etc.
-    !
-    ! stat = 1 on return if the index 
-    !  is not found
-    !
+
     character(*), intent(in) :: string
     character(*), intent(in) :: delims
     integer, intent(in) :: n
