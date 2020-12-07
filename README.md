@@ -24,7 +24,7 @@ __Note:__ On Linux and MacOS, you will need to enable executable permission befo
 
 _e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
 
-__Github actions:__ to setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/fortran-lang/setup-fpm) action.
+__Github actions:__ to setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
 
 For other platforms and architectures have a look at the [bootstrapping instructions](#bootstrapping-instructions).
 
