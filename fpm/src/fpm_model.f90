@@ -1,5 +1,18 @@
+!># The fpm package model
+!>
+!> Defines the fpm model data types which encapsulate all information 
+!> required to correctly build a package and its dependencies.
+!>
+!> The process (see `[[build_model(subroutine)]]`) for generating a valid `[[fpm_model]]` is as follows:
+!>
+!> 1. Source files are discovered ([[fpm_sources]]) and parsed ([[fpm_source_parsing]])
+!> 2. A list of build targets is generated (`[[targets_from_sources]]`) from the sources
+!> 3. Inter-target dependencies are resolved (`[[resolve_module_dependencies]]`) based on modules used and provided
+!> 4. Object link lists are generated for link targets (executables and libraries) (`[[resolve_target_linking]]`)
+!>
+!> Once a valid `[[fpm_model]]` has been constructed, it may be passed to `[[fpm_backend:build_package]]` to
+!> build the package.
 module fpm_model
-! Definition and validation of the backend model
 use iso_fortran_env, only: int64
 use fpm_strings, only: string_t
 implicit none

@@ -22,7 +22,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
 use fpm_manifest_dependency, only: dependency_config_t
 implicit none
 private
-public :: cmd_build, cmd_install, cmd_run
+public :: build_model, cmd_build, cmd_install, cmd_run
 
 contains
 
