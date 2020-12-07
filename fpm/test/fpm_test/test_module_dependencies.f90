@@ -72,7 +72,6 @@ contains
         if (allocated(error)) then
             return
         end if
-        
         if (size(model%targets) /= 3) then
             call test_failed(error,'Incorrect number of model%targets - expecting three')
             return
