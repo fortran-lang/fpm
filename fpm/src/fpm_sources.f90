@@ -1,3 +1,8 @@
+!># Discovery of sources
+!>
+!> This module implements subroutines for building a list of 
+!> `[[srcfile_t]]` objects by looking for source files in the filesystem. 
+!>
 module fpm_sources
 use fpm_error, only: error_t
 use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM
@@ -12,6 +17,8 @@ public :: add_sources_from_dir, add_executable_sources
 
 contains
 
+!> Wrapper to source parsing routines.
+!> Selects parsing routine based on source file name extension
 function parse_source(source_file_path,error) result(source)
     character(*), intent(in) :: source_file_path
     type(error_t), allocatable, intent(out) :: error
@@ -38,15 +45,19 @@ function parse_source(source_file_path,error) result(source)
 
 end function parse_source
 
-
+!> Add to `sources` by looking for source files in `directory`
 subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse,error)
-    ! Enumerate sources in a directory
-    !
+    !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
+    !> Directory in which to search for source files
     character(*), intent(in) :: directory
+    !> Scope to apply to the discovered sources, see [[fpm_model]] for enumeration
     integer, intent(in) :: scope
+    !> Executable sources (fortran `program`s) are ignored unless `with_executables=.true.`
     logical, intent(in), optional :: with_executables
+    !> Whether to recursively search subdirectories, default is `.true.`
     logical, intent(in), optional :: recurse
+    !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i
@@ -106,14 +117,19 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
 end subroutine add_sources_from_dir
 
 
+!> Add to `sources` using the executable and test entries in the manifest and
+!> applies any executable-specific overrides such as `executable%name`.
+!> Adds all sources (including modules) from each `executable%source_dir`
 subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
-    ! Include sources from any directories specified 
-    !  in [[executable]] entries and apply any customisations
-    !  
+    !> List of `[[srcfile_t]]` objects to append to. Allocated if not allocated
     type(srcfile_t), allocatable, intent(inout), target :: sources(:)
+    !> List of `[[executable_config_t]]` entries from manifest
     class(executable_config_t), intent(in) :: executables(:)
+    !> Scope to apply to the discovered sources: either `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`, see [[fpm_model]]
     integer, intent(in) :: scope
+    !> If `.false.` only executables and tests specified in the manifest are added to `sources`
     logical, intent(in) :: auto_discover
+    !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
@@ -172,10 +188,9 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
 
 end subroutine add_executable_sources
 
-
+!> Build a list of unique source directories
+!>  from executables specified in manifest
 subroutine get_executable_source_dirs(exe_dirs,executables)
-    ! Build a list of unique source directories
-    !  from executables specified in manifest
     type(string_t), allocatable, intent(inout) :: exe_dirs(:)
     class(executable_config_t), intent(in) :: executables(:)
 
