@@ -45,6 +45,12 @@ contains
 !> - Module `use` statement
 !> - `include` statement
 !>
+!> @note Intrinsic modules used by sources are not listed in
+!> the `modules_used` field of source objects.
+!>
+!> @note Submodules are treated as normal modules which `use` their
+!> corresponding parent modules.
+!>
 !>### Parsing limitations
 !>
 !> __Statements must not continued onto another line
