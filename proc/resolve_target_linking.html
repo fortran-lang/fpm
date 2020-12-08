@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.5% of total for procedures.">29 statements</a>
+    title=" 1.7% of total for procedures.">33 statements</a>
      </li> 
      
      
@@ -175,12 +175,6 @@
       
       <a class="list-group-item" href="../proc/resolve_target_linking.html#variable-i~11">i</a>
       
-      <a class="list-group-item" href="../proc/resolve_target_linking.html#variable-j~5">j</a>
-      
-      <a class="list-group-item" href="../proc/resolve_target_linking.html#variable-k~2">k</a>
-      
-      <a class="list-group-item" href="../proc/resolve_target_linking.html#variable-link_object">link_object</a>
-      
     </div>
   </div>
 </div>
@@ -195,6 +189,18 @@
 
 
 
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-0" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../proc/resolve_target_linking.html#proc-get_link_objects">get_link_objects</a>
+      
+    </div>
+  </div>
+</div>
 
 
 
@@ -229,7 +235,8 @@ public subroutine resolve_target_linking(targets)
 
 
     
-    <p>For link targets, enumerate any dependency objects required for linking</p>
+    <p>For libraries and executables, build a list of objects required for linking</p>
+<p>stored in <code>target%link_objects</code></p>
     
 
     <h3>Arguments</h3>
@@ -283,12 +290,6 @@ public subroutine resolve_target_linking(targets)
       
       <a class="list-group-item" href="../proc/resolve_target_linking.html#variable-i~11">i</a>
       
-      <a class="list-group-item" href="../proc/resolve_target_linking.html#variable-j~5">j</a>
-      
-      <a class="list-group-item" href="../proc/resolve_target_linking.html#variable-k~2">k</a>
-      
-      <a class="list-group-item" href="../proc/resolve_target_linking.html#variable-link_object">link_object</a>
-      
     </div>
   </div>
 </div>
@@ -303,6 +304,18 @@ public subroutine resolve_target_linking(targets)
 
 
 
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-1" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../proc/resolve_target_linking.html#proc-get_link_objects">get_link_objects</a>
+      
+    </div>
+  </div>
+</div>
 
 
 
@@ -353,48 +366,6 @@ public subroutine resolve_target_linking(targets)
   
 </tr>
 
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-j~5"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>j</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-k~2"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>k</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-link_object"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>link_object</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
 </tbody>
 </table>
 
@@ -414,6 +385,100 @@ public subroutine resolve_target_linking(targets)
 
 
     
+    <section>
+    <h2>Subroutines</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-get_link_objects"></span><h3>
+recursive subroutine get_link_objects(link_objects, target, is_exe)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>Wrapper to build link object list</p><a href="None" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(inout),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>link_objects</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/build_target_t.html'>build_target_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>target</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>is_exe</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    </section>    
+    
     
     
     <section>
@@ -421,8 +486,7 @@ public subroutine resolve_target_linking(targets)
     <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">resolve_target_linking</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
 
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">link_object</span>
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
 
     <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
@@ -430,46 +494,65 @@ public subroutine resolve_target_linking(targets)
 
             <span class="k">allocate</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 
-            <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">)</span>
-            
-                <span class="k">if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_ARCHIVE</span> <span class="p">)</span> <span class="k">then</span>
-            
-                    <span class="c">! Construct object list for archive</span>
-                    <span class="n">link_object</span><span class="p">%</span><span class="n">s</span> <span class="o">=</span> <span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span>
-                    <span class="k">target</span><span class="p">%</span><span class="n">link_objects</span> <span class="o">=</span> <span class="p">[</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span> <span class="n">link_object</span><span class="p">]</span>
-            
-                <span class="k">else if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
-                        <span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span>  <span class="n">FPM_TARGET_OBJECT</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    </span>
-<span class="k">                    associate</span><span class="p">(</span><span class="n">exe_obj</span> <span class="o">=&gt;</span> <span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span> <span class="k">then</span>
 
-                        <span class="c">! Construct object list for executable</span>
-                        <span class="n">link_object</span><span class="p">%</span><span class="n">s</span> <span class="o">=</span> <span class="n">exe_obj</span><span class="p">%</span><span class="n">output_file</span>
-                        <span class="k">target</span><span class="p">%</span><span class="n">link_objects</span> <span class="o">=</span> <span class="p">[</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span> <span class="n">link_object</span><span class="p">]</span>
-                            
-                        <span class="c">! Include non-library object dependencies</span>
-                        <span class="k">do </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">exe_obj</span><span class="p">%</span><span class="n">dependencies</span><span class="p">)</span>
-                
-                            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">exe_obj</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">                                if</span> <span class="p">(</span><span class="n">exe_obj</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="p">&amp;</span>
-                                     <span class="n">exe_obj</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
 
-<span class="k">                                    </span><span class="n">link_object</span><span class="p">%</span><span class="n">s</span> <span class="o">=</span> <span class="n">exe_obj</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span>
-                                    <span class="k">target</span><span class="p">%</span><span class="n">link_objects</span> <span class="o">=</span> <span class="p">[</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span> <span class="n">link_object</span><span class="p">]</span>
+            <span class="k">else if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">)</span> <span class="k">then</span>
 
-                                <span class="k">end if</span>
-<span class="k">                            end if</span>
-<span class="k">                </span>
-<span class="k">                        end do</span>
+<span class="k">                call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 
-<span class="k">                    end associate</span>
-<span class="k">            </span>
-<span class="k">                end if</span>
+            <span class="k">end if</span>
 
-<span class="k">            end do</span>
 <span class="k">        end associate</span>
 
 <span class="k">    end do</span>
+
+<span class="k">contains</span>
+
+    <span class="c">!&gt; Wrapper to build link object list</span>
+    <span class="c">!&gt;</span>
+    <span class="c">!&gt;  For libraries: just list dependency objects of lib target</span>
+    <span class="c">!&gt;</span>
+    <span class="c">!&gt;  For executables: need to recursively discover non-library</span>
+    <span class="c">!&gt;   dependency objects. (i.e. modules in same dir as program)</span>
+    <span class="c">!&gt;</span>
+    <span class="k">recursive subroutine </span><span class="n">get_link_objects</span><span class="p">(</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="p">)</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_objects</span><span class="p">(:)</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">target</span>
+<span class="k">        </span><span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">is_exe</span>
+
+        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temp_str</span>
+
+        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span> <span class="k">return</span>
+
+<span class="k">        do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">)</span>
+
+            <span class="k">associate</span><span class="p">(</span><span class="n">dep</span> <span class="o">=&gt;</span> <span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+            
+                <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
+                
+                <span class="c">! Skip library dependencies for executable targets</span>
+                <span class="c">!  since the library archive will always be linked </span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">is_exe</span><span class="p">.</span><span class="nb">and</span><span class="p">.(</span><span class="n">dep</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">))</span> <span class="k">cycle</span>
+                
+                <span class="c">! Skip if dependency object already listed</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">output_file</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">link_objects</span><span class="p">)</span> <span class="k">cycle</span>
+
+                <span class="c">! Add dependency object file to link object list</span>
+                <span class="n">temp_str</span><span class="p">%</span><span class="n">s</span> <span class="o">=</span> <span class="n">dep</span><span class="p">%</span><span class="n">output_file</span>
+                <span class="n">link_objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">link_objects</span><span class="p">,</span> <span class="n">temp_str</span><span class="p">]</span>
+
+                <span class="c">! For executable objects, also need to include non-library </span>
+                <span class="c">!  dependencies from dependencies (recurse)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">is_exe</span><span class="p">)</span> <span class="k">call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="n">link_objects</span><span class="p">,</span><span class="n">dep</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+            
+            <span class="k">end associate</span>
+
+<span class="k">        end do</span>
+
+<span class="k">    end subroutine </span><span class="n">get_link_objects</span>
 
 <span class="k">end subroutine </span><span class="n">resolve_target_linking</span>
 </pre></div>
@@ -493,7 +576,7 @@ public subroutine resolve_target_linking(targets)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-08 14:22  
+             on 2020-12-08 15:45  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
