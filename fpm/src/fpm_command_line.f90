@@ -1,3 +1,27 @@
+!># Definition of the command line interface
+!>
+!> This module uses [M_CLI2](https://github.com/urbanjost/M_CLI2) to define
+!> the command line interface.
+!> To define a command line interface create a new command settings type
+!> from the [[fpm_cmd_settings]] base class or the respective parent command
+!> settings.
+!>
+!> The subcommand is selected by the first non-option argument in the command
+!> line. In the subcase block the actual command line is defined and transferred
+!> to an instance of the [[fpm_cmd_settings]], the actual type is used by the
+!> *fpm* main program to determine which command entry point is chosen.
+!>
+!> To add a new subcommand add a new case to select construct and specify the
+!> wanted command line and the expected default values.
+!> Some of the following points also apply if you add a new option or argument
+!> to an existing *fpm* subcommand.
+!> Add this point you should create a help page for the new command in a simple
+!> catman-like format as well in the ``set_help`` procedure.
+!> Make sure to register new subcommands in the ``fpm-manual`` command by adding
+!> them to the manual character array and in the help/manual case as well.
+!> You should add the new command to the synopsis section of the ``fpm-list``,
+!> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
+!> is complete and consistent as well.
 module fpm_command_line
 use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
