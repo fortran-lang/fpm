@@ -56,8 +56,9 @@
 !> Currenly ignored. First come, first serve.
 module fpm_dependency
   use, intrinsic :: iso_fortran_env, only : output_unit
+  use fpm_environment, only : get_os_type, OS_WINDOWS
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : exists, join_path, mkdir
+  use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path
   use fpm_git, only : git_target_revision, git_target_default, git_revision
   use fpm_manifest, only : package_config_t, dependency_config_t, &
     get_package_data
@@ -634,6 +635,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     integer :: ndep, ii
+    logical :: unix
     character(len=:), allocatable :: version, url, obj, rev, proj_dir
     type(toml_key), allocatable :: list(:)
     type(toml_table), pointer :: ptr
@@ -646,6 +648,8 @@ contains
       call resize(self%dep, ndep + ndep/2 + size(list))
     end if
 
+    unix = get_os_type() /= OS_WINDOWS
+
     do ii = 1, size(list)
       call get_value(table, list(ii)%key, ptr)
       call get_value(ptr, "version", version)
@@ -657,7 +661,11 @@ contains
       self%ndep = self%ndep + 1
       associate(dep => self%dep(self%ndep))
         dep%name = list(ii)%key
-        dep%proj_dir = proj_dir
+        if (unix) then
+          dep%proj_dir = proj_dir
+        else
+          dep%proj_dir = windows_path(proj_dir)
+        end if
         dep%done = .false.
         if (allocated(version)) then
           if (.not.allocated(dep%version)) allocate(dep%version)
@@ -737,6 +745,7 @@ contains
 
     integer :: ii
     type(toml_table), pointer :: ptr
+    character(len=:), allocatable :: proj_dir
 
     do ii = 1, self%ndep
       associate(dep => self%dep(ii))
@@ -748,7 +757,8 @@ contains
         if (allocated(dep%version)) then
           call set_value(ptr, "version", char(dep%version))
         end if
-        call set_value(ptr, "proj-dir", dep%proj_dir)
+        proj_dir = canon_path(dep%proj_dir)
+        call set_value(ptr, "proj-dir", proj_dir)
         if (allocated(dep%git)) then
           call set_value(ptr, "git", dep%git%url)
           if (allocated(dep%git%object)) then
