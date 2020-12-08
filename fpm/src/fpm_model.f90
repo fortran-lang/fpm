@@ -12,6 +12,18 @@
 !>
 !> Once a valid `[[fpm_model]]` has been constructed, it may be passed to `[[fpm_backend:build_package]]` to
 !> build the package.
+!>
+!>### Enumerations
+!>
+!> __Source type:__ `FPM_UNIT_*`
+!> Describes the type of source file — determines build target generation
+!>
+!> __Source scope:__ `FPM_SCOPE_*`
+!> Describes the scoping rules for using modules — controls module dependency resolution
+!>
+!> __Target type:__ `FPM_TARGET_*`
+!> Describes the type of build target — determines backend build rules
+!>
 module fpm_model
 use iso_fortran_env, only: int64
 use fpm_strings, only: string_t
