@@ -175,6 +175,7 @@ subroutine build_model(model, settings, package, error)
     allocate(package_list(1))
     package_list(1)%s = package%name
 
+
     if(settings%compiler.eq.'')then
         model%fortran_compiler = 'gfortran'
     else
