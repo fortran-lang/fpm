@@ -108,7 +108,7 @@ buildProgram programDirectory' libraryDirectories sourceExtensions buildDirector
                 in  fileMatcher &?> \(objectFile : _) -> do
                       need (sourceFile : directDependencies)
                       cmd compiler
-                          ["-c", moduleFlag ++ buildDirectory]
+                          ["-c", moduleFlag, buildDirectory]
                           includeFlags
                           flags
                           ["-o", objectFile, sourceFile]
@@ -160,7 +160,7 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory (CompilerSettings 
                 in  fileMatcher &?> \(objectFile : _) -> do
                       need (sourceFile : directDependencies)
                       cmd compiler
-                          ["-c", moduleFlag ++ buildDirectory]
+                          ["-c", moduleFlag, buildDirectory]
                           includeFlags
                           flags
                           ["-o", objectFile, sourceFile]

@@ -745,24 +745,24 @@ defineCompilerSettings specifiedFlags compiler release
   = let flags = case specifiedFlags of
           [] -> if release
             then
-              [ "-fp-model precise"
-              , "-pc 64"
-              , "-align all"
+              [ "-fp-model", "precise"
+              , "-pc", "64"
+              , "-align", "all"
               , "-coarray"
-              , "-error-limit 1"
-              , "-reentrancy threaded"
+              , "-error-limit", "1"
+              , "-reentrancy", "threaded"
               , "-nogen-interfaces"
-              , "-assume byterecl"
-              , "-assume nounderscore"
+              , "-assume", "byterecl"
+              , "-assume", "nounderscore"
               ]
             else
-              [ "-warn all"
+              [ "-warn", "all"
               , "-check:all:noarg_temp_created"
               , "-coarray"
-              , "-error-limit 1"
+              , "-error-limit", "1"
               , "-O0"
               , "-g"
-              , "-assume byterecl"
+              , "-assume", "byterecl"
               , "-traceback"
               ]
           fs -> fs
