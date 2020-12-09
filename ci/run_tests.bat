@@ -36,6 +36,9 @@ if errorlevel 1 exit 1
 .\build\gfortran_debug\app\hello_world
 if errorlevel 1 exit 1
 
+%fpm_path% run
+if errorlevel 1 exit 1
+
 
 cd ..\hello_fpm
 if errorlevel 1 exit 1
@@ -69,6 +72,9 @@ if errorlevel 1 exit 1
 
 del /q /f build
 %fpm_path% build
+if errorlevel 1 exit 1
+
+%fpm_path% test
 if errorlevel 1 exit 1
 
 .\build\gfortran_debug\app\say_Hello

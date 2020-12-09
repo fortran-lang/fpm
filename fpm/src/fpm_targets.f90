@@ -327,12 +327,14 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
 end function find_module_dependency
 
 
-!> For link targets, enumerate any dependency objects required for linking
+!> For libraries and executables, build a list of objects required for linking
+!>
+!> stored in `target%link_objects`
+!>
 subroutine resolve_target_linking(targets)
     type(build_target_ptr), intent(inout), target :: targets(:)
 
-    integer :: i,j,k
-    type(string_t) :: link_object
+    integer :: i
 
     do i=1,size(targets)
 
@@ -340,46 +342,65 @@ subroutine resolve_target_linking(targets)
 
             allocate(target%link_objects(0))
 
-            do j=1,size(target%dependencies)
-            
-                if (target%target_type == FPM_TARGET_ARCHIVE ) then
-            
-                    ! Construct object list for archive
-                    link_object%s = target%dependencies(j)%ptr%output_file
-                    target%link_objects = [target%link_objects, link_object]
-            
-                else if (target%target_type == FPM_TARGET_EXECUTABLE .and. &
-                        target%dependencies(j)%ptr%target_type ==  FPM_TARGET_OBJECT) then
-                    
-                    associate(exe_obj => target%dependencies(j)%ptr)
+            if (target%target_type == FPM_TARGET_ARCHIVE) then
 
-                        ! Construct object list for executable
-                        link_object%s = exe_obj%output_file
-                        target%link_objects = [target%link_objects, link_object]
-                            
-                        ! Include non-library object dependencies
-                        do k=1,size(exe_obj%dependencies)
-                
-                            if (allocated(exe_obj%dependencies(k)%ptr%source)) then
-                                if (exe_obj%dependencies(k)%ptr%source%unit_scope == &
-                                     exe_obj%source%unit_scope) then
+                call get_link_objects(target%link_objects,target,is_exe=.false.)
 
-                                    link_object%s = exe_obj%dependencies(k)%ptr%output_file
-                                    target%link_objects = [target%link_objects, link_object]
+            else if (target%target_type == FPM_TARGET_EXECUTABLE) then
 
-                                end if
-                            end if
-                
-                        end do
+                call get_link_objects(target%link_objects,target,is_exe=.true.)
 
-                    end associate
-            
-                end if
+            end if
 
-            end do
         end associate
 
     end do
+
+contains
+
+    !> Wrapper to build link object list
+    !>
+    !>  For libraries: just list dependency objects of lib target
+    !>
+    !>  For executables: need to recursively discover non-library
+    !>   dependency objects. (i.e. modules in same dir as program)
+    !>
+    recursive subroutine get_link_objects(link_objects,target,is_exe)
+        type(string_t), intent(inout), allocatable :: link_objects(:)
+        type(build_target_t), intent(in) :: target
+        logical, intent(in) :: is_exe
+
+        integer :: i
+        type(string_t) :: temp_str
+
+        if (.not.allocated(target%dependencies)) return
+
+        do i=1,size(target%dependencies)
+
+            associate(dep => target%dependencies(i)%ptr)
+            
+                if (.not.allocated(dep%source)) cycle
+                
+                ! Skip library dependencies for executable targets
+                !  since the library archive will always be linked 
+                if (is_exe.and.(dep%source%unit_scope == FPM_SCOPE_LIB)) cycle
+                
+                ! Skip if dependency object already listed
+                if (dep%output_file .in. link_objects) cycle
+
+                ! Add dependency object file to link object list
+                temp_str%s = dep%output_file
+                link_objects = [link_objects, temp_str]
+
+                ! For executable objects, also need to include non-library 
+                !  dependencies from dependencies (recurse)
+                if (is_exe) call get_link_objects(link_objects,dep,is_exe=.true.)
+            
+            end associate
+
+        end do
+
+    end subroutine get_link_objects
 
 end subroutine resolve_target_linking
 
