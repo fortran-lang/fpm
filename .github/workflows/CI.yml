@@ -30,8 +30,8 @@ jobs:
           TEST_SCRIPT: ci/run_tests.sh
           GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
           CHECK_VERSION_CMD: grep $(cat fpm_version)
-          RELEASE_CMD: "cp -- fpm-v$(cat fpm_version)-linux-x86_64"
-          BOOTSTRAP_RELEASE_CMD: cp /home/runner/.local/bin/fpm fpm-bootstrap-v$(cat fpm_version)-linux-x86_64
+          RELEASE_CMD: "cp -- fpm-$(cat fpm_version)-linux-x86_64"
+          BOOTSTRAP_RELEASE_CMD: cp /home/runner/.local/bin/fpm fpm-haskell-$(cat fpm_version)-linux-x86_64
           HASH_CMD: ls fpm-*|xargs -i{} sh -c 'sha256sum $1 > $1.sha256' -- {}
           RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
 
@@ -43,8 +43,8 @@ jobs:
           TEST_SCRIPT: ci/run_tests.sh
           GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
           CHECK_VERSION_CMD: grep $(cat fpm_version)
-          RELEASE_CMD: "cp -- fpm-v$(cat fpm_version)-macos-x86_64"
-          BOOTSTRAP_RELEASE_CMD: cp /Users/runner/.local/bin/fpm fpm-bootstrap-v$(cat fpm_version)-macos-x86_64
+          RELEASE_CMD: "cp -- fpm-$(cat fpm_version)-macos-x86_64"
+          BOOTSTRAP_RELEASE_CMD: cp /Users/runner/.local/bin/fpm fpm-haskell-$(cat fpm_version)-macos-x86_64
           HASH_CMD: ls fpm-*|xargs -I{} sh -c 'shasum -a 256 $1 > $1.sha256' -- {}
           RELEASE_FLAGS: --flag -g --flag -fbacktrace --flag -O3
 
@@ -56,8 +56,8 @@ jobs:
           TEST_SCRIPT: ci\run_tests.bat
           GET_VERSION_CMD: ("${{ github.ref }}" -Split "v")[1]
           CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
-          RELEASE_CMD: copy -- (-join("fpm-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
-          BOOTSTRAP_RELEASE_CMD: copy C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe (-join("fpm-bootstrap-v",(Get-Content fpm_version),"-windows-x86_64.exe"))
+          RELEASE_CMD: copy -- (-join("fpm-",(Get-Content fpm_version),"-windows-x86_64.exe"))
+          BOOTSTRAP_RELEASE_CMD: copy C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe (-join("fpm-haskell-",(Get-Content fpm_version),"-windows-x86_64.exe"))
           HASH_CMD: Get-ChildItem -File -Filter "fpm-*" | Foreach-Object {echo (Get-FileHash -Algorithm SHA256 $PSItem | Select-Object hash | Format-Table -HideTableHeaders | Out-String) > (-join($PSItem,".sha256"))}
           RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
 
