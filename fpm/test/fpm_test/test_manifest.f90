@@ -47,6 +47,7 @@ contains
             & new_unittest("package-noname", test_package_noname, should_fail=.true.), &
             & new_unittest("package-wrongexe", test_package_wrongexe, should_fail=.true.), &
             & new_unittest("package-wrongtest", test_package_wrongtest, should_fail=.true.), &
+            & new_unittest("package-duplicate", test_package_duplicate, should_fail=.true.), &
             & new_unittest("test-simple", test_test_simple), &
             & new_unittest("test-empty", test_test_empty, should_fail=.true.), &
             & new_unittest("test-typeerror", test_test_typeerror, should_fail=.true.), &
@@ -742,6 +743,33 @@ contains
         call new_package(package, table, error)
 
     end subroutine test_package_wrongtest
+
+
+    !> Try to read tests from a mixed type array
+    subroutine test_package_duplicate(error)
+        use fpm_manifest_package
+        use fpm_toml, only : set_value, add_table, add_array, toml_table, toml_array
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_table), pointer :: child
+        type(toml_array), pointer :: children
+        integer :: stat
+        type(package_config_t) :: package
+
+        table = toml_table()
+        call set_value(table, 'name', '"example"', stat)
+        call add_array(table, 'test', children, stat)
+        call add_table(children, child, stat)
+        call set_value(child, 'name', '"prog"', stat)
+        call add_table(children, child, stat)
+        call set_value(child, 'name', '"prog"', stat)
+
+        call new_package(package, table, error)
+
+    end subroutine test_package_duplicate
 
 
     !> Tests cannot be created from empty tables

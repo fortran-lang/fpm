@@ -93,6 +93,10 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
+        ! Backspace (8), tabulator (9), newline (10), formfeed (12) and carriage
+        ! return (13) are invalid in package names
+        character(len=*), parameter :: invalid_chars = &
+           achar(8) // achar(9) // achar(10) // achar(12) // achar(13)
         type(toml_table), pointer :: child, node
         type(toml_array), pointer :: children
         character(len=:), allocatable :: version
@@ -105,6 +109,17 @@ contains
         if (.not.allocated(self%name)) then
            call syntax_error(error, "Could not retrieve package name")
            return
+        end if
+
+        if (len(self%name) <= 0) then
+            call syntax_error(error, "Package name must be a non-empty string")
+            return
+        end if
+
+        ii = scan(self%name, invalid_chars)
+        if (ii > 0) then
+            call syntax_error(error, "Package name contains invalid characters")
+            return
         end if
 
         call get_value(table, "build", child, requested=.true., stat=stat)
@@ -154,6 +169,9 @@ contains
                 if (allocated(error)) exit
             end do
             if (allocated(error)) return
+
+            call unique_programs(self%executable, error)
+            if (allocated(error)) return
         end if
 
         call get_value(table, "test", children, requested=.false.)
@@ -169,6 +187,9 @@ contains
                 call new_test(self%test(ii), node, error)
                 if (allocated(error)) exit
             end do
+            if (allocated(error)) return
+
+            call unique_programs(self%test, error)
             if (allocated(error)) return
         end if
 
@@ -296,6 +317,32 @@ contains
         end if
 
     end subroutine info
+
+
+    !> Check whether or not the names in a set of executables are unique
+    subroutine unique_programs(executable, error)
+
+        !> Array of executables
+        class(executable_config_t), intent(in) :: executable(:)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i, j
+
+        do i = 1, size(executable)
+            do j = 1, i - 1
+                if (executable(i)%name == executable(j)%name) then
+                    call fatal_error(error, "The program named '"//&
+                        executable(j)%name//"' is duplicated. "//&
+                        "Unique program names are required.")
+                    exit
+                end if
+            end do
+        end do
+        if (allocated(error)) return
+
+    end subroutine unique_programs
 
 
 end module fpm_manifest_package
