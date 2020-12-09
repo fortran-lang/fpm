@@ -13,7 +13,7 @@ the features demonstrated in each package and which versions of fpm are supporte
 | hello_complex_2     | Auto-discovery of tests and executables with modules          |            N            |  Y  |
 | hello_fpm           | App-only; local path dependency                               |            Y            |  Y  |
 | hello_world         | App-only                                                      |            Y            |  Y  |
-| with_examples       | Example-only                                                  |            N            |  Y  |
+| with_examples       | Example-only                                                  |            Y            |  Y  |
 | makefile_complex    | External build command (makefile); local path dependency      |            Y            |  N  |
 | program_with_module | App-only; module+program in single source file                |            Y            |  Y  |
 | submodules          | Lib-only; submodules (3 levels)                               |            N            |  Y  |

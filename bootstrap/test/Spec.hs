@@ -20,6 +20,7 @@ testHelloWorld :: IO ()
 testHelloWorld =
   withCurrentDirectory (example_path </> "hello_world") $ start $ Run
     { runRelease = False
+    , runExample = False
     , runCompiler = "gfortran"
     , runFlags = []
     , runRunner = Nothing
@@ -42,6 +43,19 @@ testHelloFpm :: IO ()
 testHelloFpm =
   withCurrentDirectory (example_path </> "hello_fpm") $ start $ Run
     { runRelease = False
+    , runExample = False
+    , runCompiler = "gfortran"
+    , runFlags = []
+    , runRunner = Nothing
+    , runTarget  = Nothing
+    , runArgs    = Nothing
+    }
+
+testWithExamples :: IO ()
+testWithExamples =
+  withCurrentDirectory (example_path </> "with_examples") $ start $ Run
+    { runRelease = False
+    , runExample = True
     , runCompiler = "gfortran"
     , runFlags = []
     , runRunner = Nothing
@@ -72,6 +86,7 @@ testMakefileComplex :: IO ()
 testMakefileComplex =
   withCurrentDirectory (example_path </> "makefile_complex") $ start $ Run
     { runRelease = False
+    , runExample = False
     , runCompiler = "gfortran"
     , runFlags = []
     , runRunner = Nothing
