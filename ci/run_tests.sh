@@ -50,6 +50,10 @@ cd ../hello_complex_2
 ./build/gfortran_debug/test/greet_test
 ./build/gfortran_debug/test/farewell_test
 
+cd ../with_examples
+"${f_fpm_path}" build
+./build/gfortran_debug/app/demo-prog
+
 cd ../auto_discovery_off
 "${f_fpm_path}" build
 ./build/gfortran_debug/app/auto_discovery_off

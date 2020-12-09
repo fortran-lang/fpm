@@ -5,6 +5,7 @@
 !>```toml
 !>[build]
 !>auto-executables = bool
+!>auto-examples = bool
 !>auto-tests = bool
 !>link = ["lib"]
 !>```
@@ -23,6 +24,9 @@ module fpm_manifest_build
 
         !> Automatic discovery of executables
         logical :: auto_executables
+
+        !> Automatic discovery of examples
+        logical :: auto_examples
 
         !> Automatic discovery of tests
         logical :: auto_tests
@@ -72,6 +76,14 @@ contains
             return
         end if
 
+        call get_value(table, "auto-examples", self%auto_examples, .true., stat=stat)
+
+        if (stat /= toml_stat%success) then
+            call fatal_error(error,"Error while reading value for 'auto-examples' in fpm.toml, expecting logical")
+            return
+        end if
+
+
         call get_value(table, "link", self%link, error)
         if (allocated(error)) return
 
@@ -98,7 +110,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("auto-executables", "auto-tests", "link")
+            case("auto-executables", "auto-examples", "auto-tests", "link")
                 continue
 
             case default
@@ -136,6 +148,7 @@ contains
 
         write(unit, fmt) "Build configuration"
         write(unit, fmt) " - auto-discovery (apps) ", merge("enabled ", "disabled", self%auto_executables)
+        write(unit, fmt) " - auto-discovery (examples) ", merge("enabled ", "disabled", self%auto_examples)
         write(unit, fmt) " - auto-discovery (tests) ", merge("enabled ", "disabled", self%auto_tests)
         if (allocated(self%link)) then
             write(unit, fmt) " - link against"

@@ -8,6 +8,7 @@
 !> to hide the actual implementation details.
 module fpm_manifest
     use fpm_manifest_build, only: build_config_t
+    use fpm_manifest_example, only : example_config_t
     use fpm_manifest_executable, only : executable_config_t
     use fpm_manifest_dependency, only : dependency_config_t
     use fpm_manifest_library, only : library_config_t
@@ -20,6 +21,7 @@ module fpm_manifest
     private
 
     public :: get_package_data, default_executable, default_library, default_test
+    public :: default_example
     public :: package_config_t, dependency_config_t
 
 
@@ -52,6 +54,21 @@ contains
 
     end subroutine default_executable
 
+    !> Populate test in case we find the default example/ directory
+    subroutine default_example(self, name)
+
+        !> Instance of the executable meta data
+        type(example_config_t), intent(out) :: self
+
+        !> Name of the package
+        character(len=*), intent(in) :: name
+
+        self%name = name // "-demo"
+        self%source_dir = "example"
+        self%main = "main.f90"
+
+    end subroutine default_example
+
     !> Populate test in case we find the default test/ directory
     subroutine default_test(self, name)
 
@@ -61,7 +78,7 @@ contains
         !> Name of the package
         character(len=*), intent(in) :: name
 
-        self%name = name
+        self%name = name // "-test"
         self%source_dir = "test"
         self%main = "main.f90"
 
@@ -135,6 +152,13 @@ contains
             call default_executable(package%executable(1), package%name)
         end if
 
+        ! Populate example in case we find the default example directory
+        if (.not.allocated(package%example) .and. &
+            exists(join_path("example","main.f90"))) then
+            allocate(package%example(1))
+            call default_example(package%example(1), package%name)
+        endif
+
         ! Populate test in case we find the default test directory
         if (.not.allocated(package%test) .and. &
             & exists(join_path(root, "test", "main.f90"))) then
@@ -142,7 +166,10 @@ contains
             call default_test(package%test(1), package%name)
         endif
 
-        if (.not.(allocated(package%library) .or. allocated(package%executable))) then
+        if (.not.(allocated(package%library) &
+            & .or. allocated(package%executable) &
+            & .or. allocated(package%example) &
+            & .or. allocated(package%test))) then
             call fatal_error(error, "Neither library nor executable found, there is nothing to do")
             return
         end if

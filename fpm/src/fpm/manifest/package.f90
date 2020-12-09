@@ -25,11 +25,13 @@
 !>[dependencies]
 !>[dev-dependencies]
 !>[[ executable ]]
+!>[[ example ]]
 !>[[ test ]]
 !>```
 module fpm_manifest_package
     use fpm_manifest_build, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
+    use fpm_manifest_example, only : example_config_t, new_example
     use fpm_manifest_executable, only : executable_config_t, new_executable
     use fpm_manifest_library, only : library_config_t, new_library
     use fpm_manifest_test, only : test_config_t, new_test
@@ -66,6 +68,9 @@ module fpm_manifest_package
 
         !> Development dependency meta data
         type(dependency_config_t), allocatable :: dev_dependency(:)
+
+        !> Example meta data
+        type(example_config_t), allocatable :: example(:)
 
         !> Test meta data
         type(test_config_t), allocatable :: test(:)
@@ -174,6 +179,22 @@ contains
             if (allocated(error)) return
         end if
 
+        call get_value(table, "example", children, requested=.false.)
+        if (associated(children)) then
+            nn = len(children)
+            allocate(self%example(nn))
+            do ii = 1, nn
+                call get_value(children, ii, node, stat=stat)
+                if (stat /= toml_stat%success) then
+                    call fatal_error(error, "Could not retrieve example from array entry")
+                    exit
+                end if
+                call new_example(self%example(ii), node, error)
+                if (allocated(error)) exit
+            end do
+            if (allocated(error)) return
+        end if
+
         call get_value(table, "test", children, requested=.false.)
         if (associated(children)) then
             nn = len(children)
@@ -230,7 +251,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
-                    & "library")
+                    & "example", "library")
                 continue
 
             end select
@@ -295,6 +316,15 @@ contains
             end if
             do ii = 1, size(self%dependency)
                 call self%dependency(ii)%info(unit, pr - 1)
+            end do
+        end if
+
+        if (allocated(self%example)) then
+            if (size(self%example) > 1 .or. pr > 2) then
+                write(unit, fmti) "- examples", size(self%example)
+            end if
+            do ii = 1, size(self%example)
+                call self%example(ii)%info(unit, pr - 1)
             end do
         end if
 

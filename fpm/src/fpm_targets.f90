@@ -99,7 +99,7 @@ subroutine targets_from_sources(model,sources)
                         source = sources(i) &
                         )
             
-            if (sources(i)%unit_scope == FPM_SCOPE_APP) then
+            if (any(sources(i)%unit_scope == [FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE])) then
                 call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
                             link_libraries = sources(i)%link_libraries, &
                             output_file = join_path(model%output_directory,'app', &
@@ -151,7 +151,7 @@ subroutine targets_from_sources(model,sources)
 
         select case(source%unit_scope)
 
-        case (FPM_SCOPE_APP)
+        case (FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE)
             object_file = join_path(model%output_directory,'app',object_file)//'.o'
 
         case (FPM_SCOPE_TEST)
@@ -258,8 +258,8 @@ subroutine resolve_module_dependencies(targets,error)
                     cycle
                 end if
             
-                if (targets(i)%ptr%source%unit_scope == FPM_SCOPE_APP .OR. &
-                    targets(i)%ptr%source%unit_scope == FPM_SCOPE_TEST ) then
+                if (any(targets(i)%ptr%source%unit_scope == &
+                    [FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST])) then
                     dep%ptr => &
                         find_module_dependency(targets,targets(i)%ptr%source%modules_used(j)%s, &
                                             include_dir = dirname(targets(i)%ptr%source%file_name))
