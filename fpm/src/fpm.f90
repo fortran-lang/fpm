@@ -116,7 +116,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (allocated(package%example)) then
         call add_executable_sources(model%sources, package%example, FPM_SCOPE_EXAMPLE, &
-                                     auto_discover=package%build%auto_executables, &
+                                     auto_discover=package%build%auto_examples, &
                                      error=error)
 
         if (allocated(error)) then
