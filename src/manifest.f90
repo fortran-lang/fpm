@@ -93,6 +93,7 @@ contains
         end if
 
         call new_package(package, table, error)
+        if (allocated(error)) return
 
         if (present(apply_defaults)) then
             if (apply_defaults) then
