@@ -1,11 +1,13 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
     use fpm_error, only: error_t, fatal_error
+    use fpm_filesystem, only : get_temp_filename, getline
     implicit none
 
     public :: git_target_t
     public :: git_target_default, git_target_branch, git_target_tag, &
         & git_target_revision
+    public :: git_revision
 
 
     !> Possible git target
@@ -31,10 +33,9 @@ module fpm_git
 
     !> Description of an git target
     type :: git_target_t
-        private
 
         !> Kind of the git target
-        integer :: descriptor = git_descriptor%default
+        integer, private :: descriptor = git_descriptor%default
 
         !> Target URL of the git repository
         character(len=:), allocatable :: url
@@ -128,7 +129,7 @@ contains
     end function git_target_tag
 
 
-    subroutine checkout(self,local_path, error)
+    subroutine checkout(self, local_path, error)
 
         !> Instance of the git target
         class(git_target_t), intent(in) :: self
@@ -138,12 +139,9 @@ contains
 
         !> Error
         type(error_t), allocatable, intent(out) :: error
-        
-        !> git object ref
-        character(:), allocatable :: object
 
-        !> Stat for execute_command_line
         integer :: stat
+        character(len=:), allocatable :: object
 
         if (allocated(self%object)) then
             object = self%object
@@ -158,8 +156,8 @@ contains
             return
         end if
 
-        call execute_command_line("git -C "//local_path//" fetch "//self%url//&
-                                        " "//object, exitstat=stat)
+        call execute_command_line("git -C "//local_path//" fetch --depth=1 "// &
+                                  self%url//" "//object, exitstat=stat)
 
         if (stat /= 0) then
             call fatal_error(error,'Error while fetching git repository for remote dependency')
@@ -173,7 +171,50 @@ contains
             return
         end if
 
-    end subroutine checkout 
+    end subroutine checkout
+
+
+    subroutine git_revision(local_path, object, error)
+
+        !> Local path to checkout in
+        character(*), intent(in) :: local_path
+
+        !> Git object reference
+        character(len=:), allocatable, intent(out) :: object
+
+        !> Error
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: stat, unit, istart, iend
+        character(len=:), allocatable :: temp_file, line, iomsg
+        character(len=*), parameter :: hexdigits = '0123456789abcdef'
+
+        allocate(temp_file, source=get_temp_filename())
+        line = "git -C "//local_path//" log -n 1 > "//temp_file
+        call execute_command_line(line, exitstat=stat)
+
+        if (stat /= 0) then
+            call fatal_error(error, "Error while retrieving commit information")
+            return
+        end if
+
+        open(file=temp_file, newunit=unit)
+        call getline(unit, line, stat, iomsg)
+
+        if (stat /= 0) then
+            call fatal_error(error, iomsg)
+            return
+        end if
+        close(unit, status="delete")
+
+        ! Tokenize:
+        ! commit 0123456789abcdef (HEAD, ...)
+        istart = scan(line, ' ') + 1
+        iend = verify(line(istart:), hexdigits) + istart - 1
+        if (iend < istart) iend = len(line)
+        object = line(istart:iend)
+
+    end subroutine git_revision
 
 
     !> Show information on git target

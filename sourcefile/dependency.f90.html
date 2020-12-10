@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.3% of total for source files.">139 statements</a>
+    title="12.6% of total for source files.">483 statements</a>
      </li> 
      
      
@@ -172,7 +172,7 @@
   <div id="mods-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../module/fpm_manifest_dependency.html">fpm_manifest_dependency</a>
+      <a class="list-group-item" href="../module/fpm_dependency.html">fpm_dependency</a>
       
     </div>
   </div>
@@ -228,7 +228,7 @@
   <div id="mods-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../module/fpm_manifest_dependency.html">fpm_manifest_dependency</a>
+      <a class="list-group-item" href="../module/fpm_dependency.html">fpm_dependency</a>
       
     </div>
   </div>
@@ -263,254 +263,817 @@
 
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="c">!&gt; Implementation of the meta data for dependencies.</span>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="c">!&gt; # Dependency management</span>
 <a name="ln-2"></a><span class="c">!&gt;</span>
-<a name="ln-3"></a><span class="c">!&gt; A dependency table can currently have the following fields</span>
+<a name="ln-3"></a><span class="c">!&gt; ## Fetching dependencies and creating a dependency tree</span>
 <a name="ln-4"></a><span class="c">!&gt;</span>
-<a name="ln-5"></a><span class="c">!&gt;```toml</span>
-<a name="ln-6"></a><span class="c">!&gt;[dependencies]</span>
-<a name="ln-7"></a><span class="c">!&gt;&quot;dep1&quot; = { git = &quot;url&quot; }</span>
-<a name="ln-8"></a><span class="c">!&gt;&quot;dep2&quot; = { git = &quot;url&quot;, branch = &quot;name&quot; }</span>
-<a name="ln-9"></a><span class="c">!&gt;&quot;dep3&quot; = { git = &quot;url&quot;, tag = &quot;name&quot; }</span>
-<a name="ln-10"></a><span class="c">!&gt;&quot;dep4&quot; = { git = &quot;url&quot;, rev = &quot;sha1&quot; }</span>
-<a name="ln-11"></a><span class="c">!&gt;&quot;dep0&quot; = { path = &quot;path&quot; }</span>
-<a name="ln-12"></a><span class="c">!&gt;```</span>
-<a name="ln-13"></a><span class="c">!&gt;</span>
-<a name="ln-14"></a><span class="c">!&gt; To reduce the amount of boilerplate code this module provides two constructors</span>
-<a name="ln-15"></a><span class="c">!&gt; for dependency types, one basic for an actual dependency (inline) table</span>
-<a name="ln-16"></a><span class="c">!&gt; and another to collect all dependency objects from a dependencies table,</span>
-<a name="ln-17"></a><span class="c">!&gt; which is handling the allocation of the objects and is forwarding the</span>
-<a name="ln-18"></a><span class="c">!&gt; individual dependency tables to their respective constructors.</span>
-<a name="ln-19"></a><span class="c">!&gt; The usual entry point should be the constructor for the super table.</span>
+<a name="ln-5"></a><span class="c">!&gt; Dependencies on the top-level can be specified from:</span>
+<a name="ln-6"></a><span class="c">!&gt;</span>
+<a name="ln-7"></a><span class="c">!&gt; - `package%dependencies`</span>
+<a name="ln-8"></a><span class="c">!&gt; - `package%dev_dependencies`</span>
+<a name="ln-9"></a><span class="c">!&gt; - `package%executable(:)%dependencies`</span>
+<a name="ln-10"></a><span class="c">!&gt; - `package%test(:)%dependencies`</span>
+<a name="ln-11"></a><span class="c">!&gt;</span>
+<a name="ln-12"></a><span class="c">!&gt; Each dependency is fetched in some way and provides a path to its package</span>
+<a name="ln-13"></a><span class="c">!&gt; manifest.</span>
+<a name="ln-14"></a><span class="c">!&gt; The `package%dependencies` of the dependencies are resolved recursively.</span>
+<a name="ln-15"></a><span class="c">!&gt;</span>
+<a name="ln-16"></a><span class="c">!&gt; To initialize the dependency tree all dependencies are recursively fetched</span>
+<a name="ln-17"></a><span class="c">!&gt; and stored in a flat data structure to avoid retrieving a package twice.</span>
+<a name="ln-18"></a><span class="c">!&gt; The data structure used to store this information should describe the current</span>
+<a name="ln-19"></a><span class="c">!&gt; status of the dependency tree. Important information are:</span>
 <a name="ln-20"></a><span class="c">!&gt;</span>
-<a name="ln-21"></a><span class="c">!&gt; This objects contains a target to retrieve required `fpm` projects to</span>
-<a name="ln-22"></a><span class="c">!&gt; build the target declaring the dependency.</span>
-<a name="ln-23"></a><span class="c">!&gt; Resolving a dependency will result in obtaining a new package configuration</span>
-<a name="ln-24"></a><span class="c">!&gt; data for the respective project.</span>
-<a name="ln-25"></a><span class="k">module </span><span class="n">fpm_manifest_dependency</span>
-<a name="ln-26"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">syntax_error</span>
-<a name="ln-27"></a>    <span class="k">use </span><span class="n">fpm_git</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">git_target_t</span><span class="p">,</span> <span class="n">git_target_tag</span><span class="p">,</span> <span class="n">git_target_branch</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-28"></a>        <span class="p">&amp;</span> <span class="n">git_target_revision</span><span class="p">,</span> <span class="n">git_target_default</span>
-<a name="ln-29"></a>    <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_stat</span><span class="p">,</span> <span class="n">get_value</span>
-<a name="ln-30"></a>    <span class="k">implicit none</span>
-<a name="ln-31"></a><span class="k">    private</span>
-<a name="ln-32"></a>
-<a name="ln-33"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">dependency_config_t</span><span class="p">,</span> <span class="n">new_dependency</span><span class="p">,</span> <span class="n">new_dependencies</span>
-<a name="ln-34"></a>
-<a name="ln-35"></a>
-<a name="ln-36"></a>    <span class="c">!&gt; Configuration meta data for a dependency</span>
-<a name="ln-37"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">dependency_config_t</span>
-<a name="ln-38"></a>
-<a name="ln-39"></a>        <span class="c">!&gt; Name of the dependency</span>
-<a name="ln-40"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
-<a name="ln-41"></a>
-<a name="ln-42"></a>        <span class="c">!&gt; Local target</span>
-<a name="ln-43"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">path</span>
-<a name="ln-44"></a>
-<a name="ln-45"></a>        <span class="c">!&gt; Git descriptor</span>
-<a name="ln-46"></a>        <span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">git</span>
-<a name="ln-47"></a>
-<a name="ln-48"></a>    <span class="k">contains</span>
-<a name="ln-49"></a>
-<a name="ln-50"></a>        <span class="c">!&gt; Print information on this instance</span>
-<a name="ln-51"></a>        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
-<a name="ln-52"></a>
-<a name="ln-53"></a>    <span class="k">end type </span><span class="n">dependency_config_t</span>
-<a name="ln-54"></a>
-<a name="ln-55"></a>
-<a name="ln-56"></a><span class="k">contains</span>
-<a name="ln-57"></a>
-<a name="ln-58"></a>
-<a name="ln-59"></a>    <span class="c">!&gt; Construct a new dependency configuration from a TOML data structure</span>
-<a name="ln-60"></a>    <span class="k">subroutine </span><span class="n">new_dependency</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-61"></a>
-<a name="ln-62"></a>        <span class="c">!&gt; Instance of the dependency configuration</span>
-<a name="ln-63"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-64"></a>
-<a name="ln-65"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
-<a name="ln-66"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
-<a name="ln-67"></a>
-<a name="ln-68"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-69"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-70"></a>
-<a name="ln-71"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">url</span><span class="p">,</span> <span class="n">obj</span>
-<a name="ln-72"></a>
-<a name="ln-73"></a>        <span class="k">call </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-74"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-21"></a><span class="c">!&gt; - name of the package</span>
+<a name="ln-22"></a><span class="c">!&gt; - version of the package</span>
+<a name="ln-23"></a><span class="c">!&gt; - path to the package root</span>
+<a name="ln-24"></a><span class="c">!&gt;</span>
+<a name="ln-25"></a><span class="c">!&gt; Additionally, for version controlled dependencies the following should be</span>
+<a name="ln-26"></a><span class="c">!&gt; stored along with the package:</span>
+<a name="ln-27"></a><span class="c">!&gt;</span>
+<a name="ln-28"></a><span class="c">!&gt; - the upstream url</span>
+<a name="ln-29"></a><span class="c">!&gt; - the current checked out revision</span>
+<a name="ln-30"></a><span class="c">!&gt;</span>
+<a name="ln-31"></a><span class="c">!&gt; Fetching a remote (version controlled) dependency turns it for our purpose</span>
+<a name="ln-32"></a><span class="c">!&gt; into a local path dependency which is handled by the same means.</span>
+<a name="ln-33"></a><span class="c">!&gt;</span>
+<a name="ln-34"></a><span class="c">!&gt; ## Updating dependencies</span>
+<a name="ln-35"></a><span class="c">!&gt;</span>
+<a name="ln-36"></a><span class="c">!&gt; For a given dependency tree all top-level dependencies can be updated.</span>
+<a name="ln-37"></a><span class="c">!&gt; We have two cases to consider, a remote dependency and a local dependency,</span>
+<a name="ln-38"></a><span class="c">!&gt; again, remote dependencies turn into local dependencies by fetching.</span>
+<a name="ln-39"></a><span class="c">!&gt; Therefore we will update remote dependencies by simply refetching them.</span>
+<a name="ln-40"></a><span class="c">!&gt;</span>
+<a name="ln-41"></a><span class="c">!&gt; For remote dependencies we have to refetch if the revision in the manifest</span>
+<a name="ln-42"></a><span class="c">!&gt; changes or the upstream HEAD has changed (for branches _and_ tags).</span>
+<a name="ln-43"></a><span class="c">!&gt;</span>
+<a name="ln-44"></a><span class="c">!&gt; @Note For our purpose a tag is just a fancy branch name. Tags can be delete and</span>
+<a name="ln-45"></a><span class="c">!&gt;       modified afterwards, therefore they do not differ too much from branches</span>
+<a name="ln-46"></a><span class="c">!&gt;       from our perspective.</span>
+<a name="ln-47"></a><span class="c">!&gt;</span>
+<a name="ln-48"></a><span class="c">!&gt; For the latter case we only know if we actually fetch from the upstream URL.</span>
+<a name="ln-49"></a><span class="c">!&gt;</span>
+<a name="ln-50"></a><span class="c">!&gt; In case of local (and fetched remote) dependencies we have to read the package</span>
+<a name="ln-51"></a><span class="c">!&gt; manifest and compare its dependencies against our dependency tree, any change</span>
+<a name="ln-52"></a><span class="c">!&gt; requires updating the respective dependencies as well.</span>
+<a name="ln-53"></a><span class="c">!&gt;</span>
+<a name="ln-54"></a><span class="c">!&gt; ## Handling dependency compatibilties</span>
+<a name="ln-55"></a><span class="c">!&gt;</span>
+<a name="ln-56"></a><span class="c">!&gt; Currenly ignored. First come, first serve.</span>
+<a name="ln-57"></a><span class="k">module </span><span class="n">fpm_dependency</span>
+<a name="ln-58"></a>  <span class="k">use</span><span class="p">,</span> <span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">output_unit</span>
+<a name="ln-59"></a>  <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="n">OS_WINDOWS</span>
+<a name="ln-60"></a>  <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span>
+<a name="ln-61"></a>  <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">exists</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">windows_path</span>
+<a name="ln-62"></a>  <span class="k">use </span><span class="n">fpm_git</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">git_target_revision</span><span class="p">,</span> <span class="n">git_target_default</span><span class="p">,</span> <span class="n">git_revision</span>
+<a name="ln-63"></a>  <span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">dependency_config_t</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-64"></a>    <span class="n">get_package_data</span>
+<a name="ln-65"></a>  <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.)</span>
+<a name="ln-66"></a>  <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_error</span><span class="p">,</span> <span class="n">toml_serializer</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-67"></a>    <span class="n">toml_parse</span><span class="p">,</span> <span class="n">get_value</span><span class="p">,</span> <span class="n">set_value</span><span class="p">,</span> <span class="n">add_table</span>
+<a name="ln-68"></a>  <span class="k">use </span><span class="n">fpm_versioning</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">version_t</span><span class="p">,</span> <span class="n">new_version</span><span class="p">,</span> <span class="nb">char</span>
+<a name="ln-69"></a><span class="nb">  </span><span class="k">implicit none</span>
+<a name="ln-70"></a><span class="k">  private</span>
+<a name="ln-71"></a>
+<a name="ln-72"></a><span class="k">  public</span> <span class="kd">::</span> <span class="n">dependency_tree_t</span><span class="p">,</span> <span class="n">new_dependency_tree</span>
+<a name="ln-73"></a>  <span class="k">public</span> <span class="kd">::</span> <span class="n">dependency_node_t</span><span class="p">,</span> <span class="n">new_dependency_node</span>
+<a name="ln-74"></a>  <span class="k">public</span> <span class="kd">::</span> <span class="n">resize</span>
 <a name="ln-75"></a>
-<a name="ln-76"></a><span class="k">        call </span><span class="n">table</span><span class="p">%</span><span class="n">get_key</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
-<a name="ln-77"></a>
-<a name="ln-78"></a>        <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-<a name="ln-79"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">url</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-80"></a><span class="k">            call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">path</span><span class="p">)</span>
-<a name="ln-81"></a>        <span class="k">else</span>
-<a name="ln-82"></a><span class="k">            call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-<a name="ln-83"></a>
-<a name="ln-84"></a>            <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-<a name="ln-85"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-86"></a><span class="k">                </span><span class="n">self</span><span class="p">%</span><span class="n">git</span> <span class="o">=</span> <span class="n">git_target_tag</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-<a name="ln-87"></a>            <span class="k">end if</span>
-<a name="ln-88"></a>
-<a name="ln-89"></a><span class="k">            if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-90"></a><span class="k">                call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-<a name="ln-91"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-92"></a><span class="k">                    </span><span class="n">self</span><span class="p">%</span><span class="n">git</span> <span class="o">=</span> <span class="n">git_target_branch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-<a name="ln-93"></a>                <span class="k">end if</span>
-<a name="ln-94"></a><span class="k">            end if</span>
-<a name="ln-95"></a>
-<a name="ln-96"></a><span class="k">            if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-97"></a><span class="k">                call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;rev&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-<a name="ln-98"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-99"></a><span class="k">                    </span><span class="n">self</span><span class="p">%</span><span class="n">git</span> <span class="o">=</span> <span class="n">git_target_revision</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-<a name="ln-100"></a>                <span class="k">end if</span>
-<a name="ln-101"></a><span class="k">            end if</span>
-<a name="ln-102"></a>
-<a name="ln-103"></a><span class="k">            if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-104"></a><span class="k">                </span><span class="n">self</span><span class="p">%</span><span class="n">git</span> <span class="o">=</span> <span class="n">git_target_default</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-<a name="ln-105"></a>            <span class="k">end if</span>
-<a name="ln-106"></a>
-<a name="ln-107"></a><span class="k">        end if</span>
-<a name="ln-108"></a>
-<a name="ln-109"></a><span class="k">    end subroutine </span><span class="n">new_dependency</span>
-<a name="ln-110"></a>
-<a name="ln-111"></a>
-<a name="ln-112"></a>    <span class="c">!&gt; Check local schema for allowed entries</span>
-<a name="ln-113"></a>    <span class="k">subroutine </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-114"></a>
-<a name="ln-115"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
-<a name="ln-116"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
-<a name="ln-117"></a>
-<a name="ln-118"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-119"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-120"></a>
-<a name="ln-121"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
-<a name="ln-122"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
-<a name="ln-123"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">url_present</span><span class="p">,</span> <span class="n">git_target_present</span><span class="p">,</span> <span class="n">has_path</span>
-<a name="ln-124"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ikey</span>
-<a name="ln-125"></a>
-<a name="ln-126"></a>        <span class="n">has_path</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-127"></a>        <span class="n">url_present</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-128"></a>        <span class="n">git_target_present</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-129"></a>
-<a name="ln-130"></a>        <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_key</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-<a name="ln-131"></a>        <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-<a name="ln-132"></a>
-<a name="ln-133"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-134"></a><span class="k">            call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Dependency &quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot; does not provide sufficient entries&quot;</span><span class="p">)</span>
-<a name="ln-135"></a>            <span class="k">return</span>
-<a name="ln-136"></a><span class="k">        end if</span>
-<a name="ln-137"></a>
-<a name="ln-138"></a><span class="k">        do </span><span class="n">ikey</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-<a name="ln-139"></a>            <span class="k">select case</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="p">)</span>
-<a name="ln-140"></a>            <span class="k">case </span><span class="n">default</span>
-<a name="ln-141"></a>                <span class="k">call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Key &quot;</span><span class="o">//</span><span class="n">list</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; is not allowed in dependency &quot;</span><span class="o">//</span><span class="n">name</span><span class="p">)</span>
-<a name="ln-142"></a>                <span class="k">exit</span>
-<a name="ln-143"></a>
-<a name="ln-144"></a><span class="k">            case</span><span class="p">(</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">)</span>
-<a name="ln-145"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">url_present</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-146"></a><span class="k">                    call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Dependency &quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot; cannot have both git and path entries&quot;</span><span class="p">)</span>
-<a name="ln-147"></a>                    <span class="k">exit</span>
-<a name="ln-148"></a><span class="k">                end if</span>
-<a name="ln-149"></a><span class="k">                </span><span class="n">url_present</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a name="ln-150"></a>                <span class="n">has_path</span> <span class="o">=</span> <span class="n">list</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;path&#39;</span>
-<a name="ln-151"></a>
-<a name="ln-152"></a>            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;rev&quot;</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">)</span>
-<a name="ln-153"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">git_target_present</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-154"></a><span class="k">                    call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Dependency &quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot; can only have one of branch, rev or tag present&quot;</span><span class="p">)</span>
-<a name="ln-155"></a>                    <span class="k">exit</span>
-<a name="ln-156"></a><span class="k">                end if</span>
-<a name="ln-157"></a><span class="k">                </span><span class="n">git_target_present</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a name="ln-158"></a>
-<a name="ln-159"></a>            <span class="k">end select</span>
-<a name="ln-160"></a><span class="k">        end do</span>
-<a name="ln-161"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-162"></a>
-<a name="ln-163"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">url_present</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-164"></a><span class="k">            call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Dependency &quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot; does not provide a method to actually retrieve itself&quot;</span><span class="p">)</span>
-<a name="ln-165"></a>            <span class="k">return</span>
-<a name="ln-166"></a><span class="k">        end if</span>
-<a name="ln-167"></a>
-<a name="ln-168"></a><span class="k">        if</span> <span class="p">(</span><span class="n">has_path</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">git_target_present</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-169"></a><span class="k">            call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Dependency &quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot; uses a local path, therefore no git identifiers are allowed&quot;</span><span class="p">)</span>
-<a name="ln-170"></a>        <span class="k">end if</span>
-<a name="ln-171"></a>
-<a name="ln-172"></a><span class="k">    end subroutine </span><span class="n">check</span>
-<a name="ln-173"></a>
-<a name="ln-174"></a>
-<a name="ln-175"></a>    <span class="c">!&gt; Construct new dependency array from a TOML data structure</span>
-<a name="ln-176"></a>    <span class="k">subroutine </span><span class="n">new_dependencies</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-177"></a>
-<a name="ln-178"></a>        <span class="c">!&gt; Instance of the dependency configuration</span>
-<a name="ln-179"></a>        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">deps</span><span class="p">(:)</span>
-<a name="ln-180"></a>
-<a name="ln-181"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
-<a name="ln-182"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
-<a name="ln-183"></a>
-<a name="ln-184"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-185"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-76"></a>
+<a name="ln-77"></a>  <span class="c">!&gt; Overloaded reallocation interface</span>
+<a name="ln-78"></a>  <span class="k">interface </span><span class="n">resize</span>
+<a name="ln-79"></a>    <span class="k">module procedure</span> <span class="kd">::</span> <span class="n">resize_dependency_node</span>
+<a name="ln-80"></a>  <span class="k">end interface </span><span class="n">resize</span>
+<a name="ln-81"></a>
+<a name="ln-82"></a>
+<a name="ln-83"></a>  <span class="c">!&gt; Dependency node in the projects dependency tree</span>
+<a name="ln-84"></a>  <span class="k">type</span><span class="p">,</span> <span class="k">extends</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency_node_t</span>
+<a name="ln-85"></a>    <span class="c">!&gt; Actual version of this dependency</span>
+<a name="ln-86"></a>    <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">version</span>
+<a name="ln-87"></a>    <span class="c">!&gt; Installation prefix of this dependencies</span>
+<a name="ln-88"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">proj_dir</span>
+<a name="ln-89"></a>    <span class="c">!&gt; Checked out revision of the version control system</span>
+<a name="ln-90"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">revision</span>
+<a name="ln-91"></a>    <span class="c">!&gt; Dependency is handled</span>
+<a name="ln-92"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">done</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-93"></a>    <span class="c">!&gt; Dependency should be updated</span>
+<a name="ln-94"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">update</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-95"></a>  <span class="k">contains</span>
+<a name="ln-96"></a>    <span class="c">!&gt; Update dependency from project manifest</span>
+<a name="ln-97"></a>    <span class="k">procedure</span> <span class="kd">::</span> <span class="n">register</span>
+<a name="ln-98"></a>  <span class="k">end type </span><span class="n">dependency_node_t</span>
+<a name="ln-99"></a>
+<a name="ln-100"></a>
+<a name="ln-101"></a>  <span class="c">!&gt; Respresentation of a projects dependencies</span>
+<a name="ln-102"></a>  <span class="c">!&gt;</span>
+<a name="ln-103"></a>  <span class="c">!&gt; The dependencies are stored in a simple array for now, this can be replaced</span>
+<a name="ln-104"></a>  <span class="c">!&gt; with a binary-search tree or a hash table in the future.</span>
+<a name="ln-105"></a>  <span class="k">type</span> <span class="kd">::</span> <span class="n">dependency_tree_t</span>
+<a name="ln-106"></a>    <span class="c">!&gt; Unit for IO</span>
+<a name="ln-107"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">output_unit</span>
+<a name="ln-108"></a>    <span class="c">!&gt; Verbosity of printout</span>
+<a name="ln-109"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">verbosity</span> <span class="o">=</span> <span class="mi">1</span>
+<a name="ln-110"></a>    <span class="c">!&gt; Installation prefix for dependencies</span>
+<a name="ln-111"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dep_dir</span>
+<a name="ln-112"></a>    <span class="c">!&gt; Number of currently registered dependencies</span>
+<a name="ln-113"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ndep</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-114"></a>    <span class="c">!&gt; Flattend list of all dependencies</span>
+<a name="ln-115"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_node_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dep</span><span class="p">(:)</span>
+<a name="ln-116"></a>    <span class="c">!&gt; Cache file</span>
+<a name="ln-117"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">cache</span>
+<a name="ln-118"></a>  <span class="k">contains</span>
+<a name="ln-119"></a>    <span class="c">!&gt; Overload procedure to add new dependencies to the tree</span>
+<a name="ln-120"></a>    <span class="k">generic</span> <span class="kd">::</span> <span class="n">add</span> <span class="o">=&gt;</span> <span class="n">add_project</span><span class="p">,</span> <span class="n">add_project_dependencies</span><span class="p">,</span> <span class="n">add_dependencies</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-121"></a>      <span class="n">add_dependency</span>
+<a name="ln-122"></a>    <span class="c">!&gt; Main entry point to add a project</span>
+<a name="ln-123"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">add_project</span>
+<a name="ln-124"></a>    <span class="c">!&gt; Add a project and its dependencies to the dependency tree</span>
+<a name="ln-125"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">add_project_dependencies</span>
+<a name="ln-126"></a>    <span class="c">!&gt; Add a list of dependencies to the dependency tree</span>
+<a name="ln-127"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">add_dependencies</span>
+<a name="ln-128"></a>    <span class="c">!&gt; Add a single dependency to the dependency tree</span>
+<a name="ln-129"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">add_dependency</span>
+<a name="ln-130"></a>    <span class="c">!&gt; Resolve dependencies</span>
+<a name="ln-131"></a>    <span class="k">generic</span> <span class="kd">::</span> <span class="n">resolve</span> <span class="o">=&gt;</span> <span class="n">resolve_dependencies</span><span class="p">,</span> <span class="n">resolve_dependency</span>
+<a name="ln-132"></a>    <span class="c">!&gt; Resolve dependencies</span>
+<a name="ln-133"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">resolve_dependencies</span>
+<a name="ln-134"></a>    <span class="c">!&gt; Resolve dependencies</span>
+<a name="ln-135"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">resolve_dependency</span>
+<a name="ln-136"></a>    <span class="c">!&gt; Find a dependency in the tree</span>
+<a name="ln-137"></a>    <span class="k">generic</span> <span class="kd">::</span> <span class="n">find</span> <span class="o">=&gt;</span> <span class="n">find_dependency</span><span class="p">,</span> <span class="n">find_name</span>
+<a name="ln-138"></a>    <span class="c">!&gt; Find a dependency from an dependency configuration</span>
+<a name="ln-139"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">find_dependency</span>
+<a name="ln-140"></a>    <span class="c">!&gt; Find a dependency by its name</span>
+<a name="ln-141"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">find_name</span>
+<a name="ln-142"></a>    <span class="c">!&gt; Depedendncy resolution finished</span>
+<a name="ln-143"></a>    <span class="k">procedure</span> <span class="kd">::</span> <span class="n">finished</span>
+<a name="ln-144"></a>    <span class="c">!&gt; Reading of dependency tree</span>
+<a name="ln-145"></a>    <span class="k">generic</span> <span class="kd">::</span> <span class="n">load</span> <span class="o">=&gt;</span> <span class="n">load_from_file</span><span class="p">,</span> <span class="n">load_from_unit</span><span class="p">,</span> <span class="n">load_from_toml</span>
+<a name="ln-146"></a>    <span class="c">!&gt; Read dependency tree from file</span>
+<a name="ln-147"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">load_from_file</span>
+<a name="ln-148"></a>    <span class="c">!&gt; Read dependency tree from formatted unit</span>
+<a name="ln-149"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">load_from_unit</span>
+<a name="ln-150"></a>    <span class="c">!&gt; Read dependency tree from TOML data structure</span>
+<a name="ln-151"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">load_from_toml</span>
+<a name="ln-152"></a>    <span class="c">!&gt; Writing of dependency tree</span>
+<a name="ln-153"></a>    <span class="k">generic</span> <span class="kd">::</span> <span class="n">dump</span> <span class="o">=&gt;</span> <span class="n">dump_to_file</span><span class="p">,</span> <span class="n">dump_to_unit</span><span class="p">,</span> <span class="n">dump_to_toml</span>
+<a name="ln-154"></a>    <span class="c">!&gt; Write dependency tree to file</span>
+<a name="ln-155"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">dump_to_file</span>
+<a name="ln-156"></a>    <span class="c">!&gt; Write dependency tree to formatted unit</span>
+<a name="ln-157"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">dump_to_unit</span>
+<a name="ln-158"></a>    <span class="c">!&gt; Write dependency tree to TOML data structure</span>
+<a name="ln-159"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">dump_to_toml</span>
+<a name="ln-160"></a>    <span class="c">!&gt; Update dependency tree</span>
+<a name="ln-161"></a>    <span class="k">generic</span> <span class="kd">::</span> <span class="n">update</span> <span class="o">=&gt;</span> <span class="n">update_dependency</span>
+<a name="ln-162"></a>    <span class="c">!&gt; Update a list of dependencies</span>
+<a name="ln-163"></a>    <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">update_dependency</span>
+<a name="ln-164"></a>  <span class="k">end type </span><span class="n">dependency_tree_t</span>
+<a name="ln-165"></a>
+<a name="ln-166"></a>  <span class="c">!&gt; Common output format for writing to the command line</span>
+<a name="ln-167"></a>  <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">out_fmt</span> <span class="o">=</span> <span class="s1">&#39;(&quot;#&quot;, *(1x, g0))&#39;</span>
+<a name="ln-168"></a>
+<a name="ln-169"></a><span class="k">contains</span>
+<a name="ln-170"></a>
+<a name="ln-171"></a>  <span class="c">!&gt; Create a new dependency tree</span>
+<a name="ln-172"></a>  <span class="k">subroutine </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+<a name="ln-173"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-174"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-175"></a>    <span class="c">!&gt; Verbosity of printout</span>
+<a name="ln-176"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">verbosity</span>
+<a name="ln-177"></a>    <span class="c">!&gt; Name of the cache file</span>
+<a name="ln-178"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">cache</span>
+<a name="ln-179"></a>
+<a name="ln-180"></a>    <span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">)</span>
+<a name="ln-181"></a>    <span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="s2">&quot;dependencies&quot;</span><span class="p">)</span>
+<a name="ln-182"></a>
+<a name="ln-183"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbosity</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-184"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
+<a name="ln-185"></a>    <span class="k">end if</span>
 <a name="ln-186"></a>
-<a name="ln-187"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">node</span>
-<a name="ln-188"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
-<a name="ln-189"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">idep</span><span class="p">,</span> <span class="nb">stat</span>
+<a name="ln-187"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">cache</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-188"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">cache</span> <span class="o">=</span> <span class="n">cache</span>
+<a name="ln-189"></a>    <span class="k">end if</span>
 <a name="ln-190"></a>
-<a name="ln-191"></a><span class="nb">        </span><span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-<a name="ln-192"></a>        <span class="c">! An empty table is okay</span>
-<a name="ln-193"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
-<a name="ln-194"></a>
-<a name="ln-195"></a><span class="k">        allocate</span><span class="p">(</span><span class="n">deps</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)))</span>
-<a name="ln-196"></a>        <span class="k">do </span><span class="n">idep</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-<a name="ln-197"></a>            <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="n">idep</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-198"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-199"></a><span class="k">                call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Dependency &quot;</span><span class="o">//</span><span class="n">list</span><span class="p">(</span><span class="n">idep</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; must be a table entry&quot;</span><span class="p">)</span>
-<a name="ln-200"></a>                <span class="k">exit</span>
-<a name="ln-201"></a><span class="k">            end if</span>
-<a name="ln-202"></a><span class="k">            call </span><span class="n">new_dependency</span><span class="p">(</span><span class="n">deps</span><span class="p">(</span><span class="n">idep</span><span class="p">),</span> <span class="n">node</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-203"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
-<a name="ln-204"></a><span class="k">        end do</span>
+<a name="ln-191"></a><span class="k">  end subroutine </span><span class="n">new_dependency_tree</span>
+<a name="ln-192"></a>
+<a name="ln-193"></a>  <span class="c">!&gt; Create a new dependency node from a configuration</span>
+<a name="ln-194"></a>  <span class="k">pure subroutine </span><span class="n">new_dependency_node</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">dependency</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">proj_dir</span><span class="p">,</span> <span class="n">update</span><span class="p">)</span>
+<a name="ln-195"></a>    <span class="c">!&gt; Instance of the dependency node</span>
+<a name="ln-196"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_node_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-197"></a>    <span class="c">!&gt; Dependency configuration data</span>
+<a name="ln-198"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency</span>
+<a name="ln-199"></a>    <span class="c">!&gt; Version of the dependency</span>
+<a name="ln-200"></a>    <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">version</span>
+<a name="ln-201"></a>    <span class="c">!&gt; Installation prefix of the dependency</span>
+<a name="ln-202"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">proj_dir</span>
+<a name="ln-203"></a>    <span class="c">!&gt; Dependency should be updated</span>
+<a name="ln-204"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">update</span>
 <a name="ln-205"></a>
-<a name="ln-206"></a><span class="k">    end subroutine </span><span class="n">new_dependencies</span>
+<a name="ln-206"></a>    <span class="n">self</span><span class="p">%</span><span class="n">dependency_config_t</span> <span class="o">=</span> <span class="n">dependency</span>
 <a name="ln-207"></a>
-<a name="ln-208"></a>
-<a name="ln-209"></a>    <span class="c">!&gt; Write information on instance</span>
-<a name="ln-210"></a>    <span class="k">subroutine </span><span class="n">info</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">)</span>
+<a name="ln-208"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">version</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-209"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
+<a name="ln-210"></a>    <span class="k">end if</span>
 <a name="ln-211"></a>
-<a name="ln-212"></a>        <span class="c">!&gt; Instance of the dependency configuration</span>
-<a name="ln-213"></a>        <span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-214"></a>
-<a name="ln-215"></a>        <span class="c">!&gt; Unit for IO</span>
-<a name="ln-216"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">unit</span>
-<a name="ln-217"></a>
-<a name="ln-218"></a>        <span class="c">!&gt; Verbosity of the printout</span>
-<a name="ln-219"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">verbosity</span>
-<a name="ln-220"></a>
-<a name="ln-221"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">pr</span>
-<a name="ln-222"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;(&quot;#&quot;, 1x, a, t30, a)&#39;</span>
-<a name="ln-223"></a>
-<a name="ln-224"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbosity</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-225"></a><span class="k">            </span><span class="n">pr</span> <span class="o">=</span> <span class="n">verbosity</span>
-<a name="ln-226"></a>        <span class="k">else</span>
-<a name="ln-227"></a><span class="k">            </span><span class="n">pr</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="ln-228"></a>        <span class="k">end if</span>
-<a name="ln-229"></a>
-<a name="ln-230"></a><span class="k">        write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;Dependency&quot;</span>
-<a name="ln-231"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-232"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- name&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">name</span>
-<a name="ln-233"></a>        <span class="k">end if</span>
-<a name="ln-234"></a>
-<a name="ln-235"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-236"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- kind&quot;</span><span class="p">,</span> <span class="s2">&quot;git&quot;</span>
-<a name="ln-237"></a>            <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">%</span><span class="n">info</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">pr</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-<a name="ln-238"></a>        <span class="k">end if</span>
-<a name="ln-239"></a>
-<a name="ln-240"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">path</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-241"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- kind&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span>
-<a name="ln-242"></a>            <span class="k">write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- path&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">path</span>
-<a name="ln-243"></a>        <span class="k">end if</span>
-<a name="ln-244"></a>
-<a name="ln-245"></a><span class="k">    end subroutine </span><span class="n">info</span>
+<a name="ln-212"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">proj_dir</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-213"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">proj_dir</span>
+<a name="ln-214"></a>    <span class="k">end if</span>
+<a name="ln-215"></a>
+<a name="ln-216"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">update</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-217"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">update</span> <span class="o">=</span> <span class="n">update</span>
+<a name="ln-218"></a>    <span class="k">end if</span>
+<a name="ln-219"></a>
+<a name="ln-220"></a><span class="k">  end subroutine </span><span class="n">new_dependency_node</span>
+<a name="ln-221"></a>
+<a name="ln-222"></a>  <span class="c">!&gt; Add project dependencies, each depth level after each other.</span>
+<a name="ln-223"></a>  <span class="c">!&gt;</span>
+<a name="ln-224"></a>  <span class="c">!&gt; We implement this algorithm in an interative rather than a recursive fashion</span>
+<a name="ln-225"></a>  <span class="c">!&gt; as a choice of design.</span>
+<a name="ln-226"></a>  <span class="k">subroutine </span><span class="n">add_project</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-227"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-228"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-229"></a>    <span class="c">!&gt; Project configuration to add</span>
+<a name="ln-230"></a>    <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+<a name="ln-231"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-232"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-233"></a>
+<a name="ln-234"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency</span>
+<a name="ln-235"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">root</span>
+<a name="ln-236"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">main</span>
+<a name="ln-237"></a>
+<a name="ln-238"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cache</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-239"></a><span class="k">      call </span><span class="n">self</span><span class="p">%</span><span class="n">load</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cache</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-240"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-241"></a><span class="k">    end if</span>
+<a name="ln-242"></a>
+<a name="ln-243"></a><span class="k">    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-244"></a><span class="k">      call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span><span class="p">)</span>
+<a name="ln-245"></a>    <span class="k">end if</span>
 <a name="ln-246"></a>
-<a name="ln-247"></a>
-<a name="ln-248"></a><span class="k">end module </span><span class="n">fpm_manifest_dependency</span>
+<a name="ln-247"></a><span class="k">    </span><span class="n">root</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
+<a name="ln-248"></a>
+<a name="ln-249"></a>    <span class="c">! Create this project as the first dependency node (depth 0)</span>
+<a name="ln-250"></a>    <span class="n">dependency</span><span class="p">%</span><span class="n">name</span> <span class="o">=</span> <span class="n">package</span><span class="p">%</span><span class="n">name</span>
+<a name="ln-251"></a>    <span class="n">dependency</span><span class="p">%</span><span class="n">path</span> <span class="o">=</span> <span class="n">root</span>
+<a name="ln-252"></a>    <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">dependency</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-253"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-254"></a>
+<a name="ln-255"></a>    <span class="c">! Resolve the root project</span>
+<a name="ln-256"></a>    <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">resolve</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-257"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-258"></a>
+<a name="ln-259"></a>    <span class="c">! Add the root project dependencies (depth 1)</span>
+<a name="ln-260"></a>    <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="p">.</span><span class="n">true</span><span class="p">.,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-261"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-262"></a>
+<a name="ln-263"></a>    <span class="c">! Now decent into the dependency tree, level for level</span>
+<a name="ln-264"></a>    <span class="k">do while</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">self</span><span class="p">%</span><span class="n">finished</span><span class="p">())</span>
+<a name="ln-265"></a>       <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">resolve</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-266"></a>       <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a name="ln-267"></a><span class="k">    end do</span>
+<a name="ln-268"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-269"></a>
+<a name="ln-270"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cache</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-271"></a><span class="k">      call </span><span class="n">self</span><span class="p">%</span><span class="n">dump</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cache</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-272"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-273"></a><span class="k">    end if</span>
+<a name="ln-274"></a>
+<a name="ln-275"></a><span class="k">  end subroutine </span><span class="n">add_project</span>
+<a name="ln-276"></a>
+<a name="ln-277"></a>  <span class="c">!&gt; Add a project and its dependencies to the dependency tree</span>
+<a name="ln-278"></a>  <span class="k">recursive subroutine </span><span class="n">add_project_dependencies</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">main</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-279"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-280"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-281"></a>    <span class="c">!&gt; Project configuration to add</span>
+<a name="ln-282"></a>    <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+<a name="ln-283"></a>    <span class="c">!&gt; Current project root directory</span>
+<a name="ln-284"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">root</span>
+<a name="ln-285"></a>    <span class="c">!&gt; Is the main project</span>
+<a name="ln-286"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">main</span>
+<a name="ln-287"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-288"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-289"></a>
+<a name="ln-290"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
+<a name="ln-291"></a>
+<a name="ln-292"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">dependency</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-293"></a><span class="k">      call </span><span class="n">self</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">dependency</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-294"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-295"></a><span class="k">    end if</span>
+<a name="ln-296"></a>
+<a name="ln-297"></a><span class="k">    if</span> <span class="p">(</span><span class="n">main</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-298"></a><span class="k">      if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">dev_dependency</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-299"></a><span class="k">        call </span><span class="n">self</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">dev_dependency</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-300"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-301"></a><span class="k">      end if</span>
+<a name="ln-302"></a>
+<a name="ln-303"></a><span class="k">      if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-304"></a><span class="k">        do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">)</span>
+<a name="ln-305"></a>          <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">dependency</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-306"></a><span class="k">            call </span><span class="n">self</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">dependency</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-307"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a name="ln-308"></a><span class="k">          end if</span>
+<a name="ln-309"></a><span class="k">        end do</span>
+<a name="ln-310"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-311"></a><span class="k">      end if</span>
+<a name="ln-312"></a>
+<a name="ln-313"></a><span class="k">      if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-314"></a><span class="k">        do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">)</span>
+<a name="ln-315"></a>          <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">dependency</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-316"></a><span class="k">            call </span><span class="n">self</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">dependency</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-317"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a name="ln-318"></a><span class="k">          end if</span>
+<a name="ln-319"></a><span class="k">        end do</span>
+<a name="ln-320"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-321"></a><span class="k">      end if</span>
+<a name="ln-322"></a><span class="k">    end if</span>
+<a name="ln-323"></a>
+<a name="ln-324"></a><span class="k">  end subroutine </span><span class="n">add_project_dependencies</span>
+<a name="ln-325"></a>
+<a name="ln-326"></a>  <span class="c">!&gt; Add a list of dependencies to the dependency tree</span>
+<a name="ln-327"></a>  <span class="k">subroutine </span><span class="n">add_dependencies</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">dependency</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-328"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-329"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-330"></a>    <span class="c">!&gt; Dependency configuration to add</span>
+<a name="ln-331"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency</span><span class="p">(:)</span>
+<a name="ln-332"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-333"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-334"></a>
+<a name="ln-335"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">ndep</span>
+<a name="ln-336"></a>
+<a name="ln-337"></a>    <span class="n">ndep</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">)</span>
+<a name="ln-338"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">ndep</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">(</span><span class="n">dependency</span><span class="p">)</span> <span class="o">+</span> <span class="n">self</span><span class="p">%</span><span class="n">ndep</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-339"></a><span class="k">      call </span><span class="n">resize</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">,</span> <span class="n">ndep</span> <span class="o">+</span> <span class="n">ndep</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">size</span><span class="p">(</span><span class="n">dependency</span><span class="p">))</span>
+<a name="ln-340"></a>    <span class="k">end if</span>
+<a name="ln-341"></a>
+<a name="ln-342"></a><span class="k">    do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">dependency</span><span class="p">)</span>
+<a name="ln-343"></a>      <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">dependency</span><span class="p">(</span><span class="n">ii</span><span class="p">),</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-344"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a name="ln-345"></a><span class="k">    end do</span>
+<a name="ln-346"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-347"></a>
+<a name="ln-348"></a><span class="k">  end subroutine </span><span class="n">add_dependencies</span>
+<a name="ln-349"></a>
+<a name="ln-350"></a>  <span class="c">!&gt; Add a single dependency to the dependency tree</span>
+<a name="ln-351"></a>  <span class="k">pure subroutine </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">dependency</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-352"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-353"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-354"></a>    <span class="c">!&gt; Dependency configuration to add</span>
+<a name="ln-355"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency</span>
+<a name="ln-356"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-357"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-358"></a>
+<a name="ln-359"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">id</span>
+<a name="ln-360"></a>
+<a name="ln-361"></a>    <span class="n">id</span> <span class="o">=</span> <span class="n">self</span><span class="p">%</span><span class="n">find</span><span class="p">(</span><span class="n">dependency</span><span class="p">)</span>
+<a name="ln-362"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">id</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-363"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">ndep</span> <span class="o">=</span> <span class="n">self</span><span class="p">%</span><span class="n">ndep</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-364"></a>      <span class="k">call </span><span class="n">new_dependency_node</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ndep</span><span class="p">),</span> <span class="n">dependency</span><span class="p">)</span>
+<a name="ln-365"></a>    <span class="k">end if</span>
+<a name="ln-366"></a>
+<a name="ln-367"></a><span class="k">  end subroutine </span><span class="n">add_dependency</span>
+<a name="ln-368"></a>
+<a name="ln-369"></a>  <span class="c">!&gt; Update dependency tree</span>
+<a name="ln-370"></a>  <span class="k">subroutine </span><span class="n">update_dependency</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-371"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-372"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-373"></a>    <span class="c">!&gt; Name of the dependency to update</span>
+<a name="ln-374"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a name="ln-375"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-376"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-377"></a>
+<a name="ln-378"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">id</span>
+<a name="ln-379"></a>    <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+<a name="ln-380"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">manifest</span><span class="p">,</span> <span class="n">proj_dir</span><span class="p">,</span> <span class="n">revision</span><span class="p">,</span> <span class="n">root</span>
+<a name="ln-381"></a>
+<a name="ln-382"></a>    <span class="n">id</span> <span class="o">=</span> <span class="n">self</span><span class="p">%</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-383"></a>    <span class="n">root</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
+<a name="ln-384"></a>
+<a name="ln-385"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">id</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-386"></a><span class="k">      call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Cannot update dependency &#39;&quot;</span><span class="o">//</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+<a name="ln-387"></a>      <span class="k">return</span>
+<a name="ln-388"></a><span class="k">    end if</span>
+<a name="ln-389"></a>
+<a name="ln-390"></a><span class="k">    associate</span><span class="p">(</span><span class="n">dep</span> <span class="o">=&gt;</span> <span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">id</span><span class="p">))</span>
+<a name="ln-391"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">git</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">dep</span><span class="p">%</span><span class="n">update</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-392"></a><span class="k">        if</span> <span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-393"></a><span class="k">          write</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">unit</span><span class="p">,</span> <span class="n">out_fmt</span><span class="p">)</span> <span class="s2">&quot;Update:&quot;</span><span class="p">,</span> <span class="n">dep</span><span class="p">%</span><span class="n">name</span>
+<a name="ln-394"></a>        <span class="k">end if</span>
+<a name="ln-395"></a><span class="k">        </span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span><span class="p">,</span> <span class="n">dep</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-396"></a>        <span class="k">call </span><span class="n">dep</span><span class="p">%</span><span class="n">git</span><span class="p">%</span><span class="n">checkout</span><span class="p">(</span><span class="n">proj_dir</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-397"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-398"></a>
+<a name="ln-399"></a>        <span class="c">! Unset dependency and remove updatable attribute</span>
+<a name="ln-400"></a>        <span class="n">dep</span><span class="p">%</span><span class="n">done</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-401"></a>        <span class="n">dep</span><span class="p">%</span><span class="n">update</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-402"></a>
+<a name="ln-403"></a>        <span class="c">! Now decent into the dependency tree, level for level</span>
+<a name="ln-404"></a>        <span class="k">do while</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">self</span><span class="p">%</span><span class="n">finished</span><span class="p">())</span>
+<a name="ln-405"></a>          <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">resolve</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-406"></a>          <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a name="ln-407"></a><span class="k">        end do</span>
+<a name="ln-408"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-409"></a><span class="k">      end if</span>
+<a name="ln-410"></a><span class="k">    end associate</span>
+<a name="ln-411"></a>
+<a name="ln-412"></a><span class="k">  end subroutine </span><span class="n">update_dependency</span>
+<a name="ln-413"></a>
+<a name="ln-414"></a>  <span class="c">!&gt; Resolve all dependencies in the tree</span>
+<a name="ln-415"></a>  <span class="k">subroutine </span><span class="n">resolve_dependencies</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-416"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-417"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-418"></a>    <span class="c">!&gt; Current installation prefix</span>
+<a name="ln-419"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">root</span>
+<a name="ln-420"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-421"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-422"></a>
+<a name="ln-423"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
+<a name="ln-424"></a>
+<a name="ln-425"></a>    <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">ndep</span>
+<a name="ln-426"></a>      <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">resolve</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">ii</span><span class="p">),</span> <span class="n">root</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-427"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a name="ln-428"></a><span class="k">    end do</span>
+<a name="ln-429"></a>
+<a name="ln-430"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-431"></a>
+<a name="ln-432"></a><span class="k">  end subroutine </span><span class="n">resolve_dependencies</span>
+<a name="ln-433"></a>
+<a name="ln-434"></a>  <span class="c">!&gt; Resolve a single dependency node</span>
+<a name="ln-435"></a>  <span class="k">subroutine </span><span class="n">resolve_dependency</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">dependency</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-436"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-437"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-438"></a>    <span class="c">!&gt; Dependency configuration to add</span>
+<a name="ln-439"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_node_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency</span>
+<a name="ln-440"></a>    <span class="c">!&gt; Current installation prefix</span>
+<a name="ln-441"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">root</span>
+<a name="ln-442"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-443"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-444"></a>
+<a name="ln-445"></a>    <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+<a name="ln-446"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">manifest</span><span class="p">,</span> <span class="n">proj_dir</span><span class="p">,</span> <span class="n">revision</span>
+<a name="ln-447"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">fetch</span>
+<a name="ln-448"></a>
+<a name="ln-449"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">done</span><span class="p">)</span> <span class="k">return</span>
+<a name="ln-450"></a>
+<a name="ln-451"></a><span class="k">    </span><span class="n">fetch</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-452"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">proj_dir</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-453"></a><span class="k">      </span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">dependency</span><span class="p">%</span><span class="n">proj_dir</span>
+<a name="ln-454"></a>    <span class="k">else</span>
+<a name="ln-455"></a><span class="k">      if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">path</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-456"></a><span class="k">        </span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dependency</span><span class="p">%</span><span class="n">path</span><span class="p">)</span>
+<a name="ln-457"></a>      <span class="k">else if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">git</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-458"></a><span class="k">        </span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span><span class="p">,</span> <span class="n">dependency</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-459"></a>        <span class="n">fetch</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="n">proj_dir</span><span class="p">)</span>
+<a name="ln-460"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">fetch</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-461"></a><span class="k">          call </span><span class="n">dependency</span><span class="p">%</span><span class="n">git</span><span class="p">%</span><span class="n">checkout</span><span class="p">(</span><span class="n">proj_dir</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-462"></a>          <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-463"></a><span class="k">        end if</span>
+<a name="ln-464"></a>
+<a name="ln-465"></a><span class="k">      end if</span>
+<a name="ln-466"></a><span class="k">    end if</span>
+<a name="ln-467"></a>
+<a name="ln-468"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">git</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-469"></a><span class="k">      call </span><span class="n">git_revision</span><span class="p">(</span><span class="n">proj_dir</span><span class="p">,</span> <span class="n">revision</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-470"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-471"></a><span class="k">    end if</span>
+<a name="ln-472"></a>
+<a name="ln-473"></a><span class="k">    </span><span class="n">manifest</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">proj_dir</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">)</span>
+<a name="ln-474"></a>    <span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">manifest</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-475"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-476"></a>
+<a name="ln-477"></a><span class="k">    call </span><span class="n">dependency</span><span class="p">%</span><span class="n">register</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">proj_dir</span><span class="p">,</span> <span class="n">fetch</span><span class="p">,</span> <span class="n">revision</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-478"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-479"></a>
+<a name="ln-480"></a><span class="k">    if</span> <span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-481"></a><span class="k">      write</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">unit</span><span class="p">,</span> <span class="n">out_fmt</span><span class="p">)</span> <span class="p">&amp;</span>
+<a name="ln-482"></a>        <span class="s2">&quot;Dep:&quot;</span><span class="p">,</span> <span class="n">dependency</span><span class="p">%</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="nb">char</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">version</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-483"></a>        <span class="s2">&quot;at&quot;</span><span class="p">,</span> <span class="n">dependency</span><span class="p">%</span><span class="n">proj_dir</span>
+<a name="ln-484"></a>    <span class="k">end if</span>
+<a name="ln-485"></a>
+<a name="ln-486"></a><span class="k">    call </span><span class="n">self</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">proj_dir</span><span class="p">,</span> <span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-487"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-488"></a>
+<a name="ln-489"></a><span class="k">  end subroutine </span><span class="n">resolve_dependency</span>
+<a name="ln-490"></a>
+<a name="ln-491"></a>  <span class="c">!&gt; Find a dependency in the dependency tree</span>
+<a name="ln-492"></a>  <span class="k">pure function </span><span class="n">find_dependency</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">dependency</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<a name="ln-493"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-494"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-495"></a>    <span class="c">!&gt; Dependency configuration to add</span>
+<a name="ln-496"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency</span>
+<a name="ln-497"></a>    <span class="c">!&gt; Index of the dependency</span>
+<a name="ln-498"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">pos</span>
+<a name="ln-499"></a>
+<a name="ln-500"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
+<a name="ln-501"></a>
+<a name="ln-502"></a>    <span class="n">pos</span> <span class="o">=</span> <span class="n">self</span><span class="p">%</span><span class="n">find</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-503"></a>
+<a name="ln-504"></a>  <span class="k">end function </span><span class="n">find_dependency</span>
+<a name="ln-505"></a>
+<a name="ln-506"></a>  <span class="c">!&gt; Find a dependency in the dependency tree</span>
+<a name="ln-507"></a>  <span class="k">pure function </span><span class="n">find_name</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<a name="ln-508"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-509"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-510"></a>    <span class="c">!&gt; Dependency configuration to add</span>
+<a name="ln-511"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a name="ln-512"></a>    <span class="c">!&gt; Index of the dependency</span>
+<a name="ln-513"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">pos</span>
+<a name="ln-514"></a>
+<a name="ln-515"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
+<a name="ln-516"></a>
+<a name="ln-517"></a>    <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-518"></a>    <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">ndep</span>
+<a name="ln-519"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">name</span> <span class="o">==</span> <span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">name</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-520"></a><span class="k">        </span><span class="n">pos</span> <span class="o">=</span> <span class="n">ii</span>
+<a name="ln-521"></a>        <span class="k">exit</span>
+<a name="ln-522"></a><span class="k">      end if</span>
+<a name="ln-523"></a><span class="k">    end do</span>
+<a name="ln-524"></a>
+<a name="ln-525"></a><span class="k">  end function </span><span class="n">find_name</span>
+<a name="ln-526"></a>
+<a name="ln-527"></a>  <span class="c">!&gt; Check if we are done with the dependency resolution</span>
+<a name="ln-528"></a>  <span class="k">pure function </span><span class="n">finished</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+<a name="ln-529"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-530"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-531"></a>    <span class="c">!&gt; All dependencies are updated</span>
+<a name="ln-532"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">finished</span>
+<a name="ln-533"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
+<a name="ln-534"></a>
+<a name="ln-535"></a>    <span class="n">finished</span> <span class="o">=</span> <span class="k">all</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">(:</span><span class="n">self</span><span class="p">%</span><span class="n">ndep</span><span class="p">)%</span><span class="n">done</span><span class="p">)</span>
+<a name="ln-536"></a>
+<a name="ln-537"></a>  <span class="k">end function </span><span class="n">finished</span>
+<a name="ln-538"></a>
+<a name="ln-539"></a>  <span class="c">!&gt; Update dependency from project manifest</span>
+<a name="ln-540"></a>  <span class="k">subroutine </span><span class="n">register</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">fetch</span><span class="p">,</span> <span class="n">revision</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-541"></a>    <span class="c">!&gt; Instance of the dependency node</span>
+<a name="ln-542"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_node_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-543"></a>    <span class="c">!&gt; Package configuration data</span>
+<a name="ln-544"></a>    <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
+<a name="ln-545"></a>    <span class="c">!&gt; Project has been fetched</span>
+<a name="ln-546"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">fetch</span>
+<a name="ln-547"></a>    <span class="c">!&gt; Root directory of the project</span>
+<a name="ln-548"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">root</span>
+<a name="ln-549"></a>    <span class="c">!&gt; Git revision of the project</span>
+<a name="ln-550"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">revision</span>
+<a name="ln-551"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-552"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-553"></a>
+<a name="ln-554"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">url</span>
+<a name="ln-555"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">update</span>
+<a name="ln-556"></a>
+<a name="ln-557"></a>    <span class="n">update</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-558"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span> <span class="o">/=</span> <span class="n">package</span><span class="p">%</span><span class="n">name</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-559"></a><span class="k">      call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Dependency name &#39;&quot;</span><span class="o">//</span><span class="n">package</span><span class="p">%</span><span class="n">name</span><span class="o">//</span> <span class="p">&amp;</span>
+<a name="ln-560"></a>        <span class="p">&amp;</span> <span class="s2">&quot;&#39; found, but expected &#39;&quot;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="o">//</span><span class="s2">&quot;&#39; instead&quot;</span><span class="p">)</span>
+<a name="ln-561"></a>    <span class="k">end if</span>
+<a name="ln-562"></a>
+<a name="ln-563"></a><span class="k">    </span><span class="n">self</span><span class="p">%</span><span class="n">version</span> <span class="o">=</span> <span class="n">package</span><span class="p">%</span><span class="n">version</span>
+<a name="ln-564"></a>    <span class="n">self</span><span class="p">%</span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">root</span>
+<a name="ln-565"></a>
+<a name="ln-566"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">).</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">revision</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-567"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">revision</span> <span class="o">=</span> <span class="n">revision</span>
+<a name="ln-568"></a>      <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">fetch</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-569"></a>        <span class="c">! git object is HEAD always allows an update</span>
+<a name="ln-570"></a>        <span class="n">update</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">%</span><span class="n">object</span><span class="p">)</span>
+<a name="ln-571"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">update</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-572"></a>          <span class="c">! allow update in case the revision does not match the requested object</span>
+<a name="ln-573"></a>          <span class="n">update</span> <span class="o">=</span> <span class="n">revision</span> <span class="o">/=</span> <span class="n">self</span><span class="p">%</span><span class="n">git</span><span class="p">%</span><span class="n">object</span>
+<a name="ln-574"></a>        <span class="k">end if</span>
+<a name="ln-575"></a><span class="k">      end if</span>
+<a name="ln-576"></a><span class="k">    end if</span>
+<a name="ln-577"></a>
+<a name="ln-578"></a><span class="k">    </span><span class="n">self</span><span class="p">%</span><span class="n">update</span> <span class="o">=</span> <span class="n">update</span>
+<a name="ln-579"></a>    <span class="n">self</span><span class="p">%</span><span class="n">done</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a name="ln-580"></a>
+<a name="ln-581"></a>  <span class="k">end subroutine </span><span class="n">register</span>
+<a name="ln-582"></a>
+<a name="ln-583"></a>  <span class="c">!&gt; Read dependency tree from file</span>
+<a name="ln-584"></a>  <span class="k">subroutine </span><span class="n">load_from_file</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="k">file</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-585"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-586"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-587"></a>    <span class="c">!&gt; File name</span>
+<a name="ln-588"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">file</span>
+<a name="ln-589"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-590"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-591"></a>
+<a name="ln-592"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit</span>
+<a name="ln-593"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">exist</span>
+<a name="ln-594"></a>
+<a name="ln-595"></a>    <span class="k">inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">exist</span><span class="p">)</span>
+<a name="ln-596"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">exist</span><span class="p">)</span> <span class="k">return</span>
+<a name="ln-597"></a>
+<a name="ln-598"></a><span class="k">    open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+<a name="ln-599"></a>    <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">load</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-600"></a>    <span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+<a name="ln-601"></a>  <span class="k">end subroutine </span><span class="n">load_from_file</span>
+<a name="ln-602"></a>
+<a name="ln-603"></a>  <span class="c">!&gt; Read dependency tree from file</span>
+<a name="ln-604"></a>  <span class="k">subroutine </span><span class="n">load_from_unit</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-605"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-606"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-607"></a>    <span class="c">!&gt; File name</span>
+<a name="ln-608"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">unit</span>
+<a name="ln-609"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-610"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-611"></a>
+<a name="ln-612"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_error</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">parse_error</span>
+<a name="ln-613"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">table</span>
+<a name="ln-614"></a>
+<a name="ln-615"></a>    <span class="k">call </span><span class="n">toml_parse</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">parse_error</span><span class="p">)</span>
+<a name="ln-616"></a>
+<a name="ln-617"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">parse_error</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-618"></a><span class="k">      allocate</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-619"></a>      <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">parse_error</span><span class="p">%</span><span class="n">message</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
+<a name="ln-620"></a>      <span class="k">return</span>
+<a name="ln-621"></a><span class="k">    end if</span>
+<a name="ln-622"></a>
+<a name="ln-623"></a><span class="k">    call </span><span class="n">self</span><span class="p">%</span><span class="n">load</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-624"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-625"></a>
+<a name="ln-626"></a><span class="k">  end subroutine </span><span class="n">load_from_unit</span>
+<a name="ln-627"></a>
+<a name="ln-628"></a>  <span class="c">!&gt; Read dependency tree from TOML data structure</span>
+<a name="ln-629"></a>  <span class="k">subroutine </span><span class="n">load_from_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-630"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-631"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-632"></a>    <span class="c">!&gt; Data structure</span>
+<a name="ln-633"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
+<a name="ln-634"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-635"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-636"></a>
+<a name="ln-637"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ndep</span><span class="p">,</span> <span class="n">ii</span>
+<a name="ln-638"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">unix</span>
+<a name="ln-639"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">version</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">rev</span><span class="p">,</span> <span class="n">proj_dir</span>
+<a name="ln-640"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
+<a name="ln-641"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">ptr</span>
+<a name="ln-642"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dep</span>
+<a name="ln-643"></a>
+<a name="ln-644"></a>    <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+<a name="ln-645"></a>
+<a name="ln-646"></a>    <span class="n">ndep</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">)</span>
+<a name="ln-647"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">ndep</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span> <span class="o">+</span> <span class="n">self</span><span class="p">%</span><span class="n">ndep</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-648"></a><span class="k">      call </span><span class="n">resize</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">,</span> <span class="n">ndep</span> <span class="o">+</span> <span class="n">ndep</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">))</span>
+<a name="ln-649"></a>    <span class="k">end if</span>
+<a name="ln-650"></a>
+<a name="ln-651"></a><span class="k">    </span><span class="n">unix</span> <span class="o">=</span> <span class="n">get_os_type</span><span class="p">()</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span>
+<a name="ln-652"></a>
+<a name="ln-653"></a>    <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+<a name="ln-654"></a>      <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span> <span class="n">ptr</span><span class="p">)</span>
+<a name="ln-655"></a>      <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+<a name="ln-656"></a>      <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;proj-dir&quot;</span><span class="p">,</span> <span class="n">proj_dir</span><span class="p">)</span>
+<a name="ln-657"></a>      <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+<a name="ln-658"></a>      <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;obj&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+<a name="ln-659"></a>      <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;rev&quot;</span><span class="p">,</span> <span class="n">rev</span><span class="p">)</span>
+<a name="ln-660"></a>      <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">proj_dir</span><span class="p">))</span> <span class="k">cycle</span>
+<a name="ln-661"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">ndep</span> <span class="o">=</span> <span class="n">self</span><span class="p">%</span><span class="n">ndep</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-662"></a>      <span class="k">associate</span><span class="p">(</span><span class="n">dep</span> <span class="o">=&gt;</span> <span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ndep</span><span class="p">))</span>
+<a name="ln-663"></a>        <span class="n">dep</span><span class="p">%</span><span class="n">name</span> <span class="o">=</span> <span class="n">list</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">key</span>
+<a name="ln-664"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">unix</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-665"></a><span class="k">          </span><span class="n">dep</span><span class="p">%</span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">proj_dir</span>
+<a name="ln-666"></a>        <span class="k">else</span>
+<a name="ln-667"></a><span class="k">          </span><span class="n">dep</span><span class="p">%</span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">windows_path</span><span class="p">(</span><span class="n">proj_dir</span><span class="p">)</span>
+<a name="ln-668"></a>        <span class="k">end if</span>
+<a name="ln-669"></a><span class="k">        </span><span class="n">dep</span><span class="p">%</span><span class="n">done</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-670"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">version</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-671"></a><span class="k">          if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">version</span><span class="p">))</span> <span class="k">allocate</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">version</span><span class="p">)</span>
+<a name="ln-672"></a>          <span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">version</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-673"></a>          <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a name="ln-674"></a><span class="k">        end if</span>
+<a name="ln-675"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">version</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-676"></a><span class="k">          call </span><span class="n">new_version</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">version</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-677"></a>          <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a name="ln-678"></a><span class="k">        end if</span>
+<a name="ln-679"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">url</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-680"></a><span class="k">          if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-681"></a><span class="k">            </span><span class="n">dep</span><span class="p">%</span><span class="n">git</span> <span class="o">=</span> <span class="n">git_target_revision</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+<a name="ln-682"></a>          <span class="k">else</span>
+<a name="ln-683"></a><span class="k">            </span><span class="n">dep</span><span class="p">%</span><span class="n">git</span> <span class="o">=</span> <span class="n">git_target_default</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<a name="ln-684"></a>          <span class="k">end if</span>
+<a name="ln-685"></a><span class="k">          if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">rev</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-686"></a><span class="k">            </span><span class="n">dep</span><span class="p">%</span><span class="n">revision</span> <span class="o">=</span> <span class="n">rev</span>
+<a name="ln-687"></a>          <span class="k">end if</span>
+<a name="ln-688"></a><span class="k">        else</span>
+<a name="ln-689"></a><span class="k">          </span><span class="n">dep</span><span class="p">%</span><span class="n">path</span> <span class="o">=</span> <span class="n">proj_dir</span>
+<a name="ln-690"></a>        <span class="k">end if</span>
+<a name="ln-691"></a><span class="k">      end associate</span>
+<a name="ln-692"></a><span class="k">    end do</span>
+<a name="ln-693"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-694"></a>
+<a name="ln-695"></a><span class="k">    </span><span class="n">self</span><span class="p">%</span><span class="n">ndep</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+<a name="ln-696"></a>  <span class="k">end subroutine </span><span class="n">load_from_toml</span>
+<a name="ln-697"></a>
+<a name="ln-698"></a>  <span class="c">!&gt; Write dependency tree to file</span>
+<a name="ln-699"></a>  <span class="k">subroutine </span><span class="n">dump_to_file</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="k">file</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-700"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-701"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-702"></a>    <span class="c">!&gt; File name</span>
+<a name="ln-703"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">file</span>
+<a name="ln-704"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-705"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-706"></a>
+<a name="ln-707"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit</span>
+<a name="ln-708"></a>
+<a name="ln-709"></a>    <span class="k">open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+<a name="ln-710"></a>    <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">dump</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-711"></a>    <span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+<a name="ln-712"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-713"></a>
+<a name="ln-714"></a><span class="k">  end subroutine </span><span class="n">dump_to_file</span>
+<a name="ln-715"></a>
+<a name="ln-716"></a>  <span class="c">!&gt; Write dependency tree to file</span>
+<a name="ln-717"></a>  <span class="k">subroutine </span><span class="n">dump_to_unit</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-718"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-719"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-720"></a>    <span class="c">!&gt; Formatted unit</span>
+<a name="ln-721"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">unit</span>
+<a name="ln-722"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-723"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-724"></a>
+<a name="ln-725"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
+<a name="ln-726"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_serializer</span><span class="p">)</span> <span class="kd">::</span> <span class="n">ser</span>
+<a name="ln-727"></a>
+<a name="ln-728"></a>    <span class="n">table</span> <span class="o">=</span> <span class="n">toml_table</span><span class="p">()</span>
+<a name="ln-729"></a>    <span class="n">ser</span> <span class="o">=</span> <span class="n">toml_serializer</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+<a name="ln-730"></a>
+<a name="ln-731"></a>    <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">dump</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-732"></a>
+<a name="ln-733"></a>    <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="k">accept</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
+<a name="ln-734"></a>
+<a name="ln-735"></a>  <span class="k">end subroutine </span><span class="n">dump_to_unit</span>
+<a name="ln-736"></a>
+<a name="ln-737"></a>  <span class="c">!&gt; Write dependency tree to TOML datastructure</span>
+<a name="ln-738"></a>  <span class="k">subroutine </span><span class="n">dump_to_toml</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-739"></a>    <span class="c">!&gt; Instance of the dependency tree</span>
+<a name="ln-740"></a>    <span class="k">class</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a name="ln-741"></a>    <span class="c">!&gt; Data structure</span>
+<a name="ln-742"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
+<a name="ln-743"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-744"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-745"></a>
+<a name="ln-746"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
+<a name="ln-747"></a>    <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">ptr</span>
+<a name="ln-748"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">proj_dir</span>
+<a name="ln-749"></a>
+<a name="ln-750"></a>    <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">ndep</span>
+<a name="ln-751"></a>      <span class="k">associate</span><span class="p">(</span><span class="n">dep</span> <span class="o">=&gt;</span> <span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">ii</span><span class="p">))</span>
+<a name="ln-752"></a>        <span class="k">call </span><span class="n">add_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">dep</span><span class="p">%</span><span class="n">name</span><span class="p">,</span> <span class="n">ptr</span><span class="p">)</span>
+<a name="ln-753"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">associated</span><span class="p">(</span><span class="n">ptr</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-754"></a><span class="k">          call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Cannot create entry for &quot;</span><span class="o">//</span><span class="n">dep</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
+<a name="ln-755"></a>          <span class="k">exit</span>
+<a name="ln-756"></a><span class="k">        end if</span>
+<a name="ln-757"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">version</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-758"></a><span class="k">          call </span><span class="n">set_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="nb">char</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">version</span><span class="p">))</span>
+<a name="ln-759"></a>        <span class="k">end if</span>
+<a name="ln-760"></a><span class="k">        </span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">proj_dir</span><span class="p">)</span>
+<a name="ln-761"></a>        <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;proj-dir&quot;</span><span class="p">,</span> <span class="n">proj_dir</span><span class="p">)</span>
+<a name="ln-762"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">git</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-763"></a><span class="k">          call </span><span class="n">set_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="n">dep</span><span class="p">%</span><span class="n">git</span><span class="p">%</span><span class="n">url</span><span class="p">)</span>
+<a name="ln-764"></a>          <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">git</span><span class="p">%</span><span class="n">object</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-765"></a><span class="k">            call </span><span class="n">set_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;obj&quot;</span><span class="p">,</span> <span class="n">dep</span><span class="p">%</span><span class="n">git</span><span class="p">%</span><span class="n">object</span><span class="p">)</span>
+<a name="ln-766"></a>          <span class="k">end if</span>
+<a name="ln-767"></a><span class="k">          if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">revision</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-768"></a><span class="k">            call </span><span class="n">set_value</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="s2">&quot;rev&quot;</span><span class="p">,</span> <span class="n">dep</span><span class="p">%</span><span class="n">revision</span><span class="p">)</span>
+<a name="ln-769"></a>          <span class="k">end if</span>
+<a name="ln-770"></a><span class="k">        end if</span>
+<a name="ln-771"></a><span class="k">      end associate</span>
+<a name="ln-772"></a><span class="k">    end do</span>
+<a name="ln-773"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-774"></a>
+<a name="ln-775"></a><span class="k">  end subroutine </span><span class="n">dump_to_toml</span>
+<a name="ln-776"></a>
+<a name="ln-777"></a>  <span class="c">!&gt; Reallocate a list of dependencies</span>
+<a name="ln-778"></a>  <span class="k">pure subroutine </span><span class="n">resize_dependency_node</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<a name="ln-779"></a>    <span class="c">!&gt; Instance of the array to be resized</span>
+<a name="ln-780"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_node_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span><span class="p">(:)</span>
+<a name="ln-781"></a>    <span class="c">!&gt; Dimension of the final array size</span>
+<a name="ln-782"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">n</span>
+<a name="ln-783"></a>
+<a name="ln-784"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_node_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">tmp</span><span class="p">(:)</span>
+<a name="ln-785"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">this_size</span><span class="p">,</span> <span class="n">new_size</span>
+<a name="ln-786"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">initial_size</span> <span class="o">=</span> <span class="mi">16</span>
+<a name="ln-787"></a>
+<a name="ln-788"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">var</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-789"></a><span class="k">      </span><span class="n">this_size</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<a name="ln-790"></a>      <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">tmp</span><span class="p">)</span>
+<a name="ln-791"></a>    <span class="k">else</span>
+<a name="ln-792"></a><span class="k">      </span><span class="n">this_size</span> <span class="o">=</span> <span class="n">initial_size</span>
+<a name="ln-793"></a>    <span class="k">end if</span>
+<a name="ln-794"></a>
+<a name="ln-795"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-796"></a><span class="k">      </span><span class="n">new_size</span> <span class="o">=</span> <span class="n">n</span>
+<a name="ln-797"></a>    <span class="k">else</span>
+<a name="ln-798"></a><span class="k">      </span><span class="n">new_size</span> <span class="o">=</span> <span class="n">this_size</span> <span class="o">+</span> <span class="n">this_size</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-799"></a>    <span class="k">end if</span>
+<a name="ln-800"></a>
+<a name="ln-801"></a><span class="k">    allocate</span><span class="p">(</span><span class="n">var</span><span class="p">(</span><span class="n">new_size</span><span class="p">))</span>
+<a name="ln-802"></a>
+<a name="ln-803"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">tmp</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-804"></a><span class="k">      </span><span class="n">this_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">size</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<a name="ln-805"></a>      <span class="n">var</span><span class="p">(:</span><span class="n">this_size</span><span class="p">)</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">(:</span><span class="n">this_size</span><span class="p">)</span>
+<a name="ln-806"></a>      <span class="k">deallocate</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+<a name="ln-807"></a>    <span class="k">end if</span>
+<a name="ln-808"></a>
+<a name="ln-809"></a><span class="k">  end subroutine </span><span class="n">resize_dependency_node</span>
+<a name="ln-810"></a>
+<a name="ln-811"></a><span class="k">end module </span><span class="n">fpm_dependency</span>
 </pre></div>
 
     </section>
@@ -529,7 +1092,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-10 16:32  
+             on 2020-12-10 16:59  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

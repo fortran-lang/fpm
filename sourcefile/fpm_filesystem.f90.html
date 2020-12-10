@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 7.6% of total for source files.">248 statements</a>
+    title=" 7.4% of total for source files.">284 statements</a>
      </li> 
      
      
@@ -271,7 +271,7 @@
 <a name="ln-6"></a>    <span class="k">implicit none</span>
 <a name="ln-7"></a><span class="k">    private</span>
 <a name="ln-8"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">number_of_rows</span><span class="p">,</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,&amp;</span>
-<a name="ln-9"></a>            <span class="n">mkdir</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">get_temp_filename</span><span class="p">,</span> <span class="n">windows_path</span>
+<a name="ln-9"></a>            <span class="n">mkdir</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">get_temp_filename</span><span class="p">,</span> <span class="n">windows_path</span><span class="p">,</span> <span class="n">getline</span><span class="p">,</span> <span class="n">delete_file</span>
 <a name="ln-10"></a>
 <a name="ln-11"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_BUFFER_LEN</span> <span class="o">=</span> <span class="mi">1000</span>
 <a name="ln-12"></a>
@@ -650,12 +650,66 @@
 <a name="ln-385"></a><span class="s1">    idx = index(nixpath,&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
 <a name="ln-386"></a><span class="s1">    do while(idx &gt; 0)</span>
 <a name="ln-387"></a><span class="s1">        nixpath(idx:idx) = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
-<a name="ln-388"></a><span class="s1">        idx = index(nixpath,&#39;</span><span class="err">\&#39;</span><span class="p">)</span>
-<a name="ln-389"></a>    <span class="k">end do</span>
-<a name="ln-390"></a><span class="k">    </span>
-<a name="ln-391"></a><span class="k">end function </span><span class="n">unix_path</span>
+<a name="ln-388"></a><span class="s1">        idx = index(nixpath,&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
+<a name="ln-389"></a><span class="s1">    end do</span>
+<a name="ln-390"></a><span class="s1">    </span>
+<a name="ln-391"></a><span class="s1">end function unix_path</span>
 <a name="ln-392"></a>
-<a name="ln-393"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
+<a name="ln-393"></a>
+<a name="ln-394"></a><span class="s1">subroutine getline(unit, line, iostat, iomsg)</span>
+<a name="ln-395"></a>
+<a name="ln-396"></a><span class="s1">    !&gt; Formatted IO unit</span>
+<a name="ln-397"></a><span class="s1">    integer, intent(in) :: unit</span>
+<a name="ln-398"></a>
+<a name="ln-399"></a><span class="s1">    !&gt; Line to read</span>
+<a name="ln-400"></a><span class="s1">    character(len=:), allocatable, intent(out) :: line</span>
+<a name="ln-401"></a>
+<a name="ln-402"></a><span class="s1">    !&gt; Status of operation</span>
+<a name="ln-403"></a><span class="s1">    integer, intent(out) :: iostat</span>
+<a name="ln-404"></a>
+<a name="ln-405"></a><span class="s1">    !&gt; Error message</span>
+<a name="ln-406"></a><span class="s1">    character(len=:), allocatable, optional :: iomsg</span>
+<a name="ln-407"></a>
+<a name="ln-408"></a><span class="s1">    character(len=LINE_BUFFER_LEN) :: buffer</span>
+<a name="ln-409"></a><span class="s1">    character(len=LINE_BUFFER_LEN) :: msg</span>
+<a name="ln-410"></a><span class="s1">    integer :: size</span>
+<a name="ln-411"></a><span class="s1">    integer :: stat</span>
+<a name="ln-412"></a>
+<a name="ln-413"></a><span class="s1">    allocate(character(len=0) :: line)</span>
+<a name="ln-414"></a><span class="s1">    do</span>
+<a name="ln-415"></a><span class="s1">        read(unit, &#39;</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;, advance=&#39;</span><span class="n">no</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span> <span class="n">iomsg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span> <span class="p">&amp;</span>
+<a name="ln-416"></a>            <span class="p">&amp;</span> <span class="n">buffer</span>
+<a name="ln-417"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">exit</span>
+<a name="ln-418"></a><span class="k">        </span><span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">//</span> <span class="n">buffer</span><span class="p">(:</span><span class="n">size</span><span class="p">)</span>
+<a name="ln-419"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-420"></a><span class="k">            if</span> <span class="p">(</span><span class="nb">is_iostat_eor</span><span class="p">(</span><span class="nb">stat</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-421"></a><span class="k">                </span><span class="nb">stat</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-422"></a>            <span class="k">end if</span>
+<a name="ln-423"></a><span class="k">            exit</span>
+<a name="ln-424"></a><span class="k">        end if</span>
+<a name="ln-425"></a><span class="k">    end do</span>
+<a name="ln-426"></a>
+<a name="ln-427"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-428"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">iomsg</span><span class="p">))</span> <span class="n">iomsg</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<a name="ln-429"></a>    <span class="k">end if</span>
+<a name="ln-430"></a><span class="k">    </span><span class="n">iostat</span> <span class="o">=</span> <span class="nb">stat</span>
+<a name="ln-431"></a>
+<a name="ln-432"></a><span class="k">end subroutine </span><span class="n">getline</span>
+<a name="ln-433"></a>
+<a name="ln-434"></a>
+<a name="ln-435"></a><span class="k">subroutine </span><span class="n">delete_file</span><span class="p">(</span><span class="k">file</span><span class="p">)</span>
+<a name="ln-436"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">file</span>
+<a name="ln-437"></a><span class="k">    </span><span class="kt">logical</span> <span class="kd">::</span> <span class="n">exist</span>
+<a name="ln-438"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit</span>
+<a name="ln-439"></a>    <span class="k">inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">exist</span><span class="p">)</span>
+<a name="ln-440"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">exist</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-441"></a><span class="k">        open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+<a name="ln-442"></a>        <span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;delete&quot;</span><span class="p">)</span>
+<a name="ln-443"></a>    <span class="k">end if</span>
+<a name="ln-444"></a><span class="k">end subroutine </span><span class="n">delete_file</span>
+<a name="ln-445"></a>
+<a name="ln-446"></a>
+<a name="ln-447"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
 </pre></div>
 
     </section>
@@ -674,7 +728,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-10 16:32  
+             on 2020-12-10 16:59  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

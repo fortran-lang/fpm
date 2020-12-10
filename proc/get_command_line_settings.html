@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.8% of total for procedures.">175 statements</a>
+    title=" 8.7% of total for procedures.">186 statements</a>
      </li> 
      
      
@@ -683,6 +683,8 @@ subroutine printhelp(lines)
                    <span class="n">help_text</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">help_runner</span><span class="p">]</span>
                 <span class="k">case</span><span class="p">(</span><span class="s1">&#39;list   &#39;</span> <span class="p">)</span>
                    <span class="n">help_text</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">help_list</span><span class="p">]</span>
+                <span class="k">case</span><span class="p">(</span><span class="s1">&#39;update &#39;</span> <span class="p">)</span>
+                   <span class="n">help_text</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">help_update</span><span class="p">]</span>
                 <span class="k">case</span><span class="p">(</span><span class="s1">&#39;help   &#39;</span> <span class="p">)</span>
                    <span class="n">help_text</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">help_help</span><span class="p">]</span>
                 <span class="k">case</span><span class="p">(</span><span class="s1">&#39;version&#39;</span> <span class="p">)</span>
@@ -744,6 +746,21 @@ subroutine printhelp(lines)
             <span class="p">&amp;</span> <span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">runner</span><span class="o">=</span><span class="n">val_runner</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="k">case</span><span class="p">(</span><span class="s1">&#39;update&#39;</span><span class="p">)</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;--fetch-only F --verbose F --clean F&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="n">help_update</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
+
+            <span class="k">if</span><span class="p">(</span> <span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">)</span> <span class="p">.</span><span class="n">gt</span><span class="p">.</span> <span class="mi">1</span> <span class="p">)</span><span class="k">then</span>
+<span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">:)</span>
+            <span class="k">else</span>
+<span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="kd">::</span> <span class="p">]</span>
+            <span class="n">endif</span>
+
+            <span class="k">allocate</span><span class="p">(</span><span class="n">fpm_update_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
+            <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_update_settings</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="n">fetch_only</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;fetch-only&#39;</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
+                <span class="n">clean</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;clean&#39;</span><span class="p">))</span>
 
         <span class="k">case </span><span class="n">default</span>
 
@@ -816,7 +833,7 @@ subroutine printhelp(lines)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-10 16:32  
+             on 2020-12-10 16:59  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

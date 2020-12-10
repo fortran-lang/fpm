@@ -27,6 +27,7 @@
 module fpm_model
 use iso_fortran_env, only: int64
 use fpm_strings, only: string_t
+use fpm_dependency, only: dependency_tree_t
 implicit none
 
 private
@@ -187,6 +188,9 @@ type :: fpm_model_t
     !> Native libraries to link against
     type(string_t), allocatable :: link_libraries(:)
     
+    !> Project dependencies
+    type(dependency_tree_t) :: deps
+
 end type fpm_model_t
 
 end module fpm_model

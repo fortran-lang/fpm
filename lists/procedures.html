@@ -137,6 +137,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/canon_path.html'>canon_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
 			 
+			   <tr><td><a href='../interface/char.html'>char</a></td><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td>Interface</td><td></td></tr>
+			 
 			   <tr><td><a href='../proc/checkout.html'>checkout</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/cmd_build.html'>cmd_build</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
@@ -147,11 +149,15 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/cmd_run.html'>cmd_run</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
 			 
+			   <tr><td><a href='../proc/cmd_update.html'>cmd_update</a></td><td><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></td><td>Subroutine</td><td><p>Entry point for the update subcommand</p></td></tr>
+			 
 			   <tr><td><a href='../proc/default_executable.html'>default_executable</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate executable in case we find the default app directory</p></td></tr>
 			 
 			   <tr><td><a href='../proc/default_library.html'>default_library</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate library in case we find the default src directory</p></td></tr>
 			 
 			   <tr><td><a href='../proc/default_test.html'>default_test</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate test in case we find the default test/ directory</p></td></tr>
+			 
+			   <tr><td><a href='../proc/delete_file.html'>delete_file</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/dirname.html'>dirname</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
 			 
@@ -181,6 +187,10 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../interface/get_value.html'>get_value</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Interface</td><td></td></tr>
 			 
+			   <tr><td><a href='../proc/getline.html'>getline</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td></td></tr>
+			 
+			   <tr><td><a href='../proc/git_revision.html'>git_revision</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td></td></tr>
+			 
 			   <tr><td><a href='../proc/git_target_branch.html'>git_target_branch</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Function</td><td><p>Target a branch in the git repository</p></td></tr>
 			 
 			   <tr><td><a href='../proc/git_target_default.html'>git_target_default</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Function</td><td><p>Default target</p></td></tr>
@@ -207,6 +217,10 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/new_dependency.html'>new_dependency</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct a new dependency configuration from a TOML data structure</p></td></tr>
 			 
+			   <tr><td><a href='../proc/new_dependency_node.html'>new_dependency_node</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td><p>Create a new dependency node from a configuration</p></td></tr>
+			 
+			   <tr><td><a href='../proc/new_dependency_tree.html'>new_dependency_tree</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td><p>Create a new dependency tree</p></td></tr>
+			 
 			   <tr><td><a href='../proc/new_executable.html'>new_executable</a></td><td><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></td><td>Subroutine</td><td><p>Construct a new executable configuration from a TOML data structure</p></td></tr>
 			 
 			   <tr><td><a href='../proc/new_library.html'>new_library</a></td><td><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></td><td>Subroutine</td><td><p>Construct a new library configuration from a TOML data structure</p></td></tr>
@@ -228,6 +242,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/read_lines.html'>read_lines</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/read_package_file.html'>read_package_file</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td><p>Process the configuration file to a TOML data structure</p></td></tr>
+			 
+			   <tr><td><a href='../interface/resize.html'>resize</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Interface</td><td><p>Overloaded reallocation interface</p></td></tr>
 			 
 			   <tr><td><a href='../proc/resolve_module_dependencies.html'>resolve_module_dependencies</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Add dependencies to source-based targets (<code>FPM_TARGET_OBJECT</code>) 
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
@@ -272,7 +288,7 @@ All Procedures &ndash; Fortran-lang/fpm
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-10 16:32  
+             on 2020-12-10 16:59  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

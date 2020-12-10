@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.1% of total for source files.">68 statements</a>
+    title=" 1.8% of total for source files.">69 statements</a>
      </li> 
      
      
@@ -281,106 +281,108 @@
 <a name="ln-16"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span><span class="p">,</span> <span class="n">file_not_found_error</span>
 <a name="ln-17"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">string_t</span>
 <a name="ln-18"></a>    <span class="k">use </span><span class="n">tomlf</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_array</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_stat</span><span class="p">,</span> <span class="n">get_value</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-19"></a>        <span class="p">&amp;</span> <span class="n">set_value</span><span class="p">,</span> <span class="n">toml_parse</span><span class="p">,</span> <span class="n">toml_error</span><span class="p">,</span> <span class="n">new_table</span><span class="p">,</span> <span class="n">add_table</span><span class="p">,</span> <span class="n">add_array</span><span class="p">,</span> <span class="nb">len</span>
-<a name="ln-20"></a><span class="nb">    </span><span class="k">implicit none</span>
-<a name="ln-21"></a><span class="k">    private</span>
-<a name="ln-22"></a>
-<a name="ln-23"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">read_package_file</span>
-<a name="ln-24"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_array</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_stat</span><span class="p">,</span> <span class="n">get_value</span><span class="p">,</span> <span class="n">set_value</span>
-<a name="ln-25"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">new_table</span><span class="p">,</span> <span class="n">add_table</span><span class="p">,</span> <span class="n">add_array</span><span class="p">,</span> <span class="nb">len</span>
-<a name="ln-26"></a>
-<a name="ln-27"></a>
-<a name="ln-28"></a><span class="nb">    </span><span class="k">interface </span><span class="n">get_value</span>
-<a name="ln-29"></a>        <span class="k">module procedure</span> <span class="kd">::</span> <span class="n">get_child_value_string_list</span>
-<a name="ln-30"></a>    <span class="k">end interface </span><span class="n">get_value</span>
-<a name="ln-31"></a>
-<a name="ln-32"></a>
-<a name="ln-33"></a><span class="k">contains</span>
+<a name="ln-19"></a>        <span class="p">&amp;</span> <span class="n">set_value</span><span class="p">,</span> <span class="n">toml_parse</span><span class="p">,</span> <span class="n">toml_error</span><span class="p">,</span> <span class="n">new_table</span><span class="p">,</span> <span class="n">add_table</span><span class="p">,</span> <span class="n">add_array</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-20"></a>        <span class="p">&amp;</span> <span class="n">toml_serializer</span><span class="p">,</span> <span class="nb">len</span>
+<a name="ln-21"></a><span class="nb">    </span><span class="k">implicit none</span>
+<a name="ln-22"></a><span class="k">    private</span>
+<a name="ln-23"></a>
+<a name="ln-24"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">read_package_file</span>
+<a name="ln-25"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_array</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_stat</span><span class="p">,</span> <span class="n">get_value</span><span class="p">,</span> <span class="n">set_value</span>
+<a name="ln-26"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">new_table</span><span class="p">,</span> <span class="n">add_table</span><span class="p">,</span> <span class="n">add_array</span><span class="p">,</span> <span class="nb">len</span>
+<a name="ln-27"></a><span class="nb">    </span><span class="k">public</span> <span class="kd">::</span> <span class="n">toml_error</span><span class="p">,</span> <span class="n">toml_serializer</span><span class="p">,</span> <span class="n">toml_parse</span>
+<a name="ln-28"></a>
+<a name="ln-29"></a>
+<a name="ln-30"></a>    <span class="k">interface </span><span class="n">get_value</span>
+<a name="ln-31"></a>        <span class="k">module procedure</span> <span class="kd">::</span> <span class="n">get_child_value_string_list</span>
+<a name="ln-32"></a>    <span class="k">end interface </span><span class="n">get_value</span>
+<a name="ln-33"></a>
 <a name="ln-34"></a>
-<a name="ln-35"></a>
-<a name="ln-36"></a>    <span class="c">!&gt; Process the configuration file to a TOML data structure</span>
-<a name="ln-37"></a>    <span class="k">subroutine </span><span class="n">read_package_file</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">manifest</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-38"></a>
-<a name="ln-39"></a>        <span class="c">!&gt; TOML data structure</span>
-<a name="ln-40"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
-<a name="ln-41"></a>
-<a name="ln-42"></a>        <span class="c">!&gt; Name of the package configuration file</span>
-<a name="ln-43"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">manifest</span>
-<a name="ln-44"></a>
-<a name="ln-45"></a>        <span class="c">!&gt; Error status of the operation</span>
-<a name="ln-46"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-47"></a>
-<a name="ln-48"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_error</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">parse_error</span>
-<a name="ln-49"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit</span>
-<a name="ln-50"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">exist</span>
-<a name="ln-51"></a>
-<a name="ln-52"></a>        <span class="k">inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">manifest</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">exist</span><span class="p">)</span>
+<a name="ln-35"></a><span class="k">contains</span>
+<a name="ln-36"></a>
+<a name="ln-37"></a>
+<a name="ln-38"></a>    <span class="c">!&gt; Process the configuration file to a TOML data structure</span>
+<a name="ln-39"></a>    <span class="k">subroutine </span><span class="n">read_package_file</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">manifest</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-40"></a>
+<a name="ln-41"></a>        <span class="c">!&gt; TOML data structure</span>
+<a name="ln-42"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
+<a name="ln-43"></a>
+<a name="ln-44"></a>        <span class="c">!&gt; Name of the package configuration file</span>
+<a name="ln-45"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">manifest</span>
+<a name="ln-46"></a>
+<a name="ln-47"></a>        <span class="c">!&gt; Error status of the operation</span>
+<a name="ln-48"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-49"></a>
+<a name="ln-50"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_error</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">parse_error</span>
+<a name="ln-51"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit</span>
+<a name="ln-52"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">exist</span>
 <a name="ln-53"></a>
-<a name="ln-54"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">exist</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-55"></a><span class="k">            call </span><span class="n">file_not_found_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">manifest</span><span class="p">)</span>
-<a name="ln-56"></a>            <span class="k">return</span>
-<a name="ln-57"></a><span class="k">        end if</span>
-<a name="ln-58"></a>
-<a name="ln-59"></a><span class="k">        open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">manifest</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
-<a name="ln-60"></a>        <span class="k">call </span><span class="n">toml_parse</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">parse_error</span><span class="p">)</span>
-<a name="ln-61"></a>        <span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
-<a name="ln-62"></a>
-<a name="ln-63"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">parse_error</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-64"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-65"></a>            <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">parse_error</span><span class="p">%</span><span class="n">message</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
-<a name="ln-66"></a>            <span class="k">return</span>
-<a name="ln-67"></a><span class="k">        end if</span>
-<a name="ln-68"></a>
-<a name="ln-69"></a><span class="k">    end subroutine </span><span class="n">read_package_file</span>
+<a name="ln-54"></a>        <span class="k">inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">manifest</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">exist</span><span class="p">)</span>
+<a name="ln-55"></a>
+<a name="ln-56"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">exist</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-57"></a><span class="k">            call </span><span class="n">file_not_found_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">manifest</span><span class="p">)</span>
+<a name="ln-58"></a>            <span class="k">return</span>
+<a name="ln-59"></a><span class="k">        end if</span>
+<a name="ln-60"></a>
+<a name="ln-61"></a><span class="k">        open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">manifest</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+<a name="ln-62"></a>        <span class="k">call </span><span class="n">toml_parse</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">parse_error</span><span class="p">)</span>
+<a name="ln-63"></a>        <span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+<a name="ln-64"></a>
+<a name="ln-65"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">parse_error</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-66"></a><span class="k">            allocate</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-67"></a>            <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">parse_error</span><span class="p">%</span><span class="n">message</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
+<a name="ln-68"></a>            <span class="k">return</span>
+<a name="ln-69"></a><span class="k">        end if</span>
 <a name="ln-70"></a>
-<a name="ln-71"></a>
-<a name="ln-72"></a>    <span class="k">subroutine </span><span class="n">get_child_value_string_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">list</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-71"></a><span class="k">    end subroutine </span><span class="n">read_package_file</span>
+<a name="ln-72"></a>
 <a name="ln-73"></a>
-<a name="ln-74"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
-<a name="ln-75"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
-<a name="ln-76"></a>
-<a name="ln-77"></a>        <span class="c">!&gt; Key to read from</span>
-<a name="ln-78"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">key</span>
-<a name="ln-79"></a>
-<a name="ln-80"></a>        <span class="c">!&gt; List of strings to read</span>
-<a name="ln-81"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
-<a name="ln-82"></a>
-<a name="ln-83"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-84"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-85"></a>
-<a name="ln-86"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">ilist</span><span class="p">,</span> <span class="n">nlist</span>
-<a name="ln-87"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">children</span>
-<a name="ln-88"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">str</span>
-<a name="ln-89"></a>
-<a name="ln-90"></a>        <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
-<a name="ln-91"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">associated</span><span class="p">(</span><span class="n">children</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-92"></a><span class="k">            </span><span class="n">nlist</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
-<a name="ln-93"></a>            <span class="k">allocate</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="n">nlist</span><span class="p">))</span>
-<a name="ln-94"></a>            <span class="k">do </span><span class="n">ilist</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nlist</span>
-<a name="ln-95"></a>                <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">ilist</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-96"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-97"></a><span class="k">                    call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Entry in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field cannot be read&quot;</span><span class="p">)</span>
-<a name="ln-98"></a>                    <span class="k">exit</span>
-<a name="ln-99"></a><span class="k">                end if</span>
-<a name="ln-100"></a><span class="k">                call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="n">ilist</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-101"></a>            <span class="k">end do</span>
-<a name="ln-102"></a><span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-103"></a><span class="k">        else</span>
-<a name="ln-104"></a><span class="k">            call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-105"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-106"></a><span class="k">                call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Entry in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field cannot be read&quot;</span><span class="p">)</span>
-<a name="ln-107"></a>                <span class="k">return</span>
-<a name="ln-108"></a><span class="k">            end if</span>
-<a name="ln-109"></a><span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">str</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-110"></a><span class="k">                allocate</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-<a name="ln-111"></a>                <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-112"></a>            <span class="k">end if</span>
-<a name="ln-113"></a><span class="k">        end if</span>
-<a name="ln-114"></a>
-<a name="ln-115"></a><span class="k">    end subroutine </span><span class="n">get_child_value_string_list</span>
+<a name="ln-74"></a>    <span class="k">subroutine </span><span class="n">get_child_value_string_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">list</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-75"></a>
+<a name="ln-76"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
+<a name="ln-77"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
+<a name="ln-78"></a>
+<a name="ln-79"></a>        <span class="c">!&gt; Key to read from</span>
+<a name="ln-80"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">key</span>
+<a name="ln-81"></a>
+<a name="ln-82"></a>        <span class="c">!&gt; List of strings to read</span>
+<a name="ln-83"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
+<a name="ln-84"></a>
+<a name="ln-85"></a>        <span class="c">!&gt; Error handling</span>
+<a name="ln-86"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-87"></a>
+<a name="ln-88"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">ilist</span><span class="p">,</span> <span class="n">nlist</span>
+<a name="ln-89"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">children</span>
+<a name="ln-90"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">str</span>
+<a name="ln-91"></a>
+<a name="ln-92"></a>        <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+<a name="ln-93"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">associated</span><span class="p">(</span><span class="n">children</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-94"></a><span class="k">            </span><span class="n">nlist</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
+<a name="ln-95"></a>            <span class="k">allocate</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="n">nlist</span><span class="p">))</span>
+<a name="ln-96"></a>            <span class="k">do </span><span class="n">ilist</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nlist</span>
+<a name="ln-97"></a>                <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">ilist</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-98"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-99"></a><span class="k">                    call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Entry in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field cannot be read&quot;</span><span class="p">)</span>
+<a name="ln-100"></a>                    <span class="k">exit</span>
+<a name="ln-101"></a><span class="k">                end if</span>
+<a name="ln-102"></a><span class="k">                call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="n">ilist</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-103"></a>            <span class="k">end do</span>
+<a name="ln-104"></a><span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-105"></a><span class="k">        else</span>
+<a name="ln-106"></a><span class="k">            call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-107"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-108"></a><span class="k">                call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Entry in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field cannot be read&quot;</span><span class="p">)</span>
+<a name="ln-109"></a>                <span class="k">return</span>
+<a name="ln-110"></a><span class="k">            end if</span>
+<a name="ln-111"></a><span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">str</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-112"></a><span class="k">                allocate</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-113"></a>                <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-114"></a>            <span class="k">end if</span>
+<a name="ln-115"></a><span class="k">        end if</span>
 <a name="ln-116"></a>
-<a name="ln-117"></a>
-<a name="ln-118"></a><span class="k">end module </span><span class="n">fpm_toml</span>
+<a name="ln-117"></a><span class="k">    end subroutine </span><span class="n">get_child_value_string_list</span>
+<a name="ln-118"></a>
+<a name="ln-119"></a>
+<a name="ln-120"></a><span class="k">end module </span><span class="n">fpm_toml</span>
 </pre></div>
 
     </section>
@@ -399,7 +401,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-10 16:32  
+             on 2020-12-10 16:59  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
