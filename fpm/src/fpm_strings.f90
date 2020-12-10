@@ -19,9 +19,14 @@ interface fnv_1a
     procedure :: fnv_1a_string_t
 end interface fnv_1a
 
+interface str_ends_with
+    procedure :: str_ends_with_str
+    procedure :: str_ends_with_any
+end interface str_ends_with
+
 contains
 
-logical function str_ends_with(s, e) result(r)
+logical function str_ends_with_str(s, e) result(r)
     character(*), intent(in) :: s, e
     integer :: n1, n2
     n1 = len(s)-len(e)+1
@@ -31,7 +36,23 @@ logical function str_ends_with(s, e) result(r)
     else
         r = (s(n1:n2) == e)
     end if
-end function str_ends_with
+end function str_ends_with_str
+
+logical function str_ends_with_any(s, e) result(r)
+    character(*), intent(in) :: s
+    character(*), intent(in) :: e(:)
+
+    integer :: i
+    
+    r = .true.
+    do i=1,size(e)
+
+        if (str_ends_with(s,trim(e(i)))) return
+
+    end do
+    r = .false.
+
+end function str_ends_with_any
 
 function f_string(c_string)
     use iso_c_binding
