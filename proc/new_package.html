@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.7% of total for procedures.">72 statements</a>
+    title=" 4.3% of total for procedures.">86 statements</a>
      </li> 
      
      
@@ -178,6 +178,8 @@
       <a class="list-group-item" href="../proc/new_package.html#variable-children">children</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-ii~2">ii</a>
+      
+      <a class="list-group-item" href="../proc/new_package.html#variable-invalid_chars">invalid_chars</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-nn">nn</a>
       
@@ -323,6 +325,8 @@ public subroutine new_package(self, table, error)
       
       <a class="list-group-item" href="../proc/new_package.html#variable-ii~2">ii</a>
       
+      <a class="list-group-item" href="../proc/new_package.html#variable-invalid_chars">invalid_chars</a>
+      
       <a class="list-group-item" href="../proc/new_package.html#variable-nn">nn</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-node">node</a>
@@ -429,6 +433,20 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
+  <td><span class="anchor" id="variable-invalid_chars"></span>character(len=*),</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>invalid_chars</strong></td><td> =</td><td>achar(8)//achar(9)//achar(10)//achar(12)//achar(13)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-nn"></span>integer,</td>
   
   <td>public</td>
@@ -513,6 +531,10 @@ public subroutine new_package(self, table, error)
         <span class="c">!&gt; Error handling</span>
         <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
 
+        <span class="c">! Backspace (8), tabulator (9), newline (10), formfeed (12) and carriage</span>
+        <span class="c">! return (13) are invalid in package names</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">invalid_chars</span> <span class="o">=</span> <span class="p">&amp;</span>
+           <span class="nb">achar</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">//</span> <span class="nb">achar</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span> <span class="o">//</span> <span class="nb">achar</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">//</span> <span class="nb">achar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="o">//</span> <span class="nb">achar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span>
         <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">child</span><span class="p">,</span> <span class="n">node</span>
         <span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">children</span>
         <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">version</span>
@@ -525,6 +547,17 @@ public subroutine new_package(self, table, error)
         <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">           call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Could not retrieve package name&quot;</span><span class="p">)</span>
            <span class="k">return</span>
+<span class="k">        end if</span>
+
+<span class="k">        if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Package name must be a non-empty string&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+<span class="k">        end if</span>
+
+<span class="k">        </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">scan</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">,</span> <span class="n">invalid_chars</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ii</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Package name contains invalid characters&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
 <span class="k">        end if</span>
 
 <span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
@@ -574,6 +607,9 @@ public subroutine new_package(self, table, error)
                 <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
 <span class="k">            end do</span>
 <span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+
+<span class="k">            call </span><span class="n">unique_programs</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">executable</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 <span class="k">        end if</span>
 
 <span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
@@ -590,6 +626,9 @@ public subroutine new_package(self, table, error)
                 <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
 <span class="k">            end do</span>
 <span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+
+<span class="k">            call </span><span class="n">unique_programs</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">test</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 <span class="k">        end if</span>
 
 <span class="k">    end subroutine </span><span class="n">new_package</span>
@@ -614,7 +653,7 @@ public subroutine new_package(self, table, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-10 16:25  
+             on 2020-12-10 16:32  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
