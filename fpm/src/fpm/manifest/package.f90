@@ -45,6 +45,12 @@ module fpm_manifest_package
     public :: package_config_t, new_package
 
 
+    interface unique_programs
+        module procedure :: unique_programs1
+        module procedure :: unique_programs2
+    end interface unique_programs
+
+
     !> Package meta data
     type :: package_config_t
 
@@ -193,6 +199,14 @@ contains
                 if (allocated(error)) exit
             end do
             if (allocated(error)) return
+
+            call unique_programs(self%example, error)
+            if (allocated(error)) return
+
+            if (allocated(self%executable)) then
+                call unique_programs(self%executable, self%example, error)
+                if (allocated(error)) return
+            end if
         end if
 
         call get_value(table, "test", children, requested=.false.)
@@ -350,7 +364,7 @@ contains
 
 
     !> Check whether or not the names in a set of executables are unique
-    subroutine unique_programs(executable, error)
+    subroutine unique_programs1(executable, error)
 
         !> Array of executables
         class(executable_config_t), intent(in) :: executable(:)
@@ -372,7 +386,36 @@ contains
         end do
         if (allocated(error)) return
 
-    end subroutine unique_programs
+    end subroutine unique_programs1
+
+
+    !> Check whether or not the names in a set of executables are unique
+    subroutine unique_programs2(executable_i, executable_j, error)
+
+        !> Array of executables
+        class(executable_config_t), intent(in) :: executable_i(:)
+
+        !> Array of executables
+        class(executable_config_t), intent(in) :: executable_j(:)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i, j
+
+        do i = 1, size(executable_i)
+            do j = 1, size(executable_j)
+                if (executable_i(i)%name == executable_j(j)%name) then
+                    call fatal_error(error, "The program named '"//&
+                        executable_j(j)%name//"' is duplicated. "//&
+                        "Unique program names are required.")
+                    exit
+                end if
+            end do
+        end do
+        if (allocated(error)) return
+
+    end subroutine unique_programs2
 
 
 end module fpm_manifest_package
