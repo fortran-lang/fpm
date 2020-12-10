@@ -92,6 +92,7 @@ data Arguments =
       }
   | Run
       { runRelease :: Bool
+      , runExample :: Bool
       , runCompiler :: FilePath
       , runFlags :: [String]
       , runRunner :: Maybe String
@@ -111,6 +112,7 @@ data TomlSettings = TomlSettings {
       tomlSettingsProjectName :: String
     , tomlSettingsLibrary :: (Maybe Library)
     , tomlSettingsExecutables :: [Executable]
+    , tomlSettingsExamples :: [Executable]
     , tomlSettingsTests :: [Executable]
     , tomlSettingsDependencies :: (Map.Map String Version)
     , tomlSettingsDevDependencies :: (Map.Map String Version)
@@ -122,6 +124,7 @@ data AppSettings = AppSettings {
     , appSettingsBuildPrefix :: String
     , appSettingsLibrary :: (Maybe Library)
     , appSettingsExecutables :: [Executable]
+    , appSettingsExamples :: [Executable]
     , appSettingsTests :: [Executable]
     , appSettingsDependencies :: (Map.Map String Version)
     , appSettingsDevDependencies :: (Map.Map String Version)
@@ -168,15 +171,23 @@ start args = case args of
 app :: Arguments -> AppSettings -> IO ()
 app args settings = case args of
   Build{} -> build settings
-  Run { runTarget = whichOne, runArgs = runArgs, runRunner = runner } -> do
+  Run { runTarget = whichOne, runArgs = runArgs, runRunner = runner, runExample = runExample } -> do
     build settings
     let buildPrefix = appSettingsBuildPrefix settings
     let
-      executableNames = map
-        (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
-          sourceDir </> name
-        )
-        (appSettingsExecutables settings)
+      executableNames = if runExample
+        then
+          map
+          (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+            sourceDir </> name
+          )
+          (appSettingsExamples settings)
+        else
+          map
+          (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name } ->
+            sourceDir </> name
+          )
+          (appSettingsExecutables settings)
     let executables =
           map (buildPrefix </>) $ map (flip (<.>) exe) executableNames
     canonicalExecutables <- mapM makeAbsolute executables
@@ -265,6 +276,7 @@ build settings = do
   let projectName      = appSettingsProjectName settings
   let buildPrefix      = appSettingsBuildPrefix settings
   let executables      = appSettingsExecutables settings
+  let examples         = appSettingsExamples settings
   let tests            = appSettingsTests settings
   mainDependencyTrees <- fetchDependencies (appSettingsDependencies settings)
   builtDependencies   <- buildDependencies buildPrefix
@@ -319,6 +331,29 @@ build settings = do
   devDependencies <-
     fetchExecutableDependencies maybeTree (appSettingsDevDependencies settings)
       >>= buildDependencies buildPrefix compilerSettings
+  mapM_
+    (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name, executableDependencies = dependencies } ->
+      do
+        localDependencies <-
+          fetchExecutableDependencies maybeTree dependencies
+            >>= buildDependencies buildPrefix compilerSettings
+        buildProgram
+          sourceDir
+          (  (map fst executableDepends)
+          ++ (map fst devDependencies)
+          ++ (map fst localDependencies)
+          )
+          [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+          (buildPrefix </> sourceDir)
+          compilerSettings
+          name
+          mainFile
+          (  (map snd executableDepends)
+          ++ (map snd devDependencies)
+          ++ (map snd localDependencies)
+          )
+    )
+    examples
   mapM_
     (\Executable { executableSourceDir = sourceDir, executableMainFile = mainFile, executableName = name, executableDependencies = dependencies } ->
       do
@@ -409,6 +444,10 @@ runArguments =
     <$> switch
           (  long "release"
           <> help "Build with optimizations instead of debugging"
+          )
+    <*> switch
+          (  long "example"
+          <> help "Run example programs instead of applications"
           )
     <*> strOption
           (  long "compiler"
@@ -503,6 +542,8 @@ settingsCodec =
     .=  tomlSettingsLibrary
     <*> Toml.list executableCodec "executable"
     .=  tomlSettingsExecutables
+    <*> Toml.list executableCodec "example"
+    .=  tomlSettingsExamples
     <*> Toml.list executableCodec "test"
     .=  tomlSettingsTests
     <*> Toml.tableMap Toml._KeyString versionCodec "dependencies"
@@ -608,6 +649,7 @@ toml2AppSettings tomlSettings args = do
   executableSettings <- getExecutableSettings
     (tomlSettingsExecutables tomlSettings)
     projectName
+  exampleSettings <- getExampleSettings $ tomlSettingsExamples tomlSettings
   testSettings <- getTestSettings $ tomlSettingsTests tomlSettings
   compilerSettings <- defineCompilerSettings specifiedFlags compiler release
   buildPrefix <- makeBuildPrefix (compilerSettingsCompiler compilerSettings)
@@ -619,6 +661,7 @@ toml2AppSettings tomlSettings args = do
                      , appSettingsBuildPrefix     = buildPrefix
                      , appSettingsLibrary         = librarySettings
                      , appSettingsExecutables     = executableSettings
+                     , appSettingsExamples        = exampleSettings
                      , appSettingsTests           = testSettings
                      , appSettingsDependencies    = dependencies
                      , appSettingsDevDependencies = devDependencies
@@ -724,6 +767,24 @@ getExecutableSettings [] projectName = do
         else return []
     else return []
 getExecutableSettings executables _ = return executables
+
+getExampleSettings :: [Executable] -> IO [Executable]
+getExampleSettings [] = do
+  defaultDirectoryExists <- doesDirectoryExist "example"
+  if defaultDirectoryExists
+    then do
+      defaultMainExists <- doesFileExist ("example" </> "main.f90")
+      if defaultMainExists
+        then return
+          [ Executable { executableSourceDir    = "example"
+                       , executableMainFile     = "main.f90"
+                       , executableName         = "demo"
+                       , executableDependencies = Map.empty
+                       }
+          ]
+        else return []
+    else return []
+getExampleSettings examples = return examples
 
 getTestSettings :: [Executable] -> IO [Executable]
 getTestSettings [] = do

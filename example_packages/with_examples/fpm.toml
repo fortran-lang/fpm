@@ -1,0 +1,7 @@
+name = "with_examples"
+build.auto-examples = false
+
+[[example]]
+name = "demo-prog"
+source-dir = "demo"
+main = "prog.f90"

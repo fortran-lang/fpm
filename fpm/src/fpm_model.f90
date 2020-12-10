@@ -36,7 +36,7 @@ public :: fpm_model_t, srcfile_t, build_target_t, build_target_ptr
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
           FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
-          FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
+          FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST, &
           FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE, &
           FPM_TARGET_OBJECT
 
@@ -66,6 +66,7 @@ integer, parameter :: FPM_SCOPE_DEP = 2
 integer, parameter :: FPM_SCOPE_APP = 3
 !> Module-use scope is library/dependency and test modules
 integer, parameter :: FPM_SCOPE_TEST = 4
+integer, parameter :: FPM_SCOPE_EXAMPLE = 5
 
 
 !> Target type is unknown (ignored)

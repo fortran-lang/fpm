@@ -109,6 +109,17 @@ if errorlevel 1 exit 1
 .\build\gfortran_debug\test\farewell_test
 
 
+cd ..\with_examples
+if errorlevel 1 exit 1
+
+del /q /f build
+%fpm_path% build
+if errorlevel 1 exit 1
+
+.\build\gfortran_debug\app\demo-prog
+if errorlevel 1 exit 1
+
+
 cd ..\auto_discovery_off
 if errorlevel 1 exit 1
 

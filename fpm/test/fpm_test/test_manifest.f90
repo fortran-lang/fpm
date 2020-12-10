@@ -53,9 +53,11 @@ contains
             & new_unittest("test-typeerror", test_test_typeerror, should_fail=.true.), &
             & new_unittest("test-noname", test_test_noname, should_fail=.true.), &
             & new_unittest("test-wrongkey", test_test_wrongkey, should_fail=.true.), &
-            & new_unittest("test-link-string", test_link_string), &
-            & new_unittest("test-link-array", test_link_array), &
-            & new_unittest("test-link-error", test_invalid_link, should_fail=.true.)]
+            & new_unittest("link-string", test_link_string), &
+            & new_unittest("link-array", test_link_array), &
+            & new_unittest("link-error", test_invalid_link, should_fail=.true.), &
+            & new_unittest("example-simple", test_example_simple), &
+            & new_unittest("example-empty", test_example_empty, should_fail=.true.)]
 
     end subroutine collect_manifest
 
@@ -879,6 +881,52 @@ contains
         call new_test(test, table, error)
 
     end subroutine test_test_wrongkey
+
+
+    !> Create a simple example entry
+    subroutine test_example_simple(error)
+        use fpm_manifest_example
+        use fpm_toml, only : new_table, set_value, add_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_table), pointer :: child
+        integer :: stat
+        type(example_config_t) :: example
+
+        call new_table(table)
+        call set_value(table, 'name', '"example"', stat)
+        call set_value(table, 'source-dir', '"demos"', stat)
+        call set_value(table, 'main', '"demo.f90"', stat)
+        call add_table(table, 'dependencies', child, stat)
+
+        call new_example(example, table, error)
+        if (allocated(error)) return
+
+        call check_string(error, example%main, "demo.f90", "Example main")
+        if (allocated(error)) return
+
+    end subroutine test_example_simple
+
+
+    !> Examples cannot be created from empty tables
+    subroutine test_example_empty(error)
+        use fpm_manifest_example
+        use fpm_toml, only : new_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(example_config_t) :: example
+
+        call new_table(table)
+
+        call new_example(example, table, error)
+
+    end subroutine test_example_empty
 
 
     !> Test link options

@@ -310,6 +310,16 @@ contains
         if (allocated(error)) return
       end if
 
+      if (allocated(package%example)) then
+        do ii = 1, size(package%example)
+          if (allocated(package%example(ii)%dependency)) then
+            call self%add(package%example(ii)%dependency, error)
+            if (allocated(error)) exit
+          end if
+        end do
+        if (allocated(error)) return
+      end if
+
       if (allocated(package%test)) then
         do ii = 1, size(package%test)
           if (allocated(package%test(ii)%dependency)) then

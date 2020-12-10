@@ -27,6 +27,8 @@ Every manifest file consists of the following sections:
 - Build configuration:
   - [*auto-tests*](#automatic-target-discovery):
     Toggle automatic discovery of test executables
+  - [*auto-examples*](#automatic-target-discovery):
+    Toggle automatic discovery of example programs
   - [*auto-executables*](#automatic-target-discovery):
     Toggle automatic discovery of executables
   - [*link*](#link-external-libraries):
@@ -260,6 +262,41 @@ executable = [
 ```
 
 
+### Example targets
+
+Example applications for a project are defined as *example* sections.
+If no example section is specified the ``example`` directory is searched for program definitions.
+For explicitly specified examples the *name* entry must always be specified.
+The source directory for each example can be adjusted in the *source-dir* entry.
+Paths for the source directory are given relative to the project root and use ``/`` as path separator on all platforms.
+The source file containing the program body can be specified in the *main* entry.
+
+Examples can have their own dependencies.
+See [specifying dependencies](#specifying-dependencies) for more details.
+
+> Dependencies supported in Bootstrap fpm only
+
+Examples can also specify their own external library dependencies.
+See [external libraries](#link-external-libraries) for more details.
+
+> Linking against libraries is supported in Fortran fpm only
+
+*Example:*
+
+```toml
+[[ example ]]
+name = "demo-app"
+source-dir = "demo"
+main = "program.f90"
+
+[[ example ]]
+name = "example-tool"
+link = "z"
+[example.dependencies]
+helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }
+```
+
+
 ### Test targets
 
 Test targets are Fortran programs defined as *test* sections.
@@ -328,14 +365,15 @@ link = ["blas", "lapack"]
 > Supported in Fortran fpm only
 
 Executables and test can be discovered automatically in their default directories.
-The automatic discovery recursively searches the ``app`` and ``test`` directories for ``program`` definitions and declares them as executable and test targets, respectively.
+The automatic discovery recursively searches the ``app``, ``example``, and ``test`` directories for ``program`` definitions and declares them as executable, example, and test targets, respectively.
 The automatic discovery is enabled by default.
 
-To disable the automatic discovery of targets set the *auto-executables* and *auto-tests* entry to *false*.
+To disable the automatic discovery of targets set the *auto-executables*, *auto-examples*, and *auto-tests* entry to *false*.
 
 ```toml
 [build]
 auto-executables = false
+auto-examples = false
 auto-tests = false
 ```
 
