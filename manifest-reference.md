@@ -27,6 +27,8 @@ Every manifest file consists of the following sections:
 - Build configuration:
   - [*auto-tests*](#automatic-target-discovery):
     Toggle automatic discovery of test executables
+  - [*auto-examples*](#automatic-target-discovery):
+    Toggle automatic discovery of example programs
   - [*auto-executables*](#automatic-target-discovery):
     Toggle automatic discovery of executables
   - [*link*](#link-external-libraries):
@@ -363,14 +365,15 @@ link = ["blas", "lapack"]
 > Supported in Fortran fpm only
 
 Executables and test can be discovered automatically in their default directories.
-The automatic discovery recursively searches the ``app`` and ``test`` directories for ``program`` definitions and declares them as executable and test targets, respectively.
+The automatic discovery recursively searches the ``app``, ``example``, and ``test`` directories for ``program`` definitions and declares them as executable, example, and test targets, respectively.
 The automatic discovery is enabled by default.
 
-To disable the automatic discovery of targets set the *auto-executables* and *auto-tests* entry to *false*.
+To disable the automatic discovery of targets set the *auto-executables*, *auto-examples*, and *auto-tests* entry to *false*.
 
 ```toml
 [build]
 auto-executables = false
+auto-examples = false
 auto-tests = false
 ```
 
