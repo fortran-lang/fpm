@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.1% of total for procedures.">40 statements</a>
+    title=" 2.0% of total for procedures.">40 statements</a>
      </li> 
      
      
@@ -177,9 +177,9 @@
       
       <a class="list-group-item" href="../proc/add_executable_sources.html#variable-exe_source">exe_source</a>
       
-      <a class="list-group-item" href="../proc/add_executable_sources.html#variable-i~6">i</a>
+      <a class="list-group-item" href="../proc/add_executable_sources.html#variable-i~4">i</a>
       
-      <a class="list-group-item" href="../proc/add_executable_sources.html#variable-j~3">j</a>
+      <a class="list-group-item" href="../proc/add_executable_sources.html#variable-j~2">j</a>
       
     </div>
   </div>
@@ -229,6 +229,10 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
 
 
     
+    <p>Add to <code>sources</code> using the executable and test entries in the manifest and
+ applies any executable-specific overrides such as <code>executable%name</code>.
+ Adds all sources (including modules) from each <code>executable%source_dir</code></p>
+    
 
     <h3>Arguments</h3>
     
@@ -253,7 +257,7 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
   <td></td>
   
   <td>allocatable, target</td><td>::</td>
-  <td><strong>sources</strong>(:)</td><td></td>
+  <td><strong>sources</strong>(:)</td><td><p>List of <code><a href="../type/srcfile_t.html">srcfile_t</a></code> objects to append to. Allocated if not allocated</p></td>
   
 </tr>
 
@@ -268,7 +272,7 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>executables</strong>(:)</td><td></td>
+  <td><strong>executables</strong>(:)</td><td><p>List of <code><a href="../type/executable_config_t.html">executable_config_t</a></code> entries from manifest</p></td>
   
 </tr>
 
@@ -283,7 +287,7 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>scope</strong></td><td></td>
+  <td><strong>scope</strong></td><td><p>Scope to apply to the discovered sources: either <code>FPM_SCOPE_APP</code> or <code>FPM_SCOPE_TEST</code>, see <a href="../module/fpm_model.html">fpm_model</a></p></td>
   
 </tr>
 
@@ -298,7 +302,7 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>auto_discover</strong></td><td></td>
+  <td><strong>auto_discover</strong></td><td><p>If <code>.false.</code> only executables and tests specified in the manifest are added to <code>sources</code></p></td>
   
 </tr>
 
@@ -308,12 +312,12 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~3"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
   <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td></td>
+  <td><strong>error</strong></td><td><p>Error handling</p></td>
   
 </tr>
 
@@ -343,9 +347,9 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
       
       <a class="list-group-item" href="../proc/add_executable_sources.html#variable-exe_source">exe_source</a>
       
-      <a class="list-group-item" href="../proc/add_executable_sources.html#variable-i~6">i</a>
+      <a class="list-group-item" href="../proc/add_executable_sources.html#variable-i~4">i</a>
       
-      <a class="list-group-item" href="../proc/add_executable_sources.html#variable-j~3">j</a>
+      <a class="list-group-item" href="../proc/add_executable_sources.html#variable-j~2">j</a>
       
     </div>
   </div>
@@ -431,7 +435,7 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~6"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~4"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -445,7 +449,7 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
   
 <tr>
   
-  <td><span class="anchor" id="variable-j~3"></span>integer,</td>
+  <td><span class="anchor" id="variable-j~2"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -477,13 +481,15 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">executables</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">auto_discover</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-    <span class="c">! Include sources from any directories specified </span>
-    <span class="c">!  in [[executable]] entries and apply any customisations</span>
-    <span class="c">!  </span>
+    <span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
     <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
+    <span class="c">!&gt; List of `[[executable_config_t]]` entries from manifest</span>
     <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
+    <span class="c">!&gt; Scope to apply to the discovered sources: either `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`, see [[fpm_model]]</span>
     <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">scope</span>
+    <span class="c">!&gt; If `.false.` only executables and tests specified in the manifest are added to `sources`</span>
     <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">auto_discover</span>
+    <span class="c">!&gt; Error handling</span>
     <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
 
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
@@ -562,7 +568,7 @@ public subroutine add_executable_sources(sources, executables, scope, auto_disco
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-09 16:17  
+             on 2020-12-10 10:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.0% of total for modules and submodules.">63 statements</a>
+    title=" 1.9% of total for modules and submodules.">62 statements</a>
      </li> 
      
      
@@ -250,7 +250,25 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    
+    <h1 id="the-fpm-package-model">The fpm package model</h1>
+<p>Defines the fpm model data types which encapsulate all information 
+ required to correctly build a package and its dependencies.</p>
+<p>The process (see <code><a href="../proc/build_model.html">build_model</a></code>) for generating a valid <code><a href="../module/fpm_model.html">fpm_model</a></code> is as follows:</p>
+<ol>
+<li>Source files are discovered (<a href="../module/fpm_sources.html">fpm_sources</a>) and parsed (<a href="../module/fpm_source_parsing.html">fpm_source_parsing</a>)</li>
+<li>A list of build targets is generated (<code><a href="../proc/targets_from_sources.html">targets_from_sources</a></code>) from the sources</li>
+<li>Inter-target dependencies are resolved (<code><a href="../proc/resolve_module_dependencies.html">resolve_module_dependencies</a></code>) based on modules used and provided</li>
+<li>Object link lists are generated for link targets (executables and libraries) (<code><a href="../proc/resolve_target_linking.html">resolve_target_linking</a></code>)</li>
+</ol>
+<p>Once a valid <code><a href="../module/fpm_model.html">fpm_model</a></code> has been constructed, it may be passed to <code><a href="../module/fpm_backend.html#proc-build_package">build_package</a></code> to
+ build the package.</p>
+<h3 id="enumerations">Enumerations</h3>
+<p><strong>Source type:</strong> <code>FPM_UNIT_*</code>
+ Describes the type of source file — determines build target generation</p>
+<p><strong>Source scope:</strong> <code>FPM_SCOPE_*</code>
+ Describes the scoping rules for using modules — controls module dependency resolution</p>
+<p><strong>Target type:</strong> <code>FPM_TARGET_*</code>
+ Describes the type of build target — determines backend build rules</p>
       <br>
     
   
@@ -395,7 +413,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_SCOPE_APP</strong></td><td> =</td><td>3</td><td></td>
+  <td><strong>FPM_SCOPE_APP</strong></td><td> =</td><td>3</td><td><p>Module-use scope is library/dependency and app modules</p></td>
   
 </tr>
 
@@ -409,7 +427,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_SCOPE_DEP</strong></td><td> =</td><td>2</td><td></td>
+  <td><strong>FPM_SCOPE_DEP</strong></td><td> =</td><td>2</td><td><p>Module-use scope is library/dependency modules only</p></td>
   
 </tr>
 
@@ -423,7 +441,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_SCOPE_LIB</strong></td><td> =</td><td>1</td><td></td>
+  <td><strong>FPM_SCOPE_LIB</strong></td><td> =</td><td>1</td><td><p>Module-use scope is library/dependency modules only</p></td>
   
 </tr>
 
@@ -437,7 +455,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_SCOPE_TEST</strong></td><td> =</td><td>4</td><td></td>
+  <td><strong>FPM_SCOPE_TEST</strong></td><td> =</td><td>4</td><td><p>Module-use scope is library/dependency and test modules</p></td>
   
 </tr>
 
@@ -451,7 +469,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_SCOPE_UNKNOWN</strong></td><td> =</td><td>-1</td><td></td>
+  <td><strong>FPM_SCOPE_UNKNOWN</strong></td><td> =</td><td>-1</td><td><p>Source has no module-use scope</p></td>
   
 </tr>
 
@@ -465,7 +483,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_TARGET_ARCHIVE</strong></td><td> =</td><td>2</td><td></td>
+  <td><strong>FPM_TARGET_ARCHIVE</strong></td><td> =</td><td>2</td><td><p>Target type is library archive</p></td>
   
 </tr>
 
@@ -479,7 +497,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_TARGET_EXECUTABLE</strong></td><td> =</td><td>1</td><td></td>
+  <td><strong>FPM_TARGET_EXECUTABLE</strong></td><td> =</td><td>1</td><td><p>Target type is executable</p></td>
   
 </tr>
 
@@ -493,7 +511,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_TARGET_OBJECT</strong></td><td> =</td><td>3</td><td></td>
+  <td><strong>FPM_TARGET_OBJECT</strong></td><td> =</td><td>3</td><td><p>Target type is compiled object</p></td>
   
 </tr>
 
@@ -507,7 +525,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_TARGET_UNKNOWN</strong></td><td> =</td><td>-1</td><td></td>
+  <td><strong>FPM_TARGET_UNKNOWN</strong></td><td> =</td><td>-1</td><td><p>Target type is unknown (ignored)</p></td>
   
 </tr>
 
@@ -521,7 +539,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_CHEADER</strong></td><td> =</td><td>6</td><td></td>
+  <td><strong>FPM_UNIT_CHEADER</strong></td><td> =</td><td>6</td><td><p>Source type is c header file</p></td>
   
 </tr>
 
@@ -535,7 +553,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_CSOURCE</strong></td><td> =</td><td>5</td><td></td>
+  <td><strong>FPM_UNIT_CSOURCE</strong></td><td> =</td><td>5</td><td><p>Source type is c source file</p></td>
   
 </tr>
 
@@ -549,7 +567,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_MODULE</strong></td><td> =</td><td>2</td><td></td>
+  <td><strong>FPM_UNIT_MODULE</strong></td><td> =</td><td>2</td><td><p>Source type is fortran module</p></td>
   
 </tr>
 
@@ -563,7 +581,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_PROGRAM</strong></td><td> =</td><td>1</td><td></td>
+  <td><strong>FPM_UNIT_PROGRAM</strong></td><td> =</td><td>1</td><td><p>Source type is fortran program</p></td>
   
 </tr>
 
@@ -577,7 +595,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_SUBMODULE</strong></td><td> =</td><td>3</td><td></td>
+  <td><strong>FPM_UNIT_SUBMODULE</strong></td><td> =</td><td>3</td><td><p>Source type is fortran submodule</p></td>
   
 </tr>
 
@@ -591,7 +609,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_SUBPROGRAM</strong></td><td> =</td><td>4</td><td></td>
+  <td><strong>FPM_UNIT_SUBPROGRAM</strong></td><td> =</td><td>4</td><td><p>Source type is fortran subprogram</p></td>
   
 </tr>
 
@@ -605,7 +623,7 @@
   
   <td>public,</td>
   <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_UNKNOWN</strong></td><td> =</td><td>-1</td><td></td>
+  <td><strong>FPM_UNIT_UNKNOWN</strong></td><td> =</td><td>-1</td><td><p>Source type unknown</p></td>
   
 </tr>
 
@@ -632,6 +650,9 @@
     
   </h3></div>
   <div class="panel-body">
+    
+    
+    <p>Wrapper type for constructing arrays of <code><a href="../type/build_target_t.html">build_target_t</a></code> pointers</p>
     
      
      <h4>Components</h4>
@@ -677,6 +698,9 @@
   </h3></div>
   <div class="panel-body">
     
+    
+    <p>Type describing a generated build target</p>
+    
      
      <h4>Components</h4>
     
@@ -699,7 +723,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>dependencies</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>dependencies</strong>(:)</td><td></td><td></td><td><p>Resolved build dependencies</p></td>
   
 </tr>
 
@@ -713,7 +737,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>digest_cached</strong></td><td></td><td></td><td></td>
+  <td><strong>digest_cached</strong></td><td></td><td></td><td><p>Previous source file hash</p></td>
   
 </tr>
 
@@ -727,7 +751,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
   
 </tr>
 
@@ -741,7 +765,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>link_objects</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>link_objects</strong>(:)</td><td></td><td></td><td><p>Objects needed to link this target</p></td>
   
 </tr>
 
@@ -755,7 +779,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>output_file</strong></td><td></td><td></td><td></td>
+  <td><strong>output_file</strong></td><td></td><td></td><td><p>File path of build target object relative to cwd</p></td>
   
 </tr>
 
@@ -769,7 +793,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>schedule</strong></td><td> =</td><td>-1</td><td></td>
+  <td><strong>schedule</strong></td><td> =</td><td>-1</td><td><p>Targets in the same schedule group are guaranteed to be independent</p></td>
   
 </tr>
 
@@ -783,7 +807,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>skip</strong></td><td> =</td><td>.false.</td><td></td>
+  <td><strong>skip</strong></td><td> =</td><td>.false.</td><td><p>Flag set if build target will be skipped (not built)</p></td>
   
 </tr>
 
@@ -797,7 +821,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>sorted</strong></td><td> =</td><td>.false.</td><td></td>
+  <td><strong>sorted</strong></td><td> =</td><td>.false.</td><td><p>Flag set if build target is sorted for building</p></td>
   
 </tr>
 
@@ -811,7 +835,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>source</strong></td><td></td><td></td><td></td>
+  <td><strong>source</strong></td><td></td><td></td><td><p>Primary source for this build target</p></td>
   
 </tr>
 
@@ -825,7 +849,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>target_type</strong></td><td> =</td><td>FPM_TARGET_UNKNOWN</td><td></td>
+  <td><strong>target_type</strong></td><td> =</td><td>FPM_TARGET_UNKNOWN</td><td><p>Target type</p></td>
   
 </tr>
 
@@ -839,7 +863,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>touched</strong></td><td> =</td><td>.false.</td><td></td>
+  <td><strong>touched</strong></td><td> =</td><td>.false.</td><td><p>Flag set when first visited to check for circular dependencies</p></td>
   
 </tr>
 
@@ -860,6 +884,10 @@
     
   </h3></div>
   <div class="panel-body">
+    
+    
+    <p>Type describing everything required to build a package
+ and its dependencies.</p>
     
      
      <h4>Components</h4>
@@ -883,7 +911,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>fortran_compile_flags</strong></td><td></td><td></td><td></td>
+  <td><strong>fortran_compile_flags</strong></td><td></td><td></td><td><p>Command line flags passed to fortran for compilation</p></td>
   
 </tr>
 
@@ -897,7 +925,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>fortran_compiler</strong></td><td></td><td></td><td></td>
+  <td><strong>fortran_compiler</strong></td><td></td><td></td><td><p>Command line name to invoke fortran compiler</p></td>
   
 </tr>
 
@@ -911,7 +939,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>library_file</strong></td><td></td><td></td><td></td>
+  <td><strong>library_file</strong></td><td></td><td></td><td><p>Output file for library archive</p></td>
   
 </tr>
 
@@ -925,7 +953,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>link_flags</strong></td><td></td><td></td><td></td>
+  <td><strong>link_flags</strong></td><td></td><td></td><td><p>Command line flags pass for linking</p></td>
   
 </tr>
 
@@ -939,7 +967,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
   
 </tr>
 
@@ -953,7 +981,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>output_directory</strong></td><td></td><td></td><td></td>
+  <td><strong>output_directory</strong></td><td></td><td></td><td><p>Base directory for build</p></td>
   
 </tr>
 
@@ -967,7 +995,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>package_name</strong></td><td></td><td></td><td></td>
+  <td><strong>package_name</strong></td><td></td><td></td><td><p>Name of package</p></td>
   
 </tr>
 
@@ -981,7 +1009,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>sources</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>sources</strong>(:)</td><td></td><td></td><td><p>Array of sources</p></td>
   
 </tr>
 
@@ -995,7 +1023,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>targets</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>targets</strong>(:)</td><td></td><td></td><td><p>Array of targets with module-dependencies resolved</p></td>
   
 </tr>
 
@@ -1016,6 +1044,9 @@
     
   </h3></div>
   <div class="panel-body">
+    
+    
+    <p>Type for describing a source file</p>
     
      
      <h4>Components</h4>
@@ -1039,7 +1070,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>digest</strong></td><td></td><td></td><td></td>
+  <td><strong>digest</strong></td><td></td><td></td><td><p>Current hash</p></td>
   
 </tr>
 
@@ -1053,7 +1084,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>exe_name</strong></td><td></td><td></td><td></td>
+  <td><strong>exe_name</strong></td><td></td><td></td><td><p>Name of executable for FPM_UNIT_PROGRAM</p></td>
   
 </tr>
 
@@ -1067,7 +1098,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>file_name</strong></td><td></td><td></td><td></td>
+  <td><strong>file_name</strong></td><td></td><td></td><td><p>File path relative to cwd</p></td>
   
 </tr>
 
@@ -1081,21 +1112,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>include_dependencies</strong>(:)</td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-is_test"></span>logical,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>is_test</strong></td><td> =</td><td>.false.</td><td></td>
+  <td><strong>include_dependencies</strong>(:)</td><td></td><td></td><td><p>Files INCLUDEd by this source file</p></td>
   
 </tr>
 
@@ -1109,7 +1126,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
   
 </tr>
 
@@ -1123,7 +1140,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>modules_provided</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>modules_provided</strong>(:)</td><td></td><td></td><td><p>Modules provided by this source file (lowerstring)</p></td>
   
 </tr>
 
@@ -1137,7 +1154,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>modules_used</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>modules_used</strong>(:)</td><td></td><td></td><td><p>Modules USEd by this source file (lowerstring)</p></td>
   
 </tr>
 
@@ -1151,7 +1168,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>unit_scope</strong></td><td> =</td><td>FPM_SCOPE_UNKNOWN</td><td></td>
+  <td><strong>unit_scope</strong></td><td> =</td><td>FPM_SCOPE_UNKNOWN</td><td><p>Target module-use scope</p></td>
   
 </tr>
 
@@ -1165,7 +1182,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>unit_type</strong></td><td> =</td><td>FPM_UNIT_UNKNOWN</td><td></td>
+  <td><strong>unit_type</strong></td><td> =</td><td>FPM_UNIT_UNKNOWN</td><td><p>Type of source unit</p></td>
   
 </tr>
 
@@ -1204,7 +1221,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-09 16:17  
+             on 2020-12-10 10:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

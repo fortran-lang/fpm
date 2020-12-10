@@ -1,5 +1,30 @@
+!># The fpm package model
+!>
+!> Defines the fpm model data types which encapsulate all information 
+!> required to correctly build a package and its dependencies.
+!>
+!> The process (see `[[build_model(subroutine)]]`) for generating a valid `[[fpm_model]]` is as follows:
+!>
+!> 1. Source files are discovered ([[fpm_sources]]) and parsed ([[fpm_source_parsing]])
+!> 2. A list of build targets is generated (`[[targets_from_sources]]`) from the sources
+!> 3. Inter-target dependencies are resolved (`[[resolve_module_dependencies]]`) based on modules used and provided
+!> 4. Object link lists are generated for link targets (executables and libraries) (`[[resolve_target_linking]]`)
+!>
+!> Once a valid `[[fpm_model]]` has been constructed, it may be passed to `[[fpm_backend:build_package]]` to
+!> build the package.
+!>
+!>### Enumerations
+!>
+!> __Source type:__ `FPM_UNIT_*`
+!> Describes the type of source file — determines build target generation
+!>
+!> __Source scope:__ `FPM_SCOPE_*`
+!> Describes the scoping rules for using modules — controls module dependency resolution
+!>
+!> __Target type:__ `FPM_TARGET_*`
+!> Describes the type of build target — determines backend build rules
+!>
 module fpm_model
-! Definition and validation of the backend model
 use iso_fortran_env, only: int64
 use fpm_strings, only: string_t
 implicit none
@@ -14,101 +39,154 @@ public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE, &
           FPM_TARGET_OBJECT
 
+!> Source type unknown
 integer, parameter :: FPM_UNIT_UNKNOWN = -1
+!> Source type is fortran program
 integer, parameter :: FPM_UNIT_PROGRAM = 1
+!> Source type is fortran module
 integer, parameter :: FPM_UNIT_MODULE = 2
+!> Source type is fortran submodule
 integer, parameter :: FPM_UNIT_SUBMODULE = 3
+!> Source type is fortran subprogram
 integer, parameter :: FPM_UNIT_SUBPROGRAM = 4
+!> Source type is c source file
 integer, parameter :: FPM_UNIT_CSOURCE = 5
+!> Source type is c header file
 integer, parameter :: FPM_UNIT_CHEADER = 6
 
+
+!> Source has no module-use scope
 integer, parameter :: FPM_SCOPE_UNKNOWN = -1
+!> Module-use scope is library/dependency modules only
 integer, parameter :: FPM_SCOPE_LIB = 1
+!> Module-use scope is library/dependency modules only
 integer, parameter :: FPM_SCOPE_DEP = 2
+!> Module-use scope is library/dependency and app modules
 integer, parameter :: FPM_SCOPE_APP = 3
+!> Module-use scope is library/dependency and test modules
 integer, parameter :: FPM_SCOPE_TEST = 4
 
+
+!> Target type is unknown (ignored)
 integer, parameter :: FPM_TARGET_UNKNOWN = -1
+!> Target type is executable
 integer, parameter :: FPM_TARGET_EXECUTABLE = 1
+!> Target type is library archive
 integer, parameter :: FPM_TARGET_ARCHIVE = 2
+!> Target type is compiled object
 integer, parameter :: FPM_TARGET_OBJECT = 3
 
+
+!> Type for describing a source file
 type srcfile_t
-    ! Type for encapsulating a source file 
-    !  and it's metadata
+    !> File path relative to cwd
     character(:), allocatable :: file_name
-        ! File path relative to cwd
+
+    !> Name of executable for FPM_UNIT_PROGRAM
     character(:), allocatable :: exe_name
-        ! Name of executable for FPM_UNIT_PROGRAM
+
+    !> Target module-use scope
     integer :: unit_scope = FPM_SCOPE_UNKNOWN
-        ! app/test/lib/dependency
-    logical :: is_test = .false.
-        ! Is executable a test?
+
+    !> Modules provided by this source file (lowerstring)
     type(string_t), allocatable :: modules_provided(:)
-        ! Modules provided by this source file (lowerstring)
+
+    !> Type of source unit
     integer :: unit_type = FPM_UNIT_UNKNOWN
-        ! Type of program unit
+
+    !>  Modules USEd by this source file (lowerstring)
     type(string_t), allocatable :: modules_used(:)
-        ! Modules USEd by this source file (lowerstring)
+
+    !> Files INCLUDEd by this source file
     type(string_t), allocatable :: include_dependencies(:)
-        ! Files INCLUDEd by this source file
+
+    !> Native libraries to link against
     type(string_t), allocatable :: link_libraries(:)
-        ! Native libraries to link against
+
+    !> Current hash
     integer(int64) :: digest
-        ! Current hash
+
 end type srcfile_t
 
+
+!> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
-    ! For constructing arrays of build_target_t pointers
+
     type(build_target_t), pointer :: ptr => null()
+
 end type build_target_ptr
 
+
+!> Type describing a generated build target
 type build_target_t
+
+    !> File path of build target object relative to cwd
     character(:), allocatable :: output_file
-        ! File path of build target object relative to cwd
+
+    !> Primary source for this build target
     type(srcfile_t), allocatable :: source
-        ! Primary source for this build target
+
+    !> Resolved build dependencies
     type(build_target_ptr), allocatable :: dependencies(:)
-        ! Resolved build dependencies
+
+    !> Target type
     integer :: target_type = FPM_TARGET_UNKNOWN
+
+    !> Native libraries to link against
     type(string_t), allocatable :: link_libraries(:)
-        ! Native libraries to link against
+
+    !> Objects needed to link this target
     type(string_t), allocatable :: link_objects(:)
-        ! Objects needed to link this target
-
+    
+    !> Flag set when first visited to check for circular dependencies
     logical :: touched = .false.
-        ! Flag set when first visited to check for circular dependencies
+    
+    !> Flag set if build target is sorted for building
     logical :: sorted = .false.
-        ! Flag set if build target is sorted for building
-    logical :: skip = .false.
-        ! Flag set if build target will be skipped (not built)
 
+    !> Flag set if build target will be skipped (not built)
+    logical :: skip = .false.
+
+    !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
-        ! Targets in the same schedule group are guaranteed to be independent
+
+    !> Previous source file hash
     integer(int64), allocatable :: digest_cached
-        ! Previous hash
 
 end type build_target_t
 
+
+!> Type describing everything required to build a package
+!> and its dependencies.
 type :: fpm_model_t
+
+    !> Name of package
     character(:), allocatable :: package_name
-        ! Name of package
+
+    !> Array of sources
     type(srcfile_t), allocatable :: sources(:)
-        ! Array of sources
+
+    !> Array of targets with module-dependencies resolved
     type(build_target_ptr), allocatable :: targets(:)
-        ! Array of targets with module-dependencies resolved
+
+    !> Command line name to invoke fortran compiler
     character(:), allocatable :: fortran_compiler
-        ! Command line name to invoke fortran compiler
+
+    !> Command line flags passed to fortran for compilation
     character(:), allocatable :: fortran_compile_flags
-        ! Command line flags passed to fortran for compilation
+
+    !> Command line flags pass for linking
     character(:), allocatable :: link_flags
-        ! Command line flags pass for linking
+
+    !> Output file for library archive
     character(:), allocatable :: library_file
-        ! Output file for library archive
+
+    !> Base directory for build
     character(:), allocatable :: output_directory
-        ! Base directory for build
+
+    !> Native libraries to link against
     type(string_t), allocatable :: link_libraries(:)
-        ! Native libraries to link against
+    
 end type fpm_model_t
 
 end module fpm_model

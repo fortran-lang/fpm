@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 8.1% of total for derived types.</p>Including implementation: 12 statements,  2.2% of total for derived types.">12 statements</a>
+    title="<p> 7.4% of total for derived types.</p>Including implementation: 11 statements,  2.0% of total for derived types.">11 statements</a>
      </li> 
      
      
@@ -181,8 +181,6 @@
       
       <a class="list-group-item" href="../type/srcfile_t.html#variable-include_dependencies">include_dependencies</a>
       
-      <a class="list-group-item" href="../type/srcfile_t.html#variable-is_test">is_test</a>
-      
       <a class="list-group-item" href="../type/srcfile_t.html#variable-link_libraries~3">link_libraries</a>
       
       <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_provided">modules_provided</a>
@@ -231,7 +229,7 @@
     
     <div class="col-md-9" id='text'>
       <h2>type, public :: srcfile_t</h2>
-    
+    <p>Type for describing a source file</p>
     
     
     
@@ -256,8 +254,6 @@
       <a class="list-group-item" href="../type/srcfile_t.html#variable-file_name">file_name</a>
       
       <a class="list-group-item" href="../type/srcfile_t.html#variable-include_dependencies">include_dependencies</a>
-      
-      <a class="list-group-item" href="../type/srcfile_t.html#variable-is_test">is_test</a>
       
       <a class="list-group-item" href="../type/srcfile_t.html#variable-link_libraries~3">link_libraries</a>
       
@@ -327,7 +323,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>digest</strong></td><td></td><td></td><td></td>
+  <td><strong>digest</strong></td><td></td><td></td><td><p>Current hash</p></td>
   
 </tr>
 
@@ -341,7 +337,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>exe_name</strong></td><td></td><td></td><td></td>
+  <td><strong>exe_name</strong></td><td></td><td></td><td><p>Name of executable for FPM_UNIT_PROGRAM</p></td>
   
 </tr>
 
@@ -355,7 +351,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>file_name</strong></td><td></td><td></td><td></td>
+  <td><strong>file_name</strong></td><td></td><td></td><td><p>File path relative to cwd</p></td>
   
 </tr>
 
@@ -369,21 +365,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>include_dependencies</strong>(:)</td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-is_test"></span>logical,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>is_test</strong></td><td> =</td><td>.false.</td><td></td>
+  <td><strong>include_dependencies</strong>(:)</td><td></td><td></td><td><p>Files INCLUDEd by this source file</p></td>
   
 </tr>
 
@@ -397,7 +379,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
   
 </tr>
 
@@ -411,7 +393,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>modules_provided</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>modules_provided</strong>(:)</td><td></td><td></td><td><p>Modules provided by this source file (lowerstring)</p></td>
   
 </tr>
 
@@ -425,7 +407,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>modules_used</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>modules_used</strong>(:)</td><td></td><td></td><td><p>Modules USEd by this source file (lowerstring)</p></td>
   
 </tr>
 
@@ -439,7 +421,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>unit_scope</strong></td><td> =</td><td>FPM_SCOPE_UNKNOWN</td><td></td>
+  <td><strong>unit_scope</strong></td><td> =</td><td>FPM_SCOPE_UNKNOWN</td><td><p>Target module-use scope</p></td>
   
 </tr>
 
@@ -453,7 +435,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>unit_type</strong></td><td> =</td><td>FPM_UNIT_UNKNOWN</td><td></td>
+  <td><strong>unit_type</strong></td><td> =</td><td>FPM_UNIT_UNKNOWN</td><td><p>Type of source unit</p></td>
   
 </tr>
 
@@ -474,28 +456,33 @@
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
     <div class="highlight"><pre><span></span><span class="k">type </span><span class="n">srcfile_t</span>
-    <span class="c">! Type for encapsulating a source file </span>
-    <span class="c">!  and it&#39;s metadata</span>
+    <span class="c">!&gt; File path relative to cwd</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_name</span>
-        <span class="c">! File path relative to cwd</span>
+
+    <span class="c">!&gt; Name of executable for FPM_UNIT_PROGRAM</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">exe_name</span>
-        <span class="c">! Name of executable for FPM_UNIT_PROGRAM</span>
+
+    <span class="c">!&gt; Target module-use scope</span>
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit_scope</span> <span class="o">=</span> <span class="n">FPM_SCOPE_UNKNOWN</span>
-        <span class="c">! app/test/lib/dependency</span>
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_test</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-        <span class="c">! Is executable a test?</span>
+
+    <span class="c">!&gt; Modules provided by this source file (lowerstring)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">modules_provided</span><span class="p">(:)</span>
-        <span class="c">! Modules provided by this source file (lowerstring)</span>
+
+    <span class="c">!&gt; Type of source unit</span>
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_UNKNOWN</span>
-        <span class="c">! Type of program unit</span>
+
+    <span class="c">!&gt;  Modules USEd by this source file (lowerstring)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">modules_used</span><span class="p">(:)</span>
-        <span class="c">! Modules USEd by this source file (lowerstring)</span>
+
+    <span class="c">!&gt; Files INCLUDEd by this source file</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">include_dependencies</span><span class="p">(:)</span>
-        <span class="c">! Files INCLUDEd by this source file</span>
+
+    <span class="c">!&gt; Native libraries to link against</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_libraries</span><span class="p">(:)</span>
-        <span class="c">! Native libraries to link against</span>
+
+    <span class="c">!&gt; Current hash</span>
     <span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">)</span> <span class="kd">::</span> <span class="n">digest</span>
-        <span class="c">! Current hash</span>
+
 <span class="k">end type </span><span class="n">srcfile_t</span>
 </pre></div>
 
@@ -517,7 +504,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-09 16:17  
+             on 2020-12-10 10:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

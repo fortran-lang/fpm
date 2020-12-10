@@ -1,4 +1,30 @@
-!> Implements the native fpm build backend
+!># Build backend
+!> Uses a valid `[[fpm_model]]` instance to schedule and execute the
+!> compilation and linking of package targets.
+!> 
+!> The package build process (`[[build_package]]`) comprises three steps:
+!>
+!> 1. __Target sorting:__ topological sort of the target dependency graph (`[[sort_target]]`)
+!> 2. __Target scheduling:__ group targets into schedule regions based on the sorting (`[[schedule_targets]]`)
+!> 3. __Target building:__ generate targets by compilation or linking
+!> 
+!> @note If compiled with OpenMP, targets will be build in parallel where possible.
+!>
+!>### Incremental compilation
+!> The backend process supports *incremental* compilation whereby targets are not 
+!> re-compiled if their corresponding dependencies have not been modified.
+!> 
+!> - Source-based targets (*i.e.* objects) are not re-compiled if the corresponding source
+!>   file is unmodified AND all of the target dependencies are not marked for re-compilation
+!>
+!> - Link targets (*i.e.* executables and libraries) are not re-compiled if the 
+!>   target output file already exists AND all of the target dependencies are not marked for
+!>   re-compilation
+!>
+!> Source file modification is determined by a file digest (hash) which is calculated during
+!> the source parsing phase ([[fpm_source_parsing]]) and cached to disk after a target is 
+!> successfully generated.
+!>
 module fpm_backend
 
 use fpm_environment, only: run
@@ -59,6 +85,12 @@ end subroutine build_package
 !> 
 !> Checks disk-cached source hashes to determine if objects are
 !>  up-to-date. Up-to-date sources are tagged as skipped.
+!>
+!> On completion, `target` should either be marked as 
+!> sorted (`target%sorted=.true.`) or skipped (`target%skip=.true.`)
+!>
+!> If `target` is marked as sorted, `target%schedule` should be an 
+!> integer greater than zero indicating the region for scheduling
 !>
 recursive subroutine sort_target(target)
     type(build_target_t), intent(inout), target :: target

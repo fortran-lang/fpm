@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>new_version &ndash; Fortran-lang/fpm</title>
+    <title>fpm_source_parsing &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,8 +110,8 @@
     
   
   <div class="row">
-    <h1>new_version
-   <small>Interface</small>
+    <h1>fpm_source_parsing 
+    <small>Module</small>
     
     </h1>
     
@@ -128,24 +128,22 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.2% of total for procedures.</p>Including implementation: 44 statements,  2.2% of total for procedures.">4 statements</a>
+    title=" 7.2% of total for modules and submodules.">232 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/versioning.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_source_parsing.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/versioning.f90.html'>versioning.f90</a></li>
-    
-     <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
+     <li><a href='../sourcefile/fpm_source_parsing.f90.html'>fpm_source_parsing.f90</a></li>
     
   
-     <li class="active">new_version</li>
+     <li class="active">fpm_source_parsing</li>
   </ol>
 </div>
 </div>
@@ -160,7 +158,7 @@
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-      
+    
 <div id="sidebar">
   
 <h3>Contents</h3>
@@ -178,25 +176,25 @@
 
 
 
-
-
-
-
-
-
-
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
-  <div id="modprocs-0" class="panel-collapse collapse">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
+  <div id="funcs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/new_version.html#moduleprocedure-new_version_from_string">new_version_from_string</a>
+      <a class="list-group-item" href="../module/fpm_source_parsing.html#proc-parse_c_source">parse_c_source</a>
       
-      <a class="list-group-item" href="../interface/new_version.html#moduleprocedure-new_version_from_int">new_version_from_int</a>
+      <a class="list-group-item" href="../module/fpm_source_parsing.html#proc-parse_f_source">parse_f_source</a>
       
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
 
 
 
@@ -206,14 +204,54 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>public interface new_version</h2>
-   
-     
-     
+    <h1 id="parsing-of-package-source-files">Parsing of package source files</h1>
+<p>This module exposes two functions, <code><a href="../proc/parse_f_source.html">parse_f_source</a></code> and <code><a href="../proc/parse_c_source.html">parse_c_source</a></code>,
+ which perform a rudimentary parsing of fortran and c source files
+ in order to extract information required for module dependency tracking.</p>
+<p>Both functions additionally calculate and store a file digest (hash) which
+ is used by the backend (<a href="../module/fpm_backend.html">fpm_backend</a>) to skip compilation of unmodified sources.</p>
+<p>Both functions return an instance of the <a href="../type/srcfile_t.html">srcfile_t</a> type. </p>
+<p>For more information, please read the documentation for each function:</p>
+<ul>
+<li><code><a href="../proc/parse_f_source.html">parse_f_source</a></code></li>
+<li><code><a href="../proc/parse_c_source.html">parse_c_source</a></code></li>
+</ul>
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+    
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+    
+    <li><a href='../module/fpm_model.html'>fpm_model</a></li>
+    
+    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      </ul>
+    </div>
     
 
-     <section class="visible-xs visible-sm hidden-md">
-       
+    
+    
+
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
 <h3>Contents</h3>
  
 
@@ -229,21 +267,14 @@
 
 
 
-
-
-
-
-
-
-
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
-  <div id="modprocs-1" class="panel-collapse collapse">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
+  <div id="funcs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/new_version.html#moduleprocedure-new_version_from_string">new_version_from_string</a>
+      <a class="list-group-item" href="../module/fpm_source_parsing.html#proc-parse_c_source">parse_c_source</a>
       
-      <a class="list-group-item" href="../interface/new_version.html#moduleprocedure-new_version_from_int">new_version_from_int</a>
+      <a class="list-group-item" href="../module/fpm_source_parsing.html#proc-parse_f_source">parse_f_source</a>
       
     </div>
   </div>
@@ -252,20 +283,36 @@
 
 
 
-     </section>
-     <br class="visible-xs visible-sm hidden-md">
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
      
-  
-
-  
-
-  
-   <h2>Module Procedures</h2>
-   
+    <section>
+    <h2>Functions</h2>
+    
     
   <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-new_version_from_string"></span><h3>
-private subroutine new_version_from_string(self, string, error)
+  <div class="panel-heading codesum"><span class="anchor" id="proc-parse_c_source"></span><h3>
+public function <a href='../proc/parse_c_source.html'>parse_c_source</a>(c_filename, error) result(c_source)
     
     
    
@@ -276,7 +323,11 @@ private subroutine new_version_from_string(self, string, error)
 
 
 
-<p>Create a new version from a string</p>
+
+
+
+
+<p>Parsing of c source files</p><a href="../proc/parse_c_source.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -297,27 +348,12 @@ private subroutine new_version_from_string(self, string, error)
   
 <tr>
   
-  <td><span class="anchor" ></span>type(<a href='../type/version_t.html'>version_t</a>),</td>
-  <td>intent(out)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the versioning data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
   <td><span class="anchor" ></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>string</strong></td><td><p>String describing the version information</p></td>
+  <td><strong>c_filename</strong></td><td></td>
   
 </tr>
 
@@ -332,7 +368,7 @@ private subroutine new_version_from_string(self, string, error)
   <td></td>
   
   <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td><p>Error handling</p></td>
+  <td><strong>error</strong></td><td></td>
   
 </tr>
 
@@ -343,14 +379,23 @@ private subroutine new_version_from_string(self, string, error)
     
     
 
+  
+  
+  
+  
+     <h4>Return Value <small>type(<a href='../type/srcfile_t.html'>srcfile_t</a>)
+  </small></h4>
+  
+    
+
   </div>
   </div>
 
-   
+    
     
   <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-new_version_from_int"></span><h3>
-private subroutine new_version_from_int(self, num)
+  <div class="panel-heading codesum"><span class="anchor" id="proc-parse_f_source"></span><h3>
+public function <a href='../proc/parse_f_source.html'>parse_f_source</a>(f_filename, error) result(f_source)
     
     
    
@@ -361,7 +406,11 @@ private subroutine new_version_from_int(self, num)
 
 
 
-<p>Create a new version from a string</p>
+
+
+
+
+<p>Parsing of free-form fortran source files</p><a href="../proc/parse_f_source.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -382,12 +431,12 @@ private subroutine new_version_from_int(self, num)
   
 <tr>
   
-  <td><span class="anchor" ></span>type(<a href='../type/version_t.html'>version_t</a>),</td>
-  <td>intent(out)</td>
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the versioning data</p></td>
+  <td><strong>f_filename</strong></td><td></td>
   
 </tr>
 
@@ -397,12 +446,12 @@ private subroutine new_version_from_int(self, num)
   
 <tr>
   
-  <td><span class="anchor" ></span>integer,</td>
-  <td>intent(in)</td>
+  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td>intent(out),</td>
   <td></td>
   
-  <td></td><td>::</td>
-  <td><strong>num</strong>(:)</td><td><p>Subversion numbers to define version data</p></td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>error</strong></td><td></td>
   
 </tr>
 
@@ -413,16 +462,30 @@ private subroutine new_version_from_int(self, num)
     
     
 
+  
+  
+  
+  
+     <h4>Return Value <small>type(<a href='../type/srcfile_t.html'>srcfile_t</a>)
+  </small></h4>
+  
+    
+
   </div>
   </div>
 
-   
-     
+    
+    </section>
+    <br>
+    
 
- </div>
-</div>
+    
+    
+    
+    </div>
+  </div>
 
-
+  
     <hr>    
     </div> <!-- /container -->
     <footer>

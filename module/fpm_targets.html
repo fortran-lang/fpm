@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.6% of total for modules and submodules.">181 statements</a>
+    title=" 5.7% of total for modules and submodules.">184 statements</a>
      </li> 
      
      
@@ -176,18 +176,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
-  <div id="funcs-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../module/fpm_targets.html#proc-find_module_dependency">find_module_dependency</a>
-      
-    </div>
-  </div>
-</div>
-
-
 
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
@@ -222,7 +210,22 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    
+    <h1 id="build-target-handling">Build target handling</h1>
+<p>This module handles the construction of the build target list
+ from the sources list (<code><a href="../proc/targets_from_sources.html">targets_from_sources</a></code>), the 
+ resolution of module-dependencies between build targets
+ (<code><a href="../proc/resolve_module_dependencies.html">resolve_module_dependencies</a></code>), and the enumeration of
+ objects required for link targets (<code><a href="../proc/resolve_target_linking.html">resolve_target_linking</a></code>).</p>
+<p>A build target (<code><a href="../type/build_target_t.html">build_target_t</a></code>) is a file to be generated
+ by the backend (compilation and linking).</p>
+<p></p><div class="alert alert-info" role="alert"><h4>Note</h4><p>The current implementation is ignorant to the existence of
+ module files (<code>.mod</code>,<code>.smod</code>). Dependencies arising from modules
+ are based on the corresponding object files (<code>.o</code>) only.</p></div>
+<p>For more information, please read the documentation for the procedures:</p>
+<ul>
+<li><code><a href="../proc/targets_from_sources.html">targets_from_sources</a></code></li>
+<li><code><a href="../proc/resolve_module_dependencies.html">resolve_module_dependencies</a></code></li>
+</ul>
       <br>
     
   
@@ -276,18 +279,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
-  <div id="funcs-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../module/fpm_targets.html#proc-find_module_dependency">find_module_dependency</a>
-      
-    </div>
-  </div>
-</div>
-
-
 
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
@@ -332,102 +323,6 @@
     
     
     
-     
-    <section>
-    <h2>Functions</h2>
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-find_module_dependency"></span><h3>
-public function <a href='../proc/find_module_dependency.html'>find_module_dependency</a>(targets, module_name, include_dir) result(target_ptr)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>target</td><td>::</td>
-  <td><strong>targets</strong>(:)</td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>module_name</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>include_dir</strong></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  
-  
-  
-  
-     <h4>Return Value <small>type(<a href='../type/build_target_t.html'>build_target_t</a>),
-  pointer</small></h4>
-  
-    
-
-  </div>
-  </div>
-
-    
-    </section>
-    <br>
     
 
     
@@ -526,7 +421,7 @@ public subroutine <a href='../proc/add_target.html'>add_target</a>(targets, type
 
 
 
-<p>Add new target to target list</p>
+<p>Allocate a new target and append to target list</p>
     
     <h4>Arguments</h4>
     
@@ -638,6 +533,15 @@ public subroutine <a href='../proc/resolve_module_dependencies.html'>resolve_mod
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Add dependencies to source-based targets (<code>FPM_TARGET_OBJECT</code>) 
+ based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -763,6 +667,14 @@ public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sourc
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Constructs a list of build targets from a list of source files</p><a href="../proc/targets_from_sources.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -788,7 +700,7 @@ public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sourc
   <td></td>
   
   <td>target</td><td>::</td>
-  <td><strong>model</strong></td><td></td>
+  <td><strong>model</strong></td><td><p>The package model within which to construct the target list</p></td>
   
 </tr>
 
@@ -803,7 +715,7 @@ public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sourc
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>sources</strong>(:)</td><td></td>
+  <td><strong>sources</strong>(:)</td><td><p>The list of sources from which to construct the target list</p></td>
   
 </tr>
 
@@ -838,7 +750,7 @@ public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sourc
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-09 16:17  
+             on 2020-12-10 10:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

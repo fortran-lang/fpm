@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 8.7% of total for derived types.</p>Including implementation: 13 statements,  2.4% of total for derived types.">13 statements</a>
+    title="<p> 8.8% of total for derived types.</p>Including implementation: 13 statements,  2.4% of total for derived types.">13 statements</a>
      </li> 
      
      
@@ -233,7 +233,7 @@
     
     <div class="col-md-9" id='text'>
       <h2>type, public :: build_target_t</h2>
-    
+    <p>Type describing a generated build target</p>
     
     
     
@@ -331,7 +331,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>dependencies</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>dependencies</strong>(:)</td><td></td><td></td><td><p>Resolved build dependencies</p></td>
   
 </tr>
 
@@ -345,7 +345,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>digest_cached</strong></td><td></td><td></td><td></td>
+  <td><strong>digest_cached</strong></td><td></td><td></td><td><p>Previous source file hash</p></td>
   
 </tr>
 
@@ -359,7 +359,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
   
 </tr>
 
@@ -373,7 +373,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>link_objects</strong>(:)</td><td></td><td></td><td></td>
+  <td><strong>link_objects</strong>(:)</td><td></td><td></td><td><p>Objects needed to link this target</p></td>
   
 </tr>
 
@@ -387,7 +387,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>output_file</strong></td><td></td><td></td><td></td>
+  <td><strong>output_file</strong></td><td></td><td></td><td><p>File path of build target object relative to cwd</p></td>
   
 </tr>
 
@@ -401,7 +401,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>schedule</strong></td><td> =</td><td>-1</td><td></td>
+  <td><strong>schedule</strong></td><td> =</td><td>-1</td><td><p>Targets in the same schedule group are guaranteed to be independent</p></td>
   
 </tr>
 
@@ -415,7 +415,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>skip</strong></td><td> =</td><td>.false.</td><td></td>
+  <td><strong>skip</strong></td><td> =</td><td>.false.</td><td><p>Flag set if build target will be skipped (not built)</p></td>
   
 </tr>
 
@@ -429,7 +429,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>sorted</strong></td><td> =</td><td>.false.</td><td></td>
+  <td><strong>sorted</strong></td><td> =</td><td>.false.</td><td><p>Flag set if build target is sorted for building</p></td>
   
 </tr>
 
@@ -443,7 +443,7 @@
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>source</strong></td><td></td><td></td><td></td>
+  <td><strong>source</strong></td><td></td><td></td><td><p>Primary source for this build target</p></td>
   
 </tr>
 
@@ -457,7 +457,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>target_type</strong></td><td> =</td><td>FPM_TARGET_UNKNOWN</td><td></td>
+  <td><strong>target_type</strong></td><td> =</td><td>FPM_TARGET_UNKNOWN</td><td><p>Target type</p></td>
   
 </tr>
 
@@ -471,7 +471,7 @@
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>touched</strong></td><td> =</td><td>.false.</td><td></td>
+  <td><strong>touched</strong></td><td> =</td><td>.false.</td><td><p>Flag set when first visited to check for circular dependencies</p></td>
   
 </tr>
 
@@ -492,29 +492,39 @@
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
     <div class="highlight"><pre><span></span><span class="k">type </span><span class="n">build_target_t</span>
+
+    <span class="c">!&gt; File path of build target object relative to cwd</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">output_file</span>
-        <span class="c">! File path of build target object relative to cwd</span>
+
+    <span class="c">!&gt; Primary source for this build target</span>
     <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">source</span>
-        <span class="c">! Primary source for this build target</span>
+
+    <span class="c">!&gt; Resolved build dependencies</span>
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependencies</span><span class="p">(:)</span>
-        <span class="c">! Resolved build dependencies</span>
+
+    <span class="c">!&gt; Target type</span>
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">target_type</span> <span class="o">=</span> <span class="n">FPM_TARGET_UNKNOWN</span>
+
+    <span class="c">!&gt; Native libraries to link against</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_libraries</span><span class="p">(:)</span>
-        <span class="c">! Native libraries to link against</span>
+
+    <span class="c">!&gt; Objects needed to link this target</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_objects</span><span class="p">(:)</span>
-        <span class="c">! Objects needed to link this target</span>
-
+    
+    <span class="c">!&gt; Flag set when first visited to check for circular dependencies</span>
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">touched</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-        <span class="c">! Flag set when first visited to check for circular dependencies</span>
+    
+    <span class="c">!&gt; Flag set if build target is sorted for building</span>
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">sorted</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-        <span class="c">! Flag set if build target is sorted for building</span>
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">skip</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-        <span class="c">! Flag set if build target will be skipped (not built)</span>
 
+    <span class="c">!&gt; Flag set if build target will be skipped (not built)</span>
+    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">skip</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+
+    <span class="c">!&gt; Targets in the same schedule group are guaranteed to be independent</span>
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">schedule</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="c">! Targets in the same schedule group are guaranteed to be independent</span>
+
+    <span class="c">!&gt; Previous source file hash</span>
     <span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">digest_cached</span>
-        <span class="c">! Previous hash</span>
 
 <span class="k">end type </span><span class="n">build_target_t</span>
 </pre></div>
@@ -537,7 +547,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-09 16:17  
+             on 2020-12-10 10:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
