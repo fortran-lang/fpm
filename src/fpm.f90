@@ -7,8 +7,8 @@ use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: run
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
-                    FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
-                    FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
+                    FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
+                    FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST, &
                     FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_compiler, only: add_compile_flag_defaults
 
@@ -86,6 +86,15 @@ subroutine build_model(model, settings, package, error)
         end if
 
     end if
+    if (is_dir('example') .and. package%build%auto_examples) then
+        call add_sources_from_dir(model%sources,'example', FPM_SCOPE_EXAMPLE, &
+                                   with_executables=.true., error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
     if (is_dir('test') .and. package%build%auto_tests) then
         call add_sources_from_dir(model%sources,'test', FPM_SCOPE_TEST, &
                                    with_executables=.true., error=error)
@@ -98,6 +107,16 @@ subroutine build_model(model, settings, package, error)
     if (allocated(package%executable)) then
         call add_executable_sources(model%sources, package%executable, FPM_SCOPE_APP, &
                                      auto_discover=package%build%auto_executables, &
+                                     error=error)
+
+        if (allocated(error)) then
+            return
+        end if
+
+    end if
+    if (allocated(package%example)) then
+        call add_executable_sources(model%sources, package%example, FPM_SCOPE_EXAMPLE, &
+                                     auto_discover=package%build%auto_examples, &
                                      error=error)
 
         if (allocated(error)) then
@@ -205,6 +224,7 @@ subroutine cmd_run(settings,test)
     type(string_t), allocatable :: executables(:)
     type(build_target_t), pointer :: exe_target
     type(srcfile_t), pointer :: exe_source
+    integer :: run_scope
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -216,6 +236,12 @@ subroutine cmd_run(settings,test)
     if (allocated(error)) then
         print '(a)', error%message
         error stop 1
+    end if
+
+    if (test) then
+       run_scope = FPM_SCOPE_TEST
+    else
+       run_scope = merge(FPM_SCOPE_EXAMPLE, FPM_SCOPE_APP, settings%example)
     end if
 
     ! Enumerate executable targets to run
@@ -231,8 +257,7 @@ subroutine cmd_run(settings,test)
 
             exe_source => exe_target%dependencies(1)%ptr%source
 
-            if (exe_source%unit_scope == &
-                merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then
+            if (exe_source%unit_scope == run_scope) then
 
                 col_width = max(col_width,len(basename(exe_target%output_file))+2)
 
@@ -295,8 +320,7 @@ subroutine cmd_run(settings,test)
 
                 exe_source => exe_target%dependencies(1)%ptr%source
 
-                if (exe_source%unit_scope == &
-                    merge(FPM_SCOPE_TEST,FPM_SCOPE_APP,test)) then
+                if (exe_source%unit_scope == run_scope) then
 
                     write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
                                         & [character(len=col_width) :: basename(exe_target%output_file)]

@@ -67,6 +67,7 @@ type, extends(fpm_build_settings)  :: fpm_run_settings
     character(len=ibug),allocatable :: name(:)
     character(len=:),allocatable :: args
     character(len=:),allocatable :: runner
+    logical :: example
 end type
 
 type, extends(fpm_run_settings)  :: fpm_test_settings
@@ -142,6 +143,7 @@ contains
             & --target " " &
             & --list F &
             & --release F&
+            & --example F&
             & --runner " " &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --verbose F&
@@ -166,6 +168,7 @@ contains
             & args=remaining,&
             & build_name=val_build,&
             & compiler=val_compiler, &
+            & example=lget('example'), &
             & list=lget('list'),&
             & name=names,&
             & runner=val_runner,&
@@ -334,6 +337,7 @@ contains
             & args=remaining, &
             & build_name=val_build, &
             & compiler=val_compiler, &
+            & example=.false., &
             & list=lget('list'), &
             & name=names, &
             & runner=val_runner, &
@@ -359,7 +363,7 @@ contains
             call set_args('&
             & --list F&
             & --verbose F&
-            ', help_fpm, version_text)
+            &', help_fpm, version_text)
             ! Note: will not get here if --version or --usage or --help
             ! is present on commandline
             help_text=help_usage
@@ -451,7 +455,7 @@ contains
    ' new NAME [--lib|--src] [--app] [--test] [--backfill]                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
+   ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list] [--example]    ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
@@ -629,17 +633,21 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm run [[--target] NAME(s)][--release][--compiler COMPILER_NAME]     ', &
-    '         [--runner "CMD"] [--list][-- ARGS]                            ', &
+    '         [--runner "CMD"] [--example] [--list][-- ARGS]                ', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     ' Run applications you have built in your fpm(1) project.               ', &
+    ' By default applications specified in as "executable" in your package  ', &
+    ' manifest are used, alternatively also demonstration programs under    ', &
+    ' "example" can be used with this subcommand.                           ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
     ' --target NAME(s)  optional list of specific names to execute.         ', &
     '                   The default is to run all the applications in app/  ', &
     '                   or the programs listed in the "fpm.toml" file.      ', &
+    ' --example  run example programs instead of applications               ', &
     ' --release  selects the optimized build instead of the debug           ', &
     '            build.                                                     ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
@@ -657,10 +665,14 @@ contains
     '                                                                       ', &
     '  # run default programs in /app or as specified in "fpm.toml"         ', &
     '  fpm run                                                              ', &
-
+    '                                                                       ', &
     '  # run default programs in /app or as specified in "fpm.toml"         ', &
     '  # using the compiler command "f90".                                  ', &
     '  fpm run --compiler f90                                               ', &
+    '                                                                       ', &
+    '  # run example and demonstration programs instead of the default      ', &
+    '  # application programs (specified in "fpm.toml")                     ', &
+    '  fpm run --example                                                    ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
     '  fpm run mytest -- -x 10 -y 20 --title "my title line"                ', &

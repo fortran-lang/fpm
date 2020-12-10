@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.8% of total for source files.">184 statements</a>
+    title=" 4.6% of total for source files.">184 statements</a>
      </li> 
      
      
@@ -364,7 +364,7 @@
 <a name="ln-99"></a>                        <span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">&amp;</span>
 <a name="ln-100"></a>                        <span class="p">)</span>
 <a name="ln-101"></a>            
-<a name="ln-102"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_APP</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-102"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="p">[</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">]))</span> <span class="k">then</span>
 <a name="ln-103"></a><span class="k">                call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,&amp;</span>
 <a name="ln-104"></a>                            <span class="n">link_libraries</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">link_libraries</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-105"></a>                            <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -416,7 +416,7 @@
 <a name="ln-151"></a>
 <a name="ln-152"></a><span class="k">        select case</span><span class="p">(</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span><span class="p">)</span>
 <a name="ln-153"></a>
-<a name="ln-154"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">FPM_SCOPE_APP</span><span class="p">)</span>
+<a name="ln-154"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">)</span>
 <a name="ln-155"></a>            <span class="n">object_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="n">object_file</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;.o&#39;</span>
 <a name="ln-156"></a>
 <a name="ln-157"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">FPM_SCOPE_TEST</span><span class="p">)</span>
@@ -523,8 +523,8 @@
 <a name="ln-258"></a>                    <span class="k">cycle</span>
 <a name="ln-259"></a><span class="k">                end if</span>
 <a name="ln-260"></a><span class="k">            </span>
-<a name="ln-261"></a><span class="k">                if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_APP</span> <span class="p">.</span><span class="nb">OR</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-262"></a>                    <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_TEST</span> <span class="p">)</span> <span class="k">then</span>
+<a name="ln-261"></a><span class="k">                if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="p">&amp;</span>
+<a name="ln-262"></a>                    <span class="p">[</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span><span class="p">]))</span> <span class="k">then</span>
 <a name="ln-263"></a><span class="k">                    </span><span class="n">dep</span><span class="p">%</span><span class="n">ptr</span> <span class="o">=&gt;</span> <span class="p">&amp;</span>
 <a name="ln-264"></a>                        <span class="n">find_module_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-265"></a>                                            <span class="n">include_dir</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">))</span>
@@ -689,7 +689,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-10 16:59  
+             on 2020-12-10 17:46  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
