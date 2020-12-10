@@ -41,6 +41,7 @@ public :: fpm_cmd_settings, &
           fpm_new_settings, &
           fpm_run_settings, &
           fpm_test_settings, &
+          fpm_update_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
@@ -74,6 +75,13 @@ end type
 type, extends(fpm_cmd_settings)  :: fpm_install_settings
 end type
 
+!> Settings for interacting and updating with project dependencies
+type, extends(fpm_cmd_settings)  :: fpm_update_settings
+    character(len=ibug),allocatable :: name(:)
+    logical :: fetch_only
+    logical :: clean
+end type
+
 character(len=:),allocatable :: name
 character(len=:),allocatable :: os_type
 character(len=ibug),allocatable :: names(:) 
@@ -82,11 +90,11 @@ character(len=:),allocatable :: tnames(:)
 character(len=:), allocatable :: version_text(:)
 character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
-                 & help_text(:), help_install(:), help_help(:), &
+                 & help_text(:), help_install(:), help_help(:), help_update(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',     'new',   'build',  'run',     &
-&  'test',  'runner',  'list',  'help',   'version'  ]
+&  'test',  'runner',  'update','list',   'help',   'version'  ]
 
 character(len=:), allocatable :: val_runner, val_build, val_compiler
 
@@ -267,6 +275,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_runner]
                 case('list   ' )
                    help_text=[character(len=widest) :: help_text, help_list]
+                case('update ' )
+                   help_text=[character(len=widest) :: help_text, help_update]
                 case('help   ' )
                    help_text=[character(len=widest) :: help_text, help_help]
                 case('version' )
@@ -328,6 +338,21 @@ contains
             & name=names, &
             & runner=val_runner, &
             & verbose=lget('verbose') )
+
+        case('update')
+            call set_args('--fetch-only F --verbose F --clean F', &
+                help_update, version_text)
+
+            if( size(unnamed) .gt. 1 )then
+                names=unnamed(2:)
+            else
+                names=[character(len=len(names)) :: ]
+            endif
+
+            allocate(fpm_update_settings :: cmd_settings)
+            cmd_settings=fpm_update_settings(name=names, &
+                fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
+                clean=lget('clean'))
 
         case default
 
@@ -414,6 +439,7 @@ contains
    '  new       Create a new Fortran package directory with sample files    ', &
    '  run       Run the local package application programs                  ', &
    '  test      Run the test programs                                       ', &
+   '  update    Update and manage project dependencies                      ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
@@ -423,6 +449,7 @@ contains
    ' build [--compiler COMPILER_NAME] [--release] [--list]                          ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [--lib|--src] [--app] [--test] [--backfill]                           ', &
+   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
@@ -522,6 +549,7 @@ contains
     '                                                                       ', &
     '  + build Compile the packages into the "build/" directory.            ', &
     '  + new   Create a new Fortran package directory with sample files.    ', &
+    '  + update  Update the project dependencies.                           ', &
     '  + run   Run the local package binaries. defaults to all binaries for ', &
     '          that release.                                                ', &
     '  + test  Run the tests.                                               ', &
@@ -532,6 +560,7 @@ contains
     '                                                                       ', &
     '     build [--release] [--list] [--compiler COMPILER_NAME]             ', &
     '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
+    '     update [NAME(s)] [--fetch-only] [--clean]                         ', &
     '     run|test [[--target] NAME(s)] [--release] [--list]                ', &
     '              [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]    ', &
     '     help [NAME(s)]                                                    ', &
@@ -831,6 +860,25 @@ contains
     ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &
     '                                                                       ', &
     ' fpm test tst1 tst2 --release # run production version of two tests    ', &
+    '' ]
+    help_update=[character(len=80) :: &
+    'NAME', &
+    ' fpm-update(1) - manage project dependencies', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
+    '', &
+    'DESCRIPTION', &
+    ' Manage and update project dependencies. If no dependency names are', &
+    ' provided all the dependencies are updated automatically.', &
+    '', &
+    'OPTIONS', &
+    ' --fetch-only  Only fetch dependencies, do not update existing projects', &
+    ' --clean       Do not use previous dependency cache', &
+    ' --verbose     Show additional printout', &
+    '', &
+    'SEE ALSO', &
+    ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
     '' ]
     help_install=[character(len=80) :: &
     ' fpm(1) subcommand "install"                                           ', &
