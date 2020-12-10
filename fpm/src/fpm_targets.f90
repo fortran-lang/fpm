@@ -1,3 +1,23 @@
+!># Build target handling
+!>
+!> This module handles the construction of the build target list
+!> from the sources list (`[[targets_from_sources]]`), the 
+!> resolution of module-dependencies between build targets
+!> (`[[resolve_module_dependencies]]`), and the enumeration of
+!> objects required for link targets (`[[resolve_target_linking]]`).
+!>
+!> A build target (`[[build_target_t]]`) is a file to be generated
+!> by the backend (compilation and linking).
+!> 
+!> @note The current implementation is ignorant to the existence of
+!> module files (`.mod`,`.smod`). Dependencies arising from modules
+!> are based on the corresponding object files (`.o`) only.
+!>
+!> For more information, please read the documentation for the procedures:
+!>
+!> - `[[targets_from_sources]]`
+!> - `[[resolve_module_dependencies]]`
+!>
 module fpm_targets
 use fpm_error, only: error_t, fatal_error
 use fpm_model
@@ -6,10 +26,39 @@ use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.)
 implicit none
 
+private
+public targets_from_sources, resolve_module_dependencies
+public resolve_target_linking, add_target, add_dependency
+
 contains
 
+!> Constructs a list of build targets from a list of source files
+!>
+!>### Source-target mapping
+!>
+!> One compiled object target (`FPM_TARGET_OBJECT`) is generated for each
+!> non-executable source file (`FPM_UNIT_MODULE`,`FPM_UNIT_SUBMODULE`,
+!>  `FPM_UNIT_SUBPROGRAM`,`FPM_UNIT_CSOURCE`).
+!>
+!> If any source file has scope `FPM_SCOPE_LIB` (*i.e.* there are library sources)
+!> then the first target in the target list will be a library archive target
+!> (`FPM_TARGET_ARCHIVE`). The archive target will have a dependency on every
+!> compiled object target corresponding to a library source file.
+!>
+!> One compiled object target (`FPM_TARGET_OBJECT`) and one executable target (`FPM_TARGET_EXECUTABLE`) is
+!> generated for each exectuable source file (`FPM_UNIT_PROGRAM`). The exectuble target
+!> always has a dependency on the corresponding compiled object target. If there
+!> is a library, then the executable target has an additional dependency on the library
+!> archive target.
+!>
+!> @note Inter-object dependencies based on modules used and provided are generated separately
+!> in `[[resolve_module_dependencies]]` after all targets have been enumerated.
 subroutine targets_from_sources(model,sources)
+
+    !> The package model within which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
+
+    !> The list of sources from which to construct the target list
     type(srcfile_t), intent(in) :: sources(:)
 
     integer :: i
@@ -118,7 +167,7 @@ subroutine targets_from_sources(model,sources)
 end subroutine targets_from_sources
 
 
-!> Add new target to target list
+!> Allocate a new target and append to target list
 subroutine add_target(targets,type,output_file,source,link_libraries)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     integer, intent(in) :: type
@@ -168,10 +217,29 @@ subroutine add_dependency(target, dependency)
 end subroutine add_dependency
 
 
+!> Add dependencies to source-based targets (`FPM_TARGET_OBJECT`) 
+!> based on any modules used by the corresponding source file.
+!>
+!>### Source file scoping
+!> 
+!> Source files are assigned a scope of either `FPM_SCOPE_LIB`, 
+!> `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`. The scope controls which
+!> modules may be used by the source file:
+!> 
+!> - Library sources (`FPM_SCOPE_LIB`) may only use modules
+!>   also with library scope. This includes library modules
+!>   from dependencies.
+!>
+!> - Executable sources (`FPM_SCOPE_APP`,`FPM_SCOPE_TEST`) may use
+!>   library modules (including dependencies) as well as any modules
+!>   corresponding to source files __in the same directory__ as the 
+!>   executable source.
+!>
+!> @warning If a module used by a source file cannot be resolved to
+!> a source file in the package of the correct scope, then a __fatal error__
+!> is returned by the procedure and model construction fails.
+!>
 subroutine resolve_module_dependencies(targets,error)
-    ! After enumerating all source files: resolve file dependencies
-    !  by searching on module names
-    !
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(error_t), allocatable, intent(out) :: error
 
