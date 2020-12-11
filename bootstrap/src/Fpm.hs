@@ -749,7 +749,6 @@ defineCompilerSettings specifiedFlags compiler release
               [ "-fp-model", "precise"
               , "-pc", "64"
               , "-align", "all"
-              , "-coarray=single"
               , "-error-limit", "1"
               , "-reentrancy", "threaded"
               , "-nogen-interfaces"
@@ -759,7 +758,6 @@ defineCompilerSettings specifiedFlags compiler release
             else
               [ "-warn", "all"
               , "-check:all:noarg_temp_created"
-              , "-coarray=single"
               , "-error-limit", "1"
               , "-O0"
               , "-g"
