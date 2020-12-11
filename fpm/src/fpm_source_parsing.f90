@@ -197,8 +197,14 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 if (mod_name == 'procedure' .or. &
                     mod_name == 'subroutine' .or. &
-                    mod_name == 'function') then
-                    ! Ignore these cases
+                    mod_name == 'function' .or. &
+                    scan(mod_name,'=(')>0 ) then
+                    ! Ignore these cases:
+                    ! module procedure *
+                    ! module function *
+                    ! module subroutine *
+                    ! module =*
+                    ! module (i)
                     cycle
                 end if
 
@@ -275,7 +281,19 @@ function parse_f_source(f_filename,error) result(f_source)
 
             ! Detect if contains a program
             !  (no modules allowed after program def)
-            if (index(adjustl(lower(file_lines(i)%s)),'program') == 1) then
+            if (index(adjustl(lower(file_lines(i)%s)),'program ') == 1) then
+
+                temp_string = lower(split_n(file_lines(i)%s,n=2,delims=' ',stat=stat))
+                if (stat == 0) then
+                    
+                    if (scan(temp_string,'=(')>0 ) then
+                        ! Ignore:
+                        ! program =*
+                        ! program (i) =*
+                        cycle
+                    end if
+
+                end if
 
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
