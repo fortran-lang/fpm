@@ -71,6 +71,7 @@ import           System.Exit                    ( ExitCode(..)
                                                 , exitWith
                                                 )
 import           System.Process                 ( readProcess
+                                                , readProcessWithExitCode
                                                 , system
                                                 )
 import           Toml                           ( TomlCodec
@@ -928,7 +929,23 @@ makeBuildPrefix :: FilePath -> [String] -> IO FilePath
 makeBuildPrefix compiler flags = do
   -- TODO Figure out what other info should be part of this
   --      Probably version, and make sure to not include path to the compiler
-  versionInfo <- readProcess compiler ["--version"] []
+  versionInfo <- do
+    (exitCode, stdout, stderr) <- readProcessWithExitCode compiler
+                                                          ["--version"]
+                                                          []
+    case exitCode of
+      ExitSuccess -> case stdout of
+        "" -> return stderr -- Guess this compiler outputs version info to stderr instead?
+        _  -> return stdout
+      _ -> do -- guess this compiler doesn't support the --version option. let's try -version
+        (exitCode, stdout, stderr) <- readProcessWithExitCode compiler
+                                                              ["-version"]
+                                                              []
+        case exitCode of
+          ExitSuccess -> case stdout of
+            "" -> return stderr -- Guess this compiler outputs version info to stderr instead?
+            _  -> return stdout
+          _ -> return "" -- Don't know how to get version info, we'll let defineCompilerSettings report it as unsupported
   let compilerName = last (splitDirectories compiler)
   let versionHash  = abs (hash versionInfo)
   let flagsHash    = abs (hash flags)
