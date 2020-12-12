@@ -16,7 +16,7 @@
 !>
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error
-use fpm_strings, only: string_t, split, lower, str_ends_with, fnv_1a
+use fpm_strings, only: string_t, string_cat, split, lower, str_ends_with, fnv_1a
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -85,6 +85,9 @@ function parse_f_source(f_filename,error) result(f_source)
     open(newunit=fh,file=f_filename,status='old')
     file_lines = read_lines(fh)
     close(fh)
+
+    ! Ignore empty files, returned as FPM_UNIT_UNKNOW
+    if (len_trim(string_cat(file_lines,' ')) < 1) return
 
     f_source%digest = fnv_1a(file_lines)
 
@@ -197,8 +200,14 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 if (mod_name == 'procedure' .or. &
                     mod_name == 'subroutine' .or. &
-                    mod_name == 'function') then
-                    ! Ignore these cases
+                    mod_name == 'function' .or. &
+                    scan(mod_name,'=(')>0 ) then
+                    ! Ignore these cases:
+                    ! module procedure *
+                    ! module function *
+                    ! module subroutine *
+                    ! module =*
+                    ! module (i)
                     cycle
                 end if
 
@@ -275,7 +284,19 @@ function parse_f_source(f_filename,error) result(f_source)
 
             ! Detect if contains a program
             !  (no modules allowed after program def)
-            if (index(adjustl(lower(file_lines(i)%s)),'program') == 1) then
+            if (index(adjustl(lower(file_lines(i)%s)),'program ') == 1) then
+
+                temp_string = lower(split_n(file_lines(i)%s,n=2,delims=' ',stat=stat))
+                if (stat == 0) then
+                    
+                    if (scan(temp_string,'=(')>0 ) then
+                        ! Ignore:
+                        ! program =*
+                        ! program (i) =*
+                        cycle
+                    end if
+
+                end if
 
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
@@ -370,6 +391,12 @@ function parse_c_source(c_filename,error) result(c_source)
     file_lines = read_lines(fh)
     close(fh)
 
+    ! Ignore empty files, returned as FPM_UNIT_UNKNOW
+    if (len_trim(string_cat(file_lines,' ')) < 1) then
+        c_source%unit_type = FPM_UNIT_UNKNOWN
+        return
+    end if
+    
     c_source%digest = fnv_1a(file_lines)
     
     do pass = 1,2
