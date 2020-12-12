@@ -230,8 +230,6 @@ The source file containing the program body can be specified in the *main* entry
 Executables can have their own dependencies.
 See [specifying dependencies](#specifying-dependencies) for more details.
 
-> Dependencies supported in Bootstrap fpm only
-
 Executables can also specify their own external library dependencies.
 See [external libraries](#link-external-libraries) for more details.
 
@@ -274,8 +272,6 @@ The source file containing the program body can be specified in the *main* entry
 Examples can have their own dependencies.
 See [specifying dependencies](#specifying-dependencies) for more details.
 
-> Dependencies supported in Bootstrap fpm only
-
 Examples can also specify their own external library dependencies.
 See [external libraries](#link-external-libraries) for more details.
 
@@ -309,8 +305,6 @@ The source file containing the program body can be specified in the *main* entry
 
 Tests can have their own dependencies.
 See [specifying dependencies](#specifying-dependencies) for more details.
-
-> Dependencies supported in Bootstrap fpm only
 
 Tests can also specify their own external library dependencies.
 See [external libraries](#link-external-libraries) for more details.
