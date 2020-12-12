@@ -141,7 +141,6 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -fp-model precise&
        & -pc 64&
        & -align all&
-       & -coarray&
        & -error-limit 1&
        & -reentrancy threaded&
        & -nogen-interfaces&
@@ -153,7 +152,6 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        fflags = '&
        & -warn all&
        & -check:all:noarg_temp_created&
-       & -coarray&
        & -error-limit 1&
        & -O0&
        & -g&
