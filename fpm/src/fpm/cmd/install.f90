@@ -2,7 +2,7 @@ module fpm_cmd_install
   use fpm, only : build_model
   use fpm_backend, only : build_package
   use fpm_command_line, only : fpm_install_settings
-  use fpm_error, only : error_t
+  use fpm_error, only : error_t, fatal_error
   use fpm_filesystem, only : join_path, list_files
   use fpm_installer, only : installer_t, new_installer
   use fpm_manifest, only : package_config_t, get_package_data
@@ -25,12 +25,20 @@ contains
     type(fpm_model_t) :: model
     type(installer_t) :: installer
     character(len=:), allocatable :: lib, exe, dir
+    logical :: installable
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
 
     call build_model(model, settings%fpm_build_settings, package, error)
     call handle_error(error)
+
+    installable = (allocated(package%library) .and. package%install%library) &
+      .or. allocated(package%executable)
+    if (.not.installable) then
+      call fatal_error(error, "Project does not contain any installable targets")
+      call handle_error(error)
+    end if
 
     if (.not.settings%no_rebuild) then
       call build_package(model)
@@ -114,7 +122,7 @@ contains
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      print '(a)', error%message
+      print '("[Error]", 1x, a)', error%message
       error stop 1
     end if
   end subroutine handle_error
