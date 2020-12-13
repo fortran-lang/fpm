@@ -465,6 +465,7 @@ contains
    '  run       Run the local package application programs                  ', &
    '  test      Run the test programs                                       ', &
    '  update    Update and manage project dependencies                      ', &
+   '  install   Install project                                             ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
