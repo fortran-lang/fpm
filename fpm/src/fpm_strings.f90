@@ -26,7 +26,7 @@ end interface str_ends_with
 
 contains
 
-logical function str_ends_with_str(s, e) result(r)
+pure logical function str_ends_with_str(s, e) result(r)
     character(*), intent(in) :: s, e
     integer :: n1, n2
     n1 = len(s)-len(e)+1
@@ -38,7 +38,7 @@ logical function str_ends_with_str(s, e) result(r)
     end if
 end function str_ends_with_str
 
-logical function str_ends_with_any(s, e) result(r)
+pure logical function str_ends_with_any(s, e) result(r)
     character(*), intent(in) :: s
     character(*), intent(in) :: e(:)
 
