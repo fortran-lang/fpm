@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.2% of total for source files.">129 statements</a>
+    title=" 3.2% of total for source files.">130 statements</a>
      </li> 
      
      
@@ -280,208 +280,209 @@
 <a name="ln-15"></a><span class="k">private</span>
 <a name="ln-16"></a><span class="k">public</span> <span class="kd">::</span> <span class="n">add_sources_from_dir</span><span class="p">,</span> <span class="n">add_executable_sources</span>
 <a name="ln-17"></a>
-<a name="ln-18"></a><span class="k">contains</span>
-<a name="ln-19"></a>
-<a name="ln-20"></a><span class="c">!&gt; Wrapper to source parsing routines.</span>
-<a name="ln-21"></a><span class="c">!&gt; Selects parsing routine based on source file name extension</span>
-<a name="ln-22"></a><span class="k">function </span><span class="n">parse_source</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">,</span><span class="n">error</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-<a name="ln-23"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">source_file_path</span>
-<a name="ln-24"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-25"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">source</span>
-<a name="ln-26"></a>
-<a name="ln-27"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">),</span> <span class="s2">&quot;.f90&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-28"></a>
-<a name="ln-29"></a><span class="k">        </span><span class="n">source</span> <span class="o">=</span> <span class="n">parse_f_source</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-30"></a>
-<a name="ln-31"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-32"></a><span class="k">            </span><span class="n">source</span><span class="p">%</span><span class="n">exe_name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
-<a name="ln-33"></a>        <span class="k">end if</span>
-<a name="ln-34"></a>
-<a name="ln-35"></a><span class="k">    else if</span> <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">),</span> <span class="s2">&quot;.c&quot;</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-36"></a>        <span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">),</span> <span class="s2">&quot;.h&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-18"></a><span class="kt">character</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">fortran_suffixes</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;.f90&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-19"></a>                                                  <span class="s2">&quot;.f  &quot;</span><span class="p">]</span>
+<a name="ln-20"></a>
+<a name="ln-21"></a><span class="k">contains</span>
+<a name="ln-22"></a>
+<a name="ln-23"></a><span class="c">!&gt; Wrapper to source parsing routines.</span>
+<a name="ln-24"></a><span class="c">!&gt; Selects parsing routine based on source file name extension</span>
+<a name="ln-25"></a><span class="k">function </span><span class="n">parse_source</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">,</span><span class="n">error</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+<a name="ln-26"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">source_file_path</span>
+<a name="ln-27"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-28"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">source</span>
+<a name="ln-29"></a>
+<a name="ln-30"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">),</span> <span class="n">fortran_suffixes</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-31"></a>
+<a name="ln-32"></a><span class="k">        </span><span class="n">source</span> <span class="o">=</span> <span class="n">parse_f_source</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a name="ln-33"></a>
+<a name="ln-34"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-35"></a><span class="k">            </span><span class="n">source</span><span class="p">%</span><span class="n">exe_name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+<a name="ln-36"></a>        <span class="k">end if</span>
 <a name="ln-37"></a>
-<a name="ln-38"></a><span class="k">        </span><span class="n">source</span> <span class="o">=</span> <span class="n">parse_c_source</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-38"></a><span class="k">    else if</span> <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">),</span> <span class="p">[</span><span class="s2">&quot;.c&quot;</span><span class="p">,</span> <span class="s2">&quot;.h&quot;</span><span class="p">]))</span> <span class="k">then</span>
 <a name="ln-39"></a>
-<a name="ln-40"></a>    <span class="k">end if</span>
+<a name="ln-40"></a><span class="k">        </span><span class="n">source</span> <span class="o">=</span> <span class="n">parse_c_source</span><span class="p">(</span><span class="n">source_file_path</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 <a name="ln-41"></a>
-<a name="ln-42"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-43"></a><span class="k">        return</span>
-<a name="ln-44"></a><span class="k">    end if</span>
-<a name="ln-45"></a>
-<a name="ln-46"></a><span class="k">end function </span><span class="n">parse_source</span>
+<a name="ln-42"></a>    <span class="k">end if</span>
+<a name="ln-43"></a>
+<a name="ln-44"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-45"></a><span class="k">        return</span>
+<a name="ln-46"></a><span class="k">    end if</span>
 <a name="ln-47"></a>
-<a name="ln-48"></a><span class="c">!&gt; Add to `sources` by looking for source files in `directory`</span>
-<a name="ln-49"></a><span class="k">subroutine </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">directory</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">with_executables</span><span class="p">,</span><span class="n">recurse</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-50"></a>    <span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
-<a name="ln-51"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
-<a name="ln-52"></a>    <span class="c">!&gt; Directory in which to search for source files</span>
-<a name="ln-53"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">directory</span>
-<a name="ln-54"></a>    <span class="c">!&gt; Scope to apply to the discovered sources, see [[fpm_model]] for enumeration</span>
-<a name="ln-55"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">scope</span>
-<a name="ln-56"></a>    <span class="c">!&gt; Executable sources (fortran `program`s) are ignored unless `with_executables=.true.`</span>
-<a name="ln-57"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">with_executables</span>
-<a name="ln-58"></a>    <span class="c">!&gt; Whether to recursively search subdirectories, default is `.true.`</span>
-<a name="ln-59"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">recurse</span>
-<a name="ln-60"></a>    <span class="c">!&gt; Error handling</span>
-<a name="ln-61"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-62"></a>
-<a name="ln-63"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-<a name="ln-64"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">is_source</span><span class="p">(:),</span> <span class="n">exclude_source</span><span class="p">(:)</span>
-<a name="ln-65"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_names</span><span class="p">(:)</span>
-<a name="ln-66"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">src_file_names</span><span class="p">(:)</span>
-<a name="ln-67"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">existing_src_files</span><span class="p">(:)</span>
-<a name="ln-68"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir_sources</span><span class="p">(:)</span>
-<a name="ln-69"></a>
-<a name="ln-70"></a>    <span class="c">! Scan directory for sources</span>
-<a name="ln-71"></a>    <span class="k">call </span><span class="n">list_files</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span><span class="n">recurse</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="n">recurse</span><span class="p">,.</span><span class="n">true</span><span class="p">.,</span><span class="nb">present</span><span class="p">(</span><span class="n">recurse</span><span class="p">)))</span>
-<a name="ln-72"></a>
-<a name="ln-73"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-74"></a><span class="k">        allocate</span><span class="p">(</span><span class="n">existing_src_files</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)))</span>
-<a name="ln-75"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
-<a name="ln-76"></a>            <span class="n">existing_src_files</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">file_name</span><span class="p">)</span>
-<a name="ln-77"></a>        <span class="k">end do</span>
-<a name="ln-78"></a><span class="k">    else</span>
-<a name="ln-79"></a><span class="k">        allocate</span><span class="p">(</span><span class="n">existing_src_files</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<a name="ln-80"></a>    <span class="k">end if</span>
-<a name="ln-81"></a>
-<a name="ln-82"></a><span class="k">    </span><span class="n">is_source</span> <span class="o">=</span> <span class="p">[(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">canon_path</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">existing_src_files</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-83"></a>                  <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span> <span class="s2">&quot;.f90&quot;</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-84"></a>                   <span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span> <span class="s2">&quot;.c&quot;</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-85"></a>                   <span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span> <span class="s2">&quot;.h&quot;</span><span class="p">)</span> <span class="p">),</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_names</span><span class="p">))]</span>
-<a name="ln-86"></a>    <span class="n">src_file_names</span> <span class="o">=</span> <span class="nb">pack</span><span class="p">(</span><span class="n">file_names</span><span class="p">,</span><span class="n">is_source</span><span class="p">)</span>
-<a name="ln-87"></a>
-<a name="ln-88"></a>    <span class="k">allocate</span><span class="p">(</span><span class="n">dir_sources</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">)))</span>
-<a name="ln-89"></a>    <span class="k">allocate</span><span class="p">(</span><span class="n">exclude_source</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">)))</span>
-<a name="ln-90"></a>
-<a name="ln-91"></a>    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">)</span>
-<a name="ln-92"></a>
-<a name="ln-93"></a>        <span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="n">parse_source</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-94"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-95"></a>
-<a name="ln-96"></a><span class="k">        </span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">=</span> <span class="n">scope</span>
-<a name="ln-97"></a>
-<a name="ln-98"></a>        <span class="c">! Exclude executables unless specified otherwise</span>
-<a name="ln-99"></a>        <span class="n">exclude_source</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span>
-<a name="ln-100"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_PROGRAM</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
-<a name="ln-101"></a>            <span class="p">&amp;</span> <span class="nb">present</span><span class="p">(</span><span class="n">with_executables</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-102"></a><span class="k">            if</span> <span class="p">(</span><span class="n">with_executables</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-103"></a>
-<a name="ln-104"></a><span class="k">                </span><span class="n">exclude_source</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-105"></a>
-<a name="ln-106"></a>            <span class="k">end if</span>
-<a name="ln-107"></a><span class="k">        end if</span>
-<a name="ln-108"></a>
-<a name="ln-109"></a><span class="k">    end do</span>
-<a name="ln-110"></a>
-<a name="ln-111"></a><span class="k">    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-112"></a><span class="k">        </span><span class="n">sources</span> <span class="o">=</span> <span class="nb">pack</span><span class="p">(</span><span class="n">dir_sources</span><span class="p">,.</span><span class="nb">not</span><span class="p">.</span><span class="n">exclude_source</span><span class="p">)</span>
-<a name="ln-113"></a>    <span class="k">else</span>
-<a name="ln-114"></a><span class="k">        </span><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">sources</span><span class="p">,</span> <span class="nb">pack</span><span class="p">(</span><span class="n">dir_sources</span><span class="p">,.</span><span class="nb">not</span><span class="p">.</span><span class="n">exclude_source</span><span class="p">)]</span>
-<a name="ln-115"></a>    <span class="k">end if</span>
-<a name="ln-116"></a>
-<a name="ln-117"></a><span class="k">end subroutine </span><span class="n">add_sources_from_dir</span>
-<a name="ln-118"></a>
+<a name="ln-48"></a><span class="k">end function </span><span class="n">parse_source</span>
+<a name="ln-49"></a>
+<a name="ln-50"></a><span class="c">!&gt; Add to `sources` by looking for source files in `directory`</span>
+<a name="ln-51"></a><span class="k">subroutine </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">directory</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">with_executables</span><span class="p">,</span><span class="n">recurse</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-52"></a>    <span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
+<a name="ln-53"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
+<a name="ln-54"></a>    <span class="c">!&gt; Directory in which to search for source files</span>
+<a name="ln-55"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">directory</span>
+<a name="ln-56"></a>    <span class="c">!&gt; Scope to apply to the discovered sources, see [[fpm_model]] for enumeration</span>
+<a name="ln-57"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">scope</span>
+<a name="ln-58"></a>    <span class="c">!&gt; Executable sources (fortran `program`s) are ignored unless `with_executables=.true.`</span>
+<a name="ln-59"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">with_executables</span>
+<a name="ln-60"></a>    <span class="c">!&gt; Whether to recursively search subdirectories, default is `.true.`</span>
+<a name="ln-61"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">recurse</span>
+<a name="ln-62"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-63"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-64"></a>
+<a name="ln-65"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-66"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">is_source</span><span class="p">(:),</span> <span class="n">exclude_source</span><span class="p">(:)</span>
+<a name="ln-67"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_names</span><span class="p">(:)</span>
+<a name="ln-68"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">src_file_names</span><span class="p">(:)</span>
+<a name="ln-69"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">existing_src_files</span><span class="p">(:)</span>
+<a name="ln-70"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir_sources</span><span class="p">(:)</span>
+<a name="ln-71"></a>
+<a name="ln-72"></a>    <span class="c">! Scan directory for sources</span>
+<a name="ln-73"></a>    <span class="k">call </span><span class="n">list_files</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span><span class="n">recurse</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="n">recurse</span><span class="p">,.</span><span class="n">true</span><span class="p">.,</span><span class="nb">present</span><span class="p">(</span><span class="n">recurse</span><span class="p">)))</span>
+<a name="ln-74"></a>
+<a name="ln-75"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-76"></a><span class="k">        allocate</span><span class="p">(</span><span class="n">existing_src_files</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)))</span>
+<a name="ln-77"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+<a name="ln-78"></a>            <span class="n">existing_src_files</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">file_name</span><span class="p">)</span>
+<a name="ln-79"></a>        <span class="k">end do</span>
+<a name="ln-80"></a><span class="k">    else</span>
+<a name="ln-81"></a><span class="k">        allocate</span><span class="p">(</span><span class="n">existing_src_files</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<a name="ln-82"></a>    <span class="k">end if</span>
+<a name="ln-83"></a>
+<a name="ln-84"></a><span class="k">    </span><span class="n">is_source</span> <span class="o">=</span> <span class="p">[(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">canon_path</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">existing_src_files</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-85"></a>                  <span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span> <span class="n">fortran_suffixes</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-86"></a>                   <span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),[</span><span class="s2">&quot;.c&quot;</span><span class="p">,</span><span class="s2">&quot;.h&quot;</span><span class="p">])</span> <span class="p">),</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_names</span><span class="p">))]</span>
+<a name="ln-87"></a>    <span class="n">src_file_names</span> <span class="o">=</span> <span class="nb">pack</span><span class="p">(</span><span class="n">file_names</span><span class="p">,</span><span class="n">is_source</span><span class="p">)</span>
+<a name="ln-88"></a>
+<a name="ln-89"></a>    <span class="k">allocate</span><span class="p">(</span><span class="n">dir_sources</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">)))</span>
+<a name="ln-90"></a>    <span class="k">allocate</span><span class="p">(</span><span class="n">exclude_source</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">)))</span>
+<a name="ln-91"></a>
+<a name="ln-92"></a>    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">)</span>
+<a name="ln-93"></a>
+<a name="ln-94"></a>        <span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="n">parse_source</span><span class="p">(</span><span class="n">src_file_names</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-95"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-96"></a>
+<a name="ln-97"></a><span class="k">        </span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">=</span> <span class="n">scope</span>
+<a name="ln-98"></a>
+<a name="ln-99"></a>        <span class="c">! Exclude executables unless specified otherwise</span>
+<a name="ln-100"></a>        <span class="n">exclude_source</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span>
+<a name="ln-101"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">dir_sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_PROGRAM</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-102"></a>            <span class="p">&amp;</span> <span class="nb">present</span><span class="p">(</span><span class="n">with_executables</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-103"></a><span class="k">            if</span> <span class="p">(</span><span class="n">with_executables</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-104"></a>
+<a name="ln-105"></a><span class="k">                </span><span class="n">exclude_source</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-106"></a>
+<a name="ln-107"></a>            <span class="k">end if</span>
+<a name="ln-108"></a><span class="k">        end if</span>
+<a name="ln-109"></a>
+<a name="ln-110"></a><span class="k">    end do</span>
+<a name="ln-111"></a>
+<a name="ln-112"></a><span class="k">    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-113"></a><span class="k">        </span><span class="n">sources</span> <span class="o">=</span> <span class="nb">pack</span><span class="p">(</span><span class="n">dir_sources</span><span class="p">,.</span><span class="nb">not</span><span class="p">.</span><span class="n">exclude_source</span><span class="p">)</span>
+<a name="ln-114"></a>    <span class="k">else</span>
+<a name="ln-115"></a><span class="k">        </span><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">sources</span><span class="p">,</span> <span class="nb">pack</span><span class="p">(</span><span class="n">dir_sources</span><span class="p">,.</span><span class="nb">not</span><span class="p">.</span><span class="n">exclude_source</span><span class="p">)]</span>
+<a name="ln-116"></a>    <span class="k">end if</span>
+<a name="ln-117"></a>
+<a name="ln-118"></a><span class="k">end subroutine </span><span class="n">add_sources_from_dir</span>
 <a name="ln-119"></a>
-<a name="ln-120"></a><span class="c">!&gt; Add to `sources` using the executable and test entries in the manifest and</span>
-<a name="ln-121"></a><span class="c">!&gt; applies any executable-specific overrides such as `executable%name`.</span>
-<a name="ln-122"></a><span class="c">!&gt; Adds all sources (including modules) from each `executable%source_dir`</span>
-<a name="ln-123"></a><span class="k">subroutine </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">executables</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">auto_discover</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-124"></a>    <span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
-<a name="ln-125"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
-<a name="ln-126"></a>    <span class="c">!&gt; List of `[[executable_config_t]]` entries from manifest</span>
-<a name="ln-127"></a>    <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
-<a name="ln-128"></a>    <span class="c">!&gt; Scope to apply to the discovered sources: either `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`, see [[fpm_model]]</span>
-<a name="ln-129"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">scope</span>
-<a name="ln-130"></a>    <span class="c">!&gt; If `.false.` only executables and tests specified in the manifest are added to `sources`</span>
-<a name="ln-131"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">auto_discover</span>
-<a name="ln-132"></a>    <span class="c">!&gt; Error handling</span>
-<a name="ln-133"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-134"></a>
-<a name="ln-135"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
-<a name="ln-136"></a>
-<a name="ln-137"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">exe_dirs</span><span class="p">(:)</span>
-<a name="ln-138"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exe_source</span>
-<a name="ln-139"></a>
-<a name="ln-140"></a>    <span class="k">call </span><span class="n">get_executable_source_dirs</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">,</span><span class="n">executables</span><span class="p">)</span>
-<a name="ln-141"></a>
-<a name="ln-142"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">)</span>
-<a name="ln-143"></a>        <span class="k">call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">exe_dirs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="n">scope</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-144"></a>                     <span class="n">with_executables</span><span class="o">=</span><span class="n">auto_discover</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-145"></a>
-<a name="ln-146"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-147"></a><span class="k">            return</span>
-<a name="ln-148"></a><span class="k">        end if</span>
-<a name="ln-149"></a><span class="k">    end do</span>
-<a name="ln-150"></a>
-<a name="ln-151"></a><span class="k">    </span><span class="n">exe_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
-<a name="ln-152"></a>
-<a name="ln-153"></a>        <span class="c">! Check if executable already discovered automatically</span>
-<a name="ln-154"></a>        <span class="c">!  and apply any overrides</span>
-<a name="ln-155"></a>        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
-<a name="ln-156"></a>
-<a name="ln-157"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span> <span class="o">==</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span> <span class="p">.</span><span class="nb">and</span><span class="p">.&amp;</span>
-<a name="ln-158"></a>                 <span class="n">canon_path</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">))</span> <span class="o">==</span> <span class="p">&amp;</span>
-<a name="ln-159"></a>                 <span class="n">canon_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">)</span> <span class="p">)</span> <span class="k">then</span>
-<a name="ln-160"></a><span class="k">                </span>
-<a name="ln-161"></a><span class="k">                </span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">exe_name</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span>
-<a name="ln-162"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-163"></a><span class="k">                    </span><span class="n">exe_source</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span>
-<a name="ln-164"></a><span class="nb">                </span><span class="k">end if</span>
-<a name="ln-165"></a><span class="k">                cycle </span><span class="n">exe_loop</span>
-<a name="ln-166"></a>
-<a name="ln-167"></a>            <span class="k">end if</span>
-<a name="ln-168"></a>
-<a name="ln-169"></a><span class="k">        end do</span>
-<a name="ln-170"></a>
-<a name="ln-171"></a>        <span class="c">! Add if not already discovered (auto_discovery off)</span>
-<a name="ln-172"></a>        <span class="n">exe_source</span> <span class="o">=</span> <span class="n">parse_source</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">,</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span><span class="p">),</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-173"></a>        <span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span>
-<a name="ln-174"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-175"></a><span class="k">            </span><span class="n">exe_source</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span>
-<a name="ln-176"></a><span class="nb">        </span><span class="k">end if</span>
-<a name="ln-177"></a><span class="k">        </span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">=</span> <span class="n">scope</span>
-<a name="ln-178"></a>        
-<a name="ln-179"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-180"></a>
-<a name="ln-181"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-182"></a><span class="k">            </span><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">exe_source</span><span class="p">]</span>
-<a name="ln-183"></a>        <span class="k">else</span>
-<a name="ln-184"></a><span class="k">            </span><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">sources</span><span class="p">,</span> <span class="n">exe_source</span><span class="p">]</span>
-<a name="ln-185"></a>        <span class="k">end if</span>
-<a name="ln-186"></a>
-<a name="ln-187"></a><span class="k">    end do </span><span class="n">exe_loop</span>
-<a name="ln-188"></a>
-<a name="ln-189"></a><span class="k">end subroutine </span><span class="n">add_executable_sources</span>
-<a name="ln-190"></a>
-<a name="ln-191"></a><span class="c">!&gt; Build a list of unique source directories</span>
-<a name="ln-192"></a><span class="c">!&gt;  from executables specified in manifest</span>
-<a name="ln-193"></a><span class="k">subroutine </span><span class="n">get_executable_source_dirs</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">,</span><span class="n">executables</span><span class="p">)</span>
-<a name="ln-194"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exe_dirs</span><span class="p">(:)</span>
-<a name="ln-195"></a>    <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
-<a name="ln-196"></a>
-<a name="ln-197"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dirs_temp</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">))</span>
-<a name="ln-198"></a>
-<a name="ln-199"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span>
-<a name="ln-200"></a>
-<a name="ln-201"></a>    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-202"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
-<a name="ln-203"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">dirs_temp</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-204"></a>
-<a name="ln-205"></a><span class="k">            </span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-206"></a>            <span class="n">dirs_temp</span><span class="p">(</span><span class="n">n</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span>
-<a name="ln-207"></a>
-<a name="ln-208"></a>        <span class="k">end if</span>
-<a name="ln-209"></a><span class="k">    end do</span>
-<a name="ln-210"></a>
-<a name="ln-211"></a><span class="k">    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-212"></a><span class="k">        </span><span class="n">exe_dirs</span> <span class="o">=</span> <span class="n">dirs_temp</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">)</span>
-<a name="ln-213"></a>    <span class="k">else</span>
-<a name="ln-214"></a><span class="k">        </span><span class="n">exe_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">exe_dirs</span><span class="p">,</span><span class="n">dirs_temp</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">)]</span>
-<a name="ln-215"></a>    <span class="k">end if</span>
-<a name="ln-216"></a>
-<a name="ln-217"></a><span class="k">end subroutine </span><span class="n">get_executable_source_dirs</span>
-<a name="ln-218"></a>
-<a name="ln-219"></a><span class="k">end module </span><span class="n">fpm_sources</span>
+<a name="ln-120"></a>
+<a name="ln-121"></a><span class="c">!&gt; Add to `sources` using the executable and test entries in the manifest and</span>
+<a name="ln-122"></a><span class="c">!&gt; applies any executable-specific overrides such as `executable%name`.</span>
+<a name="ln-123"></a><span class="c">!&gt; Adds all sources (including modules) from each `executable%source_dir`</span>
+<a name="ln-124"></a><span class="k">subroutine </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">executables</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">auto_discover</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-125"></a>    <span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
+<a name="ln-126"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
+<a name="ln-127"></a>    <span class="c">!&gt; List of `[[executable_config_t]]` entries from manifest</span>
+<a name="ln-128"></a>    <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
+<a name="ln-129"></a>    <span class="c">!&gt; Scope to apply to the discovered sources: either `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`, see [[fpm_model]]</span>
+<a name="ln-130"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">scope</span>
+<a name="ln-131"></a>    <span class="c">!&gt; If `.false.` only executables and tests specified in the manifest are added to `sources`</span>
+<a name="ln-132"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">auto_discover</span>
+<a name="ln-133"></a>    <span class="c">!&gt; Error handling</span>
+<a name="ln-134"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-135"></a>
+<a name="ln-136"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+<a name="ln-137"></a>
+<a name="ln-138"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">exe_dirs</span><span class="p">(:)</span>
+<a name="ln-139"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exe_source</span>
+<a name="ln-140"></a>
+<a name="ln-141"></a>    <span class="k">call </span><span class="n">get_executable_source_dirs</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">,</span><span class="n">executables</span><span class="p">)</span>
+<a name="ln-142"></a>
+<a name="ln-143"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">)</span>
+<a name="ln-144"></a>        <span class="k">call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">exe_dirs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="n">scope</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-145"></a>                     <span class="n">with_executables</span><span class="o">=</span><span class="n">auto_discover</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-146"></a>
+<a name="ln-147"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-148"></a><span class="k">            return</span>
+<a name="ln-149"></a><span class="k">        end if</span>
+<a name="ln-150"></a><span class="k">    end do</span>
+<a name="ln-151"></a>
+<a name="ln-152"></a><span class="k">    </span><span class="n">exe_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
+<a name="ln-153"></a>
+<a name="ln-154"></a>        <span class="c">! Check if executable already discovered automatically</span>
+<a name="ln-155"></a>        <span class="c">!  and apply any overrides</span>
+<a name="ln-156"></a>        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+<a name="ln-157"></a>
+<a name="ln-158"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span> <span class="o">==</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span> <span class="p">.</span><span class="nb">and</span><span class="p">.&amp;</span>
+<a name="ln-159"></a>                 <span class="n">canon_path</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">))</span> <span class="o">==</span> <span class="p">&amp;</span>
+<a name="ln-160"></a>                 <span class="n">canon_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">)</span> <span class="p">)</span> <span class="k">then</span>
+<a name="ln-161"></a><span class="k">                </span>
+<a name="ln-162"></a><span class="k">                </span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">exe_name</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span>
+<a name="ln-163"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-164"></a><span class="k">                    </span><span class="n">exe_source</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span>
+<a name="ln-165"></a><span class="nb">                </span><span class="k">end if</span>
+<a name="ln-166"></a><span class="k">                cycle </span><span class="n">exe_loop</span>
+<a name="ln-167"></a>
+<a name="ln-168"></a>            <span class="k">end if</span>
+<a name="ln-169"></a>
+<a name="ln-170"></a><span class="k">        end do</span>
+<a name="ln-171"></a>
+<a name="ln-172"></a>        <span class="c">! Add if not already discovered (auto_discovery off)</span>
+<a name="ln-173"></a>        <span class="n">exe_source</span> <span class="o">=</span> <span class="n">parse_source</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">,</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span><span class="p">),</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-174"></a>        <span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span>
+<a name="ln-175"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-176"></a><span class="k">            </span><span class="n">exe_source</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span>
+<a name="ln-177"></a><span class="nb">        </span><span class="k">end if</span>
+<a name="ln-178"></a><span class="k">        </span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">=</span> <span class="n">scope</span>
+<a name="ln-179"></a>        
+<a name="ln-180"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-181"></a>
+<a name="ln-182"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-183"></a><span class="k">            </span><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">exe_source</span><span class="p">]</span>
+<a name="ln-184"></a>        <span class="k">else</span>
+<a name="ln-185"></a><span class="k">            </span><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">sources</span><span class="p">,</span> <span class="n">exe_source</span><span class="p">]</span>
+<a name="ln-186"></a>        <span class="k">end if</span>
+<a name="ln-187"></a>
+<a name="ln-188"></a><span class="k">    end do </span><span class="n">exe_loop</span>
+<a name="ln-189"></a>
+<a name="ln-190"></a><span class="k">end subroutine </span><span class="n">add_executable_sources</span>
+<a name="ln-191"></a>
+<a name="ln-192"></a><span class="c">!&gt; Build a list of unique source directories</span>
+<a name="ln-193"></a><span class="c">!&gt;  from executables specified in manifest</span>
+<a name="ln-194"></a><span class="k">subroutine </span><span class="n">get_executable_source_dirs</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">,</span><span class="n">executables</span><span class="p">)</span>
+<a name="ln-195"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exe_dirs</span><span class="p">(:)</span>
+<a name="ln-196"></a>    <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
+<a name="ln-197"></a>
+<a name="ln-198"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dirs_temp</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">))</span>
+<a name="ln-199"></a>
+<a name="ln-200"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span>
+<a name="ln-201"></a>
+<a name="ln-202"></a>    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-203"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
+<a name="ln-204"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">dirs_temp</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-205"></a>
+<a name="ln-206"></a><span class="k">            </span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-207"></a>            <span class="n">dirs_temp</span><span class="p">(</span><span class="n">n</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span>
+<a name="ln-208"></a>
+<a name="ln-209"></a>        <span class="k">end if</span>
+<a name="ln-210"></a><span class="k">    end do</span>
+<a name="ln-211"></a>
+<a name="ln-212"></a><span class="k">    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-213"></a><span class="k">        </span><span class="n">exe_dirs</span> <span class="o">=</span> <span class="n">dirs_temp</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">)</span>
+<a name="ln-214"></a>    <span class="k">else</span>
+<a name="ln-215"></a><span class="k">        </span><span class="n">exe_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">exe_dirs</span><span class="p">,</span><span class="n">dirs_temp</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">)]</span>
+<a name="ln-216"></a>    <span class="k">end if</span>
+<a name="ln-217"></a>
+<a name="ln-218"></a><span class="k">end subroutine </span><span class="n">get_executable_source_dirs</span>
+<a name="ln-219"></a>
+<a name="ln-220"></a><span class="k">end module </span><span class="n">fpm_sources</span>
 </pre></div>
 
     </section>
@@ -500,7 +501,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-14 14:27  
+             on 2020-12-14 17:54  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.6% of total for modules and submodules.">226 statements</a>
+    title=" 5.9% of total for modules and submodules.">240 statements</a>
      </li> 
      
      
@@ -182,6 +182,8 @@
       
       <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28.in.%29">operator(.in.)</a>
       
+      <a class="list-group-item" href="../module/fpm_strings.html#interface-str_ends_with">str_ends_with</a>
+      
     </div>
   </div>
 </div>
@@ -210,8 +212,6 @@
       <a class="list-group-item" href="../module/fpm_strings.html#proc-f_string">f_string</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-lower">lower</a>
-      
-      <a class="list-group-item" href="../module/fpm_strings.html#proc-str_ends_with">str_ends_with</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-string_array_contains">string_array_contains</a>
       
@@ -300,6 +300,8 @@
       
       <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28.in.%29">operator(.in.)</a>
       
+      <a class="list-group-item" href="../module/fpm_strings.html#interface-str_ends_with">str_ends_with</a>
+      
     </div>
   </div>
 </div>
@@ -328,8 +330,6 @@
       <a class="list-group-item" href="../module/fpm_strings.html#proc-f_string">f_string</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-lower">lower</a>
-      
-      <a class="list-group-item" href="../module/fpm_strings.html#proc-str_ends_with">str_ends_with</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-string_array_contains">string_array_contains</a>
       
@@ -628,6 +628,165 @@ public function <a href='../proc/string_array_contains.html'>string_array_contai
 </div>
 
     
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-str_ends_with"></span><h3>public interface <a href='../interface/str_ends_with.html'>str_ends_with</a>
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+  
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private pure function str_ends_with_str(s, e) result(r)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>s</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>e</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+    </li>
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private pure function str_ends_with_any(s, e) result(r)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>s</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>e</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+    </li>
+  
+  
+  </ul>
+</div>
+
+    
     </section>
   <br>
     
@@ -832,81 +991,6 @@ public pure elemental function <a href='../proc/lower.html'>lower</a>(str, begin
   
   
      <h4>Return Value <small>character(len=len(str))
-  </small></h4>
-  
-    
-
-  </div>
-  </div>
-
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-str_ends_with"></span><h3>
-public function <a href='../proc/str_ends_with.html'>str_ends_with</a>(s, e) result(r)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>s</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>e</strong></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  
-  
-  
-  
-     <h4>Return Value <small>logical
   </small></h4>
   
     
@@ -1213,7 +1297,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-14 14:27  
+             on 2020-12-14 17:54  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

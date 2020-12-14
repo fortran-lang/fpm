@@ -111,7 +111,7 @@
   
   <div class="row">
     <h1>str_ends_with
-      <small>Function</small>
+   <small>Interface</small>
     
     </h1>
     
@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.5% of total for procedures.">11 statements</a>
+    title="<p> 0.2% of total for procedures.</p>Including implementation: 25 statements,  1.1% of total for procedures.">4 statements</a>
      </li> 
      
      
@@ -160,7 +160,7 @@
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    
+      
 <div id="sidebar">
   
 <h3>Contents</h3>
@@ -168,44 +168,36 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
-  <div id="vars-0" class="panel-collapse collapse">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
+  <div id="modprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/str_ends_with.html#variable-n1">n1</a>
+      <a class="list-group-item" href="../interface/str_ends_with.html#moduleprocedure-str_ends_with_str">str_ends_with_str</a>
       
-      <a class="list-group-item" href="../proc/str_ends_with.html#variable-n2">n2</a>
+      <a class="list-group-item" href="../interface/str_ends_with.html#moduleprocedure-str_ends_with_any">str_ends_with_any</a>
       
     </div>
   </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/str_ends_with.html#src">str_ends_with</a>
-  </div>
-</div>
 
 
 
@@ -214,20 +206,77 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>
-public function str_ends_with(s, e) result(r)
+      <h2>public interface str_ends_with</h2>
+   
+     
+     
+    
+
+     <section class="visible-xs visible-sm hidden-md">
+       
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
+  <div id="modprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../interface/str_ends_with.html#moduleprocedure-str_ends_with_str">str_ends_with_str</a>
+      
+      <a class="list-group-item" href="../interface/str_ends_with.html#moduleprocedure-str_ends_with_any">str_ends_with_any</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+     </section>
+     <br class="visible-xs visible-sm hidden-md">
+     
+  
+
+  
+
+  
+   <h2>Module Procedures</h2>
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-str_ends_with_str"></span><h3>
+private pure function str_ends_with_str(s, e) result(r)
     
     
    
-</h2>
+</h3></div>
+  <div class="panel-body">
+       
     
-  
-
-
     
-
-    <h3>Arguments</h3>
+    <h4>Arguments</h4>
     
+      
       
 <table class="table table-striped varlist">
 <thead><tr><th>Type</th>
@@ -244,7 +293,7 @@ public function str_ends_with(s, e) result(r)
   
 <tr>
   
-  <td><span class="anchor" id="variable-s~3"></span>character(len=*),</td>
+  <td><span class="anchor" ></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -259,7 +308,7 @@ public function str_ends_with(s, e) result(r)
   
 <tr>
   
-  <td><span class="anchor" id="variable-e"></span>character(len=*),</td>
+  <td><span class="anchor" ></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -271,83 +320,43 @@ public function str_ends_with(s, e) result(r)
 </tbody>
 </table>
 
-    
-    
-    
-    
-    
-    
-    
-   <h3>Return Value <small><span class="anchor" id="variable-r~3"></span>logical
-  </small></h3>
-    
-    
-    
-    
-     
-    <br>
-
-    <section class="visible-xs visible-sm hidden-md">
       
-<h3>Contents</h3>
- 
+    
+    
 
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
 
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
-  <div id="vars-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/str_ends_with.html#variable-n1">n1</a>
-      
-      <a class="list-group-item" href="../proc/str_ends_with.html#variable-n2">n2</a>
-      
-    </div>
   </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/str_ends_with.html#src">str_ends_with</a>
   </div>
-</div>
 
-
-
-    </section>
-    <br class="visible-xs visible-sm hidden-md">
-
+   
     
-
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-str_ends_with_any"></span><h3>
+private pure function str_ends_with_any(s, e) result(r)
     
-    <section>    
-      <h2>Variables</h2>
     
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
 <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
 
 
 
@@ -359,11 +368,12 @@ public function str_ends_with(s, e) result(r)
   
 <tr>
   
-  <td><span class="anchor" id="variable-n1"></span>integer,</td>
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
   
-  <td>public</td>
   <td></td><td>::</td>
-  <td><strong>n1</strong></td><td></td><td></td><td></td>
+  <td><strong>s</strong></td><td></td>
   
 </tr>
 
@@ -373,56 +383,39 @@ public function str_ends_with(s, e) result(r)
   
 <tr>
   
-  <td><span class="anchor" id="variable-n2"></span>integer,</td>
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
   
-  <td>public</td>
   <td></td><td>::</td>
-  <td><strong>n2</strong></td><td></td><td></td><td></td>
+  <td><strong>e</strong>(:)</td><td></td>
   
 </tr>
 
 </tbody>
 </table>
 
-    </section>
-    <br>
-    
-    
-    
+      
     
     
 
-    
-    
-    
-    
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
     
 
-
-    
-    
-    
-    <section>
-    <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="kt">logical </span><span class="k">function </span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span>
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span>
-    <span class="n">n1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
-    <span class="n">n2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">n1</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">r</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-    <span class="k">else</span>
-<span class="k">        </span><span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">s</span><span class="p">(</span><span class="n">n1</span><span class="p">:</span><span class="n">n2</span><span class="p">)</span> <span class="o">==</span> <span class="n">e</span><span class="p">)</span>
-    <span class="k">end if</span>
-<span class="k">end function </span><span class="n">str_ends_with</span>
-</pre></div>
-
-    </section>
-    <br>
-    
-    
-    </div>
   </div>
+  </div>
+
+   
+     
+
+ </div>
+</div>
 
 
     <hr>    
@@ -436,7 +429,7 @@ public function str_ends_with(s, e) result(r)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-14 14:27  
+             on 2020-12-14 17:54  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

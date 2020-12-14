@@ -15,6 +15,9 @@ implicit none
 private
 public :: add_sources_from_dir, add_executable_sources
 
+character(4), parameter :: fortran_suffixes(2) = [".f90", &
+                                                  ".f  "]
+
 contains
 
 !> Wrapper to source parsing routines.
@@ -24,7 +27,7 @@ function parse_source(source_file_path,error) result(source)
     type(error_t), allocatable, intent(out) :: error
     type(srcfile_t)  :: source
 
-    if (str_ends_with(lower(source_file_path), ".f90")) then
+    if (str_ends_with(lower(source_file_path), fortran_suffixes)) then
 
         source = parse_f_source(source_file_path, error)
 
@@ -32,8 +35,7 @@ function parse_source(source_file_path,error) result(source)
             source%exe_name = basename(source_file_path,suffix=.false.)
         end if
 
-    else if (str_ends_with(lower(source_file_path), ".c") .or. &
-        str_ends_with(lower(source_file_path), ".h")) then
+    else if (str_ends_with(lower(source_file_path), [".c", ".h"])) then
 
         source = parse_c_source(source_file_path,error)
 
@@ -80,9 +82,8 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
     end if
 
     is_source = [(.not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
-                  (str_ends_with(lower(file_names(i)%s), ".f90") .or. &
-                   str_ends_with(lower(file_names(i)%s), ".c") .or. &
-                   str_ends_with(lower(file_names(i)%s), ".h") ),i=1,size(file_names))]
+                  (str_ends_with(lower(file_names(i)%s), fortran_suffixes) .or. &
+                   str_ends_with(lower(file_names(i)%s),[".c",".h"]) ),i=1,size(file_names))]
     src_file_names = pack(file_names,is_source)
 
     allocate(dir_sources(size(src_file_names)))
