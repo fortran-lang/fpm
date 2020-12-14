@@ -5,10 +5,15 @@ implicit none
 private
 public :: f_string, lower, split, str_ends_with, string_t
 public :: string_array_contains, string_cat, operator(.in.), fnv_1a
+public :: resize
 
 type string_t
     character(len=:), allocatable :: s
 end type
+
+interface resize
+  module procedure :: resize_string
+end interface
 
 interface operator(.in.)
     module procedure string_array_contains
@@ -288,5 +293,39 @@ subroutine split(input_line,array,delimiters,order,nulls)
     enddo
 end subroutine split
 
+subroutine resize_string(list, n)
+  !> Instance of the array to be resized
+  type(string_t), allocatable, intent(inout) :: list(:)
+  !> Dimension of the final array size
+  integer, intent(in), optional :: n
+
+  type(string_t), allocatable :: tmp(:)
+  integer :: this_size, new_size, i
+  integer, parameter :: initial_size = 16
+
+  if (allocated(list)) then
+    this_size = size(list, 1)
+    call move_alloc(list, tmp)
+  else
+    this_size = initial_size
+  end if
+
+  if (present(n)) then
+    new_size = n
+  else
+    new_size = this_size + this_size/2 + 1
+  end if
+
+  allocate(list(new_size))
+
+  if (allocated(tmp)) then
+    this_size = min(size(tmp, 1), size(list, 1))
+    do i = 1, this_size
+      call move_alloc(tmp(i)%s, list(i)%s)
+    end do
+    deallocate(tmp)
+  end if
+
+end subroutine resize_string
 
 end module fpm_strings

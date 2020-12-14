@@ -1,4 +1,5 @@
 module fpm_cmd_install
+  use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm, only : build_model
   use fpm_backend, only : build_package
   use fpm_command_line, only : fpm_install_settings
@@ -8,7 +9,7 @@ module fpm_cmd_install
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_model, only : fpm_model_t, build_target_t, FPM_TARGET_EXECUTABLE, &
     FPM_SCOPE_APP
-  use fpm_strings, only : string_t
+  use fpm_strings, only : string_t, resize
   implicit none
   private
 
@@ -40,6 +41,11 @@ contains
       call handle_error(error)
     end if
 
+    if (settings%list) then
+      call install_info(output_unit, package, model)
+      return
+    end if
+
     if (.not.settings%no_rebuild) then
       call build_package(model)
     end if
@@ -65,6 +71,40 @@ contains
     end if
 
   end subroutine cmd_install
+
+  subroutine install_info(unit, package, model)
+    integer, intent(in) :: unit
+    type(package_config_t), intent(in) :: package
+    type(fpm_model_t), intent(in) :: model
+
+    integer :: ii, ntargets
+    character(len=:), allocatable :: lib
+    type(string_t), allocatable :: install_target(:)
+
+    call resize(install_target)
+
+    ntargets = 0
+    if (allocated(package%library) .and. package%install%library) then
+      ntargets = ntargets + 1
+      lib = join_path(model%output_directory, model%package_name, &
+        "lib"//model%package_name//".a")
+      install_target(ntargets)%s = lib
+    end if
+    do ii = 1, size(model%targets)
+      if (is_executable_target(model%targets(ii)%ptr)) then
+        if (ntargets >= size(install_target)) call resize(install_target)
+        ntargets = ntargets + 1
+        install_target(ntargets)%s = model%targets(ii)%ptr%output_file
+      end if
+    end do
+
+    write(unit, '("#", *(1x, g0))') &
+      "total number of installable targets:", ntargets
+    do ii = 1, ntargets
+      write(unit, '("-", *(1x, g0))') install_target(ii)%s
+    end do
+
+  end subroutine install_info
 
   subroutine install_module_files(installer, dir, error)
     type(installer_t), intent(inout) :: installer

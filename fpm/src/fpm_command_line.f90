@@ -302,6 +302,7 @@ contains
 
         case('install')
             call set_args('--release F --no-rebuild F --verbose F --prefix " " &
+                & --list F &
                 & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
                 & --libdir "lib" --bindir "bin" --includedir "include"', &
                 help_install, version_text)
@@ -310,7 +311,8 @@ contains
 
             allocate(install_settings)
             install_settings = fpm_install_settings(&
-                build_name=val_build,&
+                list=lget('list'), &
+                build_name=val_build, &
                 compiler=val_compiler, &
                 no_rebuild=lget('no-rebuild'), &
                 verbose=lget('verbose'))
@@ -901,7 +903,7 @@ contains
     '' ]
     help_update=[character(len=80) :: &
     'NAME', &
-    ' fpm-update(1) - manage project dependencies', &
+    ' update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
     ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
@@ -920,21 +922,23 @@ contains
     '' ]
     help_install=[character(len=80) :: &
     'NAME', &
-    ' fpm-install(1) - install fpm projects', &
+    ' install(1) - install fpm projects', &
     '', &
     'SYNOPSIS', &
-    ' fpm install [--release] [--no-rebuild] [--prefix DIR]', &
+    ' fpm install [--release] [--list] [--no-rebuild] [--prefix DIR]', &
     '             [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
     '             [--verbose]', &
     '', &
     'DESCRIPTION', &
     ' Subcommand to install fpm projects. Running install will export the', &
     ' current project to the selected prefix, this will by default install all', &
-    ' executables (test are excluded) which are part of the projects.', &
+    ' executables (test and examples are excluded) which are part of the projects.', &
     ' Libraries and module files are only installed for projects requiring the', &
     ' installation of those components in the package manifest.', &
     '', &
     'OPTIONS', &
+    ' --list            list all installable targets for this project,', &
+    '                   but do not install any of them', &
     ' --release         selects the optimized build instead of the debug build', &
     ' --no-rebuild      do not rebuild project before installation', &
     ' --prefix DIR      path to installation directory (requires write access),', &
