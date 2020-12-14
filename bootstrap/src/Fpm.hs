@@ -71,6 +71,7 @@ import           System.Exit                    ( ExitCode(..)
                                                 , exitWith
                                                 )
 import           System.Process                 ( readProcess
+                                                , readProcessWithExitCode
                                                 , system
                                                 )
 import           Toml                           ( TomlCodec
@@ -733,6 +734,185 @@ defineCompilerSettings specifiedFlags compiler release
                                   , compilerSettingsModuleFlag  = "-J"
                                   , compilerSettingsIncludeFlag = "-I"
                                   }
+  | "f95" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              [ "-O3"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-ffast-math"
+              , "-funroll-loops"
+              ]
+            else
+              [ "-Wall"
+              , "-Wextra"
+              , "-Wimplicit-interface"
+              , "-fPIC"
+              , "-fmax-errors=1"
+              , "-g"
+              , "-fbounds-check"
+              , "-fcheck-array-temporaries"
+              , "-Wno-maybe-uninitialized"
+              , "-Wno-uninitialized"
+              , "-fbacktrace"
+              ]
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-J"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "nvfortran" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              [ "-Mbackslash"
+              ]
+            else
+              [ "-Minform=inform"
+              , "-Mbackslash"
+              , "-g"
+              , "-Mbounds"
+              , "-Mchkptr"
+              , "-Mchkstk"
+              , "-traceback"
+              ]
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-module"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "ifort" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              [ "-fp-model", "precise"
+              , "-pc", "64"
+              , "-align", "all"
+              , "-error-limit", "1"
+              , "-reentrancy", "threaded"
+              , "-nogen-interfaces"
+              , "-assume", "byterecl"
+              , "-assume", "nounderscore"
+              ]
+            else
+              [ "-warn", "all"
+              , "-check:all:noarg_temp_created"
+              , "-error-limit", "1"
+              , "-O0"
+              , "-g"
+              , "-assume", "byterecl"
+              , "-traceback"
+              ]
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-module"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "ifx" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              []
+            else
+              []
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-module"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "pgfortran" `isInfixOf` compiler || "pgf90" `isInfixOf` compiler || "pgf95" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              []
+            else
+              []
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-module"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "flang" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              []
+            else
+              []
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-module"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "lfc" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              []
+            else
+              []
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-M"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "nagfor" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              [ "-O4"
+              , "-coarray=single"
+              , "-PIC"
+              ]
+            else
+              [ "-g"
+              , "-C=all"
+              , "-O0"
+              , "-gline"
+              , "-coarray=single"
+              , "-PIC"
+              ]
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-mdir"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "crayftn" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              []
+            else
+              []
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-J"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
+  | "xlf90" `isInfixOf` compiler
+  = let flags = case specifiedFlags of
+          [] -> if release
+            then
+              []
+            else
+              []
+          fs -> fs
+  in  return $ CompilerSettings { compilerSettingsCompiler    = compiler
+                                , compilerSettingsFlags       = flags
+                                , compilerSettingsModuleFlag  = "-qmoddir"
+                                , compilerSettingsIncludeFlag = "-I"
+                                }
   | otherwise
   = do
     putStrLn $ "Sorry, compiler is currently unsupported: " ++ compiler
@@ -808,7 +988,23 @@ makeBuildPrefix :: FilePath -> [String] -> IO FilePath
 makeBuildPrefix compiler flags = do
   -- TODO Figure out what other info should be part of this
   --      Probably version, and make sure to not include path to the compiler
-  versionInfo <- readProcess compiler ["--version"] []
+  versionInfo <- do
+    (exitCode, stdout, stderr) <- readProcessWithExitCode compiler
+                                                          ["--version"]
+                                                          []
+    case exitCode of
+      ExitSuccess -> case stdout of
+        "" -> return stderr -- Guess this compiler outputs version info to stderr instead?
+        _  -> return stdout
+      _ -> do -- guess this compiler doesn't support the --version option. let's try -version
+        (exitCode, stdout, stderr) <- readProcessWithExitCode compiler
+                                                              ["-version"]
+                                                              []
+        case exitCode of
+          ExitSuccess -> case stdout of
+            "" -> return stderr -- Guess this compiler outputs version info to stderr instead?
+            _  -> return stdout
+          _ -> return "" -- Don't know how to get version info, we'll let defineCompilerSettings report it as unsupported
   let compilerName = last (splitDirectories compiler)
   let versionHash  = abs (hash versionInfo)
   let flagsHash    = abs (hash flags)

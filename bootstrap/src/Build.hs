@@ -75,7 +75,7 @@ buildProgram programDirectory' libraryDirectories sourceExtensions buildDirector
     libraryModules <- findAvailableModules libraryDirectories
     let programDirectory = foldl1 (</>) (splitDirectories programDirectory')
     let buildDirectory   = foldl1 (</>) (splitDirectories buildDirectory')
-    let includeFlags     = map (includeFlag ++) libraryDirectories
+    let includeFlags     = (includeFlag ++ buildDirectory) : map (includeFlag ++) libraryDirectories
     sourceFiles <- getDirectoriesFiles [programDirectory] sourceExtensions
     rawSources  <- mapM sourceFileToRawSource sourceFiles
     let sources' = map processRawSource rawSources
@@ -108,7 +108,7 @@ buildProgram programDirectory' libraryDirectories sourceExtensions buildDirector
                 in  fileMatcher &?> \(objectFile : _) -> do
                       need (sourceFile : directDependencies)
                       cmd compiler
-                          ["-c", moduleFlag ++ buildDirectory]
+                          ["-c", moduleFlag, buildDirectory]
                           includeFlags
                           flags
                           ["-o", objectFile, sourceFile]
@@ -130,7 +130,7 @@ buildLibrary
 buildLibrary libraryDirectory sourceExtensions buildDirectory (CompilerSettings { compilerSettingsCompiler = compiler, compilerSettingsFlags = flags, compilerSettingsModuleFlag = moduleFlag, compilerSettingsIncludeFlag = includeFlag }) libraryName otherLibraryDirectories
   = do
     otherModules <- findAvailableModules otherLibraryDirectories
-    let includeFlags = map (includeFlag ++) otherLibraryDirectories
+    let includeFlags = (includeFlag ++ buildDirectory) : map (includeFlag ++) otherLibraryDirectories
     sourceFiles <- getDirectoriesFiles [libraryDirectory] sourceExtensions
     rawSources  <- mapM sourceFileToRawSource sourceFiles
     let sources          = map processRawSource rawSources
@@ -160,7 +160,7 @@ buildLibrary libraryDirectory sourceExtensions buildDirectory (CompilerSettings 
                 in  fileMatcher &?> \(objectFile : _) -> do
                       need (sourceFile : directDependencies)
                       cmd compiler
-                          ["-c", moduleFlag ++ buildDirectory]
+                          ["-c", moduleFlag, buildDirectory]
                           includeFlags
                           flags
                           ["-o", objectFile, sourceFile]
