@@ -139,9 +139,6 @@ subroutine targets_from_sources(model,sources)
         
         object_file = canon_path(source%file_name)
 
-        ! Ignore first directory level
-        object_file = object_file(index(object_file,filesep)+1:)
-        
         ! Convert any remaining directory separators to underscores
         i = index(object_file,filesep)
         do while(i > 0)
@@ -149,18 +146,7 @@ subroutine targets_from_sources(model,sources)
             i = index(object_file,filesep)
         end do
 
-        select case(source%unit_scope)
-
-        case (FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE)
-            object_file = join_path(model%output_directory,'app',object_file)//'.o'
-
-        case (FPM_SCOPE_TEST)
-            object_file = join_path(model%output_directory,'test',object_file)//'.o'
-
-        case default
-            object_file = join_path(model%output_directory,model%package_name,object_file)//'.o'
-            
-        end select
+        object_file = join_path(model%output_directory,model%package_name,object_file)//'.o'
     
     end function get_object_name
 
