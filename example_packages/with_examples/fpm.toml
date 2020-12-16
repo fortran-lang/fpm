@@ -3,5 +3,5 @@ build.auto-examples = false
 
 [[example]]
 name = "demo-prog"
-source-dir = "example"
+source-dir = "demo"
 main = "prog.f90"
