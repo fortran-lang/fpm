@@ -54,6 +54,7 @@ type, extends(fpm_cmd_settings)  :: fpm_new_settings
     logical                      :: with_executable=.false.
     logical                      :: with_test=.false.
     logical                      :: with_lib=.true.
+    logical                      :: with_example=.false.
     logical                      :: backfill=.true.
 end type
 
@@ -203,6 +204,7 @@ contains
             & --lib F &
             & --app F &
             & --test F &
+            & --example F &
             & --backfill F&
             & --verbose F',&
             & help_new, version_text)
@@ -210,14 +212,14 @@ contains
             case(1)
                 write(stderr,'(*(g0,/))')'<ERROR> directory name required'
                 write(stderr,'(*(7x,g0,/))') &
-                & '<USAGE> fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
+                & '<USAGE> fpm new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]'
                 stop 1
             case(2)
                 name=trim(unnamed(2))
             case default
                 write(stderr,'(g0)')'<ERROR> only one directory name allowed'
                 write(stderr,'(7x,g0)') &
-                & '<USAGE> fpm new NAME [--lib|--src] [--app] [--test] [--backfill]'
+                & '<USAGE> fpm new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]'
                 stop 2
             end select
             !*! canon_path is not converting ".", etc.
@@ -234,13 +236,14 @@ contains
 
             allocate(fpm_new_settings :: cmd_settings)
 
-            if (any( specified(['src ','lib ','app ','test']) ) )then
+            if (any( specified([character(len=10) :: 'src','lib','app','test','example']) ) )then
                 cmd_settings=fpm_new_settings(&
                  & backfill=lget('backfill'),               &
                  & name=name,                               &
                  & with_executable=lget('app'),             &
                  & with_lib=any([lget('lib'),lget('src')]), &
                  & with_test=lget('test'),                  &
+                 & with_example=lget('example'),            &
                  & verbose=lget('verbose') )
             else
                 cmd_settings=fpm_new_settings(&
@@ -249,6 +252,7 @@ contains
                  & with_executable=.true.,               &
                  & with_lib=.true.,                      &
                  & with_test=.true.,                     &
+                 & with_example=.true.,                  &
                  & verbose=lget('verbose') )
             endif
 
@@ -476,7 +480,7 @@ contains
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--release] [--list]                          ', &
    ' help [NAME(s)]                                                                 ', &
-   ' new NAME [--lib|--src] [--app] [--test] [--backfill]                           ', &
+   ' new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]               ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list] [--example]    ', &
@@ -588,14 +592,16 @@ contains
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                       ', &
-    '     build [--release] [--list] [--compiler COMPILER_NAME]             ', &
-    '     new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
-    '     update [NAME(s)] [--fetch-only] [--clean]                         ', &
-    '     run|test [[--target] NAME(s)] [--release] [--list]                ', &
-    '              [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]    ', &
-    '     help [NAME(s)]                                                    ', &
-    '     list [--list]                                                     ', &
-    '     install [--release] [--no-rebuild] [--prefix PATH] [options]      ', &
+    '    build [--release] [--list] [--compiler COMPILER_NAME]              ', &
+    '    new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]   ', &
+    '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
+    '    run [[--target] NAME(s)] [--release] [--list] [--example]          ', &
+    '        [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]          ', &
+    '    test [[--target] NAME(s)] [--release] [--list]                     ', &
+    '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]         ', &
+    '    help [NAME(s)]                                                     ', &
+    '    list [--list]                                                      ', &
+    '    install [--release] [--no-rebuild] [--prefix PATH] [options]       ', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
     '  --release  Builds or runs in release mode (versus debug mode). fpm(1)', &
@@ -730,6 +736,7 @@ contains
     '    o src/     for modules and procedure source                        ', &
     '    o app/     main program(s) for applications                        ', &
     '    o test/    main program(s) and support files for project tests     ', &
+    '    o example/ main program(s) for examples and demonstrations         ', &
     ' Changed or new files found are rebuilt. The results are placed in     ', &
     ' the build/ directory.                                                 ', &
     '                                                                       ', &
@@ -788,7 +795,7 @@ contains
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
     'SYNOPSIS                                                               ', &
-    ' fpm new NAME [--lib|--src] [--app] [--test] [--backfill]              ', &
+    ' fpm new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]  ', &
     '                                                                       ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
@@ -813,6 +820,8 @@ contains
     '           main.f90                                                    ', &
     '       test/                                                           ', &
     '           main.f90                                                    ', &
+    '       example/                                                        ', &
+    '           demo.f90                                                    ', &
     '                                                                       ', &
     ' Remember to update the information in the sample "fpm.toml"           ', &
     ' file with your name and e-mail address.                               ', &
@@ -823,7 +832,7 @@ contains
     '        ASCII alphanumeric characters and underscores,                 ', &
     '        starting with a letter.                                        ', &
     '                                                                       ', &
-    ' The default is to create all of the src/, app/, and test/             ', &
+    ' The default is to create all of the src/, app/, test/, and example/   ', &
     ' directories. If any of the following options are specified            ', &
     ' then only selected subdirectories are generated:                      ', &
     '                                                                       ', &
@@ -834,8 +843,10 @@ contains
     ' --test       create directory test/ and a placeholder program         ', &
     '              for use with the subcommand "test". Note that sans       ', &
     '              "--lib" it really does not have anything to test.        ', &
+    ' --example    create directory example/ and a placeholder program      ', &
+    '              for use with the subcommand "run --example".             ', &
     '                                                                       ', &
-    ' So the default is equivalent to "fpm NAME --lib --app --test".        ', &
+    ' So the default is equivalent to "fpm NAME --lib --app --test --example"        ', &
     '                                                                       ', &
     ' --backfill   By default the directory must not exist. If this         ', &
     '              option is present the directory may pre-exist and        ', &
@@ -843,7 +854,7 @@ contains
     '              already exist will be created. For example, if you       ', &
     '              previously entered "fpm new myname --lib" entering       ', &
     '              "fpm new myname --backfill" will create the missing      ', &
-    '              app/ and test/ directories and programs.                 ', &
+    '              app/, test/ and example/ directories and programs.                ', &
     '                                                                       ', &
     ' --help       print this help and exit                                 ', &
     ' --version    print program version information and exit               ', &
@@ -855,8 +866,9 @@ contains
     '   cd myproject       # Enter the new directory                        ', &
     '   # and run commands such as                                          ', &
     '   fpm build                                                           ', &
-    '   fpm run            # run example application program                ', &
-    '   fpm test           # run example test program                       ', &
+    '   fpm run            # run example application program(s)             ', &
+    '   fpm test           # run example test program(s)                    ', &
+    '   fpm run --example  # run example program(s)                         ', &
     '' ]
     help_test=[character(len=80) :: &
     'NAME                                                                   ', &

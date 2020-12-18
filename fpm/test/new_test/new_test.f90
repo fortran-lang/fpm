@@ -21,6 +21,7 @@ character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ' new '//scr//'E --lib --test ', &
 ' new '//scr//'F --lib --app', &
 ' new '//scr//'G --test --app', &
+' new '//scr//'H --example', &
 ' new '//scr//'BB --lib', &
 ' new '//scr//'BB --test ', &
 ' new '//scr//'BB --backfill --test', &
@@ -38,7 +39,7 @@ logical                       :: IS_OS_WINDOWS
 
    cmdpath = get_command_path()
    allocate(tally(0))
-   shortdirs=[character(len=80) :: 'A','B','C','D','E','F','G','BB','CC']
+   shortdirs=[character(len=80) :: 'A','B','C','D','E','F','G','H','BB','CC']
    allocate(character(len=80) :: directories(size(shortdirs)))
 
    !! SEE IF EXPECTED FILES ARE GENERATED
@@ -104,6 +105,8 @@ logical                       :: IS_OS_WINDOWS
           &'F/app','F/fpm.toml','F/README.md','F/src','F/app/main.f90','F/src/'//scr//'F.f90']
          case('G');  expected=[ character(len=80)::&
           &'G/app','G/fpm.toml','G/README.md','G/test','G/app/main.f90','G/test/main.f90']
+         case('H');  expected=[ character(len=80)::&
+          &'H/example','H/fpm.toml','H/README.md','H/example/demo.f90']
          case('BB'); expected=[ character(len=80)::&
           &'BB/fpm.toml','BB/README.md','BB/src','BB/test','BB/src/'//scr//'BB.f90','BB/test/main.f90']
          case('CC'); expected=[ character(len=80)::&

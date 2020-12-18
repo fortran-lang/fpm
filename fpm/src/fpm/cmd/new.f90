@@ -107,6 +107,28 @@ character(len=8)             :: date
         call warnwrite(join_path(settings%name, 'test/main.f90'), littlefile)
     endif
 
+    if(settings%with_example)then
+
+       ! create NAME/example or stop
+       call mkdir(join_path(settings%name, 'example'))
+        ! create next section of fpm.toml
+        message=[character(len=80) ::  message,   &
+        &'[[example]]                          ', &
+        &'name="demo"                          ', &
+        &'source-dir="example"                 ', &
+        &'main="demo.f90"                      ', &
+        &'']
+
+        littlefile=[character(len=80) ::          &
+        &'program demo',                          &
+        &'implicit none',                         &
+        &'',                                      &
+        &'print *, "Put some examples in here!"', &
+        &'end program demo']
+        ! create NAME/example/demo.f90
+        call warnwrite(join_path(settings%name, 'example/demo.f90'), littlefile)
+    endif
+
     if(settings%with_executable)then
         ! create next section of fpm.toml
         call mkdir(join_path(settings%name, 'app'))
