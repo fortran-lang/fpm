@@ -122,6 +122,9 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
+.\build\gfortran_debug\example\demo-prog
+if errorlevel 1 exit 1
+
 .\build\gfortran_debug\app\demo-prog
 if errorlevel 1 exit 1
 

@@ -62,7 +62,7 @@ subroutine targets_from_sources(model,sources)
     type(srcfile_t), intent(in) :: sources(:)
 
     integer :: i
-    character(:), allocatable :: xsuffix
+    character(:), allocatable :: xsuffix, exe_dir
     type(build_target_t), pointer :: dep
     logical :: with_lib
 
@@ -99,18 +99,24 @@ subroutine targets_from_sources(model,sources)
                         source = sources(i) &
                         )
             
-            if (any(sources(i)%unit_scope == [FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE])) then
-                call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
-                            link_libraries = sources(i)%link_libraries, &
-                            output_file = join_path(model%output_directory,'app', &
-                            sources(i)%exe_name//xsuffix))
+            if (sources(i)%unit_scope == FPM_SCOPE_APP) then
+
+                exe_dir = 'app'
+
+            else if (sources(i)%unit_scope == FPM_SCOPE_EXAMPLE) then
+
+                exe_dir = 'example'
+
             else
-                call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
-                            link_libraries = sources(i)%link_libraries, &
-                            output_file = join_path(model%output_directory,'test', &
-                            sources(i)%exe_name//xsuffix))
-            
+
+                exe_dir = 'test'
+
             end if
+
+            call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
+                            link_libraries = sources(i)%link_libraries, &
+                            output_file = join_path(model%output_directory,exe_dir, &
+                            sources(i)%exe_name//xsuffix))
 
             ! Executable depends on object
             call add_dependency(model%targets(size(model%targets))%ptr, model%targets(size(model%targets)-1)%ptr)
@@ -139,9 +145,6 @@ subroutine targets_from_sources(model,sources)
         
         object_file = canon_path(source%file_name)
 
-        ! Ignore first directory level
-        object_file = object_file(index(object_file,filesep)+1:)
-        
         ! Convert any remaining directory separators to underscores
         i = index(object_file,filesep)
         do while(i > 0)
@@ -149,18 +152,7 @@ subroutine targets_from_sources(model,sources)
             i = index(object_file,filesep)
         end do
 
-        select case(source%unit_scope)
-
-        case (FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE)
-            object_file = join_path(model%output_directory,'app',object_file)//'.o'
-
-        case (FPM_SCOPE_TEST)
-            object_file = join_path(model%output_directory,'test',object_file)//'.o'
-
-        case default
-            object_file = join_path(model%output_directory,model%package_name,object_file)//'.o'
-            
-        end select
+        object_file = join_path(model%output_directory,model%package_name,object_file)//'.o'
     
     end function get_object_name
 

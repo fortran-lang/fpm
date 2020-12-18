@@ -60,6 +60,7 @@ cd ../hello_complex_2
 
 cd ../with_examples
 "${f_fpm_path}" build
+./build/gfortran_debug/example/demo-prog
 ./build/gfortran_debug/app/demo-prog
 
 cd ../auto_discovery_off
