@@ -27,6 +27,7 @@ character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 'fpm run -- help run     >> fpm_scratch_help.txt',&
 'fpm run -- help test    >> fpm_scratch_help.txt',&
 'fpm run -- help runner  >> fpm_scratch_help.txt',&
+'fpm run -- help install >> fpm_scratch_help.txt',&
 'fpm run -- help list    >> fpm_scratch_help.txt',&
 'fpm run -- help help    >> fpm_scratch_help.txt',&
 'fpm run -- --version    >> fpm_scratch_help.txt',&
@@ -39,6 +40,7 @@ character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 'fpm run --release -- help run     >> fpm_scratch_help3.txt',&
 'fpm run --release -- help test    >> fpm_scratch_help3.txt',&
 'fpm run --release -- help runner  >> fpm_scratch_help3.txt',&
+'fpm run --release -- help install >> fpm_scratch_help3.txt',&
 'fpm run --release -- help list    >> fpm_scratch_help3.txt',&
 'fpm run --release -- help help    >> fpm_scratch_help3.txt',&
 'fpm run --release -- --version    >> fpm_scratch_help3.txt',&
@@ -48,7 +50,8 @@ character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 !'fpm run             >> fpm_scratch_help.txt',&
 !'fpm run -- --list       >> fpm_scratch_help.txt',&
 !'fpm run -- list --list  >> fpm_scratch_help.txt',&
-character(len=*),parameter :: names(*)=[character(len=10) :: 'fpm','new','update','build','run','test','runner','list','help']
+character(len=*),parameter :: names(*)=[character(len=10) ::&
+   'fpm','new','update','build','run','test','runner','install','list','help']
 character(len=:),allocatable :: add
 
    write(*,'(g0:,1x)')'<INFO>TEST help SUBCOMMAND STARTED'

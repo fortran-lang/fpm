@@ -2,6 +2,7 @@ module fpm_environment
     implicit none
     private
     public :: get_os_type
+    public :: os_is_unix
     public :: run
     public :: get_env
 
@@ -104,6 +105,17 @@ contains
             return
         end if
     end function get_os_type
+
+    logical function os_is_unix(os) result(unix)
+        integer, intent(in), optional :: os
+        integer :: build_os
+        if (present(os)) then
+            build_os = os
+        else
+            build_os = get_os_type()
+        end if
+        unix = os /= OS_WINDOWS
+    end function os_is_unix
 
     subroutine run(cmd)
         character(len=*), intent(in) :: cmd

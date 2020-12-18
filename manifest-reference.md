@@ -45,6 +45,9 @@ Every manifest file consists of the following sections:
     Project library dependencies
   - [*dev-dependencies*](#development-dependencies):
     Dependencies only needed for tests
+- [*install*](#installation-configuration):
+  Installation configuration
+
 
 [TOML]: https://toml.io/
 
@@ -432,3 +435,16 @@ rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"
 ### Development dependencies
 
 Development dependencies allow to declare *dev-dependencies* in the manifest root, which are available to all tests but not exported with the project.
+
+
+## Installation configuration
+
+In the *install* section components for the installation can be selected.
+By default only executables are installed, library projects can set the *library* boolean to also installatation the module files and the archive.
+
+*Example*
+
+```toml
+[install]
+library = true
+```

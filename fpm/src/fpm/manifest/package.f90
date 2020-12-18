@@ -24,6 +24,8 @@
 !>[library]
 !>[dependencies]
 !>[dev-dependencies]
+!>[build]
+!>[install]
 !>[[ executable ]]
 !>[[ example ]]
 !>[[ test ]]
@@ -34,6 +36,7 @@ module fpm_manifest_package
     use fpm_manifest_example, only : example_config_t, new_example
     use fpm_manifest_executable, only : executable_config_t, new_executable
     use fpm_manifest_library, only : library_config_t, new_library
+    use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_error, only : error_t, fatal_error, syntax_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
@@ -57,11 +60,14 @@ module fpm_manifest_package
         !> Name of the package
         character(len=:), allocatable :: name
 
+        !> Package version
+        type(version_t) :: version
+
         !> Build configuration data
         type(build_config_t) :: build
 
-        !> Package version
-        type(version_t) :: version
+        !> Installation configuration data
+        type(install_config_t) :: install
 
         !> Library meta data
         type(library_config_t), allocatable :: library
@@ -139,12 +145,18 @@ contains
             return
         end if
         call new_build_config(self%build, child, error)
+        if (allocated(error)) return
 
+        call get_value(table, "install", child, requested=.true., stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, "Type mismatch for install entry, must be a table")
+            return
+        end if
+        call new_install_config(self%install, child, error)
         if (allocated(error)) return
         
         call get_value(table, "version", version, "0")
         call new_version(self%version, version, error)
-        
         if (allocated(error)) return
 
         call get_value(table, "dependencies", child, requested=.false.)
@@ -265,7 +277,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
-                    & "example", "library")
+                    & "example", "library", "install")
                 continue
 
             end select
@@ -309,6 +321,8 @@ contains
         end if
 
         call self%build%info(unit, pr - 1)
+
+        call self%install%info(unit, pr - 1)
 
         if (allocated(self%library)) then
             write(unit, fmt) "- target", "archive"

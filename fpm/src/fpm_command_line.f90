@@ -73,7 +73,12 @@ end type
 type, extends(fpm_run_settings)  :: fpm_test_settings
 end type
 
-type, extends(fpm_cmd_settings)  :: fpm_install_settings
+type, extends(fpm_build_settings) :: fpm_install_settings
+    character(len=:), allocatable :: prefix
+    character(len=:), allocatable :: bindir
+    character(len=:), allocatable :: libdir
+    character(len=:), allocatable :: includedir
+    logical :: no_rebuild
 end type
 
 !> Settings for interacting and updating with project dependencies
@@ -95,7 +100,7 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',     'new',   'build',  'run',     &
-&  'test',  'runner',  'update','list',   'help',   'version'  ]
+&  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
 character(len=:), allocatable :: val_runner, val_build, val_compiler
 
@@ -106,6 +111,7 @@ contains
         character(len=4096)           :: cmdarg
         integer                       :: i
         integer                       :: widest
+        type(fpm_install_settings), allocatable :: install_settings
 
         call set_help()
         ! text for --version switch,
@@ -270,6 +276,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_new]
                 case('build  ' )
                    help_text=[character(len=widest) :: help_text, help_build]
+                case('install' )
+                   help_text=[character(len=widest) :: help_text, help_install]
                 case('run    ' )
                    help_text=[character(len=widest) :: help_text, help_run]
                 case('test   ' )
@@ -293,12 +301,27 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('&
-            & --release F&
-            & --verbose F&
-            &', help_install, version_text)
+            call set_args('--release F --no-rebuild F --verbose F --prefix " " &
+                & --list F &
+                & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
+                & --libdir "lib" --bindir "bin" --includedir "include"', &
+                help_install, version_text)
 
-            allocate(fpm_install_settings :: cmd_settings)
+            call check_build_vals()
+
+            allocate(install_settings)
+            install_settings = fpm_install_settings(&
+                list=lget('list'), &
+                build_name=val_build, &
+                compiler=val_compiler, &
+                no_rebuild=lget('no-rebuild'), &
+                verbose=lget('verbose'))
+            call get_char_arg(install_settings%prefix, 'prefix')
+            call get_char_arg(install_settings%libdir, 'libdir')
+            call get_char_arg(install_settings%bindir, 'bindir')
+            call get_char_arg(install_settings%includedir, 'includedir')
+            call move_alloc(install_settings, cmd_settings)
+
         case('list')
             call set_args('&
             & --list F&
@@ -444,6 +467,7 @@ contains
    '  run       Run the local package application programs                  ', &
    '  test      Run the test programs                                       ', &
    '  update    Update and manage project dependencies                      ', &
+   '  install   Install project                                             ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
@@ -459,6 +483,7 @@ contains
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
+   ' install [--release] [--no-rebuild] [--prefix PATH] [options]                   ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -559,6 +584,7 @@ contains
     '  + test  Run the tests.                                               ', &
     '  + help  Alternate method for displaying subcommand help.             ', &
     '  + list  Display brief descriptions of all subcommands.               ', &
+    '  + install Install project                                            ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                       ', &
@@ -569,6 +595,7 @@ contains
     '              [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]    ', &
     '     help [NAME(s)]                                                    ', &
     '     list [--list]                                                     ', &
+    '     install [--release] [--no-rebuild] [--prefix PATH] [options]      ', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
     '  --release  Builds or runs in release mode (versus debug mode). fpm(1)', &
@@ -597,6 +624,7 @@ contains
     '    fpm run                                                            ', &
     '    fpm new --help                                                     ', &
     '    fpm run myprogram --release -- -x 10 -y 20 --title "my title"      ', &
+    '    fpm install --prefix ~/.local                                      ', &
     '                                                                       ', &
     'SEE ALSO                                                               ', &
     '                                                                       ', &
@@ -875,7 +903,7 @@ contains
     '' ]
     help_update=[character(len=80) :: &
     'NAME', &
-    ' fpm-update(1) - manage project dependencies', &
+    ' update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
     ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
@@ -893,10 +921,56 @@ contains
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
     '' ]
     help_install=[character(len=80) :: &
-    ' fpm(1) subcommand "install"                                           ', &
-    '                                                                       ', &
-    '<USAGE> fpm install NAME                                               ', &
+    'NAME', &
+    ' install(1) - install fpm projects', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm install [--release] [--list] [--no-rebuild] [--prefix DIR]', &
+    '             [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
+    '             [--verbose]', &
+    '', &
+    'DESCRIPTION', &
+    ' Subcommand to install fpm projects. Running install will export the', &
+    ' current project to the selected prefix, this will by default install all', &
+    ' executables (test and examples are excluded) which are part of the projects.', &
+    ' Libraries and module files are only installed for projects requiring the', &
+    ' installation of those components in the package manifest.', &
+    '', &
+    'OPTIONS', &
+    ' --list            list all installable targets for this project,', &
+    '                   but do not install any of them', &
+    ' --release         selects the optimized build instead of the debug build', &
+    ' --no-rebuild      do not rebuild project before installation', &
+    ' --prefix DIR      path to installation directory (requires write access),', &
+    '                   the default prefix on Unix systems is $HOME/.local', &
+    '                   and %APPDATA%\local on Windows', &
+    ' --bindir DIR      subdirectory to place executables in (default: bin)', &
+    ' --libdir DIR      subdirectory to place libraries and archives in', &
+    '                   (default: lib)', &
+    ' --includedir DIR  subdirectory to place headers and module files in', &
+    '                   (default: include)', &
+    ' --verbose         print more information', &
+    '', &
+    'EXAMPLES', &
+    ' 1. Install release version of project:', &
+    '', &
+    '    fpm install --release', &
+    '', &
+    ' 2. Install the project without rebuilding the executables:', &
+    '', &
+    '    fpm install --no-rebuild', &
+    '', &
+    ' 3. Install executables to a custom prefix into the exe directory:', &
+    '', &
+    '    fpm install --prefix $PWD --bindir exe', &
     '' ]
     end subroutine set_help
+
+    subroutine get_char_arg(var, arg)
+      character(len=:), allocatable, intent(out) :: var
+      character(len=*), intent(in) :: arg
+      var = sget(arg)
+      if (len_trim(var) == 0) deallocate(var)
+    end subroutine get_char_arg
 
 end module fpm_command_line
