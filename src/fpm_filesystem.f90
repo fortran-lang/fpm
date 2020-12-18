@@ -5,12 +5,33 @@ module fpm_filesystem
     use fpm_strings, only: f_string, string_t, split
     implicit none
     private
-    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files,&
-            mkdir, exists, get_temp_filename, windows_path, getline, delete_file
+    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
+            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
 contains
+
+
+subroutine env_variable(var, name)
+   character(len=:), allocatable, intent(out) :: var
+   character(len=*), intent(in) :: name
+   integer :: length, stat
+
+   call get_environment_variable(name, length=length, status=stat)
+   if (stat /= 0) return
+
+   allocate(character(len=length) :: var)
+
+   if (length > 0) then
+      call get_environment_variable(name, var, status=stat)
+      if (stat /= 0) then
+         deallocate(var)
+         return
+      end if
+   end if
+
+end subroutine env_variable
 
 
 function basename(path,suffix) result (base)

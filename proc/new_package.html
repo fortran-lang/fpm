@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.8% of total for procedures.">107 statements</a>
+    title=" 4.8% of total for procedures.">114 statements</a>
      </li> 
      
      
@@ -185,7 +185,7 @@
       
       <a class="list-group-item" href="../proc/new_package.html#variable-node">node</a>
       
-      <a class="list-group-item" href="../proc/new_package.html#variable-stat~12">stat</a>
+      <a class="list-group-item" href="../proc/new_package.html#variable-stat~13">stat</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-version~4">version</a>
       
@@ -258,7 +258,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-self~14"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
+  <td><span class="anchor" id="variable-self~16"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -273,7 +273,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-table~4"></span>type(toml_table),</td>
+  <td><span class="anchor" id="variable-table~5"></span>type(toml_table),</td>
   <td>intent(inout)</td>
   <td></td>
   
@@ -288,7 +288,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~18"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~20"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -331,7 +331,7 @@ public subroutine new_package(self, table, error)
       
       <a class="list-group-item" href="../proc/new_package.html#variable-node">node</a>
       
-      <a class="list-group-item" href="../proc/new_package.html#variable-stat~12">stat</a>
+      <a class="list-group-item" href="../proc/new_package.html#variable-stat~13">stat</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-version~4">version</a>
       
@@ -475,7 +475,7 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat~12"></span>integer,</td>
+  <td><span class="anchor" id="variable-stat~13"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -566,12 +566,18 @@ public subroutine new_package(self, table, error)
             <span class="k">return</span>
 <span class="k">        end if</span>
 <span class="k">        call </span><span class="n">new_build_config</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">build</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
+<span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;install&quot;</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Type mismatch for install entry, must be a table&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+<span class="k">        end if</span>
+<span class="k">        call </span><span class="n">new_install_config</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">install</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 <span class="k">        </span>
 <span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span>
         <span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">version</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-        
         <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
 <span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;dependencies&quot;</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
@@ -677,7 +683,7 @@ public subroutine new_package(self, table, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-14 17:54  
+             on 2020-12-18 11:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

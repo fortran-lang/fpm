@@ -143,7 +143,7 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/cmd_build.html'>cmd_build</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/cmd_install.html'>cmd_install</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
+			   <tr><td><a href='../proc/cmd_install.html'>cmd_install</a></td><td><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></td><td>Subroutine</td><td><p>Entry point for the fpm-install subcommand</p></td></tr>
 			 
 			   <tr><td><a href='../proc/cmd_new.html'>cmd_new</a></td><td><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></td><td>Subroutine</td><td></td></tr>
 			 
@@ -162,6 +162,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/delete_file.html'>delete_file</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/dirname.html'>dirname</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
+			 
+			   <tr><td><a href='../proc/env_variable.html'>env_variable</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/exists.html'>exists</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
 			 
@@ -227,6 +229,10 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/new_executable.html'>new_executable</a></td><td><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></td><td>Subroutine</td><td><p>Construct a new executable configuration from a TOML data structure</p></td></tr>
 			 
+			   <tr><td><a href='../proc/new_install_config.html'>new_install_config</a></td><td><a href='../module/fpm_manifest_install.html'>fpm_manifest_install</a></td><td>Subroutine</td><td><p>Create a new installation configuration from a TOML data structure</p></td></tr>
+			 
+			   <tr><td><a href='../proc/new_installer.html'>new_installer</a></td><td><a href='../module/fpm_installer.html'>fpm_installer</a></td><td>Subroutine</td><td><p>Create a new instance of an installer</p></td></tr>
+			 
 			   <tr><td><a href='../proc/new_library.html'>new_library</a></td><td><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></td><td>Subroutine</td><td><p>Construct a new library configuration from a TOML data structure</p></td></tr>
 			 
 			   <tr><td><a href='../proc/new_package.html'>new_package</a></td><td><a href='../module/fpm_manifest_package.html'>fpm_manifest_package</a></td><td>Subroutine</td><td><p>Construct a new package configuration from a TOML data structure</p></td></tr>
@@ -239,6 +245,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../interface/operator%28.in.%29.html'>operator(.in.)</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			 
+			   <tr><td><a href='../proc/os_is_unix.html'>os_is_unix</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td></td></tr>
+			 
 			   <tr><td><a href='../proc/parse_c_source.html'>parse_c_source</a></td><td><a href='../module/fpm_source_parsing.html'>fpm_source_parsing</a></td><td>Function</td><td><p>Parsing of c source files</p><a href="../proc/parse_c_source.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
 			   <tr><td><a href='../proc/parse_f_source.html'>parse_f_source</a></td><td><a href='../module/fpm_source_parsing.html'>fpm_source_parsing</a></td><td>Function</td><td><p>Parsing of free-form fortran source files</p><a href="../proc/parse_f_source.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
@@ -247,7 +255,9 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/read_package_file.html'>read_package_file</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td><p>Process the configuration file to a TOML data structure</p></td></tr>
 			 
-			   <tr><td><a href='../interface/resize.html'>resize</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Interface</td><td><p>Overloaded reallocation interface</p></td></tr>
+			   <tr><td><a href='../interface/resize.html'>resize</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
+			 
+			   <tr><td><a href='../interface/resize~2.html'>resize</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Interface</td><td><p>Overloaded reallocation interface</p></td></tr>
 			 
 			   <tr><td><a href='../proc/resolve_module_dependencies.html'>resolve_module_dependencies</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Add dependencies to source-based targets (<code>FPM_TARGET_OBJECT</code>) 
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
@@ -274,6 +284,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/targets_from_sources.html'>targets_from_sources</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Constructs a list of build targets from a list of source files</p><a href="../proc/targets_from_sources.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
+			   <tr><td><a href='../proc/unix_path.html'>unix_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
+			 
 			   <tr><td><a href='../proc/windows_path.html'>windows_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
 			 
 			 </tbody></table>
@@ -292,7 +304,7 @@ All Procedures &ndash; Fortran-lang/fpm
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-14 17:54  
+             on 2020-12-18 11:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

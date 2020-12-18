@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 6.5% of total for derived types.</p>Including implementation: 75 statements,  5.4% of total for derived types.">13 statements</a>
+    title="<p> 6.1% of total for derived types.</p>Including implementation: 77 statements,  5.1% of total for derived types.">14 statements</a>
      </li> 
      
      
@@ -183,7 +183,9 @@
       
       <a class="list-group-item" href="../type/package_config_t.html#variable-executable">executable</a>
       
-      <a class="list-group-item" href="../type/package_config_t.html#variable-library">library</a>
+      <a class="list-group-item" href="../type/package_config_t.html#variable-install~2">install</a>
+      
+      <a class="list-group-item" href="../type/package_config_t.html#variable-library~2">library</a>
       
       <a class="list-group-item" href="../type/package_config_t.html#variable-name~6">name</a>
       
@@ -217,7 +219,7 @@
   <div id="boundprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/package_config_t.html#boundprocedure-info~4">info</a>
+      <a class="list-group-item" href="../type/package_config_t.html#boundprocedure-info~5">info</a>
       
     </div>
   </div>
@@ -269,7 +271,9 @@
       
       <a class="list-group-item" href="../type/package_config_t.html#variable-executable">executable</a>
       
-      <a class="list-group-item" href="../type/package_config_t.html#variable-library">library</a>
+      <a class="list-group-item" href="../type/package_config_t.html#variable-install~2">install</a>
+      
+      <a class="list-group-item" href="../type/package_config_t.html#variable-library~2">library</a>
       
       <a class="list-group-item" href="../type/package_config_t.html#variable-name~6">name</a>
       
@@ -303,7 +307,7 @@
   <div id="boundprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/package_config_t.html#boundprocedure-info~4">info</a>
+      <a class="list-group-item" href="../type/package_config_t.html#boundprocedure-info~5">info</a>
       
     </div>
   </div>
@@ -413,7 +417,21 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-library"></span>type(<a href='../type/library_config_t.html'>library_config_t</a>),</td>
+  <td><span class="anchor" id="variable-install~2"></span>type(<a href='../type/install_config_t.html'>install_config_t</a>),</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>install</strong></td><td></td><td></td><td><p>Installation configuration data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-library~2"></span>type(<a href='../type/library_config_t.html'>library_config_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -480,7 +498,7 @@
     
      
 <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~4"></span><h3>procedure, public :: <strong>info</strong>  
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~5"></span><h3>procedure, public :: <strong>info</strong>  
     
   </h3></div>
   
@@ -594,11 +612,14 @@ private subroutine info(self, unit, verbosity)
         <span class="c">!&gt; Name of the package</span>
         <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
 
+        <span class="c">!&gt; Package version</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">version</span>
+
         <span class="c">!&gt; Build configuration data</span>
         <span class="k">type</span><span class="p">(</span><span class="n">build_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">build</span>
 
-        <span class="c">!&gt; Package version</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">version</span>
+        <span class="c">!&gt; Installation configuration data</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">install_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">install</span>
 
         <span class="c">!&gt; Library meta data</span>
         <span class="k">type</span><span class="p">(</span><span class="n">library_config_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">library</span>
@@ -644,7 +665,7 @@ private subroutine info(self, unit, verbosity)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-14 17:54  
+             on 2020-12-18 11:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

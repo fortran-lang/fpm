@@ -25,7 +25,8 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
 use fpm_manifest_dependency, only: dependency_config_t
 implicit none
 private
-public :: build_model, cmd_build, cmd_install, cmd_run
+public :: cmd_build, cmd_run
+public :: build_model
 
 contains
 
@@ -203,12 +204,6 @@ else
 endif
 
 end subroutine
-
-subroutine cmd_install(settings)
-type(fpm_install_settings), intent(in) :: settings
-    print *, "fpm error: 'fpm install' not implemented."
-    error stop 8
-end subroutine cmd_install
 
 subroutine cmd_run(settings,test)
     class(fpm_run_settings), intent(in) :: settings

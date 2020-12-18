@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.4% of total for procedures.">186 statements</a>
+    title=" 8.3% of total for procedures.">196 statements</a>
      </li> 
      
      
@@ -175,7 +175,9 @@
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-cmdarg">cmdarg</a>
       
-      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~6">i</a>
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~4">i</a>
+      
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-widest">widest</a>
       
@@ -296,7 +298,9 @@ public subroutine get_command_line_settings(cmd_settings)
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-cmdarg">cmdarg</a>
       
-      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~6">i</a>
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~4">i</a>
+      
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-widest">widest</a>
       
@@ -384,11 +388,25 @@ public subroutine get_command_line_settings(cmd_settings)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~6"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~4"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>i</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-install_settings"></span>type(<a href='../type/fpm_install_settings.html'>fpm_install_settings</a>),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>install_settings</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -513,6 +531,7 @@ subroutine printhelp(lines)
         <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">cmdarg</span>
         <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">i</span>
         <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">widest</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">fpm_install_settings</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">install_settings</span>
 
         <span class="k">call </span><span class="n">set_help</span><span class="p">()</span>
         <span class="c">! text for --version switch,</span>
@@ -677,6 +696,8 @@ subroutine printhelp(lines)
                    <span class="n">help_text</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">help_new</span><span class="p">]</span>
                 <span class="k">case</span><span class="p">(</span><span class="s1">&#39;build  &#39;</span> <span class="p">)</span>
                    <span class="n">help_text</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">help_build</span><span class="p">]</span>
+                <span class="k">case</span><span class="p">(</span><span class="s1">&#39;install&#39;</span> <span class="p">)</span>
+                   <span class="n">help_text</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">help_install</span><span class="p">]</span>
                 <span class="k">case</span><span class="p">(</span><span class="s1">&#39;run    &#39;</span> <span class="p">)</span>
                    <span class="n">help_text</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">help_run</span><span class="p">]</span>
                 <span class="k">case</span><span class="p">(</span><span class="s1">&#39;test   &#39;</span> <span class="p">)</span>
@@ -700,12 +721,27 @@ subroutine printhelp(lines)
             <span class="k">call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;install&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; --release F&amp;</span>
-<span class="s1">            &amp; --verbose F&amp;</span>
-<span class="s1">            &amp;&#39;</span><span class="p">,</span> <span class="n">help_install</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;--release F --no-rebuild F --verbose F --prefix &quot; &quot; &amp;</span>
+<span class="s1">                &amp; --list F &amp;</span>
+<span class="s1">                &amp; --compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;FPM_COMPILER&#39;</span><span class="p">,</span><span class="s1">&#39;gfortran&#39;</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot; &amp;</span>
+<span class="s1">                &amp; --libdir &quot;lib&quot; --bindir &quot;bin&quot; --includedir &quot;include&quot;&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="n">help_install</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
 
-            <span class="k">allocate</span><span class="p">(</span><span class="n">fpm_install_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
+            <span class="k">call </span><span class="n">check_build_vals</span><span class="p">()</span>
+
+            <span class="k">allocate</span><span class="p">(</span><span class="n">install_settings</span><span class="p">)</span>
+            <span class="n">install_settings</span> <span class="o">=</span> <span class="n">fpm_install_settings</span><span class="p">(&amp;</span>
+                <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
+                <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="n">no_rebuild</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;no-rebuild&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">))</span>
+            <span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;prefix&#39;</span><span class="p">)</span>
+            <span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">libdir</span><span class="p">,</span> <span class="s1">&#39;libdir&#39;</span><span class="p">)</span>
+            <span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">bindir</span><span class="p">,</span> <span class="s1">&#39;bindir&#39;</span><span class="p">)</span>
+            <span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">includedir</span><span class="p">,</span> <span class="s1">&#39;includedir&#39;</span><span class="p">)</span>
+            <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">install_settings</span><span class="p">,</span> <span class="n">cmd_settings</span><span class="p">)</span>
+
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
             <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --list F&amp;</span>
@@ -836,7 +872,7 @@ subroutine printhelp(lines)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-14 17:54  
+             on 2020-12-18 11:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
