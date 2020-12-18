@@ -1,4 +1,57 @@
 module fpm_cmd_new
+!># Definition of the "new" subcommand
+!>
+!> A type of the general command base class [[fpm_cmd_settings]]
+!> was created for the "new" subcommand ==> type [[fpm_new_settings]].
+!> This procedure read the values that were set on the command line 
+!> from this type to decide what actions to take. 
+!>
+!> It is virtually self-contained and so independant of the rest of the 
+!> application that it could function as a seperate program.    
+!>
+!> The "new" subcommand options currently consist of a SINGLE top
+!> directory name to create that must have a name that is an 
+!> allowable Fortran variable name. That should have been ensured
+!> by the command line processing before this procedure is called.
+!> So basically this routine has already had the options vetted and
+!> just needs to conditionally create a few files.
+!> 
+!> As described in the documentation documentation it will selectively
+!> create the subdirectories app/, test/, src/, and example/
+!> and populate them with sample files.
+!> 
+!> It also needs to create an initial manifest file "fpm.toml".
+!> 
+!> It then calls the system command "git init".
+!>
+!> It should test for file existence and not overwrite existing
+!> files and inform the user if there were conflicts. 
+!>
+!> Any changes should be reflected in the documentation in
+!> [[fpm_command_line.f90]]
+!> 
+!> FUTURE
+!> A filename like "." would need system commands or a standard routine
+!> like realpath(3c) to process properly.
+!> 
+!> Perhaps allow more than one name on a single command. It is an arbitrary
+!> restriction based on a concensus preference, not a required limitation.
+!> 
+!> Initially the name of the directory is used as the module name in the
+!> src file so it must be an allowable Fortran variable name. If there are
+!> complaints about it it might be changed. Handling unicode at this point
+!> might be problematic as not all current compilers handle it. Other 
+!> utilities like content trackers (ie. git) or repositories like github
+!> might also have issues with alternative names or names with spaces, etc.
+!> So for the time being it seems prudent to encourage simple ASCII top directory
+!> names (similiar to the primary programming language Fortran itself).
+!> 
+!> Should be able to create or pull more complicated initial examples
+!> based on various templates. It should place or mention other relevant
+!> documents such as a description of the manifest file format in user hands;
+!> or how to access registered packages and local packages,
+!> although some other command might provide that (and the help command should
+!> be the first go-to for a CLI utility).
 
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
@@ -17,11 +70,14 @@ character(len=:),allocatable :: message(:)
 character(len=:),allocatable :: littlefile(:)
 character(len=8)             :: date
 
+    !> get date to put into metadata in manifest file "fpm.toml"
     call date_and_time(DATE=date)
 
+    !> TOP DIRECTORY NAME PROCESSING
+    !> see if requested new directory already exists and process appropriately
     if(exists(settings%name) .and. .not.settings%backfill )then
         write(stderr,'(*(g0,1x))')&
-        & 'ERROR: ',settings%name,'already exists.'
+        & '<ERROR>',settings%name,'already exists.'
         write(stderr,'(*(g0,1x))')&
         & '        perhaps you wanted to add --backfill ?'
         return
@@ -29,14 +85,15 @@ character(len=8)             :: date
         write(*,'(*(g0))')'backfilling ',settings%name
     elseif(exists(settings%name) )then
         write(stderr,'(*(g0,1x))')&
-        & 'ERROR: ',settings%name,'already exists and is not a directory.'
+        & '<ERROR>',settings%name,'already exists and is not a directory.'
         return
     else
         ! make new directory
         call mkdir(settings%name)
     endif
 
-    ! change to new directory as a test. System dependent potentially
+
+    !> temporarily change to new directory as a test. NB: System dependent 
     call run('cd '//settings%name)
     ! NOTE: need some system routines to handle filenames like "."
     ! like realpath() or getcwd().
