@@ -54,7 +54,6 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -Wimplicit-interface&
        & -fPIC&
        & -fmax-errors=1&
-       & -ffast-math&
        & -funroll-loops&
        &'
        mandatory=' -J '//modpath//' -I '//modpath 
@@ -76,7 +75,6 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -Wimplicit-interface&
        & -fPIC&
        & -fmax-errors=1&
-       & -ffast-math&
        & -funroll-loops&
        & -fcoarray=single&
        &'
