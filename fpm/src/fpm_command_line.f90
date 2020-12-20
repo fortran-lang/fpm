@@ -135,10 +135,10 @@ contains
          &  os_type]
         ! find the subcommand name by looking for first word on command
         ! not starting with dash
-        cmdarg = ''
+        cmdarg=' '
         do i = 1, command_argument_count()
-            call get_command_argument(i, cmdarg)
-            if(adjustl(cmdarg(1:1)) .ne. '-')exit
+           call get_command_argument(i, cmdarg)
+           if(adjustl(cmdarg(1:1)) .ne. '-')exit
         enddo
 
         ! now set subcommand-specific help text and process commandline
@@ -252,7 +252,7 @@ contains
                  & with_executable=.true.,               &
                  & with_lib=.true.,                      &
                  & with_test=.true.,                     &
-                 & with_example=.true.,                  &
+                 & with_example=.false.,                 &
                  & verbose=lget('verbose') )
             endif
 
@@ -819,7 +819,7 @@ contains
     '       app/                                                            ', &
     '           main.f90                                                    ', &
     '       test/                                                           ', &
-    '           main.f90                                                    ', &
+    '           check.f90                                                   ', &
     '       example/                                                        ', &
     '           demo.f90                                                    ', &
     '                                                                       ', &
@@ -832,7 +832,7 @@ contains
     '        ASCII alphanumeric characters and underscores,                 ', &
     '        starting with a letter.                                        ', &
     '                                                                       ', &
-    ' The default is to create all of the src/, app/, test/, and example/   ', &
+    ' The default is to create the src/, app/, and test/,                   ', &
     ' directories. If any of the following options are specified            ', &
     ' then only selected subdirectories are generated:                      ', &
     '                                                                       ', &
@@ -846,7 +846,7 @@ contains
     ' --example    create directory example/ and a placeholder program      ', &
     '              for use with the subcommand "run --example".             ', &
     '                                                                       ', &
-    ' So the default is equivalent to "fpm NAME --lib --app --test --example"        ', &
+    ' So the default is equivalent to "fpm NAME --lib --app --test"         ', &
     '                                                                       ', &
     ' --backfill   By default the directory must not exist. If this         ', &
     '              option is present the directory may pre-exist and        ', &
@@ -854,7 +854,7 @@ contains
     '              already exist will be created. For example, if you       ', &
     '              previously entered "fpm new myname --lib" entering       ', &
     '              "fpm new myname --backfill" will create the missing      ', &
-    '              app/, test/ and example/ directories and programs.                ', &
+    '              app/ and test/ directories and programs.                 ', &
     '                                                                       ', &
     ' --help       print this help and exit                                 ', &
     ' --version    print program version information and exit               ', &

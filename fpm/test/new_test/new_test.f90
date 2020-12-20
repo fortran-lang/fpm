@@ -92,25 +92,25 @@ logical                       :: IS_OS_WINDOWS
       else
          select case(shortdirs(i))
          case('A');  expected=[ character(len=80)::&
-          &'A/app','A/fpm.toml','A/README.md','A/src','A/test','A/app/main.f90','A/src/'//scr//'A.f90','A/test/main.f90']
+          &'A/app','A/fpm.toml','A/README.md','A/src','A/test','A/app/main.f90','A/src/'//scr//'A.f90','A/test/check.f90']
          case('B');  expected=[ character(len=80)::&
           &'B/fpm.toml','B/README.md','B/src','B/src/'//scr//'B.f90']
          case('C');  expected=[ character(len=80)::&
           &'C/app','C/fpm.toml','C/README.md','C/app/main.f90']
          case('D');  expected=[ character(len=80)::&
-          &'D/fpm.toml','D/README.md','D/test','D/test/main.f90']
+          &'D/fpm.toml','D/README.md','D/test','D/test/check.f90']
          case('E');  expected=[ character(len=80)::&
-          &'E/fpm.toml','E/README.md','E/src','E/test','E/src/'//scr//'E.f90','E/test/main.f90']
+          &'E/fpm.toml','E/README.md','E/src','E/test','E/src/'//scr//'E.f90','E/test/check.f90']
          case('F');  expected=[ character(len=80)::&
           &'F/app','F/fpm.toml','F/README.md','F/src','F/app/main.f90','F/src/'//scr//'F.f90']
          case('G');  expected=[ character(len=80)::&
-          &'G/app','G/fpm.toml','G/README.md','G/test','G/app/main.f90','G/test/main.f90']
+          &'G/app','G/fpm.toml','G/README.md','G/test','G/app/main.f90','G/test/check.f90']
          case('H');  expected=[ character(len=80)::&
           &'H/example','H/fpm.toml','H/README.md','H/example/demo.f90']
          case('BB'); expected=[ character(len=80)::&
-          &'BB/fpm.toml','BB/README.md','BB/src','BB/test','BB/src/'//scr//'BB.f90','BB/test/main.f90']
+          &'BB/fpm.toml','BB/README.md','BB/src','BB/test','BB/src/'//scr//'BB.f90','BB/test/check.f90']
          case('CC'); expected=[ character(len=80)::&
-          &'CC/app','CC/fpm.toml','CC/README.md','CC/src','CC/test','CC/app/main.f90','CC/src/'//scr//'CC.f90','CC/test/main.f90']
+          &'CC/app','CC/fpm.toml','CC/README.md','CC/src','CC/test','CC/app/main.f90','CC/src/'//scr//'CC.f90','CC/test/check.f90']
          case default
             write(*,*)'ERROR: internal error. unknown directory name ',trim(shortdirs(i))
             stop 4
@@ -149,7 +149,7 @@ logical                       :: IS_OS_WINDOWS
       call execute_command_line('rmdir fpm_scratch_* /s /q',exitstat=estat,cmdstat=cstat,cmdmsg=message)
    end select
 
-   write(*,'("TALLY=",*(g0))')tally
+   write(*,'("new TEST TALLY=",*(g0))')tally
    if(all(tally))then
       write(*,'(*(g0))')'PASSED: all ',count(tally),' tests passed '
    else

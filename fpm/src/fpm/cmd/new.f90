@@ -3,49 +3,49 @@ module fpm_cmd_new
 !>
 !> A type of the general command base class [[fpm_cmd_settings]]
 !> was created for the "new" subcommand ==> type [[fpm_new_settings]].
-!> This procedure read the values that were set on the command line 
-!> from this type to decide what actions to take. 
+!> This procedure read the values that were set on the command line
+!> from this type to decide what actions to take.
 !>
-!> It is virtually self-contained and so independant of the rest of the 
-!> application that it could function as a seperate program.    
+!> It is virtually self-contained and so independant of the rest of the
+!> application that it could function as a seperate program.
 !>
 !> The "new" subcommand options currently consist of a SINGLE top
-!> directory name to create that must have a name that is an 
+!> directory name to create that must have a name that is an
 !> allowable Fortran variable name. That should have been ensured
 !> by the command line processing before this procedure is called.
 !> So basically this routine has already had the options vetted and
 !> just needs to conditionally create a few files.
-!> 
+!>
 !> As described in the documentation documentation it will selectively
 !> create the subdirectories app/, test/, src/, and example/
 !> and populate them with sample files.
-!> 
+!>
 !> It also needs to create an initial manifest file "fpm.toml".
-!> 
+!>
 !> It then calls the system command "git init".
 !>
 !> It should test for file existence and not overwrite existing
-!> files and inform the user if there were conflicts. 
+!> files and inform the user if there were conflicts.
 !>
 !> Any changes should be reflected in the documentation in
 !> [[fpm_command_line.f90]]
-!> 
+!>
 !> FUTURE
 !> A filename like "." would need system commands or a standard routine
 !> like realpath(3c) to process properly.
-!> 
+!>
 !> Perhaps allow more than one name on a single command. It is an arbitrary
 !> restriction based on a concensus preference, not a required limitation.
-!> 
+!>
 !> Initially the name of the directory is used as the module name in the
 !> src file so it must be an allowable Fortran variable name. If there are
 !> complaints about it it might be changed. Handling unicode at this point
-!> might be problematic as not all current compilers handle it. Other 
+!> might be problematic as not all current compilers handle it. Other
 !> utilities like content trackers (ie. git) or repositories like github
 !> might also have issues with alternative names or names with spaces, etc.
 !> So for the time being it seems prudent to encourage simple ASCII top directory
 !> names (similiar to the primary programming language Fortran itself).
-!> 
+!>
 !> Should be able to create or pull more complicated initial examples
 !> based on various templates. It should place or mention other relevant
 !> documents such as a description of the manifest file format in user hands;
@@ -92,8 +92,7 @@ character(len=8)             :: date
         call mkdir(settings%name)
     endif
 
-
-    !> temporarily change to new directory as a test. NB: System dependent 
+    !> temporarily change to new directory as a test. NB: System dependent
     call run('cd '//settings%name)
     ! NOTE: need some system routines to handle filenames like "."
     ! like realpath() or getcwd().
@@ -151,17 +150,17 @@ character(len=8)             :: date
         &'[[test]]                             ', &
         &'name="runTests"                      ', &
         &'source-dir="test"                    ', &
-        &'main="main.f90"                      ', &
+        &'main="check.f90"                     ', &
         &'']
 
         littlefile=[character(len=80) ::       &
-        &'program main',                       &
+        &'program check',                      &
         &'implicit none',                      &
         &'',                                   &
         &'print *, "Put some tests in here!"', &
-        &'end program main']
-        ! create NAME/test/main.f90
-        call warnwrite(join_path(settings%name, 'test/main.f90'), littlefile)
+        &'end program check']
+        ! create NAME/test/check.f90
+        call warnwrite(join_path(settings%name, 'test/check.f90'), littlefile)
     endif
 
     if(settings%with_example)then
@@ -229,7 +228,7 @@ character(len=*),intent(in) :: data(:)
     if(.not.exists(fname))then
         call filewrite(fname,data)
     else
-        write(stderr,'(*(g0,1x))')'INFO:   ',fname,&
+        write(stderr,'(*(g0,1x))')'<INFO>  ',fname,&
         & 'already exists. Not overwriting'
     endif
 
@@ -263,7 +262,7 @@ character(len=256)                    :: message
     endif
     if(ios.ne.0)then
         write(stderr,'(*(a:,1x))')&
-        & '*filewrite* error:',filename,trim(message)
+        & '<ERROR> *filewrite*:',filename,trim(message)
         error stop 1
     endif
     ! write file
@@ -271,14 +270,14 @@ character(len=256)                    :: message
         write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
         if(ios.ne.0)then
             write(stderr,'(*(a:,1x))')&
-            & '*filewrite* error:',filename,trim(message)
+            & '<ERROR> *filewrite*:',filename,trim(message)
             error stop 4
         endif
     enddo
     ! close file
     close(unit=lun,iostat=ios,iomsg=message)
     if(ios.ne.0)then
-        write(stderr,'(*(a:,1x))')'*filewrite* error:',trim(message)
+        write(stderr,'(*(a:,1x))')'<ERROR> *filewrite*:',trim(message)
         error stop 2
     endif
 end subroutine filewrite
