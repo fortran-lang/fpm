@@ -681,7 +681,6 @@ defineCompilerSettings specifiedFlags compiler release
               , "-fmax-errors=1"
               , "-O3"
               , "-march=native"
-              , "-ffast-math"
               , "-funroll-loops"
               , "-fcoarray=single"
               ]
@@ -714,7 +713,6 @@ defineCompilerSettings specifiedFlags compiler release
               , "-fmax-errors=1"
               , "-O3"
               , "-march=native"
-              , "-ffast-math"
               , "-funroll-loops"
               ]
             else
@@ -742,7 +740,6 @@ defineCompilerSettings specifiedFlags compiler release
               , "-Wimplicit-interface"
               , "-fPIC"
               , "-fmax-errors=1"
-              , "-ffast-math"
               , "-funroll-loops"
               ]
             else
