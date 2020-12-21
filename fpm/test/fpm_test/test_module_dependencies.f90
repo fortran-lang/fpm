@@ -52,21 +52,22 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(srcfile_t) :: sources(2)
         type(fpm_model_t) :: model
 
         model%output_directory = ''
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
 
-        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
         
-        sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_2')], &
                                     uses=[string_t('my_mod_1')])
 
-        call targets_from_sources(model,sources)
+        call targets_from_sources(model)
         call resolve_module_dependencies(model%targets,error)
 
         if (allocated(error)) then
@@ -87,13 +88,13 @@ contains
 
 
         call check_target(model%targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                          source=sources(1),error=error)
+                          source=model%packages(1)%sources(1),error=error)
         
         if (allocated(error)) return
         
 
         call check_target(model%targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          deps=[model%targets(2)],source=sources(2),error=error)
+                          deps=[model%targets(2)],source=model%packages(1)%sources(2),error=error)
         
         if (allocated(error)) return
         
@@ -121,23 +122,24 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: i
-        type(srcfile_t) :: sources(3)
         type(fpm_model_t) :: model
         character(:), allocatable :: scope_str
 
         model%output_directory = ''
-
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
+        
         scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
 
-        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
         
-        sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=exe_scope, &
                                     uses=[string_t('my_mod_1')])
 
-        call targets_from_sources(model,sources)
+        call targets_from_sources(model)
         call resolve_module_dependencies(model%targets,error)
 
         if (allocated(error)) then
@@ -157,12 +159,12 @@ contains
         if (allocated(error)) return
 
         call check_target(model%targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                            source=sources(1),error=error)
+                            source=model%packages(1)%sources(1),error=error)
 
         if (allocated(error)) return
 
         call check_target(model%targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                            deps=[model%targets(2)],source=sources(2),error=error)
+                            deps=[model%targets(2)],source=model%packages(1)%sources(2),error=error)
 
         if (allocated(error)) return
 
@@ -185,17 +187,18 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: i
-        type(srcfile_t) :: sources(1)
         type(fpm_model_t) :: model
 
         model%output_directory = ''
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(1))
 
-        sources(1) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')], &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(model,sources)
+        call targets_from_sources(model)
         call resolve_module_dependencies(model%targets,error)
 
         if (allocated(error)) then
@@ -211,7 +214,7 @@ contains
         call resolve_target_linking(model%targets)
 
         call check_target(model%targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                          source=sources(1),error=error)
+                          source=model%packages(1)%sources(1),error=error)
         
         if (allocated(error)) return
 
@@ -241,27 +244,28 @@ contains
         integer, intent(in) :: exe_scope
         type(error_t), allocatable, intent(out) :: error
 
-        type(srcfile_t) :: sources(3)
         type(fpm_model_t) :: model
         character(:), allocatable :: scope_str
 
         model%output_directory = ''
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(3))
 
         scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
 
-        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod1.f90", &
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod1.f90", &
                                     scope = exe_scope, &
                                     provides=[string_t('app_mod1')])
         
-        sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod2.f90", &
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod2.f90", &
                                     scope = exe_scope, &
                                     provides=[string_t('app_mod2')],uses=[string_t('app_mod1')])
 
-        sources(3) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
+        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=exe_scope, &
                                     uses=[string_t('app_mod2')])
 
-        call targets_from_sources(model,sources)
+        call targets_from_sources(model)
         call resolve_module_dependencies(model%targets,error)
 
         if (allocated(error)) then
@@ -276,17 +280,17 @@ contains
         call resolve_target_linking(model%targets)
 
         call check_target(model%targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                          source=sources(1),error=error)
+                          source=model%packages(1)%sources(1),error=error)
         
         if (allocated(error)) return
 
         call check_target(model%targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          source=sources(2),deps=[model%targets(1)],error=error)
+                          source=model%packages(1)%sources(2),deps=[model%targets(1)],error=error)
         
         if (allocated(error)) return
 
         call check_target(model%targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          source=sources(3),deps=[model%targets(2)],error=error)
+                          source=model%packages(1)%sources(3),deps=[model%targets(2)],error=error)
         
         if (allocated(error)) return
 
@@ -305,21 +309,22 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(srcfile_t) :: sources(2)
         type(fpm_model_t) :: model
 
         model%output_directory = ''
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
 
-        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
         
-        sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_2')], &
                                     uses=[string_t('my_mod_3')])
 
-        call targets_from_sources(model,sources)
+        call targets_from_sources(model)
         call resolve_module_dependencies(model%targets,error)
         
     end subroutine test_missing_library_use
@@ -331,20 +336,21 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(srcfile_t) :: sources(2)
         type(fpm_model_t) :: model
 
         model%output_directory = ''
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
 
-        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
 
-        sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('my_mod_2')])
 
-        call targets_from_sources(model,sources)
+        call targets_from_sources(model)
         call resolve_module_dependencies(model%targets,error)
         
     end subroutine test_missing_program_use
@@ -356,21 +362,22 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(srcfile_t) :: sources(2)
         type(fpm_model_t) :: model
 
         model%output_directory = ''
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
 
-        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod.f90", &
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')])
         
-        sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod.f90", &
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod')], &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(model,sources)
+        call targets_from_sources(model)
         call resolve_module_dependencies(model%targets,error)
         
     end subroutine test_invalid_library_use
@@ -382,20 +389,21 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(srcfile_t) :: sources(2)
         type(fpm_model_t) :: model
 
         model%output_directory = ''
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
 
-        sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/subdir/app_mod.f90", &
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/subdir/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')])
         
-        sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(model,sources)
+        call targets_from_sources(model)
         call resolve_module_dependencies(model%targets,error)
         
     end subroutine test_invalid_own_module_use

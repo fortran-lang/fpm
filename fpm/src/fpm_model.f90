@@ -111,6 +111,18 @@ type srcfile_t
 end type srcfile_t
 
 
+!> Type for describing a single package
+type package_t
+
+    !> Name of package
+    character(:), allocatable :: name
+
+    !> Array of sources
+    type(srcfile_t), allocatable :: sources(:)
+
+end type package_t
+
+
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
 
@@ -158,15 +170,15 @@ type build_target_t
 end type build_target_t
 
 
-!> Type describing everything required to build a package
-!> and its dependencies.
+!> Type describing everything required to build
+!>  the root package and its dependencies.
 type :: fpm_model_t
 
-    !> Name of package
+    !> Name of root package
     character(:), allocatable :: package_name
 
-    !> Array of sources
-    type(srcfile_t), allocatable :: sources(:)
+    !> Array of packages (including the root package)
+    type(package_t), allocatable :: packages(:)
 
     !> Array of targets with module-dependencies resolved
     type(build_target_ptr), allocatable :: targets(:)
