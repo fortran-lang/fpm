@@ -38,7 +38,6 @@ subroutine build_model(model, settings, package, error)
     type(fpm_build_settings), intent(in) :: settings
     type(package_config_t), intent(in) :: package
     type(error_t), allocatable, intent(out) :: error
-    type(string_t), allocatable :: package_list(:)
 
     integer :: i
     type(package_config_t) :: dependency
@@ -60,10 +59,6 @@ subroutine build_model(model, settings, package, error)
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
     call model%deps%add(package, error)
     if (allocated(error)) return
-
-    allocate(package_list(1))
-    package_list(1)%s = package%name
-
 
     if(settings%compiler.eq.'')then
         model%fortran_compiler = 'gfortran'
