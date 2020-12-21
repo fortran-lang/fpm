@@ -66,13 +66,16 @@ contains
 subroutine cmd_new(settings)
 type(fpm_new_settings), intent(in) :: settings
 character(len=:),allocatable :: bname          ! baeename of NAME
-character(len=:),allocatable :: message(:)
+character(len=:),allocatable :: tomlfile(:)
 character(len=:),allocatable :: littlefile(:)
 character(len=8)             :: date
 
     !> get date to put into metadata in manifest file "fpm.toml"
     call date_and_time(DATE=date)
 
+    write(*,*)settings%name
+    write(*,*)settings%backfill
+    write(*,*)settings%verbose
     !> TOP DIRECTORY NAME PROCESSING
     !> see if requested new directory already exists and process appropriately
     if(exists(settings%name) .and. .not.settings%backfill )then
@@ -107,23 +110,78 @@ character(len=8)             :: date
     call warnwrite(join_path(settings%name, 'README.md'), littlefile)
 
     ! start building NAME/fpm.toml
-    message=[character(len=80) ::                 &
-    &'name = "'//bname//'"                     ', &
-    &'version = "0.1.0"                        ', &
-    &'license = "license"                      ', &
-    &'author = "Jane Doe"                      ', &
-    &'maintainer = "jane.doe@example.com"      ', &
-    &'copyright = "'//date(1:4)//' Jane Doe"   ', &
-    &'                                         ', &
-    &'']
+    if(settings%verbose)then
+       tomlfile=[character(len=80) :: &
+       &'# Manifest root                                                                 ',&
+       &'                                                                                ',&
+       &'## Project Identification                                                       ',&
+       &'name = "'//bname//'"', &
+       &'  #  The project name (required) is how the project will be referred to.        ',&
+       &'  #  It is used by another package using it as a dependency and as the          ',&
+       &'  #  default name of the library built from src/.                               ',&
+       &'                                                                                ',&
+       &'version = "0.1.0"                                                               ',&
+       &'  #  The project version number is a string. A recommended standardized way     ',&
+       &'  #  to manage and specify versions is the Semantic Versioning scheme.          ',&
+       &'                                                                                ',&
+       &'license = "license"                                                             ',&
+       &'  #  Licensing information specified using a standard such as SPDX              ',&
+       &'  #  identifiers are preferred (eg. "Apache-2.0 OR MIT" or "LGPL-3.0-or-later").',&
+       &'                                                                                ',&
+       &'maintainer = "jane.doe@example.com"                                             ',&
+       &'  #  Information on the project maintainer and means to reach out to them.      ',&
+       &'                                                                                ',&
+       &'author = "Jane Doe"                                                             ',&
+       &'  #  Information on the project author.                                         ',&
+       &'                                                                                ',&
+       &'copyright = "Copyright 2020 Jane Doe"                                           ',&
+       &'  #  A statement clarifying the Copyright status of the project.                ',&
+       &'                                                                                ',&
+       &'#description = "A short project summary in plain text"                          ',&
+       &'  #  The description provides a short summary on the project. It should be      ',&
+       &'  #  plain text and not use any markup formatting.                              ',&
+       &'                                                                                ',&
+       &'#categories = ["fortran", "graphics"]                                           ',&
+       &'  #  Categories associated with the project. Listing only one is preferred.     ',&
+       &'                                                                                ',&
+       &'#keywords = ["hdf5", "mpi"]                                                     ',&
+       &'  #  The keywords field is an array of strings describing the project.          ',&
+       &'                                                                                ',&
+       &'#homepage = "https://stdlib.fortran-lang.org"                                   ',&
+       &'  #  URL to the webpage of the project.                                         ',&
+       &'                                                                                ',&
+       &'## TABLES                                                                       ',&
+       &'                                                                                ',&
+       &'## BUILD CONFIGURATION SECTION                                                  ',&
+       &'[build]                                                                         ',&
+       &'auto-executables = true  # Toggle automatic discovery of executables            ',&
+       &'auto-examples = true     # Toggle automatic discovery of example programs       ',&
+       &'auto-tests = true        # Toggle automatic discovery of test executables       ',&
+       &'#link = ["blas", "lapack", "z", "X11"] # Linking against libraries              ',&
+       &'                                                                                ',&
+       &'## TARGETS                                                                      ',&
+       &'']
+    else
+       tomlfile=[character(len=80) ::                &
+       &'name = "'//bname//'"                     ', &
+       &'version = "0.1.0"                        ', &
+       &'license = "license"                      ', &
+       &'author = "Jane Doe"                      ', &
+       &'maintainer = "jane.doe@example.com"      ', &
+       &'copyright = "'//date(1:4)//' Jane Doe"   ', &
+       &'                                         ', &
+       &'']
+    endif
 
     if(settings%with_lib)then
         call mkdir(join_path(settings%name,'src') )
         ! create next section of fpm.toml
-        message=[character(len=80) ::  message,   &
-        &'[library]                            ', &
-        &'source-dir="src"                     ', &
-        &'']
+        if(settings%verbose)then
+            tomlfile=[character(len=80) ::  tomlfile, &
+            &'[library]                            ', &
+            &'source-dir="src"                     ', &
+            &'']
+        endif
         ! create placeholder module src/bname.f90
         littlefile=[character(len=80) ::          &
         &'module '//bname,                        &
@@ -146,12 +204,14 @@ character(len=8)             :: date
        ! create NAME/test or stop
        call mkdir(join_path(settings%name, 'test'))
         ! create next section of fpm.toml
-        message=[character(len=80) ::  message,   &
-        &'[[test]]                             ', &
-        &'name="runTests"                      ', &
-        &'source-dir="test"                    ', &
-        &'main="check.f90"                     ', &
-        &'']
+        if(settings%verbose)then
+           tomlfile=[character(len=80) ::  tomlfile ,&
+           &'[[test]]                             ', &
+           &'name="runTests"                      ', &
+           &'source-dir="test"                    ', &
+           &'main="check.f90"                     ', &
+           &'']
+        endif
 
         littlefile=[character(len=80) ::       &
         &'program check',                      &
@@ -168,12 +228,14 @@ character(len=8)             :: date
        ! create NAME/example or stop
        call mkdir(join_path(settings%name, 'example'))
         ! create next section of fpm.toml
-        message=[character(len=80) ::  message,   &
-        &'[[example]]                          ', &
-        &'name="demo"                          ', &
-        &'source-dir="example"                 ', &
-        &'main="demo.f90"                      ', &
-        &'']
+        if(settings%verbose)then
+           tomlfile=[character(len=80) ::  tomlfile, &
+           &'[[example]]                          ', &
+           &'name="demo"                          ', &
+           &'source-dir="example"                 ', &
+           &'main="demo.f90"                      ', &
+           &'']
+        endif
 
         littlefile=[character(len=80) ::          &
         &'program demo',                          &
@@ -189,12 +251,14 @@ character(len=8)             :: date
         ! create next section of fpm.toml
         call mkdir(join_path(settings%name, 'app'))
         ! create NAME/app or stop
-        message=[character(len=80) ::  message,   &
-        &'[[executable]]                       ', &
-        &'name="'//bname//'"                   ', &
-        &'source-dir="app"                     ', &
-        &'main="main.f90"                      ', &
-        &'']
+        if(settings%verbose)then
+           tomlfile=[character(len=80) ::  tomlfile, &
+           &'[[executable]]                       ', &
+           &'name="'//bname//'"                   ', &
+           &'source-dir="app"                     ', &
+           &'main="main.f90"                      ', &
+           &'']
+        endif
 
         if(exists(bname//'/src/'))then
             littlefile=[character(len=80) ::          &
@@ -214,9 +278,21 @@ character(len=8)             :: date
         endif
         call warnwrite(join_path(settings%name, 'app/main.f90'), littlefile)
     endif
+    if(settings%verbose)then
+       tomlfile=[character(len=80) ::  tomlfile,   &
+       &'[dependencies]                                                                  ', &
+       &'#                                                                               ', &
+       &'#Files will be searched for automatically (by default) in                       ', &
+       &'# src/, app/, test/, and example/.                                              ', &
+       &'#For a complete list of keys and their attributes see                           ', &
+       &'#                                                                               ', &
+       &'#  https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md        ', &
+       &'#                                                                               ', &
+       &'']
+    endif
 
     ! now that built it write NAME/fpm.toml
-    call warnwrite(join_path(settings%name, 'fpm.toml'), message)
+    call warnwrite(join_path(settings%name, 'fpm.toml'), tomlfile)
     ! assumes git(1) is installed and in path
     call run('git init ' // settings%name)
 contains

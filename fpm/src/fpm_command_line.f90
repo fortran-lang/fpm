@@ -252,7 +252,7 @@ contains
                  & with_executable=.true.,               &
                  & with_lib=.true.,                      &
                  & with_test=.true.,                     &
-                 & with_example=.false.,                 &
+                 & with_example=lget('verbose'),         &
                  & verbose=lget('verbose') )
             endif
 
@@ -823,6 +823,14 @@ contains
     '       example/                                                        ', &
     '           demo.f90                                                    ', &
     '                                                                       ', &
+    ' Using this file structure is highly encouraged, particularly for      ', &
+    ' small packages primarily intended to be used as dependendencies.      ', &
+    '                                                                       ', &
+    ' If you find this restrictive and need to customize the package        ', &
+    ' structure you will find using the --verbose switch creates a          ', &
+    ' heavily annotated manifest file with references to documentation      ', &
+    ' to aid in constructing complex package structures.                    ', &
+    '                                                                       ', &
     ' Remember to update the information in the sample "fpm.toml"           ', &
     ' file with your name and e-mail address.                               ', &
     '                                                                       ', &
@@ -855,6 +863,13 @@ contains
     '              previously entered "fpm new myname --lib" entering       ', &
     '              "fpm new myname --backfill" will create the missing      ', &
     '              app/ and test/ directories and programs.                 ', &
+    '                                                                       ', &
+    ' --verbose    By default a minimal manifest file ("fpm.toml") is       ', &
+    '              created that depends on auto-discovery and (as noted)    ', &
+    '              the example/ directory is only created if explicitly     ', &
+    '              asked for. With this option a much more extensive        ', &
+    '              manifest sample is written and the example/ directory    ', &
+    '              is created by default as well.                           ', &
     '                                                                       ', &
     ' --help       print this help and exit                                 ', &
     ' --version    print program version information and exit               ', &
