@@ -55,6 +55,8 @@ type, extends(fpm_cmd_settings)  :: fpm_new_settings
     logical                      :: with_test=.false.
     logical                      :: with_lib=.true.
     logical                      :: with_example=.false.
+    logical                      :: with_full=.false.
+    logical                      :: with_bare=.false.
     logical                      :: backfill=.true.
 end type
 
@@ -205,21 +207,23 @@ contains
             & --app F &
             & --test F &
             & --example F &
-            & --backfill F&
-            & --verbose F',&
+            & --backfill F &
+            & --full F &
+            & --bare F &
+            & --verbose:V F',&
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
                 write(stderr,'(*(g0,/))')'<ERROR> directory name required'
                 write(stderr,'(*(7x,g0,/))') &
-                & '<USAGE> fpm new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]'
+                & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
                 stop 1
             case(2)
                 name=trim(unnamed(2))
             case default
                 write(stderr,'(g0)')'<ERROR> only one directory name allowed'
                 write(stderr,'(7x,g0)') &
-                & '<USAGE> fpm new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]'
+                & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]'
                 stop 2
             end select
             !*! canon_path is not converting ".", etc.
@@ -235,8 +239,19 @@ contains
             endif
 
             allocate(fpm_new_settings :: cmd_settings)
-
-            if (any( specified([character(len=10) :: 'src','lib','app','test','example']) ) )then
+            if (any( specified([character(len=10) :: 'src','lib','app','test','example','bare'])) &
+            & .and.lget('full') )then
+                write(stderr,'(*(a))')&
+                &'<ERROR> --full and any of [--src|--lib,--app,--test,--example,--bare]', &
+                &'        are mutually exclusive.'
+                stop 5
+            elseif (any( specified([character(len=10) :: 'src','lib','app','test','example','full'])) &
+            & .and.lget('bare') )then
+                write(stderr,'(*(a))')&
+                &'<ERROR> --bare and any of [--src|--lib,--app,--test,--example,--full]', &
+                &'        are mutually exclusive.'
+                stop 3
+            elseif (any( specified([character(len=10) :: 'src','lib','app','test','example']) ) )then
                 cmd_settings=fpm_new_settings(&
                  & backfill=lget('backfill'),               &
                  & name=name,                               &
@@ -252,7 +267,10 @@ contains
                  & with_executable=.true.,               &
                  & with_lib=.true.,                      &
                  & with_test=.true.,                     &
-                 & with_example=lget('verbose'),         &
+                 & with_example=.true.,                  &
+                 !*!& with_example=lget('full'),            &
+                 & with_full=lget('full'),               &
+                 & with_bare=lget('bare'),               &
                  & verbose=lget('verbose') )
             endif
 
@@ -480,7 +498,8 @@ contains
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--release] [--list]                          ', &
    ' help [NAME(s)]                                                                 ', &
-   ' new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]               ', &
+   ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
+   '          [--full|--bare][--backfill]                                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list] [--example]    ', &
@@ -593,7 +612,8 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                       ', &
     '    build [--release] [--list] [--compiler COMPILER_NAME]              ', &
-    '    new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]   ', &
+    '    new NAME [[--lib|--src] [--app] [--test] [--example]]|             ', &
+   '              [--full|--bare][--backfill]                               ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
     '    run [[--target] NAME(s)] [--release] [--list] [--example]          ', &
     '        [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]          ', &
@@ -795,8 +815,8 @@ contains
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
     'SYNOPSIS                                                               ', &
-    ' fpm new NAME [--lib|--src] [--app] [--test] [--example] [--backfill]  ', &
-    '                                                                       ', &
+   '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|            ', &
+   '      [--full|--bare][--backfill]                                       ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
@@ -864,12 +884,16 @@ contains
     '              "fpm new myname --backfill" will create the missing      ', &
     '              app/ and test/ directories and programs.                 ', &
     '                                                                       ', &
-    ' --verbose    By default a minimal manifest file ("fpm.toml") is       ', &
+    ' --full       By default a minimal manifest file ("fpm.toml") is       ', &
     '              created that depends on auto-discovery and (as noted)    ', &
     '              the example/ directory is only created if explicitly     ', &
     '              asked for. With this option a much more extensive        ', &
     '              manifest sample is written and the example/ directory    ', &
     '              is created by default as well.                           ', &
+    '                                                                       ', &
+    ' --bare       A minimal manifest file ("fpm.toml") is created and      ', &
+    '              a ".gitignore" and "README.md" file is created but no    ', &
+    '              directories or sample Fortran is generated.              ', &
     '                                                                       ', &
     ' --help       print this help and exit                                 ', &
     ' --version    print program version information and exit               ', &
