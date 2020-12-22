@@ -847,7 +847,7 @@ contains
     ' small packages primarily intended to be used as dependendencies.      ', &
     '                                                                       ', &
     ' If you find this restrictive and need to customize the package        ', &
-    ' structure you will find using the --verbose switch creates a          ', &
+    ' structure you will find using the --full switch creates a             ', &
     ' heavily annotated manifest file with references to documentation      ', &
     ' to aid in constructing complex package structures.                    ', &
     '                                                                       ', &
@@ -885,11 +885,8 @@ contains
     '              app/ and test/ directories and programs.                 ', &
     '                                                                       ', &
     ' --full       By default a minimal manifest file ("fpm.toml") is       ', &
-    '              created that depends on auto-discovery and (as noted)    ', &
-    '              the example/ directory is only created if explicitly     ', &
-    '              asked for. With this option a much more extensive        ', &
-    '              manifest sample is written and the example/ directory    ', &
-    '              is created by default as well.                           ', &
+    '              created that depends on auto-discovery. With this        ', &
+    '              option a much more extensive manifest sample is written. ', &
     '                                                                       ', &
     ' --bare       A minimal manifest file ("fpm.toml") is created and      ', &
     '              a ".gitignore" and "README.md" file is created but no    ', &
