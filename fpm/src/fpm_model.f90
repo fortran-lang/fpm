@@ -309,7 +309,25 @@ do i = 1, size(source%modules_provided)
 end do
 s = s // "]"
 !    integer :: unit_type = FPM_UNIT_UNKNOWN
-s = s // ", unit_type=" // str(source%unit_type)
+s = s // ", unit_type="
+select case(source%unit_type)
+case (FPM_UNIT_UNKNOWN)
+    s = s // "FPM_UNIT_UNKNOWN"
+case (FPM_UNIT_PROGRAM)
+    s = s // "FPM_UNIT_PROGRAM"
+case (FPM_UNIT_MODULE)
+    s = s // "FPM_UNIT_MODULE"
+case (FPM_UNIT_SUBMODULE)
+    s = s // "FPM_UNIT_SUBMODULE"
+case (FPM_UNIT_SUBPROGRAM)
+    s = s // "FPM_UNIT_SUBPROGRAM"
+case (FPM_UNIT_CSOURCE)
+    s = s // "FPM_UNIT_CSOURCE"
+case (FPM_UNIT_CHEADER)
+    s = s // "FPM_UNIT_CHEADER"
+case default
+    s = s // "INVALID"
+end select
 !    type(string_t), allocatable :: modules_used(:)
 s = s // ", modules_used=["
 do i = 1, size(source%modules_used)
