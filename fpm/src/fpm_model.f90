@@ -207,7 +207,7 @@ recursive function info_build_target(t) result(s)
     s = s // 'output_file="' // t%output_file // '"'
     !    type(srcfile_t), allocatable :: source
     if (allocated(t%source)) then
-        s = s // ", source=" // info_srcfile(t%source)
+        s = s // ", source=" // info_srcfile_short(t%source)
     else
         s = s // ", source=()"
     end if
@@ -353,6 +353,16 @@ function info_srcfile(source) result(s)
     s = s // ", digest=" // str(source%digest)
     !end type srcfile_t
     s = s // ")"
+end function
+
+function info_srcfile_short(source) result(s)
+    ! Prints a shortened version of srcfile_t
+    type(srcfile_t), intent(in) :: source
+    character(:), allocatable :: s
+    integer :: i
+    s = "srcfile_t("
+    s = s // 'file_name="' // source%file_name // '"'
+    s = s // ", ...)"
 end function
 
 function info_model(model) result(s)
