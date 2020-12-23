@@ -224,7 +224,19 @@ if (allocated(t%dependencies)) then
 end if
 s = s // "]"
 !    integer :: target_type = FPM_TARGET_UNKNOWN
-s = s // ", target_type=" // str(t%target_type)
+s = s // ", target_type="
+select case(t%target_type)
+case (FPM_TARGET_UNKNOWN)
+    s = s // "FPM_TARGET_UNKNOWN"
+case (FPM_TARGET_EXECUTABLE)
+    s = s // "FPM_TARGET_EXECUTABLE"
+case (FPM_TARGET_ARCHIVE)
+    s = s // "FPM_TARGET_ARCHIVE"
+case (FPM_TARGET_OBJECT)
+    s = s // "FPM_TARGET_OBJECT"
+case default
+    s = s // "INVALID"
+end select
 !    type(string_t), allocatable :: link_libraries(:)
 s = s // ", link_libraries=["
 if (allocated(t%link_libraries)) then
