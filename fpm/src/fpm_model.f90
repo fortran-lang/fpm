@@ -272,7 +272,23 @@ s = s // 'file_name="' // source%file_name // '"'
 !    character(:), allocatable :: exe_name
 s = s // ', exe_name="' // source%exe_name // '"'
 !    integer :: unit_scope = FPM_SCOPE_UNKNOWN
-s = s // ", unit_scope=" // str(source%unit_scope)
+s = s // ", unit_scope="
+select case(source%unit_scope)
+case (FPM_SCOPE_UNKNOWN)
+    s = s // "FPM_SCOPE_UNKNOWN"
+case (FPM_SCOPE_LIB)
+    s = s // "FPM_SCOPE_LIB"
+case (FPM_SCOPE_DEP)
+    s = s // "FPM_SCOPE_DEP"
+case (FPM_SCOPE_APP)
+    s = s // "FPM_SCOPE_APP"
+case (FPM_SCOPE_TEST)
+    s = s // "FPM_SCOPE_TEST"
+case (FPM_SCOPE_EXAMPLE)
+    s = s // "FPM_SCOPE_EXAMPLE"
+case default
+    s = s // "INVALID"
+end select
 !    type(string_t), allocatable :: modules_provided(:)
 s = s // ", modules_provided=["
 do i = 1, size(source%modules_provided)
