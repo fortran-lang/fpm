@@ -197,7 +197,7 @@ end type fpm_model_t
 
 contains
 
-recursive function info_build_target(t) result(s)
+function info_build_target(t) result(s)
     type(build_target_t), intent(in) :: t
     character(:), allocatable :: s
     integer :: i
@@ -215,10 +215,7 @@ recursive function info_build_target(t) result(s)
     s = s // ", dependencies=["
     if (allocated(t%dependencies)) then
         do i = 1, size(t%dependencies)
-            ! TODO: This compiles, but it hangs at runtime due to infinite
-            !       recursion, so for now we just print "..."
-            !s = s // info_build_target(t%dependencies(i)%ptr)
-            s = s // "build_target_t(...)"
+            s = s // info_build_target_short(t%dependencies(i)%ptr)
             if (i < size(t%dependencies)) s = s // ", "
         end do
     end if
@@ -271,6 +268,16 @@ recursive function info_build_target(t) result(s)
     end if
     !end type build_target_t
     s = s // ")"
+end function
+
+function info_build_target_short(t) result(s)
+    ! Prints a shortened representation of build_target_t
+    type(build_target_t), intent(in) :: t
+    character(:), allocatable :: s
+    integer :: i
+    s = "build_target_t("
+    s = s // 'output_file="' // t%output_file // '"'
+    s = s // ", ...)"
 end function
 
 function info_srcfile(source) result(s)
