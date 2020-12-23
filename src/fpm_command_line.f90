@@ -59,6 +59,7 @@ end type
 
 type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
+    logical                      :: show_model=.false.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: build_name
 end type
@@ -184,6 +185,7 @@ contains
             call set_args( '&
             & --release F &
             & --list F &
+            & --show-model F &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --verbose F&
             & --',help_build,version_text)
@@ -195,6 +197,7 @@ contains
             & build_name=val_build,&
             & compiler=val_compiler, &
             & list=lget('list'),&
+            & show_model=lget('show-model'),&
             & verbose=lget('verbose') )
 
         case('new')
@@ -737,14 +740,15 @@ contains
     ' specified in the "fpm.toml" file.                                     ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
-    ' --release  build in build/*_release instead of build/*_debug with     ', &
-    '            high optimization instead of full debug options.           ', &
-    ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
+    ' --release    build in build/*_release instead of build/*_debug with   ', &
+    '              high optimization instead of full debug options.         ', &
+    ' --compiler   COMPILER_NAME  Specify a compiler name. The default is   ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
-    ' --list     list candidates instead of building or running them        ', &
-    ' --help     print this help and exit                                   ', &
-    ' --version  print program version information and exit                 ', &
+    ' --list       list candidates instead of building or running them      ', &
+    ' --show-model show the model and exit (do not build)                   ', &
+    ' --help       print this help and exit                                 ', &
+    ' --version    print program version information and exit               ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     ' Sample commands:                                                      ', &

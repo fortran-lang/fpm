@@ -5,7 +5,7 @@ implicit none
 private
 public :: f_string, lower, split, str_ends_with, string_t
 public :: string_array_contains, string_cat, operator(.in.), fnv_1a
-public :: resize
+public :: resize, str
 
 type string_t
     character(len=:), allocatable :: s
@@ -28,6 +28,10 @@ interface str_ends_with
     procedure :: str_ends_with_str
     procedure :: str_ends_with_any
 end interface str_ends_with
+
+interface str
+    module procedure str_int, str_int64, str_logical
+end interface
 
 contains
 
@@ -348,5 +352,62 @@ subroutine resize_string(list, n)
   end if
 
 end subroutine resize_string
+
+pure integer function str_int_len(i) result(sz)
+! Returns the length of the string representation of 'i'
+integer, intent(in) :: i
+integer, parameter :: MAX_STR = 100
+character(MAX_STR) :: s
+! If 's' is too short (MAX_STR too small), Fortran will abort with:
+! "Fortran runtime error: End of record"
+write(s, '(i0)') i
+sz = len_trim(s)
+end function
+
+pure function str_int(i) result(s)
+! Converts integer "i" to string
+integer, intent(in) :: i
+character(len=str_int_len(i)) :: s
+write(s, '(i0)') i
+end function
+
+pure integer function str_int64_len(i) result(sz)
+! Returns the length of the string representation of 'i'
+integer(int64), intent(in) :: i
+integer, parameter :: MAX_STR = 100
+character(MAX_STR) :: s
+! If 's' is too short (MAX_STR too small), Fortran will abort with:
+! "Fortran runtime error: End of record"
+write(s, '(i0)') i
+sz = len_trim(s)
+end function
+
+pure function str_int64(i) result(s)
+! Converts integer "i" to string
+integer(int64), intent(in) :: i
+character(len=str_int64_len(i)) :: s
+write(s, '(i0)') i
+end function
+
+pure integer function str_logical_len(l) result(sz)
+! Returns the length of the string representation of 'l'
+logical, intent(in) :: l
+if (l) then
+    sz = 6
+else
+    sz = 7
+end if
+end function
+
+pure function str_logical(l) result(s)
+! Converts logical "l" to string
+logical, intent(in) :: l
+character(len=str_logical_len(l)) :: s
+if (l) then
+    s = ".true."
+else
+    s = ".false."
+end if
+end function
 
 end module fpm_strings

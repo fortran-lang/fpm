@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>string_cat &ndash; Fortran-lang/fpm</title>
+    <title>str &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,8 +110,8 @@
     
   
   <div class="row">
-    <h1>string_cat
-      <small>Function</small>
+    <h1>str
+   <small>Interface</small>
     
     </h1>
     
@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.8% of total for procedures.">20 statements</a>
+    title="<p> 0.1% of total for procedures.</p>Including implementation: 22 statements,  0.9% of total for procedures.">3 statements</a>
      </li> 
      
      
@@ -145,7 +145,7 @@
      <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     
   
-     <li class="active">string_cat</li>
+     <li class="active">str</li>
   </ol>
 </div>
 </div>
@@ -160,7 +160,7 @@
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    
+      
 <div id="sidebar">
   
 <h3>Contents</h3>
@@ -168,46 +168,38 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
-  <div id="vars-0" class="panel-collapse collapse">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
+  <div id="modprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/string_cat.html#variable-delim_str">delim_str</a>
+      <a class="list-group-item" href="../interface/str.html#moduleprocedure-str_int">str_int</a>
       
-      <a class="list-group-item" href="../proc/string_cat.html#variable-i~19">i</a>
+      <a class="list-group-item" href="../interface/str.html#moduleprocedure-str_int64">str_int64</a>
       
-      <a class="list-group-item" href="../proc/string_cat.html#variable-n~2">n</a>
+      <a class="list-group-item" href="../interface/str.html#moduleprocedure-str_logical">str_logical</a>
       
     </div>
   </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/string_cat.html#src">string_cat</a>
-  </div>
-</div>
 
 
 
@@ -216,23 +208,79 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>
-public function string_cat(strings, delim) result(cat)
+      <h2>public interface str</h2>
+   
+     
+     
+    
+
+     <section class="visible-xs visible-sm hidden-md">
+       
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
+  <div id="modprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../interface/str.html#moduleprocedure-str_int">str_int</a>
+      
+      <a class="list-group-item" href="../interface/str.html#moduleprocedure-str_int64">str_int64</a>
+      
+      <a class="list-group-item" href="../interface/str.html#moduleprocedure-str_logical">str_logical</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+     </section>
+     <br class="visible-xs visible-sm hidden-md">
+     
+  
+
+  
+
+  
+   <h2>Module Procedures</h2>
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-str_int"></span><h3>
+private pure function str_int(i) result(s)
     
     
    
-</h2>
+</h3></div>
+  <div class="panel-body">
+       
     
-  
-
-
     
-    <p>Concatenate an array of type(string_t) into 
-  a single character</p>
+    <h4>Arguments</h4>
     
-
-    <h3>Arguments</h3>
-    
+      
       
 <table class="table table-striped varlist">
 <thead><tr><th>Type</th>
@@ -249,112 +297,55 @@ public function string_cat(strings, delim) result(cat)
   
 <tr>
   
-  <td><span class="anchor" id="variable-strings"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td><span class="anchor" ></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>strings</strong>(:)</td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-delim"></span>character(len=*),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>delim</strong></td><td></td>
+  <td><strong>i</strong></td><td></td>
   
 </tr>
 
 </tbody>
 </table>
 
+      
     
     
-    
-    
-    
-    
-    
-   <h3>Return Value <small><span class="anchor" id="variable-cat"></span>character(len=:),
-  allocatable</small></h3>
-    
-    
-    
-    
-     
-    <br>
 
-    <section class="visible-xs visible-sm hidden-md">
-      
-<h3>Contents</h3>
- 
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=str_int_len(i))
+  </small></h4>
+  
+    
 
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
-  <div id="vars-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/string_cat.html#variable-delim_str">delim_str</a>
-      
-      <a class="list-group-item" href="../proc/string_cat.html#variable-i~19">i</a>
-      
-      <a class="list-group-item" href="../proc/string_cat.html#variable-n~2">n</a>
-      
-    </div>
   </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/string_cat.html#src">string_cat</a>
   </div>
-</div>
 
-
-
-    </section>
-    <br class="visible-xs visible-sm hidden-md">
-
+   
     
-
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-str_int64"></span><h3>
+private pure function str_int64(i) result(s)
     
-    <section>    
-      <h2>Variables</h2>
     
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
 <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
 
 
 
@@ -366,100 +357,99 @@ public function string_cat(strings, delim) result(cat)
   
 <tr>
   
-  <td><span class="anchor" id="variable-delim_str"></span>character(len=:),</td>
+  <td><span class="anchor" ></span>integer(kind=int64),</td>
+  <td>intent(in)</td>
+  <td></td>
   
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>delim_str</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-i~19"></span>integer,</td>
-  
-  <td>public</td>
   <td></td><td>::</td>
-  <td><strong>i</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-n~2"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>n</strong></td><td></td><td></td><td></td>
+  <td><strong>i</strong></td><td></td>
   
 </tr>
 
 </tbody>
 </table>
 
-    </section>
-    <br>
-    
-    
-    
+      
     
     
 
-    
-    
-    
-    
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=str_int64_len(i))
+  </small></h4>
+  
     
 
-
-    
-    
-    
-    <section>
-    <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">string_cat</span><span class="p">(</span><span class="n">strings</span><span class="p">,</span><span class="n">delim</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">cat</span><span class="p">)</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">strings</span><span class="p">(:)</span>
-    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">delim</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">cat</span>
-
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span><span class="n">n</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">delim_str</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">strings</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">cat</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="k">return</span>
-<span class="k">    end if</span>
-
-<span class="k">    if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">delim</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">delim_str</span> <span class="o">=</span> <span class="n">delim</span>
-    <span class="k">else</span>
-<span class="k">        </span><span class="n">delim_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-    <span class="k">end if</span>
-
-<span class="k">    </span><span class="n">cat</span> <span class="o">=</span> <span class="n">strings</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">strings</span><span class="p">)</span>
-
-        <span class="n">cat</span> <span class="o">=</span> <span class="n">cat</span><span class="o">//</span><span class="n">delim_str</span><span class="o">//</span><span class="n">strings</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span>
-        
-    <span class="k">end do</span>
-
-<span class="k">end function </span><span class="n">string_cat</span>
-</pre></div>
-
-    </section>
-    <br>
-    
-    
-    </div>
   </div>
+  </div>
+
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-str_logical"></span><h3>
+private pure function str_logical(l) result(s)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>l</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=str_logical_len(l))
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+   
+     
+
+ </div>
+</div>
 
 
     <hr>    
