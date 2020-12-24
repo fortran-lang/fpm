@@ -292,6 +292,25 @@ function info_build_target_short(t) result(s)
     s = s // ", ...)"
 end function
 
+function info_package(p) result(s)
+    ! Returns representation of package_t
+    type(package_t), intent(in) :: p
+    character(:), allocatable :: s
+
+    integer :: i
+
+    s = s // 'package_t('
+    s = s // 'name="' // p%name //'"'
+    s = s // ', sources=['
+    do i = 1, size(p%sources)
+        s = s // info_srcfile(p%sources(i))
+        if (i < size(p%sources)) s = s // ", "
+    end do
+    s = s // "]"
+    s = s // ")"
+
+end function info_package
+
 function info_srcfile(source) result(s)
     type(srcfile_t), intent(in) :: source
     character(:), allocatable :: s
@@ -393,10 +412,10 @@ function info_model(model) result(s)
     !    character(:), allocatable :: package_name
     s = s // 'package_name="' // model%package_name // '"'
     !    type(srcfile_t), allocatable :: sources(:)
-    s = s // ", sources=["
-    do i = 1, size(model%sources)
-        s = s // info_srcfile(model%sources(i))
-        if (i < size(model%sources)) s = s // ", "
+    s = s // ", packages=["
+    do i = 1, size(model%packages)
+        s = s // info_package(model%packages(i))
+        if (i < size(model%packages)) s = s // ", "
     end do
     s = s // "]"
     !    type(build_target_ptr), allocatable :: targets(:)
