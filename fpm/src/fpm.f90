@@ -9,7 +9,7 @@ use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists,
 use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST, &
-                    FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
+                    FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE, show_model
 use fpm_compiler, only: add_compile_flag_defaults
 
 
@@ -198,6 +198,8 @@ if(settings%list)then
     do i=1,size(model%targets)
         write(stderr,*) model%targets(i)%ptr%output_file
     enddo
+else if (settings%show_model) then
+    call show_model(model)
 else
     call build_package(model)
 endif

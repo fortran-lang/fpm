@@ -26,12 +26,13 @@
 !>
 module fpm_model
 use iso_fortran_env, only: int64
-use fpm_strings, only: string_t
+use fpm_strings, only: string_t, str
 use fpm_dependency, only: dependency_tree_t
 implicit none
 
 private
-public :: fpm_model_t, srcfile_t, build_target_t, build_target_ptr
+public :: fpm_model_t, srcfile_t, build_target_t, build_target_ptr, &
+    show_model
 
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
@@ -205,5 +206,235 @@ type :: fpm_model_t
     type(dependency_tree_t) :: deps
 
 end type fpm_model_t
+
+contains
+
+function info_build_target(t) result(s)
+    type(build_target_t), intent(in) :: t
+    character(:), allocatable :: s
+    integer :: i
+    !type build_target_t
+    s = "build_target_t("
+    !    character(:), allocatable :: output_file
+    s = s // 'output_file="' // t%output_file // '"'
+    !    type(srcfile_t), allocatable :: source
+    if (allocated(t%source)) then
+        s = s // ", source=" // info_srcfile_short(t%source)
+    else
+        s = s // ", source=()"
+    end if
+    !    type(build_target_ptr), allocatable :: dependencies(:)
+    s = s // ", dependencies=["
+    if (allocated(t%dependencies)) then
+        do i = 1, size(t%dependencies)
+            s = s // info_build_target_short(t%dependencies(i)%ptr)
+            if (i < size(t%dependencies)) s = s // ", "
+        end do
+    end if
+    s = s // "]"
+    !    integer :: target_type = FPM_TARGET_UNKNOWN
+    s = s // ", target_type="
+    select case(t%target_type)
+    case (FPM_TARGET_UNKNOWN)
+        s = s // "FPM_TARGET_UNKNOWN"
+    case (FPM_TARGET_EXECUTABLE)
+        s = s // "FPM_TARGET_EXECUTABLE"
+    case (FPM_TARGET_ARCHIVE)
+        s = s // "FPM_TARGET_ARCHIVE"
+    case (FPM_TARGET_OBJECT)
+        s = s // "FPM_TARGET_OBJECT"
+    case default
+        s = s // "INVALID"
+    end select
+    !    type(string_t), allocatable :: link_libraries(:)
+    s = s // ", link_libraries=["
+    if (allocated(t%link_libraries)) then
+        do i = 1, size(t%link_libraries)
+            s = s // '"' // t%link_libraries(i)%s // '"'
+            if (i < size(t%link_libraries)) s = s // ", "
+        end do
+    end if
+    s = s // "]"
+    !    type(string_t), allocatable :: link_objects(:)
+    s = s // ", link_objects=["
+    if (allocated(t%link_objects)) then
+        do i = 1, size(t%link_objects)
+            s = s // '"' // t%link_objects(i)%s // '"'
+            if (i < size(t%link_objects)) s = s // ", "
+        end do
+    end if
+    s = s // "]"
+    !    logical :: touched = .false.
+    s = s // ", touched=" // str(t%touched)
+    !    logical :: sorted = .false.
+    s = s // ", sorted=" // str(t%sorted)
+    !    logical :: skip = .false.
+    s = s // ", skip=" // str(t%skip)
+    !    integer :: schedule = -1
+    s = s // ", schedule=" // str(t%schedule)
+    !    integer(int64), allocatable :: digest_cached
+    if (allocated(t%digest_cached)) then
+        s = s // ", digest_cached=" // str(t%digest_cached)
+    else
+        s = s // ", digest_cached=()"
+    end if
+    !end type build_target_t
+    s = s // ")"
+end function
+
+function info_build_target_short(t) result(s)
+    ! Prints a shortened representation of build_target_t
+    type(build_target_t), intent(in) :: t
+    character(:), allocatable :: s
+    integer :: i
+    s = "build_target_t("
+    s = s // 'output_file="' // t%output_file // '"'
+    s = s // ", ...)"
+end function
+
+function info_srcfile(source) result(s)
+    type(srcfile_t), intent(in) :: source
+    character(:), allocatable :: s
+    integer :: i
+    !type srcfile_t
+    s = "srcfile_t("
+    !    character(:), allocatable :: file_name
+    s = s // 'file_name="' // source%file_name // '"'
+    !    character(:), allocatable :: exe_name
+    s = s // ', exe_name="' // source%exe_name // '"'
+    !    integer :: unit_scope = FPM_SCOPE_UNKNOWN
+    s = s // ", unit_scope="
+    select case(source%unit_scope)
+    case (FPM_SCOPE_UNKNOWN)
+        s = s // "FPM_SCOPE_UNKNOWN"
+    case (FPM_SCOPE_LIB)
+        s = s // "FPM_SCOPE_LIB"
+    case (FPM_SCOPE_DEP)
+        s = s // "FPM_SCOPE_DEP"
+    case (FPM_SCOPE_APP)
+        s = s // "FPM_SCOPE_APP"
+    case (FPM_SCOPE_TEST)
+        s = s // "FPM_SCOPE_TEST"
+    case (FPM_SCOPE_EXAMPLE)
+        s = s // "FPM_SCOPE_EXAMPLE"
+    case default
+        s = s // "INVALID"
+    end select
+    !    type(string_t), allocatable :: modules_provided(:)
+    s = s // ", modules_provided=["
+    do i = 1, size(source%modules_provided)
+        s = s // '"' // source%modules_provided(i)%s // '"'
+        if (i < size(source%modules_provided)) s = s // ", "
+    end do
+    s = s // "]"
+    !    integer :: unit_type = FPM_UNIT_UNKNOWN
+    s = s // ", unit_type="
+    select case(source%unit_type)
+    case (FPM_UNIT_UNKNOWN)
+        s = s // "FPM_UNIT_UNKNOWN"
+    case (FPM_UNIT_PROGRAM)
+        s = s // "FPM_UNIT_PROGRAM"
+    case (FPM_UNIT_MODULE)
+        s = s // "FPM_UNIT_MODULE"
+    case (FPM_UNIT_SUBMODULE)
+        s = s // "FPM_UNIT_SUBMODULE"
+    case (FPM_UNIT_SUBPROGRAM)
+        s = s // "FPM_UNIT_SUBPROGRAM"
+    case (FPM_UNIT_CSOURCE)
+        s = s // "FPM_UNIT_CSOURCE"
+    case (FPM_UNIT_CHEADER)
+        s = s // "FPM_UNIT_CHEADER"
+    case default
+        s = s // "INVALID"
+    end select
+    !    type(string_t), allocatable :: modules_used(:)
+    s = s // ", modules_used=["
+    do i = 1, size(source%modules_used)
+        s = s // '"' // source%modules_used(i)%s // '"'
+        if (i < size(source%modules_used)) s = s // ", "
+    end do
+    s = s // "]"
+    !    type(string_t), allocatable :: include_dependencies(:)
+    s = s // ", include_dependencies=["
+    do i = 1, size(source%include_dependencies)
+        s = s // '"' // source%include_dependencies(i)%s // '"'
+        if (i < size(source%include_dependencies)) s = s // ", "
+    end do
+    s = s // "]"
+    !    type(string_t), allocatable :: link_libraries(:)
+    s = s // ", link_libraries=["
+    do i = 1, size(source%link_libraries)
+        s = s // '"' // source%link_libraries(i)%s // '"'
+        if (i < size(source%link_libraries)) s = s // ", "
+    end do
+    s = s // "]"
+    !    integer(int64) :: digest
+    s = s // ", digest=" // str(source%digest)
+    !end type srcfile_t
+    s = s // ")"
+end function
+
+function info_srcfile_short(source) result(s)
+    ! Prints a shortened version of srcfile_t
+    type(srcfile_t), intent(in) :: source
+    character(:), allocatable :: s
+    integer :: i
+    s = "srcfile_t("
+    s = s // 'file_name="' // source%file_name // '"'
+    s = s // ", ...)"
+end function
+
+function info_model(model) result(s)
+    type(fpm_model_t), intent(in) :: model
+    character(:), allocatable :: s
+    integer :: i
+    !type :: fpm_model_t
+    s = "fpm_model_t("
+    !    character(:), allocatable :: package_name
+    s = s // 'package_name="' // model%package_name // '"'
+    !    type(srcfile_t), allocatable :: sources(:)
+    s = s // ", sources=["
+    do i = 1, size(model%sources)
+        s = s // info_srcfile(model%sources(i))
+        if (i < size(model%sources)) s = s // ", "
+    end do
+    s = s // "]"
+    !    type(build_target_ptr), allocatable :: targets(:)
+    s = s // ", targets=["
+    do i = 1, size(model%targets)
+        s = s // info_build_target(model%targets(i)%ptr)
+        if (i < size(model%targets)) s = s // ", "
+    end do
+    s = s // "]"
+    !    character(:), allocatable :: fortran_compiler
+    s = s // ', fortran_compiler="' // model%fortran_compiler // '"'
+    !    character(:), allocatable :: fortran_compile_flags
+    s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
+    !    character(:), allocatable :: link_flags
+    s = s // ', link_flags="' // model%link_flags // '"'
+    !    character(:), allocatable :: library_file
+    s = s // ', library_file="' // model%library_file // '"'
+    !    character(:), allocatable :: output_directory
+    s = s // ', output_directory="' // model%output_directory // '"'
+    !    type(string_t), allocatable :: link_libraries(:)
+    s = s // ", link_libraries=["
+    do i = 1, size(model%link_libraries)
+        s = s // '"' // model%link_libraries(i)%s // '"'
+        if (i < size(model%link_libraries)) s = s // ", "
+    end do
+    s = s // "]"
+    !    type(dependency_tree_t) :: deps
+    ! TODO: print `dependency_tree_t` properly, which should become part of the
+    !       model, not imported from another file
+    s = s // ", deps=dependency_tree_t(...)"
+    !end type fpm_model_t
+    s = s // ")"
+end function
+
+subroutine show_model(model)
+    ! Prints a human readable representation of the Model
+    type(fpm_model_t), intent(in) :: model
+    print *, info_model(model)
+end subroutine
 
 end module fpm_model
