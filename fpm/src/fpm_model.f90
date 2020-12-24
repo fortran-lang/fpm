@@ -280,7 +280,7 @@ function info_build_target(t) result(s)
     end if
     !end type build_target_t
     s = s // ")"
-end function
+end function info_build_target
 
 function info_build_target_short(t) result(s)
     ! Prints a shortened representation of build_target_t
@@ -290,7 +290,7 @@ function info_build_target_short(t) result(s)
     s = "build_target_t("
     s = s // 'output_file="' // t%output_file // '"'
     s = s // ", ...)"
-end function
+end function info_build_target_short
 
 function info_package(p) result(s)
     ! Returns representation of package_t
@@ -391,7 +391,7 @@ function info_srcfile(source) result(s)
     s = s // ", digest=" // str(source%digest)
     !end type srcfile_t
     s = s // ")"
-end function
+end function info_srcfile
 
 function info_srcfile_short(source) result(s)
     ! Prints a shortened version of srcfile_t
@@ -401,7 +401,7 @@ function info_srcfile_short(source) result(s)
     s = "srcfile_t("
     s = s // 'file_name="' // source%file_name // '"'
     s = s // ", ...)"
-end function
+end function info_srcfile_short
 
 function info_model(model) result(s)
     type(fpm_model_t), intent(in) :: model
@@ -448,12 +448,12 @@ function info_model(model) result(s)
     s = s // ", deps=dependency_tree_t(...)"
     !end type fpm_model_t
     s = s // ")"
-end function
+end function info_model
 
 subroutine show_model(model)
     ! Prints a human readable representation of the Model
     type(fpm_model_t), intent(in) :: model
     print *, info_model(model)
-end subroutine
+end subroutine show_model
 
 end module fpm_model
