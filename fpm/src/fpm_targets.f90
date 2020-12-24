@@ -53,15 +53,12 @@ contains
 !>
 !> @note Inter-object dependencies based on modules used and provided are generated separately
 !> in `[[resolve_module_dependencies]]` after all targets have been enumerated.
-subroutine targets_from_sources(model,sources)
+subroutine targets_from_sources(model)
 
     !> The package model within which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
 
-    !> The list of sources from which to construct the target list
-    type(srcfile_t), intent(in) :: sources(:)
-
-    integer :: i
+    integer :: i, j
     character(:), allocatable :: xsuffix, exe_dir
     type(build_target_t), pointer :: dep
     logical :: with_lib
@@ -72,61 +69,71 @@ subroutine targets_from_sources(model,sources)
         xsuffix = ''
     end if
 
-    with_lib = any([(sources(i)%unit_scope == FPM_SCOPE_LIB,i=1,size(sources))])
+    with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
+                      i=1,size(model%packages(j)%sources)), &
+                      j=1,size(model%packages))])
 
     if (with_lib) call add_target(model%targets,type = FPM_TARGET_ARCHIVE,&
                             output_file = join_path(model%output_directory,&
                                    model%package_name,'lib'//model%package_name//'.a'))
 
-    do i=1,size(sources)
+    do j=1,size(model%packages)
         
-        select case (sources(i)%unit_type)
-        case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
+        associate(sources=>model%packages(j)%sources)
 
-            call add_target(model%targets,source = sources(i), &
-                        type = FPM_TARGET_OBJECT,&
-                        output_file = get_object_name(sources(i)))
-            
-            if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
-                ! Archive depends on object
-                call add_dependency(model%targets(1)%ptr, model%targets(size(model%targets))%ptr)
-            end if
+            do i=1,size(sources)
+                
+                select case (sources(i)%unit_type)
+                case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
-        case (FPM_UNIT_PROGRAM)
+                    call add_target(model%targets,source = sources(i), &
+                                type = FPM_TARGET_OBJECT,&
+                                output_file = get_object_name(sources(i)))
+                    
+                    if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
+                        ! Archive depends on object
+                        call add_dependency(model%targets(1)%ptr, model%targets(size(model%targets))%ptr)
+                    end if
 
-            call add_target(model%targets,type = FPM_TARGET_OBJECT,&
-                        output_file = get_object_name(sources(i)), &
-                        source = sources(i) &
-                        )
-            
-            if (sources(i)%unit_scope == FPM_SCOPE_APP) then
+                case (FPM_UNIT_PROGRAM)
 
-                exe_dir = 'app'
+                    call add_target(model%targets,type = FPM_TARGET_OBJECT,&
+                                output_file = get_object_name(sources(i)), &
+                                source = sources(i) &
+                                )
+                    
+                    if (sources(i)%unit_scope == FPM_SCOPE_APP) then
 
-            else if (sources(i)%unit_scope == FPM_SCOPE_EXAMPLE) then
+                        exe_dir = 'app'
 
-                exe_dir = 'example'
+                    else if (sources(i)%unit_scope == FPM_SCOPE_EXAMPLE) then
 
-            else
+                        exe_dir = 'example'
 
-                exe_dir = 'test'
+                    else
 
-            end if
+                        exe_dir = 'test'
 
-            call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
-                            link_libraries = sources(i)%link_libraries, &
-                            output_file = join_path(model%output_directory,exe_dir, &
-                            sources(i)%exe_name//xsuffix))
+                    end if
 
-            ! Executable depends on object
-            call add_dependency(model%targets(size(model%targets))%ptr, model%targets(size(model%targets)-1)%ptr)
+                    call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
+                                    link_libraries = sources(i)%link_libraries, &
+                                    output_file = join_path(model%output_directory,exe_dir, &
+                                    sources(i)%exe_name//xsuffix))
 
-            if (with_lib) then
-                ! Executable depends on library
-                call add_dependency(model%targets(size(model%targets))%ptr, model%targets(1)%ptr)
-            end if
-            
-        end select
+                    ! Executable depends on object
+                    call add_dependency(model%targets(size(model%targets))%ptr, model%targets(size(model%targets)-1)%ptr)
+
+                    if (with_lib) then
+                        ! Executable depends on library
+                        call add_dependency(model%targets(size(model%targets))%ptr, model%targets(1)%ptr)
+                    end if
+                    
+                end select
+
+            end do
+
+        end associate
 
     end do
 
