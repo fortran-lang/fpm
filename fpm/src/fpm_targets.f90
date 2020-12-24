@@ -70,8 +70,8 @@ subroutine targets_from_sources(model)
     end if
 
     with_lib = any([((model%packages(j)%sources(i)%unit_scope == FPM_SCOPE_LIB, &
-                      i=1,size(model%packages(j)%sources)) &
-                      ,j=1,size(model%packages))])
+                      i=1,size(model%packages(j)%sources)), &
+                      j=1,size(model%packages))])
 
     if (with_lib) call add_target(model%targets,type = FPM_TARGET_ARCHIVE,&
                             output_file = join_path(model%output_directory,&
