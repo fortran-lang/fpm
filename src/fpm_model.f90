@@ -112,6 +112,18 @@ type srcfile_t
 end type srcfile_t
 
 
+!> Type for describing a single package
+type package_t
+
+    !> Name of package
+    character(:), allocatable :: name
+
+    !> Array of sources
+    type(srcfile_t), allocatable :: sources(:)
+
+end type package_t
+
+
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
 
@@ -159,15 +171,15 @@ type build_target_t
 end type build_target_t
 
 
-!> Type describing everything required to build a package
-!> and its dependencies.
+!> Type describing everything required to build
+!>  the root package and its dependencies.
 type :: fpm_model_t
 
-    !> Name of package
+    !> Name of root package
     character(:), allocatable :: package_name
 
-    !> Array of sources
-    type(srcfile_t), allocatable :: sources(:)
+    !> Array of packages (including the root package)
+    type(package_t), allocatable :: packages(:)
 
     !> Array of targets with module-dependencies resolved
     type(build_target_ptr), allocatable :: targets(:)
@@ -268,7 +280,7 @@ function info_build_target(t) result(s)
     end if
     !end type build_target_t
     s = s // ")"
-end function
+end function info_build_target
 
 function info_build_target_short(t) result(s)
     ! Prints a shortened representation of build_target_t
@@ -278,7 +290,26 @@ function info_build_target_short(t) result(s)
     s = "build_target_t("
     s = s // 'output_file="' // t%output_file // '"'
     s = s // ", ...)"
-end function
+end function info_build_target_short
+
+function info_package(p) result(s)
+    ! Returns representation of package_t
+    type(package_t), intent(in) :: p
+    character(:), allocatable :: s
+
+    integer :: i
+
+    s = s // 'package_t('
+    s = s // 'name="' // p%name //'"'
+    s = s // ', sources=['
+    do i = 1, size(p%sources)
+        s = s // info_srcfile(p%sources(i))
+        if (i < size(p%sources)) s = s // ", "
+    end do
+    s = s // "]"
+    s = s // ")"
+
+end function info_package
 
 function info_srcfile(source) result(s)
     type(srcfile_t), intent(in) :: source
@@ -360,7 +391,7 @@ function info_srcfile(source) result(s)
     s = s // ", digest=" // str(source%digest)
     !end type srcfile_t
     s = s // ")"
-end function
+end function info_srcfile
 
 function info_srcfile_short(source) result(s)
     ! Prints a shortened version of srcfile_t
@@ -370,7 +401,7 @@ function info_srcfile_short(source) result(s)
     s = "srcfile_t("
     s = s // 'file_name="' // source%file_name // '"'
     s = s // ", ...)"
-end function
+end function info_srcfile_short
 
 function info_model(model) result(s)
     type(fpm_model_t), intent(in) :: model
@@ -381,10 +412,10 @@ function info_model(model) result(s)
     !    character(:), allocatable :: package_name
     s = s // 'package_name="' // model%package_name // '"'
     !    type(srcfile_t), allocatable :: sources(:)
-    s = s // ", sources=["
-    do i = 1, size(model%sources)
-        s = s // info_srcfile(model%sources(i))
-        if (i < size(model%sources)) s = s // ", "
+    s = s // ", packages=["
+    do i = 1, size(model%packages)
+        s = s // info_package(model%packages(i))
+        if (i < size(model%packages)) s = s // ", "
     end do
     s = s // "]"
     !    type(build_target_ptr), allocatable :: targets(:)
@@ -417,12 +448,12 @@ function info_model(model) result(s)
     s = s // ", deps=dependency_tree_t(...)"
     !end type fpm_model_t
     s = s // ")"
-end function
+end function info_model
 
 subroutine show_model(model)
     ! Prints a human readable representation of the Model
     type(fpm_model_t), intent(in) :: model
     print *, info_model(model)
-end subroutine
+end subroutine show_model
 
 end module fpm_model

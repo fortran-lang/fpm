@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.2% of total for procedures.">53 statements</a>
+    title=" 2.4% of total for procedures.">56 statements</a>
      </li> 
      
      
@@ -178,6 +178,8 @@
       <a class="list-group-item" href="../proc/targets_from_sources.html#variable-exe_dir">exe_dir</a>
       
       <a class="list-group-item" href="../proc/targets_from_sources.html#variable-i~12">i</a>
+      
+      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-j~5">j</a>
       
       <a class="list-group-item" href="../proc/targets_from_sources.html#variable-with_lib~2">with_lib</a>
       
@@ -233,7 +235,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine targets_from_sources(model, sources)
+public subroutine targets_from_sources(model)
     
     
    
@@ -288,21 +290,6 @@ public subroutine targets_from_sources(model, sources)
   
 </tr>
 
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-sources~4"></span>type(<a href='../type/srcfile_t.html'>srcfile_t</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>sources</strong>(:)</td><td><p>The list of sources from which to construct the target list</p></td>
-  
-</tr>
-
 </tbody>
 </table>
 
@@ -330,6 +317,8 @@ public subroutine targets_from_sources(model, sources)
       <a class="list-group-item" href="../proc/targets_from_sources.html#variable-exe_dir">exe_dir</a>
       
       <a class="list-group-item" href="../proc/targets_from_sources.html#variable-i~12">i</a>
+      
+      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-j~5">j</a>
       
       <a class="list-group-item" href="../proc/targets_from_sources.html#variable-with_lib~2">with_lib</a>
       
@@ -436,6 +425,20 @@ public subroutine targets_from_sources(model, sources)
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>i</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-j~5"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>j</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -556,15 +559,12 @@ function get_object_name(source) result(object_file)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">sources</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="c">!&gt; The package model within which to construct the target list</span>
     <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">model</span>
 
-    <span class="c">!&gt; The list of sources from which to construct the target list</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
-
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">xsuffix</span><span class="p">,</span> <span class="n">exe_dir</span>
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dep</span>
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">with_lib</span>
@@ -575,61 +575,71 @@ function get_object_name(source) result(object_file)
 <span class="k">        </span><span class="n">xsuffix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="k">end if</span>
 
-<span class="k">    </span><span class="n">with_lib</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">))])</span>
+<span class="k">    </span><span class="n">with_lib</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([((</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="p">&amp;</span>
+                      <span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">)),</span> <span class="p">&amp;</span>
+                      <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">))])</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,&amp;</span>
                             <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,&amp;</span>
                                    <span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="o">//</span><span class="s1">&#39;.a&#39;</span><span class="p">))</span>
 
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+    <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">)</span>
         
-        <span class="k">select case</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span><span class="p">)</span>
-        <span class="k">case</span> <span class="p">(</span><span class="n">FPM_UNIT_MODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBMODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBPROGRAM</span><span class="p">,</span><span class="n">FPM_UNIT_CSOURCE</span><span class="p">)</span>
+        <span class="k">associate</span><span class="p">(</span><span class="n">sources</span><span class="o">=&gt;</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">)</span>
 
-            <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="p">&amp;</span>
-                        <span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
-                        <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
-            
-            <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">)</span> <span class="k">then</span>
-                <span class="c">! Archive depends on object</span>
-                <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">)</span>
-            <span class="k">end if</span>
+            <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+                
+                <span class="k">select case</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span><span class="p">)</span>
+                <span class="k">case</span> <span class="p">(</span><span class="n">FPM_UNIT_MODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBMODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBPROGRAM</span><span class="p">,</span><span class="n">FPM_UNIT_CSOURCE</span><span class="p">)</span>
 
-<span class="k">        case</span> <span class="p">(</span><span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span>
+                    <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="p">&amp;</span>
+                                <span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
+                                <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
+                    
+                    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">)</span> <span class="k">then</span>
+                        <span class="c">! Archive depends on object</span>
+                        <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">)</span>
+                    <span class="k">end if</span>
 
-            <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
-                        <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span> <span class="p">&amp;</span>
-                        <span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">&amp;</span>
-                        <span class="p">)</span>
-            
-            <span class="k">if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_APP</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                case</span> <span class="p">(</span><span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span>
 
-<span class="k">                </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;app&#39;</span>
+                    <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
+                                <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span> <span class="p">&amp;</span>
+                                <span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">&amp;</span>
+                                <span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_APP</span><span class="p">)</span> <span class="k">then</span>
 
-            <span class="k">else if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;app&#39;</span>
 
-<span class="k">                </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;example&#39;</span>
+                    <span class="k">else if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">)</span> <span class="k">then</span>
 
-            <span class="k">else</span>
+<span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;example&#39;</span>
 
-<span class="k">                </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+                    <span class="k">else</span>
 
-            <span class="k">end if</span>
+<span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
 
-<span class="k">            call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,&amp;</span>
-                            <span class="n">link_libraries</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">link_libraries</span><span class="p">,</span> <span class="p">&amp;</span>
-                            <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">exe_dir</span><span class="p">,</span> <span class="p">&amp;</span>
-                            <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">exe_name</span><span class="o">//</span><span class="n">xsuffix</span><span class="p">))</span>
+                    <span class="k">end if</span>
 
-            <span class="c">! Executable depends on object</span>
-            <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+<span class="k">                    call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,&amp;</span>
+                                    <span class="n">link_libraries</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">link_libraries</span><span class="p">,</span> <span class="p">&amp;</span>
+                                    <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">exe_dir</span><span class="p">,</span> <span class="p">&amp;</span>
+                                    <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">exe_name</span><span class="o">//</span><span class="n">xsuffix</span><span class="p">))</span>
 
-            <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">then</span>
-                <span class="c">! Executable depends on library</span>
-                <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
-            <span class="k">end if</span>
-<span class="k">            </span>
-<span class="k">        end select</span>
+                    <span class="c">! Executable depends on object</span>
+                    <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">then</span>
+                        <span class="c">! Executable depends on library</span>
+                        <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+                    <span class="k">end if</span>
+<span class="k">                    </span>
+<span class="k">                end select</span>
+
+<span class="k">            end do</span>
+
+<span class="k">        end associate</span>
 
 <span class="k">    end do</span>
 
@@ -681,7 +691,7 @@ function get_object_name(source) result(object_file)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-23 22:16  
+             on 2020-12-24 13:47  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

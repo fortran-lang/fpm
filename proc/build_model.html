@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.0% of total for procedures.">94 statements</a>
+    title=" 3.9% of total for procedures.">93 statements</a>
      </li> 
      
      
@@ -180,8 +180,6 @@
       <a class="list-group-item" href="../proc/build_model.html#variable-lib_dir">lib_dir</a>
       
       <a class="list-group-item" href="../proc/build_model.html#variable-manifest">manifest</a>
-      
-      <a class="list-group-item" href="../proc/build_model.html#variable-package_list">package_list</a>
       
     </div>
   </div>
@@ -334,8 +332,6 @@ public subroutine build_model(model, settings, package, error)
       
       <a class="list-group-item" href="../proc/build_model.html#variable-manifest">manifest</a>
       
-      <a class="list-group-item" href="../proc/build_model.html#variable-package_list">package_list</a>
-      
     </div>
   </div>
 </div>
@@ -442,20 +438,6 @@ public subroutine build_model(model, settings, package, error)
   
 </tr>
 
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-package_list"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>package_list</strong>(:)</td><td></td><td></td><td></td>
-  
-</tr>
-
 </tbody>
 </table>
 
@@ -486,7 +468,6 @@ public subroutine build_model(model, settings, package, error)
     <span class="k">type</span><span class="p">(</span><span class="n">fpm_build_settings</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">settings</span>
     <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
     <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">package_list</span><span class="p">(:)</span>
 
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
     <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency</span>
@@ -509,11 +490,7 @@ public subroutine build_model(model, settings, package, error)
     <span class="k">call </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
-<span class="k">    allocate</span><span class="p">(</span><span class="n">package_list</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-    <span class="n">package_list</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">package</span><span class="p">%</span><span class="n">name</span>
-
-
-    <span class="k">if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">compiler</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="k">    if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">compiler</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
 <span class="k">        </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span> <span class="o">=</span> <span class="s1">&#39;gfortran&#39;</span>
     <span class="k">else</span>
 <span class="k">        </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span> <span class="o">=</span> <span class="n">settings</span><span class="p">%</span><span class="n">compiler</span>
@@ -525,9 +502,11 @@ public subroutine build_model(model, settings, package, error)
 
     <span class="n">model</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 
+    <span class="k">allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="p">))</span>
+
     <span class="c">! Add sources from executable directories</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">auto_executables</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">sources</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span> <span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">        call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">sources</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span> <span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="p">&amp;</span>
                                    <span class="n">with_executables</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
@@ -536,7 +515,7 @@ public subroutine build_model(model, settings, package, error)
 
 <span class="k">    end if</span>
 <span class="k">    if</span> <span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;example&#39;</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">auto_examples</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">sources</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">        call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">sources</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span> <span class="p">&amp;</span>
                                    <span class="n">with_executables</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
@@ -545,7 +524,7 @@ public subroutine build_model(model, settings, package, error)
 
 <span class="k">    end if</span>
 <span class="k">    if</span> <span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">auto_tests</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">sources</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">        call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">sources</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span><span class="p">,</span> <span class="p">&amp;</span>
                                    <span class="n">with_executables</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
@@ -554,7 +533,7 @@ public subroutine build_model(model, settings, package, error)
 
     <span class="k">end if</span>
 <span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">        call </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">sources</span><span class="p">,</span> <span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">,</span> <span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">        call </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">sources</span><span class="p">,</span> <span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">,</span> <span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="p">&amp;</span>
                                      <span class="n">auto_discover</span><span class="o">=</span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">auto_executables</span><span class="p">,</span> <span class="p">&amp;</span>
                                      <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
 
@@ -564,7 +543,7 @@ public subroutine build_model(model, settings, package, error)
 
 <span class="k">    end if</span>
 <span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">example</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">        call </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">sources</span><span class="p">,</span> <span class="n">package</span><span class="p">%</span><span class="n">example</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">        call </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">sources</span><span class="p">,</span> <span class="n">package</span><span class="p">%</span><span class="n">example</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span> <span class="p">&amp;</span>
                                      <span class="n">auto_discover</span><span class="o">=</span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">auto_examples</span><span class="p">,</span> <span class="p">&amp;</span>
                                      <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
 
@@ -574,7 +553,7 @@ public subroutine build_model(model, settings, package, error)
 
 <span class="k">    end if</span>
 <span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">        call </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">sources</span><span class="p">,</span> <span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">        call </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">sources</span><span class="p">,</span> <span class="n">package</span><span class="p">%</span><span class="n">test</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span><span class="p">,</span> <span class="p">&amp;</span>
                                      <span class="n">auto_discover</span><span class="o">=</span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">auto_tests</span><span class="p">,</span> <span class="p">&amp;</span>
                                      <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
 
@@ -592,9 +571,11 @@ public subroutine build_model(model, settings, package, error)
                 <span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
 
-<span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">library</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">            </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span> <span class="o">=</span> <span class="n">dependency</span><span class="p">%</span><span class="n">name</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">library</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">lib_dir</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">proj_dir</span><span class="p">,</span> <span class="n">dependency</span><span class="p">%</span><span class="n">library</span><span class="p">%</span><span class="n">source_dir</span><span class="p">)</span>
-                <span class="k">call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">sources</span><span class="p">,</span> <span class="n">lib_dir</span><span class="p">,</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="k">call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">sources</span><span class="p">,</span> <span class="n">lib_dir</span><span class="p">,</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="p">&amp;</span>
                     <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
                 <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
 <span class="k">            end if</span>
@@ -606,7 +587,7 @@ public subroutine build_model(model, settings, package, error)
 <span class="k">    end do</span>
 <span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
-<span class="k">    call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">sources</span><span class="p">)</span>
+<span class="k">    call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">)</span>
         <span class="n">model</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">//</span> <span class="s2">&quot; -l&quot;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span>
@@ -642,7 +623,7 @@ public subroutine build_model(model, settings, package, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-23 22:16  
+             on 2020-12-24 13:47  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

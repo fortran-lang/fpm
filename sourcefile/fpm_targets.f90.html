@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.8% of total for source files.">179 statements</a>
+    title=" 3.8% of total for source files.">182 statements</a>
      </li> 
      
      
@@ -318,351 +318,358 @@
 <a name="ln-53"></a><span class="c">!&gt;</span>
 <a name="ln-54"></a><span class="c">!&gt; @note Inter-object dependencies based on modules used and provided are generated separately</span>
 <a name="ln-55"></a><span class="c">!&gt; in `[[resolve_module_dependencies]]` after all targets have been enumerated.</span>
-<a name="ln-56"></a><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">sources</span><span class="p">)</span>
+<a name="ln-56"></a><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <a name="ln-57"></a>
 <a name="ln-58"></a>    <span class="c">!&gt; The package model within which to construct the target list</span>
 <a name="ln-59"></a>    <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">model</span>
 <a name="ln-60"></a>
-<a name="ln-61"></a>    <span class="c">!&gt; The list of sources from which to construct the target list</span>
-<a name="ln-62"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
-<a name="ln-63"></a>
-<a name="ln-64"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-<a name="ln-65"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">xsuffix</span><span class="p">,</span> <span class="n">exe_dir</span>
-<a name="ln-66"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dep</span>
-<a name="ln-67"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">with_lib</span>
-<a name="ln-68"></a>
-<a name="ln-69"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">OS_WINDOWS</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-70"></a><span class="k">        </span><span class="n">xsuffix</span> <span class="o">=</span> <span class="s1">&#39;.exe&#39;</span>
-<a name="ln-71"></a>    <span class="k">else</span>
-<a name="ln-72"></a><span class="k">        </span><span class="n">xsuffix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-<a name="ln-73"></a>    <span class="k">end if</span>
-<a name="ln-74"></a>
-<a name="ln-75"></a><span class="k">    </span><span class="n">with_lib</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">))])</span>
-<a name="ln-76"></a>
-<a name="ln-77"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,&amp;</span>
-<a name="ln-78"></a>                            <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,&amp;</span>
-<a name="ln-79"></a>                                   <span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="o">//</span><span class="s1">&#39;.a&#39;</span><span class="p">))</span>
-<a name="ln-80"></a>
-<a name="ln-81"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
-<a name="ln-82"></a>        
-<a name="ln-83"></a>        <span class="k">select case</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span><span class="p">)</span>
-<a name="ln-84"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">FPM_UNIT_MODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBMODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBPROGRAM</span><span class="p">,</span><span class="n">FPM_UNIT_CSOURCE</span><span class="p">)</span>
-<a name="ln-85"></a>
-<a name="ln-86"></a>            <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="p">&amp;</span>
-<a name="ln-87"></a>                        <span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
-<a name="ln-88"></a>                        <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
-<a name="ln-89"></a>            
-<a name="ln-90"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-91"></a>                <span class="c">! Archive depends on object</span>
-<a name="ln-92"></a>                <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">)</span>
-<a name="ln-93"></a>            <span class="k">end if</span>
-<a name="ln-94"></a>
-<a name="ln-95"></a><span class="k">        case</span> <span class="p">(</span><span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span>
-<a name="ln-96"></a>
-<a name="ln-97"></a>            <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
-<a name="ln-98"></a>                        <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span> <span class="p">&amp;</span>
-<a name="ln-99"></a>                        <span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">&amp;</span>
-<a name="ln-100"></a>                        <span class="p">)</span>
-<a name="ln-101"></a>            
-<a name="ln-102"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_APP</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-103"></a>
-<a name="ln-104"></a><span class="k">                </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;app&#39;</span>
-<a name="ln-105"></a>
-<a name="ln-106"></a>            <span class="k">else if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-107"></a>
-<a name="ln-108"></a><span class="k">                </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;example&#39;</span>
-<a name="ln-109"></a>
-<a name="ln-110"></a>            <span class="k">else</span>
-<a name="ln-111"></a>
-<a name="ln-112"></a><span class="k">                </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
-<a name="ln-113"></a>
-<a name="ln-114"></a>            <span class="k">end if</span>
-<a name="ln-115"></a>
-<a name="ln-116"></a><span class="k">            call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,&amp;</span>
-<a name="ln-117"></a>                            <span class="n">link_libraries</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">link_libraries</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-118"></a>                            <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">exe_dir</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-119"></a>                            <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">exe_name</span><span class="o">//</span><span class="n">xsuffix</span><span class="p">))</span>
-<a name="ln-120"></a>
-<a name="ln-121"></a>            <span class="c">! Executable depends on object</span>
-<a name="ln-122"></a>            <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+<a name="ln-61"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+<a name="ln-62"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">xsuffix</span><span class="p">,</span> <span class="n">exe_dir</span>
+<a name="ln-63"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dep</span>
+<a name="ln-64"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">with_lib</span>
+<a name="ln-65"></a>
+<a name="ln-66"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">OS_WINDOWS</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-67"></a><span class="k">        </span><span class="n">xsuffix</span> <span class="o">=</span> <span class="s1">&#39;.exe&#39;</span>
+<a name="ln-68"></a>    <span class="k">else</span>
+<a name="ln-69"></a><span class="k">        </span><span class="n">xsuffix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<a name="ln-70"></a>    <span class="k">end if</span>
+<a name="ln-71"></a>
+<a name="ln-72"></a><span class="k">    </span><span class="n">with_lib</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([((</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-73"></a>                      <span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">)),</span> <span class="p">&amp;</span>
+<a name="ln-74"></a>                      <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">))])</span>
+<a name="ln-75"></a>
+<a name="ln-76"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,&amp;</span>
+<a name="ln-77"></a>                            <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,&amp;</span>
+<a name="ln-78"></a>                                   <span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="o">//</span><span class="s1">&#39;.a&#39;</span><span class="p">))</span>
+<a name="ln-79"></a>
+<a name="ln-80"></a>    <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">)</span>
+<a name="ln-81"></a>        
+<a name="ln-82"></a>        <span class="k">associate</span><span class="p">(</span><span class="n">sources</span><span class="o">=&gt;</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">)</span>
+<a name="ln-83"></a>
+<a name="ln-84"></a>            <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+<a name="ln-85"></a>                
+<a name="ln-86"></a>                <span class="k">select case</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span><span class="p">)</span>
+<a name="ln-87"></a>                <span class="k">case</span> <span class="p">(</span><span class="n">FPM_UNIT_MODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBMODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBPROGRAM</span><span class="p">,</span><span class="n">FPM_UNIT_CSOURCE</span><span class="p">)</span>
+<a name="ln-88"></a>
+<a name="ln-89"></a>                    <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-90"></a>                                <span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
+<a name="ln-91"></a>                                <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
+<a name="ln-92"></a>                    
+<a name="ln-93"></a>                    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-94"></a>                        <span class="c">! Archive depends on object</span>
+<a name="ln-95"></a>                        <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">)</span>
+<a name="ln-96"></a>                    <span class="k">end if</span>
+<a name="ln-97"></a>
+<a name="ln-98"></a><span class="k">                case</span> <span class="p">(</span><span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span>
+<a name="ln-99"></a>
+<a name="ln-100"></a>                    <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
+<a name="ln-101"></a>                                <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span> <span class="p">&amp;</span>
+<a name="ln-102"></a>                                <span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">&amp;</span>
+<a name="ln-103"></a>                                <span class="p">)</span>
+<a name="ln-104"></a>                    
+<a name="ln-105"></a>                    <span class="k">if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_APP</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-106"></a>
+<a name="ln-107"></a><span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;app&#39;</span>
+<a name="ln-108"></a>
+<a name="ln-109"></a>                    <span class="k">else if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-110"></a>
+<a name="ln-111"></a><span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;example&#39;</span>
+<a name="ln-112"></a>
+<a name="ln-113"></a>                    <span class="k">else</span>
+<a name="ln-114"></a>
+<a name="ln-115"></a><span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+<a name="ln-116"></a>
+<a name="ln-117"></a>                    <span class="k">end if</span>
+<a name="ln-118"></a>
+<a name="ln-119"></a><span class="k">                    call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,&amp;</span>
+<a name="ln-120"></a>                                    <span class="n">link_libraries</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">link_libraries</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-121"></a>                                    <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">exe_dir</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-122"></a>                                    <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">exe_name</span><span class="o">//</span><span class="n">xsuffix</span><span class="p">))</span>
 <a name="ln-123"></a>
-<a name="ln-124"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-125"></a>                <span class="c">! Executable depends on library</span>
-<a name="ln-126"></a>                <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
-<a name="ln-127"></a>            <span class="k">end if</span>
-<a name="ln-128"></a><span class="k">            </span>
-<a name="ln-129"></a><span class="k">        end select</span>
-<a name="ln-130"></a>
-<a name="ln-131"></a><span class="k">    end do</span>
-<a name="ln-132"></a>
-<a name="ln-133"></a><span class="k">    contains</span>
-<a name="ln-134"></a>
-<a name="ln-135"></a><span class="k">    function </span><span class="n">get_object_name</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">object_file</span><span class="p">)</span>
-<a name="ln-136"></a>        <span class="c">! Generate object target path from source name and model params</span>
-<a name="ln-137"></a>        <span class="c">!  </span>
-<a name="ln-138"></a>        <span class="c">!</span>
-<a name="ln-139"></a>        <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">source</span>
-<a name="ln-140"></a>        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">object_file</span>
-<a name="ln-141"></a>    
-<a name="ln-142"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-<a name="ln-143"></a>        <span class="kt">character</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">filesep</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>
-<a name="ln-144"></a>        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir</span>
-<a name="ln-145"></a>        
-<a name="ln-146"></a>        <span class="n">object_file</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">)</span>
-<a name="ln-147"></a>
-<a name="ln-148"></a>        <span class="c">! Convert any remaining directory separators to underscores</span>
-<a name="ln-149"></a>        <span class="n">i</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">object_file</span><span class="p">,</span><span class="n">filesep</span><span class="p">)</span>
-<a name="ln-150"></a>        <span class="k">do while</span><span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-<a name="ln-151"></a>            <span class="n">object_file</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span>
-<a name="ln-152"></a>            <span class="n">i</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">object_file</span><span class="p">,</span><span class="n">filesep</span><span class="p">)</span>
-<a name="ln-153"></a>        <span class="k">end do</span>
+<a name="ln-124"></a>                    <span class="c">! Executable depends on object</span>
+<a name="ln-125"></a>                    <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+<a name="ln-126"></a>
+<a name="ln-127"></a>                    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-128"></a>                        <span class="c">! Executable depends on library</span>
+<a name="ln-129"></a>                        <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+<a name="ln-130"></a>                    <span class="k">end if</span>
+<a name="ln-131"></a><span class="k">                    </span>
+<a name="ln-132"></a><span class="k">                end select</span>
+<a name="ln-133"></a>
+<a name="ln-134"></a><span class="k">            end do</span>
+<a name="ln-135"></a>
+<a name="ln-136"></a><span class="k">        end associate</span>
+<a name="ln-137"></a>
+<a name="ln-138"></a><span class="k">    end do</span>
+<a name="ln-139"></a>
+<a name="ln-140"></a><span class="k">    contains</span>
+<a name="ln-141"></a>
+<a name="ln-142"></a><span class="k">    function </span><span class="n">get_object_name</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">object_file</span><span class="p">)</span>
+<a name="ln-143"></a>        <span class="c">! Generate object target path from source name and model params</span>
+<a name="ln-144"></a>        <span class="c">!  </span>
+<a name="ln-145"></a>        <span class="c">!</span>
+<a name="ln-146"></a>        <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">source</span>
+<a name="ln-147"></a>        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">object_file</span>
+<a name="ln-148"></a>    
+<a name="ln-149"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-150"></a>        <span class="kt">character</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">filesep</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>
+<a name="ln-151"></a>        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir</span>
+<a name="ln-152"></a>        
+<a name="ln-153"></a>        <span class="n">object_file</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">)</span>
 <a name="ln-154"></a>
-<a name="ln-155"></a><span class="k">        </span><span class="n">object_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">,</span><span class="n">object_file</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;.o&#39;</span>
-<a name="ln-156"></a>    
-<a name="ln-157"></a>    <span class="k">end function </span><span class="n">get_object_name</span>
-<a name="ln-158"></a>
-<a name="ln-159"></a><span class="k">end subroutine </span><span class="n">targets_from_sources</span>
-<a name="ln-160"></a>
+<a name="ln-155"></a>        <span class="c">! Convert any remaining directory separators to underscores</span>
+<a name="ln-156"></a>        <span class="n">i</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">object_file</span><span class="p">,</span><span class="n">filesep</span><span class="p">)</span>
+<a name="ln-157"></a>        <span class="k">do while</span><span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+<a name="ln-158"></a>            <span class="n">object_file</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span>
+<a name="ln-159"></a>            <span class="n">i</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">object_file</span><span class="p">,</span><span class="n">filesep</span><span class="p">)</span>
+<a name="ln-160"></a>        <span class="k">end do</span>
 <a name="ln-161"></a>
-<a name="ln-162"></a><span class="c">!&gt; Allocate a new target and append to target list</span>
-<a name="ln-163"></a><span class="k">subroutine </span><span class="n">add_target</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span><span class="p">,</span><span class="n">output_file</span><span class="p">,</span><span class="n">source</span><span class="p">,</span><span class="n">link_libraries</span><span class="p">)</span>
-<a name="ln-164"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
-<a name="ln-165"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">type</span>
-<a name="ln-166"></a><span class="k">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output_file</span>
-<a name="ln-167"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">source</span>
-<a name="ln-168"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">link_libraries</span><span class="p">(:)</span>
-<a name="ln-169"></a>
-<a name="ln-170"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-<a name="ln-171"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">temp</span><span class="p">(:)</span>
-<a name="ln-172"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">new_target</span>
-<a name="ln-173"></a>
-<a name="ln-174"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">targets</span><span class="p">))</span> <span class="k">allocate</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<a name="ln-175"></a>
-<a name="ln-176"></a>    <span class="c">! Check for duplicate outputs</span>
-<a name="ln-177"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-<a name="ln-178"></a>
-<a name="ln-179"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span> <span class="o">==</span> <span class="n">output_file</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-162"></a><span class="k">        </span><span class="n">object_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">,</span><span class="n">object_file</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;.o&#39;</span>
+<a name="ln-163"></a>    
+<a name="ln-164"></a>    <span class="k">end function </span><span class="n">get_object_name</span>
+<a name="ln-165"></a>
+<a name="ln-166"></a><span class="k">end subroutine </span><span class="n">targets_from_sources</span>
+<a name="ln-167"></a>
+<a name="ln-168"></a>
+<a name="ln-169"></a><span class="c">!&gt; Allocate a new target and append to target list</span>
+<a name="ln-170"></a><span class="k">subroutine </span><span class="n">add_target</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span><span class="p">,</span><span class="n">output_file</span><span class="p">,</span><span class="n">source</span><span class="p">,</span><span class="n">link_libraries</span><span class="p">)</span>
+<a name="ln-171"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
+<a name="ln-172"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">type</span>
+<a name="ln-173"></a><span class="k">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output_file</span>
+<a name="ln-174"></a>    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">source</span>
+<a name="ln-175"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">link_libraries</span><span class="p">(:)</span>
+<a name="ln-176"></a>
+<a name="ln-177"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-178"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">temp</span><span class="p">(:)</span>
+<a name="ln-179"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">new_target</span>
 <a name="ln-180"></a>
-<a name="ln-181"></a><span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Error while building target list: duplicate output object &quot;&#39;</span><span class="p">,&amp;</span>
-<a name="ln-182"></a>                        <span class="n">output_file</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span>
-<a name="ln-183"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">source</span><span class="p">))</span> <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39; Source file: &quot;&#39;</span><span class="p">,</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span>
-<a name="ln-184"></a>            <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-181"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">targets</span><span class="p">))</span> <span class="k">allocate</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<a name="ln-182"></a>
+<a name="ln-183"></a>    <span class="c">! Check for duplicate outputs</span>
+<a name="ln-184"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 <a name="ln-185"></a>
-<a name="ln-186"></a>        <span class="k">end if</span>
+<a name="ln-186"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span> <span class="o">==</span> <span class="n">output_file</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-187"></a>
-<a name="ln-188"></a><span class="k">    end do</span>
-<a name="ln-189"></a>
-<a name="ln-190"></a><span class="k">    allocate</span><span class="p">(</span><span class="n">new_target</span><span class="p">)</span>
-<a name="ln-191"></a>    <span class="n">new_target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">=</span> <span class="k">type</span>
-<a name="ln-192"></a><span class="k">    </span><span class="n">new_target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">=</span> <span class="n">output_file</span>
-<a name="ln-193"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">source</span><span class="p">))</span> <span class="n">new_target</span><span class="p">%</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
-<a name="ln-194"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">link_libraries</span><span class="p">))</span> <span class="n">new_target</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">link_libraries</span>
-<a name="ln-195"></a>    <span class="k">allocate</span><span class="p">(</span><span class="n">new_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<a name="ln-196"></a>    
-<a name="ln-197"></a>    <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">targets</span><span class="p">,</span> <span class="n">build_target_ptr</span><span class="p">(</span><span class="n">new_target</span><span class="p">)]</span>
-<a name="ln-198"></a>
-<a name="ln-199"></a><span class="k">end subroutine </span><span class="n">add_target</span>
-<a name="ln-200"></a>
-<a name="ln-201"></a>
-<a name="ln-202"></a><span class="c">!&gt; Add pointer to dependeny in target%dependencies</span>
-<a name="ln-203"></a><span class="k">subroutine </span><span class="n">add_dependency</span><span class="p">(</span><span class="k">target</span><span class="p">,</span> <span class="n">dependency</span><span class="p">)</span>
-<a name="ln-204"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="k">target</span>
-<a name="ln-205"></a><span class="k">    type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">)</span> <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">dependency</span>
-<a name="ln-206"></a>
-<a name="ln-207"></a>    <span class="k">target</span><span class="p">%</span><span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">,</span> <span class="n">build_target_ptr</span><span class="p">(</span><span class="n">dependency</span><span class="p">)]</span>
+<a name="ln-188"></a><span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Error while building target list: duplicate output object &quot;&#39;</span><span class="p">,&amp;</span>
+<a name="ln-189"></a>                        <span class="n">output_file</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span>
+<a name="ln-190"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">source</span><span class="p">))</span> <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39; Source file: &quot;&#39;</span><span class="p">,</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span>
+<a name="ln-191"></a>            <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-192"></a>
+<a name="ln-193"></a>        <span class="k">end if</span>
+<a name="ln-194"></a>
+<a name="ln-195"></a><span class="k">    end do</span>
+<a name="ln-196"></a>
+<a name="ln-197"></a><span class="k">    allocate</span><span class="p">(</span><span class="n">new_target</span><span class="p">)</span>
+<a name="ln-198"></a>    <span class="n">new_target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">=</span> <span class="k">type</span>
+<a name="ln-199"></a><span class="k">    </span><span class="n">new_target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">=</span> <span class="n">output_file</span>
+<a name="ln-200"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">source</span><span class="p">))</span> <span class="n">new_target</span><span class="p">%</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
+<a name="ln-201"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">link_libraries</span><span class="p">))</span> <span class="n">new_target</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">link_libraries</span>
+<a name="ln-202"></a>    <span class="k">allocate</span><span class="p">(</span><span class="n">new_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<a name="ln-203"></a>    
+<a name="ln-204"></a>    <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">targets</span><span class="p">,</span> <span class="n">build_target_ptr</span><span class="p">(</span><span class="n">new_target</span><span class="p">)]</span>
+<a name="ln-205"></a>
+<a name="ln-206"></a><span class="k">end subroutine </span><span class="n">add_target</span>
+<a name="ln-207"></a>
 <a name="ln-208"></a>
-<a name="ln-209"></a><span class="k">end subroutine </span><span class="n">add_dependency</span>
-<a name="ln-210"></a>
-<a name="ln-211"></a>
-<a name="ln-212"></a><span class="c">!&gt; Add dependencies to source-based targets (`FPM_TARGET_OBJECT`) </span>
-<a name="ln-213"></a><span class="c">!&gt; based on any modules used by the corresponding source file.</span>
-<a name="ln-214"></a><span class="c">!&gt;</span>
-<a name="ln-215"></a><span class="c">!&gt;### Source file scoping</span>
-<a name="ln-216"></a><span class="c">!&gt; </span>
-<a name="ln-217"></a><span class="c">!&gt; Source files are assigned a scope of either `FPM_SCOPE_LIB`, </span>
-<a name="ln-218"></a><span class="c">!&gt; `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`. The scope controls which</span>
-<a name="ln-219"></a><span class="c">!&gt; modules may be used by the source file:</span>
-<a name="ln-220"></a><span class="c">!&gt; </span>
-<a name="ln-221"></a><span class="c">!&gt; - Library sources (`FPM_SCOPE_LIB`) may only use modules</span>
-<a name="ln-222"></a><span class="c">!&gt;   also with library scope. This includes library modules</span>
-<a name="ln-223"></a><span class="c">!&gt;   from dependencies.</span>
-<a name="ln-224"></a><span class="c">!&gt;</span>
-<a name="ln-225"></a><span class="c">!&gt; - Executable sources (`FPM_SCOPE_APP`,`FPM_SCOPE_TEST`) may use</span>
-<a name="ln-226"></a><span class="c">!&gt;   library modules (including dependencies) as well as any modules</span>
-<a name="ln-227"></a><span class="c">!&gt;   corresponding to source files __in the same directory__ as the </span>
-<a name="ln-228"></a><span class="c">!&gt;   executable source.</span>
-<a name="ln-229"></a><span class="c">!&gt;</span>
-<a name="ln-230"></a><span class="c">!&gt; @warning If a module used by a source file cannot be resolved to</span>
-<a name="ln-231"></a><span class="c">!&gt; a source file in the package of the correct scope, then a __fatal error__</span>
-<a name="ln-232"></a><span class="c">!&gt; is returned by the procedure and model construction fails.</span>
-<a name="ln-233"></a><span class="c">!&gt;</span>
-<a name="ln-234"></a><span class="k">subroutine </span><span class="n">resolve_module_dependencies</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-235"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
-<a name="ln-236"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-237"></a>
-<a name="ln-238"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dep</span>
-<a name="ln-239"></a>
-<a name="ln-240"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
-<a name="ln-241"></a>
-<a name="ln-242"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-<a name="ln-243"></a>        
-<a name="ln-244"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
-<a name="ln-245"></a>
-<a name="ln-246"></a><span class="k">            do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">)</span>
-<a name="ln-247"></a>
-<a name="ln-248"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-249"></a>                    <span class="c">! Dependency satisfied in same file, skip</span>
-<a name="ln-250"></a>                    <span class="k">cycle</span>
-<a name="ln-251"></a><span class="k">                end if</span>
-<a name="ln-252"></a><span class="k">            </span>
-<a name="ln-253"></a><span class="k">                if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="p">&amp;</span>
-<a name="ln-254"></a>                    <span class="p">[</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span><span class="p">]))</span> <span class="k">then</span>
-<a name="ln-255"></a><span class="k">                    </span><span class="n">dep</span><span class="p">%</span><span class="n">ptr</span> <span class="o">=&gt;</span> <span class="p">&amp;</span>
-<a name="ln-256"></a>                        <span class="n">find_module_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-257"></a>                                            <span class="n">include_dir</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">))</span>
-<a name="ln-258"></a>                <span class="k">else</span>
-<a name="ln-259"></a><span class="k">                    </span><span class="n">dep</span><span class="p">%</span><span class="n">ptr</span> <span class="o">=&gt;</span> <span class="p">&amp;</span>
-<a name="ln-260"></a>                        <span class="n">find_module_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a name="ln-261"></a>                <span class="k">end if</span>
-<a name="ln-262"></a>
-<a name="ln-263"></a><span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">associated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">ptr</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-264"></a><span class="k">                    call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-265"></a>                            <span class="s1">&#39;Unable to find source for module dependency: &quot;&#39;</span> <span class="o">//</span> <span class="p">&amp;</span>
-<a name="ln-266"></a>                            <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span> <span class="o">//</span> <span class="p">&amp;</span>
-<a name="ln-267"></a>                            <span class="s1">&#39;&quot; used by &quot;&#39;</span><span class="o">//</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
-<a name="ln-268"></a>                    <span class="k">return</span>
-<a name="ln-269"></a><span class="k">                end if</span>
-<a name="ln-270"></a>
-<a name="ln-271"></a><span class="k">                call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">dep</span><span class="p">%</span><span class="n">ptr</span><span class="p">)</span>
-<a name="ln-272"></a>
-<a name="ln-273"></a>            <span class="k">end do</span>
-<a name="ln-274"></a>
-<a name="ln-275"></a><span class="k">    end do    </span>
-<a name="ln-276"></a>
-<a name="ln-277"></a><span class="k">end subroutine </span><span class="n">resolve_module_dependencies</span>
-<a name="ln-278"></a>
-<a name="ln-279"></a><span class="k">function </span><span class="n">find_module_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">module_name</span><span class="p">,</span><span class="n">include_dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">target_ptr</span><span class="p">)</span>
-<a name="ln-280"></a>    <span class="c">! Find a module dependency in the library or a dependency library</span>
-<a name="ln-281"></a>    <span class="c">!</span>
-<a name="ln-282"></a>    <span class="c">! &#39;include_dir&#39; specifies an allowable non-library search directory</span>
-<a name="ln-283"></a>    <span class="c">!   (Used for executable dependencies)</span>
-<a name="ln-284"></a>    <span class="c">!</span>
-<a name="ln-285"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
-<a name="ln-286"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">module_name</span>
-<a name="ln-287"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">include_dir</span>
-<a name="ln-288"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">target_ptr</span>
-<a name="ln-289"></a>
-<a name="ln-290"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span>
-<a name="ln-291"></a>
-<a name="ln-292"></a>    <span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="nb">NULL</span><span class="p">()</span>
-<a name="ln-293"></a>
-<a name="ln-294"></a>    <span class="k">do </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-<a name="ln-295"></a>
-<a name="ln-296"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
-<a name="ln-297"></a>
-<a name="ln-298"></a><span class="k">        do </span><span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span>
-<a name="ln-299"></a>
-<a name="ln-300"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">module_name</span> <span class="o">==</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-301"></a><span class="k">                select case</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span><span class="p">)</span>
-<a name="ln-302"></a>                <span class="k">case</span> <span class="p">(</span><span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="n">FPM_SCOPE_DEP</span><span class="p">)</span>
-<a name="ln-303"></a>                    <span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span>
-<a name="ln-304"></a>                    <span class="k">exit</span>
-<a name="ln-305"></a><span class="k">                case </span><span class="n">default</span>
-<a name="ln-306"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">include_dir</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-307"></a><span class="k">                        if</span> <span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">)</span> <span class="o">==</span> <span class="n">include_dir</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-308"></a><span class="k">                            </span><span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span>
-<a name="ln-309"></a>                            <span class="k">exit</span>
-<a name="ln-310"></a><span class="k">                        end if</span>
-<a name="ln-311"></a><span class="k">                    end if</span>
-<a name="ln-312"></a><span class="k">                end select</span>
-<a name="ln-313"></a><span class="k">            end if</span>
-<a name="ln-314"></a>
-<a name="ln-315"></a><span class="k">        end do</span>
-<a name="ln-316"></a><span class="k">        </span>
-<a name="ln-317"></a><span class="k">    end do</span>
-<a name="ln-318"></a>
-<a name="ln-319"></a><span class="k">end function </span><span class="n">find_module_dependency</span>
-<a name="ln-320"></a>
+<a name="ln-209"></a><span class="c">!&gt; Add pointer to dependeny in target%dependencies</span>
+<a name="ln-210"></a><span class="k">subroutine </span><span class="n">add_dependency</span><span class="p">(</span><span class="k">target</span><span class="p">,</span> <span class="n">dependency</span><span class="p">)</span>
+<a name="ln-211"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="k">target</span>
+<a name="ln-212"></a><span class="k">    type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">)</span> <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">dependency</span>
+<a name="ln-213"></a>
+<a name="ln-214"></a>    <span class="k">target</span><span class="p">%</span><span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">,</span> <span class="n">build_target_ptr</span><span class="p">(</span><span class="n">dependency</span><span class="p">)]</span>
+<a name="ln-215"></a>
+<a name="ln-216"></a><span class="k">end subroutine </span><span class="n">add_dependency</span>
+<a name="ln-217"></a>
+<a name="ln-218"></a>
+<a name="ln-219"></a><span class="c">!&gt; Add dependencies to source-based targets (`FPM_TARGET_OBJECT`) </span>
+<a name="ln-220"></a><span class="c">!&gt; based on any modules used by the corresponding source file.</span>
+<a name="ln-221"></a><span class="c">!&gt;</span>
+<a name="ln-222"></a><span class="c">!&gt;### Source file scoping</span>
+<a name="ln-223"></a><span class="c">!&gt; </span>
+<a name="ln-224"></a><span class="c">!&gt; Source files are assigned a scope of either `FPM_SCOPE_LIB`, </span>
+<a name="ln-225"></a><span class="c">!&gt; `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`. The scope controls which</span>
+<a name="ln-226"></a><span class="c">!&gt; modules may be used by the source file:</span>
+<a name="ln-227"></a><span class="c">!&gt; </span>
+<a name="ln-228"></a><span class="c">!&gt; - Library sources (`FPM_SCOPE_LIB`) may only use modules</span>
+<a name="ln-229"></a><span class="c">!&gt;   also with library scope. This includes library modules</span>
+<a name="ln-230"></a><span class="c">!&gt;   from dependencies.</span>
+<a name="ln-231"></a><span class="c">!&gt;</span>
+<a name="ln-232"></a><span class="c">!&gt; - Executable sources (`FPM_SCOPE_APP`,`FPM_SCOPE_TEST`) may use</span>
+<a name="ln-233"></a><span class="c">!&gt;   library modules (including dependencies) as well as any modules</span>
+<a name="ln-234"></a><span class="c">!&gt;   corresponding to source files __in the same directory__ as the </span>
+<a name="ln-235"></a><span class="c">!&gt;   executable source.</span>
+<a name="ln-236"></a><span class="c">!&gt;</span>
+<a name="ln-237"></a><span class="c">!&gt; @warning If a module used by a source file cannot be resolved to</span>
+<a name="ln-238"></a><span class="c">!&gt; a source file in the package of the correct scope, then a __fatal error__</span>
+<a name="ln-239"></a><span class="c">!&gt; is returned by the procedure and model construction fails.</span>
+<a name="ln-240"></a><span class="c">!&gt;</span>
+<a name="ln-241"></a><span class="k">subroutine </span><span class="n">resolve_module_dependencies</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<a name="ln-242"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
+<a name="ln-243"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a name="ln-244"></a>
+<a name="ln-245"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dep</span>
+<a name="ln-246"></a>
+<a name="ln-247"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+<a name="ln-248"></a>
+<a name="ln-249"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+<a name="ln-250"></a>        
+<a name="ln-251"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
+<a name="ln-252"></a>
+<a name="ln-253"></a><span class="k">            do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">)</span>
+<a name="ln-254"></a>
+<a name="ln-255"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-256"></a>                    <span class="c">! Dependency satisfied in same file, skip</span>
+<a name="ln-257"></a>                    <span class="k">cycle</span>
+<a name="ln-258"></a><span class="k">                end if</span>
+<a name="ln-259"></a><span class="k">            </span>
+<a name="ln-260"></a><span class="k">                if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="p">&amp;</span>
+<a name="ln-261"></a>                    <span class="p">[</span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span><span class="p">]))</span> <span class="k">then</span>
+<a name="ln-262"></a><span class="k">                    </span><span class="n">dep</span><span class="p">%</span><span class="n">ptr</span> <span class="o">=&gt;</span> <span class="p">&amp;</span>
+<a name="ln-263"></a>                        <span class="n">find_module_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-264"></a>                                            <span class="n">include_dir</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">))</span>
+<a name="ln-265"></a>                <span class="k">else</span>
+<a name="ln-266"></a><span class="k">                    </span><span class="n">dep</span><span class="p">%</span><span class="n">ptr</span> <span class="o">=&gt;</span> <span class="p">&amp;</span>
+<a name="ln-267"></a>                        <span class="n">find_module_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a name="ln-268"></a>                <span class="k">end if</span>
+<a name="ln-269"></a>
+<a name="ln-270"></a><span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">associated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">ptr</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-271"></a><span class="k">                    call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-272"></a>                            <span class="s1">&#39;Unable to find source for module dependency: &quot;&#39;</span> <span class="o">//</span> <span class="p">&amp;</span>
+<a name="ln-273"></a>                            <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span> <span class="o">//</span> <span class="p">&amp;</span>
+<a name="ln-274"></a>                            <span class="s1">&#39;&quot; used by &quot;&#39;</span><span class="o">//</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+<a name="ln-275"></a>                    <span class="k">return</span>
+<a name="ln-276"></a><span class="k">                end if</span>
+<a name="ln-277"></a>
+<a name="ln-278"></a><span class="k">                call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">dep</span><span class="p">%</span><span class="n">ptr</span><span class="p">)</span>
+<a name="ln-279"></a>
+<a name="ln-280"></a>            <span class="k">end do</span>
+<a name="ln-281"></a>
+<a name="ln-282"></a><span class="k">    end do    </span>
+<a name="ln-283"></a>
+<a name="ln-284"></a><span class="k">end subroutine </span><span class="n">resolve_module_dependencies</span>
+<a name="ln-285"></a>
+<a name="ln-286"></a><span class="k">function </span><span class="n">find_module_dependency</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">module_name</span><span class="p">,</span><span class="n">include_dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">target_ptr</span><span class="p">)</span>
+<a name="ln-287"></a>    <span class="c">! Find a module dependency in the library or a dependency library</span>
+<a name="ln-288"></a>    <span class="c">!</span>
+<a name="ln-289"></a>    <span class="c">! &#39;include_dir&#39; specifies an allowable non-library search directory</span>
+<a name="ln-290"></a>    <span class="c">!   (Used for executable dependencies)</span>
+<a name="ln-291"></a>    <span class="c">!</span>
+<a name="ln-292"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
+<a name="ln-293"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">module_name</span>
+<a name="ln-294"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">include_dir</span>
+<a name="ln-295"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">target_ptr</span>
+<a name="ln-296"></a>
+<a name="ln-297"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span>
+<a name="ln-298"></a>
+<a name="ln-299"></a>    <span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="nb">NULL</span><span class="p">()</span>
+<a name="ln-300"></a>
+<a name="ln-301"></a>    <span class="k">do </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+<a name="ln-302"></a>
+<a name="ln-303"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
+<a name="ln-304"></a>
+<a name="ln-305"></a><span class="k">        do </span><span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span>
+<a name="ln-306"></a>
+<a name="ln-307"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">module_name</span> <span class="o">==</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-308"></a><span class="k">                select case</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span><span class="p">)</span>
+<a name="ln-309"></a>                <span class="k">case</span> <span class="p">(</span><span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="n">FPM_SCOPE_DEP</span><span class="p">)</span>
+<a name="ln-310"></a>                    <span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span>
+<a name="ln-311"></a>                    <span class="k">exit</span>
+<a name="ln-312"></a><span class="k">                case </span><span class="n">default</span>
+<a name="ln-313"></a>                    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">include_dir</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-314"></a><span class="k">                        if</span> <span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">)</span> <span class="o">==</span> <span class="n">include_dir</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-315"></a><span class="k">                            </span><span class="n">target_ptr</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">ptr</span>
+<a name="ln-316"></a>                            <span class="k">exit</span>
+<a name="ln-317"></a><span class="k">                        end if</span>
+<a name="ln-318"></a><span class="k">                    end if</span>
+<a name="ln-319"></a><span class="k">                end select</span>
+<a name="ln-320"></a><span class="k">            end if</span>
 <a name="ln-321"></a>
-<a name="ln-322"></a><span class="c">!&gt; For libraries and executables, build a list of objects required for linking</span>
-<a name="ln-323"></a><span class="c">!&gt;</span>
-<a name="ln-324"></a><span class="c">!&gt; stored in `target%link_objects`</span>
-<a name="ln-325"></a><span class="c">!&gt;</span>
-<a name="ln-326"></a><span class="k">subroutine </span><span class="n">resolve_target_linking</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-<a name="ln-327"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
+<a name="ln-322"></a><span class="k">        end do</span>
+<a name="ln-323"></a><span class="k">        </span>
+<a name="ln-324"></a><span class="k">    end do</span>
+<a name="ln-325"></a>
+<a name="ln-326"></a><span class="k">end function </span><span class="n">find_module_dependency</span>
+<a name="ln-327"></a>
 <a name="ln-328"></a>
-<a name="ln-329"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-<a name="ln-330"></a>
-<a name="ln-331"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-<a name="ln-332"></a>
-<a name="ln-333"></a>        <span class="k">associate</span><span class="p">(</span><span class="k">target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
-<a name="ln-334"></a>
-<a name="ln-335"></a>            <span class="k">allocate</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-<a name="ln-336"></a>
-<a name="ln-337"></a>            <span class="k">if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-338"></a>
-<a name="ln-339"></a><span class="k">                call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
-<a name="ln-340"></a>
-<a name="ln-341"></a>            <span class="k">else if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-342"></a>
-<a name="ln-343"></a><span class="k">                call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<a name="ln-344"></a>
-<a name="ln-345"></a>            <span class="k">end if</span>
-<a name="ln-346"></a>
-<a name="ln-347"></a><span class="k">        end associate</span>
-<a name="ln-348"></a>
-<a name="ln-349"></a><span class="k">    end do</span>
-<a name="ln-350"></a>
-<a name="ln-351"></a><span class="k">contains</span>
-<a name="ln-352"></a>
-<a name="ln-353"></a>    <span class="c">!&gt; Wrapper to build link object list</span>
-<a name="ln-354"></a>    <span class="c">!&gt;</span>
-<a name="ln-355"></a>    <span class="c">!&gt;  For libraries: just list dependency objects of lib target</span>
-<a name="ln-356"></a>    <span class="c">!&gt;</span>
-<a name="ln-357"></a>    <span class="c">!&gt;  For executables: need to recursively discover non-library</span>
-<a name="ln-358"></a>    <span class="c">!&gt;   dependency objects. (i.e. modules in same dir as program)</span>
-<a name="ln-359"></a>    <span class="c">!&gt;</span>
-<a name="ln-360"></a>    <span class="k">recursive subroutine </span><span class="n">get_link_objects</span><span class="p">(</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="p">)</span>
-<a name="ln-361"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_objects</span><span class="p">(:)</span>
-<a name="ln-362"></a>        <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">target</span>
-<a name="ln-363"></a><span class="k">        </span><span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">is_exe</span>
-<a name="ln-364"></a>
-<a name="ln-365"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-<a name="ln-366"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temp_str</span>
-<a name="ln-367"></a>
-<a name="ln-368"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-369"></a>
-<a name="ln-370"></a><span class="k">        do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">)</span>
+<a name="ln-329"></a><span class="c">!&gt; For libraries and executables, build a list of objects required for linking</span>
+<a name="ln-330"></a><span class="c">!&gt;</span>
+<a name="ln-331"></a><span class="c">!&gt; stored in `target%link_objects`</span>
+<a name="ln-332"></a><span class="c">!&gt;</span>
+<a name="ln-333"></a><span class="k">subroutine </span><span class="n">resolve_target_linking</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+<a name="ln-334"></a>    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
+<a name="ln-335"></a>
+<a name="ln-336"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-337"></a>
+<a name="ln-338"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+<a name="ln-339"></a>
+<a name="ln-340"></a>        <span class="k">associate</span><span class="p">(</span><span class="k">target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+<a name="ln-341"></a>
+<a name="ln-342"></a>            <span class="k">allocate</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<a name="ln-343"></a>
+<a name="ln-344"></a>            <span class="k">if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-345"></a>
+<a name="ln-346"></a><span class="k">                call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+<a name="ln-347"></a>
+<a name="ln-348"></a>            <span class="k">else if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-349"></a>
+<a name="ln-350"></a><span class="k">                call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<a name="ln-351"></a>
+<a name="ln-352"></a>            <span class="k">end if</span>
+<a name="ln-353"></a>
+<a name="ln-354"></a><span class="k">        end associate</span>
+<a name="ln-355"></a>
+<a name="ln-356"></a><span class="k">    end do</span>
+<a name="ln-357"></a>
+<a name="ln-358"></a><span class="k">contains</span>
+<a name="ln-359"></a>
+<a name="ln-360"></a>    <span class="c">!&gt; Wrapper to build link object list</span>
+<a name="ln-361"></a>    <span class="c">!&gt;</span>
+<a name="ln-362"></a>    <span class="c">!&gt;  For libraries: just list dependency objects of lib target</span>
+<a name="ln-363"></a>    <span class="c">!&gt;</span>
+<a name="ln-364"></a>    <span class="c">!&gt;  For executables: need to recursively discover non-library</span>
+<a name="ln-365"></a>    <span class="c">!&gt;   dependency objects. (i.e. modules in same dir as program)</span>
+<a name="ln-366"></a>    <span class="c">!&gt;</span>
+<a name="ln-367"></a>    <span class="k">recursive subroutine </span><span class="n">get_link_objects</span><span class="p">(</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="p">)</span>
+<a name="ln-368"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_objects</span><span class="p">(:)</span>
+<a name="ln-369"></a>        <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">target</span>
+<a name="ln-370"></a><span class="k">        </span><span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">is_exe</span>
 <a name="ln-371"></a>
-<a name="ln-372"></a>            <span class="k">associate</span><span class="p">(</span><span class="n">dep</span> <span class="o">=&gt;</span> <span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
-<a name="ln-373"></a>            
-<a name="ln-374"></a>                <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
-<a name="ln-375"></a>                
-<a name="ln-376"></a>                <span class="c">! Skip library dependencies for executable targets</span>
-<a name="ln-377"></a>                <span class="c">!  since the library archive will always be linked </span>
-<a name="ln-378"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">is_exe</span><span class="p">.</span><span class="nb">and</span><span class="p">.(</span><span class="n">dep</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">))</span> <span class="k">cycle</span>
-<a name="ln-379"></a>                
-<a name="ln-380"></a>                <span class="c">! Skip if dependency object already listed</span>
-<a name="ln-381"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">output_file</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">link_objects</span><span class="p">)</span> <span class="k">cycle</span>
-<a name="ln-382"></a>
-<a name="ln-383"></a>                <span class="c">! Add dependency object file to link object list</span>
-<a name="ln-384"></a>                <span class="n">temp_str</span><span class="p">%</span><span class="n">s</span> <span class="o">=</span> <span class="n">dep</span><span class="p">%</span><span class="n">output_file</span>
-<a name="ln-385"></a>                <span class="n">link_objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">link_objects</span><span class="p">,</span> <span class="n">temp_str</span><span class="p">]</span>
-<a name="ln-386"></a>
-<a name="ln-387"></a>                <span class="c">! For executable objects, also need to include non-library </span>
-<a name="ln-388"></a>                <span class="c">!  dependencies from dependencies (recurse)</span>
-<a name="ln-389"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">is_exe</span><span class="p">)</span> <span class="k">call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="n">link_objects</span><span class="p">,</span><span class="n">dep</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<a name="ln-390"></a>            
-<a name="ln-391"></a>            <span class="k">end associate</span>
-<a name="ln-392"></a>
-<a name="ln-393"></a><span class="k">        end do</span>
-<a name="ln-394"></a>
-<a name="ln-395"></a><span class="k">    end subroutine </span><span class="n">get_link_objects</span>
-<a name="ln-396"></a>
-<a name="ln-397"></a><span class="k">end subroutine </span><span class="n">resolve_target_linking</span>
-<a name="ln-398"></a>
+<a name="ln-372"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-373"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temp_str</span>
+<a name="ln-374"></a>
+<a name="ln-375"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span> <span class="k">return</span>
+<a name="ln-376"></a>
+<a name="ln-377"></a><span class="k">        do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">)</span>
+<a name="ln-378"></a>
+<a name="ln-379"></a>            <span class="k">associate</span><span class="p">(</span><span class="n">dep</span> <span class="o">=&gt;</span> <span class="k">target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+<a name="ln-380"></a>            
+<a name="ln-381"></a>                <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
+<a name="ln-382"></a>                
+<a name="ln-383"></a>                <span class="c">! Skip library dependencies for executable targets</span>
+<a name="ln-384"></a>                <span class="c">!  since the library archive will always be linked </span>
+<a name="ln-385"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">is_exe</span><span class="p">.</span><span class="nb">and</span><span class="p">.(</span><span class="n">dep</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">))</span> <span class="k">cycle</span>
+<a name="ln-386"></a>                
+<a name="ln-387"></a>                <span class="c">! Skip if dependency object already listed</span>
+<a name="ln-388"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">output_file</span> <span class="p">.</span><span class="n">in</span><span class="p">.</span> <span class="n">link_objects</span><span class="p">)</span> <span class="k">cycle</span>
+<a name="ln-389"></a>
+<a name="ln-390"></a>                <span class="c">! Add dependency object file to link object list</span>
+<a name="ln-391"></a>                <span class="n">temp_str</span><span class="p">%</span><span class="n">s</span> <span class="o">=</span> <span class="n">dep</span><span class="p">%</span><span class="n">output_file</span>
+<a name="ln-392"></a>                <span class="n">link_objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">link_objects</span><span class="p">,</span> <span class="n">temp_str</span><span class="p">]</span>
+<a name="ln-393"></a>
+<a name="ln-394"></a>                <span class="c">! For executable objects, also need to include non-library </span>
+<a name="ln-395"></a>                <span class="c">!  dependencies from dependencies (recurse)</span>
+<a name="ln-396"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">is_exe</span><span class="p">)</span> <span class="k">call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="n">link_objects</span><span class="p">,</span><span class="n">dep</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<a name="ln-397"></a>            
+<a name="ln-398"></a>            <span class="k">end associate</span>
 <a name="ln-399"></a>
-<a name="ln-400"></a><span class="k">end module </span><span class="n">fpm_targets</span>
+<a name="ln-400"></a><span class="k">        end do</span>
+<a name="ln-401"></a>
+<a name="ln-402"></a><span class="k">    end subroutine </span><span class="n">get_link_objects</span>
+<a name="ln-403"></a>
+<a name="ln-404"></a><span class="k">end subroutine </span><span class="n">resolve_target_linking</span>
+<a name="ln-405"></a>
+<a name="ln-406"></a>
+<a name="ln-407"></a><span class="k">end module </span><span class="n">fpm_targets</span>
 </pre></div>
 
     </section>
@@ -681,7 +688,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2020-12-23 22:16  
+             on 2020-12-24 13:47  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
