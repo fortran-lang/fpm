@@ -455,7 +455,6 @@ character(len=:),allocatable          :: sep_local, left_local, right_local
       endif
    enddo
 end function join
-=======
 pure integer function str_int_len(i) result(sz)
 ! Returns the length of the string representation of 'i'
 integer, intent(in) :: i
