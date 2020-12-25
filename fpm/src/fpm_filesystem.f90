@@ -1,4 +1,5 @@
 module fpm_filesystem
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
@@ -7,6 +8,7 @@ module fpm_filesystem
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
+    public :: fileopen, fileclose, filewrite, warnwrite
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -73,7 +75,7 @@ function canon_path(path) result(canon)
     ! Canonicalize path for comparison
     !  Handles path string redundancies
     !  Does not test existence of path
-    ! 
+    !
     ! To be replaced by realpath/_fullname in stdlib_os
     !
     character(*), intent(in) :: path
@@ -127,7 +129,7 @@ function canon_path(path) result(canon)
             end if
 
         end if
-        
+
 
         temp(j:j) = nixpath(i:i)
         j = j + 1
@@ -152,23 +154,23 @@ function dirname(path) result (dir)
 end function dirname
 
 
-logical function is_dir(dir) 
-    character(*), intent(in) :: dir 
-    integer :: stat 
+logical function is_dir(dir)
+    character(*), intent(in) :: dir
+    integer :: stat
 
-    select case (get_os_type()) 
+    select case (get_os_type())
 
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
-        call execute_command_line("test -d " // dir , exitstat=stat) 
+        call execute_command_line("test -d " // dir , exitstat=stat)
 
-    case (OS_WINDOWS) 
-        call execute_command_line('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', exitstat=stat) 
+    case (OS_WINDOWS)
+        call execute_command_line('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', exitstat=stat)
 
-    end select 
+    end select
 
-    is_dir = (stat == 0) 
+    is_dir = (stat == 0)
 
-end function is_dir 
+end function is_dir
 
 
 function join_path(a1,a2,a3,a4,a5) result(path)
@@ -315,7 +317,7 @@ recursive subroutine list_files(dir, files, recurse)
             do i=1,size(files)
                 if (is_dir(files(i)%s)) then
 
-                    call list_files(files(i)%s, dir_files, recurse=.true.) 
+                    call list_files(files(i)%s, dir_files, recurse=.true.)
                     sub_dir_files = [sub_dir_files, dir_files]
 
                 end if
@@ -347,7 +349,7 @@ function get_temp_filename() result(tempfile)
 
     type(c_ptr) :: c_tempfile_ptr
     character(len=1), pointer :: c_tempfile(:)
-    
+
     interface
 
         function c_tempnam(dir,pfx) result(tmp) bind(c,name="tempnam")
@@ -389,7 +391,7 @@ function windows_path(path) result(winpath)
         winpath(idx:idx) = '\'
         idx = index(winpath,'/')
     end do
-    
+
 end function windows_path
 
 
@@ -408,7 +410,7 @@ function unix_path(path) result(nixpath)
         nixpath(idx:idx) = '/'
         idx = index(nixpath,'\')
     end do
-    
+
 end function unix_path
 
 
@@ -464,5 +466,100 @@ subroutine delete_file(file)
     end if
 end subroutine delete_file
 
+subroutine warnwrite(fname,data)
+!> write trimmed character data to a file if it does not exist
+character(len=*),intent(in) :: fname
+character(len=*),intent(in) :: data(:)
+
+    if(.not.exists(fname))then
+        call filewrite(fname,data)
+    else
+        write(stderr,'(*(g0,1x))')'<INFO>  ',fname,&
+        & 'already exists. Not overwriting'
+    endif
+
+end subroutine warnwrite
+
+subroutine fileopen(filename,lun,ier)
+! procedure to open filename as a sequential "text" file
+
+character(len=*),intent(in)   :: filename
+integer,intent(out)           :: lun
+integer,intent(out),optional  :: ier
+integer                       :: i, ios
+character(len=256)            :: message
+
+    message=' '
+    ios=0
+    if(filename.ne.' ')then
+        open(file=filename, &
+        & newunit=lun, &
+        & form='formatted', &    ! FORM    = FORMATTED | UNFORMATTED
+        & access='sequential', & ! ACCESS  = SEQUENTIAL| DIRECT | STREAM
+        & action='write', &      ! ACTION  = READ|WRITE| READWRITE
+        & position='rewind', &   ! POSITION= ASIS      | REWIND | APPEND
+        & status='new', &        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN
+        & iostat=ios, &
+        & iomsg=message)
+    else
+        lun=stdout
+        ios=0
+    endif
+    if(ios.ne.0)then
+        write(stderr,'(*(a:,1x))')&
+        & '<ERROR> *filewrite*:',filename,trim(message)
+        lun=-1
+        if(present(ier))then
+           ier=ios
+        else
+           stop 1
+        endif
+    endif
+
+end subroutine fileopen
+
+subroutine fileclose(lun,ier)
+! simple close of a LUN.  On error show message and stop (by default)
+integer,intent(in)    :: lun
+integer,intent(out),optional :: ier
+character(len=256)    :: message
+integer               :: ios
+    if(lun.ne.-1)then
+        close(unit=lun,iostat=ios,iomsg=message)
+        if(ios.ne.0)then
+            write(stderr,'(*(a:,1x))')'<ERROR> *filewrite*:',trim(message)
+            if(present(ier))then
+               ier=ios
+            else
+               stop 2
+            endif
+        endif
+    endif
+end subroutine fileclose
+
+subroutine filewrite(filename,filedata)
+! procedure to write filedata to file filename
+
+character(len=*),intent(in)           :: filename
+character(len=*),intent(in)           :: filedata(:)
+integer                               :: lun, i, ios
+character(len=256)                    :: message
+    call fileopen(filename,lun)
+    if(lun.ne.-1)then ! program currently stops on error on open, but might
+                      ! want it to continue so -1 (unallowed LUN) indicates error
+       ! write file
+       do i=1,size(filedata)
+           write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
+           if(ios.ne.0)then
+               write(stderr,'(*(a:,1x))')&
+               & '<ERROR> *filewrite*:',filename,trim(message)
+               stop 4
+           endif
+       enddo
+    endif
+    ! close file
+    call fileclose(lun)
+
+end subroutine filewrite
 
 end module fpm_filesystem

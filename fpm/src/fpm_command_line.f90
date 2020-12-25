@@ -93,7 +93,7 @@ end type
 
 character(len=:),allocatable :: name
 character(len=:),allocatable :: os_type
-character(len=ibug),allocatable :: names(:) 
+character(len=ibug),allocatable :: names(:)
 character(len=:),allocatable :: tnames(:)
 
 character(len=:), allocatable :: version_text(:)
@@ -434,7 +434,7 @@ contains
         if(val_compiler.eq.'') then
             val_compiler='gfortran'
         endif
-   
+
         val_build=trim(merge('release','debug  ',lget('release')))
 
     end subroutine check_build_vals

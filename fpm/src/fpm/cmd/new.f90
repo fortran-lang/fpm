@@ -7,7 +7,7 @@ module fpm_cmd_new
 !> from this type to decide what actions to take.
 !>
 !> It is virtually self-contained and so independant of the rest of the
-!> application that it could function as a seperate program.
+!> application that it could function as a separate program.
 !>
 !> The "new" subcommand options currently consist of a SINGLE top
 !> directory name to create that must have a name that is an
@@ -16,7 +16,7 @@ module fpm_cmd_new
 !> So basically this routine has already had the options vetted and
 !> just needs to conditionally create a few files.
 !>
-!> As described in the documentation documentation it will selectively
+!> As described in the documentation it will selectively
 !> create the subdirectories app/, test/, src/, and example/
 !> and populate them with sample files.
 !>
@@ -56,6 +56,8 @@ module fpm_cmd_new
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
 use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
+use fpm_filesystem, only : fileopen, fileclose, filewrite, warnwrite
+use fpm_strings, only : join
 use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
 implicit none
 private
@@ -148,6 +150,9 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
        &'                                                                                ',&
        &'## BUILD CONFIGURATION SECTION                                                  ',&
        &'[build]                                                                         ',&
+       &'#                                                                               ',&
+       &'# Files will be searched for automatically (by default) in src/, app/, test/    ',&
+       &'# and example/. This can be turned off for app/, test, exampl                   ',&
        &'auto-executables = true  # Toggle automatic discovery of executables            ',&
        &'auto-examples = true     # Toggle automatic discovery of example programs       ',&
        &'auto-tests = true        # Toggle automatic discovery of test executables       ',&
@@ -270,9 +275,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
     if(settings%with_full)then
        tomlfile=[character(len=80) ::  tomlfile,   &
        &'[dependencies]                                                                  ', &
-       &'#                                                                               ', &
-       &'#Files will be searched for automatically (by default) in                       ', &
-       &'# src/, app/, test/, and example/.                                              ', &
        &'#For a complete list of keys and their attributes see                           ', &
        &'#                                                                               ', &
        &'#  https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md        ', &
@@ -311,11 +313,11 @@ character(len=*),intent(in) :: filename
     ser = toml_serializer()
     call fileopen(filename,lun) ! fileopen stops on error
 
-    call set_value(table, "name",       BNAME)        
-    call set_value(table, "version",    "0.1.0")          
-    call set_value(table, "license",    "license")        
-    call set_value(table, "author",     "Jane Doe")             
-    call set_value(table, "maintainer", "jane.doe@example.com")                    
+    call set_value(table, "name",       BNAME)
+    call set_value(table, "version",    "0.1.0")
+    call set_value(table, "license",    "license")
+    call set_value(table, "author",     "Jane Doe")
+    call set_value(table, "maintainer", "jane.doe@example.com")
     call set_value(table, "copyright",  'Copyright '//date(1:4)//', Jane Doe')
     ! continue building of manifest
     ! ...
@@ -330,95 +332,6 @@ character(len=*),intent(in) :: filename
 
 end subroutine create_verified_basic_manifest
 
-subroutine warnwrite(fname,data)
-character(len=*),intent(in) :: fname
-character(len=*),intent(in) :: data(:)
-
-    if(.not.exists(fname))then
-        call filewrite(fname,data)
-    else
-        write(stderr,'(*(g0,1x))')'<INFO>  ',fname,&
-        & 'already exists. Not overwriting'
-    endif
-
-end subroutine warnwrite
-
-subroutine fileopen(filename,lun)
-! procedure to open filedata to file filename
-use,intrinsic :: iso_fortran_env, only : &
- & stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-
-character(len=*),intent(in)   :: filename
-integer,intent(out)           :: lun
-integer                       :: i, ios
-character(len=256)            :: message
-
-    message=' '
-    ios=0
-    if(filename.ne.' ')then
-        open(file=filename, &
-        & newunit=lun, &
-        & form='formatted', &    ! FORM    = FORMATTED | UNFORMATTED
-        & access='sequential', & ! ACCESS  = SEQUENTIAL| DIRECT | STREAM
-        & action='write', &      ! ACTION  = READ|WRITE| READWRITE
-        & position='rewind', &   ! POSITION= ASIS      | REWIND | APPEND
-        & status='new', &        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN
-        & iostat=ios, &
-        & iomsg=message)
-    else
-        lun=stdout
-        ios=0
-    endif
-    if(ios.ne.0)then
-        write(stderr,'(*(a:,1x))')&
-        & '<ERROR> *filewrite*:',filename,trim(message)
-        lun=-1
-        stop 1
-    endif
-
-end subroutine fileopen
-
-subroutine fileclose(lun)
-use,intrinsic :: iso_fortran_env, only : &
- & stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-integer,intent(in)    :: lun
-character(len=256)    :: message
-integer               :: ios
-    if(lun.ne.-1)then
-        close(unit=lun,iostat=ios,iomsg=message)
-        if(ios.ne.0)then
-            write(stderr,'(*(a:,1x))')'<ERROR> *filewrite*:',trim(message)
-            stop 2
-        endif
-    endif
-end subroutine fileclose
-
-subroutine filewrite(filename,filedata)
-! procedure to write filedata to file filename
-use,intrinsic :: iso_fortran_env, only : &
- & stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-
-character(len=*),intent(in)           :: filename
-character(len=*),intent(in)           :: filedata(:)
-integer                               :: lun, i, ios
-character(len=256)                    :: message
-    call fileopen(filename,lun)
-    if(lun.ne.-1)then ! program currently stops on error on open, but might 
-                      ! want it to continue so -1 (unallowed LUN) indicates error
-       ! write file
-       do i=1,size(filedata)
-           write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
-           if(ios.ne.0)then
-               write(stderr,'(*(a:,1x))')&
-               & '<ERROR> *filewrite*:',filename,trim(message)
-               stop 4
-           endif
-       enddo
-    endif
-    ! close file
-    call fileclose(lun)
-
-end subroutine filewrite
 
 subroutine validate_toml_data(input)
 !> verify a string array is a valid fpm.toml file
@@ -449,109 +362,6 @@ if (allocated(table)) then
 endif
 
 end subroutine validate_toml_data
-
-pure function join(str,sep,trm,left,right) result (string)
-
-!> M_strings::join(3f): append an array of character variables with specified separator into a single CHARACTER variable
-!>
-!>##NAME
-!>    join(3f) - [M_strings:EDITING] append CHARACTER variable array into
-!>    a single CHARACTER variable with specified separator
-!>    (LICENSE:PD)
-!>
-!>##SYNOPSIS
-!>
-!>    pure function join(str,sep,trm,left,right) result (string)
-!>
-!>     character(len=*),intent(in)          :: str(:)
-!>     character(len=*),intent(in),optional :: sep
-!>     logical,intent(in),optional          :: trm
-!>     character(len=*),intent(in),optional :: right
-!>     character(len=*),intent(in),optional :: left
-!>     character(len=:),allocatable         :: string
-!>
-!>##DESCRIPTION
-!>      JOIN(3f) appends the elements of a CHARACTER array into a single
-!>      CHARACTER variable, with elements 1 to N joined from left to right.
-!>      By default each element is trimmed of trailing spaces and the
-!>      default separator is a null string.
-!>
-!>##OPTIONS
-!>      STR(:)  array of CHARACTER variables to be joined
-!>      SEP     separator string to place between each variable. defaults
-!>              to a null string.
-!>      LEFT    string to place at left of each element
-!>      RIGHT   string to place at right of each element
-!>      TRM     option to trim each element of STR of trailing
-!>              spaces. Defaults to .TRUE.
-!>
-!>##RESULT
-!>      STRING  CHARACTER variable composed of all of the elements of STR()
-!>              appended together with the optional separator SEP placed
-!>              between the elements.
-!>
-!>##EXAMPLE
-!>
-!>  Sample program:
-!>
-!>   program demo_join
-!>   use M_strings, only: join
-!>   implicit none
-!>   character(len=:),allocatable  :: s(:)
-!>   character(len=:),allocatable  :: out
-!>   integer                       :: i
-!>     s=[character(len=10) :: 'United',' we',' stand,', &
-!>     & ' divided',' we fall.']
-!>     out=join(s)
-!>     write(*,'(a)') out
-!>     write(*,'(a)') join(s,trm=.false.)
-!>     write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
-!>     write(*,'(a)') join(s,sep='<>')
-!>     write(*,'(a)') join(s,sep=';',left='[',right=']')
-!>     write(*,'(a)') join(s,left='[',right=']')
-!>     write(*,'(a)') join(s,left='>>')
-!>   end program demo_join
-!>
-!>  Expected output:
-!>
-!>   United we stand, divided we fall.
-!>   United     we        stand,    divided   we fall.
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United<> we<> stand,<> divided<> we fall.<>
-!>   [United];[ we];[ stand,];[ divided];[ we fall.];
-!>   [United][ we][ stand,][ divided][ we fall.]
-!>   >>United>> we>> stand,>> divided>> we fall.
-!>
-!>##AUTHOR
-!>    John S. Urban
-!>
-!>##LICENSE
-!>    Public Domain
-
-character(len=*,kind=tfc),intent(in)  :: str(:)
-character(len=*),intent(in),optional  :: sep, right, left
-logical,intent(in),optional           :: trm
-character(len=:,kind=tfc),allocatable :: string
-integer                               :: i
-logical                               :: trm_local
-character(len=:),allocatable          :: sep_local, left_local, right_local
-
-   if(present(sep))then    ;  sep_local=sep      ;  else  ;  sep_local=''      ;  endif
-   if(present(trm))then    ;  trm_local=trm      ;  else  ;  trm_local=.true.  ;  endif
-   if(present(left))then   ;  left_local=left    ;  else  ;  left_local=''     ;  endif
-   if(present(right))then  ;  right_local=right  ;  else  ;  right_local=''    ;  endif
-
-   string=''
-   do i = 1,size(str)
-      if(trm_local)then
-         string=string//left_local//trim(str(i))//right_local//sep_local
-      else
-         string=string//left_local//str(i)//right_local//sep_local
-      endif
-   enddo
-end function join
 
 end subroutine cmd_new
 
