@@ -189,7 +189,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  #                                                                             ',&
         &'  # Now lets start describing how the project should be built.                  ',&
         &'  #                                                                             ',&
-        &'  # Note that tables would go here but we will not be taling about them (much)!!',&
+        &'  # Note tables would go here but we will not be talking about them (much)!!'    ,&
         &'  #                                                                             ',&
         &'  # Tables are a way to explicitly specify large numbers of programs in         ',&
         &'  # a compact format instead of individual per-program entries in the           ',&
