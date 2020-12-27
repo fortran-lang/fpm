@@ -651,6 +651,7 @@ contains
     '    fpm build                                                          ', &
     '    fpm test                                                           ', &
     '    fpm run                                                            ', &
+    '    fpm run --example                                                  ', &
     '    fpm new --help                                                     ', &
     '    fpm run myprogram --release -- -x 10 -y 20 --title "my title"      ', &
     '    fpm install --prefix ~/.local                                      ', &
@@ -864,7 +865,7 @@ contains
     '        ASCII alphanumeric characters and underscores,                 ', &
     '        starting with a letter.                                        ', &
     '                                                                       ', &
-    ' The default is to create the src/, app/, and test/,                   ', &
+    ' The default is to create the src/, app/, example/ and test/           ', &
     ' directories. If any of the following options are specified            ', &
     ' then only selected subdirectories are generated:                      ', &
     '                                                                       ', &
@@ -878,19 +879,23 @@ contains
     ' --example    create directory example/ and a placeholder program      ', &
     '              for use with the subcommand "run --example".             ', &
     '                                                                       ', &
-    ' So the default is equivalent to "fpm NAME --lib --app --test"         ', &
+    ' So the default is equivalent to                                        ',&
+    '                                                                       ', &
+    '    fpm NAME --lib --app --test --example                              ', &
     '                                                                       ', &
     ' --backfill   By default the directory must not exist. If this         ', &
     '              option is present the directory may pre-exist and        ', &
     '              only subdirectories and files that do not                ', &
     '              already exist will be created. For example, if you       ', &
     '              previously entered "fpm new myname --lib" entering       ', &
-    '              "fpm new myname --backfill" will create the missing      ', &
-    '              app/ and test/ directories and programs.                 ', &
+    '              "fpm new myname --backfill" will create any missing      ', &
+    '              app/, example/ and test/ directories and programs.       ', &
     '                                                                       ', &
     ' --full       By default a minimal manifest file ("fpm.toml") is       ', &
     '              created that depends on auto-discovery. With this        ', &
     '              option a much more extensive manifest sample is written. ', &
+    '              It is designed to facilitate creating projects that      ', &
+    '              depend extensively on non-default build options.         ', &
     '                                                                       ', &
     ' --bare       A minimal manifest file ("fpm.toml") is created and      ', &
     '              a ".gitignore" and "README.md" file is created but no    ', &
@@ -984,7 +989,7 @@ contains
     'DESCRIPTION', &
     ' Subcommand to install fpm projects. Running install will export the', &
     ' current project to the selected prefix, this will by default install all', &
-    ' executables (test and examples are excluded) which are part of the projects.', &
+    ' executables (tests and examples are excluded) which are part of the projects.', &
     ' Libraries and module files are only installed for projects requiring the', &
     ' installation of those components in the package manifest.', &
     '', &

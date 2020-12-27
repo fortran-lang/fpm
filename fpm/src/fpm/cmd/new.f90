@@ -107,59 +107,158 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
 
     ! start building NAME/fpm.toml
     if(settings%with_full)then
-       tomlfile=[character(len=80) :: &
-       &'# Manifest root                                                                 ',&
-       &'                                                                                ',&
-       &'## Project Identification                                                       ',&
-       &'name = "'//bname//'"', &
-       &'  #  The project name (required) is how the project will be referred to.        ',&
-       &'  #  It is used by another package using it as a dependency and as the          ',&
-       &'  #  default name of the library built from src/.                               ',&
-       &'                                                                                ',&
-       &'version = "0.1.0"                                                               ',&
-       &'  #  The project version number is a string. A recommended standardized way     ',&
-       &'  #  to manage and specify versions is the Semantic Versioning scheme.          ',&
-       &'                                                                                ',&
-       &'license = "license"                                                             ',&
-       &'  #  Licensing information specified using a standard such as SPDX              ',&
-       &'  #  identifiers are preferred (eg. "Apache-2.0 OR MIT" or "LGPL-3.0-or-later").',&
-       &'                                                                                ',&
-       &'maintainer = "jane.doe@example.com"                                             ',&
-       &'  #  Information on the project maintainer and means to reach out to them.      ',&
-       &'                                                                                ',&
-       &'author = "Jane Doe"                                                             ',&
-       &'  #  Information on the project author.                                         ',&
-       &'                                                                                ',&
-       &'copyright = "Copyright 2020 Jane Doe"                                           ',&
-       &'  #  A statement clarifying the Copyright status of the project.                ',&
-       &'                                                                                ',&
-       &'#description = "A short project summary in plain text"                          ',&
-       &'  #  The description provides a short summary on the project. It should be      ',&
-       &'  #  plain text and not use any markup formatting.                              ',&
-       &'                                                                                ',&
-       &'#categories = ["fortran", "graphics"]                                           ',&
-       &'  #  Categories associated with the project. Listing only one is preferred.     ',&
-       &'                                                                                ',&
-       &'#keywords = ["hdf5", "mpi"]                                                     ',&
-       &'  #  The keywords field is an array of strings describing the project.          ',&
-       &'                                                                                ',&
-       &'#homepage = "https://stdlib.fortran-lang.org"                                   ',&
-       &'  #  URL to the webpage of the project.                                         ',&
-       &'                                                                                ',&
-       &'## TABLES                                                                       ',&
-       &'                                                                                ',&
-       &'## BUILD CONFIGURATION SECTION                                                  ',&
-       &'[build]                                                                         ',&
-       &'#                                                                               ',&
-       &'# Files will be searched for automatically (by default) in src/, app/, test/    ',&
-       &'# and example/. This can be turned off for app/, test, exampl                   ',&
-       &'auto-executables = true  # Toggle automatic discovery of executables            ',&
-       &'auto-examples = true     # Toggle automatic discovery of example programs       ',&
-       &'auto-tests = true        # Toggle automatic discovery of test executables       ',&
-       &'#link = ["blas", "lapack", "z", "X11"] # Linking against libraries              ',&
-       &'                                                                                ',&
-       &'## TARGETS                                                                      ',&
-       &'']
+        tomlfile=[character(len=80) :: &
+        &'  # This is your fpm(Fortran Package Manager) manifest file                     ',&
+        &'  # ("fpm.toml"). It is heavily annotated to help guide you though              ',&
+        &'  # customizing a package build, although the defaults are sufficient           ',&
+        &'  # for many basic packages.                                                    ',&
+        &'  #                                                                             ',&
+        &'  # The manifest file is not only used to provide metadata identifying          ',&
+        &'  # your project (so it can be used by others as a dependency). It can          ',&
+        &'  # specify where your library and program sources live, what the name          ',&
+        &'  # of the executable(s) will be, what files to build, dependencies on          ',&
+        &'  # other fpm packages, and what external libraries are required.               ',&
+        &'  #                                                                             ',&
+        &'  # The manifest format must conform to the TOML configuration file             ',&
+        &'  # standard.                                                                   ',&
+        &'  #                                                                             ',&
+        &'  # TOML files support flexible use of white-space and commenting of the        ',&
+        &'  # configuration data, but for clarity in this sample active directives        ',&
+        &'  # begin in column one. Inactive example directives are commented              ',&
+        &'  # out with a pound character ("#") but begin in column one as well.           ',&
+        &'  # Commentary begins with a pound character in column three.                   ',&
+        &'  #                                                                             ',&
+        &'  # This file draws heavily upon the following references:                      ',&
+        &'  #                                                                             ',&
+        &'  # The fpm home page at                                                        ',&
+        &'  #     https://github.com/fortran-lang/fpm                                     ',&
+        &'  # A complete list of keys and their attributes at                             ',&
+        &'  #     https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md   ',&
+        &'  # examples of fpm project packaging at                                        ',&
+        &'  #     https://github.com/fortran-lang/fpm/blob/master/PACKAGING.md            ',&
+        &'  # The Fortran TOML file interface and it''s references at                     ',&
+        &'  #     https://github.com/toml-f/toml-f                                        ',&
+        &'  #                                                                             ',&
+        &'  #-----------------------                                                      ',&
+        &'  # project Identification                                                      ',&
+        &'  #-----------------------                                                      ',&
+        &'  # We begin with project metadata at the manifest root. This data is designed  ',&
+        &'  # to aid others when searching for the project in a repository and to         ',&
+        &'  # identify how and when to contact the package supporters.                    ',&
+        &'                                                                                ',&
+        &'name = "'//settings%name//'"',&
+        &'  # The project name (required) is how the project will be referred to.         ',&
+        &'  # The name is used by other packages using it as a dependency. It also        ',&
+        &'  # is used as the default name of any library built and the optional           ',&
+        &'  # default executable built from app/main.f90. It must conform to the rules    ',&
+        &'  # for a Fortran variable name.                                                ',&
+        &'                                                                                ',&
+        &'version = "0.1.0"                                                               ',&
+        &'  # The project version number is a string. A recommended scheme for            ',&
+        &'  # specifying versions is the Semantic Versioning scheme.                      ',&
+        &'                                                                                ',&
+        &'license = "license"                                                             ',&
+        &'  # Licensing information specified using SPDX identifiers is preferred         ',&
+        &'  # (eg. "Apache-2.0 OR MIT" or "LGPL-3.0-or-later").                           ',&
+        &'                                                                                ',&
+        &'maintainer = "jane.doe@example.com"                                             ',&
+        &'  # Information on the project maintainer and means to reach out to them.       ',&
+        &'                                                                                ',&
+        &'author = "Jane Doe"                                                             ',&
+        &'  # Information on the project author.                                          ',&
+        &'                                                                                ',&
+        &'copyright = "Copyright 2020 Jane Doe"                                           ',&
+        &'  # A statement clarifying the Copyright status of the project.                 ',&
+        &'                                                                                ',&
+        &'#description = "A short project summary in plain text"                          ',&
+        &'  # The description provides a short summary on the project. It should be       ',&
+        &'  # plain text and not use any markup formatting.                               ',&
+        &'                                                                                ',&
+        &'#categories = ["fortran", "graphics"]                                           ',&
+        &'  # Categories associated with the project. Listing only one is preferred.      ',&
+        &'                                                                                ',&
+        &'#keywords = ["hdf5", "mpi"]                                                     ',&
+        &'  # The keywords field is an array of strings describing the project.           ',&
+        &'                                                                                ',&
+        &'#homepage = "https://stdlib.fortran-lang.org"                                   ',&
+        &'  # URL to the webpage of the project.                                          ',&
+        &'                                                                                ',&
+        &'  # -----------------------------------------                                   ',&
+        &'  # We are done with identifying the project.                                   ',&
+        &'  # -----------------------------------------                                   ',&
+        &'  #                                                                             ',&
+        &'  # Now lets start describing how the project should be built.                  ',&
+        &'  #                                                                             ',&
+        &'  # Note that tables would go here but we will not be taling about them (much)!!',&
+        &'  #                                                                             ',&
+        &'  # Tables are a way to explicitly specify large numbers of programs in         ',&
+        &'  # a compact format instead of individual per-program entries in the           ',&
+        &'  # [[executable]], [[test]], and [[example]] sections to follow but            ',&
+        &'  # will not be discussed further except for the following notes:               ',&
+        &'  #                                                                             ',&
+        &'  # + Tables must appear (here) before any sections are declared. Once a        ',&
+        &'  #   section is specified in a TOML file everything afterwards must be         ',&
+        &'  #   values for that section or the beginning of a new section. A simple       ',&
+        &'  #   example looks like:                                                       ',&
+        &'                                                                                ',&
+        &'#executable = [                                                                 ',&
+        &'#  { name = "a-prog" },                                                         ',&
+        &'#  { name = "app-tool", source-dir = "tool" }                                   ',&
+        &'#  { name = "fpm-man", source-dir = "tool", main="fman.f90" }                   ',&
+        &'#]                                                                              ',&
+        &'                                                                                ',&
+        &'  # + See the reference documents (at the beginning of this document)           ',&
+        &'  #   for more information on tables if you have long lists of programs         ',&
+        &'  #   to build and are not simply depending on auto-detection and building.     ',&
+        &'  #                                                                             ',&
+        &'  # Now lets begin the TOML sections (lines beginning with "[") ...             ',&
+        &'  #                                                                             ',&
+        &'                                                                                ',&
+        &'[install] # Options for the "install" subcommand                                ',&
+        &'                                                                                ',&
+        &'  # When you run the "install" subcommand only executables are installed by     ',&
+        &'  # default on the local system. Library projects that will be used outside of  ',&
+        &'  # "fpm" can set the "library" boolean to also allow installing the module     ',&
+        &'  # files and library archive. Without this being set to "true" an "install"    ',&
+        &'  # subcommand ignores parameters that specify library installation.            ',&
+        &'                                                                                ',&
+        &'library = false                                                                 ',&
+        &'                                                                                ',&
+        &'[build] # General Build Options                                                 ',&
+        &'                                                                                ',&
+        &'  ###  Automatic target discovery                                               ',&
+        &'  #                                                                             ',&
+        &'  # Normally fpm recursively searches the app/, example/, and test/ directories ',&
+        &'  # for program sources and builds them. To disable this automatic discovery of ',&
+        &'  # program targets set the following to "false":                               ',&
+        &'                                                                                ',&
+        &'#auto-executables = true                                                        ',&
+        &'#auto-examples = true                                                           ',&
+        &'#auto-tests = true                                                              ',&
+        &'                                                                                ',&
+        &'  ### Package-level External Library Links                                      ',&
+        &'  #                                                                             ',&
+        &'  # To declare link-time dependencies on external libraries a list of           ',&
+        &'  # native libraries can be specified with the "link" entry. You may            ',&
+        &'  # have one library name or a list of strings in case several                  ',&
+        &'  # libraries should be linked. This list of library dependencies is            ',&
+        &'  # exported to dependent packages. You may have to alter your library          ',&
+        &'  # search-path to ensure the libraries can be accessed.  Typically,            ',&
+        &'  # this is done with the LD_LIBRARY_PATH environment variable on ULS           ',&
+        &'  # (Unix-Like Systems).  You only specify the core name of the library         ',&
+        &'  # (as is typical with most programming environments, where you                ',&
+        &'  # would specify "-lz" on your load command to link against the zlib           ',&
+        &'  # compression library even though the library file would typically be         ',&
+        &'  # a file called "libz.a" "or libz.so"). So to link against that library       ',&
+        &'  # you would specify:                                                          ',&
+        &'                                                                                ',&
+        &'#link = "z"                                                                     ',&
+        &'                                                                                ',&
+        &'  # Note in that in some cases the order of the libraries matters:              ',&
+        &'                                                                                ',&
+        &'#link = ["blas", "lapack"]                                                      ',&
+        &'                                                                                ',&
+        &'']
     endif
 
     if(settings%with_bare)then
@@ -168,8 +267,45 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         ! create next section of fpm.toml
         if(settings%with_full)then
             tomlfile=[character(len=80) ::  tomlfile, &
-            &'[library]                            ', &
-            &'source-dir="src"                     ', &
+            &'                                                                                ',&
+            &'[library]                                                                       ',&
+            &'                                                                                ',&
+            &'  # You can change the name of the directory to search for your library         ',&
+            &'  # source from the default of "src/". Library targets are exported             ',&
+            &'  # and usable by other projects.                                               ',&
+            &'                                                                                ',&
+            &'source-dir="src"                                                                ',&
+            &'                                                                                ',&
+            &'  # this can be a list:                                                         ',&
+            &'                                                                                ',&
+            &'#source-dir=["src", "src2"]                                                     ',&
+            &'                                                                                ',&
+            &'  # More complex libraries may organize their modules in subdirectories.        ',&
+            &'  # For modules in a top-level directory fpm requires (but does not             ',&
+            &'  # enforce) that:                                                              ',&
+            &'  #                                                                             ',&
+            &'  #  + The module has the same name as the source file. This is important.      ',&
+            &'  #  + There should be only one module per file.                                ',&
+            &'  #                                                                             ',&
+            &'  # These two requirements simplify the build process for fpm. As Fortran       ',&
+            &'  # compilers emit module files (.mod) with the same name as the module         ',&
+            &'  # itself (but not the source file, .f90), naming the module the same          ',&
+            &'  # as the source file allows fpm to:                                           ',&
+            &'  #                                                                             ',&
+            &'  #  + Uniquely and exactly map a source file (.f90) to its object (.o)         ',&
+            &'  #    and module (.mod) files.                                                 ',&
+            &'  #  + Avoid conflicts with modules of the same name that could appear          ',&
+            &'  #    in dependency packages.                                                  ',&
+            &'  #                                                                             ',&
+            &'  ### Multi-level library source                                                ',&
+            &'  # You can place your module source files in any levels of subdirectories      ',&
+            &'  # inside your source directory, but there are certain naming conventions      ',&
+            &'  # to be followed -- module names must contain the path components             ',&
+            &'  # of the directory that its source file is in.                                ',&
+            &'  #                                                                             ',&
+            &'  # This rule applies generally to any number of nested directories and         ',&
+            &'  # modules. For example, src/a/b/c/d.f90 must define a module called a_b_c_d.  ',&
+            &'  # Again, this is not enforced but may be required in future releases.         ',&
             &'']
         endif
         ! create placeholder module src/bname.f90
@@ -189,56 +325,83 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
          & littlefile)
     endif
 
-    if(settings%with_bare)then
-    elseif(settings%with_test)then
-
-       ! create NAME/test or stop
-       call mkdir(join_path(settings%name, 'test'))
-        ! create next section of fpm.toml
-        if(settings%with_full)then
-           tomlfile=[character(len=80) ::  tomlfile ,&
-           &'[[test]]                             ', &
-           &'name="runTests"                      ', &
-           &'source-dir="test"                    ', &
-           &'main="check.f90"                     ', &
-           &'']
-        endif
-
-        littlefile=[character(len=80) ::       &
-        &'program check',                      &
-        &'implicit none',                      &
-        &'',                                   &
-        &'print *, "Put some tests in here!"', &
-        &'end program check']
-        ! create NAME/test/check.f90
-        call warnwrite(join_path(settings%name, 'test/check.f90'), littlefile)
+    if(settings%with_full)then
+        tomlfile=[character(len=80) ::  tomlfile ,&
+        &'                                                                                ',&
+        &'[dependencies]                                                                  ',&
+        &'                                                                                ',&
+        &'  # Inevitably, you will want to be able to include other packages in           ',&
+        &'  # a project. fpm makes this incredibly simple, by taking care of              ',&
+        &'  # fetching and compiling your dependencies for you. You just tell it          ',&
+        &'  # what your dependencies names are, and where to find them.                   ',&
+        &'  #                                                                             ',&
+        &'  # If you are going to distribute your package only place dependencies         ',&
+        &'  # here someone using your package as a remote dependency needs built.         ',&
+        &'  # You can define dependencies just for developer executables in the           ',&
+        &'  # next section, or even for specific executables as we will see below         ',&
+        &'  # (Then fpm will still fetch and compile it when building your                ',&
+        &'  # developer executables, but users of your library will not have to).         ',&
+        &'  #                                                                             ',&
+        &'  ## GLOBAL DEPENDENCIES (exported with your project)                           ',&
+        &'  #                                                                             ',&
+        &'  # Typically, dependencies are defined by specifying the project''s            ',&
+        &'  # git repository.                                                             ',&
+        &'  #                                                                             ',&
+        &'  # You can be specific about which version of a dependency you would           ',&
+        &'  # like. By default the latest master master branch is used. You can           ',&
+        &'  # optionally specify a branch, a tag or a commit value.                       ',&
+        &'  #                                                                             ',&
+        &'  # So here are several alternates for specifying a remote dependency (you      ',&
+        &'  # can have at most one of "branch", "rev" or "tag" present):                  ',&
+        &'                                                                                ',&
+        &'#stdlib = { git = "https://github.com/LKedward/stdlib-fpm.git" }                ',&
+        &'#stdlib = {git="https://github.com/LKedward/stdlib-fpm.git",branch = "master" },',&
+        &'#stdlib = {git="https://github.com/LKedward/stdlib-fpm.git", tag = "v0.1.0" },  ',&
+        &'#stdlib = {git="https://github.com/LKedward/stdlib-fpm.git", rev = "5a9b7a8" }. ',&
+        &'                                                                                ',&
+        &'  # There may be multiple packages listed:                                      ',&
+        &'                                                                                ',&
+        &'#M_strings = { git = "https://github.com/urbanjost/M_strings.git" }             ',&
+        &'#M_time    = { git = "https://github.com/urbanjost/M_time.git" }                ',&
+        &'                                                                                ',&
+        &'  #                                                                             ',&
+        &'  # You can even specify the local path to another project if it is in          ',&
+        &'  # a sub-folder (If for example you have got another fpm package **in          ',&
+        &'  # the same repository**) like this:                                           ',&
+        &'                                                                                ',&
+        &'#M_strings = { path = "M_strings" }                                             ',&
+        &'                                                                                ',&
+        &'  #  If you specify paths outside of your repository (ie. paths with a          ',&
+        &'  #  slash in them) things will not work for your users!                        ',&
+        &'  #                                                                             ',&
+        &'  # For a more verbose layout use normal tables rather than inline tables       ',&
+        &'  # to specify dependencies:                                                    ',&
+        &'                                                                                ',&
+        &'#[dependencies.toml-f]                                                          ',&
+        &'#git = "https://github.com/toml-f/toml-f"                                       ',&
+        &'#rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"                               ',&
+        &'                                                                                ',&
+        &'  #                                                                             ',&
+        &'  # Now you can use any modules from these libraries anywhere in your           ',&
+        &'  # code -- whether is in your library source or a program source.              ',&
+        &'                                                                                ',&
+        &'[dev-dependencies]                                                              ',&
+        &'                                                                                ',&
+        &'  ## Dependencies Only for Development                                          ',&
+        &'  #                                                                             ',&
+        &'  # You can specify dependencies your library or application does not           ',&
+        &'  # depend on in a similar way. The difference is that these will not           ',&
+        &'  # be exported as part of your project to those using it as a remote           ',&
+        &'  # dependency.                                                                 ',&
+        &'  #                                                                             ',&
+        &'  # Currently, like a global dependency it will still be available for          ',&
+        &'  # all codes. It is up to the developer to ensure that nothing except          ',&
+        &'  # developer test programs rely upon it.                                       ',&
+        &'                                                                                ',&
+        &'#M_msg    = { git = "https://github.com/urbanjost/M_msg.git" }                  ',&
+        &'#M_verify = { git = "https://github.com/urbanjost/M_verify.git" }               ',&
+        &'']
     endif
-
-    if(settings%with_bare)then
-    elseif(settings%with_example)then
-
-       ! create NAME/example or stop
-       call mkdir(join_path(settings%name, 'example'))
-        ! create next section of fpm.toml
-        if(settings%with_full)then
-           tomlfile=[character(len=80) ::  tomlfile, &
-           &'[[example]]                          ', &
-           &'name="demo"                          ', &
-           &'source-dir="example"                 ', &
-           &'main="demo.f90"                      ', &
-           &'']
-        endif
-
-        littlefile=[character(len=80) ::          &
-        &'program demo',                          &
-        &'implicit none',                         &
-        &'',                                      &
-        &'print *, "Put some examples in here!"', &
-        &'end program demo']
-        ! create NAME/example/demo.f90
-        call warnwrite(join_path(settings%name, 'example/demo.f90'), littlefile)
-    endif
-
     if(settings%with_bare)then
     elseif(settings%with_executable)then
         ! create next section of fpm.toml
@@ -246,10 +409,54 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         ! create NAME/app or stop
         if(settings%with_full)then
            tomlfile=[character(len=80) ::  tomlfile, &
-           &'[[executable]]                       ', &
-           &'name="'//bname//'"                   ', &
-           &'source-dir="app"                     ', &
-           &'main="main.f90"                      ', &
+           &'  #-----------------------------------                                          ',&
+           &'  ## Application-specific declarations                                          ',&
+           &'  #-----------------------------------                                          ',&
+           &'  # Now lets begin entries for the TOML tables (lines beginning with "[[")      ',&
+           &'  # that describe the program sources -- applications, tests, and examples.     ',&
+           &'  #                                                                             ',&
+           &'  # So configuration of individual applications(run with "fpm run") begins here.',&
+           &'  #                                                                             ',&
+           &'  #   + the "name" entry for the executable to be built must always             ',&
+           &'  #     be specified. The name must satisfy the rules for a Fortran             ',&
+           &'  #     variable name.                                                          ',&
+           &'  #   + The source directory for each executable can be adjusted by the         ',&
+           &'  #     "source-dir" entry.                                                     ',&
+           &'  #   + The basename of the source file containing the program body can         ',&
+           &'  #     be specified with the "main" entry.                                     ',&
+           &'  #   + Executables can also specify their own external package and             ',&
+           &'  #     library link dependencies.                                              ',&
+           &'  #                                                                             ',&
+           &'  #     Currently, like a global dependency any external package dependency     ',&
+           &'  #     will be available for all codes. It is up to the developer to ensure    ',&
+           &'  #     that nothing except the application programs specified rely upon it.    ',&
+           &'  #                                                                             ',&
+           &'  # Note if your application needs to use a module internally, but you do not   ',&
+           &'  # intend to build it as a library to be used in other projects, you can       ',&
+           &'  # include the module in your program source file or directory as well.        ',&
+           &'                                                                                ',&
+           &'[[executable]]                                                                  ',&
+           &'name="'//settings%name//'"',&
+           &'source-dir="app"                                                                ',&
+           &'main="main.f90"                                                                 ',&
+           &'  #                                                                             ',&
+           &'  # you may repeat this pattern to add additional explicit application          ',&
+           &'  # names and parameters.                                                       ',&
+           &'  #                                                                             ',&
+           &'  # The following sample illustrates all accepted options, where "link" and     ',&
+           &'  # "executable.dependencies" keys are the same as the global external library  ',&
+           &'  # links and package dependencies described previously except they apply       ',&
+           &'  # only to this executable:                                                    ',&
+           &'                                                                                ',&
+           &'#[[ executable ]]                                                               ',&
+           &'#name = "app-name"                                                              ',&
+           &'#source-dir = "prog"                                                            ',&
+           &'#main = "program.f90"                                                           ',&
+           &'#link = "z"                                                                     ',&
+           &'#[executable.dependencies]                                                      ',&
+           &'#M_CLI   = { git = "https://github.com/urbanjost/M_CLI.git" }                   ',&
+           &'#helloff = { git = "https://gitlab.com/everythingfunctional/helloff.git" }      ',&
+           &'#M_path  = { git = "https://github.com/urbanjost/M_path.git" }                  ',&
            &'']
         endif
 
@@ -272,14 +479,96 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         call warnwrite(join_path(settings%name, 'app/main.f90'), littlefile)
     endif
 
-    if(settings%with_full)then
-       tomlfile=[character(len=80) ::  tomlfile,   &
-       &'[dependencies]                                                                  ', &
-       &'#For a complete list of keys and their attributes see                           ', &
-       &'#                                                                               ', &
-       &'#  https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md        ', &
-       &'#                                                                               ', &
-       &'']
+    if(settings%with_bare)then
+    elseif(settings%with_test)then
+
+       ! create NAME/test or stop
+       call mkdir(join_path(settings%name, 'test'))
+        ! create next section of fpm.toml
+        if(settings%with_full)then
+           tomlfile=[character(len=80) ::  tomlfile ,&
+           &'                                                                                ',&
+           &'[[test]]                                                                        ',&
+           &'                                                                                ',&
+           &'  # The same declarations can be made for test programs, which are              ',&
+           &'  # executed with the "fpm test" command and are not build when your            ',&
+           &'  # package is used as a dependency by other packages.  These are               ',&
+           &'  # typically unit tests of the package only used during package                ',&
+           &'  # development.                                                                ',&
+           &'                                                                                ',&
+           &'name="runTests"                                                                 ',&
+           &'source-dir="test"                                                               ',&
+           &'main="check.f90"                                                                ',&
+           &'                                                                                ',&
+           &'  # you may repeat this pattern to add additional explicit test program         ',&
+           &'  # parameters. The following example contains a sample of all accepted         ',&
+           &'  # options.                                                                    ',&
+           &'                                                                                ',&
+           &'#[[ test ]]                                                                     ',&
+           &'#name = "tester"                                                                ',&
+           &'#source-dir="test"                                                              ',&
+           &'#main="tester.f90"                                                              ',&
+           &'#link = ["blas", "lapack"]                                                      ',&
+           &'#[test.dependencies]                                                            ',&
+           &'#M_CLI2  = { git = "https://github.com/urbanjost/M_CLI2.git" }                  ',&
+           &'#M_io    = { git = "https://github.com/urbanjost/M_path.git" }                  ',&
+           &'#M_system= { git = "https://github.com/urbanjost/M_system.git" }                ',&
+           &'']
+        endif
+
+        littlefile=[character(len=80) ::       &
+        &'program check',                      &
+        &'implicit none',                      &
+        &'',                                   &
+        &'print *, "Put some tests in here!"', &
+        &'end program check']
+        ! create NAME/test/check.f90
+        call warnwrite(join_path(settings%name, 'test/check.f90'), littlefile)
+    endif
+
+    if(settings%with_bare)then
+    elseif(settings%with_example)then
+
+       ! create NAME/example or stop
+       call mkdir(join_path(settings%name, 'example'))
+        ! create next section of fpm.toml
+        if(settings%with_full)then
+           tomlfile=[character(len=80) ::  tomlfile, &
+           &'                                                                                ',&
+           &'[[example]]                                                                     ',&
+           &'                                                                                ',&
+           &'  # Example applications for a project are defined here.                        ',&
+           &'  # These are run via "fpm run --example NAME" and like the                     ',&
+           &'  # test applications, are not built when this package is used as a             ',&
+           &'  # dependency by other packages.                                               ',&
+           &'                                                                                ',&
+           &'name="demo"                                                                     ',&
+           &'source-dir="example"                                                            ',&
+           &'main="demo.f90"                                                                 ',&
+           &'                                                                                ',&
+           &'  #                                                                             ',&
+           &'  # you may add additional programs to the example table. The following         ',&
+           &'  # example contains a sample of all accepted options                           ',&
+           &'                                                                                ',&
+           &'#[[ example ]]                                                                  ',&
+           &'#name = "example-tool"                                                          ',&
+           &'#source-dir="example"                                                           ',&
+           &'#main="tool.f90"                                                                ',&
+           &'#link = "z"                                                                     ',&
+           &'#[example.dependencies]                                                         ',&
+           &'#M_kracken95  = { git = "https://github.com/urbanjost/M_kracken95.git" }        ',&
+           &'#datetime = {git = "https://github.com/wavebitscientific/datetime-fortran.git" }',&
+           &'']
+        endif
+
+        littlefile=[character(len=80) ::          &
+        &'program demo',                          &
+        &'implicit none',                         &
+        &'',                                      &
+        &'print *, "Put some examples in here!"', &
+        &'end program demo']
+        ! create NAME/example/demo.f90
+        call warnwrite(join_path(settings%name, 'example/demo.f90'), littlefile)
     endif
 
     ! now that built it write NAME/fpm.toml
