@@ -189,7 +189,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  #                                                                             ',&
         &'  # Now lets start describing how the project should be built.                  ',&
         &'  #                                                                             ',&
-        &'  # Note that tables would go here but we will not be taling about them (much)!!',&
+        &'  # Note tables would go here but we will not be talking about them (much)!!'    ,&
         &'  #                                                                             ',&
         &'  # Tables are a way to explicitly specify large numbers of programs in         ',&
         &'  # a compact format instead of individual per-program entries in the           ',&
@@ -209,7 +209,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'                                                                                ',&
         &'  # + See the reference documents (at the beginning of this document)           ',&
         &'  #   for more information on tables if you have long lists of programs         ',&
-        &'  #   to build and are not simply depending on auto-detection and building.     ',&
+        &'  #   to build and are not simply depending on auto-detection.                  ',&
         &'  #                                                                             ',&
         &'  # Now lets begin the TOML sections (lines beginning with "[") ...             ',&
         &'  #                                                                             ',&
@@ -254,10 +254,9 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'                                                                                ',&
         &'#link = "z"                                                                     ',&
         &'                                                                                ',&
-        &'  # Note in that in some cases the order of the libraries matters:              ',&
+        &'  # Note that in some cases the order of the libraries matters:                 ',&
         &'                                                                                ',&
         &'#link = ["blas", "lapack"]                                                      ',&
-        &'                                                                                ',&
         &'']
     endif
 
@@ -267,7 +266,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         ! create next section of fpm.toml
         if(settings%with_full)then
             tomlfile=[character(len=80) ::  tomlfile, &
-            &'                                                                                ',&
             &'[library]                                                                       ',&
             &'                                                                                ',&
             &'  # You can change the name of the directory to search for your library         ',&
@@ -298,9 +296,9 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
             &'  #    in dependency packages.                                                  ',&
             &'  #                                                                             ',&
             &'  ### Multi-level library source                                                ',&
-            &'  # You can place your module source files in any levels of subdirectories      ',&
-            &'  # inside your source directory, but there are certain naming conventions      ',&
-            &'  # to be followed -- module names must contain the path components             ',&
+            &'  # You can place your module source files in any number of levels of           ',&
+            &'  # subdirectories inside your source directory, but there are certain naming   ',&
+            &'  # conventions to be followed -- module names must contain the path components ',&
             &'  # of the directory that its source file is in.                                ',&
             &'  #                                                                             ',&
             &'  # This rule applies generally to any number of nested directories and         ',&
@@ -327,11 +325,10 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
 
     if(settings%with_full)then
         tomlfile=[character(len=80) ::  tomlfile ,&
-        &'                                                                                ',&
         &'[dependencies]                                                                  ',&
         &'                                                                                ',&
         &'  # Inevitably, you will want to be able to include other packages in           ',&
-        &'  # a project. fpm makes this incredibly simple, by taking care of              ',&
+        &'  # a project. Fpm makes this incredibly simple, by taking care of              ',&
         &'  # fetching and compiling your dependencies for you. You just tell it          ',&
         &'  # what your dependencies names are, and where to find them.                   ',&
         &'  #                                                                             ',&
@@ -381,7 +378,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'#git = "https://github.com/toml-f/toml-f"                                       ',&
         &'#rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"                               ',&
         &'                                                                                ',&
-        &'  #                                                                             ',&
         &'  # Now you can use any modules from these libraries anywhere in your           ',&
         &'  # code -- whether is in your library source or a program source.              ',&
         &'                                                                                ',&
@@ -415,11 +411,12 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
            &'  # Now lets begin entries for the TOML tables (lines beginning with "[[")      ',&
            &'  # that describe the program sources -- applications, tests, and examples.     ',&
            &'  #                                                                             ',&
-           &'  # So configuration of individual applications(run with "fpm run") begins here.',&
+           &'  # First we will configuration individual applications run with "fpm run".    .',&
            &'  #                                                                             ',&
            &'  #   + the "name" entry for the executable to be built must always             ',&
            &'  #     be specified. The name must satisfy the rules for a Fortran             ',&
-           &'  #     variable name.                                                          ',&
+           &'  #     variable name. This will be the name of the binary installed by         ',&
+           &'  #     the "install" subcommand and used on the "run" subcommand.              ',&
            &'  #   + The source directory for each executable can be adjusted by the         ',&
            &'  #     "source-dir" entry.                                                     ',&
            &'  #   + The basename of the source file containing the program body can         ',&
@@ -439,11 +436,9 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
            &'name="'//settings%name//'"',&
            &'source-dir="app"                                                                ',&
            &'main="main.f90"                                                                 ',&
-           &'  #                                                                             ',&
-           &'  # you may repeat this pattern to add additional explicit application          ',&
-           &'  # names and parameters.                                                       ',&
-           &'  #                                                                             ',&
-           &'  # The following sample illustrates all accepted options, where "link" and     ',&
+           &'                                                                                ',&
+           &'  # You may repeat this pattern to define additional applications. For instance,',&
+           &'  # the following sample illustrates all accepted options, where "link" and     ',&
            &'  # "executable.dependencies" keys are the same as the global external library  ',&
            &'  # links and package dependencies described previously except they apply       ',&
            &'  # only to this executable:                                                    ',&
@@ -487,7 +482,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         ! create next section of fpm.toml
         if(settings%with_full)then
            tomlfile=[character(len=80) ::  tomlfile ,&
-           &'                                                                                ',&
            &'[[test]]                                                                        ',&
            &'                                                                                ',&
            &'  # The same declarations can be made for test programs, which are              ',&
@@ -534,7 +528,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         ! create next section of fpm.toml
         if(settings%with_full)then
            tomlfile=[character(len=80) ::  tomlfile, &
-           &'                                                                                ',&
            &'[[example]]                                                                     ',&
            &'                                                                                ',&
            &'  # Example applications for a project are defined here.                        ',&
