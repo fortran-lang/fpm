@@ -245,9 +245,9 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  # have one library name or a list of strings in case several                  ',&
         &'  # libraries should be linked. This list of library dependencies is            ',&
         &'  # exported to dependent packages. You may have to alter your library          ',&
-        &'  # search-path to ensure the libraries can be accessed.  Typically,            ',&
+        &'  # search-path to ensure the libraries can be accessed. Typically,             ',&
         &'  # this is done with the LD_LIBRARY_PATH environment variable on ULS           ',&
-        &'  # (Unix-Like Systems).  You only specify the core name of the library         ',&
+        &'  # (Unix-Like Systems). You only specify the core name of the library          ',&
         &'  # (as is typical with most programming environments, where you                ',&
         &'  # would specify "-lz" on your load command to link against the zlib           ',&
         &'  # compression library even though the library file would typically be         ',&
@@ -413,7 +413,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
            &'  # Now lets begin entries for the TOML tables (lines beginning with "[[")      ',&
            &'  # that describe the program sources -- applications, tests, and examples.     ',&
            &'  #                                                                             ',&
-           &'  # First we will configuration individual applications run with "fpm run".    .',&
+           &'  # First we will configuration individual applications run with "fpm run".     ',&
            &'  #                                                                             ',&
            &'  #   + the "name" entry for the executable to be built must always             ',&
            &'  #     be specified. The name must satisfy the rules for a Fortran             ',&
@@ -488,7 +488,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
            &'                                                                                ',&
            &'  # The same declarations can be made for test programs, which are              ',&
            &'  # executed with the "fpm test" command and are not build when your            ',&
-           &'  # package is used as a dependency by other packages.  These are               ',&
+           &'  # package is used as a dependency by other packages. These are                ',&
            &'  # typically unit tests of the package only used during package                ',&
            &'  # development.                                                                ',&
            &'                                                                                ',&
