@@ -203,10 +203,12 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'                                                                                ',&
         &'#executable = [                                                                 ',&
         &'#  { name = "a-prog" },                                                         ',&
-        &'#  { name = "app-tool", source-dir = "tool" }                                   ',&
+        &'#  { name = "app-tool", source-dir = "tool" },                                  ',&
         &'#  { name = "fpm-man", source-dir = "tool", main="fman.f90" }                   ',&
         &'#]                                                                              ',&
         &'                                                                                ',&
+        &'  # This would be in lieue of the [[executable]] section found later in this    ',&
+        &'  # configuration file.                                                         ',&
         &'  # + See the reference documents (at the beginning of this document)           ',&
         &'  #   for more information on tables if you have long lists of programs         ',&
         &'  #   to build and are not simply depending on auto-detection.                  ',&
@@ -505,7 +507,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
            &'#link = ["blas", "lapack"]                                                      ',&
            &'#[test.dependencies]                                                            ',&
            &'#M_CLI2  = { git = "https://github.com/urbanjost/M_CLI2.git" }                  ',&
-           &'#M_io    = { git = "https://github.com/urbanjost/M_path.git" }                  ',&
+           &'#M_io    = { git = "https://github.com/urbanjost/M_io.git" }                    ',&
            &'#M_system= { git = "https://github.com/urbanjost/M_system.git" }                ',&
            &'']
         endif
