@@ -849,7 +849,7 @@ contains
     '           demo.f90                                                    ', &
     '                                                                       ', &
     ' Using this file structure is highly encouraged, particularly for      ', &
-    ' small packages primarily intended to be used as dependendencies.      ', &
+    ' small packages primarily intended to be used as dependencies.         ', &
     '                                                                       ', &
     ' If you find this restrictive and need to customize the package        ', &
     ' structure you will find using the --full switch creates a             ', &
