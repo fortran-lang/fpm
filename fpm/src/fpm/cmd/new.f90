@@ -146,7 +146,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  # to aid others when searching for the project in a repository and to         ',&
         &'  # identify how and when to contact the package supporters.                    ',&
         &'                                                                                ',&
-        &'name = "'//settings%name//'"',&
+        &'name = "'//bname//'"',&
         &'  # The project name (required) is how the project will be referred to.         ',&
         &'  # The name is used by other packages using it as a dependency. It also        ',&
         &'  # is used as the default name of any library built and the optional           ',&
@@ -435,7 +435,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
            &'  # include the module in your program source file or directory as well.        ',&
            &'                                                                                ',&
            &'[[executable]]                                                                  ',&
-           &'name="'//settings%name//'"',&
+           &'name="'//bname//'"',&
            &'source-dir="app"                                                                ',&
            &'main="main.f90"                                                                 ',&
            &'                                                                                ',&
