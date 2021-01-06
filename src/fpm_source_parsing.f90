@@ -16,7 +16,7 @@
 !>
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error
-use fpm_strings, only: string_t, string_cat, split, lower, str_ends_with, fnv_1a
+use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -87,7 +87,7 @@ function parse_f_source(f_filename,error) result(f_source)
     close(fh)
 
     ! Ignore empty files, returned as FPM_UNIT_UNKNOW
-    if (len_trim(string_cat(file_lines,' ')) < 1) return
+    if (len_trim(file_lines) < 1) return
 
     f_source%digest = fnv_1a(file_lines)
 
@@ -392,7 +392,7 @@ function parse_c_source(c_filename,error) result(c_source)
     close(fh)
 
     ! Ignore empty files, returned as FPM_UNIT_UNKNOW
-    if (len_trim(string_cat(file_lines,' ')) < 1) then
+    if (len_trim(file_lines) < 1) then
         c_source%unit_type = FPM_UNIT_UNKNOWN
         return
     end if

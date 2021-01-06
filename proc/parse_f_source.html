@@ -715,7 +715,7 @@ function validate_name(name) result(valid)
     <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
 
     <span class="c">! Ignore empty files, returned as FPM_UNIT_UNKNOW</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">string_cat</span><span class="p">(</span><span class="n">file_lines</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
 
 <span class="k">    </span><span class="n">f_source</span><span class="p">%</span><span class="n">digest</span> <span class="o">=</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
 

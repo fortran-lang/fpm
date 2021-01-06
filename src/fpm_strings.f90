@@ -4,12 +4,16 @@ implicit none
 
 private
 public :: f_string, lower, split, str_ends_with, string_t
-public :: string_array_contains, string_cat, operator(.in.), fnv_1a
+public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: resize, str
 
 type string_t
     character(len=:), allocatable :: s
 end type
+
+interface len_trim
+    module procedure :: string_len_trim
+end interface len_trim
 
 interface resize
   module procedure :: resize_string
@@ -199,6 +203,19 @@ function string_cat(strings,delim) result(cat)
     end do
 
 end function string_cat
+
+
+!> Determine total trimmed length of `string_t` array
+pure function string_len_trim(strings) result(n)
+    type(string_t), intent(in) :: strings(:)
+    integer :: i, n
+
+    n = 0
+    do i=1,size(strings)
+        n = n + len_trim(strings(i)%s)
+    end do
+
+end function string_len_trim
 
 subroutine split(input_line,array,delimiters,order,nulls)
     ! parse string on delimiter characters and store tokens into an allocatable array"

@@ -281,7 +281,7 @@
 <a name="ln-16"></a><span class="c">!&gt;</span>
 <a name="ln-17"></a><span class="k">module </span><span class="n">fpm_source_parsing</span>
 <a name="ln-18"></a><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">file_parse_error</span><span class="p">,</span> <span class="n">fatal_error</span>
-<a name="ln-19"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">string_cat</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">str_ends_with</span><span class="p">,</span> <span class="n">fnv_1a</span>
+<a name="ln-19"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">string_cat</span><span class="p">,</span> <span class="nb">len_trim</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">str_ends_with</span><span class="p">,</span> <span class="n">fnv_1a</span>
 <a name="ln-20"></a><span class="k">use </span><span class="n">fpm_model</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">srcfile_t</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-21"></a>                    <span class="n">FPM_UNIT_UNKNOWN</span><span class="p">,</span> <span class="n">FPM_UNIT_PROGRAM</span><span class="p">,</span> <span class="n">FPM_UNIT_MODULE</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-22"></a>                    <span class="n">FPM_UNIT_SUBMODULE</span><span class="p">,</span> <span class="n">FPM_UNIT_SUBPROGRAM</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -352,7 +352,7 @@
 <a name="ln-87"></a>    <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
 <a name="ln-88"></a>
 <a name="ln-89"></a>    <span class="c">! Ignore empty files, returned as FPM_UNIT_UNKNOW</span>
-<a name="ln-90"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">string_cat</span><span class="p">(</span><span class="n">file_lines</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
+<a name="ln-90"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
 <a name="ln-91"></a>
 <a name="ln-92"></a><span class="k">    </span><span class="n">f_source</span><span class="p">%</span><span class="n">digest</span> <span class="o">=</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
 <a name="ln-93"></a>
@@ -657,7 +657,7 @@
 <a name="ln-392"></a>    <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
 <a name="ln-393"></a>
 <a name="ln-394"></a>    <span class="c">! Ignore empty files, returned as FPM_UNIT_UNKNOW</span>
-<a name="ln-395"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">string_cat</span><span class="p">(</span><span class="n">file_lines</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-395"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-396"></a><span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_UNKNOWN</span>
 <a name="ln-397"></a>        <span class="k">return</span>
 <a name="ln-398"></a><span class="k">    end if</span>

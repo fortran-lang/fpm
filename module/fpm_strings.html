@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.6% of total for modules and submodules.">314 statements</a>
+    title=" 6.9% of total for modules and submodules.">325 statements</a>
      </li> 
      
      
@@ -179,6 +179,8 @@
     <div class="list-group">
       
       <a class="list-group-item" href="../module/fpm_strings.html#interface-fnv_1a">fnv_1a</a>
+      
+      <a class="list-group-item" href="../module/fpm_strings.html#interface-len_trim">len_trim</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28.in.%29">operator(.in.)</a>
       
@@ -301,6 +303,8 @@
     <div class="list-group">
       
       <a class="list-group-item" href="../module/fpm_strings.html#interface-fnv_1a">fnv_1a</a>
+      
+      <a class="list-group-item" href="../module/fpm_strings.html#interface-len_trim">len_trim</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#interface-operator%28.in.%29">operator(.in.)</a>
       
@@ -538,6 +542,82 @@ private pure function fnv_1a_string_t(input, seed) result(hash)
   
   
      <h4>Return Value <small>integer(kind=int64)
+  </small></h4>
+  
+    
+
+    </li>
+  
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-len_trim"></span><h3>public interface <a href='../interface/len_trim.html'>len_trim</a>
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+  
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private pure function string_len_trim(strings) result(n)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>Determine total trimmed length of <code>string_t</code> array</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>strings</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer
   </small></h4>
   
     
