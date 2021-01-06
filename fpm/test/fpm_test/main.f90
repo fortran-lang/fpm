@@ -14,12 +14,12 @@ program fpm_testing
     implicit none
     integer :: stat, is
     character(len=:), allocatable :: suite_name, test_name
-    type(testsuite_t), allocatable :: testsuite(:)
+    type(testsuite_t), allocatable :: suite(:)
     character(len=*), parameter :: fmt = '("#", *(1x, a))'
 
     stat = 0
 
-    testsuite = [ &
+    suite = [ &
         & new_testsuite("fpm_toml", collect_toml), &
         & new_testsuite("fpm_manifest", collect_manifest), &
         & new_testsuite("fpm_source_parsing", collect_source_parsing), &
@@ -34,29 +34,29 @@ program fpm_testing
     call get_argument(2, test_name)
 
     if (allocated(suite_name)) then
-        is = select_suite(testsuite, suite_name)
-        if (is > 0 .and. is <= size(testsuite)) then
+        is = select_suite(suite, suite_name)
+        if (is > 0 .and. is <= size(suite)) then
             if (allocated(test_name)) then
-                write(error_unit, fmt) "Suite:", testsuite(is)%name
-                call run_selected(testsuite(is)%collect, test_name, error_unit, stat)
+                write(error_unit, fmt) "Suite:", suite(is)%name
+                call run_selected(suite(is)%collect, test_name, error_unit, stat)
                 if (stat < 0) then
                     error stop 1
                 end if
             else
-                write(error_unit, fmt) "Testing:", testsuite(is)%name
-                call run_testsuite(testsuite(is)%collect, error_unit, stat)
+                write(error_unit, fmt) "Testing:", suite(is)%name
+                call run_testsuite(suite(is)%collect, error_unit, stat)
             end if
         else
             write(error_unit, fmt) "Available testsuites"
-            do is = 1, size(testsuite)
-                write(error_unit, fmt) "-", testsuite(is)%name
+            do is = 1, size(suite)
+                write(error_unit, fmt) "-", suite(is)%name
             end do
             error stop 1
         end if
     else
-        do is = 1, size(testsuite)
-            write(error_unit, fmt) "Testing:", testsuite(is)%name
-            call run_testsuite(testsuite(is)%collect, error_unit, stat)
+        do is = 1, size(suite)
+            write(error_unit, fmt) "Testing:", suite(is)%name
+            call run_testsuite(suite(is)%collect, error_unit, stat)
         end do
     end if
 
