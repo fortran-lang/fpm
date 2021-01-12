@@ -2,7 +2,7 @@ module fpm_cmd_new
 
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
+use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir, to_fortran_name
 use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
 implicit none
 private
@@ -70,7 +70,7 @@ character(len=8)             :: date
         &'']
         ! create placeholder module src/bname.f90
         littlefile=[character(len=80) ::          &
-        &'module '//bname,                        &
+        &'module '//to_fortran_name(bname),       &
         &'  implicit none',                       &
         &'  private',                             &
         &'',                                      &
@@ -79,7 +79,7 @@ character(len=8)             :: date
         &'  subroutine say_hello',                &
         &'    print *, "Hello, '//bname//'!"',    &
         &'  end subroutine say_hello',            &
-        &'end module '//bname]
+        &'end module '//to_fortran_name(bname)]
         ! create NAME/src/NAME.f90
         call warnwrite(join_path(settings%name, 'src', bname//'.f90'),&
          & littlefile)
@@ -121,7 +121,7 @@ character(len=8)             :: date
         if(exists(bname//'/src/'))then
             littlefile=[character(len=80) ::          &
             &'program main',                          &
-            &'  use '//bname//', only: say_hello',    &
+            &'  use '//to_fortran_name(bname)//', only: say_hello', &
             &'  implicit none',                       &
             &'',                                      &
             &'  call say_hello()',                    &
