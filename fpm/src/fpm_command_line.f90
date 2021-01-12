@@ -820,9 +820,8 @@ contains
     '                                                                       ', &
     'OPTIONS                                                                ', &
     ' NAME   the name of the project directory to create. The name          ', &
-    '        must be a valid Fortran name composed of 1 to 63               ', &
-    '        ASCII alphanumeric characters and underscores,                 ', &
-    '        starting with a letter.                                        ', &
+    '        must be made of up to 63 ASCII letters, digits, underscores,   ', &
+    '        or hyphens, and start with a letter.                           ', &
     '                                                                       ', &
     ' The default is to create all of the src/, app/, and test/             ', &
     ' directories. If any of the following options are specified            ', &
