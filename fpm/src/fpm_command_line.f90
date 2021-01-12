@@ -28,7 +28,7 @@ use fpm_environment,  only : get_os_type, get_env, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use fpm_strings,      only : lower, split
-use fpm_filesystem,   only : basename, canon_path
+use fpm_filesystem,   only : basename, canon_path, to_fortran_name
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -225,13 +225,11 @@ contains
             end select
             !*! canon_path is not converting ".", etc.
             name=canon_path(name)
-            if( .not.is_fortran_name(basename(name)) )then
+            if( .not.is_fortran_name(to_fortran_name(basename(name))) )then
                 write(stderr,'(g0)') [ character(len=72) :: &
-                & '<ERROR>the new directory basename must be an allowed ', &
-                & '       Fortran name. It must be composed of 1 to 63 ASCII', &
-                & '       characters and start with a letter and be composed', &
-                & '       entirely of alphanumeric characters [a-zA-Z0-9]', &
-                & '       and underscores.']
+                & '<ERROR> the fpm project name must be made of ASCII letters', &
+                & '        numbers, underscores, or hyphens, and no longer   ', &
+                & '        than 63 characters.']
                 stop 4
             endif
 
