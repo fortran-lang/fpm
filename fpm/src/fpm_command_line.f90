@@ -227,9 +227,8 @@ contains
             name=canon_path(name)
             if( .not.is_fortran_name(to_fortran_name(basename(name))) )then
                 write(stderr,'(g0)') [ character(len=72) :: &
-                & '<ERROR> the fpm project name must be made of ASCII letters', &
-                & '        numbers, underscores, or hyphens, and no longer   ', &
-                & '        than 63 characters.']
+                & '<ERROR> the fpm project name must be made of up to 63 ASCII letters,', &
+                & '        numbers, underscores, or hyphens, and start with a letter.']
                 stop 4
             endif
 
