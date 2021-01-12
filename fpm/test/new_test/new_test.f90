@@ -13,7 +13,7 @@ character(len=*),parameter     :: scr = 'fpm_scratch_'
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ! run a variety of "fpm new" variations and verify expected files are generated
 ' new', &
-' new no-no', &
+' new name-with-hyphens', &
 ' new '//scr//'A', &
 ' new '//scr//'B --lib', &
 ' new '//scr//'C --app', &
@@ -63,7 +63,7 @@ logical                       :: IS_OS_WINDOWS
       if( is_dir(trim(directories(i))) ) then
          write(*,*)'ERROR:',trim( directories(i) ),' already exists'
          write(*,*)'        you must remove scratch directories before performing this test'
-         write(*,'(*(g0:,1x))')'directories:',(trim(directories(j)),j=1,size(directories)),'no-no'
+         write(*,'(*(g0:,1x))')'directories:',(trim(directories(j)),j=1,size(directories)),'name-with-hyphens'
          stop
       endif
    enddo
@@ -75,11 +75,11 @@ logical                       :: IS_OS_WINDOWS
       write(*,'(*(g0))')'CMD=',trim(cmds(i)),' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
    enddo
 
-   if( is_dir('no-no') ) then
-       tally=[tally,.false.]
-       write(*,*)'ERROR: directory no-no/ exists'
-    else
+   if( is_dir('name-with-hyphens') ) then
        tally=[tally,.true.]
+    else
+       write(*,*)'ERROR: directory name-with-hyphens/ exists'
+       tally=[tally,.false.]
     endif
 
    ! assuming hidden files in .git and .gitignore are ignored for now
