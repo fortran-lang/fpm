@@ -264,30 +264,30 @@
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">module </span><span class="n">fpm</span>
-<a name="ln-2"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.)</span>
-<a name="ln-3"></a><span class="k">use </span><span class="n">fpm_backend</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">build_package</span>
-<a name="ln-4"></a><span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">fpm_build_settings</span><span class="p">,</span> <span class="n">fpm_new_settings</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-2"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.)</span>
+<a name="ln-3"></a><span class="k">use </span><span class="n">fpm_backend</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">build_package</span>
+<a name="ln-4"></a><span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">fpm_build_settings</span><span class="p">,</span> <span class="n">fpm_new_settings</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-5"></a>                      <span class="n">fpm_run_settings</span><span class="p">,</span> <span class="n">fpm_install_settings</span><span class="p">,</span> <span class="n">fpm_test_settings</span>
-<a name="ln-6"></a><span class="k">use </span><span class="n">fpm_dependency</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">new_dependency_tree</span>
-<a name="ln-7"></a><span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">run</span>
-<a name="ln-8"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">number_of_rows</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">basename</span>
-<a name="ln-9"></a><span class="k">use </span><span class="n">fpm_model</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">fpm_model_t</span><span class="p">,</span> <span class="n">srcfile_t</span><span class="p">,</span> <span class="n">build_target_t</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-6"></a><span class="k">use </span><span class="n">fpm_dependency</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">new_dependency_tree</span>
+<a name="ln-7"></a><span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">run</span>
+<a name="ln-8"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">number_of_rows</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">basename</span>
+<a name="ln-9"></a><span class="k">use </span><span class="n">fpm_model</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">fpm_model_t</span><span class="p">,</span> <span class="n">srcfile_t</span><span class="p">,</span> <span class="n">build_target_t</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-10"></a>                    <span class="n">FPM_SCOPE_UNKNOWN</span><span class="p">,</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="n">FPM_SCOPE_DEP</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-11"></a>                    <span class="n">FPM_SCOPE_APP</span><span class="p">,</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span> <span class="n">FPM_SCOPE_TEST</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-12"></a>                    <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,</span> <span class="n">show_model</span>
-<a name="ln-13"></a><span class="k">use </span><span class="n">fpm_compiler</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">add_compile_flag_defaults</span>
+<a name="ln-13"></a><span class="k">use </span><span class="n">fpm_compiler</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">add_compile_flag_defaults</span>
 <a name="ln-14"></a>
 <a name="ln-15"></a>
-<a name="ln-16"></a><span class="k">use </span><span class="n">fpm_sources</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">add_executable_sources</span><span class="p">,</span> <span class="n">add_sources_from_dir</span>
-<a name="ln-17"></a><span class="k">use </span><span class="n">fpm_targets</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">targets_from_sources</span><span class="p">,</span> <span class="n">resolve_module_dependencies</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-16"></a><span class="k">use </span><span class="n">fpm_sources</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">add_executable_sources</span><span class="p">,</span> <span class="n">add_sources_from_dir</span>
+<a name="ln-17"></a><span class="k">use </span><span class="n">fpm_targets</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">targets_from_sources</span><span class="p">,</span> <span class="n">resolve_module_dependencies</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-18"></a>                        <span class="n">resolve_target_linking</span>
-<a name="ln-19"></a><span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">get_package_data</span><span class="p">,</span> <span class="n">package_config_t</span>
-<a name="ln-20"></a><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span>
-<a name="ln-21"></a><span class="k">use </span><span class="n">fpm_manifest_test</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">test_config_t</span>
-<a name="ln-22"></a><span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">stdin</span><span class="o">=&gt;</span><span class="n">input_unit</span><span class="p">,</span>   <span class="p">&amp;</span>
+<a name="ln-19"></a><span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">get_package_data</span><span class="p">,</span> <span class="n">package_config_t</span>
+<a name="ln-20"></a><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span>
+<a name="ln-21"></a><span class="k">use </span><span class="n">fpm_manifest_test</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">test_config_t</span>
+<a name="ln-22"></a><span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">stdin</span><span class="o">=&gt;</span><span class="n">input_unit</span><span class="p">,</span>   <span class="p">&amp;</span>
 <a name="ln-23"></a>                                       <span class="p">&amp;</span> <span class="n">stdout</span><span class="o">=&gt;</span><span class="n">output_unit</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-24"></a>                                       <span class="p">&amp;</span> <span class="n">stderr</span><span class="o">=&gt;</span><span class="n">error_unit</span>
-<a name="ln-25"></a><span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">dependency_config_t</span>
+<a name="ln-25"></a><span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">dependency_config_t</span>
 <a name="ln-26"></a><span class="k">implicit none</span>
 <a name="ln-27"></a><span class="k">private</span>
 <a name="ln-28"></a><span class="k">public</span> <span class="kd">::</span> <span class="n">cmd_build</span><span class="p">,</span> <span class="n">cmd_run</span>
@@ -450,13 +450,13 @@
 <a name="ln-185"></a><span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 <a name="ln-186"></a><span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-187"></a><span class="k">    print</span> <span class="s1">&#39;(a)&#39;</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
-<a name="ln-188"></a>    <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-188"></a>    <span class="k">error stop </span><span class="mi">1</span>
 <a name="ln-189"></a><span class="k">end if</span>
 <a name="ln-190"></a>
 <a name="ln-191"></a><span class="k">call </span><span class="n">build_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 <a name="ln-192"></a><span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-193"></a><span class="k">    print</span> <span class="s1">&#39;(a)&#39;</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
-<a name="ln-194"></a>    <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-194"></a>    <span class="k">error stop </span><span class="mi">1</span>
 <a name="ln-195"></a><span class="k">end if</span>
 <a name="ln-196"></a>
 <a name="ln-197"></a><span class="k">if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span><span class="k">then</span>
@@ -490,13 +490,13 @@
 <a name="ln-225"></a>    <span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 <a name="ln-226"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-227"></a><span class="k">        print</span> <span class="s1">&#39;(a)&#39;</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
-<a name="ln-228"></a>        <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-228"></a>        <span class="k">error stop </span><span class="mi">1</span>
 <a name="ln-229"></a>    <span class="k">end if</span>
 <a name="ln-230"></a>
 <a name="ln-231"></a><span class="k">    call </span><span class="n">build_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">settings</span><span class="p">%</span><span class="n">fpm_build_settings</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 <a name="ln-232"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-233"></a><span class="k">        print</span> <span class="s1">&#39;(a)&#39;</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
-<a name="ln-234"></a>        <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-234"></a>        <span class="k">error stop </span><span class="mi">1</span>
 <a name="ln-235"></a>    <span class="k">end if</span>
 <a name="ln-236"></a>
 <a name="ln-237"></a><span class="k">    if</span> <span class="p">(</span><span class="n">test</span><span class="p">)</span> <span class="k">then</span>
@@ -640,7 +640,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-01-06 17:59  
+             on 2021-01-14 15:40  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

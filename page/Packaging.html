@@ -224,7 +224,7 @@ For example:</p>
 <span class="k">end module </span><span class="n">math_constants</span>
 
 <span class="k">program </span><span class="n">main</span>
-    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">pi</span>
+    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">pi</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;Hello, World!&#39;</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;pi = &#39;</span><span class="p">,</span> <span class="n">pi</span>
 <span class="k">end program </span><span class="n">main</span>
@@ -313,14 +313,14 @@ constant, Euler’s number.</p>
 <p>And our source file contents are:</p>
 <div class="codehilite"><pre><span></span><code><span class="err">$</span> <span class="n">cat</span> <span class="n">src</span><span class="o">/</span><span class="n">math_constants</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">module </span><span class="n">math_constants</span>
-    <span class="k">use </span><span class="n">type_kinds</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">rk</span>
+    <span class="k">use </span><span class="n">type_kinds</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">rk</span>
     <span class="kt">real</span><span class="p">(</span><span class="n">rk</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">pi</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="nb">atan</span><span class="p">(</span><span class="mf">1._rk</span><span class="p">)</span>
     <span class="kt">real</span><span class="p">(</span><span class="n">rk</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">e</span> <span class="o">=</span> <span class="nb">exp</span><span class="p">(</span><span class="mf">1._rk</span><span class="p">)</span>
 <span class="k">end module </span><span class="n">math_constants</span>
 
 <span class="err">$</span> <span class="n">cat</span> <span class="n">src</span><span class="o">/</span><span class="n">type_kinds</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">module </span><span class="n">type_kinds</span>
-    <span class="k">use </span><span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">real64</span>
+    <span class="k">use </span><span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">real64</span>
     <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">rk</span> <span class="o">=</span> <span class="n">real64</span>
 <span class="k">end module </span><span class="n">type_kinds</span>
 </code></pre></div>
@@ -373,7 +373,7 @@ the previous example actually worked.</p>
 <p>Our <code>fpm.toml</code> remains unchanged and our executable program source file is:</p>
 <div class="codehilite"><pre><span></span><code><span class="err">$</span> <span class="n">cat</span> <span class="n">app</span><span class="o">/</span><span class="n">main</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">program </span><span class="n">main</span>
-    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span> <span class="n">pi</span>
+    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span> <span class="n">pi</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;math_constants library demo&#39;</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;pi = &#39;</span><span class="p">,</span> <span class="n">pi</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;e = &#39;</span><span class="p">,</span> <span class="n">e</span>
@@ -425,28 +425,28 @@ previous example.</p>
 <p>The rest of the source files are:</p>
 <div class="codehilite"><pre><span></span><code><span class="err">$</span> <span class="n">cat</span> <span class="n">src</span><span class="o">/</span><span class="n">math_constants</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">module </span><span class="n">math_constants</span>
-    <span class="k">use </span><span class="n">math_constants_fundamental</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span> <span class="n">pi</span>
-    <span class="k">use </span><span class="n">math_constants_derived</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">half_pi</span><span class="p">,</span> <span class="n">two_pi</span>
+    <span class="k">use </span><span class="n">math_constants_fundamental</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span> <span class="n">pi</span>
+    <span class="k">use </span><span class="n">math_constants_derived</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">half_pi</span><span class="p">,</span> <span class="n">two_pi</span>
 <span class="k">end module </span><span class="n">math_constants</span>
 
 <span class="err">$</span> <span class="n">cat</span> <span class="n">src</span><span class="o">/</span><span class="n">math_constants</span><span class="o">/</span><span class="n">fundamental</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">module </span><span class="n">math_constants_fundamental</span>
-    <span class="k">use </span><span class="n">type_kinds</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">rk</span>
+    <span class="k">use </span><span class="n">type_kinds</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">rk</span>
     <span class="kt">real</span><span class="p">(</span><span class="n">rk</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">pi</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="nb">atan</span><span class="p">(</span><span class="mf">1._rk</span><span class="p">)</span>
     <span class="kt">real</span><span class="p">(</span><span class="n">rk</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">e</span> <span class="o">=</span> <span class="nb">exp</span><span class="p">(</span><span class="mf">1._rk</span><span class="p">)</span>
 <span class="k">end module </span><span class="n">math_constants_fundamental</span>
 
 <span class="err">$</span> <span class="n">cat</span> <span class="n">src</span><span class="o">/</span><span class="n">math_constants</span><span class="o">/</span><span class="n">derived</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">module </span><span class="n">math_constants_derived</span>
-    <span class="k">use </span><span class="n">math_constants_fundamental</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">pi</span>
-    <span class="k">use </span><span class="n">type_kinds</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">rk</span>
+    <span class="k">use </span><span class="n">math_constants_fundamental</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">pi</span>
+    <span class="k">use </span><span class="n">type_kinds</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">rk</span>
     <span class="kt">real</span><span class="p">(</span><span class="n">rk</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">two_pi</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span>
     <span class="kt">real</span><span class="p">(</span><span class="n">rk</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">half_pi</span> <span class="o">=</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span>
 <span class="k">end module </span><span class="n">math_constants_derived</span>
 
 <span class="err">$</span> <span class="n">cat</span> <span class="n">app</span><span class="o">/</span><span class="n">main</span><span class="p">.</span><span class="n">f90</span>
 <span class="k">program </span><span class="n">main</span>
-    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">half_pi</span><span class="p">,</span> <span class="n">two_pi</span>
+    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">half_pi</span><span class="p">,</span> <span class="n">two_pi</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;math_constants library demo&#39;</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;pi = &#39;</span><span class="p">,</span> <span class="n">pi</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;2*pi = &#39;</span><span class="p">,</span> <span class="n">two_pi</span>
@@ -551,7 +551,7 @@ definition of <code>pi</code> satisfies the property <code>sin(pi) == 0.0</code>
 
 <p>where the contents of the <code>main.f90</code> file are</p>
 <div class="codehilite"><pre><span></span><code><span class="k">program </span><span class="n">main</span>
-    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">pi</span>
+    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">pi</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s2">&quot;sin(pi) = &quot;</span><span class="p">,</span> <span class="nb">sin</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
 <span class="k">end program </span><span class="n">main</span>
 </code></pre></div>
@@ -604,8 +604,8 @@ like this:</p>
 <p>Now you can use any modules from this library anywhere in your code. Just like
 this:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">program </span><span class="n">main</span>
-    <span class="k">use </span><span class="n">helloff</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">create_greeting</span>
-    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">half_pi</span><span class="p">,</span> <span class="n">two_pi</span>
+    <span class="k">use </span><span class="n">helloff</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">create_greeting</span>
+    <span class="k">use </span><span class="n">math_constants</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">half_pi</span><span class="p">,</span> <span class="n">two_pi</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;math_constants library demo&#39;</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;pi = &#39;</span><span class="p">,</span> <span class="n">pi</span>
     <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;2*pi = &#39;</span><span class="p">,</span> <span class="n">two_pi</span>
@@ -769,7 +769,7 @@ path.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-01-06 17:59  
+             on 2021-01-14 15:40  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

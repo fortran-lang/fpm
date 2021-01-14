@@ -272,16 +272,16 @@
 <a name="ln-7"></a><span class="c">!&gt; Additionally, the required data types for users of this module are reexported</span>
 <a name="ln-8"></a><span class="c">!&gt; to hide the actual implementation details.</span>
 <a name="ln-9"></a><span class="k">module </span><span class="n">fpm_manifest</span>
-<a name="ln-10"></a>    <span class="k">use </span><span class="n">fpm_manifest_build</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">build_config_t</span>
-<a name="ln-11"></a>    <span class="k">use </span><span class="n">fpm_manifest_example</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">example_config_t</span>
-<a name="ln-12"></a>    <span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">executable_config_t</span>
-<a name="ln-13"></a>    <span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">dependency_config_t</span>
-<a name="ln-14"></a>    <span class="k">use </span><span class="n">fpm_manifest_library</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">library_config_t</span>
-<a name="ln-15"></a>    <span class="k">use </span><span class="n">fpm_manifest_package</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">new_package</span>
-<a name="ln-16"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span><span class="p">,</span> <span class="n">file_not_found_error</span>
-<a name="ln-17"></a>    <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">read_package_file</span>
-<a name="ln-18"></a>    <span class="k">use </span><span class="n">fpm_manifest_test</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">test_config_t</span>
-<a name="ln-19"></a>    <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">dirname</span>
+<a name="ln-10"></a>    <span class="k">use </span><span class="n">fpm_manifest_build</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">build_config_t</span>
+<a name="ln-11"></a>    <span class="k">use </span><span class="n">fpm_manifest_example</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">example_config_t</span>
+<a name="ln-12"></a>    <span class="k">use </span><span class="n">fpm_manifest_executable</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">executable_config_t</span>
+<a name="ln-13"></a>    <span class="k">use </span><span class="n">fpm_manifest_dependency</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">dependency_config_t</span>
+<a name="ln-14"></a>    <span class="k">use </span><span class="n">fpm_manifest_library</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">library_config_t</span>
+<a name="ln-15"></a>    <span class="k">use </span><span class="n">fpm_manifest_package</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">new_package</span>
+<a name="ln-16"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span><span class="p">,</span> <span class="n">file_not_found_error</span>
+<a name="ln-17"></a>    <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">read_package_file</span>
+<a name="ln-18"></a>    <span class="k">use </span><span class="n">fpm_manifest_test</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">test_config_t</span>
+<a name="ln-19"></a>    <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">dirname</span>
 <a name="ln-20"></a>    <span class="k">implicit none</span>
 <a name="ln-21"></a><span class="k">    private</span>
 <a name="ln-22"></a>
@@ -461,7 +461,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-01-06 17:59  
+             on 2021-01-14 15:40  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

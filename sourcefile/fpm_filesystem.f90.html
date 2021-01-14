@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.3% of total for source files.">299 statements</a>
+    title=" 6.4% of total for source files.">305 statements</a>
      </li> 
      
      
@@ -264,14 +264,14 @@
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">module </span><span class="n">fpm_filesystem</span>
-<a name="ln-2"></a>    <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-2"></a>    <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-3"></a>                               <span class="n">OS_UNKNOWN</span><span class="p">,</span> <span class="n">OS_LINUX</span><span class="p">,</span> <span class="n">OS_MACOS</span><span class="p">,</span> <span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-4"></a>                               <span class="n">OS_CYGWIN</span><span class="p">,</span> <span class="n">OS_SOLARIS</span><span class="p">,</span> <span class="n">OS_FREEBSD</span>
-<a name="ln-5"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">f_string</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">split</span>
+<a name="ln-5"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">f_string</span><span class="p">,</span> <span class="n">replace</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">split</span>
 <a name="ln-6"></a>    <span class="k">implicit none</span>
 <a name="ln-7"></a><span class="k">    private</span>
 <a name="ln-8"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">number_of_rows</span><span class="p">,</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,</span> <span class="n">env_variable</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-9"></a>            <span class="n">mkdir</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">get_temp_filename</span><span class="p">,</span> <span class="n">windows_path</span><span class="p">,</span> <span class="n">unix_path</span><span class="p">,</span> <span class="n">getline</span><span class="p">,</span> <span class="n">delete_file</span>
+<a name="ln-9"></a>            <span class="n">mkdir</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">get_temp_filename</span><span class="p">,</span> <span class="n">windows_path</span><span class="p">,</span> <span class="n">unix_path</span><span class="p">,</span> <span class="n">getline</span><span class="p">,</span> <span class="n">delete_file</span><span class="p">,</span> <span class="n">to_fortran_name</span>
 <a name="ln-10"></a>
 <a name="ln-11"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_BUFFER_LEN</span> <span class="o">=</span> <span class="mi">1000</span>
 <a name="ln-12"></a>
@@ -698,39 +698,50 @@
 <a name="ln-433"></a>
 <a name="ln-434"></a><span class="s1">    allocate(character(len=0) :: line)</span>
 <a name="ln-435"></a><span class="s1">    do</span>
-<a name="ln-436"></a><span class="s1">        read(unit, &#39;</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;, advance=&#39;</span><span class="n">no</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span> <span class="n">iomsg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span> <span class="p">&amp;</span>
-<a name="ln-437"></a>            <span class="p">&amp;</span> <span class="n">buffer</span>
-<a name="ln-438"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">exit</span>
-<a name="ln-439"></a><span class="k">        </span><span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">//</span> <span class="n">buffer</span><span class="p">(:</span><span class="n">size</span><span class="p">)</span>
-<a name="ln-440"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-441"></a><span class="k">            if</span> <span class="p">(</span><span class="nb">is_iostat_eor</span><span class="p">(</span><span class="nb">stat</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-442"></a><span class="k">                </span><span class="nb">stat</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-443"></a>            <span class="k">end if</span>
-<a name="ln-444"></a><span class="k">            exit</span>
-<a name="ln-445"></a><span class="k">        end if</span>
-<a name="ln-446"></a><span class="k">    end do</span>
+<a name="ln-436"></a><span class="s1">        read(unit, &#39;</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;, advance=&#39;</span><span class="n">no</span><span class="s1">&#39;, iostat=stat, iomsg=msg, size=size) &amp;</span>
+<a name="ln-437"></a><span class="s1">            &amp; buffer</span>
+<a name="ln-438"></a><span class="s1">        if (stat &gt; 0) exit</span>
+<a name="ln-439"></a><span class="s1">        line = line // buffer(:size)</span>
+<a name="ln-440"></a><span class="s1">        if (stat &lt; 0) then</span>
+<a name="ln-441"></a><span class="s1">            if (is_iostat_eor(stat)) then</span>
+<a name="ln-442"></a><span class="s1">                stat = 0</span>
+<a name="ln-443"></a><span class="s1">            end if</span>
+<a name="ln-444"></a><span class="s1">            exit</span>
+<a name="ln-445"></a><span class="s1">        end if</span>
+<a name="ln-446"></a><span class="s1">    end do</span>
 <a name="ln-447"></a>
-<a name="ln-448"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-449"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">iomsg</span><span class="p">))</span> <span class="n">iomsg</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<a name="ln-450"></a>    <span class="k">end if</span>
-<a name="ln-451"></a><span class="k">    </span><span class="n">iostat</span> <span class="o">=</span> <span class="nb">stat</span>
+<a name="ln-448"></a><span class="s1">    if (stat /= 0) then</span>
+<a name="ln-449"></a><span class="s1">        if (present(iomsg)) iomsg = trim(msg)</span>
+<a name="ln-450"></a><span class="s1">    end if</span>
+<a name="ln-451"></a><span class="s1">    iostat = stat</span>
 <a name="ln-452"></a>
-<a name="ln-453"></a><span class="k">end subroutine </span><span class="n">getline</span>
+<a name="ln-453"></a><span class="s1">end subroutine getline</span>
 <a name="ln-454"></a>
 <a name="ln-455"></a>
-<a name="ln-456"></a><span class="k">subroutine </span><span class="n">delete_file</span><span class="p">(</span><span class="k">file</span><span class="p">)</span>
-<a name="ln-457"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">file</span>
-<a name="ln-458"></a><span class="k">    </span><span class="kt">logical</span> <span class="kd">::</span> <span class="n">exist</span>
-<a name="ln-459"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">unit</span>
-<a name="ln-460"></a>    <span class="k">inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">exist</span><span class="p">)</span>
-<a name="ln-461"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">exist</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-462"></a><span class="k">        open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
-<a name="ln-463"></a>        <span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;delete&quot;</span><span class="p">)</span>
-<a name="ln-464"></a>    <span class="k">end if</span>
-<a name="ln-465"></a><span class="k">end subroutine </span><span class="n">delete_file</span>
+<a name="ln-456"></a><span class="s1">subroutine delete_file(file)</span>
+<a name="ln-457"></a><span class="s1">    character(len=*), intent(in) :: file</span>
+<a name="ln-458"></a><span class="s1">    logical :: exist</span>
+<a name="ln-459"></a><span class="s1">    integer :: unit</span>
+<a name="ln-460"></a><span class="s1">    inquire(file=file, exist=exist)</span>
+<a name="ln-461"></a><span class="s1">    if (exist) then</span>
+<a name="ln-462"></a><span class="s1">        open(file=file, newunit=unit)</span>
+<a name="ln-463"></a><span class="s1">        close(unit, status=&quot;delete&quot;)</span>
+<a name="ln-464"></a><span class="s1">    end if</span>
+<a name="ln-465"></a><span class="s1">end subroutine delete_file</span>
 <a name="ln-466"></a>
 <a name="ln-467"></a>
-<a name="ln-468"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
+<a name="ln-468"></a><span class="s1">pure function to_fortran_name(string) result(res)</span>
+<a name="ln-469"></a><span class="s1">    ! Returns string with special characters replaced with an underscore.</span>
+<a name="ln-470"></a><span class="s1">    ! For now, only a hyphen is treated as a special character, but this can be</span>
+<a name="ln-471"></a><span class="s1">    ! expanded to other characters if needed.</span>
+<a name="ln-472"></a><span class="s1">    character(*), intent(in) :: string</span>
+<a name="ln-473"></a><span class="s1">    character(len(string)) :: res</span>
+<a name="ln-474"></a><span class="s1">    character, parameter :: SPECIAL_CHARACTERS(*) = [&#39;</span><span class="o">-</span><span class="s1">&#39;]</span>
+<a name="ln-475"></a><span class="s1">    res = replace(string, SPECIAL_CHARACTERS, &#39;</span><span class="err">_&#39;</span><span class="p">)</span>
+<a name="ln-476"></a><span class="k">end function </span><span class="n">to_fortran_name</span>
+<a name="ln-477"></a>
+<a name="ln-478"></a>
+<a name="ln-479"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
 </pre></div>
 
     </section>
@@ -749,7 +760,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-01-06 17:59  
+             on 2021-01-14 15:40  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

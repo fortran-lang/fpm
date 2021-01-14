@@ -5,7 +5,7 @@ implicit none
 private
 public :: f_string, lower, split, str_ends_with, string_t
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
-public :: resize, str
+public :: replace, resize, str
 
 type string_t
     character(len=:), allocatable :: s
@@ -334,6 +334,20 @@ subroutine split(input_line,array,delimiters,order,nulls)
         endif
     enddo
 end subroutine split
+
+pure function replace(string, charset, target_char) result(res)
+    ! Returns string with characters in charset replaced with target_char.
+    character(*), intent(in) :: string
+    character, intent(in) :: charset(:), target_char
+    character(len(string)) :: res
+    integer :: n
+    res = string
+    do n = 1, len(string)
+        if (any(string(n:n) == charset)) then
+            res(n:n) = target_char
+        end if
+    end do
+end function replace
 
 subroutine resize_string(list, n)
   !> Instance of the array to be resized

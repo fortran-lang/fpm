@@ -264,17 +264,17 @@
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">module </span><span class="n">fpm_cmd_install</span>
-<a name="ln-2"></a>  <span class="k">use</span><span class="p">,</span> <span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">output_unit</span>
-<a name="ln-3"></a>  <span class="k">use </span><span class="n">fpm</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">build_model</span>
-<a name="ln-4"></a>  <span class="k">use </span><span class="n">fpm_backend</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">build_package</span>
-<a name="ln-5"></a>  <span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">fpm_install_settings</span>
-<a name="ln-6"></a>  <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span>
-<a name="ln-7"></a>  <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">list_files</span>
-<a name="ln-8"></a>  <span class="k">use </span><span class="n">fpm_installer</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">installer_t</span><span class="p">,</span> <span class="n">new_installer</span>
-<a name="ln-9"></a>  <span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">get_package_data</span>
-<a name="ln-10"></a>  <span class="k">use </span><span class="n">fpm_model</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">fpm_model_t</span><span class="p">,</span> <span class="n">build_target_t</span><span class="p">,</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-2"></a>  <span class="k">use</span><span class="p">,</span> <span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">output_unit</span>
+<a name="ln-3"></a>  <span class="k">use </span><span class="n">fpm</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">build_model</span>
+<a name="ln-4"></a>  <span class="k">use </span><span class="n">fpm_backend</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">build_package</span>
+<a name="ln-5"></a>  <span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">fpm_install_settings</span>
+<a name="ln-6"></a>  <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span>
+<a name="ln-7"></a>  <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">list_files</span>
+<a name="ln-8"></a>  <span class="k">use </span><span class="n">fpm_installer</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">installer_t</span><span class="p">,</span> <span class="n">new_installer</span>
+<a name="ln-9"></a>  <span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">get_package_data</span>
+<a name="ln-10"></a>  <span class="k">use </span><span class="n">fpm_model</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">fpm_model_t</span><span class="p">,</span> <span class="n">build_target_t</span><span class="p">,</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-11"></a>    <span class="n">FPM_SCOPE_APP</span>
-<a name="ln-12"></a>  <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">resize</span>
+<a name="ln-12"></a>  <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">resize</span>
 <a name="ln-13"></a>  <span class="k">implicit none</span>
 <a name="ln-14"></a><span class="k">  private</span>
 <a name="ln-15"></a>
@@ -428,7 +428,7 @@
 <a name="ln-163"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">error</span>
 <a name="ln-164"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
 <a name="ln-165"></a><span class="k">      print</span> <span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
-<a name="ln-166"></a>      <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-166"></a>      <span class="k">error stop </span><span class="mi">1</span>
 <a name="ln-167"></a>    <span class="k">end if</span>
 <a name="ln-168"></a><span class="k">  end subroutine </span><span class="n">handle_error</span>
 <a name="ln-169"></a>
@@ -451,7 +451,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-01-06 17:59  
+             on 2021-01-14 15:40  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

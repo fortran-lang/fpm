@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>get_env &ndash; Fortran-lang/fpm</title>
+    <title>to_fortran_name &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,7 +110,7 @@
     
   
   <div class="row">
-    <h1>get_env
+    <h1>to_fortran_name
       <small>Function</small>
     
     </h1>
@@ -128,24 +128,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.1% of total for procedures.">26 statements</a>
+    title=" 0.3% of total for procedures.">6 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_environment.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_filesystem.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_environment.f90.html'>fpm_environment.f90</a></li>
+     <li><a href='../sourcefile/fpm_filesystem.f90.html'>fpm_filesystem.f90</a></li>
     
-     <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
     
   
-     <li class="active">get_env</li>
+     <li class="active">to_fortran_name</li>
   </ol>
 </div>
 </div>
@@ -173,11 +173,7 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/get_env.html#variable-howbig">howbig</a>
-      
-      <a class="list-group-item" href="../proc/get_env.html#variable-length~2">length</a>
-      
-      <a class="list-group-item" href="../proc/get_env.html#variable-stat~9">stat</a>
+      <a class="list-group-item" href="../proc/to_fortran_name.html#variable-special_characters">SPECIAL_CHARACTERS</a>
       
     </div>
   </div>
@@ -205,7 +201,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/get_env.html#src">get_env</a>
+    <a class="list-group-item" href="../proc/to_fortran_name.html#src">to_fortran_name</a>
   </div>
 </div>
 
@@ -217,7 +213,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public function get_env(NAME, DEFAULT) result(VALUE)
+public pure function to_fortran_name(string) result(res)
     
     
    
@@ -226,9 +222,6 @@ public function get_env(NAME, DEFAULT) result(VALUE)
   
 
 
-    
-    <p>!print <em>, NAME, &rdquo; is not defined in the environment. Strange&hellip;&rdquo;
-!print </em>, &ldquo;This processor doesn&rsquo;t support environment variables. Boooh!&rdquo;</p>
     
 
     <h3>Arguments</h3>
@@ -249,27 +242,12 @@ public function get_env(NAME, DEFAULT) result(VALUE)
   
 <tr>
   
-  <td><span class="anchor" id="variable-name"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-string"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>NAME</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-default"></span>character(len=*),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>DEFAULT</strong></td><td></td>
+  <td><strong>string</strong></td><td></td>
   
 </tr>
 
@@ -283,8 +261,8 @@ public function get_env(NAME, DEFAULT) result(VALUE)
     
     
     
-   <h3>Return Value <small><span class="anchor" id="variable-value"></span>character(len=:),
-  allocatable</small></h3>
+   <h3>Return Value <small><span class="anchor" id="variable-res"></span>character(len=len(string))
+  </small></h3>
     
     
     
@@ -304,11 +282,7 @@ public function get_env(NAME, DEFAULT) result(VALUE)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/get_env.html#variable-howbig">howbig</a>
-      
-      <a class="list-group-item" href="../proc/get_env.html#variable-length~2">length</a>
-      
-      <a class="list-group-item" href="../proc/get_env.html#variable-stat~9">stat</a>
+      <a class="list-group-item" href="../proc/to_fortran_name.html#variable-special_characters">SPECIAL_CHARACTERS</a>
       
     </div>
   </div>
@@ -336,7 +310,7 @@ public function get_env(NAME, DEFAULT) result(VALUE)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/get_env.html#src">get_env</a>
+    <a class="list-group-item" href="../proc/to_fortran_name.html#src">to_fortran_name</a>
   </div>
 </div>
 
@@ -366,39 +340,11 @@ public function get_env(NAME, DEFAULT) result(VALUE)
   
 <tr>
   
-  <td><span class="anchor" id="variable-howbig"></span>integer,</td>
+  <td><span class="anchor" id="variable-special_characters"></span>character,</td>
   
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>howbig</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-length~2"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>length</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-stat~9"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>stat</strong></td><td></td><td></td><td></td>
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>SPECIAL_CHARACTERS</strong>(*)</td><td> =</td><td>['-']</td><td></td>
   
 </tr>
 
@@ -425,37 +371,15 @@ public function get_env(NAME, DEFAULT) result(VALUE)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">function </span><span class="n">get_env</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="n">DEFAULT</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="k">VALUE</span><span class="p">)</span>
-    <span class="k">implicit none</span>
-<span class="k">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">NAME</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">DEFAULT</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="k">VALUE</span>
-<span class="k">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">howbig</span>
-    <span class="kt">integer</span>                              <span class="kd">::</span> <span class="nb">stat</span>
-<span class="nb">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">length</span>
-        <span class="c">! get length required to hold value</span>
-        <span class="n">length</span><span class="o">=</span><span class="mi">0</span>
-        <span class="k">if</span><span class="p">(</span><span class="n">NAME</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
-<span class="k">           call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">howbig</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-           <span class="k">select case</span> <span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
-           <span class="k">case</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-               <span class="c">!*!print *, NAME, &quot; is not defined in the environment. Strange...&quot;</span>
-               <span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-           <span class="k">case</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-               <span class="c">!*!print *, &quot;This processor doesn&#39;t support environment variables. Boooh!&quot;</span>
-               <span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-           <span class="k">case </span><span class="n">default</span>
-               <span class="c">! make string to hold value of sufficient size</span>
-               <span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">howbig</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="kd">::</span> <span class="k">VALUE</span><span class="p">)</span>
-               <span class="c">! get value</span>
-               <span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="k">VALUE</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-               <span class="k">if</span><span class="p">(</span><span class="nb">stat</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-           <span class="k">end select</span>
-<span class="k">        else</span>
-<span class="k">           VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-        <span class="n">endif</span>
-        <span class="k">if</span><span class="p">(</span><span class="k">VALUE</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">DEFAULT</span><span class="p">))</span><span class="k">VALUE</span><span class="o">=</span><span class="n">DEFAULT</span>
-     <span class="k">end function </span><span class="n">get_env</span>
+    <div class="highlight"><pre><span></span><span class="k">pure function </span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="c">! Returns string with special characters replaced with an underscore.</span>
+    <span class="c">! For now, only a hyphen is treated as a special character, but this can be</span>
+    <span class="c">! expanded to other characters if needed.</span>
+    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">))</span> <span class="kd">::</span> <span class="n">res</span>
+    <span class="kt">character</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">SPECIAL_CHARACTERS</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-&#39;</span><span class="p">]</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">SPECIAL_CHARACTERS</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+<span class="k">end function </span><span class="n">to_fortran_name</span>
 </pre></div>
 
     </section>

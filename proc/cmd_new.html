@@ -641,7 +641,7 @@ subroutine warnwrite(fname, data)
         <span class="p">&amp;</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
         <span class="c">! create placeholder module src/bname.f90</span>
         <span class="n">littlefile</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span> <span class="kd">::</span>          <span class="p">&amp;</span>
-        <span class="p">&amp;</span><span class="s1">&#39;module &#39;</span><span class="o">//</span><span class="n">bname</span><span class="p">,</span>                        <span class="p">&amp;</span>
+        <span class="p">&amp;</span><span class="s1">&#39;module &#39;</span><span class="o">//</span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">bname</span><span class="p">),</span>       <span class="p">&amp;</span>
         <span class="p">&amp;</span><span class="s1">&#39;  implicit none&#39;</span><span class="p">,</span>                       <span class="p">&amp;</span>
         <span class="p">&amp;</span><span class="s1">&#39;  private&#39;</span><span class="p">,</span>                             <span class="p">&amp;</span>
         <span class="p">&amp;</span><span class="s1">&#39;&#39;</span><span class="p">,</span>                                      <span class="p">&amp;</span>
@@ -650,7 +650,7 @@ subroutine warnwrite(fname, data)
         <span class="p">&amp;</span><span class="s1">&#39;  subroutine say_hello&#39;</span><span class="p">,</span>                <span class="p">&amp;</span>
         <span class="p">&amp;</span><span class="s1">&#39;    print *, &quot;Hello, &#39;</span><span class="o">//</span><span class="n">bname</span><span class="o">//</span><span class="s1">&#39;!&quot;&#39;</span><span class="p">,</span>    <span class="p">&amp;</span>
         <span class="p">&amp;</span><span class="s1">&#39;  end subroutine say_hello&#39;</span><span class="p">,</span>            <span class="p">&amp;</span>
-        <span class="p">&amp;</span><span class="s1">&#39;end module &#39;</span><span class="o">//</span><span class="n">bname</span><span class="p">]</span>
+        <span class="p">&amp;</span><span class="s1">&#39;end module &#39;</span><span class="o">//</span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">bname</span><span class="p">)]</span>
         <span class="c">! create NAME/src/NAME.f90</span>
         <span class="k">call </span><span class="n">warnwrite</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span> <span class="n">bname</span><span class="o">//</span><span class="s1">&#39;.f90&#39;</span><span class="p">),&amp;</span>
          <span class="p">&amp;</span> <span class="n">littlefile</span><span class="p">)</span>
@@ -692,7 +692,7 @@ subroutine warnwrite(fname, data)
         <span class="k">if</span><span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">bname</span><span class="o">//</span><span class="s1">&#39;/src/&#39;</span><span class="p">))</span><span class="k">then</span>
 <span class="k">            </span><span class="n">littlefile</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span> <span class="kd">::</span>          <span class="p">&amp;</span>
             <span class="p">&amp;</span><span class="s1">&#39;program main&#39;</span><span class="p">,</span>                          <span class="p">&amp;</span>
-            <span class="p">&amp;</span><span class="s1">&#39;  use &#39;</span><span class="o">//</span><span class="n">bname</span><span class="o">//</span><span class="s1">&#39;, only: say_hello&#39;</span><span class="p">,</span>    <span class="p">&amp;</span>
+            <span class="p">&amp;</span><span class="s1">&#39;  use &#39;</span><span class="o">//</span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">bname</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;, only: say_hello&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span><span class="s1">&#39;  implicit none&#39;</span><span class="p">,</span>                       <span class="p">&amp;</span>
             <span class="p">&amp;</span><span class="s1">&#39;&#39;</span><span class="p">,</span>                                      <span class="p">&amp;</span>
             <span class="p">&amp;</span><span class="s1">&#39;  call say_hello()&#39;</span><span class="p">,</span>                    <span class="p">&amp;</span>
@@ -729,7 +729,7 @@ subroutine warnwrite(fname, data)
 
 <span class="k">subroutine </span><span class="n">filewrite</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">filedata</span><span class="p">)</span>
 <span class="c">! procedure to write filedata to file filename</span>
-<span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="p">&amp;</span>
+<span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="p">&amp;</span>
  <span class="p">&amp;</span> <span class="n">stdin</span><span class="o">=&gt;</span><span class="n">input_unit</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=&gt;</span><span class="n">output_unit</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=&gt;</span><span class="n">error_unit</span>
 
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">filename</span>
@@ -756,7 +756,7 @@ subroutine warnwrite(fname, data)
     <span class="k">if</span><span class="p">(</span><span class="n">ios</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a:,1x))&#39;</span><span class="p">)&amp;</span>
         <span class="p">&amp;</span> <span class="s1">&#39;*filewrite* error:&#39;</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-        <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
+        <span class="k">error stop </span><span class="mi">1</span>
     <span class="n">endif</span>
     <span class="c">! write file</span>
     <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">filedata</span><span class="p">)</span>
@@ -764,14 +764,14 @@ subroutine warnwrite(fname, data)
         <span class="k">if</span><span class="p">(</span><span class="n">ios</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <span class="k">            write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a:,1x))&#39;</span><span class="p">)&amp;</span>
             <span class="p">&amp;</span> <span class="s1">&#39;*filewrite* error:&#39;</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-            <span class="n">error</span> <span class="k">stop </span><span class="mi">4</span>
+            <span class="k">error stop </span><span class="mi">4</span>
         <span class="n">endif</span>
     <span class="n">enddo</span>
     <span class="c">! close file</span>
     <span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">lun</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="n">ios</span><span class="p">,</span><span class="n">iomsg</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
     <span class="k">if</span><span class="p">(</span><span class="n">ios</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a:,1x))&#39;</span><span class="p">)</span><span class="s1">&#39;*filewrite* error:&#39;</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-        <span class="n">error</span> <span class="k">stop </span><span class="mi">2</span>
+        <span class="k">error stop </span><span class="mi">2</span>
     <span class="n">endif</span>
 <span class="k">end subroutine </span><span class="n">filewrite</span>
 
@@ -797,7 +797,7 @@ subroutine warnwrite(fname, data)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-01-06 17:59  
+             on 2021-01-14 15:40  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

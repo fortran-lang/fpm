@@ -265,10 +265,10 @@
       <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">module </span><span class="n">fpm_cmd_new</span>
 <a name="ln-2"></a>
-<a name="ln-3"></a><span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">fpm_new_settings</span>
-<a name="ln-4"></a><span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">run</span><span class="p">,</span> <span class="n">OS_LINUX</span><span class="p">,</span> <span class="n">OS_MACOS</span><span class="p">,</span> <span class="n">OS_WINDOWS</span>
-<a name="ln-5"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">is_dir</span>
-<a name="ln-6"></a><span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">stderr</span><span class="o">=&gt;</span><span class="n">error_unit</span>
+<a name="ln-3"></a><span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">fpm_new_settings</span>
+<a name="ln-4"></a><span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">run</span><span class="p">,</span> <span class="n">OS_LINUX</span><span class="p">,</span> <span class="n">OS_MACOS</span><span class="p">,</span> <span class="n">OS_WINDOWS</span>
+<a name="ln-5"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">to_fortran_name</span>
+<a name="ln-6"></a><span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">stderr</span><span class="o">=&gt;</span><span class="n">error_unit</span>
 <a name="ln-7"></a><span class="k">implicit none</span>
 <a name="ln-8"></a><span class="k">private</span>
 <a name="ln-9"></a><span class="k">public</span> <span class="kd">::</span> <span class="n">cmd_new</span>
@@ -335,7 +335,7 @@
 <a name="ln-70"></a>        <span class="p">&amp;</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
 <a name="ln-71"></a>        <span class="c">! create placeholder module src/bname.f90</span>
 <a name="ln-72"></a>        <span class="n">littlefile</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span> <span class="kd">::</span>          <span class="p">&amp;</span>
-<a name="ln-73"></a>        <span class="p">&amp;</span><span class="s1">&#39;module &#39;</span><span class="o">//</span><span class="n">bname</span><span class="p">,</span>                        <span class="p">&amp;</span>
+<a name="ln-73"></a>        <span class="p">&amp;</span><span class="s1">&#39;module &#39;</span><span class="o">//</span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">bname</span><span class="p">),</span>       <span class="p">&amp;</span>
 <a name="ln-74"></a>        <span class="p">&amp;</span><span class="s1">&#39;  implicit none&#39;</span><span class="p">,</span>                       <span class="p">&amp;</span>
 <a name="ln-75"></a>        <span class="p">&amp;</span><span class="s1">&#39;  private&#39;</span><span class="p">,</span>                             <span class="p">&amp;</span>
 <a name="ln-76"></a>        <span class="p">&amp;</span><span class="s1">&#39;&#39;</span><span class="p">,</span>                                      <span class="p">&amp;</span>
@@ -344,7 +344,7 @@
 <a name="ln-79"></a>        <span class="p">&amp;</span><span class="s1">&#39;  subroutine say_hello&#39;</span><span class="p">,</span>                <span class="p">&amp;</span>
 <a name="ln-80"></a>        <span class="p">&amp;</span><span class="s1">&#39;    print *, &quot;Hello, &#39;</span><span class="o">//</span><span class="n">bname</span><span class="o">//</span><span class="s1">&#39;!&quot;&#39;</span><span class="p">,</span>    <span class="p">&amp;</span>
 <a name="ln-81"></a>        <span class="p">&amp;</span><span class="s1">&#39;  end subroutine say_hello&#39;</span><span class="p">,</span>            <span class="p">&amp;</span>
-<a name="ln-82"></a>        <span class="p">&amp;</span><span class="s1">&#39;end module &#39;</span><span class="o">//</span><span class="n">bname</span><span class="p">]</span>
+<a name="ln-82"></a>        <span class="p">&amp;</span><span class="s1">&#39;end module &#39;</span><span class="o">//</span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">bname</span><span class="p">)]</span>
 <a name="ln-83"></a>        <span class="c">! create NAME/src/NAME.f90</span>
 <a name="ln-84"></a>        <span class="k">call </span><span class="n">warnwrite</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span> <span class="n">bname</span><span class="o">//</span><span class="s1">&#39;.f90&#39;</span><span class="p">),&amp;</span>
 <a name="ln-85"></a>         <span class="p">&amp;</span> <span class="n">littlefile</span><span class="p">)</span>
@@ -386,7 +386,7 @@
 <a name="ln-121"></a>        <span class="k">if</span><span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">bname</span><span class="o">//</span><span class="s1">&#39;/src/&#39;</span><span class="p">))</span><span class="k">then</span>
 <a name="ln-122"></a><span class="k">            </span><span class="n">littlefile</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span> <span class="kd">::</span>          <span class="p">&amp;</span>
 <a name="ln-123"></a>            <span class="p">&amp;</span><span class="s1">&#39;program main&#39;</span><span class="p">,</span>                          <span class="p">&amp;</span>
-<a name="ln-124"></a>            <span class="p">&amp;</span><span class="s1">&#39;  use &#39;</span><span class="o">//</span><span class="n">bname</span><span class="o">//</span><span class="s1">&#39;, only: say_hello&#39;</span><span class="p">,</span>    <span class="p">&amp;</span>
+<a name="ln-124"></a>            <span class="p">&amp;</span><span class="s1">&#39;  use &#39;</span><span class="o">//</span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">bname</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;, only: say_hello&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-125"></a>            <span class="p">&amp;</span><span class="s1">&#39;  implicit none&#39;</span><span class="p">,</span>                       <span class="p">&amp;</span>
 <a name="ln-126"></a>            <span class="p">&amp;</span><span class="s1">&#39;&#39;</span><span class="p">,</span>                                      <span class="p">&amp;</span>
 <a name="ln-127"></a>            <span class="p">&amp;</span><span class="s1">&#39;  call say_hello()&#39;</span><span class="p">,</span>                    <span class="p">&amp;</span>
@@ -423,7 +423,7 @@
 <a name="ln-158"></a>
 <a name="ln-159"></a><span class="k">subroutine </span><span class="n">filewrite</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">filedata</span><span class="p">)</span>
 <a name="ln-160"></a><span class="c">! procedure to write filedata to file filename</span>
-<a name="ln-161"></a><span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="p">&amp;</span>
+<a name="ln-161"></a><span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="p">&amp;</span>
 <a name="ln-162"></a> <span class="p">&amp;</span> <span class="n">stdin</span><span class="o">=&gt;</span><span class="n">input_unit</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=&gt;</span><span class="n">output_unit</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=&gt;</span><span class="n">error_unit</span>
 <a name="ln-163"></a>
 <a name="ln-164"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">filename</span>
@@ -450,7 +450,7 @@
 <a name="ln-185"></a>    <span class="k">if</span><span class="p">(</span><span class="n">ios</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <a name="ln-186"></a><span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a:,1x))&#39;</span><span class="p">)&amp;</span>
 <a name="ln-187"></a>        <span class="p">&amp;</span> <span class="s1">&#39;*filewrite* error:&#39;</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-<a name="ln-188"></a>        <span class="n">error</span> <span class="k">stop </span><span class="mi">1</span>
+<a name="ln-188"></a>        <span class="k">error stop </span><span class="mi">1</span>
 <a name="ln-189"></a>    <span class="n">endif</span>
 <a name="ln-190"></a>    <span class="c">! write file</span>
 <a name="ln-191"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">filedata</span><span class="p">)</span>
@@ -458,14 +458,14 @@
 <a name="ln-193"></a>        <span class="k">if</span><span class="p">(</span><span class="n">ios</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <a name="ln-194"></a><span class="k">            write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a:,1x))&#39;</span><span class="p">)&amp;</span>
 <a name="ln-195"></a>            <span class="p">&amp;</span> <span class="s1">&#39;*filewrite* error:&#39;</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-<a name="ln-196"></a>            <span class="n">error</span> <span class="k">stop </span><span class="mi">4</span>
+<a name="ln-196"></a>            <span class="k">error stop </span><span class="mi">4</span>
 <a name="ln-197"></a>        <span class="n">endif</span>
 <a name="ln-198"></a>    <span class="n">enddo</span>
 <a name="ln-199"></a>    <span class="c">! close file</span>
 <a name="ln-200"></a>    <span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">lun</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="n">ios</span><span class="p">,</span><span class="n">iomsg</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
 <a name="ln-201"></a>    <span class="k">if</span><span class="p">(</span><span class="n">ios</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <a name="ln-202"></a><span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a:,1x))&#39;</span><span class="p">)</span><span class="s1">&#39;*filewrite* error:&#39;</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-<a name="ln-203"></a>        <span class="n">error</span> <span class="k">stop </span><span class="mi">2</span>
+<a name="ln-203"></a>        <span class="k">error stop </span><span class="mi">2</span>
 <a name="ln-204"></a>    <span class="n">endif</span>
 <a name="ln-205"></a><span class="k">end subroutine </span><span class="n">filewrite</span>
 <a name="ln-206"></a>
@@ -490,7 +490,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-01-06 17:59  
+             on 2021-01-14 15:40  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

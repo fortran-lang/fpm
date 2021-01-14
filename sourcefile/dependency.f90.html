@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="10.4% of total for source files.">492 statements</a>
+    title="10.3% of total for source files.">492 statements</a>
      </li> 
      
      
@@ -320,17 +320,17 @@
 <a name="ln-55"></a><span class="c">!&gt;</span>
 <a name="ln-56"></a><span class="c">!&gt; Currenly ignored. First come, first serve.</span>
 <a name="ln-57"></a><span class="k">module </span><span class="n">fpm_dependency</span>
-<a name="ln-58"></a>  <span class="k">use</span><span class="p">,</span> <span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">output_unit</span>
-<a name="ln-59"></a>  <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="n">OS_WINDOWS</span>
-<a name="ln-60"></a>  <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span>
-<a name="ln-61"></a>  <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">exists</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">windows_path</span>
-<a name="ln-62"></a>  <span class="k">use </span><span class="n">fpm_git</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">git_target_revision</span><span class="p">,</span> <span class="n">git_target_default</span><span class="p">,</span> <span class="n">git_revision</span>
-<a name="ln-63"></a>  <span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">dependency_config_t</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-58"></a>  <span class="k">use</span><span class="p">,</span> <span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">output_unit</span>
+<a name="ln-59"></a>  <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="n">OS_WINDOWS</span>
+<a name="ln-60"></a>  <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fatal_error</span>
+<a name="ln-61"></a>  <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">exists</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">windows_path</span>
+<a name="ln-62"></a>  <span class="k">use </span><span class="n">fpm_git</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">git_target_revision</span><span class="p">,</span> <span class="n">git_target_default</span><span class="p">,</span> <span class="n">git_revision</span>
+<a name="ln-63"></a>  <span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">dependency_config_t</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-64"></a>    <span class="n">get_package_data</span>
-<a name="ln-65"></a>  <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.)</span>
-<a name="ln-66"></a>  <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_error</span><span class="p">,</span> <span class="n">toml_serializer</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-65"></a>  <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">operator</span><span class="p">(.</span><span class="n">in</span><span class="p">.)</span>
+<a name="ln-66"></a>  <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_error</span><span class="p">,</span> <span class="n">toml_serializer</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-67"></a>    <span class="n">toml_parse</span><span class="p">,</span> <span class="n">get_value</span><span class="p">,</span> <span class="n">set_value</span><span class="p">,</span> <span class="n">add_table</span>
-<a name="ln-68"></a>  <span class="k">use </span><span class="n">fpm_versioning</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">version_t</span><span class="p">,</span> <span class="n">new_version</span><span class="p">,</span> <span class="nb">char</span>
+<a name="ln-68"></a>  <span class="k">use </span><span class="n">fpm_versioning</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">version_t</span><span class="p">,</span> <span class="n">new_version</span><span class="p">,</span> <span class="nb">char</span>
 <a name="ln-69"></a><span class="nb">  </span><span class="k">implicit none</span>
 <a name="ln-70"></a><span class="k">  private</span>
 <a name="ln-71"></a>
@@ -1102,7 +1102,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-01-06 17:59  
+             on 2021-01-14 15:40  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
