@@ -115,7 +115,7 @@ open an issue and we’ll discuss it.
 
 If you have never created a pull request before, welcome :tada:.
 You can learn how from
-[this great tutorial](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
+[this great tutorial](https://app.egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github).
 
 Don’t know where to start?
 You can start by looking through the list of
