@@ -263,15 +263,14 @@ contains
                  & with_test=lget('test'),                  &
                  & with_example=lget('example'),            &
                  & verbose=lget('verbose') )
-            else
+            else  ! default if no specific directories are requested
                 cmd_settings=fpm_new_settings(&
                  & backfill=lget('backfill') ,           &
                  & name=name,                            &
                  & with_executable=.true.,               &
                  & with_lib=.true.,                      &
                  & with_test=.true.,                     &
-                 & with_example=.true.,                  &
-                 !*!& with_example=lget('full'),            &
+                 & with_example=lget('full'),            &
                  & with_full=lget('full'),               &
                  & with_bare=lget('bare'),               &
                  & verbose=lget('verbose') )
@@ -834,7 +833,7 @@ contains
     '   o adds a ".gitignore" file for ignoring the build/ directory        ', &
     '     (where fpm-generated output will be placed)                       ', &
     '                                                                       ', &
-    ' The basic default file structure is                                   ', &
+    ' The default file structure (that will be automatically scanned) is    ', &
     '                                                                       ', &
     '     NAME/                                                             ', &
     '       fpm.toml                                                        ', &
@@ -865,9 +864,9 @@ contains
     '        ASCII alphanumeric characters and underscores,                 ', &
     '        starting with a letter.                                        ', &
     '                                                                       ', &
-    ' The default is to create the src/, app/, example/ and test/           ', &
-    ' directories. If any of the following options are specified            ', &
-    ' then only selected subdirectories are generated:                      ', &
+    ' The default is to create the src/, app/, and test/ directories.       ', &
+    ' If any of the following options are specified then only the           ', &
+    ' selected subdirectories are generated:                                ', &
     '                                                                       ', &
     ' --lib,--src  create directory src/ and a placeholder module           ', &
     '              named "NAME.f90" for use with subcommand "build".        ', &
@@ -878,22 +877,24 @@ contains
     '              "--lib" it really does not have anything to test.        ', &
     ' --example    create directory example/ and a placeholder program      ', &
     '              for use with the subcommand "run --example".             ', &
+    '              It is only created by default if "--full is" specified.  ', &
     '                                                                       ', &
     ' So the default is equivalent to                                        ',&
     '                                                                       ', &
-    '    fpm NAME --lib --app --test --example                              ', &
+    '    fpm NAME --lib --app --test                                        ', &
     '                                                                       ', &
     ' --backfill   By default the directory must not exist. If this         ', &
     '              option is present the directory may pre-exist and        ', &
     '              only subdirectories and files that do not                ', &
     '              already exist will be created. For example, if you       ', &
     '              previously entered "fpm new myname --lib" entering       ', &
-    '              "fpm new myname --backfill" will create any missing      ', &
-    '              app/, example/ and test/ directories and programs.       ', &
+    '              "fpm new myname -full --backfill" will create any missing', &
+    '              app/, example/, and test/ directories and programs.      ', &
     '                                                                       ', &
     ' --full       By default a minimal manifest file ("fpm.toml") is       ', &
     '              created that depends on auto-discovery. With this        ', &
-    '              option a much more extensive manifest sample is written. ', &
+    '              option a much more extensive manifest sample is written  ', &
+    '              and the example/ directory is created and populated.     ', &
     '              It is designed to facilitate creating projects that      ', &
     '              depend extensively on non-default build options.         ', &
     '                                                                       ', &
@@ -914,6 +915,11 @@ contains
     '   fpm run            # run example application program(s)             ', &
     '   fpm test           # run example test program(s)                    ', &
     '   fpm run --example  # run example program(s)                         ', &
+    '                                                                       ', &
+    '   fpm new A --full # create example/ and an annotated fpm.toml as well', &
+    '   fpm new A --bare # create no directories                            ', &
+    '   create any missing files in current directory                       ', &
+    '   fpm new `pwd` --full --backfill                                     ', &
     '' ]
     help_test=[character(len=80) :: &
     'NAME                                                                   ', &
