@@ -3,11 +3,11 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
-    use fpm_strings, only: f_string, string_t, split
+    use fpm_strings, only: f_string, replace, string_t, split
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
-            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
+            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, to_fortran_name
     public :: fileopen, fileclose, filewrite, warnwrite
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
@@ -146,8 +146,6 @@ function dirname(path) result (dir)
     !
     character(*), intent(in) :: path
     character(:), allocatable :: dir
-
-    character(:), allocatable :: file_parts(:)
 
     dir = path(1:scan(path,'/\',back=.true.))
 
@@ -486,7 +484,7 @@ subroutine fileopen(filename,lun,ier)
 character(len=*),intent(in)   :: filename
 integer,intent(out)           :: lun
 integer,intent(out),optional  :: ier
-integer                       :: i, ios
+integer                       :: ios
 character(len=256)            :: message
 
     message=' '
@@ -561,5 +559,15 @@ character(len=256)                    :: message
     call fileclose(lun)
 
 end subroutine filewrite
+
+pure function to_fortran_name(string) result(res)
+    ! Returns string with special characters replaced with an underscore.
+    ! For now, only a hyphen is treated as a special character, but this can be
+    ! expanded to other characters if needed.
+    character(*), intent(in) :: string
+    character(len(string)) :: res
+    character, parameter :: SPECIAL_CHARACTERS(*) = ['-']
+    res = replace(string, SPECIAL_CHARACTERS, '_')
+end function to_fortran_name
 
 end module fpm_filesystem

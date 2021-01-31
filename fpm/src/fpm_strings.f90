@@ -4,12 +4,16 @@ implicit none
 
 private
 public :: f_string, lower, split, str_ends_with, string_t
-public :: string_array_contains, string_cat, operator(.in.), fnv_1a
-public :: resize, str, join
+public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
+public :: replace, resize, str, join
 
 type string_t
     character(len=:), allocatable :: s
 end type
+
+interface len_trim
+    module procedure :: string_len_trim
+end interface len_trim
 
 interface resize
   module procedure :: resize_string
@@ -177,7 +181,7 @@ function string_cat(strings,delim) result(cat)
     character(*), intent(in), optional :: delim
     character(:), allocatable :: cat
 
-    integer :: i,n
+    integer :: i
     character(:), allocatable :: delim_str
 
     if (size(strings) < 1) then
@@ -199,6 +203,18 @@ function string_cat(strings,delim) result(cat)
     end do
 
 end function string_cat
+
+!> Determine total trimmed length of `string_t` array
+pure function string_len_trim(strings) result(n)
+    type(string_t), intent(in) :: strings(:)
+    integer :: i, n
+
+    n = 0
+    do i=1,size(strings)
+        n = n + len_trim(strings(i)%s)
+    end do
+
+end function string_len_trim
 
 subroutine split(input_line,array,delimiters,order,nulls)
     ! parse string on delimiter characters and store tokens into an allocatable array"
@@ -317,6 +333,20 @@ subroutine split(input_line,array,delimiters,order,nulls)
         endif
     enddo
 end subroutine split
+
+pure function replace(string, charset, target_char) result(res)
+    ! Returns string with characters in charset replaced with target_char.
+    character(*), intent(in) :: string
+    character, intent(in) :: charset(:), target_char
+    character(len(string)) :: res
+    integer :: n
+    res = string
+    do n = 1, len(string)
+        if (any(string(n:n) == charset)) then
+            res(n:n) = target_char
+        end if
+    end do
+end function replace
 
 subroutine resize_string(list, n)
   !> Instance of the array to be resized

@@ -16,7 +16,7 @@
 !>
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error
-use fpm_strings, only: string_t, string_cat, split, lower, str_ends_with, fnv_1a
+use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &

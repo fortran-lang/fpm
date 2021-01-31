@@ -55,7 +55,7 @@ module fpm_cmd_new
 
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
+use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir, to_fortran_name
 use fpm_filesystem, only : fileopen, fileclose, filewrite, warnwrite
 use fpm_strings, only : join
 use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
@@ -71,7 +71,7 @@ integer,parameter            :: tfc = selected_char_kind('DEFAULT')
 character(len=:,kind=tfc),allocatable :: bname          ! baeename of NAME
 character(len=:,kind=tfc),allocatable :: tomlfile(:)
 character(len=:,kind=tfc),allocatable :: littlefile(:)
-
+  
     !> TOP DIRECTORY NAME PROCESSING
     !> see if requested new directory already exists and process appropriately
     if(exists(settings%name) .and. .not.settings%backfill )then
@@ -310,7 +310,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         endif
         ! create placeholder module src/bname.f90
         littlefile=[character(len=80) ::          &
-        &'module '//bname,                        &
+        &'module '//to_fortran_name(bname),       &
         &'  implicit none',                       &
         &'  private',                             &
         &'',                                      &
@@ -319,7 +319,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  subroutine say_hello',                &
         &'    print *, "Hello, '//bname//'!"',    &
         &'  end subroutine say_hello',            &
-        &'end module '//bname]
+        &'end module '//to_fortran_name(bname)]
         ! create NAME/src/NAME.f90
         call warnwrite(join_path(settings%name, 'src', bname//'.f90'),&
          & littlefile)
@@ -460,7 +460,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         if(exists(bname//'/src/'))then
             littlefile=[character(len=80) ::          &
             &'program main',                          &
-            &'  use '//bname//', only: say_hello',    &
+            &'  use '//to_fortran_name(bname)//', only: say_hello',    &
             &'  implicit none',                       &
             &'',                                      &
             &'  call say_hello()',                    &
