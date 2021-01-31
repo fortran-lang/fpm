@@ -87,7 +87,7 @@ function parse_f_source(f_filename,error) result(f_source)
     close(fh)
 
     ! Ignore empty files, returned as FPM_UNIT_UNKNOW
-    if (len_trim(string_cat(file_lines,' ')) < 1) return
+    if (len_trim(file_lines) < 1) return
 
     f_source%digest = fnv_1a(file_lines)
 
@@ -392,7 +392,7 @@ function parse_c_source(c_filename,error) result(c_source)
     close(fh)
 
     ! Ignore empty files, returned as FPM_UNIT_UNKNOW
-    if (len_trim(string_cat(file_lines,' ')) < 1) then
+    if (len_trim(file_lines) < 1) then
         c_source%unit_type = FPM_UNIT_UNKNOWN
         return
     end if

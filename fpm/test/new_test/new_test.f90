@@ -78,10 +78,11 @@ logical                       :: IS_OS_WINDOWS
 
    if( is_dir('name-with-hyphens') ) then
        tally=[tally,.true.]
-   else
+
+    else
        write(*,*)'ERROR: directory name-with-hyphens/ exists'
        tally=[tally,.false.]
-   endif
+    endif
 
    ! assuming hidden files in .git and .gitignore are ignored for now
    TESTS: do i=1,size(directories)
