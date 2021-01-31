@@ -8,7 +8,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, to_fortran_name
-    public :: fileopen, fileclose, filewrite, warn
+    public :: fileopen, fileclose, filewrite, warnwrite
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -569,16 +569,5 @@ pure function to_fortran_name(string) result(res)
     character, parameter :: SPECIAL_CHARACTERS(*) = ['-']
     res = replace(string, SPECIAL_CHARACTERS, '_')
 end function to_fortran_name
-
-pure function to_fortran_name(string) result(res)
-    ! Returns string with special characters replaced with an underscore.
-    ! For now, only a hyphen is treated as a special character, but this can be
-    ! expanded to other characters if needed.
-    character(*), intent(in) :: string
-    character(len(string)) :: res
-    character, parameter :: SPECIAL_CHARACTERS(*) = ['-']
-    res = replace(string, SPECIAL_CHARACTERS, '_')
-end function to_fortran_name
-
 
 end module fpm_filesystem
