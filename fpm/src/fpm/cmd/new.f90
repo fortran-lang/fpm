@@ -71,7 +71,7 @@ integer,parameter            :: tfc = selected_char_kind('DEFAULT')
 character(len=:,kind=tfc),allocatable :: bname          ! baeename of NAME
 character(len=:,kind=tfc),allocatable :: tomlfile(:)
 character(len=:,kind=tfc),allocatable :: littlefile(:)
-  
+
     !> TOP DIRECTORY NAME PROCESSING
     !> see if requested new directory already exists and process appropriately
     if(exists(settings%name) .and. .not.settings%backfill )then
