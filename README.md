@@ -96,7 +96,7 @@ $ fpm test
 Finally, install the Fortran *fpm* version with
 
 ```bash
-$ fpm run --runner cp -- ~/.local/bin
+$ fpm run --runner mv -- ~/.local/bin
 ```
 
 Or choose another location if you do not want to overwrite the bootstrapping version.
