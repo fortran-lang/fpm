@@ -154,7 +154,7 @@ contains
 
         ! Populate example in case we find the default example directory
         if (.not.allocated(package%example) .and. &
-            exists(join_path("example","main.f90"))) then
+            & exists(join_path(root, "example", "main.f90"))) then
             allocate(package%example(1))
             call default_example(package%example(1), package%name)
         endif
