@@ -28,7 +28,8 @@ use fpm_environment,  only : get_os_type, get_env, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use fpm_strings,      only : lower, split
-use fpm_filesystem,   only : basename, canon_path, to_fortran_name
+use fpm_filesystem,   only : basename, canon_path, to_fortran_name, which
+use fpm_environment,  only : run, get_command_arguments_quoted
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -91,7 +92,7 @@ end type
 
 character(len=:),allocatable :: name
 character(len=:),allocatable :: os_type
-character(len=ibug),allocatable :: names(:) 
+character(len=ibug),allocatable :: names(:)
 character(len=:),allocatable :: tnames(:)
 
 character(len=:), allocatable :: version_text(:)
@@ -383,25 +384,30 @@ contains
 
         case default
 
-            call set_args('&
-            & --list F&
-            & --verbose F&
-            &', help_fpm, version_text)
-            ! Note: will not get here if --version or --usage or --help
-            ! is present on commandline
-            help_text=help_usage
-            if(lget('list'))then
-               help_text=help_list_dash
-            elseif(len_trim(cmdarg).eq.0)then
-                write(stdout,'(*(a))')'Fortran Package Manager:'
-                write(stdout,'(*(a))')' '
-                call printhelp(help_list_nodash)
+            if(which('fpm-'//cmdarg).ne.'')then
+                write(stderr,'(*(a))')'<CALLING> command [', 'fpm-'//trim(cmdarg)//' '//get_command_arguments_quoted(), ']'
+                call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted() )
             else
-                write(stderr,'(*(a))')'<ERROR> unknown subcommand [', &
-                 & trim(cmdarg), ']'
-                call printhelp(help_list_dash)
+               call set_args('&
+               & --list F&
+               & --verbose F&
+               &', help_fpm, version_text)
+               ! Note: will not get here if --version or --usage or --help
+               ! is present on commandline
+               help_text=help_usage
+               if(lget('list'))then
+                  help_text=help_list_dash
+               elseif(len_trim(cmdarg).eq.0)then
+                   write(stdout,'(*(a))')'Fortran Package Manager:'
+                   write(stdout,'(*(a))')' '
+                   call printhelp(help_list_nodash)
+               else
+                   write(stderr,'(*(a))')'<ERROR> unknown subcommand [', &
+                    & trim(cmdarg), ']'
+                   call printhelp(help_list_dash)
+               endif
+               call printhelp(help_text)
             endif
-            call printhelp(help_text)
 
         end select
     contains
@@ -412,7 +418,7 @@ contains
         if(val_compiler.eq.'') then
             val_compiler='gfortran'
         endif
-   
+
         val_build=trim(merge('release','debug  ',lget('release')))
 
     end subroutine check_build_vals

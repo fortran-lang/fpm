@@ -1,10 +1,15 @@
 module fpm_environment
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
+                                       & stdout=>output_unit, &
+                                       & stderr=>error_unit
     implicit none
     private
     public :: get_os_type
     public :: os_is_unix
     public :: run
     public :: get_env
+    public :: get_command_arguments_quoted
+    public :: separator
 
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
@@ -159,5 +164,130 @@ contains
         endif
         if(VALUE.eq.''.and.present(DEFAULT))VALUE=DEFAULT
      end function get_env
+
+    function get_command_arguments_quoted() result(args)
+    character(len=:),allocatable :: args
+    character(len=:),allocatable :: arg
+    character(len=1)             :: quote
+    integer                      :: ilength, istatus, i
+    ilength=0
+    args=''
+        quote=merge('"',"'",separator().eq.'\')
+        do i=2,command_argument_count() ! look at all arguments after subcommand
+            call get_command_argument(number=i,length=ilength,status=istatus)   
+            if(istatus /= 0) then                                                
+                write(stderr,'(*(g0,1x))')'<ERROR>*get_command_arguments_stack* error obtaining argument ',i
+                exit
+            else
+                if(allocated(arg))deallocate(arg)
+                allocate(character(len=ilength) :: arg)
+                call get_command_argument(number=i,value=arg,length=ilength,status=istatus) 
+                if(istatus /= 0) then                                
+                    write(stderr,'(*(g0,1x))')'<ERROR>*get_command_arguments_stack* error obtaining argument ',i
+                    exit 
+                elseif(ilength.gt.0)then
+                    if(index(arg//' ','-').ne.1)then
+                        args=args//quote//arg//quote//' '
+                    else
+                        args=args//arg//' '
+                    endif
+                else
+                    args=args//repeat(quote,2)//' '
+                endif
+             endif
+         enddo 
+    end function get_command_arguments_quoted
+
+function separator() result(sep)
+!>
+!!##NAME
+!!    separator(3f) - [M_io:ENVIRONMENT] try to determine pathname directory separator character
+!!    (LICENSE:PD)
+!!
+!!##SYNOPSIS
+!!
+!!    function separator() result(sep)
+!!
+!!     character(len=1) :: sep
+!!
+!!##DESCRIPTION
+!!    First using the name the program was invoked with, then the name
+!!    returned by an INQUIRE(3f) of that name, then ".\NAME" and "./NAME"
+!!    try to determine the separator character used to separate directory
+!!    names from file basenames.
+!!
+!!    If a slash or backslash is not found in the name, the environment
+!!    variable PATH is examined first for a backslash, then a slash.
+!!
+!!    Can be very system dependent. If the queries fail the default returned
+!!    is "/".
+!!
+!!##EXAMPLE
+!!
+!!   sample usage
+!!
+!!    program demo_separator
+!!    use M_io, only : separator
+!!    implicit none
+!!       write(*,*)'separator=',separator()
+!!    end program demo_separator
+
+! use the pathname returned as arg0 to determine pathname separator
+implicit none
+character(len=:),allocatable :: arg0
+integer                      :: arg0_length
+integer                      :: istat
+logical                      :: existing
+character(len=1)             :: sep
+!*ifort_bug*!character(len=1),save        :: sep_cache=' '
+character(len=4096)          :: name
+character(len=:),allocatable :: fname
+
+   !*ifort_bug*!   if(sep_cache.ne.' ')then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS
+   !*ifort_bug*!      sep=sep_cache
+   !*ifort_bug*!      return
+   !*ifort_bug*!   endif
+
+   arg0_length=0
+   name=' '
+   call get_command_argument(0,length=arg0_length,status=istat)
+   if(allocated(arg0))deallocate(arg0)
+   allocate(character(len=arg0_length) :: arg0)
+   call get_command_argument(0,arg0,status=istat)
+   ! check argument name
+   if(index(arg0,'\').ne.0)then
+      sep='\'
+   elseif(index(arg0,'/').ne.0)then
+      sep='/'
+   else
+      ! try name returned by INQUIRE(3f)
+      existing=.false.
+      name=' '
+      inquire(file=arg0,iostat=istat,exist=existing,name=name)
+      if(index(name,'\').ne.0)then
+         sep='\'
+      elseif(index(name,'/').ne.0)then
+         sep='/'
+      else
+         ! well, try some common syntax and assume in current directory
+         fname='.\'//arg0
+         inquire(file=fname,iostat=istat,exist=existing)
+         if(existing)then
+            sep='/'
+         else
+            fname='./'//arg0
+            inquire(file=fname,iostat=istat,exist=existing)
+            if(existing)then
+               sep='/'
+            else ! check environment variable PATH
+               sep=merge('\','/',index(get_env('PATH'),'\').ne.0)
+               !*!write(*,*)'<WARNING>unknown system directory path separator'
+               sep='/'
+            endif
+         endif
+      endif
+   endif
+   !*ifort_bug*!sep_cache=sep
+end function separator
 
 end module fpm_environment
