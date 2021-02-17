@@ -522,21 +522,31 @@ function which(command) result(pathname)
 
 character(len=*),intent(in)     :: command
 character(len=:),allocatable    :: pathname, checkon, paths(:)
-character(len=256)              :: message
-integer                         :: stat, i
-logical                         :: existing
+integer                         :: i
    pathname=''
    call split(get_env('PATH'),paths,delimiters=merge('%',':',separator().eq.'\'))
-   existing=.false.
    do i=1,size(paths)
-      checkon=join_path(trim(paths(i)),command)
-      inquire(file=checkon,exist=existing,iostat=stat,iomsg=message)
-      if(stat.ne.0)then
-         write(*,'(a,a)')'<WARNING>*which*',trim(message)
-      elseif(existing)then
-         pathname=checkon
-         exit
-      endif
+      checkon=trim(join_path(trim(paths(i)),command))
+      select case(separator())
+      case('/')
+         if(exists(checkon))then
+            pathname=checkon
+            exit
+         endif
+      case('\')
+         if(exists(checkon))then
+            pathname=checkon
+            exit
+         endif
+         if(exists(checkon//'.bat'))then
+            pathname=checkon//'.bat'
+            exit
+         endif
+         if(exists(checkon//'.exe'))then
+            pathname=checkon//'.exe'
+            exit
+         endif
+      end select
    enddo
 end function which
 
