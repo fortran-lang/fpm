@@ -282,7 +282,6 @@ character(len=:),allocatable :: fname
             else ! check environment variable PATH
                sep=merge('\','/',index(get_env('PATH'),'\').ne.0)
                !*!write(*,*)'<WARNING>unknown system directory path separator'
-               sep='/'
             endif
          endif
       endif
