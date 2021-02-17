@@ -524,7 +524,7 @@ character(len=*),intent(in)     :: command
 character(len=:),allocatable    :: pathname, checkon, paths(:)
 integer                         :: i
    pathname=''
-   call split(get_env('PATH'),paths,delimiters=merge('%',':',separator().eq.'\'))
+   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator().eq.'\'))
    do i=1,size(paths)
       checkon=trim(join_path(trim(paths(i)),command))
       select case(separator())

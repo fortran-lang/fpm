@@ -385,8 +385,7 @@ contains
         case default
 
             if(which('fpm-'//cmdarg).ne.'')then
-                write(stderr,'(*(a))')'<CALLING> command [', 'fpm-'//trim(cmdarg)//' '//get_command_arguments_quoted(), ']'
-                call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted() )
+                call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted(),.false.)
             else
                call set_args('&
                & --list F&
