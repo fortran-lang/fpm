@@ -521,33 +521,40 @@ function which(command) result(pathname)
 !!    Public Domain
 
 character(len=*),intent(in)     :: command
-character(len=:),allocatable    :: pathname, checkon, paths(:)
-integer                         :: i
+character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)
+integer                         :: i, j
    pathname=''
    call split(get_env('PATH'),paths,delimiters=merge(';',':',separator().eq.'\'))
-   do i=1,size(paths)
+   SEARCH: do i=1,size(paths)
       checkon=trim(join_path(trim(paths(i)),command))
       select case(separator())
       case('/')
          if(exists(checkon))then
             pathname=checkon
-            exit
+            exit SEARCH
          endif
       case('\')
          if(exists(checkon))then
             pathname=checkon
-            exit
+            exit SEARCH
          endif
          if(exists(checkon//'.bat'))then
             pathname=checkon//'.bat'
-            exit
+            exit SEARCH
          endif
          if(exists(checkon//'.exe'))then
             pathname=checkon//'.exe'
-            exit
+            exit SEARCH
          endif
+         call split(get_env('PATHEXT'),exts,delimiters=';')
+         do j=1,size(exts)
+            if(exists(checkon//'.'//trim(exts(j))))then
+               pathname=checkon//'.'//trim(exts(j))
+               exit SEARCH
+            endif
+         enddo
       end select
-   enddo
+   enddo SEARCH
 end function which
 
 end module fpm_filesystem
