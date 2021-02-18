@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.7% of total for procedures.">41 statements</a>
+    title=" 1.6% of total for procedures.">41 statements</a>
      </li> 
      
      
@@ -173,17 +173,17 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/parse_c_source.html#variable-fh~3">fh</a>
+      <a class="list-group-item" href="../proc/parse_c_source.html#variable-fh~2">fh</a>
       
       <a class="list-group-item" href="../proc/parse_c_source.html#variable-file_lines">file_lines</a>
       
-      <a class="list-group-item" href="../proc/parse_c_source.html#variable-i~11">i</a>
+      <a class="list-group-item" href="../proc/parse_c_source.html#variable-i~6">i</a>
       
       <a class="list-group-item" href="../proc/parse_c_source.html#variable-n_include">n_include</a>
       
       <a class="list-group-item" href="../proc/parse_c_source.html#variable-pass">pass</a>
       
-      <a class="list-group-item" href="../proc/parse_c_source.html#variable-stat~6">stat</a>
+      <a class="list-group-item" href="../proc/parse_c_source.html#variable-stat~2">stat</a>
       
     </div>
   </div>
@@ -273,7 +273,7 @@ public function parse_c_source(c_filename, error) result(c_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~4"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~3"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -313,17 +313,17 @@ public function parse_c_source(c_filename, error) result(c_source)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/parse_c_source.html#variable-fh~3">fh</a>
+      <a class="list-group-item" href="../proc/parse_c_source.html#variable-fh~2">fh</a>
       
       <a class="list-group-item" href="../proc/parse_c_source.html#variable-file_lines">file_lines</a>
       
-      <a class="list-group-item" href="../proc/parse_c_source.html#variable-i~11">i</a>
+      <a class="list-group-item" href="../proc/parse_c_source.html#variable-i~6">i</a>
       
       <a class="list-group-item" href="../proc/parse_c_source.html#variable-n_include">n_include</a>
       
       <a class="list-group-item" href="../proc/parse_c_source.html#variable-pass">pass</a>
       
-      <a class="list-group-item" href="../proc/parse_c_source.html#variable-stat~6">stat</a>
+      <a class="list-group-item" href="../proc/parse_c_source.html#variable-stat~2">stat</a>
       
     </div>
   </div>
@@ -381,7 +381,7 @@ public function parse_c_source(c_filename, error) result(c_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-fh~3"></span>integer,</td>
+  <td><span class="anchor" id="variable-fh~2"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -409,7 +409,7 @@ public function parse_c_source(c_filename, error) result(c_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~11"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~6"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -451,7 +451,7 @@ public function parse_c_source(c_filename, error) result(c_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat~6"></span>integer,</td>
+  <td><span class="anchor" id="variable-stat~2"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -514,9 +514,9 @@ public function parse_c_source(c_filename, error) result(c_source)
 <span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_UNKNOWN</span>
         <span class="k">return</span>
 <span class="k">    end if</span>
-<span class="k">    </span>
+
 <span class="k">    </span><span class="n">c_source</span><span class="p">%</span><span class="n">digest</span> <span class="o">=</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
-    
+
     <span class="k">do pass</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
         <span class="n">n_include</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">file_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
@@ -524,7 +524,7 @@ public function parse_c_source(c_filename, error) result(c_source)
             <span class="c">! Process &#39;INCLUDE&#39; statements</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;#include&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
                 <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                            </span>
+
 <span class="k">                </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
 
                 <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
@@ -572,7 +572,7 @@ public function parse_c_source(c_filename, error) result(c_source)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-05 16:57  
+             on 2021-02-18 14:01  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

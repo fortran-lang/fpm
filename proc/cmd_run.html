@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.3% of total for procedures.">102 statements</a>
+    title=" 4.0% of total for procedures.">102 statements</a>
      </li> 
      
      
@@ -177,7 +177,7 @@
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-col_width">col_width</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-error~8">error</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-error~7">error</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-exe_cmd">exe_cmd</a>
       
@@ -189,11 +189,11 @@
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-found">found</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-i~18">i</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-i~10">i</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-j~9">j</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-j~6">j</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-model~7">model</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-model~5">model</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-ncol">nCol</a>
       
@@ -318,7 +318,7 @@ public subroutine cmd_run(settings, test)
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-col_width">col_width</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-error~8">error</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-error~7">error</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-exe_cmd">exe_cmd</a>
       
@@ -330,11 +330,11 @@ public subroutine cmd_run(settings, test)
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-found">found</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-i~18">i</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-i~10">i</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-j~9">j</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-j~6">j</a>
       
-      <a class="list-group-item" href="../proc/cmd_run.html#variable-model~7">model</a>
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-model~5">model</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-ncol">nCol</a>
       
@@ -426,7 +426,7 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~8"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~7"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -510,7 +510,7 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~18"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~10"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -524,7 +524,7 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
-  <td><span class="anchor" id="variable-j~9"></span>integer,</td>
+  <td><span class="anchor" id="variable-j~6"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -538,7 +538,7 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model~7"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-model~5"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -750,8 +750,8 @@ public subroutine cmd_run(settings, test)
 <span class="k">                   call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">)</span>
                 <span class="k">else</span>
 <span class="k">                   call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">)</span>
-                <span class="n">endif</span>
-            <span class="k">else</span>
+                <span class="k">endif</span>
+<span class="k">            else</span>
 <span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;fpm::run&lt;ERROR&gt;&#39;</span><span class="p">,</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39; not found&#39;</span>
                 <span class="k">stop </span><span class="mi">1</span>
             <span class="k">end if</span>
@@ -781,7 +781,7 @@ public subroutine cmd_run(settings, test)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-05 16:57  
+             on 2021-02-18 14:01  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.5% of total for procedures.">11 statements</a>
+    title=" 0.4% of total for procedures.">11 statements</a>
      </li> 
      
      
@@ -173,7 +173,7 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/is_dir.html#variable-stat">stat</a>
+      <a class="list-group-item" href="../proc/is_dir.html#variable-stat~6">stat</a>
       
     </div>
   </div>
@@ -282,7 +282,7 @@ public function is_dir(dir)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/is_dir.html#variable-stat">stat</a>
+      <a class="list-group-item" href="../proc/is_dir.html#variable-stat~6">stat</a>
       
     </div>
   </div>
@@ -340,7 +340,7 @@ public function is_dir(dir)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat"></span>integer,</td>
+  <td><span class="anchor" id="variable-stat~6"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -371,23 +371,23 @@ public function is_dir(dir)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="kt">logical </span><span class="k">function </span><span class="n">is_dir</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> 
-    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dir</span> 
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat </span>
+    <div class="highlight"><pre><span></span><span class="kt">logical </span><span class="k">function </span><span class="n">is_dir</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span>
+    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dir</span>
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
 
-<span class="nb">    </span><span class="k">select case</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span> 
+<span class="nb">    </span><span class="k">select case</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
 
     <span class="k">case</span> <span class="p">(</span><span class="n">OS_UNKNOWN</span><span class="p">,</span> <span class="n">OS_LINUX</span><span class="p">,</span> <span class="n">OS_MACOS</span><span class="p">,</span> <span class="n">OS_CYGWIN</span><span class="p">,</span> <span class="n">OS_SOLARIS</span><span class="p">,</span> <span class="n">OS_FREEBSD</span><span class="p">)</span>
-        <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;test -d &quot;</span> <span class="o">//</span> <span class="n">dir</span> <span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span> 
+        <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;test -d &quot;</span> <span class="o">//</span> <span class="n">dir</span> <span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 
-    <span class="k">case</span> <span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">)</span> 
-        <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s1">&#39;cmd /c &quot;if not exist &#39;</span> <span class="o">//</span> <span class="n">windows_path</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="o">//</span> <span class="s1">&#39;\ exit /B 1&quot;&#39;</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span> 
+    <span class="k">case</span> <span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">)</span>
+        <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s1">&#39;cmd /c &quot;if not exist &#39;</span> <span class="o">//</span> <span class="n">windows_path</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="o">//</span> <span class="s1">&#39;\ exit /B 1&quot;&#39;</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 
-    <span class="k">end select </span>
+    <span class="k">end select</span>
 
-<span class="k">    </span><span class="n">is_dir</span> <span class="o">=</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> 
+<span class="k">    </span><span class="n">is_dir</span> <span class="o">=</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
 
-<span class="k">end function </span><span class="n">is_dir</span> 
+<span class="k">end function </span><span class="n">is_dir</span>
 </pre></div>
 
     </section>
@@ -409,7 +409,7 @@ public function is_dir(dir)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-05 16:57  
+             on 2021-02-18 14:01  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>number_of_rows &ndash; Fortran-lang/fpm</title>
+    <title>fileopen &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,8 +110,8 @@
     
   
   <div class="row">
-    <h1>number_of_rows
-      <small>Function</small>
+    <h1>fileopen
+      <small>Subroutine</small>
     
     </h1>
     
@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.5% of total for procedures.">13 statements</a>
+    title=" 0.9% of total for procedures.">24 statements</a>
      </li> 
      
      
@@ -145,7 +145,7 @@
      <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
     
   
-     <li class="active">number_of_rows</li>
+     <li class="active">fileopen</li>
   </ol>
 </div>
 </div>
@@ -173,9 +173,9 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/number_of_rows.html#variable-ios">ios</a>
+      <a class="list-group-item" href="../proc/fileopen.html#variable-ios~3">ios</a>
       
-      <a class="list-group-item" href="../proc/number_of_rows.html#variable-r~3">r</a>
+      <a class="list-group-item" href="../proc/fileopen.html#variable-message~3">message</a>
       
     </div>
   </div>
@@ -203,7 +203,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/number_of_rows.html#src">number_of_rows</a>
+    <a class="list-group-item" href="../proc/fileopen.html#src">fileopen</a>
   </div>
 </div>
 
@@ -215,7 +215,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public function number_of_rows(s) result(nrows)
+public subroutine fileopen(filename, lun, ier)
     
     
    
@@ -244,27 +244,48 @@ public function number_of_rows(s) result(nrows)
   
 <tr>
   
-  <td><span class="anchor" id="variable-s~2"></span>integer,</td>
+  <td><span class="anchor" id="variable-filename~2"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>s</strong></td><td></td>
+  <td><strong>filename</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-lun~2"></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>lun</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ier~2"></span>integer,</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>ier</strong></td><td></td>
   
 </tr>
 
 </tbody>
 </table>
 
-    
-    
-    
-    
-    
-    
-    
-   <h3>Return Value <small><span class="anchor" id="variable-nrows"></span>integer
-  </small></h3>
     
     
     
@@ -284,9 +305,9 @@ public function number_of_rows(s) result(nrows)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/number_of_rows.html#variable-ios">ios</a>
+      <a class="list-group-item" href="../proc/fileopen.html#variable-ios~3">ios</a>
       
-      <a class="list-group-item" href="../proc/number_of_rows.html#variable-r~3">r</a>
+      <a class="list-group-item" href="../proc/fileopen.html#variable-message~3">message</a>
       
     </div>
   </div>
@@ -314,7 +335,7 @@ public function number_of_rows(s) result(nrows)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/number_of_rows.html#src">number_of_rows</a>
+    <a class="list-group-item" href="../proc/fileopen.html#src">fileopen</a>
   </div>
 </div>
 
@@ -344,7 +365,7 @@ public function number_of_rows(s) result(nrows)
   
 <tr>
   
-  <td><span class="anchor" id="variable-ios"></span>integer,</td>
+  <td><span class="anchor" id="variable-ios~3"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -358,11 +379,11 @@ public function number_of_rows(s) result(nrows)
   
 <tr>
   
-  <td><span class="anchor" id="variable-r~3"></span>character(len=100),</td>
+  <td><span class="anchor" id="variable-message~3"></span>character(len=256),</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>r</strong></td><td></td><td></td><td></td>
+  <td><strong>message</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -389,20 +410,43 @@ public function number_of_rows(s) result(nrows)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="kt">integer </span><span class="k">function </span><span class="n">number_of_rows</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">nrows</span><span class="p">)</span>
-    <span class="c">! determine number or rows</span>
-    <span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="kd">::</span><span class="n">s</span>
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ios</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
-    <span class="k">rewind</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-    <span class="n">nrows</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">do</span>
-<span class="k">        read</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">&#39;(A)&#39;</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="n">ios</span><span class="p">)</span> <span class="n">r</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">ios</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">exit</span>
-<span class="k">        </span><span class="n">nrows</span> <span class="o">=</span> <span class="n">nrows</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="k">end do</span>
-<span class="k">    rewind</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="k">end function </span><span class="n">number_of_rows</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">fileopen</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">lun</span><span class="p">,</span><span class="n">ier</span><span class="p">)</span>
+<span class="c">! procedure to open filename as a sequential &quot;text&quot; file</span>
+
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>   <span class="kd">::</span> <span class="n">filename</span>
+<span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">lun</span>
+<span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="k">optional</span>  <span class="kd">::</span> <span class="n">ier</span>
+<span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">ios</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>            <span class="kd">::</span> <span class="n">message</span>
+
+    <span class="n">message</span><span class="o">=</span><span class="s1">&#39; &#39;</span>
+    <span class="n">ios</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="k">        open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="p">&amp;</span>
+        <span class="p">&amp;</span> <span class="n">newunit</span><span class="o">=</span><span class="n">lun</span><span class="p">,</span> <span class="p">&amp;</span>
+        <span class="p">&amp;</span> <span class="n">form</span><span class="o">=</span><span class="s1">&#39;formatted&#39;</span><span class="p">,</span> <span class="p">&amp;</span>    <span class="c">! FORM    = FORMATTED | UNFORMATTED</span>
+        <span class="p">&amp;</span> <span class="nb">access</span><span class="o">=</span><span class="s1">&#39;sequential&#39;</span><span class="p">,</span> <span class="p">&amp;</span> <span class="c">! ACCESS  = SEQUENTIAL| DIRECT | STREAM</span>
+        <span class="p">&amp;</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;write&#39;</span><span class="p">,</span> <span class="p">&amp;</span>      <span class="c">! ACTION  = READ|WRITE| READWRITE</span>
+        <span class="p">&amp;</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;rewind&#39;</span><span class="p">,</span> <span class="p">&amp;</span>   <span class="c">! POSITION= ASIS      | REWIND | APPEND</span>
+        <span class="p">&amp;</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;new&#39;</span><span class="p">,</span> <span class="p">&amp;</span>        <span class="c">! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN</span>
+        <span class="p">&amp;</span> <span class="n">iostat</span><span class="o">=</span><span class="n">ios</span><span class="p">,</span> <span class="p">&amp;</span>
+        <span class="p">&amp;</span> <span class="n">iomsg</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">else</span>
+<span class="k">        </span><span class="n">lun</span><span class="o">=</span><span class="n">stdout</span>
+        <span class="n">ios</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">endif</span>
+<span class="k">    if</span><span class="p">(</span><span class="n">ios</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a:,1x))&#39;</span><span class="p">)&amp;</span>
+        <span class="p">&amp;</span> <span class="s1">&#39;&lt;ERROR&gt; *filewrite*:&#39;</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">lun</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">ier</span><span class="p">))</span><span class="k">then</span>
+<span class="k">           </span><span class="n">ier</span><span class="o">=</span><span class="n">ios</span>
+        <span class="k">else</span>
+<span class="k">           stop </span><span class="mi">1</span>
+        <span class="k">endif</span>
+<span class="k">    endif</span>
+
+<span class="k">end subroutine </span><span class="n">fileopen</span>
 </pre></div>
 
     </section>

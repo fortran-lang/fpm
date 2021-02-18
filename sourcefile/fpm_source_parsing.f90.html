@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.1% of total for source files.">243 statements</a>
+    title=" 4.9% of total for source files.">243 statements</a>
      </li> 
      
      
@@ -271,8 +271,8 @@
 <a name="ln-6"></a><span class="c">!&gt;</span>
 <a name="ln-7"></a><span class="c">!&gt; Both functions additionally calculate and store a file digest (hash) which</span>
 <a name="ln-8"></a><span class="c">!&gt; is used by the backend ([[fpm_backend]]) to skip compilation of unmodified sources.</span>
-<a name="ln-9"></a><span class="c">!&gt; </span>
-<a name="ln-10"></a><span class="c">!&gt; Both functions return an instance of the [[srcfile_t]] type. </span>
+<a name="ln-9"></a><span class="c">!&gt;</span>
+<a name="ln-10"></a><span class="c">!&gt; Both functions return an instance of the [[srcfile_t]] type.</span>
 <a name="ln-11"></a><span class="c">!&gt;</span>
 <a name="ln-12"></a><span class="c">!&gt; For more information, please read the documentation for each function:</span>
 <a name="ln-13"></a><span class="c">!&gt;</span>
@@ -303,7 +303,7 @@
 <a name="ln-38"></a><span class="k">contains</span>
 <a name="ln-39"></a>
 <a name="ln-40"></a><span class="c">!&gt; Parsing of free-form fortran source files</span>
-<a name="ln-41"></a><span class="c">!&gt; </span>
+<a name="ln-41"></a><span class="c">!&gt;</span>
 <a name="ln-42"></a><span class="c">!&gt; The following statements are recognised and parsed:</span>
 <a name="ln-43"></a><span class="c">!&gt;</span>
 <a name="ln-44"></a><span class="c">!&gt; - `Module`/`submodule`/`program` declaration</span>
@@ -436,7 +436,7 @@
 <a name="ln-171"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
 <a name="ln-172"></a>                    <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">then</span>
 <a name="ln-173"></a>
-<a name="ln-174"></a><span class="k">    </span>
+<a name="ln-174"></a>
 <a name="ln-175"></a><span class="k">                    </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
 <a name="ln-176"></a>
 <a name="ln-177"></a>                    <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
@@ -529,7 +529,7 @@
 <a name="ln-264"></a><span class="k">                    if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-265"></a>
 <a name="ln-266"></a><span class="k">                        </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">temp_string</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:)</span>
-<a name="ln-267"></a>                        
+<a name="ln-267"></a>
 <a name="ln-268"></a>                    <span class="k">end if</span>
 <a name="ln-269"></a>
 <a name="ln-270"></a><span class="k">                    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span> <span class="k">then</span>
@@ -553,7 +553,7 @@
 <a name="ln-288"></a>
 <a name="ln-289"></a><span class="k">                </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">))</span>
 <a name="ln-290"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-291"></a><span class="k">                    </span>
+<a name="ln-291"></a>
 <a name="ln-292"></a><span class="k">                    if</span> <span class="p">(</span><span class="nb">scan</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;=(&#39;</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">)</span> <span class="k">then</span>
 <a name="ln-293"></a>                        <span class="c">! Ignore:</span>
 <a name="ln-294"></a>                        <span class="c">! program =*</span>
@@ -608,7 +608,7 @@
 <a name="ln-343"></a>                <span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="s1">&#39;0&#39;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="s1">&#39;9&#39;</span><span class="p">).</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
 <a name="ln-344"></a>                <span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="s1">&#39;a&#39;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="s1">&#39;z&#39;</span><span class="p">).</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
 <a name="ln-345"></a>                <span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="p">)</span> <span class="k">then</span>
-<a name="ln-346"></a><span class="k">                    </span>
+<a name="ln-346"></a>
 <a name="ln-347"></a><span class="k">                </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
 <a name="ln-348"></a>                <span class="k">return</span>
 <a name="ln-349"></a><span class="k">            end if</span>
@@ -624,7 +624,7 @@
 <a name="ln-359"></a>
 <a name="ln-360"></a>
 <a name="ln-361"></a><span class="c">!&gt; Parsing of c source files</span>
-<a name="ln-362"></a><span class="c">!&gt; </span>
+<a name="ln-362"></a><span class="c">!&gt;</span>
 <a name="ln-363"></a><span class="c">!&gt; The following statements are recognised and parsed:</span>
 <a name="ln-364"></a><span class="c">!&gt;</span>
 <a name="ln-365"></a><span class="c">!&gt; - `#include` preprocessor statement</span>
@@ -661,9 +661,9 @@
 <a name="ln-396"></a><span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_UNKNOWN</span>
 <a name="ln-397"></a>        <span class="k">return</span>
 <a name="ln-398"></a><span class="k">    end if</span>
-<a name="ln-399"></a><span class="k">    </span>
+<a name="ln-399"></a>
 <a name="ln-400"></a><span class="k">    </span><span class="n">c_source</span><span class="p">%</span><span class="n">digest</span> <span class="o">=</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
-<a name="ln-401"></a>    
+<a name="ln-401"></a>
 <a name="ln-402"></a>    <span class="k">do pass</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
 <a name="ln-403"></a>        <span class="n">n_include</span> <span class="o">=</span> <span class="mi">0</span>
 <a name="ln-404"></a>        <span class="n">file_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
@@ -671,7 +671,7 @@
 <a name="ln-406"></a>            <span class="c">! Process &#39;INCLUDE&#39; statements</span>
 <a name="ln-407"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;#include&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
 <a name="ln-408"></a>                <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-409"></a><span class="k">                            </span>
+<a name="ln-409"></a>
 <a name="ln-410"></a><span class="k">                </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
 <a name="ln-411"></a>
 <a name="ln-412"></a>                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
@@ -705,7 +705,7 @@
 <a name="ln-440"></a><span class="c">!&gt; n=0  will return the last item</span>
 <a name="ln-441"></a><span class="c">!&gt; n=-1 will return the penultimate item etc.</span>
 <a name="ln-442"></a><span class="c">!&gt;</span>
-<a name="ln-443"></a><span class="c">!&gt; stat = 1 on return if the index </span>
+<a name="ln-443"></a><span class="c">!&gt; stat = 1 on return if the index</span>
 <a name="ln-444"></a><span class="c">!&gt;  is not found</span>
 <a name="ln-445"></a><span class="c">!&gt;</span>
 <a name="ln-446"></a><span class="k">function </span><span class="n">split_n</span><span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">delims</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="nb">stat</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">substring</span><span class="p">)</span>
@@ -760,7 +760,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-05 16:57  
+             on 2021-02-18 14:01  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

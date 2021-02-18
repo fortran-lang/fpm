@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.4% of total for source files.">305 statements</a>
+    title=" 7.6% of total for source files.">373 statements</a>
      </li> 
      
      
@@ -264,176 +264,176 @@
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">module </span><span class="n">fpm_filesystem</span>
-<a name="ln-2"></a>    <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-3"></a>                               <span class="n">OS_UNKNOWN</span><span class="p">,</span> <span class="n">OS_LINUX</span><span class="p">,</span> <span class="n">OS_MACOS</span><span class="p">,</span> <span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-4"></a>                               <span class="n">OS_CYGWIN</span><span class="p">,</span> <span class="n">OS_SOLARIS</span><span class="p">,</span> <span class="n">OS_FREEBSD</span>
-<a name="ln-5"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">f_string</span><span class="p">,</span> <span class="n">replace</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">split</span>
-<a name="ln-6"></a>    <span class="k">implicit none</span>
-<a name="ln-7"></a><span class="k">    private</span>
-<a name="ln-8"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">number_of_rows</span><span class="p">,</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,</span> <span class="n">env_variable</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-9"></a>            <span class="n">mkdir</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">get_temp_filename</span><span class="p">,</span> <span class="n">windows_path</span><span class="p">,</span> <span class="n">unix_path</span><span class="p">,</span> <span class="n">getline</span><span class="p">,</span> <span class="n">delete_file</span><span class="p">,</span> <span class="n">to_fortran_name</span>
-<a name="ln-10"></a>
-<a name="ln-11"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_BUFFER_LEN</span> <span class="o">=</span> <span class="mi">1000</span>
+<a name="ln-2"></a><span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">stdin</span><span class="o">=&gt;</span><span class="n">input_unit</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=&gt;</span><span class="n">output_unit</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=&gt;</span><span class="n">error_unit</span>
+<a name="ln-3"></a>    <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-4"></a>                               <span class="n">OS_UNKNOWN</span><span class="p">,</span> <span class="n">OS_LINUX</span><span class="p">,</span> <span class="n">OS_MACOS</span><span class="p">,</span> <span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-5"></a>                               <span class="n">OS_CYGWIN</span><span class="p">,</span> <span class="n">OS_SOLARIS</span><span class="p">,</span> <span class="n">OS_FREEBSD</span>
+<a name="ln-6"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">f_string</span><span class="p">,</span> <span class="n">replace</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">split</span>
+<a name="ln-7"></a>    <span class="k">implicit none</span>
+<a name="ln-8"></a><span class="k">    private</span>
+<a name="ln-9"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">number_of_rows</span><span class="p">,</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,</span> <span class="n">env_variable</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-10"></a>            <span class="n">mkdir</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">get_temp_filename</span><span class="p">,</span> <span class="n">windows_path</span><span class="p">,</span> <span class="n">unix_path</span><span class="p">,</span> <span class="n">getline</span><span class="p">,</span> <span class="n">delete_file</span><span class="p">,</span> <span class="n">to_fortran_name</span>
+<a name="ln-11"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">fileopen</span><span class="p">,</span> <span class="n">fileclose</span><span class="p">,</span> <span class="n">filewrite</span><span class="p">,</span> <span class="n">warnwrite</span>
 <a name="ln-12"></a>
-<a name="ln-13"></a><span class="k">contains</span>
+<a name="ln-13"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_BUFFER_LEN</span> <span class="o">=</span> <span class="mi">1000</span>
 <a name="ln-14"></a>
-<a name="ln-15"></a>
-<a name="ln-16"></a><span class="k">subroutine </span><span class="n">env_variable</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a name="ln-17"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span>
-<a name="ln-18"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
-<a name="ln-19"></a>   <span class="kt">integer</span> <span class="kd">::</span> <span class="n">length</span><span class="p">,</span> <span class="nb">stat</span>
-<a name="ln-20"></a>
-<a name="ln-21"></a><span class="nb">   </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-22"></a>   <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span>
-<a name="ln-23"></a>
-<a name="ln-24"></a><span class="k">   allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">length</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span><span class="p">)</span>
+<a name="ln-15"></a><span class="k">contains</span>
+<a name="ln-16"></a>
+<a name="ln-17"></a>
+<a name="ln-18"></a><span class="k">subroutine </span><span class="n">env_variable</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a name="ln-19"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span>
+<a name="ln-20"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a name="ln-21"></a>   <span class="kt">integer</span> <span class="kd">::</span> <span class="n">length</span><span class="p">,</span> <span class="nb">stat</span>
+<a name="ln-22"></a>
+<a name="ln-23"></a><span class="nb">   </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-24"></a>   <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span>
 <a name="ln-25"></a>
-<a name="ln-26"></a>   <span class="k">if</span> <span class="p">(</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-27"></a><span class="k">      call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-28"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-29"></a><span class="k">         deallocate</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
-<a name="ln-30"></a>         <span class="k">return</span>
-<a name="ln-31"></a><span class="k">      end if</span>
-<a name="ln-32"></a><span class="k">   end if</span>
-<a name="ln-33"></a>
-<a name="ln-34"></a><span class="k">end subroutine </span><span class="n">env_variable</span>
+<a name="ln-26"></a><span class="k">   allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">length</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span><span class="p">)</span>
+<a name="ln-27"></a>
+<a name="ln-28"></a>   <span class="k">if</span> <span class="p">(</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-29"></a><span class="k">      call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a name="ln-30"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-31"></a><span class="k">         deallocate</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+<a name="ln-32"></a>         <span class="k">return</span>
+<a name="ln-33"></a><span class="k">      end if</span>
+<a name="ln-34"></a><span class="k">   end if</span>
 <a name="ln-35"></a>
-<a name="ln-36"></a>
-<a name="ln-37"></a><span class="k">function </span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">suffix</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">base</span><span class="p">)</span>
-<a name="ln-38"></a>    <span class="c">! Extract filename from path with/without suffix</span>
-<a name="ln-39"></a>    <span class="c">!</span>
-<a name="ln-40"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">In</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
-<a name="ln-41"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">suffix</span>
-<a name="ln-42"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">base</span>
-<a name="ln-43"></a>
-<a name="ln-44"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_parts</span><span class="p">(:)</span>
-<a name="ln-45"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">with_suffix</span>
-<a name="ln-46"></a>
-<a name="ln-47"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">suffix</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-48"></a><span class="k">        </span><span class="n">with_suffix</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a name="ln-49"></a>    <span class="k">else</span>
-<a name="ln-50"></a><span class="k">        </span><span class="n">with_suffix</span> <span class="o">=</span> <span class="n">suffix</span>
-<a name="ln-51"></a>    <span class="k">end if</span>
-<a name="ln-52"></a>
-<a name="ln-53"></a><span class="k">    if</span> <span class="p">(</span><span class="n">with_suffix</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-54"></a><span class="k">        call </span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">file_parts</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39;\/&#39;</span><span class="p">)</span>
-<a name="ln-55"></a>        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">).</span><span class="n">gt</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
-<a name="ln-56"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_parts</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">)))</span>
-<a name="ln-57"></a>        <span class="k">else</span>
-<a name="ln-58"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-<a name="ln-59"></a>        <span class="n">endif</span>
-<a name="ln-60"></a>    <span class="k">else</span>
-<a name="ln-61"></a><span class="k">        call </span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">file_parts</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39;\/.&#39;</span><span class="p">)</span>
-<a name="ln-62"></a>        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">).</span><span class="n">ge</span><span class="p">.</span><span class="mi">2</span><span class="p">)</span><span class="k">then</span>
-<a name="ln-63"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_parts</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-<a name="ln-64"></a>        <span class="k">else</span>
-<a name="ln-65"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-<a name="ln-66"></a>        <span class="n">endif</span>
-<a name="ln-67"></a>    <span class="k">end if</span>
-<a name="ln-68"></a>
-<a name="ln-69"></a><span class="k">end function </span><span class="n">basename</span>
+<a name="ln-36"></a><span class="k">end subroutine </span><span class="n">env_variable</span>
+<a name="ln-37"></a>
+<a name="ln-38"></a>
+<a name="ln-39"></a><span class="k">function </span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">suffix</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">base</span><span class="p">)</span>
+<a name="ln-40"></a>    <span class="c">! Extract filename from path with/without suffix</span>
+<a name="ln-41"></a>    <span class="c">!</span>
+<a name="ln-42"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">In</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+<a name="ln-43"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">suffix</span>
+<a name="ln-44"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">base</span>
+<a name="ln-45"></a>
+<a name="ln-46"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_parts</span><span class="p">(:)</span>
+<a name="ln-47"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">with_suffix</span>
+<a name="ln-48"></a>
+<a name="ln-49"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">suffix</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-50"></a><span class="k">        </span><span class="n">with_suffix</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a name="ln-51"></a>    <span class="k">else</span>
+<a name="ln-52"></a><span class="k">        </span><span class="n">with_suffix</span> <span class="o">=</span> <span class="n">suffix</span>
+<a name="ln-53"></a>    <span class="k">end if</span>
+<a name="ln-54"></a>
+<a name="ln-55"></a><span class="k">    if</span> <span class="p">(</span><span class="n">with_suffix</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-56"></a><span class="k">        call </span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">file_parts</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39;\/&#39;</span><span class="p">)</span>
+<a name="ln-57"></a>        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">).</span><span class="n">gt</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<a name="ln-58"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_parts</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">)))</span>
+<a name="ln-59"></a>        <span class="k">else</span>
+<a name="ln-60"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<a name="ln-61"></a>        <span class="k">endif</span>
+<a name="ln-62"></a><span class="k">    else</span>
+<a name="ln-63"></a><span class="k">        call </span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">file_parts</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39;\/.&#39;</span><span class="p">)</span>
+<a name="ln-64"></a>        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">).</span><span class="n">ge</span><span class="p">.</span><span class="mi">2</span><span class="p">)</span><span class="k">then</span>
+<a name="ln-65"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_parts</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-66"></a>        <span class="k">else</span>
+<a name="ln-67"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<a name="ln-68"></a>        <span class="k">endif</span>
+<a name="ln-69"></a><span class="k">    end if</span>
 <a name="ln-70"></a>
-<a name="ln-71"></a>
-<a name="ln-72"></a><span class="k">function </span><span class="n">canon_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">canon</span><span class="p">)</span>
-<a name="ln-73"></a>    <span class="c">! Canonicalize path for comparison</span>
-<a name="ln-74"></a>    <span class="c">!  Handles path string redundancies</span>
-<a name="ln-75"></a>    <span class="c">!  Does not test existence of path</span>
-<a name="ln-76"></a>    <span class="c">! </span>
-<a name="ln-77"></a>    <span class="c">! To be replaced by realpath/_fullname in stdlib_os</span>
+<a name="ln-71"></a><span class="k">end function </span><span class="n">basename</span>
+<a name="ln-72"></a>
+<a name="ln-73"></a>
+<a name="ln-74"></a><span class="k">function </span><span class="n">canon_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">canon</span><span class="p">)</span>
+<a name="ln-75"></a>    <span class="c">! Canonicalize path for comparison</span>
+<a name="ln-76"></a>    <span class="c">!  Handles path string redundancies</span>
+<a name="ln-77"></a>    <span class="c">!  Does not test existence of path</span>
 <a name="ln-78"></a>    <span class="c">!</span>
-<a name="ln-79"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
-<a name="ln-80"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">canon</span>
-<a name="ln-81"></a>
-<a name="ln-82"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
-<a name="ln-83"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">iback</span>
-<a name="ln-84"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span> <span class="kd">::</span> <span class="n">nixpath</span>
-<a name="ln-85"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span> <span class="kd">::</span> <span class="n">temp</span>
-<a name="ln-86"></a>
-<a name="ln-87"></a>    <span class="n">nixpath</span> <span class="o">=</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<a name="ln-79"></a>    <span class="c">! To be replaced by realpath/_fullname in stdlib_os</span>
+<a name="ln-80"></a>    <span class="c">!</span>
+<a name="ln-81"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+<a name="ln-82"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">canon</span>
+<a name="ln-83"></a>
+<a name="ln-84"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+<a name="ln-85"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">iback</span>
+<a name="ln-86"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span> <span class="kd">::</span> <span class="n">nixpath</span>
+<a name="ln-87"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span> <span class="kd">::</span> <span class="n">temp</span>
 <a name="ln-88"></a>
-<a name="ln-89"></a>    <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="ln-90"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">)</span>
-<a name="ln-91"></a>
-<a name="ln-92"></a>        <span class="c">! Skip back to last directory for &#39;/../&#39;</span>
-<a name="ln-93"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-94"></a>
-<a name="ln-95"></a><span class="k">            if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;/../&#39;</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-89"></a>    <span class="n">nixpath</span> <span class="o">=</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<a name="ln-90"></a>
+<a name="ln-91"></a>    <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+<a name="ln-92"></a>    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">)</span>
+<a name="ln-93"></a>
+<a name="ln-94"></a>        <span class="c">! Skip back to last directory for &#39;/../&#39;</span>
+<a name="ln-95"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-96"></a>
-<a name="ln-97"></a><span class="k">                </span><span class="n">iback</span> <span class="o">=</span> <span class="nb">scan</span><span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">-</span><span class="mi">4</span><span class="p">),</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="n">back</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<a name="ln-98"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">iback</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-99"></a><span class="k">                    </span><span class="n">j</span> <span class="o">=</span> <span class="n">iback</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-100"></a>                    <span class="k">cycle</span>
-<a name="ln-101"></a><span class="k">                end if</span>
-<a name="ln-102"></a>
-<a name="ln-103"></a><span class="k">            end if</span>
+<a name="ln-97"></a><span class="k">            if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;/../&#39;</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-98"></a>
+<a name="ln-99"></a><span class="k">                </span><span class="n">iback</span> <span class="o">=</span> <span class="nb">scan</span><span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">-</span><span class="mi">4</span><span class="p">),</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="n">back</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<a name="ln-100"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">iback</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-101"></a><span class="k">                    </span><span class="n">j</span> <span class="o">=</span> <span class="n">iback</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-102"></a>                    <span class="k">cycle</span>
+<a name="ln-103"></a><span class="k">                end if</span>
 <a name="ln-104"></a>
-<a name="ln-105"></a><span class="k">        end if</span>
+<a name="ln-105"></a><span class="k">            end if</span>
 <a name="ln-106"></a>
-<a name="ln-107"></a><span class="k">        if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-107"></a><span class="k">        end if</span>
 <a name="ln-108"></a>
-<a name="ln-109"></a>            <span class="c">! Ignore current directory reference</span>
-<a name="ln-110"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;./&#39;</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-111"></a>
-<a name="ln-112"></a><span class="k">                </span><span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span>
-<a name="ln-113"></a>                <span class="k">cycle</span>
-<a name="ln-114"></a>
-<a name="ln-115"></a><span class="k">            end if</span>
+<a name="ln-109"></a><span class="k">        if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-110"></a>
+<a name="ln-111"></a>            <span class="c">! Ignore current directory reference</span>
+<a name="ln-112"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;./&#39;</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-113"></a>
+<a name="ln-114"></a><span class="k">                </span><span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span>
+<a name="ln-115"></a>                <span class="k">cycle</span>
 <a name="ln-116"></a>
-<a name="ln-117"></a>            <span class="c">! Ignore repeated separators</span>
-<a name="ln-118"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;//&#39;</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-119"></a>
-<a name="ln-120"></a><span class="k">                cycle</span>
+<a name="ln-117"></a><span class="k">            end if</span>
+<a name="ln-118"></a>
+<a name="ln-119"></a>            <span class="c">! Ignore repeated separators</span>
+<a name="ln-120"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;//&#39;</span><span class="p">)</span> <span class="k">then</span>
 <a name="ln-121"></a>
-<a name="ln-122"></a><span class="k">            end if</span>
+<a name="ln-122"></a><span class="k">                cycle</span>
 <a name="ln-123"></a>
-<a name="ln-124"></a>            <span class="c">! Do NOT include trailing slash</span>
-<a name="ln-125"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-126"></a><span class="k">                cycle</span>
-<a name="ln-127"></a><span class="k">            end if</span>
-<a name="ln-128"></a>
-<a name="ln-129"></a><span class="k">        end if</span>
-<a name="ln-130"></a><span class="k">        </span>
-<a name="ln-131"></a>
-<a name="ln-132"></a><span class="k">        </span><span class="n">temp</span><span class="p">(</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span>
-<a name="ln-133"></a>        <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-134"></a>
-<a name="ln-135"></a>    <span class="k">end do</span>
+<a name="ln-124"></a><span class="k">            end if</span>
+<a name="ln-125"></a>
+<a name="ln-126"></a>            <span class="c">! Do NOT include trailing slash</span>
+<a name="ln-127"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-128"></a><span class="k">                cycle</span>
+<a name="ln-129"></a><span class="k">            end if</span>
+<a name="ln-130"></a>
+<a name="ln-131"></a><span class="k">        end if</span>
+<a name="ln-132"></a>
+<a name="ln-133"></a>
+<a name="ln-134"></a><span class="k">        </span><span class="n">temp</span><span class="p">(</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span>
+<a name="ln-135"></a>        <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
 <a name="ln-136"></a>
-<a name="ln-137"></a><span class="k">    </span><span class="n">canon</span> <span class="o">=</span> <span class="n">temp</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-137"></a>    <span class="k">end do</span>
 <a name="ln-138"></a>
-<a name="ln-139"></a><span class="k">end function </span><span class="n">canon_path</span>
+<a name="ln-139"></a><span class="k">    </span><span class="n">canon</span> <span class="o">=</span> <span class="n">temp</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <a name="ln-140"></a>
-<a name="ln-141"></a>
-<a name="ln-142"></a><span class="k">function </span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">dir</span><span class="p">)</span>
-<a name="ln-143"></a>    <span class="c">! Extract dirname from path</span>
-<a name="ln-144"></a>    <span class="c">!</span>
-<a name="ln-145"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
-<a name="ln-146"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir</span>
-<a name="ln-147"></a>
-<a name="ln-148"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_parts</span><span class="p">(:)</span>
+<a name="ln-141"></a><span class="k">end function </span><span class="n">canon_path</span>
+<a name="ln-142"></a>
+<a name="ln-143"></a>
+<a name="ln-144"></a><span class="k">function </span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">dir</span><span class="p">)</span>
+<a name="ln-145"></a>    <span class="c">! Extract dirname from path</span>
+<a name="ln-146"></a>    <span class="c">!</span>
+<a name="ln-147"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+<a name="ln-148"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir</span>
 <a name="ln-149"></a>
 <a name="ln-150"></a>    <span class="n">dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nb">scan</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;/\&#39;,back=.true.))</span>
 <a name="ln-151"></a>
 <a name="ln-152"></a><span class="s1">end function dirname</span>
 <a name="ln-153"></a>
 <a name="ln-154"></a>
-<a name="ln-155"></a><span class="s1">logical function is_dir(dir) </span>
-<a name="ln-156"></a><span class="s1">    character(*), intent(in) :: dir </span>
-<a name="ln-157"></a><span class="s1">    integer :: stat </span>
+<a name="ln-155"></a><span class="s1">logical function is_dir(dir)</span>
+<a name="ln-156"></a><span class="s1">    character(*), intent(in) :: dir</span>
+<a name="ln-157"></a><span class="s1">    integer :: stat</span>
 <a name="ln-158"></a>
-<a name="ln-159"></a><span class="s1">    select case (get_os_type()) </span>
+<a name="ln-159"></a><span class="s1">    select case (get_os_type())</span>
 <a name="ln-160"></a>
 <a name="ln-161"></a><span class="s1">    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)</span>
-<a name="ln-162"></a><span class="s1">        call execute_command_line(&quot;test -d &quot; // dir , exitstat=stat) </span>
+<a name="ln-162"></a><span class="s1">        call execute_command_line(&quot;test -d &quot; // dir , exitstat=stat)</span>
 <a name="ln-163"></a>
-<a name="ln-164"></a><span class="s1">    case (OS_WINDOWS) </span>
-<a name="ln-165"></a><span class="s1">        call execute_command_line(&#39;</span><span class="n">cmd</span> <span class="o">/</span><span class="n">c</span> <span class="s2">&quot;if not exist &#39; // windows_path(dir) // &#39;\ exit /B 1&quot;</span><span class="s1">&#39;, exitstat=stat) </span>
+<a name="ln-164"></a><span class="s1">    case (OS_WINDOWS)</span>
+<a name="ln-165"></a><span class="s1">        call execute_command_line(&#39;</span><span class="n">cmd</span> <span class="o">/</span><span class="n">c</span> <span class="s2">&quot;if not exist &#39; // windows_path(dir) // &#39;\ exit /B 1&quot;</span><span class="s1">&#39;, exitstat=stat)</span>
 <a name="ln-166"></a>
-<a name="ln-167"></a><span class="s1">    end select </span>
+<a name="ln-167"></a><span class="s1">    end select</span>
 <a name="ln-168"></a>
-<a name="ln-169"></a><span class="s1">    is_dir = (stat == 0) </span>
+<a name="ln-169"></a><span class="s1">    is_dir = (stat == 0)</span>
 <a name="ln-170"></a>
-<a name="ln-171"></a><span class="s1">end function is_dir </span>
+<a name="ln-171"></a><span class="s1">end function is_dir</span>
 <a name="ln-172"></a>
 <a name="ln-173"></a>
 <a name="ln-174"></a><span class="s1">function join_path(a1,a2,a3,a4,a5) result(path)</span>
@@ -580,7 +580,7 @@
 <a name="ln-315"></a><span class="s1">            do i=1,size(files)</span>
 <a name="ln-316"></a><span class="s1">                if (is_dir(files(i)%s)) then</span>
 <a name="ln-317"></a>
-<a name="ln-318"></a><span class="s1">                    call list_files(files(i)%s, dir_files, recurse=.true.) </span>
+<a name="ln-318"></a><span class="s1">                    call list_files(files(i)%s, dir_files, recurse=.true.)</span>
 <a name="ln-319"></a><span class="s1">                    sub_dir_files = [sub_dir_files, dir_files]</span>
 <a name="ln-320"></a>
 <a name="ln-321"></a><span class="s1">                end if</span>
@@ -612,7 +612,7 @@
 <a name="ln-347"></a>
 <a name="ln-348"></a><span class="s1">    type(c_ptr) :: c_tempfile_ptr</span>
 <a name="ln-349"></a><span class="s1">    character(len=1), pointer :: c_tempfile(:)</span>
-<a name="ln-350"></a><span class="s1">    </span>
+<a name="ln-350"></a>
 <a name="ln-351"></a><span class="s1">    interface</span>
 <a name="ln-352"></a>
 <a name="ln-353"></a><span class="s1">        function c_tempnam(dir,pfx) result(tmp) bind(c,name=&quot;tempnam&quot;)</span>
@@ -654,7 +654,7 @@
 <a name="ln-389"></a><span class="s1">        winpath(idx:idx) = &#39;</span><span class="err">\</span><span class="s1">&#39;</span>
 <a name="ln-390"></a><span class="s1">        idx = index(winpath,&#39;</span><span class="o">/</span><span class="s1">&#39;)</span>
 <a name="ln-391"></a><span class="s1">    end do</span>
-<a name="ln-392"></a><span class="s1">    </span>
+<a name="ln-392"></a>
 <a name="ln-393"></a><span class="s1">end function windows_path</span>
 <a name="ln-394"></a>
 <a name="ln-395"></a>
@@ -673,7 +673,7 @@
 <a name="ln-408"></a><span class="s1">        nixpath(idx:idx) = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <a name="ln-409"></a><span class="s1">        idx = index(nixpath,&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
 <a name="ln-410"></a><span class="s1">    end do</span>
-<a name="ln-411"></a><span class="s1">    </span>
+<a name="ln-411"></a>
 <a name="ln-412"></a><span class="s1">end function unix_path</span>
 <a name="ln-413"></a>
 <a name="ln-414"></a>
@@ -729,19 +729,113 @@
 <a name="ln-464"></a><span class="s1">    end if</span>
 <a name="ln-465"></a><span class="s1">end subroutine delete_file</span>
 <a name="ln-466"></a>
-<a name="ln-467"></a>
-<a name="ln-468"></a><span class="s1">pure function to_fortran_name(string) result(res)</span>
-<a name="ln-469"></a><span class="s1">    ! Returns string with special characters replaced with an underscore.</span>
-<a name="ln-470"></a><span class="s1">    ! For now, only a hyphen is treated as a special character, but this can be</span>
-<a name="ln-471"></a><span class="s1">    ! expanded to other characters if needed.</span>
-<a name="ln-472"></a><span class="s1">    character(*), intent(in) :: string</span>
-<a name="ln-473"></a><span class="s1">    character(len(string)) :: res</span>
-<a name="ln-474"></a><span class="s1">    character, parameter :: SPECIAL_CHARACTERS(*) = [&#39;</span><span class="o">-</span><span class="s1">&#39;]</span>
-<a name="ln-475"></a><span class="s1">    res = replace(string, SPECIAL_CHARACTERS, &#39;</span><span class="err">_&#39;</span><span class="p">)</span>
-<a name="ln-476"></a><span class="k">end function </span><span class="n">to_fortran_name</span>
-<a name="ln-477"></a>
+<a name="ln-467"></a><span class="s1">subroutine warnwrite(fname,data)</span>
+<a name="ln-468"></a><span class="s1">!&gt; write trimmed character data to a file if it does not exist</span>
+<a name="ln-469"></a><span class="s1">character(len=*),intent(in) :: fname</span>
+<a name="ln-470"></a><span class="s1">character(len=*),intent(in) :: data(:)</span>
+<a name="ln-471"></a>
+<a name="ln-472"></a><span class="s1">    if(.not.exists(fname))then</span>
+<a name="ln-473"></a><span class="s1">        call filewrite(fname,data)</span>
+<a name="ln-474"></a><span class="s1">    else</span>
+<a name="ln-475"></a><span class="s1">        write(stderr,&#39;</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">g0</span><span class="p">,</span><span class="mi">1</span><span class="n">x</span><span class="p">))</span><span class="s1">&#39;)&#39;</span><span class="o">&lt;</span><span class="n">INFO</span><span class="o">&gt;</span>  <span class="s1">&#39;,fname,&amp;</span>
+<a name="ln-476"></a><span class="s1">        &amp; &#39;</span><span class="n">already</span> <span class="n">exists</span><span class="p">.</span> <span class="nb">Not </span><span class="n">overwriting</span><span class="s1">&#39;</span>
+<a name="ln-477"></a><span class="s1">    endif</span>
 <a name="ln-478"></a>
-<a name="ln-479"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
+<a name="ln-479"></a><span class="s1">end subroutine warnwrite</span>
+<a name="ln-480"></a>
+<a name="ln-481"></a><span class="s1">subroutine fileopen(filename,lun,ier)</span>
+<a name="ln-482"></a><span class="s1">! procedure to open filename as a sequential &quot;text&quot; file</span>
+<a name="ln-483"></a>
+<a name="ln-484"></a><span class="s1">character(len=*),intent(in)   :: filename</span>
+<a name="ln-485"></a><span class="s1">integer,intent(out)           :: lun</span>
+<a name="ln-486"></a><span class="s1">integer,intent(out),optional  :: ier</span>
+<a name="ln-487"></a><span class="s1">integer                       :: ios</span>
+<a name="ln-488"></a><span class="s1">character(len=256)            :: message</span>
+<a name="ln-489"></a>
+<a name="ln-490"></a><span class="s1">    message=&#39;</span> <span class="s1">&#39;</span>
+<a name="ln-491"></a><span class="s1">    ios=0</span>
+<a name="ln-492"></a><span class="s1">    if(filename.ne.&#39;</span> <span class="s1">&#39;)then</span>
+<a name="ln-493"></a><span class="s1">        open(file=filename, &amp;</span>
+<a name="ln-494"></a><span class="s1">        &amp; newunit=lun, &amp;</span>
+<a name="ln-495"></a><span class="s1">        &amp; form=&#39;</span><span class="n">formatted</span><span class="s1">&#39;, &amp;    ! FORM    = FORMATTED | UNFORMATTED</span>
+<a name="ln-496"></a><span class="s1">        &amp; access=&#39;</span><span class="n">sequential</span><span class="s1">&#39;, &amp; ! ACCESS  = SEQUENTIAL| DIRECT | STREAM</span>
+<a name="ln-497"></a><span class="s1">        &amp; action=&#39;</span><span class="k">write</span><span class="s1">&#39;, &amp;      ! ACTION  = READ|WRITE| READWRITE</span>
+<a name="ln-498"></a><span class="s1">        &amp; position=&#39;</span><span class="k">rewind</span><span class="s1">&#39;, &amp;   ! POSITION= ASIS      | REWIND | APPEND</span>
+<a name="ln-499"></a><span class="s1">        &amp; status=&#39;</span><span class="n">new</span><span class="s1">&#39;, &amp;        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN</span>
+<a name="ln-500"></a><span class="s1">        &amp; iostat=ios, &amp;</span>
+<a name="ln-501"></a><span class="s1">        &amp; iomsg=message)</span>
+<a name="ln-502"></a><span class="s1">    else</span>
+<a name="ln-503"></a><span class="s1">        lun=stdout</span>
+<a name="ln-504"></a><span class="s1">        ios=0</span>
+<a name="ln-505"></a><span class="s1">    endif</span>
+<a name="ln-506"></a><span class="s1">    if(ios.ne.0)then</span>
+<a name="ln-507"></a><span class="s1">        write(stderr,&#39;</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="p">:,</span><span class="mi">1</span><span class="n">x</span><span class="p">))</span><span class="s1">&#39;)&amp;</span>
+<a name="ln-508"></a><span class="s1">        &amp; &#39;</span><span class="o">&lt;</span><span class="n">ERROR</span><span class="o">&gt;</span> <span class="o">*</span><span class="n">filewrite</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;,filename,trim(message)</span>
+<a name="ln-509"></a><span class="s1">        lun=-1</span>
+<a name="ln-510"></a><span class="s1">        if(present(ier))then</span>
+<a name="ln-511"></a><span class="s1">           ier=ios</span>
+<a name="ln-512"></a><span class="s1">        else</span>
+<a name="ln-513"></a><span class="s1">           stop 1</span>
+<a name="ln-514"></a><span class="s1">        endif</span>
+<a name="ln-515"></a><span class="s1">    endif</span>
+<a name="ln-516"></a>
+<a name="ln-517"></a><span class="s1">end subroutine fileopen</span>
+<a name="ln-518"></a>
+<a name="ln-519"></a><span class="s1">subroutine fileclose(lun,ier)</span>
+<a name="ln-520"></a><span class="s1">! simple close of a LUN.  On error show message and stop (by default)</span>
+<a name="ln-521"></a><span class="s1">integer,intent(in)    :: lun</span>
+<a name="ln-522"></a><span class="s1">integer,intent(out),optional :: ier</span>
+<a name="ln-523"></a><span class="s1">character(len=256)    :: message</span>
+<a name="ln-524"></a><span class="s1">integer               :: ios</span>
+<a name="ln-525"></a><span class="s1">    if(lun.ne.-1)then</span>
+<a name="ln-526"></a><span class="s1">        close(unit=lun,iostat=ios,iomsg=message)</span>
+<a name="ln-527"></a><span class="s1">        if(ios.ne.0)then</span>
+<a name="ln-528"></a><span class="s1">            write(stderr,&#39;</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="p">:,</span><span class="mi">1</span><span class="n">x</span><span class="p">))</span><span class="s1">&#39;)&#39;</span><span class="o">&lt;</span><span class="n">ERROR</span><span class="o">&gt;</span> <span class="o">*</span><span class="n">filewrite</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;,trim(message)</span>
+<a name="ln-529"></a><span class="s1">            if(present(ier))then</span>
+<a name="ln-530"></a><span class="s1">               ier=ios</span>
+<a name="ln-531"></a><span class="s1">            else</span>
+<a name="ln-532"></a><span class="s1">               stop 2</span>
+<a name="ln-533"></a><span class="s1">            endif</span>
+<a name="ln-534"></a><span class="s1">        endif</span>
+<a name="ln-535"></a><span class="s1">    endif</span>
+<a name="ln-536"></a><span class="s1">end subroutine fileclose</span>
+<a name="ln-537"></a>
+<a name="ln-538"></a><span class="s1">subroutine filewrite(filename,filedata)</span>
+<a name="ln-539"></a><span class="s1">! procedure to write filedata to file filename</span>
+<a name="ln-540"></a>
+<a name="ln-541"></a><span class="s1">character(len=*),intent(in)           :: filename</span>
+<a name="ln-542"></a><span class="s1">character(len=*),intent(in)           :: filedata(:)</span>
+<a name="ln-543"></a><span class="s1">integer                               :: lun, i, ios</span>
+<a name="ln-544"></a><span class="s1">character(len=256)                    :: message</span>
+<a name="ln-545"></a><span class="s1">    call fileopen(filename,lun)</span>
+<a name="ln-546"></a><span class="s1">    if(lun.ne.-1)then ! program currently stops on error on open, but might</span>
+<a name="ln-547"></a><span class="s1">                      ! want it to continue so -1 (unallowed LUN) indicates error</span>
+<a name="ln-548"></a><span class="s1">       ! write file</span>
+<a name="ln-549"></a><span class="s1">       do i=1,size(filedata)</span>
+<a name="ln-550"></a><span class="s1">           write(lun,&#39;</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;,iostat=ios,iomsg=message)trim(filedata(i))</span>
+<a name="ln-551"></a><span class="s1">           if(ios.ne.0)then</span>
+<a name="ln-552"></a><span class="s1">               write(stderr,&#39;</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="p">:,</span><span class="mi">1</span><span class="n">x</span><span class="p">))</span><span class="s1">&#39;)&amp;</span>
+<a name="ln-553"></a><span class="s1">               &amp; &#39;</span><span class="o">&lt;</span><span class="n">ERROR</span><span class="o">&gt;</span> <span class="o">*</span><span class="n">filewrite</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;,filename,trim(message)</span>
+<a name="ln-554"></a><span class="s1">               stop 4</span>
+<a name="ln-555"></a><span class="s1">           endif</span>
+<a name="ln-556"></a><span class="s1">       enddo</span>
+<a name="ln-557"></a><span class="s1">    endif</span>
+<a name="ln-558"></a><span class="s1">    ! close file</span>
+<a name="ln-559"></a><span class="s1">    call fileclose(lun)</span>
+<a name="ln-560"></a>
+<a name="ln-561"></a><span class="s1">end subroutine filewrite</span>
+<a name="ln-562"></a>
+<a name="ln-563"></a><span class="s1">pure function to_fortran_name(string) result(res)</span>
+<a name="ln-564"></a><span class="s1">    ! Returns string with special characters replaced with an underscore.</span>
+<a name="ln-565"></a><span class="s1">    ! For now, only a hyphen is treated as a special character, but this can be</span>
+<a name="ln-566"></a><span class="s1">    ! expanded to other characters if needed.</span>
+<a name="ln-567"></a><span class="s1">    character(*), intent(in) :: string</span>
+<a name="ln-568"></a><span class="s1">    character(len(string)) :: res</span>
+<a name="ln-569"></a><span class="s1">    character, parameter :: SPECIAL_CHARACTERS(*) = [&#39;</span><span class="o">-</span><span class="s1">&#39;]</span>
+<a name="ln-570"></a><span class="s1">    res = replace(string, SPECIAL_CHARACTERS, &#39;</span><span class="err">_&#39;</span><span class="p">)</span>
+<a name="ln-571"></a><span class="k">end function </span><span class="n">to_fortran_name</span>
+<a name="ln-572"></a>
+<a name="ln-573"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
 </pre></div>
 
     </section>
@@ -760,7 +854,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-05 16:57  
+             on 2021-02-18 14:01  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

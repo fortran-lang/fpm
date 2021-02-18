@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 7.0% of total for procedures.">166 statements</a>
+    title=" 6.6% of total for procedures.">166 statements</a>
      </li> 
      
      
@@ -173,11 +173,11 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/parse_f_source.html#variable-fh~4">fh</a>
+      <a class="list-group-item" href="../proc/parse_f_source.html#variable-fh~3">fh</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-file_lines~2">file_lines</a>
       
-      <a class="list-group-item" href="../proc/parse_f_source.html#variable-i~12">i</a>
+      <a class="list-group-item" href="../proc/parse_f_source.html#variable-i~7">i</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-ic">ic</a>
       
@@ -193,7 +193,7 @@
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-pass~2">pass</a>
       
-      <a class="list-group-item" href="../proc/parse_f_source.html#variable-stat~7">stat</a>
+      <a class="list-group-item" href="../proc/parse_f_source.html#variable-stat~3">stat</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-temp_string">temp_string</a>
       
@@ -315,7 +315,7 @@ public function parse_f_source(f_filename, error) result(f_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~5"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~4"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -355,11 +355,11 @@ public function parse_f_source(f_filename, error) result(f_source)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/parse_f_source.html#variable-fh~4">fh</a>
+      <a class="list-group-item" href="../proc/parse_f_source.html#variable-fh~3">fh</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-file_lines~2">file_lines</a>
       
-      <a class="list-group-item" href="../proc/parse_f_source.html#variable-i~12">i</a>
+      <a class="list-group-item" href="../proc/parse_f_source.html#variable-i~7">i</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-ic">ic</a>
       
@@ -375,7 +375,7 @@ public function parse_f_source(f_filename, error) result(f_source)
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-pass~2">pass</a>
       
-      <a class="list-group-item" href="../proc/parse_f_source.html#variable-stat~7">stat</a>
+      <a class="list-group-item" href="../proc/parse_f_source.html#variable-stat~3">stat</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-temp_string">temp_string</a>
       
@@ -447,7 +447,7 @@ public function parse_f_source(f_filename, error) result(f_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-fh~4"></span>integer,</td>
+  <td><span class="anchor" id="variable-fh~3"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -475,7 +475,7 @@ public function parse_f_source(f_filename, error) result(f_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~12"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~7"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -587,7 +587,7 @@ public function parse_f_source(f_filename, error) result(f_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat~7"></span>integer,</td>
+  <td><span class="anchor" id="variable-stat~3"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -799,7 +799,7 @@ function validate_name(name) result(valid)
                 <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
                     <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">then</span>
 
-<span class="k">    </span>
+
 <span class="k">                    </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
 
                     <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
@@ -892,7 +892,7 @@ function validate_name(name) result(valid)
 <span class="k">                    if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 
 <span class="k">                        </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">temp_string</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:)</span>
-                        
+
                     <span class="k">end if</span>
 
 <span class="k">                    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">validate_name</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span> <span class="k">then</span>
@@ -916,7 +916,7 @@ function validate_name(name) result(valid)
 
 <span class="k">                </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">))</span>
                 <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    </span>
+
 <span class="k">                    if</span> <span class="p">(</span><span class="nb">scan</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;=(&#39;</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">)</span> <span class="k">then</span>
                         <span class="c">! Ignore:</span>
                         <span class="c">! program =*</span>
@@ -971,7 +971,7 @@ function validate_name(name) result(valid)
                 <span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="s1">&#39;0&#39;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="s1">&#39;9&#39;</span><span class="p">).</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
                 <span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="s1">&#39;a&#39;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">lower</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="s1">&#39;z&#39;</span><span class="p">).</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
                 <span class="n">name</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="p">)</span> <span class="k">then</span>
-<span class="k">                    </span>
+
 <span class="k">                </span><span class="n">valid</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
                 <span class="k">return</span>
 <span class="k">            end if</span>
@@ -1005,7 +1005,7 @@ function validate_name(name) result(valid)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-05 16:57  
+             on 2021-02-18 14:01  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

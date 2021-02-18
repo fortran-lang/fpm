@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.5% of total for procedures.">107 statements</a>
+    title=" 4.2% of total for procedures.">107 statements</a>
      </li> 
      
      
@@ -205,7 +205,7 @@
       
       <a class="list-group-item" href="../proc/split.html#variable-iterm">iterm</a>
       
-      <a class="list-group-item" href="../proc/split.html#variable-n~4">n</a>
+      <a class="list-group-item" href="../proc/split.html#variable-n~3">n</a>
       
       <a class="list-group-item" href="../proc/split.html#variable-nlls">nlls</a>
       
@@ -401,7 +401,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
       
       <a class="list-group-item" href="../proc/split.html#variable-iterm">iterm</a>
       
-      <a class="list-group-item" href="../proc/split.html#variable-n~4">n</a>
+      <a class="list-group-item" href="../proc/split.html#variable-n~3">n</a>
       
       <a class="list-group-item" href="../proc/split.html#variable-nlls">nlls</a>
       
@@ -687,7 +687,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
   
 <tr>
   
-  <td><span class="anchor" id="variable-n~4"></span>integer,</td>
+  <td><span class="anchor" id="variable-n~3"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -751,7 +751,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
     <span class="c">! Author: John S. Urban</span>
     <span class="c">! License: Public Domain</span>
 
-    
+
     <span class="c">!  given a line of structure &quot; par1 par2 par3 ... parn &quot; store each par(n) into a separate variable in array.</span>
     <span class="c">!    o by default adjacent delimiters in the input string do not create an empty string in the output array</span>
     <span class="c">!    o no quoting of delimiters is supported</span>
@@ -760,7 +760,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">optional</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">order</span>       <span class="c">! order of output array sequential|[reverse|right]</span>
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">optional</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">nulls</span>       <span class="c">! return strings composed of delimiters or not ignore|return|ignoreend</span>
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="k">array</span><span class="p">(:)</span>    <span class="c">! output array of tokens</span>
-    
+
     <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">n</span>                      <span class="c">! max number of strings INPUT_LINE could split into if all delimiter</span>
     <span class="kt">integer</span><span class="p">,</span><span class="k">allocatable</span>           <span class="kd">::</span> <span class="n">ibegin</span><span class="p">(:)</span>              <span class="c">! positions in input string where tokens start</span>
     <span class="kt">integer</span><span class="p">,</span><span class="k">allocatable</span>           <span class="kd">::</span> <span class="n">iterm</span><span class="p">(:)</span>               <span class="c">! positions in input string where tokens end</span>
@@ -777,21 +777,21 @@ public subroutine split(input_line, array, delimiters, order, nulls)
     <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">inotnull</span>               <span class="c">! count strings not composed of delimiters</span>
     <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">ireturn</span>                <span class="c">! number of tokens returned</span>
     <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">imax</span>                   <span class="c">! length of longest token</span>
-    
+
     <span class="c">! decide on value for optional DELIMITERS parameter</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">delimiters</span><span class="p">))</span> <span class="k">then</span>                                     <span class="c">! optional delimiter list was present</span>
         <span class="k">if</span><span class="p">(</span><span class="n">delimiters</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>                                       <span class="c">! if DELIMITERS was specified and not null use it</span>
             <span class="n">dlim</span><span class="o">=</span><span class="n">delimiters</span>
         <span class="k">else</span>                                                           <span class="c">! DELIMITERS was specified on call as empty string</span>
             <span class="n">dlim</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c">! use default delimiter when not specified</span>
-        <span class="n">endif</span>
-    <span class="k">else</span>                                                              <span class="c">! no delimiter value was specified</span>
+        <span class="k">endif</span>
+<span class="k">    else</span>                                                              <span class="c">! no delimiter value was specified</span>
         <span class="n">dlim</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">//</span><span class="nb">char</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    <span class="c">! use default delimiter when not specified</span>
-    <span class="n">endif</span>
-    <span class="n">idlim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dlim</span><span class="p">)</span>                                                   <span class="c">! dlim a lot of blanks on some machines if dlim is a big string</span>
+    <span class="k">endif</span>
+<span class="k">    </span><span class="n">idlim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dlim</span><span class="p">)</span>                                                   <span class="c">! dlim a lot of blanks on some machines if dlim is a big string</span>
 
-    <span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">order</span><span class="p">))</span><span class="k">then</span><span class="p">;</span> <span class="n">ordr</span><span class="o">=</span><span class="n">lower</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">order</span><span class="p">));</span> <span class="k">else</span><span class="p">;</span> <span class="n">ordr</span><span class="o">=</span><span class="s1">&#39;sequential&#39;</span><span class="p">;</span> <span class="n">endif</span> <span class="c">! decide on value for optional ORDER parameter</span>
-    <span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">nulls</span><span class="p">))</span><span class="k">then</span><span class="p">;</span> <span class="n">nlls</span><span class="o">=</span><span class="n">lower</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">nulls</span><span class="p">));</span> <span class="k">else</span><span class="p">;</span> <span class="n">nlls</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span>    <span class="p">;</span> <span class="n">endif</span> <span class="c">! optional parameter</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">order</span><span class="p">))</span><span class="k">then</span><span class="p">;</span> <span class="n">ordr</span><span class="o">=</span><span class="n">lower</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">order</span><span class="p">));</span> <span class="k">else</span><span class="p">;</span> <span class="n">ordr</span><span class="o">=</span><span class="s1">&#39;sequential&#39;</span><span class="p">;</span> <span class="k">endif</span> <span class="c">! decide on value for optional ORDER parameter</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">nulls</span><span class="p">))</span><span class="k">then</span><span class="p">;</span> <span class="n">nlls</span><span class="o">=</span><span class="n">lower</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">nulls</span><span class="p">));</span> <span class="k">else</span><span class="p">;</span> <span class="n">nlls</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span>    <span class="p">;</span> <span class="k">endif</span> <span class="c">! optional parameter</span>
 
     <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">input_line</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>                        <span class="c">! max number of strings INPUT_LINE could split into if all delimiter</span>
     <span class="k">allocate</span><span class="p">(</span><span class="n">ibegin</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>                        <span class="c">! allocate enough space to hold starting location of tokens if string all tokens</span>
@@ -818,20 +818,20 @@ public subroutine split(input_line, array, delimiters, order, nulls)
                 <span class="n">ifound</span><span class="o">=</span><span class="nb">index</span><span class="p">(</span><span class="n">input_line</span><span class="p">(</span><span class="n">ibegin</span><span class="p">(</span><span class="n">i30</span><span class="p">):</span><span class="n">ilen</span><span class="p">),</span><span class="n">dlim</span><span class="p">(</span><span class="n">i10</span><span class="p">:</span><span class="n">i10</span><span class="p">))</span>
                 <span class="k">IF</span><span class="p">(</span><span class="n">ifound</span><span class="p">.</span><span class="n">gt</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
 <span class="k">                    </span><span class="n">iterm</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">iterm</span><span class="p">(</span><span class="n">i30</span><span class="p">),</span><span class="n">ifound</span><span class="o">+</span><span class="n">ibegin</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
-                <span class="n">endif</span>
-            <span class="n">enddo</span>
-            <span class="n">icol</span><span class="o">=</span><span class="n">iterm</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span>                                     <span class="c">! next place to look as found end of this token</span>
+                <span class="k">endif</span>
+<span class="k">            enddo</span>
+<span class="k">            </span><span class="n">icol</span><span class="o">=</span><span class="n">iterm</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span>                                     <span class="c">! next place to look as found end of this token</span>
             <span class="n">inotnull</span><span class="o">=</span><span class="n">inotnull</span><span class="o">+</span><span class="mi">1</span>                                   <span class="c">! increment count of number of tokens not composed of delimiters</span>
             <span class="k">else</span>                                                     <span class="c">! character is a delimiter for a null string</span>
             <span class="n">iterm</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">=</span><span class="n">icol</span><span class="o">-</span><span class="mi">1</span>                                     <span class="c">! record assumed end of string. Will be less than beginning</span>
             <span class="n">icol</span><span class="o">=</span><span class="n">icol</span><span class="o">+</span><span class="mi">1</span>                                           <span class="c">! advance pointer into input string</span>
-            <span class="n">endif</span>
-            <span class="n">imax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">imax</span><span class="p">,</span><span class="n">iterm</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">-</span><span class="n">ibegin</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">endif</span>
+<span class="k">            </span><span class="n">imax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">imax</span><span class="p">,</span><span class="n">iterm</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">-</span><span class="n">ibegin</span><span class="p">(</span><span class="n">i30</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">icount</span><span class="o">=</span><span class="n">i30</span>                                               <span class="c">! increment count of number of tokens found</span>
             <span class="k">if</span><span class="p">(</span><span class="n">icol</span><span class="p">.</span><span class="n">gt</span><span class="p">.</span><span class="n">ilen</span><span class="p">)</span><span class="k">then</span>                                     <span class="c">! no text left</span>
             <span class="k">exit </span><span class="n">INFINITE</span>
-            <span class="n">endif</span>
-        <span class="n">enddo</span> <span class="n">INFINITE</span>
+            <span class="k">endif</span>
+<span class="k">        enddo </span><span class="n">INFINITE</span>
 
     <span class="k">end select</span>
 
@@ -860,8 +860,8 @@ public subroutine split(input_line, array, delimiters, order, nulls)
 <span class="k">        else</span>
 <span class="k">            array</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span><span class="o">=</span><span class="n">input_line</span><span class="p">(</span><span class="n">ibegin</span><span class="p">(</span><span class="n">i20</span><span class="p">):</span><span class="n">iterm</span><span class="p">(</span><span class="n">i20</span><span class="p">))</span>
             <span class="n">ii</span><span class="o">=</span><span class="n">ii</span><span class="o">+</span><span class="n">iiii</span>
-        <span class="n">endif</span>
-    <span class="n">enddo</span>
+        <span class="k">endif</span>
+<span class="k">    enddo</span>
 <span class="k">end subroutine </span><span class="n">split</span>
 </pre></div>
 
@@ -884,7 +884,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-05 16:57  
+             on 2021-02-18 14:01  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

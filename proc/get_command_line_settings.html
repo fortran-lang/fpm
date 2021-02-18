@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.2% of total for procedures.">196 statements</a>
+    title=" 8.0% of total for procedures.">202 statements</a>
      </li> 
      
      
@@ -175,7 +175,7 @@
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-cmdarg">cmdarg</a>
       
-      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~10">i</a>
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~11">i</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
@@ -298,7 +298,7 @@ public subroutine get_command_line_settings(cmd_settings)
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-cmdarg">cmdarg</a>
       
-      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~10">i</a>
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~11">i</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
@@ -388,7 +388,7 @@ public subroutine get_command_line_settings(cmd_settings)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~10"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~11"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -554,11 +554,11 @@ subroutine printhelp(lines)
          <span class="p">&amp;</span>  <span class="n">os_type</span><span class="p">]</span>
         <span class="c">! find the subcommand name by looking for first word on command</span>
         <span class="c">! not starting with dash</span>
-        <span class="n">cmdarg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">cmdarg</span><span class="o">=</span><span class="s1">&#39; &#39;</span>
         <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">command_argument_count</span><span class="p">()</span>
-            <span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">cmdarg</span><span class="p">)</span>
-            <span class="k">if</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">cmdarg</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">))</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="k">exit</span>
-<span class="k">        </span><span class="n">enddo</span>
+           <span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">cmdarg</span><span class="p">)</span>
+           <span class="k">if</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">cmdarg</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">))</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="k">exit</span>
+<span class="k">        enddo</span>
 
         <span class="c">! now set subcommand-specific help text and process commandline</span>
         <span class="c">! arguments. Then call subcommand routine</span>
@@ -581,14 +581,14 @@ subroutine printhelp(lines)
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">:)</span>
             <span class="k">else</span>
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="kd">::</span> <span class="p">]</span>
-            <span class="n">endif</span>
+            <span class="k">endif</span>
 
-            <span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span> <span class="p">)</span><span class="k">then</span>
+<span class="k">            if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span> <span class="p">)</span><span class="k">then</span>
 <span class="k">               call </span><span class="n">split</span><span class="p">(</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">),</span><span class="n">tnames</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39; ,:&#39;</span><span class="p">)</span>
                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">tnames</span><span class="p">)))</span> <span class="kd">::</span> <span class="n">names</span><span class="p">,</span><span class="n">tnames</span><span class="p">]</span>
-            <span class="n">endif</span>
+            <span class="k">endif</span>
 
-            <span class="k">allocate</span><span class="p">(</span><span class="n">fpm_run_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_run_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
             <span class="n">val_runner</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_run_settings</span><span class="p">(&amp;</span>
             <span class="p">&amp;</span> <span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,&amp;</span>
@@ -625,21 +625,24 @@ subroutine printhelp(lines)
 <span class="s1">            &amp; --lib F &amp;</span>
 <span class="s1">            &amp; --app F &amp;</span>
 <span class="s1">            &amp; --test F &amp;</span>
-<span class="s1">            &amp; --backfill F&amp;</span>
-<span class="s1">            &amp; --verbose F&#39;</span><span class="p">,&amp;</span>
+<span class="s1">            &amp; --example F &amp;</span>
+<span class="s1">            &amp; --backfill F &amp;</span>
+<span class="s1">            &amp; --full F &amp;</span>
+<span class="s1">            &amp; --bare F &amp;</span>
+<span class="s1">            &amp; --verbose:V F&#39;</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">help_new</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
             <span class="k">select case</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">))</span>
             <span class="k">case</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                 <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0,/))&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;ERROR&gt; directory name required&#39;</span>
                 <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(7x,g0,/))&#39;</span><span class="p">)</span> <span class="p">&amp;</span>
-                <span class="p">&amp;</span> <span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [--lib|--src] [--app] [--test] [--backfill]&#39;</span>
+                <span class="p">&amp;</span> <span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]&#39;</span>
                 <span class="k">stop </span><span class="mi">1</span>
             <span class="k">case</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">name</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
             <span class="k">case </span><span class="n">default</span>
                 <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(g0)&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;ERROR&gt; only one directory name allowed&#39;</span>
                 <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(7x,g0)&#39;</span><span class="p">)</span> <span class="p">&amp;</span>
-                <span class="p">&amp;</span> <span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [--lib|--src] [--app] [--test] [--backfill]&#39;</span>
+                <span class="p">&amp;</span> <span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]&#39;</span>
                 <span class="k">stop </span><span class="mi">2</span>
             <span class="k">end select</span>
             <span class="c">!*! canon_path is not converting &quot;.&quot;, etc.</span>
@@ -649,29 +652,44 @@ subroutine printhelp(lines)
                 <span class="p">&amp;</span> <span class="s1">&#39;&lt;ERROR&gt; the fpm project name must be made of up to 63 ASCII letters,&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="p">&amp;</span> <span class="s1">&#39;        numbers, underscores, or hyphens, and start with a letter.&#39;</span><span class="p">]</span>
                 <span class="k">stop </span><span class="mi">4</span>
-            <span class="n">endif</span>
+            <span class="k">endif</span>
 
-            <span class="k">allocate</span><span class="p">(</span><span class="n">fpm_new_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span> <span class="n">specified</span><span class="p">([</span><span class="s1">&#39;src &#39;</span><span class="p">,</span><span class="s1">&#39;lib &#39;</span><span class="p">,</span><span class="s1">&#39;app &#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">])</span> <span class="p">)</span> <span class="p">)</span><span class="k">then</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_new_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span> <span class="n">specified</span><span class="p">([</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="kd">::</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">,</span><span class="s1">&#39;bare&#39;</span><span class="p">]))</span> <span class="p">&amp;</span>
+            <span class="p">&amp;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;full&#39;</span><span class="p">)</span> <span class="p">)</span><span class="k">then</span>
+<span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)&amp;</span>
+                <span class="p">&amp;</span><span class="s1">&#39;&lt;ERROR&gt; --full and any of [--src|--lib,--app,--test,--example,--bare]&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="p">&amp;</span><span class="s1">&#39;        are mutually exclusive.&#39;</span>
+                <span class="k">stop </span><span class="mi">5</span>
+            <span class="n">elseif</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span> <span class="n">specified</span><span class="p">([</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="kd">::</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">,</span><span class="s1">&#39;full&#39;</span><span class="p">]))</span> <span class="p">&amp;</span>
+            <span class="p">&amp;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;bare&#39;</span><span class="p">)</span> <span class="p">)</span><span class="k">then</span>
+<span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)&amp;</span>
+                <span class="p">&amp;</span><span class="s1">&#39;&lt;ERROR&gt; --bare and any of [--src|--lib,--app,--test,--example,--full]&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="p">&amp;</span><span class="s1">&#39;        are mutually exclusive.&#39;</span>
+                <span class="k">stop </span><span class="mi">3</span>
+            <span class="n">elseif</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span> <span class="n">specified</span><span class="p">([</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="kd">::</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">])</span> <span class="p">)</span> <span class="p">)</span><span class="k">then</span>
 <span class="k">                </span><span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_new_settings</span><span class="p">(&amp;</span>
                  <span class="p">&amp;</span> <span class="n">backfill</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;backfill&#39;</span><span class="p">),</span>               <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>                               <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">with_executable</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">),</span>             <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">with_lib</span><span class="o">=</span><span class="nb">any</span><span class="p">([</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;lib&#39;</span><span class="p">),</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;src&#39;</span><span class="p">)]),</span> <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">with_test</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">),</span>                  <span class="p">&amp;</span>
+                 <span class="p">&amp;</span> <span class="n">with_example</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;example&#39;</span><span class="p">),</span>            <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
-            <span class="k">else</span>
-<span class="k">                </span><span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_new_settings</span><span class="p">(&amp;</span>
+            <span class="k">else</span>  <span class="c">! default if no specific directories are requested</span>
+                <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_new_settings</span><span class="p">(&amp;</span>
                  <span class="p">&amp;</span> <span class="n">backfill</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;backfill&#39;</span><span class="p">)</span> <span class="p">,</span>           <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>                            <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">with_executable</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span>               <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">with_lib</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span>                      <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">with_test</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span>                     <span class="p">&amp;</span>
+                 <span class="p">&amp;</span> <span class="n">with_example</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;full&#39;</span><span class="p">),</span>            <span class="p">&amp;</span>
+                 <span class="p">&amp;</span> <span class="n">with_full</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;full&#39;</span><span class="p">),</span>               <span class="p">&amp;</span>
+                 <span class="p">&amp;</span> <span class="n">with_bare</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;bare&#39;</span><span class="p">),</span>               <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
-            <span class="n">endif</span>
+            <span class="k">endif</span>
 
-        <span class="k">case</span><span class="p">(</span><span class="s1">&#39;help&#39;</span><span class="p">,</span><span class="s1">&#39;manual&#39;</span><span class="p">)</span>
+<span class="k">        case</span><span class="p">(</span><span class="s1">&#39;help&#39;</span><span class="p">,</span><span class="s1">&#39;manual&#39;</span><span class="p">)</span>
             <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --verbose F &amp;</span>
 <span class="s1">            &amp; &#39;</span><span class="p">,</span><span class="n">help_help</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
@@ -680,11 +698,11 @@ subroutine printhelp(lines)
 <span class="k">                   </span><span class="n">unnamed</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;   &#39;</span><span class="p">,</span> <span class="s1">&#39;fpm&#39;</span><span class="p">]</span>
                 <span class="k">else</span>
 <span class="k">                   </span><span class="n">unnamed</span><span class="o">=</span><span class="n">manual</span>
-                <span class="n">endif</span>
-            <span class="n">elseif</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;manual&#39;</span><span class="p">)</span><span class="k">then</span>
+                <span class="k">endif</span>
+<span class="k">            </span><span class="n">elseif</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;manual&#39;</span><span class="p">)</span><span class="k">then</span>
 <span class="k">                </span><span class="n">unnamed</span><span class="o">=</span><span class="n">manual</span>
-            <span class="n">endif</span>
-            <span class="n">widest</span><span class="o">=</span><span class="mi">256</span>
+            <span class="k">endif</span>
+<span class="k">            </span><span class="n">widest</span><span class="o">=</span><span class="mi">256</span>
             <span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">widest</span><span class="p">)</span> <span class="kd">::</span> <span class="n">help_text</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
             <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">)</span>
                 <span class="k">select case</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
@@ -716,8 +734,8 @@ subroutine printhelp(lines)
                    <span class="p">&amp;</span> <span class="s1">&#39;&lt;ERROR&gt; unknown help topic &quot;&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="p">]</span>
                    <span class="c">!!&amp; &#39;&lt;ERROR&gt; unknown help topic &quot;&#39;//trim(unnamed(i)).&#39;not found in:&#39;,manual]</span>
                 <span class="k">end select</span>
-<span class="k">            </span><span class="n">enddo</span>
-            <span class="k">call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
+<span class="k">            enddo</span>
+<span class="k">            call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;install&#39;</span><span class="p">)</span>
             <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;--release F --no-rebuild F --verbose F --prefix &quot; &quot; &amp;</span>
@@ -749,8 +767,8 @@ subroutine printhelp(lines)
             <span class="k">call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_list_nodash</span><span class="p">)</span>
             <span class="k">if</span><span class="p">(</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">))</span><span class="k">then</span>
 <span class="k">               call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_list_dash</span><span class="p">)</span>
-            <span class="n">endif</span>
-        <span class="k">case</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+            <span class="k">endif</span>
+<span class="k">        case</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
             <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --target &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --list F&amp;</span>
@@ -766,14 +784,14 @@ subroutine printhelp(lines)
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">:)</span>
             <span class="k">else</span>
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="kd">::</span> <span class="p">]</span>
-            <span class="n">endif</span>
+            <span class="k">endif</span>
 
-            <span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span> <span class="p">)</span><span class="k">then</span>
+<span class="k">            if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span> <span class="p">)</span><span class="k">then</span>
 <span class="k">               call </span><span class="n">split</span><span class="p">(</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">),</span><span class="n">tnames</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39; ,:&#39;</span><span class="p">)</span>
                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">tnames</span><span class="p">)))</span> <span class="kd">::</span> <span class="n">names</span><span class="p">,</span><span class="n">tnames</span><span class="p">]</span>
-            <span class="n">endif</span>
+            <span class="k">endif</span>
 
-            <span class="k">allocate</span><span class="p">(</span><span class="n">fpm_test_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_test_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
             <span class="n">val_runner</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_test_settings</span><span class="p">(&amp;</span>
             <span class="p">&amp;</span> <span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -793,9 +811,9 @@ subroutine printhelp(lines)
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">:)</span>
             <span class="k">else</span>
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="kd">::</span> <span class="p">]</span>
-            <span class="n">endif</span>
+            <span class="k">endif</span>
 
-            <span class="k">allocate</span><span class="p">(</span><span class="n">fpm_update_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_update_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_update_settings</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="n">fetch_only</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;fetch-only&#39;</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
                 <span class="n">clean</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;clean&#39;</span><span class="p">))</span>
@@ -819,8 +837,8 @@ subroutine printhelp(lines)
 <span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;ERROR&gt; unknown subcommand [&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
                  <span class="p">&amp;</span> <span class="nb">trim</span><span class="p">(</span><span class="n">cmdarg</span><span class="p">),</span> <span class="s1">&#39;]&#39;</span>
                 <span class="k">call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_list_dash</span><span class="p">)</span>
-            <span class="n">endif</span>
-            <span class="k">call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
+            <span class="k">endif</span>
+<span class="k">            call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
 
         <span class="k">end select</span>
 <span class="k">    contains</span>
@@ -830,9 +848,9 @@ subroutine printhelp(lines)
         <span class="n">val_compiler</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;compiler&#39;</span><span class="p">)</span>
         <span class="k">if</span><span class="p">(</span><span class="n">val_compiler</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            </span><span class="n">val_compiler</span><span class="o">=</span><span class="s1">&#39;gfortran&#39;</span>
-        <span class="n">endif</span>
-   
-        <span class="n">val_build</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="s1">&#39;debug  &#39;</span><span class="p">,</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">)))</span>
+        <span class="k">endif</span>
+
+<span class="k">        </span><span class="n">val_build</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="s1">&#39;debug  &#39;</span><span class="p">,</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">)))</span>
 
     <span class="k">end subroutine </span><span class="n">check_build_vals</span>
 
@@ -845,9 +863,9 @@ subroutine printhelp(lines)
 <span class="k">               write</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="s1">&#39;(g0)&#39;</span><span class="p">)(</span><span class="nb">trim</span><span class="p">(</span><span class="n">lines</span><span class="p">(</span><span class="n">iii</span><span class="p">)),</span> <span class="n">iii</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ii</span><span class="p">)</span>
            <span class="k">else</span>
 <span class="k">               write</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;WARNING&gt; *printhelp* output requested is empty&#39;</span>
-           <span class="n">endif</span>
-        <span class="n">endif</span>
-    <span class="k">end subroutine </span><span class="n">printhelp</span>
+           <span class="k">endif</span>
+<span class="k">        endif</span>
+<span class="k">    end subroutine </span><span class="n">printhelp</span>
 
     <span class="k">end subroutine </span><span class="n">get_command_line_settings</span>
 </pre></div>
@@ -871,7 +889,7 @@ subroutine printhelp(lines)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-05 16:57  
+             on 2021-02-18 14:01  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
