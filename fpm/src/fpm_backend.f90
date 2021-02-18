@@ -68,7 +68,7 @@ subroutine build_package(model)
     do i=1,size(schedule_ptr)-1
 
         ! Build targets in schedule region i
-        !$omp parallel do default(shared)
+        !$omp parallel do default(shared) schedule(dynamic,1)
         do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
 
             call build_target(model,queue(j)%ptr)
