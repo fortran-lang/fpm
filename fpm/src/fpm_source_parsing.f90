@@ -6,8 +6,8 @@
 !>
 !> Both functions additionally calculate and store a file digest (hash) which
 !> is used by the backend ([[fpm_backend]]) to skip compilation of unmodified sources.
-!> 
-!> Both functions return an instance of the [[srcfile_t]] type. 
+!>
+!> Both functions return an instance of the [[srcfile_t]] type.
 !>
 !> For more information, please read the documentation for each function:
 !>
@@ -38,7 +38,7 @@ character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
 contains
 
 !> Parsing of free-form fortran source files
-!> 
+!>
 !> The following statements are recognised and parsed:
 !>
 !> - `Module`/`submodule`/`program` declaration
@@ -171,7 +171,7 @@ function parse_f_source(f_filename,error) result(f_source)
                 if (index(adjustl(file_lines(i)%s(ic+7:)),'"') == 1 .or. &
                     index(adjustl(file_lines(i)%s(ic+7:)),"'") == 1 ) then
 
-    
+
                     n_include = n_include + 1
 
                     if (pass == 2) then
@@ -264,7 +264,7 @@ function parse_f_source(f_filename,error) result(f_source)
                     if (index(temp_string,':') > 0) then
 
                         temp_string = temp_string(index(temp_string,':')+1:)
-                        
+
                     end if
 
                     if (.not.validate_name(temp_string)) then
@@ -288,7 +288,7 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 temp_string = lower(split_n(file_lines(i)%s,n=2,delims=' ',stat=stat))
                 if (stat == 0) then
-                    
+
                     if (scan(temp_string,'=(')>0 ) then
                         ! Ignore:
                         ! program =*
@@ -343,7 +343,7 @@ function parse_f_source(f_filename,error) result(f_source)
                 (name(i:i) >= '0' .and. name(i:i) <= '9').or. &
                 (lower(name(i:i)) >= 'a' .and. lower(name(i:i)) <= 'z').or. &
                 name(i:i) == '_') ) then
-                    
+
                 valid = .false.
                 return
             end if
@@ -359,7 +359,7 @@ end function parse_f_source
 
 
 !> Parsing of c source files
-!> 
+!>
 !> The following statements are recognised and parsed:
 !>
 !> - `#include` preprocessor statement
@@ -396,9 +396,9 @@ function parse_c_source(c_filename,error) result(c_source)
         c_source%unit_type = FPM_UNIT_UNKNOWN
         return
     end if
-    
+
     c_source%digest = fnv_1a(file_lines)
-    
+
     do pass = 1,2
         n_include = 0
         file_loop: do i=1,size(file_lines)
@@ -406,7 +406,7 @@ function parse_c_source(c_filename,error) result(c_source)
             ! Process 'INCLUDE' statements
             if (index(adjustl(lower(file_lines(i)%s)),'#include') == 1 .and. &
                 index(file_lines(i)%s,'"') > 0) then
-                            
+
                 n_include = n_include + 1
 
                 if (pass == 2) then
@@ -440,7 +440,7 @@ end function parse_c_source
 !> n=0  will return the last item
 !> n=-1 will return the penultimate item etc.
 !>
-!> stat = 1 on return if the index 
+!> stat = 1 on return if the index
 !>  is not found
 !>
 function split_n(string,delims,n,stat) result(substring)
