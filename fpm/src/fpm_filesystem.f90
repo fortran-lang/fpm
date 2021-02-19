@@ -3,11 +3,13 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
+    use fpm_environment, only: separator, get_env
     use fpm_strings, only: f_string, replace, string_t, split
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, to_fortran_name
+    public :: which
     public :: fileopen, fileclose, filewrite, warnwrite
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
@@ -569,5 +571,85 @@ pure function to_fortran_name(string) result(res)
     character, parameter :: SPECIAL_CHARACTERS(*) = ['-']
     res = replace(string, SPECIAL_CHARACTERS, '_')
 end function to_fortran_name
+
+function which(command) result(pathname)
+!>
+!!##NAME
+!!     which(3f) - [M_io:ENVIRONMENT] given a command name find the pathname by searching
+!!                 the directories in the environment variable $PATH
+!!     (LICENSE:PD)
+!!
+!!##SYNTAX
+!!   function which(command) result(pathname)
+!!
+!!    character(len=*),intent(in)  :: command
+!!    character(len=:),allocatable :: pathname
+!!
+!!##DESCRIPTION
+!!    Given a command name find the first file with that name in the directories
+!!    specified by the environment variable $PATH.
+!!
+!!##OPTIONS
+!!    COMMAND   the command to search for
+!!
+!!##RETURNS
+!!    PATHNAME  the first pathname found in the current user path. Returns blank
+!!              if the command is not found.
+!!
+!!##EXAMPLE
+!!
+!!   Sample program:
+!!
+!!   Checking the error message and counting lines:
+!!
+!!     program demo_which
+!!     use M_io, only : which
+!!     implicit none
+!!        write(*,*)'ls is ',which('ls')
+!!        write(*,*)'dir is ',which('dir')
+!!        write(*,*)'install is ',which('install')
+!!     end program demo_which
+!!
+!!##AUTHOR
+!!    John S. Urban
+!!##LICENSE
+!!    Public Domain
+
+character(len=*),intent(in)     :: command
+character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)
+integer                         :: i, j
+   pathname=''
+   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator().eq.'\'))
+   SEARCH: do i=1,size(paths)
+      checkon=trim(join_path(trim(paths(i)),command))
+      select case(separator())
+      case('/')
+         if(exists(checkon))then
+            pathname=checkon
+            exit SEARCH
+         endif
+      case('\')
+         if(exists(checkon))then
+            pathname=checkon
+            exit SEARCH
+         endif
+         if(exists(checkon//'.bat'))then
+            pathname=checkon//'.bat'
+            exit SEARCH
+         endif
+         if(exists(checkon//'.exe'))then
+            pathname=checkon//'.exe'
+            exit SEARCH
+         endif
+         call split(get_env('PATHEXT'),exts,delimiters=';')
+         do j=1,size(exts)
+            if(exists(checkon//'.'//trim(exts(j))))then
+               pathname=checkon//'.'//trim(exts(j))
+               exit SEARCH
+            endif
+         enddo
+      end select
+   enddo SEARCH
+end function which
 
 end module fpm_filesystem
