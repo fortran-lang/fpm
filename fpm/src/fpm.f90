@@ -50,11 +50,7 @@ subroutine build_model(model, settings, package, error)
 
     model%package_name = package%name
 
-    if (allocated(package%build%link)) then
-        model%link_libraries = package%build%link
-    else
-        allocate(model%link_libraries(0))
-    end if
+    allocate(model%link_libraries(0))
 
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
     call model%deps%add(package, error)
@@ -69,8 +65,6 @@ subroutine build_model(model, settings, package, error)
     model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
 
     call add_compile_flag_defaults(settings%build_name, basename(model%fortran_compiler), model)
-
-    model%link_flags = ''
 
     allocate(model%packages(model%deps%ndep))
 

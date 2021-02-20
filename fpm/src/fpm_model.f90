@@ -127,12 +127,6 @@ type :: fpm_model_t
     !> Command line flags passed to fortran for compilation
     character(:), allocatable :: fortran_compile_flags
 
-    !> Command line flags pass for linking
-    character(:), allocatable :: link_flags
-
-    !> Output file for library archive
-    character(:), allocatable :: library_file
-
     !> Base directory for build
     character(:), allocatable :: output_directory
 
@@ -277,10 +271,6 @@ function info_model(model) result(s)
     s = s // ', fortran_compiler="' // model%fortran_compiler // '"'
     !    character(:), allocatable :: fortran_compile_flags
     s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
-    !    character(:), allocatable :: link_flags
-    s = s // ', link_flags="' // model%link_flags // '"'
-    !    character(:), allocatable :: library_file
-    s = s // ', library_file="' // model%library_file // '"'
     !    character(:), allocatable :: output_directory
     s = s // ', output_directory="' // model%output_directory // '"'
     !    type(string_t), allocatable :: link_libraries(:)

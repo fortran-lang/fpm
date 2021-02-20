@@ -15,7 +15,7 @@
 !>
 !> For more information, please read the documentation for the procedures:
 !>
-!> - `[[targets_from_sources]]`
+!> - `[[build_target_list]]`
 !> - `[[resolve_module_dependencies]]`
 !>
 module fpm_targets
@@ -24,7 +24,7 @@ use fpm_error, only: error_t, fatal_error
 use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
 use fpm_filesystem, only: dirname, join_path, canon_path
-use fpm_strings, only: string_t, operator(.in.)
+use fpm_strings, only: string_t, operator(.in.), string_cat
 implicit none
 
 private
@@ -75,7 +75,13 @@ type build_target_t
 
     !> Objects needed to link this target
     type(string_t), allocatable :: link_objects(:)
+
+    !> Link flags for this build target
+    character(:), allocatable :: link_flags
     
+    !> Compile flags for this build target
+    character(:), allocatable :: compile_flags
+
     !> Flag set when first visited to check for circular dependencies
     logical :: touched = .false.
     
@@ -96,6 +102,28 @@ end type build_target_t
 
 contains
 
+!> High-level wrapper to generate build target information
+subroutine targets_from_sources(targets,model,error)
+
+    !> The generated list of build targets
+    type(build_target_ptr), intent(out), allocatable :: targets(:)
+
+    !> The package model from which to construct the target list
+    type(fpm_model_t), intent(inout), target :: model
+
+    !> Error structure
+    type(error_t), intent(out), allocatable :: error
+
+    call build_target_list(targets,model)
+    
+    call resolve_module_dependencies(targets,error)
+    if (allocated(error)) return
+    
+    call resolve_target_linking(targets,model)
+
+end subroutine targets_from_sources
+
+
 !> Constructs a list of build targets from a list of source files
 !>
 !>### Source-target mapping
@@ -115,18 +143,13 @@ contains
 !> is a library, then the executable target has an additional dependency on the library
 !> archive target.
 !>
-!> @note Inter-object dependencies based on modules used and provided are generated separately
-!> in `[[resolve_module_dependencies]]` after all targets have been enumerated.
-subroutine targets_from_sources(targets,model,error)
+subroutine build_target_list(targets,model)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
 
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
-
-    !> Error structure
-    type(error_t), intent(out), allocatable :: error
 
     integer :: i, j
     character(:), allocatable :: xsuffix, exe_dir
@@ -207,21 +230,6 @@ subroutine targets_from_sources(targets,model,error)
 
     end do
 
-    if (allocated(model%link_libraries)) then
-        do i = 1, size(model%link_libraries)
-            model%link_flags = model%link_flags // " -l" // model%link_libraries(i)%s
-        end do
-    end if
-    
-    if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        model%library_file = targets(1)%ptr%output_file
-    end if
-    
-    call resolve_module_dependencies(targets,error)
-    if (allocated(error)) return
-    
-    call resolve_target_linking(targets)
-
     contains
 
     function get_object_name(source) result(object_file)
@@ -248,7 +256,7 @@ subroutine targets_from_sources(targets,model,error)
     
     end function get_object_name
 
-end subroutine targets_from_sources
+end subroutine build_target_list
 
 
 !> Allocate a new target and append to target list
@@ -411,18 +419,33 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
 end function find_module_dependency
 
 
-!> For libraries and executables, build a list of objects required for linking
+!> Construct the linker flags string for each target
+!>  `target%link_flags` includes non-library objects and library flags
 !>
-!> stored in `target%link_objects`
-!>
-subroutine resolve_target_linking(targets)
+subroutine resolve_target_linking(targets, model)
     type(build_target_ptr), intent(inout), target :: targets(:)
+    type(fpm_model_t), intent(in) :: model
 
     integer :: i
+    character(:), allocatable :: global_link_flags
+
+    if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
+        global_link_flags = targets(1)%ptr%output_file
+    else
+        allocate(character(0) :: global_link_flags)
+    end if
+
+    if (allocated(model%link_libraries)) then
+        if (size(model%link_libraries) > 0) then
+            global_link_flags = global_link_flags // " -l" // string_cat(model%link_libraries," -l")
+        end if
+    end if
 
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
+
+            target%compile_flags = model%fortran_compile_flags
 
             allocate(target%link_objects(0))
 
@@ -430,9 +453,21 @@ subroutine resolve_target_linking(targets)
 
                 call get_link_objects(target%link_objects,target,is_exe=.false.)
 
+                allocate(character(0) :: target%link_flags)
+
             else if (target%target_type == FPM_TARGET_EXECUTABLE) then
 
                 call get_link_objects(target%link_objects,target,is_exe=.true.)
+
+                target%link_flags = string_cat(target%link_objects," ")
+
+                if (allocated(target%link_libraries)) then
+                    if (size(target%link_libraries) > 0) then
+                        target%link_flags = target%link_flags // " -l" // string_cat(target%link_libraries," -l")
+                    end if
+                end if
+
+                target%link_flags = target%link_flags//" "//global_link_flags
 
             end if
 
