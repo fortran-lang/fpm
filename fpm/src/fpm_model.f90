@@ -3,15 +3,11 @@
 !> Defines the fpm model data types which encapsulate all information 
 !> required to correctly build a package and its dependencies.
 !>
-!> The process (see `[[build_model(subroutine)]]`) for generating a valid `[[fpm_model]]` is as follows:
+!> The process (see `[[build_model(subroutine)]]`) for generating a valid `[[fpm_model]]` involves
+!>  source files discovery ([[fpm_sources]]) and parsing ([[fpm_source_parsing]]).
 !>
-!> 1. Source files are discovered ([[fpm_sources]]) and parsed ([[fpm_source_parsing]])
-!> 2. A list of build targets is generated (`[[targets_from_sources]]`) from the sources
-!> 3. Inter-target dependencies are resolved (`[[resolve_module_dependencies]]`) based on modules used and provided
-!> 4. Object link lists are generated for link targets (executables and libraries) (`[[resolve_target_linking]]`)
-!>
-!> Once a valid `[[fpm_model]]` has been constructed, it may be passed to `[[fpm_backend:build_package]]` to
-!> build the package.
+!> Once a valid `[[fpm_model]]` has been constructed, it may be passed to `[[fpm_targets:targets_from_sources]]` to
+!> generate a list of build targets for the backend.
 !>
 !>### Enumerations
 !>
@@ -20,9 +16,6 @@
 !>
 !> __Source scope:__ `FPM_SCOPE_*`
 !> Describes the scoping rules for using modules — controls module dependency resolution
-!>
-!> __Target type:__ `FPM_TARGET_*`
-!> Describes the type of build target — determines backend build rules
 !>
 module fpm_model
 use iso_fortran_env, only: int64

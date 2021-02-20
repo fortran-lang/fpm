@@ -18,6 +18,11 @@
 !> - `[[build_target_list]]`
 !> - `[[resolve_module_dependencies]]`
 !>
+!>### Enumerations
+!>
+!> __Target type:__ `FPM_TARGET_*`
+!> Describes the type of build target — determines backend build rules
+!>
 module fpm_targets
 use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error

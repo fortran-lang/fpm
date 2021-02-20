@@ -1,6 +1,6 @@
 !># Build backend
-!> Uses a valid `[[fpm_model]]` instance to schedule and execute the
-!> compilation and linking of package targets.
+!> Uses a list of `[[build_target_ptr]]` and a valid `[[fpm_model]]` instance 
+!> to schedule and execute the compilation and linking of package targets.
 !> 
 !> The package build process (`[[build_package]]`) comprises three steps:
 !>
