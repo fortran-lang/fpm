@@ -132,7 +132,7 @@ contains
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
         version_text = [character(len=80) :: &
-         &  'Version:     0.1.3, alpha',                           &
+         &  'Version:     0.1.4, alpha',                           &
          &  'Program:     fpm(1)',                                     &
          &  'Description: A Fortran package manager and build system', &
          &  'Home Page:   https://github.com/fortran-lang/fpm',        &
@@ -143,13 +143,6 @@ contains
         ! not starting with dash
         CLI_RESPONSE_FILE=.true.
         cmdarg = get_subcommand()
-        if(cmdarg.eq.' ')then
-           write(stderr,'(*(g0))')'<WARNING> internal failure in response file processing'
-           do i = 1, command_argument_count()
-              call get_command_argument(i, cmdarg)
-              if(adjustl(cmdarg(1:1)) .ne. '-')exit
-           enddo
-        endif
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -615,7 +608,7 @@ contains
     '  + run   Run the local package binaries. defaults to all binaries for ', &
     '          that release.                                                ', &
     '  + test  Run the tests.                                               ', &
-    '  + help  Alternate method for displaying subcommand help.             ', &
+    '  + help  Alternate to the --help switch for displaying help text.     ', &
     '  + list  Display brief descriptions of all subcommands.               ', &
     '  + install Install project                                            ', &
     '                                                                       ', &
