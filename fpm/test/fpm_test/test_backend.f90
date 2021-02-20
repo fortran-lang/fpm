@@ -3,9 +3,9 @@ module test_backend
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use test_module_dependencies, only: operator(.in.)
     use fpm_filesystem, only: exists, mkdir, get_temp_filename
-    use fpm_model, only: build_target_t, build_target_ptr, &
-                            FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE
-    use fpm_targets, only: add_target, add_dependency
+    use fpm_targets, only: build_target_t, build_target_ptr, &
+                            FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, &
+                           add_target, add_dependency
     use fpm_backend, only: sort_target, schedule_targets
     implicit none
     private

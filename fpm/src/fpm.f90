@@ -6,16 +6,16 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
 use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: run
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
-use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
+use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
-                    FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST, &
-                    FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE, show_model
+                    FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
 use fpm_compiler, only: add_compile_flag_defaults
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
-                        resolve_target_linking
+                        resolve_target_linking, build_target_t, build_target_ptr, &
+                        FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only : error_t, fatal_error
 use fpm_manifest_test, only : test_config_t
@@ -157,20 +157,6 @@ subroutine build_model(model, settings, package, error)
     end do
     if (allocated(error)) return
 
-    call targets_from_sources(model)
-
-    do i = 1, size(model%link_libraries)
-        model%link_flags = model%link_flags // " -l" // model%link_libraries(i)%s
-    end do
-
-    if (model%targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        model%library_file = model%targets(1)%ptr%output_file
-    end if
-
-    call resolve_module_dependencies(model%targets,error)
-
-    call resolve_target_linking(model%targets)
-
 end subroutine build_model
 
 
@@ -178,6 +164,7 @@ subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
 type(package_config_t) :: package
 type(fpm_model_t) :: model
+type(build_target_ptr), allocatable :: targets(:)
 type(error_t), allocatable :: error
 
 integer :: i
@@ -194,14 +181,20 @@ if (allocated(error)) then
     error stop 1
 end if
 
+call targets_from_sources(targets,model,error)
+if (allocated(error)) then
+    print '(a)', error%message
+    error stop 1
+end if
+
 if(settings%list)then
-    do i=1,size(model%targets)
-        write(stderr,*) model%targets(i)%ptr%output_file
+    do i=1,size(targets)
+        write(stderr,*) targets(i)%ptr%output_file
     enddo
 else if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(model)
+    call build_package(targets,model)
 endif
 
 end subroutine
@@ -216,6 +209,7 @@ subroutine cmd_run(settings,test)
     type(error_t), allocatable :: error
     type(package_config_t) :: package
     type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
     type(string_t) :: exe_cmd
     type(string_t), allocatable :: executables(:)
     type(build_target_t), pointer :: exe_target
@@ -234,6 +228,12 @@ subroutine cmd_run(settings,test)
         error stop 1
     end if
 
+    call targets_from_sources(targets,model,error)
+    if (allocated(error)) then
+        print '(a)', error%message
+        error stop 1
+    end if
+
     if (test) then
        run_scope = FPM_SCOPE_TEST
     else
@@ -244,9 +244,9 @@ subroutine cmd_run(settings,test)
     col_width = -1
     found(:) = .false.
     allocate(executables(0))
-    do i=1,size(model%targets)
+    do i=1,size(targets)
 
-        exe_target => model%targets(i)%ptr
+        exe_target => targets(i)%ptr
 
         if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
              allocated(exe_target%dependencies)) then
@@ -307,9 +307,9 @@ subroutine cmd_run(settings,test)
         j = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Available names:'
-        do i=1,size(model%targets)
+        do i=1,size(targets)
 
-            exe_target => model%targets(i)%ptr
+            exe_target => targets(i)%ptr
 
             if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
                 allocated(exe_target%dependencies)) then
@@ -333,7 +333,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(model)
+    call build_package(targets,model)
 
     do i=1,size(executables)
         if (settings%list) then

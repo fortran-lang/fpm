@@ -29,7 +29,8 @@ module fpm_backend
 
 use fpm_environment, only: run
 use fpm_filesystem, only: dirname, join_path, exists, mkdir
-use fpm_model, only: fpm_model_t, build_target_t, build_target_ptr, &
+use fpm_model, only: fpm_model_t
+use fpm_targets, only: build_target_t, build_target_ptr, &
                      FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
                      
 use fpm_strings, only: string_cat
@@ -42,8 +43,9 @@ public :: build_package, sort_target, schedule_targets
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(model)
-    type(fpm_model_t), intent(inout) :: model
+subroutine build_package(targets,model)
+    type(build_target_ptr), intent(inout) :: targets(:)
+    type(fpm_model_t), intent(in) :: model
 
     integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
@@ -55,14 +57,14 @@ subroutine build_package(model)
     end if
 
     ! Perform depth-first topological sort of targets
-    do i=1,size(model%targets)
+    do i=1,size(targets)
         
-        call sort_target(model%targets(i)%ptr)
+        call sort_target(targets(i)%ptr)
         
     end do
 
     ! Construct build schedule queue
-    call schedule_targets(queue, schedule_ptr, model%targets)
+    call schedule_targets(queue, schedule_ptr, targets)
 
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1

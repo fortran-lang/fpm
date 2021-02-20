@@ -7,8 +7,9 @@ module fpm_cmd_install
   use fpm_filesystem, only : join_path, list_files
   use fpm_installer, only : installer_t, new_installer
   use fpm_manifest, only : package_config_t, get_package_data
-  use fpm_model, only : fpm_model_t, build_target_t, FPM_TARGET_EXECUTABLE, &
-    FPM_SCOPE_APP
+  use fpm_model, only : fpm_model_t, FPM_SCOPE_APP
+  use fpm_targets, only: targets_from_sources, build_target_t, &
+                         build_target_ptr, FPM_TARGET_EXECUTABLE
   use fpm_strings, only : string_t, resize
   implicit none
   private
@@ -24,6 +25,7 @@ contains
     type(package_config_t) :: package
     type(error_t), allocatable :: error
     type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
     type(installer_t) :: installer
     character(len=:), allocatable :: lib, exe, dir
     logical :: installable
@@ -34,6 +36,9 @@ contains
     call build_model(model, settings%fpm_build_settings, package, error)
     call handle_error(error)
 
+    call targets_from_sources(targets,model,error)
+    call handle_error(error)
+
     installable = (allocated(package%library) .and. package%install%library) &
       .or. allocated(package%executable)
     if (.not.installable) then
@@ -42,12 +47,12 @@ contains
     end if
 
     if (settings%list) then
-      call install_info(output_unit, package, model)
+      call install_info(output_unit, package, model, targets)
       return
     end if
 
     if (.not.settings%no_rebuild) then
-      call build_package(model)
+      call build_package(targets,model)
     end if
 
     call new_installer(installer, prefix=settings%prefix, &
@@ -66,16 +71,17 @@ contains
     end if
 
     if (allocated(package%executable)) then
-      call install_executables(installer, model, error)
+      call install_executables(installer, targets, error)
       call handle_error(error)
     end if
 
   end subroutine cmd_install
 
-  subroutine install_info(unit, package, model)
+  subroutine install_info(unit, package, model, targets)
     integer, intent(in) :: unit
     type(package_config_t), intent(in) :: package
     type(fpm_model_t), intent(in) :: model
+    type(build_target_ptr), intent(in) :: targets(:)
 
     integer :: ii, ntargets
     character(len=:), allocatable :: lib
@@ -90,11 +96,11 @@ contains
         "lib"//model%package_name//".a")
       install_target(ntargets)%s = lib
     end if
-    do ii = 1, size(model%targets)
-      if (is_executable_target(model%targets(ii)%ptr)) then
+    do ii = 1, size(targets)
+      if (is_executable_target(targets(ii)%ptr)) then
         if (ntargets >= size(install_target)) call resize(install_target)
         ntargets = ntargets + 1
-        install_target(ntargets)%s = model%targets(ii)%ptr%output_file
+        install_target(ntargets)%s = targets(ii)%ptr%output_file
       end if
     end do
 
@@ -125,15 +131,15 @@ contains
 
   end subroutine install_module_files
 
-  subroutine install_executables(installer, model, error)
+  subroutine install_executables(installer, targets, error)
     type(installer_t), intent(inout) :: installer
-    type(fpm_model_t), intent(in) :: model
+    type(build_target_ptr), intent(in) :: targets(:)
     type(error_t), allocatable, intent(out) :: error
     integer :: ii
 
-    do ii = 1, size(model%targets)
-      if (is_executable_target(model%targets(ii)%ptr)) then
-        call installer%install_executable(model%targets(ii)%ptr%output_file, error)
+    do ii = 1, size(targets)
+      if (is_executable_target(targets(ii)%ptr)) then
+        call installer%install_executable(targets(ii)%ptr%output_file, error)
         if (allocated(error)) exit
       end if
     end do

@@ -19,6 +19,7 @@
 !> - `[[resolve_module_dependencies]]`
 !>
 module fpm_targets
+use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error
 use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
@@ -27,8 +28,71 @@ use fpm_strings, only: string_t, operator(.in.)
 implicit none
 
 private
+
+public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
+       FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT
+public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public resolve_target_linking, add_target, add_dependency
+
+
+
+!> Target type is unknown (ignored)
+integer, parameter :: FPM_TARGET_UNKNOWN = -1
+!> Target type is executable
+integer, parameter :: FPM_TARGET_EXECUTABLE = 1
+!> Target type is library archive
+integer, parameter :: FPM_TARGET_ARCHIVE = 2
+!> Target type is compiled object
+integer, parameter :: FPM_TARGET_OBJECT = 3
+
+
+!> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
+type build_target_ptr
+
+    type(build_target_t), pointer :: ptr => null()
+
+end type build_target_ptr
+
+
+!> Type describing a generated build target
+type build_target_t
+
+    !> File path of build target object relative to cwd
+    character(:), allocatable :: output_file
+
+    !> Primary source for this build target
+    type(srcfile_t), allocatable :: source
+
+    !> Resolved build dependencies
+    type(build_target_ptr), allocatable :: dependencies(:)
+
+    !> Target type
+    integer :: target_type = FPM_TARGET_UNKNOWN
+
+    !> Native libraries to link against
+    type(string_t), allocatable :: link_libraries(:)
+
+    !> Objects needed to link this target
+    type(string_t), allocatable :: link_objects(:)
+    
+    !> Flag set when first visited to check for circular dependencies
+    logical :: touched = .false.
+    
+    !> Flag set if build target is sorted for building
+    logical :: sorted = .false.
+
+    !> Flag set if build target will be skipped (not built)
+    logical :: skip = .false.
+
+    !> Targets in the same schedule group are guaranteed to be independent
+    integer :: schedule = -1
+
+    !> Previous source file hash
+    integer(int64), allocatable :: digest_cached
+
+end type build_target_t
+
 
 contains
 
@@ -53,10 +117,16 @@ contains
 !>
 !> @note Inter-object dependencies based on modules used and provided are generated separately
 !> in `[[resolve_module_dependencies]]` after all targets have been enumerated.
-subroutine targets_from_sources(model)
+subroutine targets_from_sources(targets,model,error)
 
-    !> The package model within which to construct the target list
+    !> The generated list of build targets
+    type(build_target_ptr), intent(out), allocatable :: targets(:)
+
+    !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
+
+    !> Error structure
+    type(error_t), intent(out), allocatable :: error
 
     integer :: i, j
     character(:), allocatable :: xsuffix, exe_dir
@@ -73,7 +143,7 @@ subroutine targets_from_sources(model)
                       i=1,size(model%packages(j)%sources)), &
                       j=1,size(model%packages))])
 
-    if (with_lib) call add_target(model%targets,type = FPM_TARGET_ARCHIVE,&
+    if (with_lib) call add_target(targets,type = FPM_TARGET_ARCHIVE,&
                             output_file = join_path(model%output_directory,&
                                    model%package_name,'lib'//model%package_name//'.a'))
 
@@ -86,18 +156,18 @@ subroutine targets_from_sources(model)
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
-                    call add_target(model%targets,source = sources(i), &
+                    call add_target(targets,source = sources(i), &
                                 type = FPM_TARGET_OBJECT,&
                                 output_file = get_object_name(sources(i)))
                     
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
-                        call add_dependency(model%targets(1)%ptr, model%targets(size(model%targets))%ptr)
+                        call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
                     end if
 
                 case (FPM_UNIT_PROGRAM)
 
-                    call add_target(model%targets,type = FPM_TARGET_OBJECT,&
+                    call add_target(targets,type = FPM_TARGET_OBJECT,&
                                 output_file = get_object_name(sources(i)), &
                                 source = sources(i) &
                                 )
@@ -116,17 +186,17 @@ subroutine targets_from_sources(model)
 
                     end if
 
-                    call add_target(model%targets,type = FPM_TARGET_EXECUTABLE,&
+                    call add_target(targets,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
                                     output_file = join_path(model%output_directory,exe_dir, &
                                     sources(i)%exe_name//xsuffix))
 
                     ! Executable depends on object
-                    call add_dependency(model%targets(size(model%targets))%ptr, model%targets(size(model%targets)-1)%ptr)
+                    call add_dependency(targets(size(targets))%ptr, targets(size(targets)-1)%ptr)
 
                     if (with_lib) then
                         ! Executable depends on library
-                        call add_dependency(model%targets(size(model%targets))%ptr, model%targets(1)%ptr)
+                        call add_dependency(targets(size(targets))%ptr, targets(1)%ptr)
                     end if
                     
                 end select
@@ -136,6 +206,21 @@ subroutine targets_from_sources(model)
         end associate
 
     end do
+
+    if (allocated(model%link_libraries)) then
+        do i = 1, size(model%link_libraries)
+            model%link_flags = model%link_flags // " -l" // model%link_libraries(i)%s
+        end do
+    end if
+    
+    if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
+        model%library_file = targets(1)%ptr%output_file
+    end if
+    
+    call resolve_module_dependencies(targets,error)
+    if (allocated(error)) return
+    
+    call resolve_target_linking(targets)
 
     contains
 
