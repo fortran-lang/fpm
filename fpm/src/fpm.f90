@@ -296,7 +296,9 @@ subroutine cmd_run(settings,test)
 
     ! Check all names are valid
     ! or no name and found more than one file
-    if ( any(.not.found) .or. (size(settings%name).eq.0 .and. size(executables).gt.1 .and. .not.test) ) then
+    if ( any(.not.found) .or. &
+    & (size(settings%name).eq.0 .and. size(executables).gt.1 .and. .not.test) .and.&
+    & .not.settings%list) then
         if(any(.not.found))then
            write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
            do j=1,size(settings%name)

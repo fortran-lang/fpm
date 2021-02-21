@@ -152,6 +152,7 @@ contains
             call set_args('&
             & --target " " &
             & --list F &
+            & --all F &
             & --release F&
             & --example F&
             & --runner " " &
@@ -170,6 +171,9 @@ contains
             if(specified('target') )then
                call split(sget('target'),tnames,delimiters=' ,:')
                names=[character(len=max(len(names),len(tnames))) :: names,tnames]
+            endif
+            if(lget('all'))then
+               names=[character(len=max(len(names),1)) :: names,'*']
             endif
 
             allocate(fpm_run_settings :: cmd_settings)
@@ -696,7 +700,7 @@ contains
     ' By default applications in /app or specified as "executable" in your  ', &
     ' "fpm.toml" manifest are used. Alternatively demonstration programs    ', &
     ' in example/ or specified in the "example" section in "fpm.toml"       ', &
-    ' can be executed with this subcommand.                                 ', &
+    ' can be executed.                                                      ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
     ' --target NAME(s)  list of specific application names to execute.      ', &
@@ -707,6 +711,7 @@ contains
     '                   Simple "globbing" is supported where "?" represents ', &
     '                   any single character and "*" represents any string. ', &
     '                   Therefore a quoted asterisk ''*'' runs all programs.  ', &
+    ' --all      An alias for "--target ''*''. All targets are selected.      ', &
     ' --example  run example programs instead of applications               ', &
     ' --release  selects the optimized build instead of the debug build.    ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
