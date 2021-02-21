@@ -498,7 +498,6 @@ contains
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
    ' ']
    help_list_dash = [character(len=80) :: &
-   !123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--release] [--list]                          ', &
    ' help [NAME(s)]                                                                 ', &
@@ -506,8 +505,8 @@ contains
    '          [--full|--bare][--backfill]                                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s)|--all] [--release] [--runner "CMD"] [--list] [--example]', &
-   '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
+   ' run  [[--target] NAME(s)|--all] [--example] [--release] [--runner "CMD"]       ', &
+   '      [--compiler COMPILER_NAME] [--list] [-- ARGS]                             ', &
    ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' install [--release] [--no-rebuild] [--prefix PATH] [options]                   ', &
@@ -589,7 +588,7 @@ contains
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     '   fpm(1) is a package manager that helps you create Fortran projects  ', &
-    '   from source.                                                        ', &
+    '   from source -- it automatically determines dependencies!            ', &
     '                                                                       ', &
     '   Most significantly fpm(1) lets you draw upon other fpm(1) packages  ', &
     '   in distributed git(1) repositories as if the packages were a basic  ', &
@@ -697,11 +696,11 @@ contains
     ' fpm run --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
-    ' Run applications you have built in your fpm(1) project.               ', &
-    ' By default applications in /app or specified as "executable" in your  ', &
-    ' "fpm.toml" manifest are used. Alternatively demonstration programs    ', &
-    ' in example/ or specified in the "example" section in "fpm.toml"       ', &
-    ' can be executed.                                                      ', &
+    ' Run the applications in your fpm(1) package. By default applications  ', &
+    ' in /app or specified as "executable" in your "fpm.toml" manifest are  ', &
+    ' used. Alternatively demonstration programs in example/ or specified in', &
+    ' the "example" section in "fpm.toml" can be executed. The applications ', &
+    ' are automatically rebuilt before being run if they are out of date.   ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
     ' --target NAME(s)  list of specific application names to execute.      ', &
@@ -713,14 +712,16 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Therefore a quoted asterisk ''*'' runs all programs.  ', &
     ' --all      An alias for "--target ''*''". All targets are selected.     ', &
-    ' --example  run example programs instead of applications               ', &
+    ' --example  Run example programs instead of applications.              ', &
     ' --release  selects the optimized build instead of the debug build.    ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
-    ' --list     list candidates instead of building or running them.       ', &
+    ' --list     list pathname of candidates instead of running them. Note  ', &
+    '            out-of-date candidates will still be rebuilt before being  ', &
+    '            listed.                                                    ', &
     ' -- ARGS    optional arguments to pass to the program(s). The same     ', &
     '            arguments are passed to all program names specified.       ', &
     '                                                                       ', &
@@ -728,18 +729,18 @@ contains
     ' fpm(1) - run project applications:                                    ', &
     '                                                                       ', &
     '  # run all default programs in /app or as specified in "fpm.toml"     ', &
-    '  fpm run ''*''                                                          ', &
+    '  fpm run --all                                                        ', &
     '                                                                       ', &
-    '  # run default program using the compiler command "f90". If more      ', &
-    '  # than one app exists a list displays and names must be specified.   ', &
+    '  # run default program built or to be built with the compiler command ', &
+    '  # "f90". If more than one app exists a list displays and target names', &
+    '  # are required.                                                      ', &
     '  fpm run --compiler f90                                               ', &
     '                                                                       ', &
-    '  # run example demonstration programs instead of the application      ', &
-    '  # programs ( defaults can be overridden in "fpm.toml").              ', &
+    '  # run example programs instead of the application programs.          ', &
     '  fpm run --example ''*''                                                ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
-    '  fpm run mytest -- -x 10 -y 20 --title "my title line"                ', &
+    '  fpm run myprog -- -x 10 -y 20 --title "my title line"                ', &
     '                                                                       ', &
     '  # run production version of two applications                         ', &
     '  fpm run --target prg1,prg2 --release                                 ', &
