@@ -485,6 +485,8 @@ character(len=:),allocatable          :: sep_local, left_local, right_local
       endif
    enddo
 end function join
+
+function glob(tame,wild)
 !>
 !!##NAME
 !!    glob(3f) - [M_strings:COMPARE] compare given string for match to
@@ -719,7 +721,6 @@ end function join
 !!
 !!##LICENSE
 !!   Public Domain
-function glob(tame,wild)
 
 ! ident_6="@(#)M_strings::glob(3f): function compares text strings, one of which can have wildcards ('*' or '?')."
 

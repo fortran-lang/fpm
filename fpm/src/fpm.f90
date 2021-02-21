@@ -266,7 +266,6 @@ subroutine cmd_run(settings,test)
 
                     do j=1,size(settings%name)
 
-                        !*!if (trim(settings%name(j))==exe_source%exe_name) then
                         if (glob(trim(exe_source%exe_name),trim(settings%name(j)))) then
 
                             found(j) = .true.
