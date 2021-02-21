@@ -693,7 +693,7 @@ contains
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     ' Run applications you have built in your fpm(1) project.               ', &
-    ' By default applications in /appl or specified as "executable" in your ', &
+    ' By default applications in /app or specified as "executable" in your  ', &
     ' "fpm.toml" manifest are used. Alternatively demonstration programs    ', &
     ' in example/ or specified in the "example" section in "fpm.toml"       ', &
     ' can be executed with this subcommand.                                 ', &
