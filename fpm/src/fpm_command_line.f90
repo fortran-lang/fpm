@@ -498,6 +498,7 @@ contains
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
    ' ']
    help_list_dash = [character(len=80) :: &
+   !123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--release] [--list]                          ', &
    ' help [NAME(s)]                                                                 ', &
@@ -505,7 +506,7 @@ contains
    '          [--full|--bare][--backfill]                                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list] [--example]    ', &
+   ' run  [[--target] NAME(s)|--all] [--release] [--runner "CMD"] [--list] [--example]', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
@@ -618,7 +619,7 @@ contains
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|             ', &
    '              [--full|--bare][--backfill]                               ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
-    '    run [[--target] NAME(s)] [--release] [--list] [--example]          ', &
+    '    run [[--target] NAME(s)|--all] [--release] [--list] [--example]    ', &
     '        [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]          ', &
     '    test [[--target] NAME(s)] [--release] [--list]                     ', &
     '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]         ', &
@@ -690,7 +691,7 @@ contains
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm run [[--target] NAME(s)][--release][--compiler COMPILER_NAME]     ', &
+    ' fpm run [[--target] NAME(s)|-all][--release][--compiler COMPILER_NAME]', &
     '         [--runner "CMD"] [--example] [--list][-- ARGS]                ', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
@@ -711,7 +712,7 @@ contains
     '                   Simple "globbing" is supported where "?" represents ', &
     '                   any single character and "*" represents any string. ', &
     '                   Therefore a quoted asterisk ''*'' runs all programs.  ', &
-    ' --all      An alias for "--target ''*''. All targets are selected.      ', &
+    ' --all      An alias for "--target ''*''". All targets are selected.     ', &
     ' --example  run example programs instead of applications               ', &
     ' --release  selects the optimized build instead of the debug build.    ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
