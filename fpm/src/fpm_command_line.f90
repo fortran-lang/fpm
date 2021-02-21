@@ -693,9 +693,10 @@ contains
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     ' Run applications you have built in your fpm(1) project.               ', &
-    ' By default applications specified in as "executable" in your package  ', &
-    ' manifest are used, alternatively also demonstration programs under    ', &
-    ' "example" can be used with this subcommand.                           ', &
+    ' By default applications in /appl or specified as "executable" in your ', &
+    ' "fpm.toml" manifest are used. Alternatively demonstration programs    ', &
+    ' in example/ or specified in the "example" section in "fpm.toml"       ', &
+    ' can be executed with this subcommand.                                 ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
     ' --target NAME(s)  list of specific application names to execute.      ', &
@@ -707,20 +708,18 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Therefore a quoted asterisk ''*'' runs all programs.  ', &
     ' --example  run example programs instead of applications               ', &
-    ' --release  selects the optimized build instead of the debug           ', &
-    '            build.                                                     ', &
+    ' --release  selects the optimized build instead of the debug build.    ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
-    ' --list     list candidates instead of building or running them        ', &
-    ' -- ARGS    optional arguments to pass to the program(s).              ', &
-    '            The same arguments are passed to all names                 ', &
-    '            specified.                                                 ', &
+    ' --list     list candidates instead of building or running them.       ', &
+    ' -- ARGS    optional arguments to pass to the program(s). The same     ', &
+    '            arguments are passed to all program names specified.       ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
-    ' fpm(1) "run" project applications                                     ', &
+    ' fpm(1) - run project applications:                                    ', &
     '                                                                       ', &
     '  # run all default programs in /app or as specified in "fpm.toml"     ', &
     '  fpm run ''*''                                                          ', &
