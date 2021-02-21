@@ -1,5 +1,5 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.)
+use fpm_strings, only: string_t, operator(.in.), glob
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
@@ -266,7 +266,8 @@ subroutine cmd_run(settings,test)
 
                     do j=1,size(settings%name)
 
-                        if (trim(settings%name(j))==exe_source%exe_name) then
+                        !*!if (trim(settings%name(j))==exe_source%exe_name) then
+                        if (glob(trim(exe_source%exe_name),trim(settings%name(j)))) then
 
                             found(j) = .true.
                             exe_cmd%s = exe_target%output_file
@@ -295,14 +296,19 @@ subroutine cmd_run(settings,test)
     end if
 
     ! Check all names are valid
-    if (any(.not.found)) then
-
-        write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
-        do j=1,size(settings%name)
-            if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
-        end do
-        write(stderr,'(A)') 'not found.'
-        write(stderr,*)
+    ! or no name and found more than one file
+    if ( any(.not.found) .or. (size(settings%name).eq.0 .and. size(executables).gt.1 .and. .not.test) ) then
+        if(any(.not.found))then
+           write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
+           do j=1,size(settings%name)
+               if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
+           end do
+           write(stderr,'(A)') 'not found.'
+           write(stderr,*)
+        else if(settings%verbose)then
+           write(stderr,'(A)',advance="yes")'<INFO>when more than one executable is available'
+           write(stderr,'(A)',advance="yes")'      program names must be specified.'
+        endif
 
         j = 1
         nCol = LINE_WIDTH/col_width

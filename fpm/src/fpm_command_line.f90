@@ -698,9 +698,14 @@ contains
     ' "example" can be used with this subcommand.                           ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
-    ' --target NAME(s)  optional list of specific names to execute.         ', &
-    '                   The default is to run all the applications in app/  ', &
-    '                   or the programs listed in the "fpm.toml" file.      ', &
+    ' --target NAME(s)  list of specific application names to execute.      ', &
+    '                   No name is required if only one application exists. ', &
+    '                   If no name is supplied and more than one candidate  ', &
+    '                   exists or a name has no match a list is produced    ', &
+    '                   and fpm(1) exits.                                   ', &
+    '                   Simple "globbing" is supported where "?" represents ', &
+    '                   any single character and "*" represents any string. ', &
+    '                   Therefore a quoted asterisk ''*'' runs all programs.  ', &
     ' --example  run example programs instead of applications               ', &
     ' --release  selects the optimized build instead of the debug           ', &
     '            build.                                                     ', &
@@ -717,16 +722,16 @@ contains
     'EXAMPLES                                                               ', &
     ' fpm(1) "run" project applications                                     ', &
     '                                                                       ', &
-    '  # run default programs in /app or as specified in "fpm.toml"         ', &
-    '  fpm run                                                              ', &
+    '  # run all default programs in /app or as specified in "fpm.toml"     ', &
+    '  fpm run ''*''                                                          ', &
     '                                                                       ', &
-    '  # run default programs in /app or as specified in "fpm.toml"         ', &
-    '  # using the compiler command "f90".                                  ', &
+    '  # run default program using the compiler command "f90". If more      ', &
+    '  # than one app exists a list displays and names must be specified.   ', &
     '  fpm run --compiler f90                                               ', &
     '                                                                       ', &
-    '  # run example and demonstration programs instead of the default      ', &
-    '  # application programs (specified in "fpm.toml")                     ', &
-    '  fpm run --example                                                    ', &
+    '  # run example demonstration programs instead of the application      ', &
+    '  # programs ( defaults can be overridden in "fpm.toml").              ', &
+    '  fpm run --example ''*''                                                ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
     '  fpm run mytest -- -x 10 -y 20 --title "my title line"                ', &
@@ -756,7 +761,7 @@ contains
     '    o src/     for modules and procedure source                        ', &
     '    o app/     main program(s) for applications                        ', &
     '    o test/    main program(s) and support files for project tests     ', &
-    '    o example/ main program(s) for examples and demonstrations         ', &
+    '    o example/ main program(s) for example programs                    ', &
     ' Changed or new files found are rebuilt. The results are placed in     ', &
     ' the build/ directory.                                                 ', &
     '                                                                       ', &
