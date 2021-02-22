@@ -280,7 +280,7 @@ character(len=:),allocatable :: fname
          fname='.\'//arg0
          inquire(file=fname,iostat=istat,exist=existing)
          if(existing)then
-            sep='/'
+            sep='\'
          else
             fname='./'//arg0
             inquire(file=fname,iostat=istat,exist=existing)
