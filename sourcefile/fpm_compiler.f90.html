@@ -277,7 +277,7 @@
 <a name="ln-12"></a><span class="c">! could just be a function to return a string instead of passing model</span>
 <a name="ln-13"></a><span class="c">! but likely to change other components like matching C compiler</span>
 <a name="ln-14"></a>
-<a name="ln-15"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fflags</span>  <span class="c">! optional flags that might be overridden by user</span>
+<a name="ln-15"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fflags</span>    <span class="c">! optional flags that might be overridden by user</span>
 <a name="ln-16"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">modpath</span> 
 <a name="ln-17"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">mandatory</span> <span class="c">! flags required for fpm to function properly;</span>
 <a name="ln-18"></a>                                          <span class="c">! ie. add module path and module include directory as appropriate</span>
@@ -307,194 +307,209 @@
 <a name="ln-42"></a><span class="c">! G95               ?          ?       -fmod=          -I            -fopenmp   discontinued</span>
 <a name="ln-43"></a><span class="c">! Open64            ?          ?       -module         -I            -mp        discontinued</span>
 <a name="ln-44"></a><span class="c">! Unisys            ?          ?       ?               ?             ?          discontinued</span>
-<a name="ln-45"></a>    <span class="n">modpath</span><span class="o">=</span><span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">)</span>
-<a name="ln-46"></a>    <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-<a name="ln-47"></a>    <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-<a name="ln-48"></a>
-<a name="ln-49"></a>    <span class="k">select case</span><span class="p">(</span><span class="n">build_name</span><span class="o">//</span><span class="s1">&#39;_&#39;</span><span class="o">//</span><span class="n">compiler</span><span class="p">)</span>
-<a name="ln-50"></a>
-<a name="ln-51"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_caf&#39;</span><span class="p">)</span>
-<a name="ln-52"></a>       <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
-<a name="ln-53"></a><span class="s1">       &amp; -O3&amp;</span>
-<a name="ln-54"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
-<a name="ln-55"></a><span class="s1">       &amp; -fPIC&amp;</span>
-<a name="ln-56"></a><span class="s1">       &amp; -fmax-errors=1&amp;</span>
-<a name="ln-57"></a><span class="s1">       &amp; -funroll-loops&amp;</span>
-<a name="ln-58"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-59"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-60"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_caf&#39;</span><span class="p">)</span>
-<a name="ln-61"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<a name="ln-62"></a><span class="s1">       &amp; -Wall&amp;</span>
-<a name="ln-63"></a><span class="s1">       &amp; -Wextra&amp;</span>
-<a name="ln-64"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
-<a name="ln-65"></a><span class="s1">       &amp; -fPIC -fmax-errors=1&amp;</span>
-<a name="ln-66"></a><span class="s1">       &amp; -g&amp;</span>
-<a name="ln-67"></a><span class="s1">       &amp; -fbounds-check&amp;</span>
-<a name="ln-68"></a><span class="s1">       &amp; -fcheck-array-temporaries&amp;</span>
-<a name="ln-69"></a><span class="s1">       &amp; -fbacktrace&amp;</span>
-<a name="ln-70"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-71"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-72"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_gfortran&#39;</span><span class="p">)</span>
-<a name="ln-73"></a>       <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
-<a name="ln-74"></a><span class="s1">       &amp; -O3&amp;</span>
-<a name="ln-75"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
-<a name="ln-76"></a><span class="s1">       &amp; -fPIC&amp;</span>
-<a name="ln-77"></a><span class="s1">       &amp; -fmax-errors=1&amp;</span>
-<a name="ln-78"></a><span class="s1">       &amp; -funroll-loops&amp;</span>
-<a name="ln-79"></a><span class="s1">       &amp; -fcoarray=single&amp;</span>
-<a name="ln-80"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-81"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-82"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_gfortran&#39;</span><span class="p">)</span>
-<a name="ln-83"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<a name="ln-84"></a><span class="s1">       &amp; -Wall&amp;</span>
-<a name="ln-85"></a><span class="s1">       &amp; -Wextra&amp;</span>
-<a name="ln-86"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
-<a name="ln-87"></a><span class="s1">       &amp; -fPIC -fmax-errors=1&amp;</span>
-<a name="ln-88"></a><span class="s1">       &amp; -g&amp;</span>
-<a name="ln-89"></a><span class="s1">       &amp; -fbounds-check&amp;</span>
-<a name="ln-90"></a><span class="s1">       &amp; -fcheck-array-temporaries&amp;</span>
-<a name="ln-91"></a><span class="s1">       &amp; -fbacktrace&amp;</span>
-<a name="ln-92"></a><span class="s1">       &amp; -fcoarray=single&amp;</span>
-<a name="ln-93"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-94"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-95"></a>
-<a name="ln-96"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_f95&#39;</span><span class="p">)</span>
-<a name="ln-97"></a>       <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
-<a name="ln-98"></a><span class="s1">       &amp; -O3&amp;</span>
-<a name="ln-99"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
-<a name="ln-100"></a><span class="s1">       &amp; -fPIC&amp;</span>
-<a name="ln-101"></a><span class="s1">       &amp; -fmax-errors=1&amp;</span>
-<a name="ln-102"></a><span class="s1">       &amp; -ffast-math&amp;</span>
-<a name="ln-103"></a><span class="s1">       &amp; -funroll-loops&amp;</span>
-<a name="ln-104"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-105"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-106"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_f95&#39;</span><span class="p">)</span>
-<a name="ln-107"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<a name="ln-108"></a><span class="s1">       &amp; -Wall&amp;</span>
-<a name="ln-109"></a><span class="s1">       &amp; -Wextra&amp;</span>
-<a name="ln-110"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
-<a name="ln-111"></a><span class="s1">       &amp; -fPIC -fmax-errors=1&amp;</span>
-<a name="ln-112"></a><span class="s1">       &amp; -g&amp;</span>
-<a name="ln-113"></a><span class="s1">       &amp; -fbounds-check&amp;</span>
-<a name="ln-114"></a><span class="s1">       &amp; -fcheck-array-temporaries&amp;</span>
-<a name="ln-115"></a><span class="s1">       &amp; -Wno-maybe-uninitialized -Wno-uninitialized&amp;</span>
-<a name="ln-116"></a><span class="s1">       &amp; -fbacktrace&amp;</span>
-<a name="ln-117"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-118"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-119"></a>
-<a name="ln-120"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_nvfortran&#39;</span><span class="p">)</span>
-<a name="ln-121"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<a name="ln-122"></a><span class="s1">       &amp; -Mbackslash&amp;</span>
-<a name="ln-123"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-124"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-125"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_nvfortran&#39;</span><span class="p">)</span>
-<a name="ln-126"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<a name="ln-127"></a><span class="s1">       &amp; -Minform=inform&amp;</span>
-<a name="ln-128"></a><span class="s1">       &amp; -Mbackslash&amp;</span>
-<a name="ln-129"></a><span class="s1">       &amp; -g&amp;</span>
-<a name="ln-130"></a><span class="s1">       &amp; -Mbounds&amp;</span>
-<a name="ln-131"></a><span class="s1">       &amp; -Mchkptr&amp;</span>
-<a name="ln-132"></a><span class="s1">       &amp; -Mchkstk&amp;</span>
-<a name="ln-133"></a><span class="s1">       &amp; -traceback&amp;</span>
-<a name="ln-134"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-135"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-136"></a>
-<a name="ln-137"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_ifort&#39;</span><span class="p">)</span>
-<a name="ln-138"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<a name="ln-139"></a><span class="s1">       &amp; -fp-model precise&amp;</span>
-<a name="ln-140"></a><span class="s1">       &amp; -pc 64&amp;</span>
-<a name="ln-141"></a><span class="s1">       &amp; -align all&amp;</span>
-<a name="ln-142"></a><span class="s1">       &amp; -error-limit 1&amp;</span>
-<a name="ln-143"></a><span class="s1">       &amp; -reentrancy threaded&amp;</span>
-<a name="ln-144"></a><span class="s1">       &amp; -nogen-interfaces&amp;</span>
-<a name="ln-145"></a><span class="s1">       &amp; -assume byterecl&amp;</span>
-<a name="ln-146"></a><span class="s1">       &amp; -assume nounderscore&amp;</span>
-<a name="ln-147"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-148"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-149"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_ifort&#39;</span><span class="p">)</span>
-<a name="ln-150"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<a name="ln-151"></a><span class="s1">       &amp; -warn all&amp;</span>
-<a name="ln-152"></a><span class="s1">       &amp; -check:all:noarg_temp_created&amp;</span>
-<a name="ln-153"></a><span class="s1">       &amp; -error-limit 1&amp;</span>
-<a name="ln-154"></a><span class="s1">       &amp; -O0&amp;</span>
-<a name="ln-155"></a><span class="s1">       &amp; -g&amp;</span>
-<a name="ln-156"></a><span class="s1">       &amp; -assume byterecl&amp;</span>
-<a name="ln-157"></a><span class="s1">       &amp; -traceback&amp;</span>
-<a name="ln-158"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-159"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-160"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_ifx&#39;</span><span class="p">)</span>
-<a name="ln-161"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-162"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-163"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_ifx&#39;</span><span class="p">)</span>
-<a name="ln-164"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-45"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">parameter</span> <span class="kd">::</span> <span class="n">names</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="o">=</span><span class="p">[</span> <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="kd">::</span> <span class="p">&amp;</span>
+<a name="ln-46"></a><span class="p">&amp;</span> <span class="s1">&#39;caf&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-47"></a><span class="p">&amp;</span> <span class="s1">&#39;gfortran&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-48"></a><span class="p">&amp;</span> <span class="s1">&#39;f95&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-49"></a><span class="p">&amp;</span> <span class="s1">&#39;nvfortran&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-50"></a><span class="p">&amp;</span> <span class="s1">&#39;ifort&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-51"></a><span class="p">&amp;</span> <span class="s1">&#39;ifx&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-52"></a><span class="p">&amp;</span> <span class="s1">&#39;pgfortran&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-53"></a><span class="p">&amp;</span> <span class="s1">&#39;pgf90&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-54"></a><span class="p">&amp;</span> <span class="s1">&#39;pgf95&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-55"></a><span class="p">&amp;</span> <span class="s1">&#39;flang&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-56"></a><span class="p">&amp;</span> <span class="s1">&#39;lfc&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-57"></a><span class="p">&amp;</span> <span class="s1">&#39;nagfor&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-58"></a><span class="p">&amp;</span> <span class="s1">&#39;crayftn&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-59"></a><span class="p">&amp;</span> <span class="s1">&#39;xlf90&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-60"></a><span class="p">&amp;</span> <span class="s1">&#39;unknown&#39;</span><span class="p">]</span>
+<a name="ln-61"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-62"></a>
+<a name="ln-63"></a>    <span class="n">modpath</span><span class="o">=</span><span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">)</span>
+<a name="ln-64"></a>    <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+<a name="ln-65"></a>    <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+<a name="ln-66"></a>
+<a name="ln-67"></a>    <span class="k">select case</span><span class="p">(</span><span class="n">build_name</span><span class="o">//</span><span class="s1">&#39;_&#39;</span><span class="o">//</span><span class="n">compiler</span><span class="p">)</span>
+<a name="ln-68"></a>
+<a name="ln-69"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_caf&#39;</span><span class="p">)</span>
+<a name="ln-70"></a>       <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
+<a name="ln-71"></a><span class="s1">       &amp; -O3&amp;</span>
+<a name="ln-72"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
+<a name="ln-73"></a><span class="s1">       &amp; -fPIC&amp;</span>
+<a name="ln-74"></a><span class="s1">       &amp; -fmax-errors=1&amp;</span>
+<a name="ln-75"></a><span class="s1">       &amp; -funroll-loops&amp;</span>
+<a name="ln-76"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-77"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-78"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_caf&#39;</span><span class="p">)</span>
+<a name="ln-79"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<a name="ln-80"></a><span class="s1">       &amp; -Wall&amp;</span>
+<a name="ln-81"></a><span class="s1">       &amp; -Wextra&amp;</span>
+<a name="ln-82"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
+<a name="ln-83"></a><span class="s1">       &amp; -fPIC -fmax-errors=1&amp;</span>
+<a name="ln-84"></a><span class="s1">       &amp; -g&amp;</span>
+<a name="ln-85"></a><span class="s1">       &amp; -fbounds-check&amp;</span>
+<a name="ln-86"></a><span class="s1">       &amp; -fcheck-array-temporaries&amp;</span>
+<a name="ln-87"></a><span class="s1">       &amp; -fbacktrace&amp;</span>
+<a name="ln-88"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-89"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-90"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_gfortran&#39;</span><span class="p">)</span>
+<a name="ln-91"></a>       <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
+<a name="ln-92"></a><span class="s1">       &amp; -O3&amp;</span>
+<a name="ln-93"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
+<a name="ln-94"></a><span class="s1">       &amp; -fPIC&amp;</span>
+<a name="ln-95"></a><span class="s1">       &amp; -fmax-errors=1&amp;</span>
+<a name="ln-96"></a><span class="s1">       &amp; -funroll-loops&amp;</span>
+<a name="ln-97"></a><span class="s1">       &amp; -fcoarray=single&amp;</span>
+<a name="ln-98"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-99"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-100"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_gfortran&#39;</span><span class="p">)</span>
+<a name="ln-101"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<a name="ln-102"></a><span class="s1">       &amp; -Wall&amp;</span>
+<a name="ln-103"></a><span class="s1">       &amp; -Wextra&amp;</span>
+<a name="ln-104"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
+<a name="ln-105"></a><span class="s1">       &amp; -fPIC -fmax-errors=1&amp;</span>
+<a name="ln-106"></a><span class="s1">       &amp; -g&amp;</span>
+<a name="ln-107"></a><span class="s1">       &amp; -fbounds-check&amp;</span>
+<a name="ln-108"></a><span class="s1">       &amp; -fcheck-array-temporaries&amp;</span>
+<a name="ln-109"></a><span class="s1">       &amp; -fbacktrace&amp;</span>
+<a name="ln-110"></a><span class="s1">       &amp; -fcoarray=single&amp;</span>
+<a name="ln-111"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-112"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-113"></a>
+<a name="ln-114"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_f95&#39;</span><span class="p">)</span>
+<a name="ln-115"></a>       <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
+<a name="ln-116"></a><span class="s1">       &amp; -O3&amp;</span>
+<a name="ln-117"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
+<a name="ln-118"></a><span class="s1">       &amp; -fPIC&amp;</span>
+<a name="ln-119"></a><span class="s1">       &amp; -fmax-errors=1&amp;</span>
+<a name="ln-120"></a><span class="s1">       &amp; -ffast-math&amp;</span>
+<a name="ln-121"></a><span class="s1">       &amp; -funroll-loops&amp;</span>
+<a name="ln-122"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-123"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-124"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_f95&#39;</span><span class="p">)</span>
+<a name="ln-125"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<a name="ln-126"></a><span class="s1">       &amp; -Wall&amp;</span>
+<a name="ln-127"></a><span class="s1">       &amp; -Wextra&amp;</span>
+<a name="ln-128"></a><span class="s1">       &amp; -Wimplicit-interface&amp;</span>
+<a name="ln-129"></a><span class="s1">       &amp; -fPIC -fmax-errors=1&amp;</span>
+<a name="ln-130"></a><span class="s1">       &amp; -g&amp;</span>
+<a name="ln-131"></a><span class="s1">       &amp; -fbounds-check&amp;</span>
+<a name="ln-132"></a><span class="s1">       &amp; -fcheck-array-temporaries&amp;</span>
+<a name="ln-133"></a><span class="s1">       &amp; -Wno-maybe-uninitialized -Wno-uninitialized&amp;</span>
+<a name="ln-134"></a><span class="s1">       &amp; -fbacktrace&amp;</span>
+<a name="ln-135"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-136"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-137"></a>
+<a name="ln-138"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_nvfortran&#39;</span><span class="p">)</span>
+<a name="ln-139"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<a name="ln-140"></a><span class="s1">       &amp; -Mbackslash&amp;</span>
+<a name="ln-141"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-142"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-143"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_nvfortran&#39;</span><span class="p">)</span>
+<a name="ln-144"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<a name="ln-145"></a><span class="s1">       &amp; -Minform=inform&amp;</span>
+<a name="ln-146"></a><span class="s1">       &amp; -Mbackslash&amp;</span>
+<a name="ln-147"></a><span class="s1">       &amp; -g&amp;</span>
+<a name="ln-148"></a><span class="s1">       &amp; -Mbounds&amp;</span>
+<a name="ln-149"></a><span class="s1">       &amp; -Mchkptr&amp;</span>
+<a name="ln-150"></a><span class="s1">       &amp; -Mchkstk&amp;</span>
+<a name="ln-151"></a><span class="s1">       &amp; -traceback&amp;</span>
+<a name="ln-152"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-153"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-154"></a>
+<a name="ln-155"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_ifort&#39;</span><span class="p">)</span>
+<a name="ln-156"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<a name="ln-157"></a><span class="s1">       &amp; -fp-model precise&amp;</span>
+<a name="ln-158"></a><span class="s1">       &amp; -pc 64&amp;</span>
+<a name="ln-159"></a><span class="s1">       &amp; -align all&amp;</span>
+<a name="ln-160"></a><span class="s1">       &amp; -error-limit 1&amp;</span>
+<a name="ln-161"></a><span class="s1">       &amp; -reentrancy threaded&amp;</span>
+<a name="ln-162"></a><span class="s1">       &amp; -nogen-interfaces&amp;</span>
+<a name="ln-163"></a><span class="s1">       &amp; -assume byterecl&amp;</span>
+<a name="ln-164"></a><span class="s1">       &amp;&#39;</span>
 <a name="ln-165"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-166"></a>
-<a name="ln-167"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_pgfortran&#39;</span><span class="p">,</span><span class="s1">&#39;release_pgf90&#39;</span><span class="p">,</span><span class="s1">&#39;release_pgf95&#39;</span><span class="p">)</span>  <span class="c">! Portland Group F90/F95 compilers</span>
-<a name="ln-168"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-169"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-170"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_pgfortran&#39;</span><span class="p">,</span><span class="s1">&#39;debug_pgf90&#39;</span><span class="p">,</span><span class="s1">&#39;debug_pgf95&#39;</span><span class="p">)</span>  <span class="c">! Portland Group F90/F95 compilers</span>
-<a name="ln-171"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-172"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-173"></a>
-<a name="ln-174"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_flang&#39;</span><span class="p">)</span>
-<a name="ln-175"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-166"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_ifort&#39;</span><span class="p">)</span>
+<a name="ln-167"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<a name="ln-168"></a><span class="s1">       &amp; -warn all&amp;</span>
+<a name="ln-169"></a><span class="s1">       &amp; -check:all:noarg_temp_created&amp;</span>
+<a name="ln-170"></a><span class="s1">       &amp; -error-limit 1&amp;</span>
+<a name="ln-171"></a><span class="s1">       &amp; -O0&amp;</span>
+<a name="ln-172"></a><span class="s1">       &amp; -g&amp;</span>
+<a name="ln-173"></a><span class="s1">       &amp; -assume byterecl&amp;</span>
+<a name="ln-174"></a><span class="s1">       &amp; -traceback&amp;</span>
+<a name="ln-175"></a><span class="s1">       &amp;&#39;</span>
 <a name="ln-176"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-177"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_flang&#39;</span><span class="p">)</span>
+<a name="ln-177"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_ifx&#39;</span><span class="p">)</span>
 <a name="ln-178"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
 <a name="ln-179"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-180"></a>
-<a name="ln-181"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_lfc&#39;</span><span class="p">)</span>
-<a name="ln-182"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-183"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -M &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-184"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_lfc&#39;</span><span class="p">)</span>
+<a name="ln-180"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_ifx&#39;</span><span class="p">)</span>
+<a name="ln-181"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-182"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-183"></a>
+<a name="ln-184"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_pgfortran&#39;</span><span class="p">,</span><span class="s1">&#39;release_pgf90&#39;</span><span class="p">,</span><span class="s1">&#39;release_pgf95&#39;</span><span class="p">)</span>  <span class="c">! Portland Group F90/F95 compilers</span>
 <a name="ln-185"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-186"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -M &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-187"></a>
-<a name="ln-188"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_nagfor&#39;</span><span class="p">)</span>
-<a name="ln-189"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &amp;</span>
-<a name="ln-190"></a><span class="s1">       &amp; -O4&amp;</span>
-<a name="ln-191"></a><span class="s1">       &amp; -coarray=single&amp;</span>
-<a name="ln-192"></a><span class="s1">       &amp; -PIC&amp;</span>
-<a name="ln-193"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-194"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -mdir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> <span class="c">!</span>
-<a name="ln-195"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_nagfor&#39;</span><span class="p">)</span>
-<a name="ln-196"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<a name="ln-197"></a><span class="s1">       &amp; -g&amp;</span>
-<a name="ln-198"></a><span class="s1">       &amp; -C=all&amp;</span>
-<a name="ln-199"></a><span class="s1">       &amp; -O0&amp;</span>
-<a name="ln-200"></a><span class="s1">       &amp; -gline&amp;</span>
-<a name="ln-201"></a><span class="s1">       &amp; -coarray=single&amp;</span>
-<a name="ln-202"></a><span class="s1">       &amp; -PIC&amp;</span>
-<a name="ln-203"></a><span class="s1">       &amp;&#39;</span>
-<a name="ln-204"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -mdir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> <span class="c">!</span>
-<a name="ln-205"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_crayftn&#39;</span><span class="p">)</span>
-<a name="ln-206"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-207"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-208"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_crayftn&#39;</span><span class="p">)</span>
-<a name="ln-209"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-210"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-211"></a>
-<a name="ln-212"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_xlf90&#39;</span><span class="p">)</span>
-<a name="ln-213"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-214"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -qmoddir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-215"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_xlf90&#39;</span><span class="p">)</span>
-<a name="ln-216"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-217"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -qmoddir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-218"></a>
-<a name="ln-219"></a>    <span class="k">case </span><span class="n">default</span>
-<a name="ln-220"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
-<a name="ln-221"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-<a name="ln-222"></a>       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;WARNING&gt; unknown compiler (&#39;</span><span class="p">,</span><span class="n">compiler</span><span class="p">,</span><span class="s1">&#39;)&#39;</span>
-<a name="ln-223"></a>       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;          and build name (&#39;</span><span class="p">,</span><span class="n">build_name</span><span class="p">,</span><span class="s1">&#39;)&#39;</span>
-<a name="ln-224"></a>       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;          combination.&#39;</span>
-<a name="ln-225"></a>       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;          known compilers are gfortran, nvfortran, ifort&#39;</span>
-<a name="ln-226"></a>    <span class="k">end select</span>
-<a name="ln-227"></a>
-<a name="ln-228"></a><span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span> <span class="o">=</span> <span class="n">fflags</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">mandatory</span>
-<a name="ln-229"></a>     
-<a name="ln-230"></a><span class="k">end subroutine </span><span class="n">add_compile_flag_defaults</span>
-<a name="ln-231"></a>
-<a name="ln-232"></a><span class="k">end module </span><span class="n">fpm_compiler</span>
+<a name="ln-186"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-187"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_pgfortran&#39;</span><span class="p">,</span><span class="s1">&#39;debug_pgf90&#39;</span><span class="p">,</span><span class="s1">&#39;debug_pgf95&#39;</span><span class="p">)</span>  <span class="c">! Portland Group F90/F95 compilers</span>
+<a name="ln-188"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-189"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-190"></a>
+<a name="ln-191"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_flang&#39;</span><span class="p">)</span>
+<a name="ln-192"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-193"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-194"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_flang&#39;</span><span class="p">)</span>
+<a name="ln-195"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-196"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-197"></a>
+<a name="ln-198"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_lfc&#39;</span><span class="p">)</span>
+<a name="ln-199"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-200"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -M &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-201"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_lfc&#39;</span><span class="p">)</span>
+<a name="ln-202"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-203"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -M &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-204"></a>
+<a name="ln-205"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_nagfor&#39;</span><span class="p">)</span>
+<a name="ln-206"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &amp;</span>
+<a name="ln-207"></a><span class="s1">       &amp; -O4&amp;</span>
+<a name="ln-208"></a><span class="s1">       &amp; -coarray=single&amp;</span>
+<a name="ln-209"></a><span class="s1">       &amp; -PIC&amp;</span>
+<a name="ln-210"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-211"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -mdir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> <span class="c">!</span>
+<a name="ln-212"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_nagfor&#39;</span><span class="p">)</span>
+<a name="ln-213"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<a name="ln-214"></a><span class="s1">       &amp; -g&amp;</span>
+<a name="ln-215"></a><span class="s1">       &amp; -C=all&amp;</span>
+<a name="ln-216"></a><span class="s1">       &amp; -O0&amp;</span>
+<a name="ln-217"></a><span class="s1">       &amp; -gline&amp;</span>
+<a name="ln-218"></a><span class="s1">       &amp; -coarray=single&amp;</span>
+<a name="ln-219"></a><span class="s1">       &amp; -PIC&amp;</span>
+<a name="ln-220"></a><span class="s1">       &amp;&#39;</span>
+<a name="ln-221"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -mdir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> <span class="c">!</span>
+<a name="ln-222"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_crayftn&#39;</span><span class="p">)</span>
+<a name="ln-223"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-224"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-225"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_crayftn&#39;</span><span class="p">)</span>
+<a name="ln-226"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-227"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-228"></a>
+<a name="ln-229"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;release_xlf90&#39;</span><span class="p">)</span>
+<a name="ln-230"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-231"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -qmoddir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-232"></a>    <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_xlf90&#39;</span><span class="p">)</span>
+<a name="ln-233"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-234"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -qmoddir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-235"></a>
+<a name="ln-236"></a>    <span class="k">case </span><span class="n">default</span>
+<a name="ln-237"></a>       <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
+<a name="ln-238"></a>       <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
+<a name="ln-239"></a>       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;WARNING&gt; unknown compiler (&#39;</span><span class="p">,</span><span class="n">compiler</span><span class="p">,</span><span class="s1">&#39;) and build name (&#39;</span><span class="p">,</span><span class="n">build_name</span><span class="p">,</span><span class="s1">&#39;) combination.&#39;</span>
+<a name="ln-240"></a>       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(a,*(T31,6(a:,&quot;, &quot;),/))&#39;</span><span class="p">)</span><span class="s1">&#39;          known compilers are &#39;</span><span class="p">,(</span><span class="nb">trim</span><span class="p">(</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-241"></a>    <span class="k">end select</span>
+<a name="ln-242"></a>
+<a name="ln-243"></a><span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span> <span class="o">=</span> <span class="n">fflags</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">mandatory</span>
+<a name="ln-244"></a>     
+<a name="ln-245"></a><span class="k">end subroutine </span><span class="n">add_compile_flag_defaults</span>
+<a name="ln-246"></a>
+<a name="ln-247"></a><span class="k">end module </span><span class="n">fpm_compiler</span>
 </pre></div>
 
     </section>
@@ -513,7 +528,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-18 14:01  
+             on 2021-02-24 13:59  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

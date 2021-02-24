@@ -175,9 +175,13 @@
       
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-fflags">fflags</a>
       
+      <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-i~8">i</a>
+      
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-mandatory">mandatory</a>
       
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-modpath">modpath</a>
+      
+      <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-names">names</a>
       
     </div>
   </div>
@@ -309,9 +313,13 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
       
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-fflags">fflags</a>
       
+      <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-i~8">i</a>
+      
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-mandatory">mandatory</a>
       
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-modpath">modpath</a>
+      
+      <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-names">names</a>
       
     </div>
   </div>
@@ -383,6 +391,20 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
   
 <tr>
   
+  <td><span class="anchor" id="variable-i~8"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>i</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-mandatory"></span>character(len=:),</td>
   
   <td>public,</td>
@@ -402,6 +424,20 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
   <td>public,</td>
   <td>allocatable</td><td>::</td>
   <td><strong>modpath</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-names"></span>character(len=*),</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>names</strong>(*)</td><td> =</td><td>[character(len=10)::'caf', 'gfortran', 'f95', 'nvfortran', 'ifort', 'ifx', 'pgfortran', 'pgf90', 'pgf95', 'flang', 'lfc', 'nagfor', 'crayftn', 'xlf90', 'unknown']</td><td></td>
   
 </tr>
 
@@ -436,7 +472,7 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
 <span class="c">! could just be a function to return a string instead of passing model</span>
 <span class="c">! but likely to change other components like matching C compiler</span>
 
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fflags</span>  <span class="c">! optional flags that might be overridden by user</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fflags</span>    <span class="c">! optional flags that might be overridden by user</span>
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">modpath</span> 
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">mandatory</span> <span class="c">! flags required for fpm to function properly;</span>
                                           <span class="c">! ie. add module path and module include directory as appropriate</span>
@@ -466,6 +502,24 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
 <span class="c">! G95               ?          ?       -fmod=          -I            -fopenmp   discontinued</span>
 <span class="c">! Open64            ?          ?       -module         -I            -mp        discontinued</span>
 <span class="c">! Unisys            ?          ?       ?               ?             ?          discontinued</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">parameter</span> <span class="kd">::</span> <span class="n">names</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="o">=</span><span class="p">[</span> <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="kd">::</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;caf&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;gfortran&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;f95&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;nvfortran&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;ifort&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;ifx&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;pgfortran&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;pgf90&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;pgf95&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;flang&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;lfc&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;nagfor&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;crayftn&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;xlf90&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span> <span class="s1">&#39;unknown&#39;</span><span class="p">]</span>
+<span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+
     <span class="n">modpath</span><span class="o">=</span><span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">)</span>
     <span class="n">fflags</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
     <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
@@ -567,7 +621,6 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
 <span class="s1">       &amp; -reentrancy threaded&amp;</span>
 <span class="s1">       &amp; -nogen-interfaces&amp;</span>
 <span class="s1">       &amp; -assume byterecl&amp;</span>
-<span class="s1">       &amp; -assume nounderscore&amp;</span>
 <span class="s1">       &amp;&#39;</span>
        <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
     <span class="k">case</span><span class="p">(</span><span class="s1">&#39;debug_ifort&#39;</span><span class="p">)</span>
@@ -643,10 +696,8 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
     <span class="k">case </span><span class="n">default</span>
        <span class="n">fflags</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span>
        <span class="n">mandatory</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> 
-       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;WARNING&gt; unknown compiler (&#39;</span><span class="p">,</span><span class="n">compiler</span><span class="p">,</span><span class="s1">&#39;)&#39;</span>
-       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;          and build name (&#39;</span><span class="p">,</span><span class="n">build_name</span><span class="p">,</span><span class="s1">&#39;)&#39;</span>
-       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;          combination.&#39;</span>
-       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;          known compilers are gfortran, nvfortran, ifort&#39;</span>
+       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;WARNING&gt; unknown compiler (&#39;</span><span class="p">,</span><span class="n">compiler</span><span class="p">,</span><span class="s1">&#39;) and build name (&#39;</span><span class="p">,</span><span class="n">build_name</span><span class="p">,</span><span class="s1">&#39;) combination.&#39;</span>
+       <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(a,*(T31,6(a:,&quot;, &quot;),/))&#39;</span><span class="p">)</span><span class="s1">&#39;          known compilers are &#39;</span><span class="p">,(</span><span class="nb">trim</span><span class="p">(</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">end select</span>
 
 <span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span> <span class="o">=</span> <span class="n">fflags</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">mandatory</span>
@@ -673,7 +724,7 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-02-18 14:01  
+             on 2021-02-24 13:59  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

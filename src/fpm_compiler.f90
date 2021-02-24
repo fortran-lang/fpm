@@ -12,7 +12,7 @@ type(fpm_model_t), intent(inout) :: model
 ! could just be a function to return a string instead of passing model
 ! but likely to change other components like matching C compiler
 
-character(len=:),allocatable :: fflags  ! optional flags that might be overridden by user
+character(len=:),allocatable :: fflags    ! optional flags that might be overridden by user
 character(len=:),allocatable :: modpath 
 character(len=:),allocatable :: mandatory ! flags required for fpm to function properly;
                                           ! ie. add module path and module include directory as appropriate
@@ -42,6 +42,24 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
 ! G95               ?          ?       -fmod=          -I            -fopenmp   discontinued
 ! Open64            ?          ?       -module         -I            -mp        discontinued
 ! Unisys            ?          ?       ?               ?             ?          discontinued
+character(len=*),parameter :: names(*)=[ character(len=10) :: &
+& 'caf', &
+& 'gfortran', &
+& 'f95', &
+& 'nvfortran', &
+& 'ifort', &
+& 'ifx', &
+& 'pgfortran', &
+& 'pgf90', &
+& 'pgf95', &
+& 'flang', &
+& 'lfc', &
+& 'nagfor', &
+& 'crayftn', &
+& 'xlf90', &
+& 'unknown']
+integer :: i
+
     modpath=join_path(model%output_directory,model%package_name)
     fflags=''
     mandatory=''
@@ -143,7 +161,6 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
        & -reentrancy threaded&
        & -nogen-interfaces&
        & -assume byterecl&
-       & -assume nounderscore&
        &'
        mandatory=' -module '//modpath//' -I '//modpath 
     case('debug_ifort')
@@ -219,10 +236,8 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
     case default
        fflags = ' '
        mandatory=' -module '//modpath//' -I '//modpath 
-       write(*,*)'<WARNING> unknown compiler (',compiler,')'
-       write(*,*)'          and build name (',build_name,')'
-       write(*,*)'          combination.'
-       write(*,*)'          known compilers are gfortran, nvfortran, ifort'
+       write(*,'(*(a))')'<WARNING> unknown compiler (',compiler,') and build name (',build_name,') combination.'
+       write(*,'(a,*(T31,6(a:,", "),/))')'          known compilers are ',(trim(names(i)),i=1,size(names)-1)
     end select
 
     model%fortran_compile_flags = fflags//' '//mandatory
