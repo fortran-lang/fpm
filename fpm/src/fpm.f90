@@ -69,6 +69,9 @@ subroutine build_model(model, settings, package, error)
     model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
 
     call add_compile_flag_defaults(settings%build_name, basename(model%fortran_compiler), model)
+    if(settings%verbose)then
+       write(*,*)'<INFO>COMPILER OPTIONS:  ', model%fortran_compile_flags 
+    endif
 
     model%link_flags = ''
 
