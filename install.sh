@@ -32,7 +32,7 @@ STATIC=false
 HASKELL_ONLY=false
 
 STACK_BIN_PATH="$HOME/.local/bin"
-REF=$(git tag | tail -n1)
+REF=$(git describe --tag --abbrev=0)
 RELEASE_FLAGS="--flag -g --flag -fbacktrace --flag -O3"
 
 while [ "$1" != "" ]; do
