@@ -301,7 +301,7 @@ subroutine cmd_run(settings,test)
     & (size(settings%name).eq.0 .and. size(executables).gt.1 .and. .not.test) .and.&
     & .not.settings%list) then
         line=join(settings%name)
-        if(line.ne.'.'.and. line.ne.'..')then ! do not report these special strings
+        if(line.ne.'.')then ! do not report these special strings
            if(any(.not.found))then
               write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
               do j=1,size(settings%name)
@@ -340,7 +340,7 @@ subroutine cmd_run(settings,test)
         end do
 
         write(stderr,*)
-        if(line.eq.'.' .or. line.eq.' '.or. line.eq.'..')then ! do not report these special strings
+        if(line.eq.'.' .or. line.eq.' ')then ! do not report these special strings
            stop
         else
            stop 1

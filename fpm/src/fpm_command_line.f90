@@ -172,6 +172,12 @@ contains
                names=[character(len=max(len(names),len(tnames))) :: names,tnames]
             endif
 
+            ! convert special string '..' to equivalent (shorter) '*'
+            ! to allow for a string that does not require shift-key and quoting
+            do i=1,size(names)
+               if(names(i).eq.'..')names(i)='*'
+            enddo
+
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
             cmd_settings=fpm_run_settings(&
@@ -374,6 +380,12 @@ contains
                call split(sget('target'),tnames,delimiters=' ,:')
                names=[character(len=max(len(names),len(tnames))) :: names,tnames]
             endif
+
+            ! convert special string '..' to equivalent (shorter) '*'
+            ! to allow for a string that does not require shift-key and quoting
+            do i=1,size(names)
+               if(names(i).eq.'..')names(i)='*'
+            enddo
 
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
@@ -699,16 +711,17 @@ contains
     ' are automatically rebuilt before being run if they are out of date.   ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
-    ' --target NAME(s)  list of specific application names to execute.       ', &
-    '                     No name is required if only one application exists.', &
-    '                   If no name is supplied and more than one candidate   ', &
-    '                   exists or a name has no match a list is produced     ', &
-    '                   and fpm(1) exits.                                    ', &
-    '                     Simple "globbing" is supported where "?" represents', &
-    '                   any single character and "*" represents any string.  ', &
-    '                   Therefore a quoted asterisk ''*'' runs all programs. ', &
-    '                     The special string "." also causes all targets to  ', &
-    '                   be listed, even if only a single target exists.      ', &
+    ' --target NAME(s)  list of specific application names to execute.      ', &
+    '                     No name is required if only one target exists.    ', &
+    '                   If no name is supplied and more than one candidate  ', &
+    '                   exists or a name has no match a list is produced    ', &
+    '                   and fpm(1) exits.                                   ', &
+    '                     Basic "globbing" is supported where "?" represents', &
+    '                   any single character and "*" represents any string. ', &
+    '                     The special string "." causes all targets to      ', &
+    '                   be listed, even if only a single target exists.     ', &
+    '                     The special string ".." causes all targets to     ', &
+    '                   be executed.                                        ', &
     ' --example  Run example programs instead of applications.              ', &
     ' --release  selects the optimized build instead of the debug build.    ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
@@ -726,8 +739,8 @@ contains
     ' fpm(1) - run or display project applications:                         ', &
     '                                                                       ', &
     '  fpm run     # run a target when only one exists or list targets      ', &
-    '  fpm run ''*'' # run all targets                                        ', &
     '  fpm run .   # list all targets, running nothing                      ', &
+    '  fpm run ..  # run all targets, no matter how many there are          ', &
     '                                                                       ', &
     '  # run default program built or to be built with the compiler command ', &
     '  # "f90". If more than one app exists a list displays and target names', &
