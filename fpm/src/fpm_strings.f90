@@ -383,93 +383,103 @@ subroutine resize_string(list, n)
 
 end subroutine resize_string
 
-pure function join(str,sep,trm,left,right) result (string)
+pure function join(str,sep,trm,left,right,start,end) result (string)
+!>
+!!##NAME
+!!    join(3f) - [fpm_strings:EDITING] append CHARACTER variable array into
+!!    a single CHARACTER variable with specified separator
+!!    (LICENSE:PD)
+!!
+!!##SYNOPSIS
+!!
+!!    pure function join(str,sep,trm,left,right,start,end) result (string)
+!!
+!!     character(len=*),intent(in)          :: str(:)
+!!     character(len=*),intent(in),optional :: sep
+!!     logical,intent(in),optional          :: trm
+!!     character(len=*),intent(in),optional :: right
+!!     character(len=*),intent(in),optional :: left
+!!     character(len=*),intent(in),optional :: start
+!!     character(len=*),intent(in),optional :: end
+!!     character(len=:),allocatable         :: string
+!!
+!!##DESCRIPTION
+!!      JOIN(3f) appends the elements of a CHARACTER array into a single
+!!      CHARACTER variable, with elements 1 to N joined from left to right.
+!!      By default each element is trimmed of trailing spaces and the
+!!      default separator is a null string.
+!!
+!!##OPTIONS
+!!      STR(:)  array of CHARACTER variables to be joined
+!!      SEP     separator string to place between each variable. defaults
+!!              to a null string.
+!!      LEFT    string to place at left of each element
+!!      RIGHT   string to place at right of each element
+!!      START   prefix string
+!!      END     suffix string
+!!      TRM     option to trim each element of STR of trailing
+!!              spaces. Defaults to .TRUE.
+!!
+!!##RESULT
+!!      STRING  CHARACTER variable composed of all of the elements of STR()
+!!              appended together with the optional separator SEP placed
+!!              between the elements.
+!!
+!!##EXAMPLE
+!!
+!!  Sample program:
+!!
+!!   program demo_join
+!!   use fpm_strings, only: join
+!!   implicit none
+!!   character(len=:),allocatable  :: s(:)
+!!   character(len=:),allocatable  :: out
+!!   integer                       :: i
+!!     s=[character(len=10) :: 'United',' we',' stand,', &
+!!     & ' divided',' we fall.']
+!!     out=join(s)
+!!     write(*,'(a)') out
+!!     write(*,'(a)') join(s,trm=.false.)
+!!     write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
+!!     write(*,'(a)') join(s,sep='<>')
+!!     write(*,'(a)') join(s,sep=';',left='[',right=']')
+!!     write(*,'(a)') join(s,left='[',right=']')
+!!     write(*,'(a)') join(s,left='>>')
+!!   end program demo_join
+!!
+!!  Expected output:
+!!
+!!   United we stand, divided we fall.
+!!   United     we        stand,    divided   we fall.
+!!   United    | we       | stand,   | divided  | we fall.
+!!   United    | we       | stand,   | divided  | we fall.
+!!   United    | we       | stand,   | divided  | we fall.
+!!   United<> we<> stand,<> divided<> we fall.
+!!   [United];[ we];[ stand,];[ divided];[ we fall.]
+!!   [United][ we][ stand,][ divided][ we fall.]
+!!   >>United>> we>> stand,>> divided>> we fall.
+!!
+!!##AUTHOR
+!!    John S. Urban
+!!
+!!##LICENSE
+!!    Public Domain
 
-!> M_strings::join(3f): append an array of character variables with specified separator into a single CHARACTER variable
-!>
-!>##NAME
-!>    join(3f) - [M_strings:EDITING] append CHARACTER variable array into
-!>    a single CHARACTER variable with specified separator
-!>    (LICENSE:PD)
-!>
-!>##SYNOPSIS
-!>
-!>    pure function join(str,sep,trm,left,right) result (string)
-!>
-!>     character(len=*),intent(in)          :: str(:)
-!>     character(len=*),intent(in),optional :: sep
-!>     logical,intent(in),optional          :: trm
-!>     character(len=*),intent(in),optional :: right
-!>     character(len=*),intent(in),optional :: left
-!>     character(len=:),allocatable         :: string
-!>
-!>##DESCRIPTION
-!>      JOIN(3f) appends the elements of a CHARACTER array into a single
-!>      CHARACTER variable, with elements 1 to N joined from left to right.
-!>      By default each element is trimmed of trailing spaces and the
-!>      default separator is a null string.
-!>
-!>##OPTIONS
-!>      STR(:)  array of CHARACTER variables to be joined
-!>      SEP     separator string to place between each variable. defaults
-!>              to a null string.
-!>      LEFT    string to place at left of each element
-!>      RIGHT   string to place at right of each element
-!>      TRM     option to trim each element of STR of trailing
-!>              spaces. Defaults to .TRUE.
-!>
-!>##RESULT
-!>      STRING  CHARACTER variable composed of all of the elements of STR()
-!>              appended together with the optional separator SEP placed
-!>              between the elements and optional left and right elements.
-!>
-!>##EXAMPLE
-!>
-!>  Sample program:
-!>
-!>   program demo_join
-!>   use M_strings, only: join
-!>   implicit none
-!>   character(len=:),allocatable  :: s(:)
-!>   character(len=:),allocatable  :: out
-!>   integer                       :: i
-!>     s=[character(len=10) :: 'United',' we',' stand,', &
-!>     & ' divided',' we fall.']
-!>     out=join(s)
-!>     write(*,'(a)') out
-!>     write(*,'(a)') join(s,trm=.false.)
-!>     write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
-!>     write(*,'(a)') join(s,sep='<>')
-!>     write(*,'(a)') join(s,sep=';',left='[',right=']')
-!>     write(*,'(a)') join(s,left='[',right=']')
-!>     write(*,'(a)') join(s,left='>>')
-!>   end program demo_join
-!>
-!>  Expected output:
-!>
-!>   United we stand, divided we fall.
-!>   United     we        stand,    divided   we fall.
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United<> we<> stand,<> divided<> we fall.<>
-!>   [United];[ we];[ stand,];[ divided];[ we fall.];
-!>   [United][ we][ stand,][ divided][ we fall.]
-!>   >>United>> we>> stand,>> divided>> we fall.
-!>
-!>##AUTHOR
-!>    John S. Urban
-!>
-!>##LICENSE
-!>    Public Domain
+! @(#)join(3f): append an array of character variables with specified separator into a single CHARACTER variable
 
-character(len=*),intent(in)           :: str(:)
-character(len=*),intent(in),optional  :: sep, right, left
-logical,intent(in),optional           :: trm
-character(len=:),allocatable          :: string
-integer                               :: i
-logical                               :: trm_local
-character(len=:),allocatable          :: sep_local, left_local, right_local
+character(len=*),intent(in)          :: str(:)
+character(len=*),intent(in),optional :: sep
+character(len=*),intent(in),optional :: right
+character(len=*),intent(in),optional :: left
+character(len=*),intent(in),optional :: start
+character(len=*),intent(in),optional :: end
+logical,intent(in),optional          :: trm
+character(len=:),allocatable         :: string
+integer                              :: i
+logical                              :: trm_local
+character(len=:),allocatable         :: sep_local
+character(len=:),allocatable         :: left_local
+character(len=:),allocatable         :: right_local
 
    if(present(sep))then    ;  sep_local=sep      ;  else  ;  sep_local=''      ;  endif
    if(present(trm))then    ;  trm_local=trm      ;  else  ;  trm_local=.true.  ;  endif
@@ -477,19 +487,26 @@ character(len=:),allocatable          :: sep_local, left_local, right_local
    if(present(right))then  ;  right_local=right  ;  else  ;  right_local=''    ;  endif
 
    string=''
-   do i = 1,size(str)
+   do i = 1,size(str)-1
       if(trm_local)then
          string=string//left_local//trim(str(i))//right_local//sep_local
       else
          string=string//left_local//str(i)//right_local//sep_local
       endif
    enddo
+   if(trm_local)then
+      string=string//left_local//trim(str(i))//right_local
+   else
+      string=string//left_local//str(i)//right_local
+   endif
+   if(present(start))string=start//string
+   if(present(end))string=string//end
 end function join
 
 function glob(tame,wild)
 !>
 !!##NAME
-!!    glob(3f) - [M_strings:COMPARE] compare given string for match to
+!!    glob(3f) - [fpm_strings:COMPARE] compare given string for match to
 !!    pattern which may contain wildcard characters
 !!    (LICENSE:PD)
 !!
@@ -687,7 +704,7 @@ function glob(tame,wild)
 !!    ! matching routines.
 !!    !
 !!    function test(tame, wild, bExpectedResult) result(bpassed)
-!!    use M_strings, only : glob
+!!    use fpm_strings, only : glob
 !!       character(len=*) :: tame
 !!       character(len=*) :: wild
 !!       logical          :: bExpectedResult
@@ -722,7 +739,7 @@ function glob(tame,wild)
 !!##LICENSE
 !!   Public Domain
 
-! ident_6="@(#)M_strings::glob(3f): function compares text strings, one of which can have wildcards ('*' or '?')."
+! @(#)fpm_strings::glob(3f): function compares text strings, one of which can have wildcards ('*' or '?').
 
 logical                    :: glob
 character(len=*)           :: tame       ! A string without wildcards

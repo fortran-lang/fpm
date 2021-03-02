@@ -1,5 +1,5 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob
+use fpm_strings, only: string_t, operator(.in.), glob, join
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
@@ -221,6 +221,7 @@ subroutine cmd_run(settings,test)
     type(build_target_t), pointer :: exe_target
     type(srcfile_t), pointer :: exe_source
     integer :: run_scope
+    character(len=:),allocatable :: line
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -299,16 +300,19 @@ subroutine cmd_run(settings,test)
     if ( any(.not.found) .or. &
     & (size(settings%name).eq.0 .and. size(executables).gt.1 .and. .not.test) .and.&
     & .not.settings%list) then
-        if(any(.not.found))then
-           write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
-           do j=1,size(settings%name)
-               if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
-           end do
-           write(stderr,'(A)') 'not found.'
-           write(stderr,*)
-        else if(settings%verbose)then
-           write(stderr,'(A)',advance="yes")'<INFO>when more than one executable is available'
-           write(stderr,'(A)',advance="yes")'      program names must be specified.'
+        line=join(settings%name)
+        if(line.ne.'.'.and. line.ne.'..')then ! do not report these special strings
+           if(any(.not.found))then
+              write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
+              do j=1,size(settings%name)
+                  if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
+              end do
+              write(stderr,'(A)') 'not found.'
+              write(stderr,*)
+           else if(settings%verbose)then
+              write(stderr,'(A)',advance="yes")'<INFO>when more than one executable is available'
+              write(stderr,'(A)',advance="yes")'      program names must be specified.'
+           endif
         endif
 
         j = 1
@@ -336,7 +340,11 @@ subroutine cmd_run(settings,test)
         end do
 
         write(stderr,*)
-        stop 1
+        if(line.eq.'.' .or. line.eq.' '.or. line.eq.'..')then ! do not report these special strings
+           stop
+        else
+           stop 1
+        endif
 
     end if
 

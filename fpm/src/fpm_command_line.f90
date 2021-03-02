@@ -152,7 +152,6 @@ contains
             call set_args('&
             & --target " " &
             & --list F &
-            & --all F &
             & --release F&
             & --example F&
             & --runner " " &
@@ -171,9 +170,6 @@ contains
             if(specified('target') )then
                call split(sget('target'),tnames,delimiters=' ,:')
                names=[character(len=max(len(names),len(tnames))) :: names,tnames]
-            endif
-            if(lget('all'))then
-               names=[character(len=max(len(names),1)) :: names,'*']
             endif
 
             allocate(fpm_run_settings :: cmd_settings)
@@ -505,7 +501,7 @@ contains
    '          [--full|--bare][--backfill]                                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s)|--all] [--example] [--release] [--runner "CMD"]       ', &
+   ' run  [[--target] NAME(s) [--example] [--release] [--runner "CMD"]              ', &
    '      [--compiler COMPILER_NAME] [--list] [-- ARGS]                             ', &
    ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
@@ -618,7 +614,7 @@ contains
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|             ', &
    '              [--full|--bare][--backfill]                               ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
-    '    run [[--target] NAME(s)|--all] [--release] [--list] [--example]    ', &
+    '    run [[--target] NAME(s)] [--release] [--list] [--example]          ', &
     '        [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]          ', &
     '    test [[--target] NAME(s)] [--release] [--list]                     ', &
     '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]         ', &
@@ -690,7 +686,7 @@ contains
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm run [[--target] NAME(s)|-all][--release][--compiler COMPILER_NAME]', &
+    ' fpm run [[--target] NAME(s)[--release][--compiler COMPILER_NAME]      ', &
     '         [--runner "CMD"] [--example] [--list][-- ARGS]                ', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
@@ -703,15 +699,16 @@ contains
     ' are automatically rebuilt before being run if they are out of date.   ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
-    ' --target NAME(s)  list of specific application names to execute.      ', &
-    '                   No name is required if only one application exists. ', &
-    '                   If no name is supplied and more than one candidate  ', &
-    '                   exists or a name has no match a list is produced    ', &
-    '                   and fpm(1) exits.                                   ', &
-    '                   Simple "globbing" is supported where "?" represents ', &
-    '                   any single character and "*" represents any string. ', &
-    '                   Therefore a quoted asterisk ''*'' runs all programs.  ', &
-    ' --all      An alias for "--target ''*''". All targets are selected.     ', &
+    ' --target NAME(s)  list of specific application names to execute.       ', &
+    '                     No name is required if only one application exists.', &
+    '                   If no name is supplied and more than one candidate   ', &
+    '                   exists or a name has no match a list is produced     ', &
+    '                   and fpm(1) exits.                                    ', &
+    '                     Simple "globbing" is supported where "?" represents', &
+    '                   any single character and "*" represents any string.  ', &
+    '                   Therefore a quoted asterisk ''*'' runs all programs. ', &
+    '                     The special string "." also causes all targets to  ', &
+    '                   be listed, even if only a single target exists.      ', &
     ' --example  Run example programs instead of applications.              ', &
     ' --release  selects the optimized build instead of the debug build.    ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
@@ -726,10 +723,11 @@ contains
     '            arguments are passed to all program names specified.       ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
-    ' fpm(1) - run project applications:                                    ', &
+    ' fpm(1) - run or display project applications:                         ', &
     '                                                                       ', &
-    '  # run all default programs in /app or as specified in "fpm.toml"     ', &
-    '  fpm run --all                                                        ', &
+    '  fpm run     # run a target when only one exists or list targets      ', &
+    '  fpm run ''*'' # run all targets                                        ', &
+    '  fpm run .   # list all targets, running nothing                      ', &
     '                                                                       ', &
     '  # run default program built or to be built with the compiler command ', &
     '  # "f90". If more than one app exists a list displays and target names', &
