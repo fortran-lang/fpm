@@ -636,7 +636,7 @@ contains
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|             ', &
    '              [--full|--bare][--backfill]                               ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
-    '    run [[--target] NAME(s)] [--release] [--list] [--example] [-all]   ', &
+    '    run [[--target] NAME(s)] [--release] [--list] [--example] [--all]  ', &
     '        [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]          ', &
     '    test [[--target] NAME(s)] [--release] [--list]                     ', &
     '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]         ', &
