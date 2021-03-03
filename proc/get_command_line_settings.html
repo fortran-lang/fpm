@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.0% of total for procedures.">202 statements</a>
+    title=" 8.0% of total for procedures.">213 statements</a>
      </li> 
      
      
@@ -568,6 +568,7 @@ subroutine printhelp(lines)
             <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --target &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --list F &amp;</span>
+<span class="s1">            &amp; --all F &amp;</span>
 <span class="s1">            &amp; --release F&amp;</span>
 <span class="s1">            &amp; --example F&amp;</span>
 <span class="s1">            &amp; --runner &quot; &quot; &amp;</span>
@@ -583,13 +584,26 @@ subroutine printhelp(lines)
 <span class="k">                </span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="kd">::</span> <span class="p">]</span>
             <span class="k">endif</span>
 
+
 <span class="k">            if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span> <span class="p">)</span><span class="k">then</span>
 <span class="k">               call </span><span class="n">split</span><span class="p">(</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">),</span><span class="n">tnames</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39; ,:&#39;</span><span class="p">)</span>
                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">tnames</span><span class="p">)))</span> <span class="kd">::</span> <span class="n">names</span><span class="p">,</span><span class="n">tnames</span><span class="p">]</span>
             <span class="k">endif</span>
 
+            <span class="c">! convert --all to &#39;*&#39;</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">))</span><span class="k">then</span>
+<span class="k">               </span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span> <span class="kd">::</span> <span class="n">names</span><span class="p">,</span><span class="s1">&#39;*&#39;</span> <span class="p">]</span>
+            <span class="k">endif</span>
+
+            <span class="c">! convert special string &#39;..&#39; to equivalent (shorter) &#39;*&#39;</span>
+            <span class="c">! to allow for a string that does not require shift-key and quoting</span>
+            <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+               <span class="k">if</span><span class="p">(</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;..&#39;</span><span class="p">)</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">=</span><span class="s1">&#39;*&#39;</span>
+            <span class="k">enddo</span>
+
 <span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_run_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
             <span class="n">val_runner</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">val_runner</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_runner</span><span class="o">=</span><span class="s1">&#39;echo&#39;</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_run_settings</span><span class="p">(&amp;</span>
             <span class="p">&amp;</span> <span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,&amp;</span>
@@ -791,8 +805,15 @@ subroutine printhelp(lines)
                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">tnames</span><span class="p">)))</span> <span class="kd">::</span> <span class="n">names</span><span class="p">,</span><span class="n">tnames</span><span class="p">]</span>
             <span class="k">endif</span>
 
+            <span class="c">! convert special string &#39;..&#39; to equivalent (shorter) &#39;*&#39;</span>
+            <span class="c">! to allow for a string that does not require shift-key and quoting</span>
+            <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+               <span class="k">if</span><span class="p">(</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;..&#39;</span><span class="p">)</span><span class="n">names</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">=</span><span class="s1">&#39;*&#39;</span>
+            <span class="k">enddo</span>
+
 <span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_test_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
             <span class="n">val_runner</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">val_runner</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_runner</span><span class="o">=</span><span class="s1">&#39;echo&#39;</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_test_settings</span><span class="p">(&amp;</span>
             <span class="p">&amp;</span> <span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -889,7 +910,7 @@ subroutine printhelp(lines)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-03 09:46  
+             on 2021-03-03 17:51  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
