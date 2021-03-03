@@ -117,10 +117,19 @@ contains
         unix = os /= OS_WINDOWS
     end function os_is_unix
 
-    subroutine run(cmd)
+    subroutine run(cmd,echo)
         character(len=*), intent(in) :: cmd
+        logical,intent(in),optional  :: echo
+        logical :: echo_local
         integer :: stat
-        print *, '+ ', cmd
+
+        if(present(echo))then
+           echo_local=echo
+        else
+           echo_local=.true.
+        endif
+        if(echo_local) print *, '+ ', cmd
+
         call execute_command_line(cmd, exitstat=stat)
         if (stat /= 0) then
             print *, 'Command failed'
