@@ -210,8 +210,7 @@ subroutine cmd_run(settings,test)
     class(fpm_run_settings), intent(in) :: settings
     logical, intent(in) :: test
 
-    integer, parameter :: LINE_WIDTH = 80
-    integer :: i, j, col_width, nCol
+    integer :: i, j, col_width
     logical :: found(size(settings%name))
     type(error_t), allocatable :: error
     type(package_config_t) :: package
@@ -222,6 +221,7 @@ subroutine cmd_run(settings,test)
     type(srcfile_t), pointer :: exe_source
     integer :: run_scope
     character(len=:),allocatable :: line
+    logical :: toomany
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -297,8 +297,11 @@ subroutine cmd_run(settings,test)
 
     ! Check all names are valid
     ! or no name and found more than one file
-    if ( any(.not.found) .or. &
-    & (size(settings%name).eq.0 .and. size(executables).gt.1 .and. .not.test) .and.&
+    toomany= size(settings%name).eq.0 .and. size(executables).gt.1 
+    if ( any(.not.found) &
+    & .or. &
+    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner .ne. '') ) &
+    & .and. &
     & .not.settings%list) then
         line=join(settings%name)
         if(line.ne.'.')then ! do not report these special strings
@@ -315,6 +318,39 @@ subroutine cmd_run(settings,test)
            endif
         endif
 
+        call compact_list()
+
+        if(line.eq.'.' .or. line.eq.' ')then ! do not report these special strings
+           stop
+        else
+           stop 1
+        endif
+
+    end if
+
+    call build_package(model)
+
+    if (settings%list) then
+         call compact_list()
+    else
+
+        do i=1,size(executables)
+            if (exists(executables(i)%s)) then
+                if(settings%runner .ne. ' ')then
+                    call run(settings%runner//' '//executables(i)%s//" "//settings%args,echo=settings%verbose)
+                else
+                    call run(executables(i)%s//" "//settings%args,echo=settings%verbose)
+                endif
+            else
+                write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
+                stop 1
+            end if
+        end do
+    endif
+    contains 
+    subroutine compact_list()
+    integer, parameter :: LINE_WIDTH = 80
+    integer :: i, j, nCol
         j = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Available names:'
@@ -334,40 +370,10 @@ subroutine cmd_run(settings,test)
                     j = j + 1
 
                 end if
-
             end if
-
         end do
-
         write(stderr,*)
-        if(line.eq.'.' .or. line.eq.' ')then ! do not report these special strings
-           stop
-        else
-           stop 1
-        endif
-
-    end if
-
-    call build_package(model)
-
-    do i=1,size(executables)
-        if (settings%list) then
-            write(stderr,*) executables(i)%s
-        else
-
-            if (exists(executables(i)%s)) then
-                if(settings%runner .ne. ' ')then
-                   call run(settings%runner//' '//executables(i)%s//" "//settings%args)
-                else
-                   call run(executables(i)%s//" "//settings%args)
-                endif
-            else
-                write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
-                stop 1
-            end if
-
-        end if
-    end do
+    end subroutine compact_list
 
 end subroutine cmd_run
 
