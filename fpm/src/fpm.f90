@@ -318,7 +318,7 @@ subroutine cmd_run(settings,test)
            endif
         endif
 
-        call compact_list()
+        call compact_list_all()
 
         if(line.eq.'.' .or. line.eq.' ')then ! do not report these special strings
            stop
@@ -348,7 +348,7 @@ subroutine cmd_run(settings,test)
         end do
     endif
     contains 
-    subroutine compact_list()
+    subroutine compact_list_all()
     integer, parameter :: LINE_WIDTH = 80
     integer :: i, j, nCol
         j = 1
@@ -372,6 +372,20 @@ subroutine cmd_run(settings,test)
                 end if
             end if
         end do
+        write(stderr,*)
+    end subroutine compact_list_all
+
+    subroutine compact_list()
+    integer, parameter :: LINE_WIDTH = 80
+    integer :: i, j, nCol
+        j = 1
+        nCol = LINE_WIDTH/col_width
+        write(stderr,*) 'Matched names:'
+        do i=1,size(executables)
+            write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
+             & [character(len=col_width) :: basename(executables(i)%s)]
+            j = j + 1
+        enddo
         write(stderr,*)
     end subroutine compact_list
 
