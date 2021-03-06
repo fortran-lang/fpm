@@ -128,21 +128,21 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 5.6% of total for derived types.</p>Including implementation: 13 statements,  0.9% of total for derived types.">13 statements</a>
+    title="<p> 6.5% of total for derived types.</p>Including implementation: 15 statements,  1.0% of total for derived types.">15 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_model.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_targets.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_model.f90.html'>fpm_model.f90</a></li>
+     <li><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></li>
     
-     <li><a href='../module/fpm_model.html'>fpm_model</a></li>
+     <li><a href='../module/fpm_targets.html'>fpm_targets</a></li>
     
   
      <li class="active">build_target_t</li>
@@ -173,11 +173,15 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../type/build_target_t.html#variable-compile_flags">compile_flags</a>
+      
       <a class="list-group-item" href="../type/build_target_t.html#variable-dependencies">dependencies</a>
       
       <a class="list-group-item" href="../type/build_target_t.html#variable-digest_cached">digest_cached</a>
       
-      <a class="list-group-item" href="../type/build_target_t.html#variable-link_libraries">link_libraries</a>
+      <a class="list-group-item" href="../type/build_target_t.html#variable-link_flags">link_flags</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-link_libraries~3">link_libraries</a>
       
       <a class="list-group-item" href="../type/build_target_t.html#variable-link_objects">link_objects</a>
       
@@ -251,11 +255,15 @@
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../type/build_target_t.html#variable-compile_flags">compile_flags</a>
+      
       <a class="list-group-item" href="../type/build_target_t.html#variable-dependencies">dependencies</a>
       
       <a class="list-group-item" href="../type/build_target_t.html#variable-digest_cached">digest_cached</a>
       
-      <a class="list-group-item" href="../type/build_target_t.html#variable-link_libraries">link_libraries</a>
+      <a class="list-group-item" href="../type/build_target_t.html#variable-link_flags">link_flags</a>
+      
+      <a class="list-group-item" href="../type/build_target_t.html#variable-link_libraries~3">link_libraries</a>
       
       <a class="list-group-item" href="../type/build_target_t.html#variable-link_objects">link_objects</a>
       
@@ -327,6 +335,20 @@
   
 <tr>
   
+  <td><span class="anchor" id="variable-compile_flags"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>compile_flags</strong></td><td></td><td></td><td><p>Compile flags for this build target</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-dependencies"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
   
   <td>public,</td>
@@ -355,7 +377,21 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-link_libraries"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td><span class="anchor" id="variable-link_flags"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>link_flags</strong></td><td></td><td></td><td><p>Link flags for this build target</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-link_libraries~3"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -510,7 +546,13 @@
 
     <span class="c">!&gt; Objects needed to link this target</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_objects</span><span class="p">(:)</span>
+
+    <span class="c">!&gt; Link flags for this build target</span>
+    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_flags</span>
     
+    <span class="c">!&gt; Compile flags for this build target</span>
+    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">compile_flags</span>
+
     <span class="c">!&gt; Flag set when first visited to check for circular dependencies</span>
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">touched</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
     
@@ -547,7 +589,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 10:29  
+             on 2021-03-06 11:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

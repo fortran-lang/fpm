@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.6% of total for procedures.">96 statements</a>
+    title=" 3.1% of total for procedures.">82 statements</a>
      </li> 
      
      
@@ -480,13 +480,9 @@ public subroutine build_model(model, settings, package, error)
 
 <span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span> <span class="o">=</span> <span class="n">package</span><span class="p">%</span><span class="n">name</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="nb">link</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="nb">link</span>
-<span class="nb">    </span><span class="k">else</span>
-<span class="k">        allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="k">end if</span>
+    <span class="k">allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 
-<span class="k">    call </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="s2">&quot;cache.toml&quot;</span><span class="p">))</span>
+    <span class="k">call </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="s2">&quot;cache.toml&quot;</span><span class="p">))</span>
     <span class="k">call </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
@@ -503,9 +499,7 @@ public subroutine build_model(model, settings, package, error)
 <span class="k">       write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt;COMPILER OPTIONS:  &#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span> 
     <span class="k">endif</span>
 
-<span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-
-    <span class="k">allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="p">))</span>
+<span class="k">    allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="p">))</span>
 
     <span class="c">! Add sources from executable directories</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">auto_executables</span><span class="p">)</span> <span class="k">then</span>
@@ -590,20 +584,6 @@ public subroutine build_model(model, settings, package, error)
 <span class="k">    end do</span>
 <span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
-<span class="k">    call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">)</span>
-        <span class="n">model</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">//</span> <span class="s2">&quot; -l&quot;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span>
-    <span class="k">end do</span>
-
-<span class="k">    if</span> <span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">model</span><span class="p">%</span><span class="n">library_file</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span>
-    <span class="k">end if</span>
-
-<span class="k">    call </span><span class="n">resolve_module_dependencies</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-
-    <span class="k">call </span><span class="n">resolve_target_linking</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span>
-
 <span class="k">end subroutine </span><span class="n">build_model</span>
 </pre></div>
 
@@ -626,7 +606,7 @@ public subroutine build_model(model, settings, package, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 10:29  
+             on 2021-03-06 11:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

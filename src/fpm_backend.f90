@@ -1,6 +1,6 @@
 !># Build backend
-!> Uses a valid `[[fpm_model]]` instance to schedule and execute the
-!> compilation and linking of package targets.
+!> Uses a list of `[[build_target_ptr]]` and a valid `[[fpm_model]]` instance 
+!> to schedule and execute the compilation and linking of package targets.
 !> 
 !> The package build process (`[[build_package]]`) comprises three steps:
 !>
@@ -29,7 +29,8 @@ module fpm_backend
 
 use fpm_environment, only: run
 use fpm_filesystem, only: dirname, join_path, exists, mkdir
-use fpm_model, only: fpm_model_t, build_target_t, build_target_ptr, &
+use fpm_model, only: fpm_model_t
+use fpm_targets, only: build_target_t, build_target_ptr, &
                      FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
                      
 use fpm_strings, only: string_cat
@@ -42,8 +43,9 @@ public :: build_package, sort_target, schedule_targets
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(model)
-    type(fpm_model_t), intent(inout) :: model
+subroutine build_package(targets,model)
+    type(build_target_ptr), intent(inout) :: targets(:)
+    type(fpm_model_t), intent(in) :: model
 
     integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
@@ -55,14 +57,14 @@ subroutine build_package(model)
     end if
 
     ! Perform depth-first topological sort of targets
-    do i=1,size(model%targets)
+    do i=1,size(targets)
         
-        call sort_target(model%targets(i)%ptr)
+        call sort_target(targets(i)%ptr)
         
     end do
 
     ! Construct build schedule queue
-    call schedule_targets(queue, schedule_ptr, model%targets)
+    call schedule_targets(queue, schedule_ptr, targets)
 
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
@@ -236,27 +238,13 @@ subroutine build_target(model,target)
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        call run(model%fortran_compiler//" -c " // target%source%file_name // model%fortran_compile_flags &
+        call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
               // " -o " // target%output_file)
 
     case (FPM_TARGET_EXECUTABLE)
-
-        link_flags = string_cat(target%link_objects," ") 
-
-        if (allocated(model%library_file)) then
-            link_flags = link_flags//" "//model%library_file//" "//model%link_flags
-        else
-            link_flags = link_flags//" "//model%link_flags
-        end if
         
-        if (allocated(target%link_libraries)) then
-            if (size(target%link_libraries) > 0) then
-                link_flags = link_flags // " -l" // string_cat(target%link_libraries," -l")
-            end if
-        end if
-        
-        call run(model%fortran_compiler// " " // model%fortran_compile_flags &
-              //" "//link_flags// " -o " // target%output_file)
+        call run(model%fortran_compiler// " " // target%compile_flags &
+              //" "//target%link_flags// " -o " // target%output_file)
 
     case (FPM_TARGET_ARCHIVE)
         call run("ar -rs " // target%output_file // " " // string_cat(target%link_objects," "))

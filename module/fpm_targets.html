@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.6% of total for modules and submodules.">182 statements</a>
+    title=" 4.7% of total for modules and submodules.">238 statements</a>
      </li> 
      
      
@@ -166,6 +166,22 @@
 
 
 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#variable-fpm_target_archive">FPM_TARGET_ARCHIVE</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#variable-fpm_target_executable">FPM_TARGET_EXECUTABLE</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#variable-fpm_target_object">FPM_TARGET_OBJECT</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#variable-fpm_target_unknown">FPM_TARGET_UNKNOWN</a>
+      
+    </div>
+  </div>
+</div>
 
 
 
@@ -173,6 +189,22 @@
 
 
 
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-0">Derived Types</a></h3></div>
+  <div id="types-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#type-build_target_ptr">build_target_ptr</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#type-build_target_t">build_target_t</a>
+      
+    </div>
+  </div>
+</div>
 
 
 
@@ -223,9 +255,12 @@
  are based on the corresponding object files (<code>.o</code>) only.</p></div>
 <p>For more information, please read the documentation for the procedures:</p>
 <ul>
-<li><code><a href="../proc/targets_from_sources.html">targets_from_sources</a></code></li>
+<li><code><a>build_target_list</a></code></li>
 <li><code><a href="../proc/resolve_module_dependencies.html">resolve_module_dependencies</a></code></li>
 </ul>
+<h3 id="enumerations">Enumerations</h3>
+<p><strong>Target type:</strong> <code>FPM_TARGET_*</code>
+ Describes the type of build target — determines backend build rules</p>
       <br>
     
   
@@ -237,6 +272,8 @@
       
       <li class="list-group-item">
   <ul class="list-inline">
+    
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
     
     <li><a href='../module/fpm_error.html'>fpm_error</a></li>
     
@@ -269,6 +306,22 @@
 
 
 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#variable-fpm_target_archive">FPM_TARGET_ARCHIVE</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#variable-fpm_target_executable">FPM_TARGET_EXECUTABLE</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#variable-fpm_target_object">FPM_TARGET_OBJECT</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#variable-fpm_target_unknown">FPM_TARGET_UNKNOWN</a>
+      
+    </div>
+  </div>
+</div>
 
 
 
@@ -276,6 +329,22 @@
 
 
 
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-1">Derived Types</a></h3></div>
+  <div id="types-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#type-build_target_ptr">build_target_ptr</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#type-build_target_t">build_target_t</a>
+      
+    </div>
+  </div>
+</div>
 
 
 
@@ -314,6 +383,80 @@
     
 
     
+    <section>
+    <h2>Variables</h2>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-fpm_target_archive"></span>integer,</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>FPM_TARGET_ARCHIVE</strong></td><td> =</td><td>2</td><td><p>Target type is library archive</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-fpm_target_executable"></span>integer,</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>FPM_TARGET_EXECUTABLE</strong></td><td> =</td><td>1</td><td><p>Target type is executable</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-fpm_target_object"></span>integer,</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>FPM_TARGET_OBJECT</strong></td><td> =</td><td>3</td><td><p>Target type is compiled object</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-fpm_target_unknown"></span>integer,</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>FPM_TARGET_UNKNOWN</strong></td><td> =</td><td>-1</td><td><p>Target type is unknown (ignored)</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    </section>
+    <br>
+    
     
     
     
@@ -321,6 +464,274 @@
 
     
     
+    
+    <section>
+     <h2>Derived Types</h2>
+   
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="type-build_target_ptr"></span><h3>type, public :: <a href='../type/build_target_ptr.html'>build_target_ptr</a>
+    
+  </h3></div>
+  <div class="panel-body">
+    
+    
+    <p>Wrapper type for constructing arrays of <code><a href="../type/build_target_t.html">build_target_t</a></code> pointers</p>
+    
+     
+     <h4>Components</h4>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ptr"></span>type(<a href='../type/build_target_t.html'>build_target_t</a>),</td>
+  
+  <td>public,</td>
+  <td>pointer</td><td>::</td>
+  <td><strong>ptr</strong></td><td>=> </td><td>null()</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+     
+     
+          
+     
+  </div>
+</div>
+
+     
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="type-build_target_t"></span><h3>type, public :: <a href='../type/build_target_t.html'>build_target_t</a>
+    
+  </h3></div>
+  <div class="panel-body">
+    
+    
+    <p>Type describing a generated build target</p>
+    
+     
+     <h4>Components</h4>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-compile_flags"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>compile_flags</strong></td><td></td><td></td><td><p>Compile flags for this build target</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dependencies"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>dependencies</strong>(:)</td><td></td><td></td><td><p>Resolved build dependencies</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-digest_cached"></span>integer(kind=int64),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>digest_cached</strong></td><td></td><td></td><td><p>Previous source file hash</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-link_flags"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>link_flags</strong></td><td></td><td></td><td><p>Link flags for this build target</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-link_libraries~3"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-link_objects"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>link_objects</strong>(:)</td><td></td><td></td><td><p>Objects needed to link this target</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-output_file"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>output_file</strong></td><td></td><td></td><td><p>File path of build target object relative to cwd</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-schedule"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>schedule</strong></td><td> =</td><td>-1</td><td><p>Targets in the same schedule group are guaranteed to be independent</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-skip"></span>logical,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>skip</strong></td><td> =</td><td>.false.</td><td><p>Flag set if build target will be skipped (not built)</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-sorted"></span>logical,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>sorted</strong></td><td> =</td><td>.false.</td><td><p>Flag set if build target is sorted for building</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-source"></span>type(<a href='../type/srcfile_t.html'>srcfile_t</a>),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>source</strong></td><td></td><td></td><td><p>Primary source for this build target</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-target_type"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>target_type</strong></td><td> =</td><td>FPM_TARGET_UNKNOWN</td><td><p>Target type</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-touched"></span>logical,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>touched</strong></td><td> =</td><td>.false.</td><td><p>Flag set when first visited to check for circular dependencies</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+     
+     
+          
+     
+  </div>
+</div>
+
+     
+    </section>
+  <br>
     
     
     
@@ -600,7 +1011,7 @@ public subroutine <a href='../proc/resolve_module_dependencies.html'>resolve_mod
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-resolve_target_linking"></span><h3>
-public subroutine <a href='../proc/resolve_target_linking.html'>resolve_target_linking</a>(targets)
+public subroutine <a href='../proc/resolve_target_linking.html'>resolve_target_linking</a>(targets, model)
     
     
    
@@ -615,7 +1026,8 @@ public subroutine <a href='../proc/resolve_target_linking.html'>resolve_target_l
 
 
 
-<p>For libraries and executables, build a list of objects required for linking</p><a href="../proc/resolve_target_linking.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+<p>Construct the linker flags string for each target
+  <code>target%link_flags</code> includes non-library objects and library flags</p>
     
     <h4>Arguments</h4>
     
@@ -645,6 +1057,21 @@ public subroutine <a href='../proc/resolve_target_linking.html'>resolve_target_l
   
 </tr>
 
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>model</strong></td><td></td>
+  
+</tr>
+
 </tbody>
 </table>
 
@@ -659,7 +1086,7 @@ public subroutine <a href='../proc/resolve_target_linking.html'>resolve_target_l
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-targets_from_sources"></span><h3>
-public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sources</a>(model)
+public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sources</a>(targets, model, error)
     
     
    
@@ -674,7 +1101,7 @@ public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sourc
 
 
 
-<p>Constructs a list of build targets from a list of source files</p><a href="../proc/targets_from_sources.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+<p>High-level wrapper to generate build target information</p>
     
     <h4>Arguments</h4>
     
@@ -695,12 +1122,42 @@ public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sourc
   
 <tr>
   
+  <td><span class="anchor" ></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>targets</strong>(:)</td><td><p>The generated list of build targets</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" ></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
   <td>intent(inout),</td>
   <td></td>
   
   <td>target</td><td>::</td>
-  <td><strong>model</strong></td><td><p>The package model within which to construct the target list</p></td>
+  <td><strong>model</strong></td><td><p>The package model from which to construct the target list</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>error</strong></td><td><p>Error structure</p></td>
   
 </tr>
 
@@ -735,7 +1192,7 @@ public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sourc
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 10:29  
+             on 2021-03-06 11:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

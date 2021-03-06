@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.0% of total for procedures.">134 statements</a>
+    title=" 5.3% of total for procedures.">140 statements</a>
      </li> 
      
      
@@ -198,6 +198,8 @@
       <a class="list-group-item" href="../proc/cmd_run.html#variable-package~3">package</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-run_scope">run_scope</a>
+      
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-targets~4">targets</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-toomany">toomany</a>
       
@@ -353,6 +355,8 @@ public subroutine cmd_run(settings, test)
       <a class="list-group-item" href="../proc/cmd_run.html#variable-package~3">package</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-run_scope">run_scope</a>
+      
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-targets~4">targets</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-toomany">toomany</a>
       
@@ -608,6 +612,20 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
+  <td><span class="anchor" id="variable-targets~4"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>targets</strong>(:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-toomany"></span>logical,</td>
   
   <td>public</td>
@@ -697,6 +715,7 @@ subroutine compact_list_all()
     <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">error</span>
     <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
     <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exe_cmd</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">exe_target</span>
@@ -717,6 +736,12 @@ subroutine compact_list_all()
         <span class="k">error stop </span><span class="mi">1</span>
     <span class="k">end if</span>
 
+<span class="k">    call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">        print</span> <span class="s1">&#39;(a)&#39;</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
+        <span class="k">error stop </span><span class="mi">1</span>
+    <span class="k">end if</span>
+
 <span class="k">    if</span> <span class="p">(</span><span class="n">test</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">       </span><span class="n">run_scope</span> <span class="o">=</span> <span class="n">FPM_SCOPE_TEST</span>
     <span class="k">else</span>
@@ -727,9 +752,9 @@ subroutine compact_list_all()
     <span class="n">col_width</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="n">found</span><span class="p">(:)</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
     <span class="k">allocate</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span>
+    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
-        <span class="n">exe_target</span> <span class="o">=&gt;</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
+        <span class="n">exe_target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
              <span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span> <span class="k">then</span>
@@ -810,7 +835,7 @@ subroutine compact_list_all()
 
 <span class="k">    end if</span>
 
-<span class="k">    call </span><span class="n">build_package</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="k">    call </span><span class="n">build_package</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">         call </span><span class="n">compact_list</span><span class="p">()</span>
@@ -836,9 +861,9 @@ subroutine compact_list_all()
         <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">nCol</span> <span class="o">=</span> <span class="n">LINE_WIDTH</span><span class="o">/</span><span class="n">col_width</span>
         <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Available names:&#39;</span>
-        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span>
+        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
-            <span class="n">exe_target</span> <span class="o">=&gt;</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
+            <span class="n">exe_target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
                 <span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span> <span class="k">then</span>
@@ -893,7 +918,7 @@ subroutine compact_list_all()
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 10:29  
+             on 2021-03-06 11:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

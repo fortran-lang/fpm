@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 5.2% of total for derived types.</p>Including implementation: 12 statements,  0.8% of total for derived types.">12 statements</a>
+    title="<p> 3.9% of total for derived types.</p>Including implementation: 9 statements,  0.6% of total for derived types.">9 statements</a>
      </li> 
      
      
@@ -179,19 +179,13 @@
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compiler">fortran_compiler</a>
       
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-library_file">library_file</a>
-      
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_flags">link_flags</a>
-      
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries~2">link_libraries</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries">link_libraries</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-output_directory">output_directory</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-package_name">package_name</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-packages">packages</a>
-      
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-targets">targets</a>
       
     </div>
   </div>
@@ -256,19 +250,13 @@
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compiler">fortran_compiler</a>
       
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-library_file">library_file</a>
-      
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_flags">link_flags</a>
-      
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries~2">link_libraries</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries">link_libraries</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-output_directory">output_directory</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-package_name">package_name</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-packages">packages</a>
-      
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-targets">targets</a>
       
     </div>
   </div>
@@ -366,35 +354,7 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-library_file"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>library_file</strong></td><td></td><td></td><td><p>Output file for library archive</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-link_flags"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>link_flags</strong></td><td></td><td></td><td><p>Command line flags pass for linking</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-link_libraries~2"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td><span class="anchor" id="variable-link_libraries"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -444,20 +404,6 @@
   
 </tr>
 
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-targets"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>targets</strong>(:)</td><td></td><td></td><td><p>Array of targets with module-dependencies resolved</p></td>
-  
-</tr>
-
 </tbody>
 </table>
 
@@ -482,20 +428,11 @@
     <span class="c">!&gt; Array of packages (including the root package)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">packages</span><span class="p">(:)</span>
 
-    <span class="c">!&gt; Array of targets with module-dependencies resolved</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
-
     <span class="c">!&gt; Command line name to invoke fortran compiler</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fortran_compiler</span>
 
     <span class="c">!&gt; Command line flags passed to fortran for compilation</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fortran_compile_flags</span>
-
-    <span class="c">!&gt; Command line flags pass for linking</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_flags</span>
-
-    <span class="c">!&gt; Output file for library archive</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">library_file</span>
 
     <span class="c">!&gt; Base directory for build</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">output_directory</span>
@@ -527,7 +464,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 10:29  
+             on 2021-03-06 11:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

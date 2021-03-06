@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.7% of total for procedures.">18 statements</a>
+    title=" 0.7% of total for procedures.">19 statements</a>
      </li> 
      
      
@@ -219,7 +219,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine build_package(model)
+public subroutine build_package(targets, model)
     
     
    
@@ -250,8 +250,23 @@ public subroutine build_package(model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-targets"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
   <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>targets</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-model"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
@@ -418,8 +433,9 @@ public subroutine build_package(model)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">build_package</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">build_package</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
 
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">queue</span><span class="p">(:)</span>
@@ -431,14 +447,14 @@ public subroutine build_package(model)
     <span class="k">end if</span>
 
     <span class="c">! Perform depth-first topological sort of targets</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span>
+    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
         
-        <span class="k">call </span><span class="n">sort_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+        <span class="k">call </span><span class="n">sort_target</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
         
     <span class="k">end do</span>
 
     <span class="c">! Construct build schedule queue</span>
-    <span class="k">call </span><span class="n">schedule_targets</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="n">schedule_ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span>
+    <span class="k">call </span><span class="n">schedule_targets</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="n">schedule_ptr</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
 
     <span class="c">! Loop over parallel schedule regions</span>
     <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">schedule_ptr</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
@@ -475,7 +491,7 @@ public subroutine build_package(model)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 10:29  
+             on 2021-03-06 11:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

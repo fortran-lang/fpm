@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.4% of total for procedures.">38 statements</a>
+    title=" 1.5% of total for procedures.">41 statements</a>
      </li> 
      
      
@@ -175,7 +175,7 @@
       
       <a class="list-group-item" href="../proc/cmd_install.html#variable-dir~5">dir</a>
       
-      <a class="list-group-item" href="../proc/cmd_install.html#variable-error~26">error</a>
+      <a class="list-group-item" href="../proc/cmd_install.html#variable-error~27">error</a>
       
       <a class="list-group-item" href="../proc/cmd_install.html#variable-exe">exe</a>
       
@@ -185,9 +185,11 @@
       
       <a class="list-group-item" href="../proc/cmd_install.html#variable-lib">lib</a>
       
-      <a class="list-group-item" href="../proc/cmd_install.html#variable-model~8">model</a>
+      <a class="list-group-item" href="../proc/cmd_install.html#variable-model~9">model</a>
       
       <a class="list-group-item" href="../proc/cmd_install.html#variable-package~6">package</a>
+      
+      <a class="list-group-item" href="../proc/cmd_install.html#variable-targets~9">targets</a>
       
     </div>
   </div>
@@ -291,7 +293,7 @@ public subroutine cmd_install(settings)
       
       <a class="list-group-item" href="../proc/cmd_install.html#variable-dir~5">dir</a>
       
-      <a class="list-group-item" href="../proc/cmd_install.html#variable-error~26">error</a>
+      <a class="list-group-item" href="../proc/cmd_install.html#variable-error~27">error</a>
       
       <a class="list-group-item" href="../proc/cmd_install.html#variable-exe">exe</a>
       
@@ -301,9 +303,11 @@ public subroutine cmd_install(settings)
       
       <a class="list-group-item" href="../proc/cmd_install.html#variable-lib">lib</a>
       
-      <a class="list-group-item" href="../proc/cmd_install.html#variable-model~8">model</a>
+      <a class="list-group-item" href="../proc/cmd_install.html#variable-model~9">model</a>
       
       <a class="list-group-item" href="../proc/cmd_install.html#variable-package~6">package</a>
+      
+      <a class="list-group-item" href="../proc/cmd_install.html#variable-targets~9">targets</a>
       
     </div>
   </div>
@@ -375,7 +379,7 @@ public subroutine cmd_install(settings)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~26"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~27"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -445,7 +449,7 @@ public subroutine cmd_install(settings)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model~8"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-model~9"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -464,6 +468,20 @@ public subroutine cmd_install(settings)
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>package</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-targets~9"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>targets</strong>(:)</td><td></td><td></td><td></td>
   
 </tr>
 
@@ -496,6 +514,7 @@ public subroutine cmd_install(settings)
     <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
     <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">error</span>
     <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">installer_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">installer</span>
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">lib</span><span class="p">,</span> <span class="n">exe</span><span class="p">,</span> <span class="n">dir</span>
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">installable</span>
@@ -506,6 +525,9 @@ public subroutine cmd_install(settings)
     <span class="k">call </span><span class="n">build_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">settings</span><span class="p">%</span><span class="n">fpm_build_settings</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
     <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
 
+    <span class="k">call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+    <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+
     <span class="n">installable</span> <span class="o">=</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">library</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">package</span><span class="p">%</span><span class="n">install</span><span class="p">%</span><span class="n">library</span><span class="p">)</span> <span class="p">&amp;</span>
       <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">installable</span><span class="p">)</span> <span class="k">then</span>
@@ -514,12 +536,12 @@ public subroutine cmd_install(settings)
     <span class="k">end if</span>
 
 <span class="k">    if</span> <span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">      call </span><span class="n">install_info</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="k">      call </span><span class="n">install_info</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span> <span class="n">package</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
       <span class="k">return</span>
 <span class="k">    end if</span>
 
 <span class="k">    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">settings</span><span class="p">%</span><span class="n">no_rebuild</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">      call </span><span class="n">build_package</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="k">      call </span><span class="n">build_package</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
     <span class="k">end if</span>
 
 <span class="k">    call </span><span class="n">new_installer</span><span class="p">(</span><span class="n">installer</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">prefix</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -538,7 +560,7 @@ public subroutine cmd_install(settings)
     <span class="k">end if</span>
 
 <span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">executable</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">      call </span><span class="n">install_executables</span><span class="p">(</span><span class="n">installer</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<span class="k">      call </span><span class="n">install_executables</span><span class="p">(</span><span class="n">installer</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
       <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
     <span class="k">end if</span>
 
@@ -564,7 +586,7 @@ public subroutine cmd_install(settings)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 10:29  
+             on 2021-03-06 11:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

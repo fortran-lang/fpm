@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.1% of total for procedures.">56 statements</a>
+    title=" 0.3% of total for procedures.">9 statements</a>
      </li> 
      
      
@@ -168,26 +168,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
-  <div id="vars-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-dep~3">dep</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-exe_dir">exe_dir</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-i~20">i</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-j~9">j</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-with_lib~2">with_lib</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-xsuffix">xsuffix</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -196,20 +176,6 @@
 
 
 
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
-  <div id="funcs-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#proc-get_object_name">get_object_name</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -235,7 +201,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine targets_from_sources(model)
+public subroutine targets_from_sources(targets, model, error)
     
     
    
@@ -245,22 +211,7 @@ public subroutine targets_from_sources(model)
 
 
     
-    <p>Constructs a list of build targets from a list of source files</p>
-<h3 id="source-target-mapping">Source-target mapping</h3>
-<p>One compiled object target (<code>FPM_TARGET_OBJECT</code>) is generated for each
- non-executable source file (<code>FPM_UNIT_MODULE</code>,<code>FPM_UNIT_SUBMODULE</code>,
-  <code>FPM_UNIT_SUBPROGRAM</code>,<code>FPM_UNIT_CSOURCE</code>).</p>
-<p>If any source file has scope <code>FPM_SCOPE_LIB</code> (<em>i.e.</em> there are library sources)
- then the first target in the target list will be a library archive target
- (<code>FPM_TARGET_ARCHIVE</code>). The archive target will have a dependency on every
- compiled object target corresponding to a library source file.</p>
-<p>One compiled object target (<code>FPM_TARGET_OBJECT</code>) and one executable target (<code>FPM_TARGET_EXECUTABLE</code>) is
- generated for each exectuable source file (<code>FPM_UNIT_PROGRAM</code>). The exectuble target
- always has a dependency on the corresponding compiled object target. If there
- is a library, then the executable target has an additional dependency on the library
- archive target.</p>
-<p></p><div class="alert alert-info" role="alert"><h4>Note</h4><p>Inter-object dependencies based on modules used and provided are generated separately
- in <code><a href="../proc/resolve_module_dependencies.html">resolve_module_dependencies</a></code> after all targets have been enumerated.</p></div>
+    <p>High-level wrapper to generate build target information</p>
     
 
     <h3>Arguments</h3>
@@ -281,12 +232,42 @@ public subroutine targets_from_sources(model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model~7"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-targets~8"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>targets</strong>(:)</td><td><p>The generated list of build targets</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-model~8"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
   <td>intent(inout),</td>
   <td></td>
   
   <td>target</td><td>::</td>
-  <td><strong>model</strong></td><td><p>The package model within which to construct the target list</p></td>
+  <td><strong>model</strong></td><td><p>The package model from which to construct the target list</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-error~9"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>error</strong></td><td><p>Error structure</p></td>
   
 </tr>
 
@@ -307,26 +288,6 @@ public subroutine targets_from_sources(model)
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
-  <div id="vars-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-dep~3">dep</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-exe_dir">exe_dir</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-i~20">i</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-j~9">j</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-with_lib~2">with_lib</a>
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#variable-xsuffix">xsuffix</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -335,20 +296,6 @@ public subroutine targets_from_sources(model)
 
 
 
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
-  <div id="funcs-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/targets_from_sources.html#proc-get_object_name">get_object_name</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -374,108 +321,6 @@ public subroutine targets_from_sources(model)
     
 
     
-    <section>    
-      <h2>Variables</h2>
-    
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-dep~3"></span>type(<a href='../type/build_target_t.html'>build_target_t</a>),</td>
-  
-  <td>public,</td>
-  <td>pointer</td><td>::</td>
-  <td><strong>dep</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-exe_dir"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>exe_dir</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-i~20"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>i</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-j~9"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>j</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-with_lib~2"></span>logical,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>with_lib</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-xsuffix"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>xsuffix</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-    </section>
-    <br>
-    
     
     
     
@@ -485,72 +330,6 @@ public subroutine targets_from_sources(model)
     
     
     
-     
-    <section>
-    <h2>Functions</h2>
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-get_object_name"></span><h3>
-function get_object_name(source) result(object_file)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/srcfile_t.html'>srcfile_t</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>source</strong></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  
-  
-  
-  
-     <h4>Return Value <small>character(len=:),
-  allocatable</small></h4>
-  
-    
-
-  </div>
-  </div>
-
-    
-    </section>
-    <br>
     
 
 
@@ -559,115 +338,23 @@ function get_object_name(source) result(object_file)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
 
-    <span class="c">!&gt; The package model within which to construct the target list</span>
+    <span class="c">!&gt; The generated list of build targets</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
+
+    <span class="c">!&gt; The package model from which to construct the target list</span>
     <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">model</span>
 
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">xsuffix</span><span class="p">,</span> <span class="n">exe_dir</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dep</span>
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">with_lib</span>
+    <span class="c">!&gt; Error structure</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">error</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">OS_WINDOWS</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">xsuffix</span> <span class="o">=</span> <span class="s1">&#39;.exe&#39;</span>
-    <span class="k">else</span>
-<span class="k">        </span><span class="n">xsuffix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-    <span class="k">end if</span>
-
-<span class="k">    </span><span class="n">with_lib</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([((</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">,</span> <span class="p">&amp;</span>
-                      <span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">)),</span> <span class="p">&amp;</span>
-                      <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">))])</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,&amp;</span>
-                            <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,&amp;</span>
-                                   <span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="o">//</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="o">//</span><span class="s1">&#39;.a&#39;</span><span class="p">))</span>
-
-    <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">)</span>
-        
-        <span class="k">associate</span><span class="p">(</span><span class="n">sources</span><span class="o">=&gt;</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">sources</span><span class="p">)</span>
-
-            <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
-                
-                <span class="k">select case</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_type</span><span class="p">)</span>
-                <span class="k">case</span> <span class="p">(</span><span class="n">FPM_UNIT_MODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBMODULE</span><span class="p">,</span><span class="n">FPM_UNIT_SUBPROGRAM</span><span class="p">,</span><span class="n">FPM_UNIT_CSOURCE</span><span class="p">)</span>
-
-                    <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="p">&amp;</span>
-                                <span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
-                                <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
-                    
-                    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_LIB</span><span class="p">)</span> <span class="k">then</span>
-                        <span class="c">! Archive depends on object</span>
-                        <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">)</span>
-                    <span class="k">end if</span>
-
-<span class="k">                case</span> <span class="p">(</span><span class="n">FPM_UNIT_PROGRAM</span><span class="p">)</span>
-
-                    <span class="k">call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,&amp;</span>
-                                <span class="n">output_file</span> <span class="o">=</span> <span class="n">get_object_name</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span> <span class="p">&amp;</span>
-                                <span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">&amp;</span>
-                                <span class="p">)</span>
-                    
-                    <span class="k">if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_APP</span><span class="p">)</span> <span class="k">then</span>
-
-<span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;app&#39;</span>
-
-                    <span class="k">else if</span> <span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">)</span> <span class="k">then</span>
-
-<span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;example&#39;</span>
-
-                    <span class="k">else</span>
-
-<span class="k">                        </span><span class="n">exe_dir</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
-
-                    <span class="k">end if</span>
-
-<span class="k">                    call </span><span class="n">add_target</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span> <span class="o">=</span> <span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">,&amp;</span>
-                                    <span class="n">link_libraries</span> <span class="o">=</span> <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">link_libraries</span><span class="p">,</span> <span class="p">&amp;</span>
-                                    <span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">exe_dir</span><span class="p">,</span> <span class="p">&amp;</span>
-                                    <span class="n">sources</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">exe_name</span><span class="o">//</span><span class="n">xsuffix</span><span class="p">))</span>
-
-                    <span class="c">! Executable depends on object</span>
-                    <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
-
-                    <span class="k">if</span> <span class="p">(</span><span class="n">with_lib</span><span class="p">)</span> <span class="k">then</span>
-                        <span class="c">! Executable depends on library</span>
-                        <span class="k">call </span><span class="n">add_dependency</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">))%</span><span class="n">ptr</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
-                    <span class="k">end if</span>
-<span class="k">                    </span>
-<span class="k">                end select</span>
-
-<span class="k">            end do</span>
-
-<span class="k">        end associate</span>
-
-<span class="k">    end do</span>
-
-<span class="k">    contains</span>
-
-<span class="k">    function </span><span class="n">get_object_name</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">object_file</span><span class="p">)</span>
-        <span class="c">! Generate object target path from source name and model params</span>
-        <span class="c">!  </span>
-        <span class="c">!</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">source</span>
-        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">object_file</span>
+    <span class="k">call </span><span class="n">build_target_list</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
     
-        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-        <span class="kt">character</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">filesep</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>
-        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir</span>
-        
-        <span class="n">object_file</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">)</span>
-
-        <span class="c">! Convert any remaining directory separators to underscores</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">object_file</span><span class="p">,</span><span class="n">filesep</span><span class="p">)</span>
-        <span class="k">do while</span><span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="n">object_file</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">object_file</span><span class="p">,</span><span class="n">filesep</span><span class="p">)</span>
-        <span class="k">end do</span>
-
-<span class="k">        </span><span class="n">object_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">,</span><span class="n">object_file</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;.o&#39;</span>
-    
-    <span class="k">end function </span><span class="n">get_object_name</span>
+    <span class="k">call </span><span class="n">resolve_module_dependencies</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<span class="k">    </span>
+<span class="k">    call </span><span class="n">resolve_target_linking</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
 
 <span class="k">end subroutine </span><span class="n">targets_from_sources</span>
 </pre></div>
@@ -691,7 +378,7 @@ function get_object_name(source) result(object_file)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 10:29  
+             on 2021-03-06 11:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
