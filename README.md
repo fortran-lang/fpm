@@ -72,32 +72,26 @@ $ cd fpm/
 
 #### Build a bootstrap version of fpm
 
-You can use the install script to perform the build of the Haskell version of *fpm* with:
+You can use the install script to bootstrap and install *fpm*:
 
 ```bash
 $ ./install.sh
 ```
 
-On Linux, the above command installs `fpm` to `${HOME}/.local/bin/`.
-
-Now you can build the Fortran *fpm* version with
+By default, the above command installs `fpm` to `${HOME}/.local/bin/`.
+To specify an alternative destination use the `--prefix=` flag, for example:
 
 ```bash
-$ cd fpm/
-$ fpm build
+$ ./install.sh --prefix=/usr/local
 ```
 
-Test that everything is working as expected
+which will install *fpm* to `/usr/local/bin`.
+
+To test that everything is working as expected you can now build *fpm*
+with itself and run the tests with:
 
 ```bash
+$ cd fpm
 $ fpm test
 ```
 
-Finally, install the Fortran *fpm* version with
-
-```bash
-$ fpm run --runner mv -- ~/.local/bin
-```
-
-Or choose another location if you do not want to overwrite the bootstrapping version.
-From now on you can rebuild *fpm* with your Fortran *fpm* version.

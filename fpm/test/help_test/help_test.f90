@@ -2,6 +2,8 @@ program help_test
 ! note hardcoded len=k1 instead of len=: in this test is a work-around a gfortran bug in old
 !      pre-v8.3 versions
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+use fpm_filesystem, only : dirname, join_path, exists
+use fpm_environment, only : get_os_type, OS_WINDOWS
 implicit none
 integer                        :: i, j
 integer                        :: be, af
@@ -11,7 +13,7 @@ integer,parameter              :: k1=132
 character(len=k1)              :: message
 logical,allocatable            :: tally(:)
 !intel-bug!character(len=:),allocatable   :: book1(:), book2(:)
-character(len=k1),allocatable  :: book1(:), book2(:), book3(:)
+character(len=k1),allocatable  :: book1(:), book2(:)
 !intel-bug!character(len=:),allocatable   :: page1(:)
 character(len=k1),allocatable  :: page1(:)
 integer                        :: lines
@@ -20,58 +22,57 @@ integer                        :: chars
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ! build manual as pieces using various help commands
 ! debug version
-'fpm run -- --version                           ',& ! verify fpm version being used
-'fpm run -- --help        > fpm_scratch_help.txt',&
-'fpm run -- help new     >> fpm_scratch_help.txt',&
-'fpm run -- help update  >> fpm_scratch_help.txt',&
-'fpm run -- build --help >> fpm_scratch_help.txt',&
-'fpm run -- help run     >> fpm_scratch_help.txt',&
-'fpm run -- help test    >> fpm_scratch_help.txt',&
-'fpm run -- help runner  >> fpm_scratch_help.txt',&
-'fpm run -- help install >> fpm_scratch_help.txt',&
-'fpm run -- help list    >> fpm_scratch_help.txt',&
-'fpm run -- help help    >> fpm_scratch_help.txt',&
-'fpm run -- --version    >> fpm_scratch_help.txt',&
-! release version 
-'fpm run --release -- --version                           ',& ! verify fpm version being used
-'fpm run --release -- --help        > fpm_scratch_help3.txt',&
-'fpm run --release -- help new     >> fpm_scratch_help3.txt',&
-'fpm run --release -- help update  >> fpm_scratch_help3.txt',&
-'fpm run --release -- build --help >> fpm_scratch_help3.txt',&
-'fpm run --release -- help run     >> fpm_scratch_help3.txt',&
-'fpm run --release -- help test    >> fpm_scratch_help3.txt',&
-'fpm run --release -- help runner  >> fpm_scratch_help3.txt',&
-'fpm run --release -- help install >> fpm_scratch_help3.txt',&
-'fpm run --release -- help list    >> fpm_scratch_help3.txt',&
-'fpm run --release -- help help    >> fpm_scratch_help3.txt',&
-'fpm run --release -- --version    >> fpm_scratch_help3.txt',&
+' --version                           ',& ! verify fpm version being used
+' --help        > fpm_scratch_help.txt',&
+' help new     >> fpm_scratch_help.txt',&
+' help update  >> fpm_scratch_help.txt',&
+' build --help >> fpm_scratch_help.txt',&
+' help run     >> fpm_scratch_help.txt',&
+' help test    >> fpm_scratch_help.txt',&
+' help runner  >> fpm_scratch_help.txt',&
+' help install >> fpm_scratch_help.txt',&
+' help list    >> fpm_scratch_help.txt',&
+' help help    >> fpm_scratch_help.txt',&
+' --version    >> fpm_scratch_help.txt',&
 ! generate manual
-'fpm run -- help manual   > fpm_scratch_manual.txt']
+' help manual   > fpm_scratch_manual.txt']
 
 !'fpm run             >> fpm_scratch_help.txt',&
 !'fpm run -- --list       >> fpm_scratch_help.txt',&
 !'fpm run -- list --list  >> fpm_scratch_help.txt',&
 character(len=*),parameter :: names(*)=[character(len=10) ::&
    'fpm','new','update','build','run','test','runner','install','list','help']
-character(len=:),allocatable :: add
+character(len=:), allocatable :: prog
+integer :: length
+
+   ! FIXME: Super hacky way to get the name of the fpm executable,
+   ! it works better than invoking fpm again but should be replaced ASAP.
+   call get_command_argument(0, length=length)
+   allocate(character(len=length) :: prog)
+   call get_command_argument(0, prog)
+   path = dirname(prog)
+   if (get_os_type() == OS_WINDOWS) then
+     prog = join_path(path, "..", "app", "fpm.exe")
+     if (.not.exists(prog)) then
+       prog = join_path(path, "..", "..", "app", "fpm.exe")
+     end if
+   else
+     prog = join_path(path, "..", "app", "fpm")
+     if (.not.exists(prog)) then
+       prog = join_path(path, "..", "..", "app", "fpm")
+     end if
+   end if
 
    write(*,'(g0:,1x)')'<INFO>TEST help SUBCOMMAND STARTED'
    if(allocated(tally))deallocate(tally)
    allocate(tally(0))
    call wipe('fpm_scratch_help.txt')
-   call wipe('fpm_scratch_help3.txt')
    call wipe('fpm_scratch_manual.txt')
 
    ! check that output has NAME SYNOPSIS DESCRIPTION
-   do j=1,2
-      if(j.eq.1)then
-         ADD=' '
-      else
-         ADD=' --release '
-      endif
       do i=1,size(names)
          write(*,*)'<INFO>check '//names(i)//' for NAME SYNOPSIS DESCRIPTION'
-         path= 'fpm run '//add//' -- help '//names(i)//' >fpm_scratch_help.txt'
+         path= prog // ' help '//names(i)//' >fpm_scratch_help.txt'
          message=''
          call execute_command_line(path,exitstat=estat,cmdstat=cstat,cmdmsg=message)
          write(*,'(*(g0))')'<INFO>CMD=',path,' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
@@ -99,13 +100,12 @@ character(len=:),allocatable :: add
          write(*,*)'<INFO>have completed ',count(tally),' tests'
          call wipe('fpm_scratch_help.txt')
       enddo
-   enddo
 
 
    ! execute the fpm(1) commands
    do i=1,size(cmds)
       message=''
-      path= cmds(i)
+      path= prog // cmds(i)
       call execute_command_line(path,exitstat=estat,cmdstat=cstat,cmdmsg=message)
       write(*,'(*(g0))')'<INFO>CMD=',path,' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
       tally=[tally,all([estat.eq.0,cstat.eq.0])]
@@ -114,14 +114,11 @@ character(len=:),allocatable :: add
    ! compare book written in fragments with manual
    call swallow('fpm_scratch_help.txt',book1)
    call swallow('fpm_scratch_manual.txt',book2)
-   call swallow('fpm_scratch_help3.txt',book3)
    ! get rid of lines from run() which is not on stderr at the moment
    book1=pack(book1,index(book1,' + build/').eq.0)
    book2=pack(book1,index(book2,' + build/').eq.0)
-   book3=pack(book3,index(book3,' + build/').eq.0)
    write(*,*)'<INFO>book1 ',size(book1), len(book1)
    write(*,*)'<INFO>book2 ',size(book2), len(book2)
-   write(*,*)'<INFO>book2 ',size(book3), len(book3)
    if(size(book1).ne.size(book2))then
          write(*,*)'<ERROR>manual and "debug" appended pages are not the same size'
          tally=[tally,.false.]
@@ -131,18 +128,6 @@ character(len=:),allocatable :: add
          write(*,*)'<ERROR>manual and "debug" appended pages are not the same'
       else
          write(*,*)'<INFO>manual and "debug" appended pages are the same'
-         tally=[tally,.true.]
-      endif
-   endif
-   if(size(book3).ne.size(book2))then
-         write(*,*)'<ERROR>manual and "release" appended pages are not the same size'
-         tally=[tally,.false.]
-   else
-      if(all(book3.ne.book2))then
-         tally=[tally,.false.]
-         write(*,*)'<ERROR>manual and "release" appended pages are not the same'
-      else
-         write(*,*)'<INFO>manual and "release" appended pages are the same'
          tally=[tally,.true.]
       endif
    endif
@@ -159,19 +144,9 @@ character(len=:),allocatable :: add
       write(*,*)'<INFO>"debug" manual size in bytes=',chars,' lines=',lines
       tally=[tally,.true.]
    endif
-   chars=sum(len_trim(book3)) ! SUM TRIMMED LENGTH
-   lines=size(book3)
-   if( (chars.lt.12000) .or. (lines.lt.350) )then
-      write(*,*)'<ERROR>"release" manual is suspiciously small, bytes=',chars,' lines=',lines
-      tally=[tally,.false.]
-   else
-      write(*,*)'<INFO>"release" manual size in bytes=',chars,' lines=',lines
-      tally=[tally,.true.]
-   endif
 
    write(*,'("<INFO>HELP TEST TALLY=",*(g0))')tally
    call wipe('fpm_scratch_help.txt')
-   call wipe('fpm_scratch_help3.txt')
    call wipe('fpm_scratch_manual.txt')
    if(all(tally))then
       write(*,'(*(g0))')'<INFO>PASSED: all ',count(tally),' tests passed '

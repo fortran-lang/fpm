@@ -1,6 +1,7 @@
 program new_test
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-use fpm_filesystem,  only : is_dir, list_files, exists, windows_path, join_path
+use fpm_filesystem,  only : is_dir, list_files, exists, windows_path, join_path, &
+  dirname
 use fpm_strings,     only : string_t, operator(.in.)
 use fpm_environment, only : run, get_os_type
 use fpm_environment, only : OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_WINDOWS
@@ -158,18 +159,29 @@ logical                       :: IS_OS_WINDOWS
       stop 5
    endif
 contains
-  function get_command_path() result(command_path)
-    character(len=:), allocatable :: command_path
+  function get_command_path() result(prog)
+    character(len=:), allocatable :: prog
 
-    type(string_t), allocatable :: files(:)
-    integer :: i
+    character(len=:), allocatable :: path
+    integer :: length
 
-    call list_files("build", files)
-    do i = 1, size(files)
-      if (index(files(i)%s, "gfortran") > 0) then
-        command_path = join_path(files(i)%s, "app", "fpm")
-        return
+    ! FIXME: Super hacky way to get the name of the fpm executable,
+    ! it works better than invoking fpm again but should be replaced ASAP.
+    call get_command_argument(0, length=length)
+    allocate(character(len=length) :: prog)
+    call get_command_argument(0, prog)
+    path = dirname(prog)
+    if (get_os_type() == OS_WINDOWS) then
+      prog = join_path(path, "..", "app", "fpm.exe")
+      if (.not.exists(prog)) then
+        prog = join_path(path, "..", "..", "app", "fpm.exe")
       end if
-    end do
+    else
+      prog = join_path(path, "..", "app", "fpm")
+      if (.not.exists(prog)) then
+        prog = join_path(path, "..", "..", "app", "fpm")
+      end if
+    end if
+
   end function
 end program new_test
