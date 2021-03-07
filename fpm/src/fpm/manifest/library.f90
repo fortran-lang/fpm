@@ -5,6 +5,7 @@
 !>```toml
 !>[library]
 !>source-dir = "path"
+!>include-dir = "path"
 !>build-script = "file"
 !>```
 module fpm_manifest_library
@@ -21,6 +22,9 @@ module fpm_manifest_library
 
         !> Source path prefix
         character(len=:), allocatable :: source_dir
+
+        !> Include path prefix
+        character(len=:), allocatable :: include_dir
 
         !> Alternative build script to be invoked
         character(len=:), allocatable :: build_script
@@ -52,6 +56,7 @@ contains
         if (allocated(error)) return
 
         call get_value(table, "source-dir", self%source_dir, "src")
+        call get_value(table, "include-dir", self%include_dir, "include")
         call get_value(table, "build-script", self%build_script)
 
     end subroutine new_library
@@ -80,7 +85,7 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
                 exit
 
-            case("source-dir", "build-script")
+            case("source-dir", "include-dir", "build-script")
                 continue
 
             end select
@@ -115,6 +120,9 @@ contains
         write(unit, fmt) "Library target"
         if (allocated(self%source_dir)) then
             write(unit, fmt) "- source directory", self%source_dir
+        end if
+        if (allocated(self%include_dir)) then
+            write(unit, fmt) "- include directory", self%include_dir
         end if
         if (allocated(self%build_script)) then
             write(unit, fmt) "- custom build", self%build_script

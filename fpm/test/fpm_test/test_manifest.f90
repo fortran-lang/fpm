@@ -183,6 +183,10 @@ contains
             & "Default library source-dir")
         if (allocated(error)) return
 
+        call check_string(error, package%library%include_dir, "include", &
+            & "Default library include-dir")
+        if (allocated(error)) return
+
     end subroutine test_default_library
 
 
@@ -577,6 +581,10 @@ contains
 
         call check_string(error, library%source_dir, "src", &
             & "Default library source-dir")
+        if (allocated(error)) return
+
+        call check_string(error, library%include_dir, "include", &
+            & "Default library include-dir")
         if (allocated(error)) return
 
     end subroutine test_library_empty
