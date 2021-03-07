@@ -188,15 +188,16 @@ Library targets are exported and useable for other projects.
 ### Library configuration
 
 Defines the exported library target of the project.
-A library is generated if the source directory is found in a project.
-The default source directory is ``src`` but can be modified in the *library* section using the *source-dir* entry.
-Paths for the source directory are given relative to the project root and use ``/`` as path separator on all platforms.
+A library is generated if the source directory or include directory is found in a project.
+The default source and include directories are ``src`` and ``include``; these can be modified in the *library* section using the *source-dir* and *include-dir* entries.
+Paths for the source and include directories are given relative to the project root and use ``/`` as path separator on all platforms.
 
 *Example:*
 
 ```toml
 [library]
 source-dir = "lib"
+include-dir = "inc"
 ```
 
 #### Custom build script
