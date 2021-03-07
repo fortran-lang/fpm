@@ -187,4 +187,28 @@ if errorlevel 1 exit 1
 .\build\gfortran_debug\app\gomp_test
 if errorlevel 1 exit 1
 
+
+cd ..\fortran_includes
+if errorlevel 1 exit 1
+
+del /q /f build
+%fpm_path% build
+if errorlevel 1 exit 1
+
+
+cd ..\c_includes
+if errorlevel 1 exit 1
+
+del /q /f build
+%fpm_path% build
+if errorlevel 1 exit 1
+
+
+cd ..\c_header_only
+if errorlevel 1 exit 1
+
+del /q /f build
+%fpm_path% build
+if errorlevel 1 exit 1
+
 cd ..\..

@@ -1,0 +1,4 @@
+name = "c_includes"
+
+[dependencies]
+c_header_only = { path = "../c_header_only"}

@@ -89,5 +89,14 @@ cd ../link_executable
 "${f_fpm_path}" build
 ./build/gfortran_debug/app/gomp_test
 
+cd ../fortran_includes
+"${f_fpm_path}" build
+
+cd ../c_includes
+"${f_fpm_path}" build
+
+cd ../c_header_only
+"${f_fpm_path}" build
+
 # Cleanup
 rm -rf ./*/build
