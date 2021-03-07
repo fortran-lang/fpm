@@ -433,6 +433,7 @@ subroutine resolve_target_linking(targets, model)
 
     integer :: i
     character(:), allocatable :: global_link_flags
+    character(:), allocatable :: global_compile_flags
 
     if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
         global_link_flags = targets(1)%ptr%output_file
@@ -440,9 +441,18 @@ subroutine resolve_target_linking(targets, model)
         allocate(character(0) :: global_link_flags)
     end if
 
+    global_compile_flags = model%fortran_compile_flags
+
     if (allocated(model%link_libraries)) then
         if (size(model%link_libraries) > 0) then
             global_link_flags = global_link_flags // " -l" // string_cat(model%link_libraries," -l")
+        end if
+    end if
+
+    if (allocated(model%include_dirs)) then
+        if (size(model%include_dirs) > 0) then
+            global_compile_flags = global_compile_flags // &
+            & " -I" // string_cat(model%include_dirs," -I")
         end if
     end if
 
@@ -450,7 +460,7 @@ subroutine resolve_target_linking(targets, model)
 
         associate(target => targets(i)%ptr)
 
-            target%compile_flags = model%fortran_compile_flags
+            target%compile_flags = global_compile_flags
 
             allocate(target%link_objects(0))
 
