@@ -42,6 +42,7 @@ subroutine build_model(model, settings, package, error)
     integer :: i
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir
+    type(string_t) :: include_dir
 
     if(settings%verbose)then
        write(*,*)'<INFO>BUILD_NAME:',settings%build_name
@@ -50,6 +51,7 @@ subroutine build_model(model, settings, package, error)
 
     model%package_name = package%name
 
+    allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
 
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
@@ -141,10 +143,23 @@ subroutine build_model(model, settings, package, error)
             model%packages(i)%name = dependency%name
 
             if (allocated(dependency%library)) then
-                lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
-                call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                    error=error)
-                if (allocated(error)) exit
+                
+                if (allocated(dependency%library%source_dir)) then
+                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
+                    if (is_dir(lib_dir)) then
+                        call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
+                            error=error)
+                        if (allocated(error)) exit
+                    end if
+                end if
+
+                if (allocated(dependency%library%include_dir)) then
+                    include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir)
+                    if (is_dir(include_dir%s)) then
+                        model%include_dirs = [model%include_dirs, include_dir]
+                    end if
+                end if
+                
             end if
 
             if (allocated(dependency%build%link)) then
