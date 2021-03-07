@@ -156,10 +156,19 @@ subroutine build_target_list(targets,model)
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
 
-    integer :: i, j
+    integer :: i, j, n_source
     character(:), allocatable :: xsuffix, exe_dir
     type(build_target_t), pointer :: dep
     logical :: with_lib
+
+    ! Check for empty build (e.g. header-only lib)
+    n_source = sum([(size(model%packages(j)%sources), &
+                      j=1,size(model%packages))])
+
+    if (n_source < 1) then
+        allocate(targets(0))
+        return
+    end if
 
     if (get_os_type() == OS_WINDOWS) then
         xsuffix = '.exe'
@@ -434,6 +443,8 @@ subroutine resolve_target_linking(targets, model)
     integer :: i
     character(:), allocatable :: global_link_flags
     character(:), allocatable :: global_compile_flags
+
+    if (size(targets) == 0) return
 
     if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
         global_link_flags = targets(1)%ptr%output_file

@@ -141,6 +141,7 @@ subroutine build_model(model, settings, package, error)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
+            if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
             if (allocated(dependency%library)) then
                 
