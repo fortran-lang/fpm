@@ -14,8 +14,8 @@ module fpm_environment
     integer, parameter, public :: OS_SOLARIS = 5
     integer, parameter, public :: OS_FREEBSD = 6
 contains
+    !> Determine the OS type
     integer function get_os_type() result(r)
-        !! Determine the OS type
         !!
         !! Returns one of OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN,
         !! OS_SOLARIS, OS_FREEBSD.
@@ -106,6 +106,9 @@ contains
         end if
     end function get_os_type
 
+    !> Compare the output of [[get_os_type]] or the optional 
+    !! passed INTEGER value to the value for OS_WINDOWS
+    !! and return .TRUE. if they match and .FALSE. otherwise
     logical function os_is_unix(os) result(unix)
         integer, intent(in), optional :: os
         integer :: build_os
@@ -117,6 +120,7 @@ contains
         unix = os /= OS_WINDOWS
     end function os_is_unix
 
+    !> echo command string and pass it to the system for execution
     subroutine run(cmd,echo)
         character(len=*), intent(in) :: cmd
         logical,intent(in),optional  :: echo
@@ -137,10 +141,15 @@ contains
         end if
     end subroutine run
 
+    !> get named environment variable value. It it is blank or
+    !! not set return the optional default value
     function get_env(NAME,DEFAULT) result(VALUE)
     implicit none
-    character(len=*),intent(in)          :: NAME
+    !> name of environment variable to get the value of
+    character(len=*),intent(in)          :: NAME     
+    !> default value to return if the requested value is undefined or blank
     character(len=*),intent(in),optional :: DEFAULT
+    !> the returned value
     character(len=:),allocatable         :: VALUE
     integer                              :: howbig
     integer                              :: stat

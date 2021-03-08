@@ -1,3 +1,6 @@
+!> This module defines general procedures for **string operations** for both CHARACTER and
+!! TYPE(STRING_T) variables
+!
 !>## general routines for performing __string operations__
 !!
 !!### Types

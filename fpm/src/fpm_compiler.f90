@@ -1,14 +1,18 @@
+!># Define compiler command options
+!!
+!! This module defines compiler options to use for the debug and release builds.
 module fpm_compiler
 use fpm_model, only: fpm_model_t
 use fpm_filesystem, only: join_path
 public  add_compile_flag_defaults
 
 contains
+!> Choose compile flags based on cli settings & manifest inputs
 subroutine add_compile_flag_defaults(build_name,compiler,model)
-! Choose compile flags based on cli settings & manifest inputs
-character(len=*),intent(in) :: build_name, compiler
+character(len=*),intent(in) :: build_name   !! select build from {release,debug}
+character(len=*),intent(in) :: compiler     !! compiler name
+type(fpm_model_t), intent(inout) :: model   !! model to add compiler options to
 
-type(fpm_model_t), intent(inout) :: model
 ! could just be a function to return a string instead of passing model
 ! but likely to change other components like matching C compiler
 

@@ -15,7 +15,7 @@
 !> wanted command line and the expected default values.
 !> Some of the following points also apply if you add a new option or argument
 !> to an existing *fpm* subcommand.
-!> Add this point you should create a help page for the new command in a simple
+!> At this point you should create a help page for the new command in a simple
 !> catman-like format as well in the ``set_help`` procedure.
 !> Make sure to register new subcommands in the ``fpm-manual`` command by adding
 !> them to the manual character array and in the help/manual case as well.
