@@ -18,11 +18,10 @@
 !! - **OPERATOR(.IN.)**  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
 !! - [[GLOB]]  function compares text strings, one of which can have wildcards ('*' or '?').
 !!### Miscellaneous
-!! - [[LEN_TRIM]]  Determine total trimmed length of **string_t** array
-!! - [[FNV_1A]]  Hash a **CHARACTER**(*) string of default kind or a **TYPE(STRING_T)** array
+!! - [[LEN_TRIM]]  Determine total trimmed length of **STRING_T** array
+!! - [[FNV_1A]]  Hash a **CHARACTER(*)** string of default kind or a **TYPE(STRING_T)** array
 !! - [[REPLACE]]  Returns string with characters in charset replaced with target_char.
 !! - [[RESIZE]]  increase the size of a **TYPE(STRING_T)** array by N elements
-!!               adding separators and suffix and prefix strings
 !!
 !!@note `If compiled with **OpenMP**, targets will be build in parallel where possible`.
 !!
