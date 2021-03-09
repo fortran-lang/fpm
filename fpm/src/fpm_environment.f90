@@ -1,3 +1,7 @@
+!> This module contains procedures that interact with the programming environment.
+!! 
+!! * [get_os_type] -- Determine the OS type
+!! * [get_env] -- return the value of an environment variable
 module fpm_environment
     implicit none
     private
