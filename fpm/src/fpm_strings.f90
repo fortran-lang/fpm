@@ -26,9 +26,6 @@
 !! - [[REPLACE]]  Returns string with characters in charset replaced with target_char.
 !! - [[RESIZE]]  increase the size of a **TYPE(STRING_T)** array by N elements
 !!
-!!@note `If compiled with **OpenMP**, targets will be build in parallel where possible`.
-!!
-!src/fpm_model.f90: The process (see `[[build_model(subroutine)]]`) 
 
 module fpm_strings
 use iso_fortran_env, only: int64
