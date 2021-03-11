@@ -3,7 +3,7 @@ use iso_fortran_env, only: int64
 implicit none
 
 private
-public :: f_string, lower, split, str_ends_with, new_string_t, string_t
+public :: f_string, lower, split, str_ends_with, string_t
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
 
@@ -36,6 +36,10 @@ end interface str_ends_with
 interface str
     module procedure str_int, str_int64, str_logical
 end interface
+
+interface string_t
+    module procedure new_string_t
+end interface string_t
 
 contains
 

@@ -17,6 +17,7 @@ module fpm_manifest
     use fpm_toml, only : toml_table, read_package_file
     use fpm_manifest_test, only : test_config_t
     use fpm_filesystem, only: join_path, exists, dirname, is_dir
+    use fpm_strings, only: string_t
     implicit none
     private
 
@@ -35,7 +36,7 @@ contains
         type(library_config_t), intent(out) :: self
 
         self%source_dir = "src"
-        self%include_dir = "include"
+        self%include_dir = [string_t("include")]
 
     end subroutine default_library
 

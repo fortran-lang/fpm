@@ -199,6 +199,14 @@ Paths for the source and include directories are given relative to the project r
 source-dir = "lib"
 include-dir = "inc"
 ```
+*include-dir* can contain one or more directories, where multiple directories are specified using a list of strings.
+
+*Example:*
+
+```toml
+[library]
+include-dir = ["include","third_party/include"]
+```
 
 #### Custom build script
 

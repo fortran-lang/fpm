@@ -39,7 +39,7 @@ subroutine build_model(model, settings, package, error)
     type(package_config_t), intent(in) :: package
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: i
+    integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir
     type(string_t) :: include_dir
@@ -155,10 +155,12 @@ subroutine build_model(model, settings, package, error)
                 end if
 
                 if (allocated(dependency%library%include_dir)) then
-                    include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir)
-                    if (is_dir(include_dir%s)) then
-                        model%include_dirs = [model%include_dirs, include_dir]
-                    end if
+                    do j=1,size(dependency%library%include_dir)
+                        include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir(j)%s)
+                        if (is_dir(include_dir%s)) then
+                            model%include_dirs = [model%include_dirs, include_dir]
+                        end if
+                    end do
                 end if
                 
             end if
