@@ -175,11 +175,11 @@
       
       <a class="list-group-item" href="../proc/list_files.html#variable-dir_files">dir_files</a>
       
-      <a class="list-group-item" href="../proc/list_files.html#variable-fh~5">fh</a>
+      <a class="list-group-item" href="../proc/list_files.html#variable-fh~2">fh</a>
       
-      <a class="list-group-item" href="../proc/list_files.html#variable-i~16">i</a>
+      <a class="list-group-item" href="../proc/list_files.html#variable-i~4">i</a>
       
-      <a class="list-group-item" href="../proc/list_files.html#variable-stat~9">stat</a>
+      <a class="list-group-item" href="../proc/list_files.html#variable-stat~4">stat</a>
       
       <a class="list-group-item" href="../proc/list_files.html#variable-sub_dir_files">sub_dir_files</a>
       
@@ -233,6 +233,12 @@ public recursive subroutine list_files(dir, files, recurse)
 
 
     
+    <p>Get file &amp; directory names in directory <code>dir</code>.</p>
+<ul>
+<li>File/directory names return are relative to cwd, ie. preprended with <code>dir</code></li>
+<li>Includes files starting with <code>.</code> except current directory and parent directory</li>
+</ul>
+    
 
     <h3>Arguments</h3>
     
@@ -282,7 +288,7 @@ public recursive subroutine list_files(dir, files, recurse)
   
 <tr>
   
-  <td><span class="anchor" id="variable-recurse~2"></span>logical,</td>
+  <td><span class="anchor" id="variable-recurse"></span>logical,</td>
   <td>intent(in),</td>
   <td>optional</td>
   
@@ -315,11 +321,11 @@ public recursive subroutine list_files(dir, files, recurse)
       
       <a class="list-group-item" href="../proc/list_files.html#variable-dir_files">dir_files</a>
       
-      <a class="list-group-item" href="../proc/list_files.html#variable-fh~5">fh</a>
+      <a class="list-group-item" href="../proc/list_files.html#variable-fh~2">fh</a>
       
-      <a class="list-group-item" href="../proc/list_files.html#variable-i~16">i</a>
+      <a class="list-group-item" href="../proc/list_files.html#variable-i~4">i</a>
       
-      <a class="list-group-item" href="../proc/list_files.html#variable-stat~9">stat</a>
+      <a class="list-group-item" href="../proc/list_files.html#variable-stat~4">stat</a>
       
       <a class="list-group-item" href="../proc/list_files.html#variable-sub_dir_files">sub_dir_files</a>
       
@@ -395,7 +401,7 @@ public recursive subroutine list_files(dir, files, recurse)
   
 <tr>
   
-  <td><span class="anchor" id="variable-fh~5"></span>integer,</td>
+  <td><span class="anchor" id="variable-fh~2"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -409,7 +415,7 @@ public recursive subroutine list_files(dir, files, recurse)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~16"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~4"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -423,7 +429,7 @@ public recursive subroutine list_files(dir, files, recurse)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat~9"></span>integer,</td>
+  <td><span class="anchor" id="variable-stat~4"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -483,11 +489,6 @@ public recursive subroutine list_files(dir, files, recurse)
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="k">recursive subroutine </span><span class="n">list_files</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">recurse</span><span class="p">)</span>
-    <span class="c">! Get file &amp; directory names in directory `dir`.</span>
-    <span class="c">!</span>
-    <span class="c">!  - File/directory names return are relative to cwd, ie. preprended with `dir`</span>
-    <span class="c">!  - Includes files starting with `.` except current directory and parent directory</span>
-    <span class="c">!</span>
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dir</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">files</span><span class="p">(:)</span>
     <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">recurse</span>
@@ -567,7 +568,7 @@ public recursive subroutine list_files(dir, files, recurse)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 11:42  
+             on 2021-03-11 15:41  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

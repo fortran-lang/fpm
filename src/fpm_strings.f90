@@ -1,3 +1,32 @@
+!> This module defines general procedures for **string operations** for both CHARACTER and
+!! TYPE(STRING_T) variables
+!
+!>## general routines for performing __string operations__
+!!
+!!### Types
+!! - **TYPE(STRING_T)** define a type to contain strings of variable length
+!!### Type Conversions
+!! - [[F_STRING]]  return Fortran **CHARACTER** variable when given a C-like array of 
+!!                 single characters terminated with a C_NULL_CHAR **CHARACTER**
+!! - [[STR]]  Converts **INTEGER** or** LOGICAL** to **CHARACTER** string
+!!### Case
+!! - [[LOWER]]  Changes a string to lowercase over optional specified column range
+!!### Parsing and joining
+!! - [[SPLIT]]  parse string on delimiter characters and store tokens into an allocatable array
+!! - [[STRING_CAT]]  Concatenate an array of **type(string_t)** into a single **CHARACTER** variable
+!! - [[JOIN]]  append an array of **CHARACTER** variables into a single **CHARACTER** variable 
+!!### Testing
+!! - [[STR_ENDS_WITH]]  test if a **CHARACTER** string or array ends with a specified suffix
+!! - [[STRING_ARRAY_CONTAINS]]  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
+!! - **OPERATOR(.IN.)**  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
+!! - [[GLOB]]  function compares text strings, one of which can have wildcards ('*' or '?').
+!!### Miscellaneous
+!! - [[LEN_TRIM]]  Determine total trimmed length of **STRING_T** array
+!! - [[FNV_1A]]  Hash a **CHARACTER(*)** string of default kind or a **TYPE(STRING_T)** array
+!! - [[REPLACE]]  Returns string with characters in charset replaced with target_char.
+!! - [[RESIZE]]  increase the size of a **TYPE(STRING_T)** array by N elements
+!!
+
 module fpm_strings
 use iso_fortran_env, only: int64
 implicit none
@@ -39,6 +68,7 @@ end interface
 
 contains
 
+!> test if a CHARACTER string ends with a specified suffix
 pure logical function str_ends_with_str(s, e) result(r)
     character(*), intent(in) :: s, e
     integer :: n1, n2
@@ -51,6 +81,7 @@ pure logical function str_ends_with_str(s, e) result(r)
     end if
 end function str_ends_with_str
 
+!> test if a CHARACTER string ends with any of an array of suffixs
 pure logical function str_ends_with_any(s, e) result(r)
     character(*), intent(in) :: s
     character(*), intent(in) :: e(:)
@@ -67,6 +98,8 @@ pure logical function str_ends_with_any(s, e) result(r)
 
 end function str_ends_with_any
 
+!> return Fortran character variable when given a C-like array of
+!! single characters terminated with a C_NULL_CHAR character
 function f_string(c_string)
     use iso_c_binding
     character(len=1), intent(in) :: c_string(:)
@@ -128,10 +161,10 @@ pure function fnv_1a_string_t(input, seed) result(hash)
 end function fnv_1a_string_t
 
 
+ !>Author: John S. Urban
+ !!License: Public Domain
+ !! Changes a string to lowercase over optional specified column range
 elemental pure function lower(str,begin,end) result (string)
-    ! Changes a string to lowercase over specified range
-    ! Author: John S. Urban
-    ! License: Public Domain
 
     character(*), intent(In)     :: str
     character(len(str))          :: string
@@ -161,9 +194,9 @@ elemental pure function lower(str,begin,end) result (string)
 end function lower
 
 
+!> Check if array of TYPE(STRING_T) matches a particular CHARACTER string
+!!
 logical function string_array_contains(search_string,array)
-    ! Check if array of string_t contains a particular string
-    !
     character(*), intent(in) :: search_string
     type(string_t), intent(in) :: array(:)
 
@@ -175,7 +208,7 @@ logical function string_array_contains(search_string,array)
 end function string_array_contains
 
 !> Concatenate an array of type(string_t) into
-!>  a single character
+!>  a single CHARACTER variable
 function string_cat(strings,delim) result(cat)
     type(string_t), intent(in) :: strings(:)
     character(*), intent(in), optional :: delim
@@ -216,20 +249,19 @@ pure function string_len_trim(strings) result(n)
 
 end function string_len_trim
 
+!>Author: John S. Urban
+!!License: Public Domain
+!! parse string on delimiter characters and store tokens into an allocatable array
 subroutine split(input_line,array,delimiters,order,nulls)
-    ! parse string on delimiter characters and store tokens into an allocatable array"
-    ! Author: John S. Urban
-    ! License: Public Domain
-
-
-    !  given a line of structure " par1 par2 par3 ... parn " store each par(n) into a separate variable in array.
-    !    o by default adjacent delimiters in the input string do not create an empty string in the output array
-    !    o no quoting of delimiters is supported
-    character(len=*),intent(in)              :: input_line  ! input string to tokenize
-    character(len=*),optional,intent(in)     :: delimiters  ! list of delimiter characters
-    character(len=*),optional,intent(in)     :: order       ! order of output array sequential|[reverse|right]
-    character(len=*),optional,intent(in)     :: nulls       ! return strings composed of delimiters or not ignore|return|ignoreend
-    character(len=:),allocatable,intent(out) :: array(:)    ! output array of tokens
+    !! given a line of structure " par1 par2 par3 ... parn " store each par(n) into a separate variable in array.
+    !!
+    !! * by default adjacent delimiters in the input string do not create an empty string in the output array
+    !! * no quoting of delimiters is supported
+    character(len=*),intent(in)              :: input_line  !! input string to tokenize
+    character(len=*),optional,intent(in)     :: delimiters  !! list of delimiter characters
+    character(len=*),optional,intent(in)     :: order       !! order of output array sequential|[reverse|right]
+    character(len=*),optional,intent(in)     :: nulls       !! return strings composed of delimiters or not ignore|return|ignoreend
+    character(len=:),allocatable,intent(out) :: array(:)    !! output array of tokens
 
     integer                       :: n                      ! max number of strings INPUT_LINE could split into if all delimiter
     integer,allocatable           :: ibegin(:)              ! positions in input string where tokens start
@@ -334,8 +366,8 @@ subroutine split(input_line,array,delimiters,order,nulls)
     enddo
 end subroutine split
 
+!> Returns string with characters in charset replaced with target_char.
 pure function replace(string, charset, target_char) result(res)
-    ! Returns string with characters in charset replaced with target_char.
     character(*), intent(in) :: string
     character, intent(in) :: charset(:), target_char
     character(len(string)) :: res
@@ -348,6 +380,7 @@ pure function replace(string, charset, target_char) result(res)
     end do
 end function replace
 
+!> increase the size of a TYPE(STRING_T) array by N elements
 subroutine resize_string(list, n)
   !> Instance of the array to be resized
   type(string_t), allocatable, intent(inout) :: list(:)
@@ -383,14 +416,14 @@ subroutine resize_string(list, n)
 
 end subroutine resize_string
 
-pure function join(str,sep,trm,left,right,start,end) result (string)
-!>
-!!##NAME
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
+!!## NAME
 !!    join(3f) - [fpm_strings:EDITING] append CHARACTER variable array into
 !!    a single CHARACTER variable with specified separator
 !!    (LICENSE:PD)
 !!
-!!##SYNOPSIS
+!!## SYNOPSIS
 !!
 !!    pure function join(str,sep,trm,left,right,start,end) result (string)
 !!
@@ -403,13 +436,13 @@ pure function join(str,sep,trm,left,right,start,end) result (string)
 !!     character(len=*),intent(in),optional :: end
 !!     character(len=:),allocatable         :: string
 !!
-!!##DESCRIPTION
-!!      JOIN(3f) appends the elements of a CHARACTER array into a single
-!!      CHARACTER variable, with elements 1 to N joined from left to right.
-!!      By default each element is trimmed of trailing spaces and the
-!!      default separator is a null string.
+!!## DESCRIPTION
+!!   JOIN(3f) appends the elements of a CHARACTER array into a single
+!!   CHARACTER variable, with elements 1 to N joined from left to right.
+!!   By default each element is trimmed of trailing spaces and the
+!!   default separator is a null string.
 !!
-!!##OPTIONS
+!!## OPTIONS
 !!      STR(:)  array of CHARACTER variables to be joined
 !!      SEP     separator string to place between each variable. defaults
 !!              to a null string.
@@ -420,50 +453,47 @@ pure function join(str,sep,trm,left,right,start,end) result (string)
 !!      TRM     option to trim each element of STR of trailing
 !!              spaces. Defaults to .TRUE.
 !!
-!!##RESULT
+!!## RESULT
 !!      STRING  CHARACTER variable composed of all of the elements of STR()
 !!              appended together with the optional separator SEP placed
 !!              between the elements.
 !!
-!!##EXAMPLE
+!!## EXAMPLE
 !!
 !!  Sample program:
-!!
-!!   program demo_join
-!!   use fpm_strings, only: join
-!!   implicit none
-!!   character(len=:),allocatable  :: s(:)
-!!   character(len=:),allocatable  :: out
-!!   integer                       :: i
-!!     s=[character(len=10) :: 'United',' we',' stand,', &
-!!     & ' divided',' we fall.']
-!!     out=join(s)
-!!     write(*,'(a)') out
-!!     write(*,'(a)') join(s,trm=.false.)
-!!     write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
-!!     write(*,'(a)') join(s,sep='<>')
-!!     write(*,'(a)') join(s,sep=';',left='[',right=']')
-!!     write(*,'(a)') join(s,left='[',right=']')
-!!     write(*,'(a)') join(s,left='>>')
-!!   end program demo_join
+!!```fortran
+!!    program demo_join
+!!    use fpm_strings, only: join
+!!    implicit none
+!!    character(len=:),allocatable  :: s(:)
+!!    character(len=:),allocatable  :: out
+!!    integer                       :: i
+!!      s=[character(len=10) :: 'United',' we',' stand,', &
+!!      & ' divided',' we fall.']
+!!      out=join(s)
+!!      write(*,'(a)') out
+!!      write(*,'(a)') join(s,trm=.false.)
+!!      write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
+!!      write(*,'(a)') join(s,sep='<>')
+!!      write(*,'(a)') join(s,sep=';',left='[',right=']')
+!!      write(*,'(a)') join(s,left='[',right=']')
+!!      write(*,'(a)') join(s,left='>>')
+!!    end program demo_join
+!!```fortran
 !!
 !!  Expected output:
 !!
-!!   United we stand, divided we fall.
-!!   United     we        stand,    divided   we fall.
-!!   United    | we       | stand,   | divided  | we fall.
-!!   United    | we       | stand,   | divided  | we fall.
-!!   United    | we       | stand,   | divided  | we fall.
-!!   United<> we<> stand,<> divided<> we fall.
-!!   [United];[ we];[ stand,];[ divided];[ we fall.]
-!!   [United][ we][ stand,][ divided][ we fall.]
-!!   >>United>> we>> stand,>> divided>> we fall.
+!!    United we stand, divided we fall.
+!!    United     we        stand,    divided   we fall.
+!!    United    | we       | stand,   | divided  | we fall.
+!!    United    | we       | stand,   | divided  | we fall.
+!!    United    | we       | stand,   | divided  | we fall.
+!!    United<> we<> stand,<> divided<> we fall.
+!!    [United];[ we];[ stand,];[ divided];[ we fall.]
+!!    [United][ we][ stand,][ divided][ we fall.]
+!!    >>United>> we>> stand,>> divided>> we fall.
 !!
-!!##AUTHOR
-!!    John S. Urban
-!!
-!!##LICENSE
-!!    Public Domain
+pure function join(str,sep,trm,left,right,start,end) result (string)
 
 ! @(#)join(3f): append an array of character variables with specified separator into a single CHARACTER variable
 
@@ -503,29 +533,29 @@ character(len=:),allocatable         :: right_local
    if(present(end))string=string//end
 end function join
 
-function glob(tame,wild)
-!>
-!!##NAME
+!>##AUTHOR John S. Urban
+!!##LICENSE Public Domain
+!!## NAME
 !!    glob(3f) - [fpm_strings:COMPARE] compare given string for match to
 !!    pattern which may contain wildcard characters
 !!    (LICENSE:PD)
 !!
-!!##SYNOPSIS
+!!## SYNOPSIS
 !!
 !!    logical function glob(string, pattern )
 !!
 !!     character(len=*),intent(in) :: string
 !!     character(len=*),intent(in) :: pattern
 !!
-!!##DESCRIPTION
-!!    glob(3f) compares given STRING for match to PATTERN which may
-!!    contain wildcard characters.
+!!## DESCRIPTION
+!!   glob(3f) compares given STRING for match to PATTERN which may
+!!   contain wildcard characters.
 !!
-!!    In this version to get a match the entire string must be described
-!!    by PATTERN. Trailing whitespace is significant, so trim the input
-!!    string to have trailing whitespace ignored.
+!!   In this version to get a match the entire string must be described
+!!   by PATTERN. Trailing whitespace is significant, so trim the input
+!!   string to have trailing whitespace ignored.
 !!
-!!##OPTIONS
+!!## OPTIONS
 !!    string   the input string to test to see if it contains the pattern.
 !!    pattern  the following simple globbing options are available
 !!
@@ -537,7 +567,7 @@ function glob(tame,wild)
 !!             o There is no escape character, so matching strings with
 !!               literal question mark and asterisk is problematic.
 !!
-!!##EXAMPLES
+!!## EXAMPLES
 !!
 !!   Example program
 !!
@@ -729,21 +759,18 @@ function glob(tame,wild)
 !!
 !!   Expected output
 !!
-!!##AUTHOR
-!!   John S. Urban
 !!
-!!##REFERENCE
+!!## REFERENCE
 !!   The article "Matching Wildcards: An Empirical Way to Tame an Algorithm"
 !!   in Dr Dobb's Journal, By Kirk J. Krauss, October 07, 2014
 !!
-!!##LICENSE
-!!   Public Domain
+function glob(tame,wild)
 
 ! @(#)fpm_strings::glob(3f): function compares text strings, one of which can have wildcards ('*' or '?').
 
-logical                    :: glob
-character(len=*)           :: tame       ! A string without wildcards
-character(len=*)           :: wild       ! A (potentially) corresponding string with wildcards
+logical                    :: glob       !! result of test
+character(len=*)           :: tame       !! A string without wildcards to compare to the globbing expression
+character(len=*)           :: wild       !! A (potentially) corresponding string with wildcards
 character(len=len(tame)+1) :: tametext
 character(len=len(wild)+1) :: wildtext
 character(len=1),parameter :: NULL=char(0)
@@ -829,8 +856,8 @@ character(len=:),allocatable :: tbookmark, wbookmark
    enddo
 end function glob
 
+!> Returns the length of the string representation of 'i'
 pure integer function str_int_len(i) result(sz)
-! Returns the length of the string representation of 'i'
 integer, intent(in) :: i
 integer, parameter :: MAX_STR = 100
 character(MAX_STR) :: s
@@ -840,15 +867,15 @@ write(s, '(i0)') i
 sz = len_trim(s)
 end function
 
+!> Converts integer "i" to string
 pure function str_int(i) result(s)
-! Converts integer "i" to string
 integer, intent(in) :: i
 character(len=str_int_len(i)) :: s
 write(s, '(i0)') i
 end function
 
+!> Returns the length of the string representation of 'i'
 pure integer function str_int64_len(i) result(sz)
-! Returns the length of the string representation of 'i'
 integer(int64), intent(in) :: i
 integer, parameter :: MAX_STR = 100
 character(MAX_STR) :: s
@@ -858,15 +885,15 @@ write(s, '(i0)') i
 sz = len_trim(s)
 end function
 
+!> Converts integer "i" to string
 pure function str_int64(i) result(s)
-! Converts integer "i" to string
 integer(int64), intent(in) :: i
 character(len=str_int64_len(i)) :: s
 write(s, '(i0)') i
 end function
 
+!> Returns the length of the string representation of 'l'
 pure integer function str_logical_len(l) result(sz)
-! Returns the length of the string representation of 'l'
 logical, intent(in) :: l
 if (l) then
     sz = 6
@@ -875,8 +902,8 @@ else
 end if
 end function
 
+!> Converts logical "l" to string
 pure function str_logical(l) result(s)
-! Converts logical "l" to string
 logical, intent(in) :: l
 character(len=str_logical_len(l)) :: s
 if (l) then

@@ -120,7 +120,11 @@
 <div class="well well-sm">
   <ul class="list-inline" style="margin-bottom:0px;display:inline">
      
+     <li><i class="fa fa-pencil"></i> John S. Urban</li>
      
+     
+     
+    <li><i class="fa fa-legal"></i> Public Domain</li>
      
      
     
@@ -231,6 +235,80 @@ public pure function join(str, sep, trm, left, right, start, end) result(string)
 
 
     
+    <h2 id="name">NAME</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">join</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="p">[</span><span class="n">fpm_strings</span><span class="p">:</span><span class="n">EDITING</span><span class="p">]</span> <span class="n">append</span> <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">array</span> <span class="n">into</span>
+<span class="n">a</span> <span class="n">single</span> <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">with</span> <span class="n">specified</span> <span class="n">separator</span>
+<span class="p">(</span><span class="n">LICENSE</span><span class="p">:</span><span class="n">PD</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="synopsis">SYNOPSIS</h2>
+<div class="codehilite"><pre><span></span><code><span class="nv">pure</span> <span class="nv">function</span> <span class="nv">join</span><span class="ss">(</span><span class="nv">str</span>,<span class="nv">sep</span>,<span class="nv">trm</span>,<span class="nv">left</span>,<span class="nv">right</span>,<span class="nv">start</span>,<span class="k">end</span><span class="ss">)</span> <span class="nb">result</span> <span class="ss">(</span><span class="nv">string</span><span class="ss">)</span>
+
+ <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>          :: <span class="nv">str</span><span class="ss">(</span>:<span class="ss">)</span>
+ <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="nv">sep</span>
+ <span class="nv">logical</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span>          :: <span class="nv">trm</span>
+ <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="nv">right</span>
+ <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="nv">left</span>
+ <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="nv">start</span>
+ <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="k">end</span>
+ <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=</span>:<span class="ss">)</span>,<span class="nv">allocatable</span>         :: <span class="nv">string</span>
+</code></pre></div>
+
+<h2 id="description">DESCRIPTION</h2>
+<p>JOIN(3f) appends the elements of a CHARACTER array into a single
+   CHARACTER variable, with elements 1 to N joined from left to right.
+   By default each element is trimmed of trailing spaces and the
+   default separator is a null string.</p>
+<h2 id="options">OPTIONS</h2>
+<div class="codehilite"><pre><span></span><code>  <span class="n">STR</span><span class="p">(:)</span>  <span class="n">array</span> <span class="n">of</span> <span class="n">CHARACTER</span> <span class="n">variables</span> <span class="n">to</span> <span class="n">be</span> <span class="n">joined</span>
+  <span class="n">SEP</span>     <span class="n">separator</span> <span class="n">string</span> <span class="n">to</span> <span class="n">place</span> <span class="n">between</span> <span class="n">each</span> <span class="n">variable</span><span class="o">.</span> <span class="n">defaults</span>
+          <span class="n">to</span> <span class="n">a</span> <span class="nb nb-Type">null</span> <span class="n">string</span><span class="o">.</span>
+  <span class="n">LEFT</span>    <span class="n">string</span> <span class="n">to</span> <span class="n">place</span> <span class="n">at</span> <span class="n">left</span> <span class="n">of</span> <span class="n">each</span> <span class="n">element</span>
+  <span class="n">RIGHT</span>   <span class="n">string</span> <span class="n">to</span> <span class="n">place</span> <span class="n">at</span> <span class="n">right</span> <span class="n">of</span> <span class="n">each</span> <span class="n">element</span>
+  <span class="n">START</span>   <span class="n">prefix</span> <span class="n">string</span>
+  <span class="n">END</span>     <span class="n">suffix</span> <span class="n">string</span>
+  <span class="n">TRM</span>     <span class="n">option</span> <span class="n">to</span> <span class="n">trim</span> <span class="n">each</span> <span class="n">element</span> <span class="n">of</span> <span class="n">STR</span> <span class="n">of</span> <span class="n">trailing</span>
+          <span class="n">spaces</span><span class="o">.</span> <span class="n">Defaults</span> <span class="n">to</span> <span class="o">.</span><span class="n">TRUE</span><span class="o">.</span>
+</code></pre></div>
+
+<h2 id="result">RESULT</h2>
+<div class="codehilite"><pre><span></span><code>  <span class="n">STRING</span>  <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">composed</span> <span class="n">of</span> <span class="n">all</span> <span class="n">of</span> <span class="n">the</span> <span class="n">elements</span> <span class="n">of</span> <span class="n">STR</span><span class="p">()</span>
+          <span class="n">appended</span> <span class="n">together</span> <span class="n">with</span> <span class="n">the</span> <span class="n">optional</span> <span class="n">separator</span> <span class="n">SEP</span> <span class="n">placed</span>
+          <span class="n">between</span> <span class="n">the</span> <span class="n">elements</span><span class="o">.</span>
+</code></pre></div>
+
+<h2 id="example">EXAMPLE</h2>
+<p>Sample program:
+<code>fortran
+    program demo_join
+    use fpm_strings, only: join
+    implicit none
+    character(len=:),allocatable  :: s(:)
+    character(len=:),allocatable  :: out
+    integer                       :: i
+      s=[character(len=10) :: 'United',' we',' stand,', &amp;
+      &amp; ' divided',' we fall.']
+      out=join(s)
+      write(*,'(a)') out
+      write(*,'(a)') join(s,trm=.false.)
+      write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
+      write(*,'(a)') join(s,sep='&lt;&gt;')
+      write(*,'(a)') join(s,sep=';',left='[',right=']')
+      write(*,'(a)') join(s,left='[',right=']')
+      write(*,'(a)') join(s,left='&gt;&gt;')
+    end program demo_join</code>fortran</p>
+<p>Expected output:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">United</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="w"> </span><span class="n">divided</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
+<span class="n">United</span><span class="w">     </span><span class="n">we</span><span class="w">        </span><span class="n">stand</span><span class="p">,</span><span class="w">    </span><span class="n">divided</span><span class="w">   </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
+<span class="n">United</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">divided</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
+<span class="n">United</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">divided</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
+<span class="n">United</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">divided</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
+<span class="n">United</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">we</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">divided</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
+<span class="o">[</span><span class="n">United</span><span class="o">]</span><span class="p">;</span><span class="o">[</span><span class="n"> we</span><span class="o">]</span><span class="p">;</span><span class="o">[</span><span class="n"> stand,</span><span class="o">]</span><span class="p">;</span><span class="o">[</span><span class="n"> divided</span><span class="o">]</span><span class="p">;</span><span class="o">[</span><span class="n"> we fall.</span><span class="o">]</span><span class="w"></span>
+<span class="o">[</span><span class="n">United</span><span class="o">][</span><span class="n"> we</span><span class="o">][</span><span class="n"> stand,</span><span class="o">][</span><span class="n"> divided</span><span class="o">][</span><span class="n"> we fall.</span><span class="o">]</span><span class="w"></span>
+<span class="o">&gt;&gt;</span><span class="n">United</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">we</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">divided</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
+</code></pre></div>
+    
 
     <h3>Arguments</h3>
     
@@ -255,90 +333,7 @@ public pure function join(str, sep, trm, left, right, start, end) result(string)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>str</strong>(:)</td><td><h2 id="name">NAME</h2>
-<div class="codehilite"><pre><span></span><code><span class="n">join</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="p">[</span><span class="n">fpm_strings</span><span class="p">:</span><span class="n">EDITING</span><span class="p">]</span> <span class="n">append</span> <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">array</span> <span class="n">into</span>
-<span class="n">a</span> <span class="n">single</span> <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">with</span> <span class="n">specified</span> <span class="n">separator</span>
-<span class="p">(</span><span class="n">LICENSE</span><span class="p">:</span><span class="n">PD</span><span class="p">)</span>
-</code></pre></div>
-
-<h2 id="synopsis">SYNOPSIS</h2>
-<div class="codehilite"><pre><span></span><code><span class="nv">pure</span> <span class="nv">function</span> <span class="nv">join</span><span class="ss">(</span><span class="nv">str</span>,<span class="nv">sep</span>,<span class="nv">trm</span>,<span class="nv">left</span>,<span class="nv">right</span>,<span class="nv">start</span>,<span class="k">end</span><span class="ss">)</span> <span class="nb">result</span> <span class="ss">(</span><span class="nv">string</span><span class="ss">)</span>
-
- <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>          :: <span class="nv">str</span><span class="ss">(</span>:<span class="ss">)</span>
- <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="nv">sep</span>
- <span class="nv">logical</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span>          :: <span class="nv">trm</span>
- <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="nv">right</span>
- <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="nv">left</span>
- <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="nv">start</span>
- <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=*</span><span class="ss">)</span>,<span class="nv">intent</span><span class="ss">(</span><span class="nv">in</span><span class="ss">)</span>,<span class="nv">optional</span> :: <span class="k">end</span>
- <span class="nv">character</span><span class="ss">(</span><span class="nv">len</span><span class="o">=</span>:<span class="ss">)</span>,<span class="nv">allocatable</span>         :: <span class="nv">string</span>
-</code></pre></div>
-
-<h2 id="description">DESCRIPTION</h2>
-<div class="codehilite"><pre><span></span><code>  <span class="n">JOIN</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span> <span class="n">appends</span> <span class="n">the</span> <span class="n">elements</span> <span class="n">of</span> <span class="n">a</span> <span class="n">CHARACTER</span> <span class="n">array</span> <span class="n">into</span> <span class="n">a</span> <span class="n">single</span>
-  <span class="n">CHARACTER</span> <span class="n">variable</span><span class="p">,</span> <span class="n">with</span> <span class="n">elements</span> <span class="mi">1</span> <span class="n">to</span> <span class="n">N</span> <span class="n">joined</span> <span class="n">from</span> <span class="n">left</span> <span class="n">to</span> <span class="n">right</span><span class="o">.</span>
-  <span class="n">By</span> <span class="n">default</span> <span class="n">each</span> <span class="n">element</span> <span class="k">is</span> <span class="n">trimmed</span> <span class="n">of</span> <span class="n">trailing</span> <span class="n">spaces</span> <span class="ow">and</span> <span class="n">the</span>
-  <span class="n">default</span> <span class="n">separator</span> <span class="k">is</span> <span class="n">a</span> <span class="nb nb-Type">null</span> <span class="n">string</span><span class="o">.</span>
-</code></pre></div>
-
-<h2 id="options">OPTIONS</h2>
-<div class="codehilite"><pre><span></span><code>  <span class="n">STR</span><span class="p">(:)</span>  <span class="n">array</span> <span class="n">of</span> <span class="n">CHARACTER</span> <span class="n">variables</span> <span class="n">to</span> <span class="n">be</span> <span class="n">joined</span>
-  <span class="n">SEP</span>     <span class="n">separator</span> <span class="n">string</span> <span class="n">to</span> <span class="n">place</span> <span class="n">between</span> <span class="n">each</span> <span class="n">variable</span><span class="o">.</span> <span class="n">defaults</span>
-          <span class="n">to</span> <span class="n">a</span> <span class="nb nb-Type">null</span> <span class="n">string</span><span class="o">.</span>
-  <span class="n">LEFT</span>    <span class="n">string</span> <span class="n">to</span> <span class="n">place</span> <span class="n">at</span> <span class="n">left</span> <span class="n">of</span> <span class="n">each</span> <span class="n">element</span>
-  <span class="n">RIGHT</span>   <span class="n">string</span> <span class="n">to</span> <span class="n">place</span> <span class="n">at</span> <span class="n">right</span> <span class="n">of</span> <span class="n">each</span> <span class="n">element</span>
-  <span class="n">START</span>   <span class="n">prefix</span> <span class="n">string</span>
-  <span class="n">END</span>     <span class="n">suffix</span> <span class="n">string</span>
-  <span class="n">TRM</span>     <span class="n">option</span> <span class="n">to</span> <span class="n">trim</span> <span class="n">each</span> <span class="n">element</span> <span class="n">of</span> <span class="n">STR</span> <span class="n">of</span> <span class="n">trailing</span>
-          <span class="n">spaces</span><span class="o">.</span> <span class="n">Defaults</span> <span class="n">to</span> <span class="o">.</span><span class="n">TRUE</span><span class="o">.</span>
-</code></pre></div>
-
-<h2 id="result">RESULT</h2>
-<div class="codehilite"><pre><span></span><code>  <span class="n">STRING</span>  <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">composed</span> <span class="n">of</span> <span class="n">all</span> <span class="n">of</span> <span class="n">the</span> <span class="n">elements</span> <span class="n">of</span> <span class="n">STR</span><span class="p">()</span>
-          <span class="n">appended</span> <span class="n">together</span> <span class="n">with</span> <span class="n">the</span> <span class="n">optional</span> <span class="n">separator</span> <span class="n">SEP</span> <span class="n">placed</span>
-          <span class="n">between</span> <span class="n">the</span> <span class="n">elements</span><span class="o">.</span>
-</code></pre></div>
-
-<h2 id="example">EXAMPLE</h2>
-<p>Sample program:</p>
-<p>program demo_join
-   use fpm_strings, only: join
-   implicit none
-   character(len=:),allocatable  :: s(:)
-   character(len=:),allocatable  :: out
-   integer                       :: i
-     s=[character(len=10) :: &lsquo;United&rsquo;,&rsquo; we&rsquo;,&rsquo; stand,&rsquo;, &amp;
-     &amp; &lsquo; divided&rsquo;,&rsquo; we fall.&rsquo;]
-     out=join(s)
-     write(<em>,&rsquo;(a)&rsquo;) out
-     write(</em>,&rsquo;(a)&rsquo;) join(s,trm=.false.)
-     write(<em>,&rsquo;(a)&rsquo;) (join(s,trm=.false.,sep=&rsquo;|&rsquo;),i=1,3)
-     write(</em>,&rsquo;(a)&rsquo;) join(s,sep=&rsquo;&lt;&gt;&rsquo;)
-     write(<em>,&rsquo;(a)&rsquo;) join(s,sep=&rsquo;;&rsquo;,left=&rsquo;[&lsquo;,right=&rsquo;]&rsquo;)
-     write(</em>,&rsquo;(a)&rsquo;) join(s,left=&rsquo;[&lsquo;,right=&rsquo;]&rsquo;)
-     write(*,&rsquo;(a)&rsquo;) join(s,left=&rsquo;&gt;&gt;&rsquo;)
-   end program demo_join</p>
-<p>Expected output:</p>
-<p>United we stand, divided we fall.
-   United     we        stand,    divided   we fall.
-   United    | we       | stand,   | divided  | we fall.
-   United    | we       | stand,   | divided  | we fall.
-   United    | we       | stand,   | divided  | we fall.
-   United&lt;&gt; we&lt;&gt; stand,&lt;&gt; divided&lt;&gt; we fall.
-   [United];[ we];[ stand,];[ divided];[ we fall.]
-   [United][ we][ stand,][ divided][ we fall.]</p>
-<blockquote>
-<blockquote>
-<p>United&gt;&gt; we&gt;&gt; stand,&gt;&gt; divided&gt;&gt; we fall.</p>
-</blockquote>
-</blockquote>
-<h2 id="author">AUTHOR</h2>
-<div class="codehilite"><pre><span></span><code>John S. Urban
-</code></pre></div>
-
-<h2 id="license">LICENSE</h2>
-<div class="codehilite"><pre><span></span><code>Public Domain
-</code></pre></div></td>
+  <td><strong>str</strong>(:)</td><td></td>
   
 </tr>
 
@@ -617,86 +612,6 @@ public pure function join(str, sep, trm, left, right, start, end) result(string)
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="k">pure function </span><span class="n">join</span><span class="p">(</span><span class="n">str</span><span class="p">,</span><span class="n">sep</span><span class="p">,</span><span class="n">trm</span><span class="p">,</span><span class="n">left</span><span class="p">,</span><span class="n">right</span><span class="p">,</span><span class="n">start</span><span class="p">,</span><span class="k">end</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
-<span class="c">!&gt;</span>
-<span class="c">!!##NAME</span>
-<span class="c">!!    join(3f) - [fpm_strings:EDITING] append CHARACTER variable array into</span>
-<span class="c">!!    a single CHARACTER variable with specified separator</span>
-<span class="c">!!    (LICENSE:PD)</span>
-<span class="c">!!</span>
-<span class="c">!!##SYNOPSIS</span>
-<span class="c">!!</span>
-<span class="c">!!    pure function join(str,sep,trm,left,right,start,end) result (string)</span>
-<span class="c">!!</span>
-<span class="c">!!     character(len=*),intent(in)          :: str(:)</span>
-<span class="c">!!     character(len=*),intent(in),optional :: sep</span>
-<span class="c">!!     logical,intent(in),optional          :: trm</span>
-<span class="c">!!     character(len=*),intent(in),optional :: right</span>
-<span class="c">!!     character(len=*),intent(in),optional :: left</span>
-<span class="c">!!     character(len=*),intent(in),optional :: start</span>
-<span class="c">!!     character(len=*),intent(in),optional :: end</span>
-<span class="c">!!     character(len=:),allocatable         :: string</span>
-<span class="c">!!</span>
-<span class="c">!!##DESCRIPTION</span>
-<span class="c">!!      JOIN(3f) appends the elements of a CHARACTER array into a single</span>
-<span class="c">!!      CHARACTER variable, with elements 1 to N joined from left to right.</span>
-<span class="c">!!      By default each element is trimmed of trailing spaces and the</span>
-<span class="c">!!      default separator is a null string.</span>
-<span class="c">!!</span>
-<span class="c">!!##OPTIONS</span>
-<span class="c">!!      STR(:)  array of CHARACTER variables to be joined</span>
-<span class="c">!!      SEP     separator string to place between each variable. defaults</span>
-<span class="c">!!              to a null string.</span>
-<span class="c">!!      LEFT    string to place at left of each element</span>
-<span class="c">!!      RIGHT   string to place at right of each element</span>
-<span class="c">!!      START   prefix string</span>
-<span class="c">!!      END     suffix string</span>
-<span class="c">!!      TRM     option to trim each element of STR of trailing</span>
-<span class="c">!!              spaces. Defaults to .TRUE.</span>
-<span class="c">!!</span>
-<span class="c">!!##RESULT</span>
-<span class="c">!!      STRING  CHARACTER variable composed of all of the elements of STR()</span>
-<span class="c">!!              appended together with the optional separator SEP placed</span>
-<span class="c">!!              between the elements.</span>
-<span class="c">!!</span>
-<span class="c">!!##EXAMPLE</span>
-<span class="c">!!</span>
-<span class="c">!!  Sample program:</span>
-<span class="c">!!</span>
-<span class="c">!!   program demo_join</span>
-<span class="c">!!   use fpm_strings, only: join</span>
-<span class="c">!!   implicit none</span>
-<span class="c">!!   character(len=:),allocatable  :: s(:)</span>
-<span class="c">!!   character(len=:),allocatable  :: out</span>
-<span class="c">!!   integer                       :: i</span>
-<span class="c">!!     s=[character(len=10) :: &#39;United&#39;,&#39; we&#39;,&#39; stand,&#39;, &amp;</span>
-<span class="c">!!     &amp; &#39; divided&#39;,&#39; we fall.&#39;]</span>
-<span class="c">!!     out=join(s)</span>
-<span class="c">!!     write(*,&#39;(a)&#39;) out</span>
-<span class="c">!!     write(*,&#39;(a)&#39;) join(s,trm=.false.)</span>
-<span class="c">!!     write(*,&#39;(a)&#39;) (join(s,trm=.false.,sep=&#39;|&#39;),i=1,3)</span>
-<span class="c">!!     write(*,&#39;(a)&#39;) join(s,sep=&#39;&lt;&gt;&#39;)</span>
-<span class="c">!!     write(*,&#39;(a)&#39;) join(s,sep=&#39;;&#39;,left=&#39;[&#39;,right=&#39;]&#39;)</span>
-<span class="c">!!     write(*,&#39;(a)&#39;) join(s,left=&#39;[&#39;,right=&#39;]&#39;)</span>
-<span class="c">!!     write(*,&#39;(a)&#39;) join(s,left=&#39;&gt;&gt;&#39;)</span>
-<span class="c">!!   end program demo_join</span>
-<span class="c">!!</span>
-<span class="c">!!  Expected output:</span>
-<span class="c">!!</span>
-<span class="c">!!   United we stand, divided we fall.</span>
-<span class="c">!!   United     we        stand,    divided   we fall.</span>
-<span class="c">!!   United    | we       | stand,   | divided  | we fall.</span>
-<span class="c">!!   United    | we       | stand,   | divided  | we fall.</span>
-<span class="c">!!   United    | we       | stand,   | divided  | we fall.</span>
-<span class="c">!!   United&lt;&gt; we&lt;&gt; stand,&lt;&gt; divided&lt;&gt; we fall.</span>
-<span class="c">!!   [United];[ we];[ stand,];[ divided];[ we fall.]</span>
-<span class="c">!!   [United][ we][ stand,][ divided][ we fall.]</span>
-<span class="c">!!   &gt;&gt;United&gt;&gt; we&gt;&gt; stand,&gt;&gt; divided&gt;&gt; we fall.</span>
-<span class="c">!!</span>
-<span class="c">!!##AUTHOR</span>
-<span class="c">!!    John S. Urban</span>
-<span class="c">!!</span>
-<span class="c">!!##LICENSE</span>
-<span class="c">!!    Public Domain</span>
 
 <span class="c">! @(#)join(3f): append an array of character variables with specified separator into a single CHARACTER variable</span>
 
@@ -756,7 +671,7 @@ public pure function join(str, sep, trm, left, right, start, end) result(string)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 11:42  
+             on 2021-03-11 15:41  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

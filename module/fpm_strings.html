@@ -260,7 +260,43 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    
+    <p>This module defines general procedures for <strong>string operations</strong> for both CHARACTER and
+ TYPE(STRING_T) variables</p>
+<h2 id="general-routines-for-performing-string-operations">general routines for performing <strong>string operations</strong></h2>
+<h3 id="types">Types</h3>
+<ul>
+<li><strong>TYPE(STRING_T)</strong> define a type to contain strings of variable length</li>
+</ul>
+<h3 id="type-conversions">Type Conversions</h3>
+<ul>
+<li><a href="../proc/f_string.html">f_string</a>  return Fortran <strong>CHARACTER</strong> variable when given a C-like array of 
+                 single characters terminated with a C_NULL_CHAR <strong>CHARACTER</strong></li>
+<li><a href="../interface/str.html">str</a>  Converts <strong>INTEGER</strong> or<strong> LOGICAL</strong> to <strong>CHARACTER</strong> string</li>
+</ul>
+<h3 id="case">Case</h3>
+<ul>
+<li><a href="../proc/lower.html">lower</a>  Changes a string to lowercase over optional specified column range</li>
+</ul>
+<h3 id="parsing-and-joining">Parsing and joining</h3>
+<ul>
+<li><a href="../proc/split.html">split</a>  parse string on delimiter characters and store tokens into an allocatable array</li>
+<li><a href="../proc/string_cat.html">string_cat</a>  Concatenate an array of <strong>type(string_t)</strong> into a single <strong>CHARACTER</strong> variable</li>
+<li><a href="../proc/join.html">join</a>  append an array of <strong>CHARACTER</strong> variables into a single <strong>CHARACTER</strong> variable </li>
+</ul>
+<h3 id="testing">Testing</h3>
+<ul>
+<li><a href="../interface/str_ends_with.html">str_ends_with</a>  test if a <strong>CHARACTER</strong> string or array ends with a specified suffix</li>
+<li><a href="../proc/string_array_contains.html">string_array_contains</a>  Check if array of <strong>TYPE(STRING_T)</strong> matches a particular <strong>CHARACTER</strong> string</li>
+<li><strong>OPERATOR(.IN.)</strong>  Check if array of <strong>TYPE(STRING_T)</strong> matches a particular <strong>CHARACTER</strong> string</li>
+<li><a href="../proc/glob.html">glob</a>  function compares text strings, one of which can have wildcards (&lsquo;*&rsquo; or &lsquo;?&rsquo;).</li>
+</ul>
+<h3 id="miscellaneous">Miscellaneous</h3>
+<ul>
+<li><a href="../interface/len_trim.html">len_trim</a>  Determine total trimmed length of <strong>STRING_T</strong> array</li>
+<li><a href="../interface/fnv_1a.html">fnv_1a</a>  Hash a <strong>CHARACTER(*)</strong> string of default kind or a <strong>TYPE(STRING_T)</strong> array</li>
+<li><a href="../proc/replace.html">replace</a>  Returns string with characters in charset replaced with target_char.</li>
+<li><a href="../interface/resize.html">resize</a>  increase the size of a <strong>TYPE(STRING_T)</strong> array by N elements</li>
+</ul>
       <br>
     
   
@@ -661,6 +697,14 @@ public function <a href='../proc/string_array_contains.html'>string_array_contai
    
 </h3>
     
+
+
+
+
+
+
+
+<p>Check if array of TYPE(STRING_T) matches a particular CHARACTER string</p>
     
     <h4>Arguments</h4>
     
@@ -748,6 +792,10 @@ private subroutine resize_string(list, n)
    
 </h3>
     
+
+
+
+<p>increase the size of a TYPE(STRING_T) array by N elements</p>
     
     <h4>Arguments</h4>
     
@@ -826,6 +874,10 @@ private pure function str_int(i) result(s)
    
 </h3>
     
+
+
+
+<p>Converts integer &ldquo;i&rdquo; to string</p>
     
     <h4>Arguments</h4>
     
@@ -883,6 +935,10 @@ private pure function str_int64(i) result(s)
    
 </h3>
     
+
+
+
+<p>Converts integer &ldquo;i&rdquo; to string</p>
     
     <h4>Arguments</h4>
     
@@ -940,6 +996,10 @@ private pure function str_logical(l) result(s)
    
 </h3>
     
+
+
+
+<p>Converts logical &ldquo;l&rdquo; to string</p>
     
     <h4>Arguments</h4>
     
@@ -1012,6 +1072,10 @@ private pure function str_ends_with_str(s, e) result(r)
    
 </h3>
     
+
+
+
+<p>test if a CHARACTER string ends with a specified suffix</p>
     
     <h4>Arguments</h4>
     
@@ -1084,6 +1148,10 @@ private pure function str_ends_with_any(s, e) result(r)
    
 </h3>
     
+
+
+
+<p>test if a CHARACTER string ends with any of an array of suffixs</p>
     
     <h4>Arguments</h4>
     
@@ -1224,6 +1292,15 @@ public function <a href='../proc/f_string.html'>f_string</a>(c_string)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>return Fortran character variable when given a C-like array of
+ single characters terminated with a C_NULL_CHAR character</p>
     
     <h4>Arguments</h4>
     
@@ -1284,6 +1361,15 @@ public function <a href='../proc/glob.html'>glob</a>(tame, wild)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>glob(3f) compares given STRING for match to PATTERN which may
+   contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -1309,7 +1395,7 @@ public function <a href='../proc/glob.html'>glob</a>(tame, wild)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>tame</strong></td><td></td>
+  <td><strong>tame</strong></td><td><p>A string without wildcards to compare to the globbing expression</p></td>
   
 </tr>
 
@@ -1324,7 +1410,7 @@ public function <a href='../proc/glob.html'>glob</a>(tame, wild)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>wild</strong></td><td></td>
+  <td><strong>wild</strong></td><td><p>A (potentially) corresponding string with wildcards</p></td>
   
 </tr>
 
@@ -1341,7 +1427,7 @@ public function <a href='../proc/glob.html'>glob</a>(tame, wild)
   
      <h4>Return Value <small>logical
   </small></h4>
-  <p>Example program</p><a href="None" class="pull-right"><emph>Read more&hellip;</emph></a>
+  <p>result of test</p>
     
 
   </div>
@@ -1359,6 +1445,29 @@ public pure function <a href='../proc/join.html'>join</a>(str, sep, trm, left, r
   <div class="panel-body">
        
     
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    <dt>Author</dt><dd>John S. Urban</dd>
+    
+    
+    
+    <dt>License</dt><dd>Public Domain</dd>
+    
+    
+    
+  </dl>
+
+
+
+<p>JOIN(3f) appends the elements of a CHARACTER array into a single
+   CHARACTER variable, with elements 1 to N joined from left to right.
+   By default each element is trimmed of trailing spaces and the
+   default separator is a null string.</p><a href="../proc/join.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -1384,7 +1493,7 @@ public pure function <a href='../proc/join.html'>join</a>(str, sep, trm, left, r
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>str</strong>(:)</td><td><p>Sample program:</p><a href="None" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+  <td><strong>str</strong>(:)</td><td></td>
   
 </tr>
 
@@ -1509,6 +1618,26 @@ public pure elemental function <a href='../proc/lower.html'>lower</a>(str, begin
   <div class="panel-body">
        
     
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    <dt>Author</dt><dd>John S. Urban</dd>
+    
+    
+    
+    <dt>License</dt><dd>Public Domain</dd>
+    
+    
+    
+  </dl>
+
+
+
+<p>Changes a string to lowercase over optional specified column range</p>
     
     <h4>Arguments</h4>
     
@@ -1599,6 +1728,14 @@ public pure function <a href='../proc/replace.html'>replace</a>(string, charset,
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Returns string with characters in charset replaced with target_char.</p>
     
     <h4>Arguments</h4>
     
@@ -1689,6 +1826,14 @@ public function <a href='../proc/string_array_contains.html'>string_array_contai
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Check if array of TYPE(STRING_T) matches a particular CHARACTER string</p>
     
     <h4>Arguments</h4>
     
@@ -1772,7 +1917,7 @@ public function <a href='../proc/string_cat.html'>string_cat</a>(strings, delim)
 
 
 <p>Concatenate an array of type(string_t) into
-  a single character</p>
+  a single CHARACTER variable</p>
     
     <h4>Arguments</h4>
     
@@ -1856,6 +2001,27 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
   <div class="panel-body">
        
     
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    <dt>Author</dt><dd>John S. Urban</dd>
+    
+    
+    
+    <dt>License</dt><dd>Public Domain</dd>
+    
+    
+    
+  </dl>
+
+
+
+<p>parse string on delimiter characters and store tokens into an allocatable array
+ given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store each par(n) into a separate variable in array.</p><a href="../proc/split.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -1881,7 +2047,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>input_line</strong></td><td></td>
+  <td><strong>input_line</strong></td><td><p>input string to tokenize</p></td>
   
 </tr>
 
@@ -1896,7 +2062,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
   <td></td>
   
   <td>allocatable</td><td>::</td>
-  <td><strong>array</strong>(:)</td><td></td>
+  <td><strong>array</strong>(:)</td><td><p>output array of tokens</p></td>
   
 </tr>
 
@@ -1911,7 +2077,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>delimiters</strong></td><td></td>
+  <td><strong>delimiters</strong></td><td><p>list of delimiter characters</p></td>
   
 </tr>
 
@@ -1926,7 +2092,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>order</strong></td><td></td>
+  <td><strong>order</strong></td><td><p>order of output array sequential|[reverse|right]</p></td>
   
 </tr>
 
@@ -1941,7 +2107,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>nulls</strong></td><td></td>
+  <td><strong>nulls</strong></td><td><p>return strings composed of delimiters or not ignore|return|ignoreend</p></td>
   
 </tr>
 
@@ -1976,7 +2142,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 11:42  
+             on 2021-03-11 15:41  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

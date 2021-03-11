@@ -252,7 +252,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    
+    <p>This module contains general routines for interacting with the file system</p>
       <br>
     
   
@@ -403,6 +403,14 @@ public function <a href='../proc/basename.html'>basename</a>(path, suffix) resul
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Extract filename from path with/without suffix</p>
     
     <h4>Arguments</h4>
     
@@ -478,6 +486,16 @@ public function <a href='../proc/canon_path.html'>canon_path</a>(path) result(ca
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Canonicalize path for comparison
+ * Handles path string redundancies
+ * Does not test existence of path</p><a href="../proc/canon_path.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -538,6 +556,14 @@ public function <a href='../proc/dirname.html'>dirname</a>(path) result(dir)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Extract dirname from path</p>
     
     <h4>Arguments</h4>
     
@@ -598,6 +624,14 @@ public function <a href='../proc/exists.html'>exists</a>(filename) result(r)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>test if pathname already exists</p>
     
     <h4>Arguments</h4>
     
@@ -658,6 +692,18 @@ public function <a href='../proc/get_temp_filename.html'>get_temp_filename</a>()
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Get a unused temporary filename
+  Calls posix &lsquo;tempnam&rsquo; - not recommended, but
+   we have no security concerns for this application
+   and use here is temporary.
+ Works with MinGW</p>
     
     <h4>Arguments</h4>
     
@@ -689,6 +735,14 @@ public function <a href='../proc/is_dir.html'>is_dir</a>(dir)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>test if a name matches an existing directory path</p>
     
     <h4>Arguments</h4>
     
@@ -749,6 +803,14 @@ public function <a href='../proc/join_path.html'>join_path</a>(a1, a2, a3, a4, a
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Construct path by joining strings with os file separator</p>
     
     <h4>Arguments</h4>
     
@@ -869,6 +931,14 @@ public function <a href='../proc/number_of_rows.html'>number_of_rows</a>(s) resu
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Determine number or rows in a file given a LUN</p>
     
     <h4>Arguments</h4>
     
@@ -929,6 +999,14 @@ public function <a href='../proc/read_lines.html'>read_lines</a>(fh) result(line
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>read lines into an array of TYPE(STRING_T) variables</p>
     
     <h4>Arguments</h4>
     
@@ -989,6 +1067,16 @@ public pure function <a href='../proc/to_fortran_name.html'>to_fortran_name</a>(
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Returns string with special characters replaced with an underscore.
+ For now, only a hyphen is treated as a special character, but this can be
+ expanded to other characters if needed.</p>
     
     <h4>Arguments</h4>
     
@@ -1049,6 +1137,14 @@ public function <a href='../proc/unix_path.html'>unix_path</a>(path) result(nixp
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Replace file system separators for unix</p>
     
     <h4>Arguments</h4>
     
@@ -1109,6 +1205,14 @@ public function <a href='../proc/windows_path.html'>windows_path</a>(path) resul
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Replace file system separators for windows</p>
     
     <h4>Arguments</h4>
     
@@ -1177,6 +1281,14 @@ public subroutine <a href='../proc/delete_file.html'>delete_file</a>(file)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>delete a file by filename</p>
     
     <h4>Arguments</h4>
     
@@ -1228,6 +1340,14 @@ public subroutine <a href='../proc/env_variable.html'>env_variable</a>(var, name
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>return value of environment variable</p>
     
     <h4>Arguments</h4>
     
@@ -1294,6 +1414,14 @@ public subroutine <a href='../proc/fileclose.html'>fileclose</a>(lun, ier)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>simple close of a LUN.  On error show message and stop (by default)</p>
     
     <h4>Arguments</h4>
     
@@ -1360,6 +1488,14 @@ public subroutine <a href='../proc/fileopen.html'>fileopen</a>(filename, lun, ie
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>procedure to open filename as a sequential &ldquo;text&rdquo; file</p>
     
     <h4>Arguments</h4>
     
@@ -1441,6 +1577,14 @@ public subroutine <a href='../proc/filewrite.html'>filewrite</a>(filename, filed
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>procedure to write filedata to file filename</p>
     
     <h4>Arguments</h4>
     
@@ -1507,6 +1651,14 @@ public subroutine <a href='../proc/getline.html'>getline</a>(unit, line, iostat,
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>read a line of arbitrary length into a CHARACTER variable from the specified LUN</p>
     
     <h4>Arguments</h4>
     
@@ -1603,6 +1755,14 @@ public recursive subroutine <a href='../proc/list_files.html'>list_files</a>(dir
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Get file &amp; directory names in directory <code>dir</code>.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -1684,6 +1844,14 @@ public subroutine <a href='../proc/mkdir.html'>mkdir</a>(dir)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>Create a directory. Create subdirectories as needed</p>
     
     <h4>Arguments</h4>
     
@@ -1735,6 +1903,14 @@ public subroutine <a href='../proc/warnwrite.html'>warnwrite</a>(fname, data)
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>write trimmed character data to a file if it does not exist</p>
     
     <h4>Arguments</h4>
     
@@ -1760,7 +1936,7 @@ public subroutine <a href='../proc/warnwrite.html'>warnwrite</a>(fname, data)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>fname</strong></td><td><p>write trimmed character data to a file if it does not exist</p></td>
+  <td><strong>fname</strong></td><td></td>
   
 </tr>
 
@@ -1810,7 +1986,7 @@ public subroutine <a href='../proc/warnwrite.html'>warnwrite</a>(fname, data)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 11:42  
+             on 2021-03-11 15:41  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

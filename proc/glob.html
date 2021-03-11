@@ -239,62 +239,9 @@ public function glob(tame, wild)
 
 
     
-
-    <h3>Arguments</h3>
-    
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-tame"></span>character(len=*)</td>
-  <td></td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>tame</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-wild"></span>character(len=*)</td>
-  <td></td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>wild</strong></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-    
-    
-    
-    
-    
-    
-    
-   <h3>Return Value <small><span class="anchor" id="variable-glob"></span>logical
-  </small></h3>
-    <h2 id="name">NAME</h2>
+    <h2 id="author-john-s-urban">AUTHOR John S. Urban</h2>
+<h2 id="license-public-domain">LICENSE Public Domain</h2>
+<h2 id="name">NAME</h2>
 <div class="codehilite"><pre><span></span><code><span class="nv">glob</span><span class="ss">(</span><span class="mi">3</span><span class="nv">f</span><span class="ss">)</span> <span class="o">-</span> [<span class="nv">fpm_strings</span>:<span class="nv">COMPARE</span>] <span class="nv">compare</span> <span class="nv">given</span> <span class="nv">string</span> <span class="k">for</span> <span class="nv">match</span> <span class="nv">to</span>
 <span class="nv">pattern</span> <span class="nv">which</span> <span class="nv">may</span> <span class="nv">contain</span> <span class="nv">wildcard</span> <span class="nv">characters</span>
 <span class="ss">(</span><span class="nv">LICENSE</span>:<span class="nv">PD</span><span class="ss">)</span>
@@ -308,14 +255,11 @@ public function glob(tame, wild)
 </code></pre></div>
 
 <h2 id="description">DESCRIPTION</h2>
-<div class="codehilite"><pre><span></span><code><span class="nv">glob</span><span class="ss">(</span><span class="mi">3</span><span class="nv">f</span><span class="ss">)</span> <span class="nv">compares</span> <span class="nv">given</span> <span class="nv">STRING</span> <span class="k">for</span> <span class="nv">match</span> <span class="nv">to</span> <span class="nv">PATTERN</span> <span class="nv">which</span> <span class="nv">may</span>
-<span class="nv">contain</span> <span class="nv">wildcard</span> <span class="nv">characters</span>.
-
-<span class="nv">In</span> <span class="nv">this</span> <span class="nv">version</span> <span class="nv">to</span> <span class="nv">get</span> <span class="nv">a</span> <span class="nv">match</span> <span class="nv">the</span> <span class="nv">entire</span> <span class="nv">string</span> <span class="nv">must</span> <span class="nv">be</span> <span class="nv">described</span>
-<span class="nv">by</span> <span class="nv">PATTERN</span>. <span class="nv">Trailing</span> <span class="nv">whitespace</span> <span class="nv">is</span> <span class="nv">significant</span>, <span class="nv">so</span> <span class="nv">trim</span> <span class="nv">the</span> <span class="nv">input</span>
-<span class="nv">string</span> <span class="nv">to</span> <span class="nv">have</span> <span class="nv">trailing</span> <span class="nv">whitespace</span> <span class="nv">ignored</span>.
-</code></pre></div>
-
+<p>glob(3f) compares given STRING for match to PATTERN which may
+   contain wildcard characters.</p>
+<p>In this version to get a match the entire string must be described
+   by PATTERN. Trailing whitespace is significant, so trim the input
+   string to have trailing whitespace ignored.</p>
 <h2 id="options">OPTIONS</h2>
 <div class="codehilite"><pre><span></span><code><span class="nv">string</span>   <span class="nv">the</span> <span class="nv">input</span> <span class="nv">string</span> <span class="nv">to</span> <span class="nv">test</span> <span class="nv">to</span> <span class="nv">see</span> <span class="k">if</span> <span class="nv">it</span> <span class="nv">contains</span> <span class="nv">the</span> <span class="nv">pattern</span>.
 <span class="nv">pattern</span>  <span class="nv">the</span> <span class="nv">following</span> <span class="nv">simple</span> <span class="nv">globbing</span> <span class="nv">options</span> <span class="nv">are</span> <span class="nv">available</span>
@@ -519,13 +463,66 @@ public function glob(tame, wild)
 </code></pre></div>
 
 <p>Expected output</p>
-<h2 id="author">AUTHOR</h2>
-<p>John S. Urban</p>
 <h2 id="reference">REFERENCE</h2>
 <p>The article &ldquo;Matching Wildcards: An Empirical Way to Tame an Algorithm&rdquo;
    in Dr Dobb&rsquo;s Journal, By Kirk J. Krauss, October 07, 2014</p>
-<h2 id="license">LICENSE</h2>
-<p>Public Domain</p>
+    
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tame"></span>character(len=*)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>tame</strong></td><td><p>A string without wildcards to compare to the globbing expression</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-wild"></span>character(len=*)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>wild</strong></td><td><p>A (potentially) corresponding string with wildcards</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+    
+    
+    
+    
+   <h3>Return Value <small><span class="anchor" id="variable-glob"></span>logical
+  </small></h3>
+    <p>result of test</p>
     
     
     
@@ -762,246 +759,12 @@ public function glob(tame, wild)
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">glob</span><span class="p">(</span><span class="n">tame</span><span class="p">,</span><span class="n">wild</span><span class="p">)</span>
-<span class="c">!&gt;</span>
-<span class="c">!!##NAME</span>
-<span class="c">!!    glob(3f) - [fpm_strings:COMPARE] compare given string for match to</span>
-<span class="c">!!    pattern which may contain wildcard characters</span>
-<span class="c">!!    (LICENSE:PD)</span>
-<span class="c">!!</span>
-<span class="c">!!##SYNOPSIS</span>
-<span class="c">!!</span>
-<span class="c">!!    logical function glob(string, pattern )</span>
-<span class="c">!!</span>
-<span class="c">!!     character(len=*),intent(in) :: string</span>
-<span class="c">!!     character(len=*),intent(in) :: pattern</span>
-<span class="c">!!</span>
-<span class="c">!!##DESCRIPTION</span>
-<span class="c">!!    glob(3f) compares given STRING for match to PATTERN which may</span>
-<span class="c">!!    contain wildcard characters.</span>
-<span class="c">!!</span>
-<span class="c">!!    In this version to get a match the entire string must be described</span>
-<span class="c">!!    by PATTERN. Trailing whitespace is significant, so trim the input</span>
-<span class="c">!!    string to have trailing whitespace ignored.</span>
-<span class="c">!!</span>
-<span class="c">!!##OPTIONS</span>
-<span class="c">!!    string   the input string to test to see if it contains the pattern.</span>
-<span class="c">!!    pattern  the following simple globbing options are available</span>
-<span class="c">!!</span>
-<span class="c">!!             o &quot;?&quot; matching any one character</span>
-<span class="c">!!             o &quot;*&quot; matching zero or more characters.</span>
-<span class="c">!!               Do NOT use adjacent asterisks.</span>
-<span class="c">!!             o Both strings may have trailing spaces which</span>
-<span class="c">!!               are ignored.</span>
-<span class="c">!!             o There is no escape character, so matching strings with</span>
-<span class="c">!!               literal question mark and asterisk is problematic.</span>
-<span class="c">!!</span>
-<span class="c">!!##EXAMPLES</span>
-<span class="c">!!</span>
-<span class="c">!!   Example program</span>
-<span class="c">!!</span>
-<span class="c">!!    program demo_glob</span>
-<span class="c">!!    implicit none</span>
-<span class="c">!!    ! This main() routine passes a bunch of test strings</span>
-<span class="c">!!    ! into the above code.  In performance comparison mode,</span>
-<span class="c">!!    ! it does that over and over. Otherwise, it does it just</span>
-<span class="c">!!    ! once. Either way, it outputs a passed/failed result.</span>
-<span class="c">!!    !</span>
-<span class="c">!!    integer :: nReps</span>
-<span class="c">!!    logical :: allpassed</span>
-<span class="c">!!    integer :: i</span>
-<span class="c">!!     allpassed = .true.</span>
-<span class="c">!!</span>
-<span class="c">!!     nReps = 10000</span>
-<span class="c">!!     ! Can choose as many repetitions as you&#39;re expecting</span>
-<span class="c">!!     ! in the real world.</span>
-<span class="c">!!     nReps = 1</span>
-<span class="c">!!</span>
-<span class="c">!!     do i=1,nReps</span>
-<span class="c">!!      ! Cases with repeating character sequences.</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a*abab&quot;, &quot;a*b&quot;, .true.)</span>
-<span class="c">!!      !!cycle</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;ab&quot;, &quot;*?&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abc&quot;, &quot;*?&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abcccd&quot;, &quot;*ccd&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;bLah&quot;, &quot;bLaH&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;mississippi&quot;, &quot;*sip*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. &amp;</span>
-<span class="c">!!       &amp; test(&quot;xxxx*zzzzzzzzy*f&quot;, &quot;xxx*zzy*f&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. &amp;</span>
-<span class="c">!!       &amp; test(&quot;xxxx*zzzzzzzzy*f&quot;, &quot;xxxx*zzy*fffff&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. &amp;</span>
-<span class="c">!!       &amp; test(&quot;mississipissippi&quot;, &quot;*issip*ss*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. &amp;</span>
-<span class="c">!!       &amp; test(&quot;xxxxzzzzzzzzyf&quot;, &quot;xxxx*zzy*fffff&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. &amp;</span>
-<span class="c">!!       &amp; test(&quot;xxxxzzzzzzzzyf&quot;, &quot;xxxx*zzy*f&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;xyxyxyzyxyz&quot;, &quot;xy*z*xyz&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;xyxyxyxyz&quot;, &quot;xy*xyz&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;mississippi&quot;, &quot;mi*sip*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;ababac&quot;, &quot;*abac*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;aaazz&quot;, &quot;a*zz*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a12b12&quot;, &quot;*12*23&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a12b12&quot;, &quot;a12b&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a12b12&quot;, &quot;*12*12*&quot;, .true.)</span>
-<span class="c">!!</span>
-<span class="c">!!      ! Additional cases where the &#39;*&#39; char appears in the tame string.</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;*&quot;, &quot;*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a*r&quot;, &quot;a*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a*ar&quot;, &quot;a*aar&quot;, .false.)</span>
-<span class="c">!!</span>
-<span class="c">!!      ! More double wildcard scenarios.</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;XYXYXYZYXYz&quot;, &quot;XY*Z*XYz&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;missisSIPpi&quot;, &quot;*SIP*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;mississipPI&quot;, &quot;*issip*PI&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;xyxyxyxyz&quot;, &quot;xy*xyz&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;miSsissippi&quot;, &quot;mi*sip*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;miSsissippi&quot;, &quot;mi*Sip*&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abAbac&quot;, &quot;*Abac*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;aAazz&quot;, &quot;a*zz*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;A12b12&quot;, &quot;*12*23&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a12B12&quot;, &quot;*12*12*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;oWn&quot;, &quot;*oWn*&quot;, .true.)</span>
-<span class="c">!!</span>
-<span class="c">!!      ! Completely tame (no wildcards) cases.</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;bLah&quot;, &quot;bLah&quot;, .true.)</span>
-<span class="c">!!</span>
-<span class="c">!!      ! Simple mixed wildcard tests suggested by IBMer Marlin Deckert.</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a&quot;, &quot;*?&quot;, .true.)</span>
-<span class="c">!!</span>
-<span class="c">!!      ! More mixed wildcard tests including coverage for false positives.</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;a&quot;, &quot;??&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;ab&quot;, &quot;?*?&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;ab&quot;, &quot;*?*?*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abc&quot;, &quot;?**?*?&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abc&quot;, &quot;?**?*&amp;?&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abcd&quot;, &quot;?b*??&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abcd&quot;, &quot;?a*??&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abcd&quot;, &quot;?**?c?&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abcd&quot;, &quot;?**?d?&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abcde&quot;, &quot;?*b*?*d*?&quot;, .true.)</span>
-<span class="c">!!</span>
-<span class="c">!!      ! Single-character-match cases.</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;bLah&quot;, &quot;bL?h&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;bLaaa&quot;, &quot;bLa?&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;bLah&quot;, &quot;bLa?&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;bLaH&quot;, &quot;?Lah&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;bLaH&quot;, &quot;?LaH&quot;, .true.)</span>
-<span class="c">!!</span>
-<span class="c">!!      ! Many-wildcard scenarios.</span>
-<span class="c">!!      allpassed=allpassed .and. test(&amp;</span>
-<span class="c">!!      &amp;&quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&amp;</span>
-<span class="c">!!      &amp;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;a*a*a*a*a*a*aa*aaa*a*a*b&quot;,&amp;</span>
-<span class="c">!!      &amp;.true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&amp;</span>
-<span class="c">!!      &amp;&quot;abababababababababababababababababababaacacacacacacac&amp;</span>
-<span class="c">!!      &amp;adaeafagahaiajakalaaaaaaaaaaaaaaaaaffafagaagggagaaaaaaaab&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;*a*b*ba*ca*a*aa*aaa*fa*ga*b*&quot;,&amp;</span>
-<span class="c">!!      &amp;.true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&amp;</span>
-<span class="c">!!      &amp;&quot;abababababababababababababababababababaacacacacacaca&amp;</span>
-<span class="c">!!      &amp;cadaeafagahaiajakalaaaaaaaaaaaaaaaaaffafagaagggagaaaaaaaab&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;*a*b*ba*ca*a*x*aaa*fa*ga*b*&quot;,&amp;</span>
-<span class="c">!!      &amp;.false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&amp;</span>
-<span class="c">!!      &amp;&quot;abababababababababababababababababababaacacacacacacacad&amp;</span>
-<span class="c">!!      &amp;aeafagahaiajakalaaaaaaaaaaaaaaaaaffafagaagggagaaaaaaaab&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;*a*b*ba*ca*aaaa*fa*ga*gggg*b*&quot;,&amp;</span>
-<span class="c">!!      &amp;.false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&amp;</span>
-<span class="c">!!      &amp;&quot;abababababababababababababababababababaacacacacacacacad&amp;</span>
-<span class="c">!!      &amp;aeafagahaiajakalaaaaaaaaaaaaaaaaaffafagaagggagaaaaaaaab&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;*a*b*ba*ca*aaaa*fa*ga*ggg*b*&quot;,&amp;</span>
-<span class="c">!!      &amp;.true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;aaabbaabbaab&quot;, &quot;*aabbaa*a*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. &amp;</span>
-<span class="c">!!      test(&quot;a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;aaaaaaaaaaaaaaaaa&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;aaaaaaaaaaaaaaaa&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&amp;</span>
-<span class="c">!!      &amp;&quot;abc*abcd*abcde*abcdef*abcdefg*abcdefgh*abcdefghi*abcdefghij&amp;</span>
-<span class="c">!!      &amp;*abcdefghijk*abcdefghijkl*abcdefghijklm*abcdefghijklmn&quot;,&amp;</span>
-<span class="c">!!      &amp; &quot;abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc&amp;</span>
-<span class="c">!!      &amp;*abc*abc*abc*&quot;,&amp;</span>
-<span class="c">!!      &amp;.false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&amp;</span>
-<span class="c">!!      &amp;&quot;abc*abcd*abcde*abcdef*abcdefg*abcdefgh*abcdefghi*abcdefghij&amp;</span>
-<span class="c">!!      &amp;*abcdefghijk*abcdefghijkl*abcdefghijklm*abcdefghijklmn&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*&quot;,&amp;</span>
-<span class="c">!!      &amp;.true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abc*abcd*abcd*abc*abcd&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;abc*abc*abc*abc*abc&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test( &quot;abc*abcd*abcd*abc*abcd*abcd&amp;</span>
-<span class="c">!!      &amp;*abc*abcd*abc*abc*abcd&quot;, &amp;</span>
-<span class="c">!!      &amp;&quot;abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abcd&quot;,&amp;</span>
-<span class="c">!!      &amp;.true.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;abc&quot;,&amp;</span>
-<span class="c">!!      &amp;&quot;********a********b********c********&quot;, .true.)</span>
-<span class="c">!!      allpassed=allpassed .and.&amp;</span>
-<span class="c">!!      &amp;test(&quot;********a********b********c********&quot;, &quot;abc&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. &amp;</span>
-<span class="c">!!      &amp;test(&quot;abc&quot;, &quot;********a********b********b********&quot;, .false.)</span>
-<span class="c">!!      allpassed=allpassed .and. test(&quot;*abc*&quot;, &quot;***a*b*c***&quot;, .true.)</span>
-<span class="c">!!</span>
-<span class="c">!!      ! A case-insensitive algorithm test.</span>
-<span class="c">!!      ! allpassed=allpassed .and. test(&quot;mississippi&quot;, &quot;*issip*PI&quot;, .true.)</span>
-<span class="c">!!     enddo</span>
-<span class="c">!!</span>
-<span class="c">!!     if (allpassed)then</span>
-<span class="c">!!        write(*,&#39;(a)&#39;)&quot;Passed&quot;,nReps</span>
-<span class="c">!!     else</span>
-<span class="c">!!        write(*,&#39;(a)&#39;)&quot;Failed&quot;</span>
-<span class="c">!!     endif</span>
-<span class="c">!!    contains</span>
-<span class="c">!!    ! This is a test program for wildcard matching routines.</span>
-<span class="c">!!    ! It can be used either to test a single routine for correctness,</span>
-<span class="c">!!    ! or to compare the timings of two (or more) different wildcard</span>
-<span class="c">!!    ! matching routines.</span>
-<span class="c">!!    !</span>
-<span class="c">!!    function test(tame, wild, bExpectedResult) result(bpassed)</span>
-<span class="c">!!    use fpm_strings, only : glob</span>
-<span class="c">!!       character(len=*) :: tame</span>
-<span class="c">!!       character(len=*) :: wild</span>
-<span class="c">!!       logical          :: bExpectedResult</span>
-<span class="c">!!       logical          :: bResult</span>
-<span class="c">!!       logical          :: bPassed</span>
-<span class="c">!!       bResult = .true.    ! We&#39;ll do &quot;&amp;=&quot; cumulative checking.</span>
-<span class="c">!!       bPassed = .false.   ! Assume the worst.</span>
-<span class="c">!!       write(*,*)repeat(&#39;=&#39;,79)</span>
-<span class="c">!!       bResult = glob(tame, wild) ! Call a wildcard matching routine.</span>
-<span class="c">!!</span>
-<span class="c">!!       ! To assist correctness checking, output the two strings in any</span>
-<span class="c">!!       ! failing scenarios.</span>
-<span class="c">!!       if (bExpectedResult .eqv. bResult) then</span>
-<span class="c">!!          bPassed = .true.</span>
-<span class="c">!!          if(nReps == 1) write(*,*)&quot;Passed match on &quot;,tame,&quot; vs. &quot;, wild</span>
-<span class="c">!!       else</span>
-<span class="c">!!          if(nReps == 1) write(*,*)&quot;Failed match on &quot;,tame,&quot; vs. &quot;, wild</span>
-<span class="c">!!       endif</span>
-<span class="c">!!</span>
-<span class="c">!!    end function test</span>
-<span class="c">!!    end program demo_glob</span>
-<span class="c">!!</span>
-<span class="c">!!   Expected output</span>
-<span class="c">!!</span>
-<span class="c">!!##AUTHOR</span>
-<span class="c">!!   John S. Urban</span>
-<span class="c">!!</span>
-<span class="c">!!##REFERENCE</span>
-<span class="c">!!   The article &quot;Matching Wildcards: An Empirical Way to Tame an Algorithm&quot;</span>
-<span class="c">!!   in Dr Dobb&#39;s Journal, By Kirk J. Krauss, October 07, 2014</span>
-<span class="c">!!</span>
-<span class="c">!!##LICENSE</span>
-<span class="c">!!   Public Domain</span>
 
 <span class="c">! @(#)fpm_strings::glob(3f): function compares text strings, one of which can have wildcards (&#39;*&#39; or &#39;?&#39;).</span>
 
-<span class="kt">logical</span>                    <span class="kd">::</span> <span class="n">glob</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">tame</span>       <span class="c">! A string without wildcards</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">wild</span>       <span class="c">! A (potentially) corresponding string with wildcards</span>
+<span class="kt">logical</span>                    <span class="kd">::</span> <span class="n">glob</span>       <span class="c">!! result of test</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">tame</span>       <span class="c">!! A string without wildcards to compare to the globbing expression</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">wild</span>       <span class="c">!! A (potentially) corresponding string with wildcards</span>
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tame</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tametext</span>
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">wild</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span> <span class="n">wildtext</span>
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="k">parameter</span> <span class="kd">::</span> <span class="nb">NULL</span><span class="o">=</span><span class="nb">char</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -1107,7 +870,7 @@ public function glob(tame, wild)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 11:42  
+             on 2021-03-11 15:41  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

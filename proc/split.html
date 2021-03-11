@@ -120,7 +120,11 @@
 <div class="well well-sm">
   <ul class="list-inline" style="margin-bottom:0px;display:inline">
      
+     <li><i class="fa fa-pencil"></i> John S. Urban</li>
      
+     
+     
+    <li><i class="fa fa-legal"></i> Public Domain</li>
      
      
     
@@ -259,6 +263,13 @@ public subroutine split(input_line, array, delimiters, order, nulls)
 
 
     
+    <p>parse string on delimiter characters and store tokens into an allocatable array
+ given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store each par(n) into a separate variable in array.</p>
+<ul>
+<li>by default adjacent delimiters in the input string do not create an empty string in the output array</li>
+<li>no quoting of delimiters is supported</li>
+</ul>
+    
 
     <h3>Arguments</h3>
     
@@ -283,7 +294,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>input_line</strong></td><td></td>
+  <td><strong>input_line</strong></td><td><p>input string to tokenize</p></td>
   
 </tr>
 
@@ -298,7 +309,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
   <td></td>
   
   <td>allocatable</td><td>::</td>
-  <td><strong>array</strong>(:)</td><td></td>
+  <td><strong>array</strong>(:)</td><td><p>output array of tokens</p></td>
   
 </tr>
 
@@ -313,7 +324,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>delimiters</strong></td><td></td>
+  <td><strong>delimiters</strong></td><td><p>list of delimiter characters</p></td>
   
 </tr>
 
@@ -328,7 +339,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>order</strong></td><td></td>
+  <td><strong>order</strong></td><td><p>order of output array sequential|[reverse|right]</p></td>
   
 </tr>
 
@@ -343,7 +354,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>nulls</strong></td><td></td>
+  <td><strong>nulls</strong></td><td><p>return strings composed of delimiters or not ignore|return|ignoreend</p></td>
   
 </tr>
 
@@ -747,19 +758,15 @@ public subroutine split(input_line, array, delimiters, order, nulls)
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">split</span><span class="p">(</span><span class="n">input_line</span><span class="p">,</span><span class="k">array</span><span class="p">,</span><span class="n">delimiters</span><span class="p">,</span><span class="n">order</span><span class="p">,</span><span class="n">nulls</span><span class="p">)</span>
-    <span class="c">! parse string on delimiter characters and store tokens into an allocatable array&quot;</span>
-    <span class="c">! Author: John S. Urban</span>
-    <span class="c">! License: Public Domain</span>
-
-
-    <span class="c">!  given a line of structure &quot; par1 par2 par3 ... parn &quot; store each par(n) into a separate variable in array.</span>
-    <span class="c">!    o by default adjacent delimiters in the input string do not create an empty string in the output array</span>
-    <span class="c">!    o no quoting of delimiters is supported</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>              <span class="kd">::</span> <span class="n">input_line</span>  <span class="c">! input string to tokenize</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">optional</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">delimiters</span>  <span class="c">! list of delimiter characters</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">optional</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">order</span>       <span class="c">! order of output array sequential|[reverse|right]</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">optional</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">nulls</span>       <span class="c">! return strings composed of delimiters or not ignore|return|ignoreend</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="k">array</span><span class="p">(:)</span>    <span class="c">! output array of tokens</span>
+    <span class="c">!! given a line of structure &quot; par1 par2 par3 ... parn &quot; store each par(n) into a separate variable in array.</span>
+    <span class="c">!!</span>
+    <span class="c">!! * by default adjacent delimiters in the input string do not create an empty string in the output array</span>
+    <span class="c">!! * no quoting of delimiters is supported</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>              <span class="kd">::</span> <span class="n">input_line</span>  <span class="c">!! input string to tokenize</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">optional</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">delimiters</span>  <span class="c">!! list of delimiter characters</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">optional</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">order</span>       <span class="c">!! order of output array sequential|[reverse|right]</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">optional</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">nulls</span>       <span class="c">!! return strings composed of delimiters or not ignore|return|ignoreend</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="k">array</span><span class="p">(:)</span>    <span class="c">!! output array of tokens</span>
 
     <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">n</span>                      <span class="c">! max number of strings INPUT_LINE could split into if all delimiter</span>
     <span class="kt">integer</span><span class="p">,</span><span class="k">allocatable</span>           <span class="kd">::</span> <span class="n">ibegin</span><span class="p">(:)</span>              <span class="c">! positions in input string where tokens start</span>
@@ -884,7 +891,7 @@ public subroutine split(input_line, array, delimiters, order, nulls)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 11:42  
+             on 2021-03-11 15:41  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

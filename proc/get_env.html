@@ -175,9 +175,9 @@
       
       <a class="list-group-item" href="../proc/get_env.html#variable-howbig">howbig</a>
       
-      <a class="list-group-item" href="../proc/get_env.html#variable-length">length</a>
+      <a class="list-group-item" href="../proc/get_env.html#variable-length~2">length</a>
       
-      <a class="list-group-item" href="../proc/get_env.html#variable-stat~4">stat</a>
+      <a class="list-group-item" href="../proc/get_env.html#variable-stat~9">stat</a>
       
     </div>
   </div>
@@ -227,7 +227,9 @@ public function get_env(NAME, DEFAULT) result(VALUE)
 
 
     
-    <p>!print <em>, NAME, &rdquo; is not defined in the environment. Strange&hellip;&rdquo;
+    <p>get named environment variable value. It it is blank or
+ not set return the optional default value
+!print <em>, NAME, &rdquo; is not defined in the environment. Strange&hellip;&rdquo;
 !print </em>, &ldquo;This processor doesn&rsquo;t support environment variables. Boooh!&rdquo;</p>
     
 
@@ -254,7 +256,7 @@ public function get_env(NAME, DEFAULT) result(VALUE)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>NAME</strong></td><td></td>
+  <td><strong>NAME</strong></td><td><p>name of environment variable to get the value of</p></td>
   
 </tr>
 
@@ -269,7 +271,7 @@ public function get_env(NAME, DEFAULT) result(VALUE)
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>DEFAULT</strong></td><td></td>
+  <td><strong>DEFAULT</strong></td><td><p>default value to return if the requested value is undefined or blank</p></td>
   
 </tr>
 
@@ -285,7 +287,7 @@ public function get_env(NAME, DEFAULT) result(VALUE)
     
    <h3>Return Value <small><span class="anchor" id="variable-value"></span>character(len=:),
   allocatable</small></h3>
-    
+    <p>the returned value</p>
     
     
     
@@ -306,9 +308,9 @@ public function get_env(NAME, DEFAULT) result(VALUE)
       
       <a class="list-group-item" href="../proc/get_env.html#variable-howbig">howbig</a>
       
-      <a class="list-group-item" href="../proc/get_env.html#variable-length">length</a>
+      <a class="list-group-item" href="../proc/get_env.html#variable-length~2">length</a>
       
-      <a class="list-group-item" href="../proc/get_env.html#variable-stat~4">stat</a>
+      <a class="list-group-item" href="../proc/get_env.html#variable-stat~9">stat</a>
       
     </div>
   </div>
@@ -380,7 +382,7 @@ public function get_env(NAME, DEFAULT) result(VALUE)
   
 <tr>
   
-  <td><span class="anchor" id="variable-length"></span>integer,</td>
+  <td><span class="anchor" id="variable-length~2"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -394,7 +396,7 @@ public function get_env(NAME, DEFAULT) result(VALUE)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat~4"></span>integer,</td>
+  <td><span class="anchor" id="variable-stat~9"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -427,8 +429,11 @@ public function get_env(NAME, DEFAULT) result(VALUE)
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span>    <span class="k">function </span><span class="n">get_env</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="n">DEFAULT</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="k">VALUE</span><span class="p">)</span>
     <span class="k">implicit none</span>
-<span class="k">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">NAME</span>
+    <span class="c">!&gt; name of environment variable to get the value of</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">NAME</span>     
+    <span class="c">!&gt; default value to return if the requested value is undefined or blank</span>
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">DEFAULT</span>
+    <span class="c">!&gt; the returned value</span>
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="k">VALUE</span>
 <span class="k">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">howbig</span>
     <span class="kt">integer</span>                              <span class="kd">::</span> <span class="nb">stat</span>
@@ -477,7 +482,7 @@ public function get_env(NAME, DEFAULT) result(VALUE)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 11:42  
+             on 2021-03-11 15:41  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

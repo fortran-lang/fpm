@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.5% of total for procedures.">92 statements</a>
+    title=" 3.5% of total for procedures.">93 statements</a>
      </li> 
      
      
@@ -175,7 +175,7 @@
       
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-fflags">fflags</a>
       
-      <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-i~8">i</a>
+      <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-i~16">i</a>
       
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-mandatory">mandatory</a>
       
@@ -231,6 +231,8 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
 
 
     
+    <p>Choose compile flags based on cli settings &amp; manifest inputs</p>
+    
 
     <h3>Arguments</h3>
     
@@ -255,7 +257,7 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>build_name</strong></td><td></td>
+  <td><strong>build_name</strong></td><td><p>select build from {release,debug}</p></td>
   
 </tr>
 
@@ -270,7 +272,7 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>compiler</strong></td><td></td>
+  <td><strong>compiler</strong></td><td><p>compiler name</p></td>
   
 </tr>
 
@@ -280,12 +282,12 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model~2"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-model~6"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
   <td>intent(inout)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>model</strong></td><td></td>
+  <td><strong>model</strong></td><td><p>model to add compiler options to</p></td>
   
 </tr>
 
@@ -313,7 +315,7 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
       
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-fflags">fflags</a>
       
-      <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-i~8">i</a>
+      <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-i~16">i</a>
       
       <a class="list-group-item" href="../proc/add_compile_flag_defaults.html#variable-mandatory">mandatory</a>
       
@@ -391,7 +393,7 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~8"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~16"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -465,10 +467,10 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">add_compile_flag_defaults</span><span class="p">(</span><span class="n">build_name</span><span class="p">,</span><span class="n">compiler</span><span class="p">,</span><span class="n">model</span><span class="p">)</span>
-<span class="c">! Choose compile flags based on cli settings &amp; manifest inputs</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">build_name</span><span class="p">,</span> <span class="n">compiler</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">build_name</span>   <span class="c">!! select build from {release,debug}</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>     <span class="c">!! compiler name</span>
+<span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>   <span class="c">!! model to add compiler options to</span>
 
-<span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
 <span class="c">! could just be a function to return a string instead of passing model</span>
 <span class="c">! but likely to change other components like matching C compiler</span>
 
@@ -724,7 +726,7 @@ public subroutine add_compile_flag_defaults(build_name, compiler, model)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-06 11:42  
+             on 2021-03-11 15:41  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
