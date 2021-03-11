@@ -3,7 +3,7 @@ use iso_fortran_env, only: int64
 implicit none
 
 private
-public :: f_string, lower, split, str_ends_with, string_t
+public :: f_string, lower, split, str_ends_with, new_string_t, string_t
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
 
@@ -160,6 +160,15 @@ elemental pure function lower(str,begin,end) result (string)
 
 end function lower
 
+!> Helper function to generate a new string_t instance
+!>  (Required due to the allocatable component)
+function new_string_t(s) result(string)
+    character(*), intent(in) :: s
+    type(string_t) :: string
+
+    string%s = s
+
+end function new_string_t
 
 logical function string_array_contains(search_string,array)
     ! Check if array of string_t contains a particular string
