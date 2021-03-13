@@ -108,8 +108,8 @@ integer :: i
        & -Wimplicit-interface&
        & -fPIC -fmax-errors=1&
        & -g&
-       & -fbounds-check&
-       & -fcheck-array-temporaries&
+       & -fcheck=bounds&
+       & -fcheck=array-temps&
        & -fbacktrace&
        & -fcoarray=single&
        &'
