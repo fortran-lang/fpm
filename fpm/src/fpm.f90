@@ -9,7 +9,7 @@ use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists,
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: add_compile_flag_defaults
+use fpm_compiler, only: get_module_flags
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
@@ -64,7 +64,10 @@ subroutine build_model(model, settings, package, error)
 
     model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
 
-    call add_compile_flag_defaults(settings%build_name, basename(model%fortran_compiler), model)
+    call get_module_flags(model%fortran_compiler, &
+        & join_path(model%output_directory,model%package_name), &
+        & model%fortran_compile_flags)
+    model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
     if(settings%verbose)then
        write(*,*)'<INFO>COMPILER OPTIONS:  ', model%fortran_compile_flags 
     endif

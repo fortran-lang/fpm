@@ -27,8 +27,9 @@ use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
-use fpm_strings,      only : lower, split
+use fpm_strings,      only : lower, split, fnv_1a
 use fpm_filesystem,   only : basename, canon_path, to_fortran_name
+use fpm_compiler, only : get_default_compile_flags
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -65,6 +66,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: show_model=.false.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: build_name
+    character(len=:),allocatable :: flag
 end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
@@ -106,7 +108,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',     'new',   'build',  'run',     &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
-character(len=:), allocatable :: val_runner, val_build, val_compiler
+character(len=:), allocatable :: val_runner, val_build, val_compiler, val_flag
 
 contains
     subroutine get_command_line_settings(cmd_settings)
@@ -157,6 +159,7 @@ contains
             & --example F&
             & --runner " " &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
+            & --flag:: " "&
             & --verbose F&
             & --',help_run,version_text)
 
@@ -192,6 +195,7 @@ contains
             & args=remaining,&
             & build_name=val_build,&
             & compiler=val_compiler, &
+            & flag=val_flag, &
             & example=lget('example'), &
             & list=lget('list'),&
             & name=names,&
@@ -204,6 +208,7 @@ contains
             & --list F &
             & --show-model F &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
+            & --flag:: " "&
             & --verbose F&
             & --',help_build,version_text)
 
@@ -213,6 +218,7 @@ contains
             cmd_settings=fpm_build_settings(  &
             & build_name=val_build,&
             & compiler=val_compiler, &
+            & flag=val_flag, &
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & verbose=lget('verbose') )
@@ -339,6 +345,7 @@ contains
             call set_args('--release F --no-rebuild F --verbose F --prefix " " &
                 & --list F &
                 & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
+                & --flag:: " "&
                 & --libdir "lib" --bindir "bin" --includedir "include"', &
                 help_install, version_text)
 
@@ -349,6 +356,7 @@ contains
                 list=lget('list'), &
                 build_name=val_build, &
                 compiler=val_compiler, &
+                flag=val_flag, &
                 no_rebuild=lget('no-rebuild'), &
                 verbose=lget('verbose'))
             call get_char_arg(install_settings%prefix, 'prefix')
@@ -373,6 +381,7 @@ contains
             & --release F&
             & --runner " " &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
+            & --flag:: " "&
             & --verbose F&
             & --',help_test,version_text)
 
@@ -402,6 +411,7 @@ contains
             & args=remaining, &
             & build_name=val_build, &
             & compiler=val_compiler, &
+            & flag=val_flag, &
             & example=.false., &
             & list=lget('list'), &
             & name=names, &
@@ -455,7 +465,17 @@ contains
             val_compiler='gfortran'
         endif
 
-        val_build=trim(merge('release','debug  ',lget('release')))
+        val_flag = sget('flag')
+        if (val_flag == '') then
+            call get_default_compile_flags(val_compiler, lget('release'), val_flag)
+        else
+            if (lget('release')) then
+                write(stdout,'(a)') &
+                    '<WARNING> --release ignored since explicit --flag argument provided'
+            end if
+        end if
+        allocate(character(len=16) :: val_build)
+        write(val_build, '(z16.16)') fnv_1a(val_flag)
 
     end subroutine check_build_vals
 
@@ -516,17 +536,17 @@ contains
    ' ']
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
-   ' build [--compiler COMPILER_NAME] [--release] [--list]                          ', &
+   ' build [--compiler COMPILER_NAME] [--release] [--flag FFLAGS] [--list]          ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s) [--example] [--release] [--all] [--runner "CMD"]      ', &
-   '      [--compiler COMPILER_NAME] [--list] [-- ARGS]                             ', &
-   ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
+   ' run  [[--target] NAME(s) [--example] [--release] [--flag FFLAGS] [--all]       ', &
+   '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
+   ' test [[--target] NAME(s)] [--release] [--flag FFLAGS] [--runner "CMD"] [--list]', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
-   ' install [--release] [--no-rebuild] [--prefix PATH] [options]                   ', &
+   ' install [--release] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]   ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -632,24 +652,26 @@ contains
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                       ', &
-    '    build [--release] [--list] [--compiler COMPILER_NAME]              ', &
+    '    build [--release] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|             ', &
-   '              [--full|--bare][--backfill]                               ', &
+    '             [--full|--bare][--backfill]                               ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
-    '    run [[--target] NAME(s)] [--release] [--list] [--example] [--all]  ', &
-    '        [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]          ', &
-    '    test [[--target] NAME(s)] [--release] [--list]                     ', &
+    '    run [[--target] NAME(s)] [--release] [--flag FFLAGS] [--list] [--example]', &
+    '        [--all] [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]  ', &
+    '    test [[--target] NAME(s)] [--release] [--flag FFLAGS] [--list]     ', &
     '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]         ', &
     '    help [NAME(s)]                                                     ', &
     '    list [--list]                                                      ', &
-    '    install [--release] [--no-rebuild] [--prefix PATH] [options]       ', &
+    '    install [--release] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
     '  --release  Builds or runs in release mode (versus debug mode). fpm(1)', &
-    '             Defaults to using common compiler debug flags and building', &
-    '             in "build/*_debug/". When this flag is present build      ', &
-    '             output goes into "build/*_release/" and common compiler   ', &
-    '             optimization flags are used.                              ', &
+    '             Defaults to using common compiler debug flags.            ', &
+    '             When this flag is present common compiler optimization flags', &
+    '             are used.', &
+    '  --flag FFLAGS  Use compile arguments provided in FFLAGS rather than', &
+    '                 defaults from debug or release mode, module flags are', &
+    '                 provided by fpm(1) and must not be present in FFLAGS', &
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
@@ -708,8 +730,9 @@ contains
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm run [[--target] NAME(s)[--release][--compiler COMPILER_NAME]      ', &
-    '         [--runner "CMD"] [--example] [--list] [--all] [-- ARGS]       ', &
+    ' fpm run [[--target] NAME(s) [--release] [--flag FFLAGS]', &
+    '         [--compiler COMPILER_NAME] [--runner "CMD"] [--example]', &
+    '         [--list] [--all] [-- ARGS]', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
     '                                                                       ', &
@@ -734,6 +757,7 @@ contains
     ' --all   Run all examples or applications. An alias for --target ''*''.  ', &
     ' --example  Run example programs instead of applications.              ', &
     ' --release  selects the optimized build instead of the debug build.    ', &
+    ' --flags FFLAGS    selects compile arguments for the build', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
@@ -774,7 +798,7 @@ contains
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm build [--release][--compiler COMPILER_NAME] [-list]               ', &
+    ' fpm build [--release] [--flags FFLAGS] [--compiler COMPILER_NAME] [-list]', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -798,6 +822,7 @@ contains
     'OPTIONS                                                                ', &
     ' --release    build in build/*_release instead of build/*_debug with   ', &
     '              high optimization instead of full debug options.         ', &
+    ' --flags FFLAGS  selects compile arguments for the build', &
     ' --compiler   COMPILER_NAME  Specify a compiler name. The default is   ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
@@ -954,8 +979,8 @@ contains
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm test [[--target] NAME(s)][--release][--compiler COMPILER_NAME ]   ', &
-    '          [--runner "CMD"] [--list][-- ARGS]                           ', &
+    ' fpm test [[--target] NAME(s)] [--release] [--flag FFLAGS]', &
+    '          [--compiler COMPILER_NAME ] [--runner "CMD"] [--list][-- ARGS]', &
     '                                                                       ', &
     ' fpm test --help|--version                                             ', &
     '                                                                       ', &
@@ -971,8 +996,8 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Note The glob string normally needs quoted to       ', &
     '                   protect the special characters from shell expansion.', &
-    ' --release  selects the optimized build instead of the debug           ', &
-    '            build.                                                     ', &
+    ' --release  selects the optimized build instead of the debug build.    ', &
+    ' --flags FFLAGS  selects compile arguments for the build', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
@@ -1021,7 +1046,7 @@ contains
     ' install(1) - install fpm projects', &
     '', &
     'SYNOPSIS', &
-    ' fpm install [--release] [--list] [--no-rebuild] [--prefix DIR]', &
+    ' fpm install [--release] [--flag FFLAGS] [--list] [--no-rebuild] [--prefix DIR]', &
     '             [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
     '             [--verbose]', &
     '', &
@@ -1036,6 +1061,7 @@ contains
     ' --list            list all installable targets for this project,', &
     '                   but do not install any of them', &
     ' --release         selects the optimized build instead of the debug build', &
+    ' --flags FFLAGS    selects compile arguments for the build', &
     ' --no-rebuild      do not rebuild project before installation', &
     ' --prefix DIR      path to installation directory (requires write access),', &
     '                   the default prefix on Unix systems is $HOME/.local', &
