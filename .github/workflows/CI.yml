@@ -1,6 +1,6 @@
 name: CI
 
-on: 
+on:
   push:
   pull_request:
   release:
@@ -16,7 +16,7 @@ env:
   RUST_BACKTRACE: "full" # Make Rust print full backtrace on error
 
 jobs:
-  Build:
+  stack-build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -30,7 +30,6 @@ jobs:
           TEST_SCRIPT: ci/run_tests.sh
           GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
           CHECK_VERSION_CMD: grep $(cat fpm_version)
-          RELEASE_CMD: "cp -- fpm-$(cat fpm_version)-linux-x86_64"
           BOOTSTRAP_RELEASE_CMD: cp /home/runner/.local/bin/fpm fpm-haskell-$(cat fpm_version)-linux-x86_64
           HASH_CMD: ls fpm-*|xargs -i{} sh -c 'sha256sum $1 > $1.sha256' -- {}
           RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
@@ -43,7 +42,6 @@ jobs:
           TEST_SCRIPT: ci/run_tests.sh
           GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
           CHECK_VERSION_CMD: grep $(cat fpm_version)
-          RELEASE_CMD: "cp -- fpm-$(cat fpm_version)-macos-x86_64"
           BOOTSTRAP_RELEASE_CMD: cp /Users/runner/.local/bin/fpm fpm-haskell-$(cat fpm_version)-macos-x86_64
           HASH_CMD: ls fpm-*|xargs -I{} sh -c 'shasum -a 256 $1 > $1.sha256' -- {}
           RELEASE_FLAGS: --flag -g --flag -fbacktrace --flag -O3
@@ -56,7 +54,6 @@ jobs:
           TEST_SCRIPT: ci\run_tests.bat
           GET_VERSION_CMD: ("${{ github.ref }}" -Split "v")[1]
           CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
-          RELEASE_CMD: copy -- (-join("fpm-",(Get-Content fpm_version),"-windows-x86_64.exe"))
           BOOTSTRAP_RELEASE_CMD: copy C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe (-join("fpm-haskell-",(Get-Content fpm_version),"-windows-x86_64.exe"))
           HASH_CMD: Get-ChildItem -File -Filter "fpm-*" | Foreach-Object {echo (Get-FileHash -Algorithm SHA256 $PSItem | Select-Object hash | Format-Table -HideTableHeaders | Out-String) > (-join($PSItem,".sha256"))}
           RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
@@ -88,7 +85,7 @@ jobs:
       uses: nanzm/get-time-action@v1.0
       with:
         format: 'YYYY-MM'
-          
+
     - name: Setup github actions cache
       id: cache
       uses: actions/cache@v2
@@ -116,7 +113,7 @@ jobs:
       if: contains(matrix.os, 'ubuntu')
       run: |
           sudo cp /home/runner/.local/bin/fpm /usr/local/bin
-          
+
     - name: Run tests on Haskell fpm
       run: |
         cd bootstrap
@@ -140,10 +137,108 @@ jobs:
       if: github.event_name == 'release'
       run: |
         cd fpm
-        fpm run ${{ matrix.RELEASE_FLAGS }} --runner ${{ matrix.RELEASE_CMD }}
         ${{ matrix.BOOTSTRAP_RELEASE_CMD }}
         ${{ matrix.HASH_CMD }}
-    
+
+    - name: Upload assets
+      if: github.event_name == 'release'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: fpm/fpm-*
+        file_glob: true
+        tag: ${{ github.ref }}
+        overwrite: true
+
+  fpm-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        gcc_v: [9] # Version of GFortran we want to use.
+        include:
+        - os: ubuntu-latest
+          TEST_SCRIPT: ci/run_tests.sh
+          GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
+          CHECK_VERSION_CMD: grep $(cat fpm_version)
+          RELEASE_CMD: "cp -- fpm-$(cat fpm_version)-linux-x86_64"
+          HASH_CMD: ls fpm-*|xargs -i{} sh -c 'sha256sum $1 > $1.sha256' -- {}
+          RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
+
+        - os: macos-latest
+          STACK_CACHE_VERSION: "v2"
+          TEST_SCRIPT: ci/run_tests.sh
+          GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
+          CHECK_VERSION_CMD: grep $(cat fpm_version)
+          RELEASE_CMD: "cp -- fpm-$(cat fpm_version)-macos-x86_64"
+          HASH_CMD: ls fpm-*|xargs -I{} sh -c 'shasum -a 256 $1 > $1.sha256' -- {}
+          RELEASE_FLAGS: --flag -g --flag -fbacktrace --flag -O3
+
+        - os: windows-latest
+          STACK_CACHE_VERSION: "v2"
+          TEST_SCRIPT: ci\run_tests.bat
+          GET_VERSION_CMD: ("${{ github.ref }}" -Split "v")[1]
+          CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
+          RELEASE_CMD: copy -- (-join("fpm-",(Get-Content fpm_version),"-windows-x86_64.exe"))
+          HASH_CMD: Get-ChildItem -File -Filter "fpm-*" | Foreach-Object {echo (Get-FileHash -Algorithm SHA256 $PSItem | Select-Object hash | Format-Table -HideTableHeaders | Out-String) > (-join($PSItem,".sha256"))}
+          RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
+
+    env:
+      FC: gfortran
+      GCC_V: ${{ matrix.gcc_v }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+
+    - name: Install GFortran macOS
+      if: contains(matrix.os, 'macos')
+      run: |
+          ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
+          which gfortran-${GCC_V}
+          which gfortran
+
+    - name: Install GFortran Linux
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
+        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
+        --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
+
+    - name: Get Time
+      id: time
+      uses: nanzm/get-time-action@v1.0
+      with:
+        format: 'YYYY-MM'
+
+    - name: Setup fpm
+      uses: fortran-lang/setup-fpm@v3
+      with:
+        use-haskell: true
+        fpm-version: 'v0.1.4'
+
+    - name: Build and test Fortran fpm
+      run: ${{ matrix.TEST_SCRIPT }}
+
+    - name: Build and test Fortran fpm (release version)
+      run: ${{ matrix.TEST_SCRIPT }} ${{ matrix.RELEASE_FLAGS }}
+
+    # ----- Upload binaries if creating a release -----
+    - name: Check that fpm --version matches release tag
+      if: github.event_name == 'release'
+      run: |
+        cd fpm
+        ${{ matrix.GET_VERSION_CMD }} > fpm_version
+        fpm run -- "--version" | ${{ matrix.CHECK_VERSION_CMD }}
+
+    - name: Stage release files for upload
+      if: github.event_name == 'release'
+      run: |
+        cd fpm
+        fpm run ${{ matrix.RELEASE_FLAGS }} --runner ${{ matrix.RELEASE_CMD }}
+        ${{ matrix.HASH_CMD }}
+
     - name: Upload assets
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
