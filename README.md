@@ -28,7 +28,7 @@ _e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
 
 #### Conda
 
-If you haven't yet, first enable the conda-forge channel:
+Fpm is available on conda-forge, to add conda-forge to your channels use:
 
 ```
 conda config --add channels conda-forge
@@ -41,8 +41,8 @@ conda create -n fpm fpm
 conda activate fpm
 ```
 
-Conda can be installed from [miniconda](https://docs.conda.io/en/latest/miniconda.html)
-or from [miniforge](https://github.com/conda-forge/miniforge/releases).
+The conda package manager can be installed from [miniforge](https://github.com/conda-forge/miniforge/releases)
+or from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 #### Github Actions
 
@@ -118,4 +118,3 @@ with itself and run the tests with:
 $ cd fpm
 $ fpm test
 ```
-
