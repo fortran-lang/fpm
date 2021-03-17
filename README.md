@@ -41,6 +41,9 @@ conda create -n fpm fpm
 conda activate fpm
 ```
 
+Conda can be installed from [miniconda](https://docs.conda.io/en/latest/miniconda.html)
+or from [miniforge](https://github.com/conda-forge/miniforge/releases).
+
 #### Github Actions
 
 To setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
