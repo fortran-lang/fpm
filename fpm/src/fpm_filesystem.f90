@@ -1,3 +1,5 @@
+!> This module contains general routines for interacting with the file system
+!!
 module fpm_filesystem
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
     use fpm_environment, only: get_os_type, &
@@ -17,6 +19,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
 contains
 
 
+!> return value of environment variable
 subroutine env_variable(var, name)
    character(len=:), allocatable, intent(out) :: var
    character(len=*), intent(in) :: name
@@ -38,9 +41,9 @@ subroutine env_variable(var, name)
 end subroutine env_variable
 
 
+!> Extract filename from path with/without suffix
 function basename(path,suffix) result (base)
-    ! Extract filename from path with/without suffix
-    !
+ 
     character(*), intent(In) :: path
     logical, intent(in), optional :: suffix
     character(:), allocatable :: base
@@ -73,13 +76,13 @@ function basename(path,suffix) result (base)
 end function basename
 
 
+!> Canonicalize path for comparison
+!! * Handles path string redundancies
+!! * Does not test existence of path
+!!
+!! To be replaced by realpath/_fullname in stdlib_os
+!!
 function canon_path(path) result(canon)
-    ! Canonicalize path for comparison
-    !  Handles path string redundancies
-    !  Does not test existence of path
-    !
-    ! To be replaced by realpath/_fullname in stdlib_os
-    !
     character(*), intent(in) :: path
     character(:), allocatable :: canon
 
@@ -143,9 +146,8 @@ function canon_path(path) result(canon)
 end function canon_path
 
 
+!> Extract dirname from path
 function dirname(path) result (dir)
-    ! Extract dirname from path
-    !
     character(*), intent(in) :: path
     character(:), allocatable :: dir
 
@@ -154,6 +156,7 @@ function dirname(path) result (dir)
 end function dirname
 
 
+!> test if a name matches an existing directory path
 logical function is_dir(dir)
     character(*), intent(in) :: dir
     integer :: stat
@@ -173,9 +176,9 @@ logical function is_dir(dir)
 end function is_dir
 
 
+!> Construct path by joining strings with os file separator
 function join_path(a1,a2,a3,a4,a5) result(path)
-    ! Construct path by joining strings with os file separator
-    !
+
     character(len=*), intent(in)           :: a1, a2
     character(len=*), intent(in), optional :: a3, a4, a5
     character(len=:), allocatable          :: path
@@ -211,8 +214,8 @@ function join_path(a1,a2,a3,a4,a5) result(path)
 end function join_path
 
 
+!> Determine number or rows in a file given a LUN
 integer function number_of_rows(s) result(nrows)
-    ! determine number or rows
     integer,intent(in)::s
     integer :: ios
     character(len=100) :: r
@@ -227,6 +230,7 @@ integer function number_of_rows(s) result(nrows)
 end function number_of_rows
 
 
+!> read lines into an array of TYPE(STRING_T) variables
 function read_lines(fh) result(lines)
     integer, intent(in) :: fh
     type(string_t), allocatable :: lines(:)
@@ -242,6 +246,7 @@ function read_lines(fh) result(lines)
 
 end function read_lines
 
+!> Create a directory. Create subdirectories as needed
 subroutine mkdir(dir)
     character(len=*), intent(in) :: dir
     integer                      :: stat
@@ -265,12 +270,12 @@ subroutine mkdir(dir)
 end subroutine mkdir
 
 
+!> Get file & directory names in directory `dir`.
+!!
+!!  - File/directory names return are relative to cwd, ie. preprended with `dir`
+!!  - Includes files starting with `.` except current directory and parent directory
+!!
 recursive subroutine list_files(dir, files, recurse)
-    ! Get file & directory names in directory `dir`.
-    !
-    !  - File/directory names return are relative to cwd, ie. preprended with `dir`
-    !  - Includes files starting with `.` except current directory and parent directory
-    !
     character(len=*), intent(in) :: dir
     type(string_t), allocatable, intent(out) :: files(:)
     logical, intent(in), optional :: recurse
@@ -331,18 +336,19 @@ recursive subroutine list_files(dir, files, recurse)
 end subroutine list_files
 
 
+!> test if pathname already exists
 logical function exists(filename) result(r)
     character(len=*), intent(in) :: filename
     inquire(file=filename, exist=r)
 end function
 
 
+!> Get a unused temporary filename
+!!  Calls posix 'tempnam' - not recommended, but
+!!   we have no security concerns for this application
+!!   and use here is temporary.
+!! Works with MinGW
 function get_temp_filename() result(tempfile)
-    ! Get a unused temporary filename
-    !  Calls posix 'tempnam' - not recommended, but
-    !   we have no security concerns for this application
-    !   and use here is temporary.
-    ! Works with MinGW
     !
     use iso_c_binding, only: c_ptr, C_NULL_PTR, c_f_pointer
     character(:), allocatable :: tempfile
@@ -376,9 +382,9 @@ function get_temp_filename() result(tempfile)
 end function get_temp_filename
 
 
+!> Replace file system separators for windows
 function windows_path(path) result(winpath)
-    ! Replace file system separators for windows
-    !
+
     character(*), intent(in) :: path
     character(:), allocatable :: winpath
 
@@ -395,9 +401,9 @@ function windows_path(path) result(winpath)
 end function windows_path
 
 
+!> Replace file system separators for unix
 function unix_path(path) result(nixpath)
-    ! Replace file system separators for unix
-    !
+
     character(*), intent(in) :: path
     character(:), allocatable :: nixpath
 
@@ -414,6 +420,7 @@ function unix_path(path) result(nixpath)
 end function unix_path
 
 
+!> read a line of arbitrary length into a CHARACTER variable from the specified LUN
 subroutine getline(unit, line, iostat, iomsg)
 
     !> Formatted IO unit
@@ -455,6 +462,7 @@ subroutine getline(unit, line, iostat, iomsg)
 end subroutine getline
 
 
+!> delete a file by filename
 subroutine delete_file(file)
     character(len=*), intent(in) :: file
     logical :: exist
@@ -466,8 +474,8 @@ subroutine delete_file(file)
     end if
 end subroutine delete_file
 
-subroutine warnwrite(fname,data)
 !> write trimmed character data to a file if it does not exist
+subroutine warnwrite(fname,data)
 character(len=*),intent(in) :: fname
 character(len=*),intent(in) :: data(:)
 
@@ -480,8 +488,8 @@ character(len=*),intent(in) :: data(:)
 
 end subroutine warnwrite
 
+!> procedure to open filename as a sequential "text" file
 subroutine fileopen(filename,lun,ier)
-! procedure to open filename as a sequential "text" file
 
 character(len=*),intent(in)   :: filename
 integer,intent(out)           :: lun
@@ -518,8 +526,8 @@ character(len=256)            :: message
 
 end subroutine fileopen
 
+!> simple close of a LUN.  On error show message and stop (by default)
 subroutine fileclose(lun,ier)
-! simple close of a LUN.  On error show message and stop (by default)
 integer,intent(in)    :: lun
 integer,intent(out),optional :: ier
 character(len=256)    :: message
@@ -537,8 +545,8 @@ integer               :: ios
     endif
 end subroutine fileclose
 
+!> procedure to write filedata to file filename
 subroutine filewrite(filename,filedata)
-! procedure to write filedata to file filename
 
 character(len=*),intent(in)           :: filename
 character(len=*),intent(in)           :: filedata(:)
@@ -562,10 +570,10 @@ character(len=256)                    :: message
 
 end subroutine filewrite
 
+!> Returns string with special characters replaced with an underscore.
+!! For now, only a hyphen is treated as a special character, but this can be
+!! expanded to other characters if needed.
 pure function to_fortran_name(string) result(res)
-    ! Returns string with special characters replaced with an underscore.
-    ! For now, only a hyphen is treated as a special character, but this can be
-    ! expanded to other characters if needed.
     character(*), intent(in) :: string
     character(len(string)) :: res
     character, parameter :: SPECIAL_CHARACTERS(*) = ['-']

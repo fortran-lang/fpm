@@ -1,3 +1,32 @@
+!> This module defines general procedures for **string operations** for both CHARACTER and
+!! TYPE(STRING_T) variables
+!
+!>## general routines for performing __string operations__
+!!
+!!### Types
+!! - **TYPE(STRING_T)** define a type to contain strings of variable length
+!!### Type Conversions
+!! - [[F_STRING]]  return Fortran **CHARACTER** variable when given a C-like array of 
+!!                 single characters terminated with a C_NULL_CHAR **CHARACTER**
+!! - [[STR]]  Converts **INTEGER** or** LOGICAL** to **CHARACTER** string
+!!### Case
+!! - [[LOWER]]  Changes a string to lowercase over optional specified column range
+!!### Parsing and joining
+!! - [[SPLIT]]  parse string on delimiter characters and store tokens into an allocatable array
+!! - [[STRING_CAT]]  Concatenate an array of **type(string_t)** into a single **CHARACTER** variable
+!! - [[JOIN]]  append an array of **CHARACTER** variables into a single **CHARACTER** variable 
+!!### Testing
+!! - [[STR_ENDS_WITH]]  test if a **CHARACTER** string or array ends with a specified suffix
+!! - [[STRING_ARRAY_CONTAINS]]  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
+!! - **OPERATOR(.IN.)**  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
+!! - [[GLOB]]  function compares text strings, one of which can have wildcards ('*' or '?').
+!!### Miscellaneous
+!! - [[LEN_TRIM]]  Determine total trimmed length of **STRING_T** array
+!! - [[FNV_1A]]  Hash a **CHARACTER(*)** string of default kind or a **TYPE(STRING_T)** array
+!! - [[REPLACE]]  Returns string with characters in charset replaced with target_char.
+!! - [[RESIZE]]  increase the size of a **TYPE(STRING_T)** array by N elements
+!!
+
 module fpm_strings
 use iso_fortran_env, only: int64
 implicit none
@@ -5,7 +34,7 @@ implicit none
 private
 public :: f_string, lower, split, str_ends_with, string_t
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
-public :: replace, resize, str, join
+public :: replace, resize, str, join, glob
 
 type string_t
     character(len=:), allocatable :: s
@@ -39,6 +68,7 @@ end interface
 
 contains
 
+!> test if a CHARACTER string ends with a specified suffix
 pure logical function str_ends_with_str(s, e) result(r)
     character(*), intent(in) :: s, e
     integer :: n1, n2
@@ -51,6 +81,7 @@ pure logical function str_ends_with_str(s, e) result(r)
     end if
 end function str_ends_with_str
 
+!> test if a CHARACTER string ends with any of an array of suffixs
 pure logical function str_ends_with_any(s, e) result(r)
     character(*), intent(in) :: s
     character(*), intent(in) :: e(:)
@@ -67,6 +98,8 @@ pure logical function str_ends_with_any(s, e) result(r)
 
 end function str_ends_with_any
 
+!> return Fortran character variable when given a C-like array of
+!! single characters terminated with a C_NULL_CHAR character
 function f_string(c_string)
     use iso_c_binding
     character(len=1), intent(in) :: c_string(:)
@@ -128,10 +161,10 @@ pure function fnv_1a_string_t(input, seed) result(hash)
 end function fnv_1a_string_t
 
 
+ !>Author: John S. Urban
+ !!License: Public Domain
+ !! Changes a string to lowercase over optional specified column range
 elemental pure function lower(str,begin,end) result (string)
-    ! Changes a string to lowercase over specified range
-    ! Author: John S. Urban
-    ! License: Public Domain
 
     character(*), intent(In)     :: str
     character(len(str))          :: string
@@ -161,9 +194,9 @@ elemental pure function lower(str,begin,end) result (string)
 end function lower
 
 
+!> Check if array of TYPE(STRING_T) matches a particular CHARACTER string
+!!
 logical function string_array_contains(search_string,array)
-    ! Check if array of string_t contains a particular string
-    !
     character(*), intent(in) :: search_string
     type(string_t), intent(in) :: array(:)
 
@@ -175,7 +208,7 @@ logical function string_array_contains(search_string,array)
 end function string_array_contains
 
 !> Concatenate an array of type(string_t) into
-!>  a single character
+!>  a single CHARACTER variable
 function string_cat(strings,delim) result(cat)
     type(string_t), intent(in) :: strings(:)
     character(*), intent(in), optional :: delim
@@ -216,20 +249,19 @@ pure function string_len_trim(strings) result(n)
 
 end function string_len_trim
 
+!>Author: John S. Urban
+!!License: Public Domain
+!! parse string on delimiter characters and store tokens into an allocatable array
 subroutine split(input_line,array,delimiters,order,nulls)
-    ! parse string on delimiter characters and store tokens into an allocatable array"
-    ! Author: John S. Urban
-    ! License: Public Domain
-
-
-    !  given a line of structure " par1 par2 par3 ... parn " store each par(n) into a separate variable in array.
-    !    o by default adjacent delimiters in the input string do not create an empty string in the output array
-    !    o no quoting of delimiters is supported
-    character(len=*),intent(in)              :: input_line  ! input string to tokenize
-    character(len=*),optional,intent(in)     :: delimiters  ! list of delimiter characters
-    character(len=*),optional,intent(in)     :: order       ! order of output array sequential|[reverse|right]
-    character(len=*),optional,intent(in)     :: nulls       ! return strings composed of delimiters or not ignore|return|ignoreend
-    character(len=:),allocatable,intent(out) :: array(:)    ! output array of tokens
+    !! given a line of structure " par1 par2 par3 ... parn " store each par(n) into a separate variable in array.
+    !!
+    !! * by default adjacent delimiters in the input string do not create an empty string in the output array
+    !! * no quoting of delimiters is supported
+    character(len=*),intent(in)              :: input_line  !! input string to tokenize
+    character(len=*),optional,intent(in)     :: delimiters  !! list of delimiter characters
+    character(len=*),optional,intent(in)     :: order       !! order of output array sequential|[reverse|right]
+    character(len=*),optional,intent(in)     :: nulls       !! return strings composed of delimiters or not ignore|return|ignoreend
+    character(len=:),allocatable,intent(out) :: array(:)    !! output array of tokens
 
     integer                       :: n                      ! max number of strings INPUT_LINE could split into if all delimiter
     integer,allocatable           :: ibegin(:)              ! positions in input string where tokens start
@@ -334,8 +366,8 @@ subroutine split(input_line,array,delimiters,order,nulls)
     enddo
 end subroutine split
 
+!> Returns string with characters in charset replaced with target_char.
 pure function replace(string, charset, target_char) result(res)
-    ! Returns string with characters in charset replaced with target_char.
     character(*), intent(in) :: string
     character, intent(in) :: charset(:), target_char
     character(len(string)) :: res
@@ -348,6 +380,7 @@ pure function replace(string, charset, target_char) result(res)
     end do
 end function replace
 
+!> increase the size of a TYPE(STRING_T) array by N elements
 subroutine resize_string(list, n)
   !> Instance of the array to be resized
   type(string_t), allocatable, intent(inout) :: list(:)
@@ -383,93 +416,100 @@ subroutine resize_string(list, n)
 
 end subroutine resize_string
 
-pure function join(str,sep,trm,left,right) result (string)
+!>AUTHOR: John S. Urban
+!!LICENSE: Public Domain
+!!## NAME
+!!    join(3f) - [fpm_strings:EDITING] append CHARACTER variable array into
+!!    a single CHARACTER variable with specified separator
+!!    (LICENSE:PD)
+!!
+!!## SYNOPSIS
+!!
+!!    pure function join(str,sep,trm,left,right,start,end) result (string)
+!!
+!!     character(len=*),intent(in)          :: str(:)
+!!     character(len=*),intent(in),optional :: sep
+!!     logical,intent(in),optional          :: trm
+!!     character(len=*),intent(in),optional :: right
+!!     character(len=*),intent(in),optional :: left
+!!     character(len=*),intent(in),optional :: start
+!!     character(len=*),intent(in),optional :: end
+!!     character(len=:),allocatable         :: string
+!!
+!!## DESCRIPTION
+!!   JOIN(3f) appends the elements of a CHARACTER array into a single
+!!   CHARACTER variable, with elements 1 to N joined from left to right.
+!!   By default each element is trimmed of trailing spaces and the
+!!   default separator is a null string.
+!!
+!!## OPTIONS
+!!      STR(:)  array of CHARACTER variables to be joined
+!!      SEP     separator string to place between each variable. defaults
+!!              to a null string.
+!!      LEFT    string to place at left of each element
+!!      RIGHT   string to place at right of each element
+!!      START   prefix string
+!!      END     suffix string
+!!      TRM     option to trim each element of STR of trailing
+!!              spaces. Defaults to .TRUE.
+!!
+!!## RESULT
+!!      STRING  CHARACTER variable composed of all of the elements of STR()
+!!              appended together with the optional separator SEP placed
+!!              between the elements.
+!!
+!!## EXAMPLE
+!!
+!!  Sample program:
+!!```fortran
+!!    program demo_join
+!!    use fpm_strings, only: join
+!!    implicit none
+!!    character(len=:),allocatable  :: s(:)
+!!    character(len=:),allocatable  :: out
+!!    integer                       :: i
+!!      s=[character(len=10) :: 'United',' we',' stand,', &
+!!      & ' divided',' we fall.']
+!!      out=join(s)
+!!      write(*,'(a)') out
+!!      write(*,'(a)') join(s,trm=.false.)
+!!      write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
+!!      write(*,'(a)') join(s,sep='<>')
+!!      write(*,'(a)') join(s,sep=';',left='[',right=']')
+!!      write(*,'(a)') join(s,left='[',right=']')
+!!      write(*,'(a)') join(s,left='>>')
+!!    end program demo_join
+!!```fortran
+!!
+!!  Expected output:
+!!
+!!    United we stand, divided we fall.
+!!    United     we        stand,    divided   we fall.
+!!    United    | we       | stand,   | divided  | we fall.
+!!    United    | we       | stand,   | divided  | we fall.
+!!    United    | we       | stand,   | divided  | we fall.
+!!    United<> we<> stand,<> divided<> we fall.
+!!    [United];[ we];[ stand,];[ divided];[ we fall.]
+!!    [United][ we][ stand,][ divided][ we fall.]
+!!    >>United>> we>> stand,>> divided>> we fall.
+!!
+pure function join(str,sep,trm,left,right,start,end) result (string)
 
-!> M_strings::join(3f): append an array of character variables with specified separator into a single CHARACTER variable
-!>
-!>##NAME
-!>    join(3f) - [M_strings:EDITING] append CHARACTER variable array into
-!>    a single CHARACTER variable with specified separator
-!>    (LICENSE:PD)
-!>
-!>##SYNOPSIS
-!>
-!>    pure function join(str,sep,trm,left,right) result (string)
-!>
-!>     character(len=*),intent(in)          :: str(:)
-!>     character(len=*),intent(in),optional :: sep
-!>     logical,intent(in),optional          :: trm
-!>     character(len=*),intent(in),optional :: right
-!>     character(len=*),intent(in),optional :: left
-!>     character(len=:),allocatable         :: string
-!>
-!>##DESCRIPTION
-!>      JOIN(3f) appends the elements of a CHARACTER array into a single
-!>      CHARACTER variable, with elements 1 to N joined from left to right.
-!>      By default each element is trimmed of trailing spaces and the
-!>      default separator is a null string.
-!>
-!>##OPTIONS
-!>      STR(:)  array of CHARACTER variables to be joined
-!>      SEP     separator string to place between each variable. defaults
-!>              to a null string.
-!>      LEFT    string to place at left of each element
-!>      RIGHT   string to place at right of each element
-!>      TRM     option to trim each element of STR of trailing
-!>              spaces. Defaults to .TRUE.
-!>
-!>##RESULT
-!>      STRING  CHARACTER variable composed of all of the elements of STR()
-!>              appended together with the optional separator SEP placed
-!>              between the elements and optional left and right elements.
-!>
-!>##EXAMPLE
-!>
-!>  Sample program:
-!>
-!>   program demo_join
-!>   use M_strings, only: join
-!>   implicit none
-!>   character(len=:),allocatable  :: s(:)
-!>   character(len=:),allocatable  :: out
-!>   integer                       :: i
-!>     s=[character(len=10) :: 'United',' we',' stand,', &
-!>     & ' divided',' we fall.']
-!>     out=join(s)
-!>     write(*,'(a)') out
-!>     write(*,'(a)') join(s,trm=.false.)
-!>     write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
-!>     write(*,'(a)') join(s,sep='<>')
-!>     write(*,'(a)') join(s,sep=';',left='[',right=']')
-!>     write(*,'(a)') join(s,left='[',right=']')
-!>     write(*,'(a)') join(s,left='>>')
-!>   end program demo_join
-!>
-!>  Expected output:
-!>
-!>   United we stand, divided we fall.
-!>   United     we        stand,    divided   we fall.
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United    | we       | stand,   | divided  | we fall. |
-!>   United<> we<> stand,<> divided<> we fall.<>
-!>   [United];[ we];[ stand,];[ divided];[ we fall.];
-!>   [United][ we][ stand,][ divided][ we fall.]
-!>   >>United>> we>> stand,>> divided>> we fall.
-!>
-!>##AUTHOR
-!>    John S. Urban
-!>
-!>##LICENSE
-!>    Public Domain
+! @(#)join(3f): append an array of character variables with specified separator into a single CHARACTER variable
 
-character(len=*),intent(in)           :: str(:)
-character(len=*),intent(in),optional  :: sep, right, left
-logical,intent(in),optional           :: trm
-character(len=:),allocatable          :: string
-integer                               :: i
-logical                               :: trm_local
-character(len=:),allocatable          :: sep_local, left_local, right_local
+character(len=*),intent(in)          :: str(:)
+character(len=*),intent(in),optional :: sep
+character(len=*),intent(in),optional :: right
+character(len=*),intent(in),optional :: left
+character(len=*),intent(in),optional :: start
+character(len=*),intent(in),optional :: end
+logical,intent(in),optional          :: trm
+character(len=:),allocatable         :: string
+integer                              :: i
+logical                              :: trm_local
+character(len=:),allocatable         :: sep_local
+character(len=:),allocatable         :: left_local
+character(len=:),allocatable         :: right_local
 
    if(present(sep))then    ;  sep_local=sep      ;  else  ;  sep_local=''      ;  endif
    if(present(trm))then    ;  trm_local=trm      ;  else  ;  trm_local=.true.  ;  endif
@@ -477,16 +517,347 @@ character(len=:),allocatable          :: sep_local, left_local, right_local
    if(present(right))then  ;  right_local=right  ;  else  ;  right_local=''    ;  endif
 
    string=''
-   do i = 1,size(str)
+   do i = 1,size(str)-1
       if(trm_local)then
          string=string//left_local//trim(str(i))//right_local//sep_local
       else
          string=string//left_local//str(i)//right_local//sep_local
       endif
    enddo
+   if(trm_local)then
+      string=string//left_local//trim(str(i))//right_local
+   else
+      string=string//left_local//str(i)//right_local
+   endif
+   if(present(start))string=start//string
+   if(present(end))string=string//end
 end function join
+
+!>##AUTHOR John S. Urban
+!!##LICENSE Public Domain
+!!## NAME
+!!    glob(3f) - [fpm_strings:COMPARE] compare given string for match to
+!!    pattern which may contain wildcard characters
+!!    (LICENSE:PD)
+!!
+!!## SYNOPSIS
+!!
+!!    logical function glob(string, pattern )
+!!
+!!     character(len=*),intent(in) :: string
+!!     character(len=*),intent(in) :: pattern
+!!
+!!## DESCRIPTION
+!!   glob(3f) compares given STRING for match to PATTERN which may
+!!   contain wildcard characters.
+!!
+!!   In this version to get a match the entire string must be described
+!!   by PATTERN. Trailing whitespace is significant, so trim the input
+!!   string to have trailing whitespace ignored.
+!!
+!!## OPTIONS
+!!    string   the input string to test to see if it contains the pattern.
+!!    pattern  the following simple globbing options are available
+!!
+!!             o "?" matching any one character
+!!             o "*" matching zero or more characters.
+!!               Do NOT use adjacent asterisks.
+!!             o Both strings may have trailing spaces which
+!!               are ignored.
+!!             o There is no escape character, so matching strings with
+!!               literal question mark and asterisk is problematic.
+!!
+!!## EXAMPLES
+!!
+!!   Example program
+!!
+!!    program demo_glob
+!!    implicit none
+!!    ! This main() routine passes a bunch of test strings
+!!    ! into the above code.  In performance comparison mode,
+!!    ! it does that over and over. Otherwise, it does it just
+!!    ! once. Either way, it outputs a passed/failed result.
+!!    !
+!!    integer :: nReps
+!!    logical :: allpassed
+!!    integer :: i
+!!     allpassed = .true.
+!!
+!!     nReps = 10000
+!!     ! Can choose as many repetitions as you're expecting
+!!     ! in the real world.
+!!     nReps = 1
+!!
+!!     do i=1,nReps
+!!      ! Cases with repeating character sequences.
+!!      allpassed=allpassed .and. test("a*abab", "a*b", .true.)
+!!      !!cycle
+!!      allpassed=allpassed .and. test("ab", "*?", .true.)
+!!      allpassed=allpassed .and. test("abc", "*?", .true.)
+!!      allpassed=allpassed .and. test("abcccd", "*ccd", .true.)
+!!      allpassed=allpassed .and. test("bLah", "bLaH", .false.)
+!!      allpassed=allpassed .and. test("mississippi", "*sip*", .true.)
+!!      allpassed=allpassed .and. &
+!!       & test("xxxx*zzzzzzzzy*f", "xxx*zzy*f", .true.)
+!!      allpassed=allpassed .and. &
+!!       & test("xxxx*zzzzzzzzy*f", "xxxx*zzy*fffff", .false.)
+!!      allpassed=allpassed .and. &
+!!       & test("mississipissippi", "*issip*ss*", .true.)
+!!      allpassed=allpassed .and. &
+!!       & test("xxxxzzzzzzzzyf", "xxxx*zzy*fffff", .false.)
+!!      allpassed=allpassed .and. &
+!!       & test("xxxxzzzzzzzzyf", "xxxx*zzy*f", .true.)
+!!      allpassed=allpassed .and. test("xyxyxyzyxyz", "xy*z*xyz", .true.)
+!!      allpassed=allpassed .and. test("xyxyxyxyz", "xy*xyz", .true.)
+!!      allpassed=allpassed .and. test("mississippi", "mi*sip*", .true.)
+!!      allpassed=allpassed .and. test("ababac", "*abac*", .true.)
+!!      allpassed=allpassed .and. test("aaazz", "a*zz*", .true.)
+!!      allpassed=allpassed .and. test("a12b12", "*12*23", .false.)
+!!      allpassed=allpassed .and. test("a12b12", "a12b", .false.)
+!!      allpassed=allpassed .and. test("a12b12", "*12*12*", .true.)
+!!
+!!      ! Additional cases where the '*' char appears in the tame string.
+!!      allpassed=allpassed .and. test("*", "*", .true.)
+!!      allpassed=allpassed .and. test("a*r", "a*", .true.)
+!!      allpassed=allpassed .and. test("a*ar", "a*aar", .false.)
+!!
+!!      ! More double wildcard scenarios.
+!!      allpassed=allpassed .and. test("XYXYXYZYXYz", "XY*Z*XYz", .true.)
+!!      allpassed=allpassed .and. test("missisSIPpi", "*SIP*", .true.)
+!!      allpassed=allpassed .and. test("mississipPI", "*issip*PI", .true.)
+!!      allpassed=allpassed .and. test("xyxyxyxyz", "xy*xyz", .true.)
+!!      allpassed=allpassed .and. test("miSsissippi", "mi*sip*", .true.)
+!!      allpassed=allpassed .and. test("miSsissippi", "mi*Sip*", .false.)
+!!      allpassed=allpassed .and. test("abAbac", "*Abac*", .true.)
+!!      allpassed=allpassed .and. test("aAazz", "a*zz*", .true.)
+!!      allpassed=allpassed .and. test("A12b12", "*12*23", .false.)
+!!      allpassed=allpassed .and. test("a12B12", "*12*12*", .true.)
+!!      allpassed=allpassed .and. test("oWn", "*oWn*", .true.)
+!!
+!!      ! Completely tame (no wildcards) cases.
+!!      allpassed=allpassed .and. test("bLah", "bLah", .true.)
+!!
+!!      ! Simple mixed wildcard tests suggested by IBMer Marlin Deckert.
+!!      allpassed=allpassed .and. test("a", "*?", .true.)
+!!
+!!      ! More mixed wildcard tests including coverage for false positives.
+!!      allpassed=allpassed .and. test("a", "??", .false.)
+!!      allpassed=allpassed .and. test("ab", "?*?", .true.)
+!!      allpassed=allpassed .and. test("ab", "*?*?*", .true.)
+!!      allpassed=allpassed .and. test("abc", "?**?*?", .true.)
+!!      allpassed=allpassed .and. test("abc", "?**?*&?", .false.)
+!!      allpassed=allpassed .and. test("abcd", "?b*??", .true.)
+!!      allpassed=allpassed .and. test("abcd", "?a*??", .false.)
+!!      allpassed=allpassed .and. test("abcd", "?**?c?", .true.)
+!!      allpassed=allpassed .and. test("abcd", "?**?d?", .false.)
+!!      allpassed=allpassed .and. test("abcde", "?*b*?*d*?", .true.)
+!!
+!!      ! Single-character-match cases.
+!!      allpassed=allpassed .and. test("bLah", "bL?h", .true.)
+!!      allpassed=allpassed .and. test("bLaaa", "bLa?", .false.)
+!!      allpassed=allpassed .and. test("bLah", "bLa?", .true.)
+!!      allpassed=allpassed .and. test("bLaH", "?Lah", .false.)
+!!      allpassed=allpassed .and. test("bLaH", "?LaH", .true.)
+!!
+!!      ! Many-wildcard scenarios.
+!!      allpassed=allpassed .and. test(&
+!!      &"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&
+!!      &aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab",&
+!!      &"a*a*a*a*a*a*aa*aaa*a*a*b",&
+!!      &.true.)
+!!      allpassed=allpassed .and. test(&
+!!      &"abababababababababababababababababababaacacacacacacac&
+!!      &adaeafagahaiajakalaaaaaaaaaaaaaaaaaffafagaagggagaaaaaaaab",&
+!!      &"*a*b*ba*ca*a*aa*aaa*fa*ga*b*",&
+!!      &.true.)
+!!      allpassed=allpassed .and. test(&
+!!      &"abababababababababababababababababababaacacacacacaca&
+!!      &cadaeafagahaiajakalaaaaaaaaaaaaaaaaaffafagaagggagaaaaaaaab",&
+!!      &"*a*b*ba*ca*a*x*aaa*fa*ga*b*",&
+!!      &.false.)
+!!      allpassed=allpassed .and. test(&
+!!      &"abababababababababababababababababababaacacacacacacacad&
+!!      &aeafagahaiajakalaaaaaaaaaaaaaaaaaffafagaagggagaaaaaaaab",&
+!!      &"*a*b*ba*ca*aaaa*fa*ga*gggg*b*",&
+!!      &.false.)
+!!      allpassed=allpassed .and. test(&
+!!      &"abababababababababababababababababababaacacacacacacacad&
+!!      &aeafagahaiajakalaaaaaaaaaaaaaaaaaffafagaagggagaaaaaaaab",&
+!!      &"*a*b*ba*ca*aaaa*fa*ga*ggg*b*",&
+!!      &.true.)
+!!      allpassed=allpassed .and. test("aaabbaabbaab", "*aabbaa*a*", .true.)
+!!      allpassed=allpassed .and. &
+!!      test("a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*",&
+!!      &"a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*", .true.)
+!!      allpassed=allpassed .and. test("aaaaaaaaaaaaaaaaa",&
+!!      &"*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*", .true.)
+!!      allpassed=allpassed .and. test("aaaaaaaaaaaaaaaa",&
+!!      &"*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*", .false.)
+!!      allpassed=allpassed .and. test(&
+!!      &"abc*abcd*abcde*abcdef*abcdefg*abcdefgh*abcdefghi*abcdefghij&
+!!      &*abcdefghijk*abcdefghijkl*abcdefghijklm*abcdefghijklmn",&
+!!      & "abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc&
+!!      &*abc*abc*abc*",&
+!!      &.false.)
+!!      allpassed=allpassed .and. test(&
+!!      &"abc*abcd*abcde*abcdef*abcdefg*abcdefgh*abcdefghi*abcdefghij&
+!!      &*abcdefghijk*abcdefghijkl*abcdefghijklm*abcdefghijklmn",&
+!!      &"abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*",&
+!!      &.true.)
+!!      allpassed=allpassed .and. test("abc*abcd*abcd*abc*abcd",&
+!!      &"abc*abc*abc*abc*abc", .false.)
+!!      allpassed=allpassed .and. test( "abc*abcd*abcd*abc*abcd*abcd&
+!!      &*abc*abcd*abc*abc*abcd", &
+!!      &"abc*abc*abc*abc*abc*abc*abc*abc*abc*abc*abcd",&
+!!      &.true.)
+!!      allpassed=allpassed .and. test("abc",&
+!!      &"********a********b********c********", .true.)
+!!      allpassed=allpassed .and.&
+!!      &test("********a********b********c********", "abc", .false.)
+!!      allpassed=allpassed .and. &
+!!      &test("abc", "********a********b********b********", .false.)
+!!      allpassed=allpassed .and. test("*abc*", "***a*b*c***", .true.)
+!!
+!!      ! A case-insensitive algorithm test.
+!!      ! allpassed=allpassed .and. test("mississippi", "*issip*PI", .true.)
+!!     enddo
+!!
+!!     if (allpassed)then
+!!        write(*,'(a)')"Passed",nReps
+!!     else
+!!        write(*,'(a)')"Failed"
+!!     endif
+!!    contains
+!!    ! This is a test program for wildcard matching routines.
+!!    ! It can be used either to test a single routine for correctness,
+!!    ! or to compare the timings of two (or more) different wildcard
+!!    ! matching routines.
+!!    !
+!!    function test(tame, wild, bExpectedResult) result(bpassed)
+!!    use fpm_strings, only : glob
+!!       character(len=*) :: tame
+!!       character(len=*) :: wild
+!!       logical          :: bExpectedResult
+!!       logical          :: bResult
+!!       logical          :: bPassed
+!!       bResult = .true.    ! We'll do "&=" cumulative checking.
+!!       bPassed = .false.   ! Assume the worst.
+!!       write(*,*)repeat('=',79)
+!!       bResult = glob(tame, wild) ! Call a wildcard matching routine.
+!!
+!!       ! To assist correctness checking, output the two strings in any
+!!       ! failing scenarios.
+!!       if (bExpectedResult .eqv. bResult) then
+!!          bPassed = .true.
+!!          if(nReps == 1) write(*,*)"Passed match on ",tame," vs. ", wild
+!!       else
+!!          if(nReps == 1) write(*,*)"Failed match on ",tame," vs. ", wild
+!!       endif
+!!
+!!    end function test
+!!    end program demo_glob
+!!
+!!   Expected output
+!!
+!!
+!!## REFERENCE
+!!   The article "Matching Wildcards: An Empirical Way to Tame an Algorithm"
+!!   in Dr Dobb's Journal, By Kirk J. Krauss, October 07, 2014
+!!
+function glob(tame,wild)
+
+! @(#)fpm_strings::glob(3f): function compares text strings, one of which can have wildcards ('*' or '?').
+
+logical                    :: glob       !! result of test
+character(len=*)           :: tame       !! A string without wildcards to compare to the globbing expression
+character(len=*)           :: wild       !! A (potentially) corresponding string with wildcards
+character(len=len(tame)+1) :: tametext
+character(len=len(wild)+1) :: wildtext
+character(len=1),parameter :: NULL=char(0)
+integer                    :: wlen
+integer                    :: ti, wi
+integer                    :: i
+character(len=:),allocatable :: tbookmark, wbookmark
+! These two values are set when we observe a wildcard character. They
+! represent the locations, in the two strings, from which we start once we've observed it.
+   tametext=tame//NULL
+   wildtext=wild//NULL
+   tbookmark = NULL
+   wbookmark = NULL
+   wlen=len(wild)
+   wi=1
+   ti=1
+   do                                            ! Walk the text strings one character at a time.
+      if(wildtext(wi:wi) == '*')then             ! How do you match a unique text string?
+         do i=wi,wlen                            ! Easy: unique up on it!
+            if(wildtext(wi:wi).eq.'*')then
+               wi=wi+1
+            else
+               exit
+            endif
+         enddo
+         if(wildtext(wi:wi).eq.NULL) then        ! "x" matches "*"
+            glob=.true.
+            return
+         endif
+         if(wildtext(wi:wi) .ne. '?') then
+            ! Fast-forward to next possible match.
+            do while (tametext(ti:ti) .ne. wildtext(wi:wi))
+               ti=ti+1
+               if (tametext(ti:ti).eq.NULL)then
+                  glob=.false.
+                  return                         ! "x" doesn't match "*y*"
+               endif
+            enddo
+         endif
+         wbookmark = wildtext(wi:)
+         tbookmark = tametext(ti:)
+      elseif(tametext(ti:ti) .ne. wildtext(wi:wi) .and. wildtext(wi:wi) .ne. '?') then
+         ! Got a non-match. If we've set our bookmarks, back up to one or both of them and retry.
+         if(wbookmark.ne.NULL) then
+            if(wildtext(wi:).ne. wbookmark) then
+               wildtext = wbookmark;
+               wlen=len_trim(wbookmark)
+               wi=1
+               ! Don't go this far back again.
+               if (tametext(ti:ti) .ne. wildtext(wi:wi)) then
+                  tbookmark=tbookmark(2:)
+                  tametext = tbookmark
+                  ti=1
+                  cycle                          ! "xy" matches "*y"
+               else
+                  wi=wi+1
+               endif
+            endif
+            if (tametext(ti:ti).ne.NULL) then
+               ti=ti+1
+               cycle                             ! "mississippi" matches "*sip*"
+            endif
+         endif
+         glob=.false.
+         return                                  ! "xy" doesn't match "x"
+      endif
+      ti=ti+1
+      wi=wi+1
+      if (tametext(ti:ti).eq.NULL) then          ! How do you match a tame text string?
+         if(wildtext(wi:wi).ne.NULL)then
+            do while (wildtext(wi:wi) == '*')    ! The tame way: unique up on it!
+               wi=wi+1                           ! "x" matches "x*"
+               if(wildtext(wi:wi).eq.NULL)exit
+            enddo
+         endif
+         if (wildtext(wi:wi).eq.NULL)then
+            glob=.true.
+            return                               ! "x" matches "x"
+         endif
+         glob=.false.
+         return                                  ! "x" doesn't match "xy"
+      endif
+   enddo
+end function glob
+
+!> Returns the length of the string representation of 'i'
 pure integer function str_int_len(i) result(sz)
-! Returns the length of the string representation of 'i'
 integer, intent(in) :: i
 integer, parameter :: MAX_STR = 100
 character(MAX_STR) :: s
@@ -496,15 +867,15 @@ write(s, '(i0)') i
 sz = len_trim(s)
 end function
 
+!> Converts integer "i" to string
 pure function str_int(i) result(s)
-! Converts integer "i" to string
 integer, intent(in) :: i
 character(len=str_int_len(i)) :: s
 write(s, '(i0)') i
 end function
 
+!> Returns the length of the string representation of 'i'
 pure integer function str_int64_len(i) result(sz)
-! Returns the length of the string representation of 'i'
 integer(int64), intent(in) :: i
 integer, parameter :: MAX_STR = 100
 character(MAX_STR) :: s
@@ -514,15 +885,15 @@ write(s, '(i0)') i
 sz = len_trim(s)
 end function
 
+!> Converts integer "i" to string
 pure function str_int64(i) result(s)
-! Converts integer "i" to string
 integer(int64), intent(in) :: i
 character(len=str_int64_len(i)) :: s
 write(s, '(i0)') i
 end function
 
+!> Returns the length of the string representation of 'l'
 pure integer function str_logical_len(l) result(sz)
-! Returns the length of the string representation of 'l'
 logical, intent(in) :: l
 if (l) then
     sz = 6
@@ -531,8 +902,8 @@ else
 end if
 end function
 
+!> Converts logical "l" to string
 pure function str_logical(l) result(s)
-! Converts logical "l" to string
 logical, intent(in) :: l
 character(len=str_logical_len(l)) :: s
 if (l) then

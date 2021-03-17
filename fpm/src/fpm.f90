@@ -1,21 +1,21 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.)
+use fpm_strings, only: string_t, operator(.in.), glob, join
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: run
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
-use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, &
+use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
-                    FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST, &
-                    FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE, show_model
+                    FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
 use fpm_compiler, only: add_compile_flag_defaults
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
-                        resolve_target_linking
+                        resolve_target_linking, build_target_t, build_target_ptr, &
+                        FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only : error_t, fatal_error
 use fpm_manifest_test, only : test_config_t
@@ -50,11 +50,7 @@ subroutine build_model(model, settings, package, error)
 
     model%package_name = package%name
 
-    if (allocated(package%build%link)) then
-        model%link_libraries = package%build%link
-    else
-        allocate(model%link_libraries(0))
-    end if
+    allocate(model%link_libraries(0))
 
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
     call model%deps%add(package, error)
@@ -69,8 +65,9 @@ subroutine build_model(model, settings, package, error)
     model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
 
     call add_compile_flag_defaults(settings%build_name, basename(model%fortran_compiler), model)
-
-    model%link_flags = ''
+    if(settings%verbose)then
+       write(*,*)'<INFO>COMPILER OPTIONS:  ', model%fortran_compile_flags 
+    endif
 
     allocate(model%packages(model%deps%ndep))
 
@@ -157,20 +154,6 @@ subroutine build_model(model, settings, package, error)
     end do
     if (allocated(error)) return
 
-    call targets_from_sources(model)
-
-    do i = 1, size(model%link_libraries)
-        model%link_flags = model%link_flags // " -l" // model%link_libraries(i)%s
-    end do
-
-    if (model%targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
-        model%library_file = model%targets(1)%ptr%output_file
-    end if
-
-    call resolve_module_dependencies(model%targets,error)
-
-    call resolve_target_linking(model%targets)
-
 end subroutine build_model
 
 
@@ -178,6 +161,7 @@ subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
 type(package_config_t) :: package
 type(fpm_model_t) :: model
+type(build_target_ptr), allocatable :: targets(:)
 type(error_t), allocatable :: error
 
 integer :: i
@@ -194,14 +178,20 @@ if (allocated(error)) then
     error stop 1
 end if
 
+call targets_from_sources(targets,model,error)
+if (allocated(error)) then
+    print '(a)', error%message
+    error stop 1
+end if
+
 if(settings%list)then
-    do i=1,size(model%targets)
-        write(stderr,*) model%targets(i)%ptr%output_file
+    do i=1,size(targets)
+        write(stderr,*) targets(i)%ptr%output_file
     enddo
 else if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(model)
+    call build_package(targets,model)
 endif
 
 end subroutine
@@ -210,17 +200,19 @@ subroutine cmd_run(settings,test)
     class(fpm_run_settings), intent(in) :: settings
     logical, intent(in) :: test
 
-    integer, parameter :: LINE_WIDTH = 80
-    integer :: i, j, col_width, nCol
+    integer :: i, j, col_width
     logical :: found(size(settings%name))
     type(error_t), allocatable :: error
     type(package_config_t) :: package
     type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
     type(string_t) :: exe_cmd
     type(string_t), allocatable :: executables(:)
     type(build_target_t), pointer :: exe_target
     type(srcfile_t), pointer :: exe_source
     integer :: run_scope
+    character(len=:),allocatable :: line
+    logical :: toomany
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
@@ -229,6 +221,12 @@ subroutine cmd_run(settings,test)
     end if
 
     call build_model(model, settings%fpm_build_settings, package, error)
+    if (allocated(error)) then
+        print '(a)', error%message
+        error stop 1
+    end if
+
+    call targets_from_sources(targets,model,error)
     if (allocated(error)) then
         print '(a)', error%message
         error stop 1
@@ -244,9 +242,9 @@ subroutine cmd_run(settings,test)
     col_width = -1
     found(:) = .false.
     allocate(executables(0))
-    do i=1,size(model%targets)
+    do i=1,size(targets)
 
-        exe_target => model%targets(i)%ptr
+        exe_target => targets(i)%ptr
 
         if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
              allocated(exe_target%dependencies)) then
@@ -266,7 +264,7 @@ subroutine cmd_run(settings,test)
 
                     do j=1,size(settings%name)
 
-                        if (trim(settings%name(j))==exe_source%exe_name) then
+                        if (glob(trim(exe_source%exe_name),trim(settings%name(j)))) then
 
                             found(j) = .true.
                             exe_cmd%s = exe_target%output_file
@@ -295,21 +293,67 @@ subroutine cmd_run(settings,test)
     end if
 
     ! Check all names are valid
-    if (any(.not.found)) then
+    ! or no name and found more than one file
+    toomany= size(settings%name).eq.0 .and. size(executables).gt.1 
+    if ( any(.not.found) &
+    & .or. &
+    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner .ne. '') ) &
+    & .and. &
+    & .not.settings%list) then
+        line=join(settings%name)
+        if(line.ne.'.')then ! do not report these special strings
+           if(any(.not.found))then
+              write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
+              do j=1,size(settings%name)
+                  if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
+              end do
+              write(stderr,'(A)') 'not found.'
+              write(stderr,*)
+           else if(settings%verbose)then
+              write(stderr,'(A)',advance="yes")'<INFO>when more than one executable is available'
+              write(stderr,'(A)',advance="yes")'      program names must be specified.'
+           endif
+        endif
 
-        write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
-        do j=1,size(settings%name)
-            if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
+        call compact_list_all()
+
+        if(line.eq.'.' .or. line.eq.' ')then ! do not report these special strings
+           stop
+        else
+           stop 1
+        endif
+
+    end if
+
+    call build_package(targets,model)
+
+    if (settings%list) then
+         call compact_list()
+    else
+
+        do i=1,size(executables)
+            if (exists(executables(i)%s)) then
+                if(settings%runner .ne. ' ')then
+                    call run(settings%runner//' '//executables(i)%s//" "//settings%args,echo=settings%verbose)
+                else
+                    call run(executables(i)%s//" "//settings%args,echo=settings%verbose)
+                endif
+            else
+                write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
+                stop 1
+            end if
         end do
-        write(stderr,'(A)') 'not found.'
-        write(stderr,*)
-
+    endif
+    contains 
+    subroutine compact_list_all()
+    integer, parameter :: LINE_WIDTH = 80
+    integer :: i, j, nCol
         j = 1
         nCol = LINE_WIDTH/col_width
         write(stderr,*) 'Available names:'
-        do i=1,size(model%targets)
+        do i=1,size(targets)
 
-            exe_target => model%targets(i)%ptr
+            exe_target => targets(i)%ptr
 
             if (exe_target%target_type == FPM_TARGET_EXECUTABLE .and. &
                 allocated(exe_target%dependencies)) then
@@ -323,36 +367,24 @@ subroutine cmd_run(settings,test)
                     j = j + 1
 
                 end if
-
             end if
-
         end do
-
         write(stderr,*)
-        stop 1
+    end subroutine compact_list_all
 
-    end if
-
-    call build_package(model)
-
-    do i=1,size(executables)
-        if (settings%list) then
-            write(stderr,*) executables(i)%s
-        else
-
-            if (exists(executables(i)%s)) then
-                if(settings%runner .ne. ' ')then
-                   call run(settings%runner//' '//executables(i)%s//" "//settings%args)
-                else
-                   call run(executables(i)%s//" "//settings%args)
-                endif
-            else
-                write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
-                stop 1
-            end if
-
-        end if
-    end do
+    subroutine compact_list()
+    integer, parameter :: LINE_WIDTH = 80
+    integer :: i, j, nCol
+        j = 1
+        nCol = LINE_WIDTH/col_width
+        write(stderr,*) 'Matched names:'
+        do i=1,size(executables)
+            write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
+             & [character(len=col_width) :: basename(executables(i)%s)]
+            j = j + 1
+        enddo
+        write(stderr,*)
+    end subroutine compact_list
 
 end subroutine cmd_run
 

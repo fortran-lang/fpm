@@ -2,13 +2,13 @@
 module test_module_dependencies
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
-                            resolve_target_linking
-    use fpm_model, only: fpm_model_t, srcfile_t, build_target_t, build_target_ptr, &
+                            resolve_target_linking, build_target_t, build_target_ptr, &
+                            FPM_TARGET_EXECUTABLE, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE
+    use fpm_model, only: fpm_model_t, srcfile_t,  &
                 FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                 FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
-                FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
-                FPM_TARGET_EXECUTABLE, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE
+                FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
     use fpm_strings, only: string_t, operator(.in.)
     implicit none
     private
@@ -53,6 +53,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
 
         model%output_directory = ''
         allocate(model%packages(1))
@@ -67,34 +68,32 @@ contains
                                     provides=[string_t('my_mod_2')], &
                                     uses=[string_t('my_mod_1')])
 
-        call targets_from_sources(model)
-        call resolve_module_dependencies(model%targets,error)
+        call targets_from_sources(targets,model,error)
+        if (allocated(error)) return
 
         if (allocated(error)) then
             return
         end if
-        if (size(model%targets) /= 3) then
-            call test_failed(error,'Incorrect number of model%targets - expecting three')
+        if (size(targets) /= 3) then
+            call test_failed(error,'Incorrect number of targets - expecting three')
             return
         end if
 
-        call resolve_target_linking(model%targets)
-
-        call check_target(model%targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
-                          deps = [model%targets(2),model%targets(3)], &
-                          links = model%targets(2:3), error=error)
+        call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
+                          deps = [targets(2),targets(3)], &
+                          links = targets(2:3), error=error)
         
         if (allocated(error)) return
 
 
-        call check_target(model%targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
+        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                           source=model%packages(1)%sources(1),error=error)
         
         if (allocated(error)) return
         
 
-        call check_target(model%targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          deps=[model%targets(2)],source=model%packages(1)%sources(2),error=error)
+        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
+                          deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
         
         if (allocated(error)) return
         
@@ -102,7 +101,7 @@ contains
 
 
     !> Check a program using a library module
-    !>  Each program generates two model%targets: object file and executable
+    !>  Each program generates two targets: object file and executable
     !> 
     subroutine test_program_module_use(error)
 
@@ -123,6 +122,7 @@ contains
 
         integer :: i
         type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
         character(:), allocatable :: scope_str
 
         model%output_directory = ''
@@ -139,38 +139,32 @@ contains
                                     scope=exe_scope, &
                                     uses=[string_t('my_mod_1')])
 
-        call targets_from_sources(model)
-        call resolve_module_dependencies(model%targets,error)
+        call targets_from_sources(targets,model,error)
+        if (allocated(error)) return
 
-        if (allocated(error)) then
+        if (size(targets) /= 4) then
+            call test_failed(error,scope_str//'Incorrect number of targets - expecting three')
             return
         end if
 
-        if (size(model%targets) /= 4) then
-            call test_failed(error,scope_str//'Incorrect number of model%targets - expecting three')
-            return
-        end if
-
-        call resolve_target_linking(model%targets)
-
-        call check_target(model%targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=1, &
-                          deps=[model%targets(2)],links=[model%targets(2)],error=error)
+        call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=1, &
+                          deps=[targets(2)],links=[targets(2)],error=error)
         
         if (allocated(error)) return
 
-        call check_target(model%targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
+        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                             source=model%packages(1)%sources(1),error=error)
 
         if (allocated(error)) return
 
-        call check_target(model%targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                            deps=[model%targets(2)],source=model%packages(1)%sources(2),error=error)
+        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
+                            deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
 
         if (allocated(error)) return
 
-        call check_target(model%targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=2, &
-                            deps=[model%targets(1),model%targets(3)], &
-                            links=[model%targets(3)], error=error)
+        call check_target(targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=2, &
+                            deps=[targets(1),targets(3)], &
+                            links=[targets(3)], error=error)
 
         if (allocated(error)) return
 
@@ -188,6 +182,7 @@ contains
 
         integer :: i
         type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
 
         model%output_directory = ''
         allocate(model%packages(1))
@@ -198,28 +193,22 @@ contains
                                     provides=[string_t('app_mod')], &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(model)
-        call resolve_module_dependencies(model%targets,error)
+        call targets_from_sources(targets,model,error)
+        if (allocated(error)) return
 
-        if (allocated(error)) then
+        if (size(targets) /= 2) then
+            write(*,*) size(targets)
+            call test_failed(error,'Incorrect number of targets - expecting two')
             return
         end if
 
-        if (size(model%targets) /= 2) then
-            write(*,*) size(model%targets)
-            call test_failed(error,'Incorrect number of model%targets - expecting two')
-            return
-        end if
-
-        call resolve_target_linking(model%targets)
-
-        call check_target(model%targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
+        call check_target(targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                           source=model%packages(1)%sources(1),error=error)
         
         if (allocated(error)) return
 
-        call check_target(model%targets(2)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
-                          deps=[model%targets(1)],links=[model%targets(1)],error=error)
+        call check_target(targets(2)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
+                          deps=[targets(1)],links=[targets(1)],error=error)
         
         if (allocated(error)) return
         
@@ -245,6 +234,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
         character(:), allocatable :: scope_str
 
         model%output_directory = ''
@@ -265,37 +255,31 @@ contains
                                     scope=exe_scope, &
                                     uses=[string_t('app_mod2')])
 
-        call targets_from_sources(model)
-        call resolve_module_dependencies(model%targets,error)
+        call targets_from_sources(targets,model,error)
+        if (allocated(error)) return
 
-        if (allocated(error)) then
+        if (size(targets) /= 4) then
+            call test_failed(error,scope_str//'Incorrect number of targets - expecting three')
             return
         end if
 
-        if (size(model%targets) /= 4) then
-            call test_failed(error,scope_str//'Incorrect number of model%targets - expecting three')
-            return
-        end if
-
-        call resolve_target_linking(model%targets)
-
-        call check_target(model%targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
+        call check_target(targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                           source=model%packages(1)%sources(1),error=error)
         
         if (allocated(error)) return
 
-        call check_target(model%targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          source=model%packages(1)%sources(2),deps=[model%targets(1)],error=error)
+        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
+                          source=model%packages(1)%sources(2),deps=[targets(1)],error=error)
         
         if (allocated(error)) return
 
-        call check_target(model%targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          source=model%packages(1)%sources(3),deps=[model%targets(2)],error=error)
+        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
+                          source=model%packages(1)%sources(3),deps=[targets(2)],error=error)
         
         if (allocated(error)) return
 
-        call check_target(model%targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
-                           deps=[model%targets(3)],links=model%targets(1:3), error=error)
+        call check_target(targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
+                           deps=[targets(3)],links=targets(1:3), error=error)
 
         if (allocated(error)) return
 
@@ -310,6 +294,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
 
         model%output_directory = ''
         allocate(model%packages(1))
@@ -324,8 +309,7 @@ contains
                                     provides=[string_t('my_mod_2')], &
                                     uses=[string_t('my_mod_3')])
 
-        call targets_from_sources(model)
-        call resolve_module_dependencies(model%targets,error)
+        call targets_from_sources(targets,model,error)
         
     end subroutine test_missing_library_use
 
@@ -337,6 +321,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
 
         model%output_directory = ''
         allocate(model%packages(1))
@@ -350,8 +335,7 @@ contains
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('my_mod_2')])
 
-        call targets_from_sources(model)
-        call resolve_module_dependencies(model%targets,error)
+        call targets_from_sources(targets,model,error)
         
     end subroutine test_missing_program_use
 
@@ -363,6 +347,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
 
         model%output_directory = ''
         allocate(model%packages(1))
@@ -377,8 +362,7 @@ contains
                                     provides=[string_t('my_mod')], &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(model)
-        call resolve_module_dependencies(model%targets,error)
+        call targets_from_sources(targets,model,error)
         
     end subroutine test_invalid_library_use
 
@@ -390,6 +374,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
 
         model%output_directory = ''
         allocate(model%packages(1))
@@ -403,8 +388,7 @@ contains
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(model)
-        call resolve_module_dependencies(model%targets,error)
+        call targets_from_sources(targets,model,error)
         
     end subroutine test_invalid_own_module_use
 

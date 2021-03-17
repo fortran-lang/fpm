@@ -15,7 +15,7 @@
 !> wanted command line and the expected default values.
 !> Some of the following points also apply if you add a new option or argument
 !> to an existing *fpm* subcommand.
-!> Add this point you should create a help page for the new command in a simple
+!> At this point you should create a help page for the new command in a simple
 !> catman-like format as well in the ``set_help`` procedure.
 !> Make sure to register new subcommands in the ``fpm-manual`` command by adding
 !> them to the manual character array and in the help/manual case as well.
@@ -152,6 +152,7 @@ contains
             call set_args('&
             & --target " " &
             & --list F &
+            & --all F &
             & --release F&
             & --example F&
             & --runner " " &
@@ -167,13 +168,26 @@ contains
                 names=[character(len=len(names)) :: ]
             endif
 
+
             if(specified('target') )then
                call split(sget('target'),tnames,delimiters=' ,:')
                names=[character(len=max(len(names),len(tnames))) :: names,tnames]
             endif
 
+            ! convert --all to '*'
+            if(lget('all'))then
+               names=[character(len=max(len(names),1)) :: names,'*' ]
+            endif
+
+            ! convert special string '..' to equivalent (shorter) '*'
+            ! to allow for a string that does not require shift-key and quoting
+            do i=1,size(names)
+               if(names(i).eq.'..')names(i)='*'
+            enddo
+
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
+            if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & build_name=val_build,&
@@ -375,8 +389,15 @@ contains
                names=[character(len=max(len(names),len(tnames))) :: names,tnames]
             endif
 
+            ! convert special string '..' to equivalent (shorter) '*'
+            ! to allow for a string that does not require shift-key and quoting
+            do i=1,size(names)
+               if(names(i).eq.'..')names(i)='*'
+            enddo
+
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
+            if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & build_name=val_build, &
@@ -505,8 +526,8 @@ contains
    '          [--full|--bare][--backfill]                                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s)] [--release] [--runner "CMD"] [--list] [--example]    ', &
-   '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
+   ' run  [[--target] NAME(s) [--example] [--release] [--all] [--runner "CMD"]      ', &
+   '      [--compiler COMPILER_NAME] [--list] [-- ARGS]                             ', &
    ' test [[--target] NAME(s)] [--release] [--runner "CMD"] [--list]                ', &
    '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
    ' install [--release] [--no-rebuild] [--prefix PATH] [options]                   ', &
@@ -533,7 +554,8 @@ contains
    'OPTION                                                                          ', &
    ' --runner ''CMD''  quoted command used to launch the fpm(1) executables.          ', &
    '               Available for both the "run" and "test" subcommands.             ', &
-   '                                                                                ', &
+   '               If the keyword is specified without a value the default command  ', &
+   '               is "echo".                                                       ', &
    ' -- SUFFIX_OPTIONS  additional options to suffix the command CMD and executable ', &
    '                    file names with.                                            ', &
    'EXAMPLES                                                                        ', &
@@ -588,7 +610,7 @@ contains
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     '   fpm(1) is a package manager that helps you create Fortran projects  ', &
-    '   from source.                                                        ', &
+    '   from source -- it automatically determines dependencies!            ', &
     '                                                                       ', &
     '   Most significantly fpm(1) lets you draw upon other fpm(1) packages  ', &
     '   in distributed git(1) repositories as if the packages were a basic  ', &
@@ -618,7 +640,7 @@ contains
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|             ', &
    '              [--full|--bare][--backfill]                               ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
-    '    run [[--target] NAME(s)] [--release] [--list] [--example]          ', &
+    '    run [[--target] NAME(s)] [--release] [--list] [--example] [--all]  ', &
     '        [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]          ', &
     '    test [[--target] NAME(s)] [--release] [--list]                     ', &
     '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]         ', &
@@ -690,50 +712,60 @@ contains
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm run [[--target] NAME(s)][--release][--compiler COMPILER_NAME]     ', &
-    '         [--runner "CMD"] [--example] [--list][-- ARGS]                ', &
+    ' fpm run [[--target] NAME(s)[--release][--compiler COMPILER_NAME]      ', &
+    '         [--runner "CMD"] [--example] [--list] [--all] [-- ARGS]       ', &
     '                                                                       ', &
     ' fpm run --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
-    ' Run applications you have built in your fpm(1) project.               ', &
-    ' By default applications specified in as "executable" in your package  ', &
-    ' manifest are used, alternatively also demonstration programs under    ', &
-    ' "example" can be used with this subcommand.                           ', &
+    ' Run the applications in your fpm(1) package. By default applications  ', &
+    ' in /app or specified as "executable" in your "fpm.toml" manifest are  ', &
+    ' used. Alternatively demonstration programs in example/ or specified in', &
+    ' the "example" section in "fpm.toml" can be executed. The applications ', &
+    ' are automatically rebuilt before being run if they are out of date.   ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
-    ' --target NAME(s)  optional list of specific names to execute.         ', &
-    '                   The default is to run all the applications in app/  ', &
-    '                   or the programs listed in the "fpm.toml" file.      ', &
-    ' --example  run example programs instead of applications               ', &
-    ' --release  selects the optimized build instead of the debug           ', &
-    '            build.                                                     ', &
+    ' --target NAME(s)  list of application names to execute. No name is    ', &
+    '                   required if only one target exists. If no name is   ', &
+    '                   supplied and more than one candidate exists or a    ', &
+    '                   name has no match a list is produced and fpm(1)     ', &
+    '                   exits.                                              ', &
+    '                                                                       ', &
+    '                   Basic "globbing" is supported where "?" represents  ', &
+    '                   any single character and "*" represents any string. ', &
+    '                   Note The glob string normally needs quoted to       ', &
+    '                   the special characters from shell expansion.        ', &
+    ' --all   Run all examples or applications. An alias for --target ''*''.  ', &
+    ' --example  Run example programs instead of applications.              ', &
+    ' --release  selects the optimized build instead of the debug build.    ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
-    ' --list     list candidates instead of building or running them        ', &
-    ' -- ARGS    optional arguments to pass to the program(s).              ', &
-    '            The same arguments are passed to all names                 ', &
-    '            specified.                                                 ', &
+    ' --list     list pathname of candidates instead of running them. Note  ', &
+    '            out-of-date candidates will still be rebuilt before being  ', &
+    '            listed.                                                    ', &
+    ' -- ARGS    optional arguments to pass to the program(s). The same     ', &
+    '            arguments are passed to all program names specified.       ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
-    ' fpm(1) "run" project applications                                     ', &
+    ' fpm(1) - run or display project applications:                         ', &
     '                                                                       ', &
-    '  # run default programs in /app or as specified in "fpm.toml"         ', &
-    '  fpm run                                                              ', &
+    '  fpm run        # run a target when only one exists or list targets   ', &
+    '  fpm run --list # list all targets, running nothing.                  ', &
+    '  fpm run --all  # run all targets, no matter how many there are.      ', &
     '                                                                       ', &
-    '  # run default programs in /app or as specified in "fpm.toml"         ', &
-    '  # using the compiler command "f90".                                  ', &
+    '  # run default program built or to be built with the compiler command ', &
+    '  # "f90". If more than one app exists a list displays and target names', &
+    '  # are required.                                                      ', &
     '  fpm run --compiler f90                                               ', &
     '                                                                       ', &
-    '  # run example and demonstration programs instead of the default      ', &
-    '  # application programs (specified in "fpm.toml")                     ', &
-    '  fpm run --example                                                    ', &
+    '  # run example programs instead of the application programs.          ', &
+    '  fpm run --example ''*''                                                ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
-    '  fpm run mytest -- -x 10 -y 20 --title "my title line"                ', &
+    '  fpm run myprog -- -x 10 -y 20 --title "my title line"                ', &
     '                                                                       ', &
     '  # run production version of two applications                         ', &
     '  fpm run --target prg1,prg2 --release                                 ', &
@@ -760,7 +792,7 @@ contains
     '    o src/     for modules and procedure source                        ', &
     '    o app/     main program(s) for applications                        ', &
     '    o test/    main program(s) and support files for project tests     ', &
-    '    o example/ main program(s) for examples and demonstrations         ', &
+    '    o example/ main program(s) for example programs                    ', &
     ' Changed or new files found are rebuilt. The results are placed in     ', &
     ' the build/ directory.                                                 ', &
     '                                                                       ', &
@@ -912,9 +944,9 @@ contains
     '   cd myproject       # Enter the new directory                        ', &
     '   # and run commands such as                                          ', &
     '   fpm build                                                           ', &
-    '   fpm run            # run example application program(s)             ', &
+    '   fpm run            # run lone example application program           ', &
     '   fpm test           # run example test program(s)                    ', &
-    '   fpm run --example  # run example program(s)                         ', &
+    '   fpm run --example  # run lone example program                       ', &
     '                                                                       ', &
     '   fpm new A --full # create example/ and an annotated fpm.toml as well', &
     '   fpm new A --bare # create no directories                            ', &
@@ -938,6 +970,11 @@ contains
     ' --target NAME(s)  optional list of specific test names to execute.    ', &
     '                   The default is to run all the tests in test/        ', &
     '                   or the tests listed in the "fpm.toml" file.         ', &
+    '                                                                       ', &
+    '                   Basic "globbing" is supported where "?" represents  ', &
+    '                   any single character and "*" represents any string. ', &
+    '                   Note The glob string normally needs quoted to       ', &
+    '                   protect the special characters from shell expansion.', &
     ' --release  selects the optimized build instead of the debug           ', &
     '            build.                                                     ', &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
