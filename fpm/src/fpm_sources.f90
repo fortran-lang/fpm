@@ -161,7 +161,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
                 
                 sources(j)%exe_name = executables(i)%name
                 if (allocated(executables(i)%link)) then
-                    exe_source%link_libraries = executables(i)%link
+                    sources(j)%link_libraries = executables(i)%link
                 end if
                 cycle exe_loop
 
