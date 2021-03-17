@@ -80,67 +80,98 @@ end function basename
 !!
 !! To be replaced by realpath/_fullname in stdlib_os
 !!
-function canon_path(path) result(canon)
-    character(*), intent(in) :: path
-    character(:), allocatable :: canon
+!! FIXME: Lot's of ugly hacks following here
+function canon_path(path)
+    character(len=*), intent(in) :: path
+    character(len=:), allocatable :: canon_path
+    character(len=:), allocatable :: nixpath
 
-    integer :: i, j
-    integer :: iback
-    character(len(path)) :: nixpath
-    character(len(path)) :: temp
+    integer :: ii, istart, iend, stat, nn, last
+    logical :: is_path, absolute
 
     nixpath = unix_path(path)
 
-    j = 1
-    do i=1,len(nixpath)
+    istart = 0
+    nn = 0
+    iend = 0
+    absolute = nixpath(1:1) == "/"
+    if (absolute) then
+        canon_path = "/"
+    else
+        canon_path = ""
+    end if
 
-        ! Skip back to last directory for '/../'
-        if (i > 4) then
-
-            if (nixpath(i-3:i) == '/../') then
-
-                iback = scan(nixpath(1:i-4),'/',back=.true.)
-                if (iback > 0) then
-                    j = iback + 1
-                    cycle
+    do while(iend < len(nixpath))
+        call next(nixpath, istart, iend, is_path)
+        if (is_path) then
+            select case(nixpath(istart:iend))
+            case(".", "") ! always drop empty paths
+            case("..")
+                if (nn > 0) then
+                    last = scan(canon_path(:len(canon_path)-1), "/", back=.true.)
+                    canon_path = canon_path(:last)
+                    nn = nn - 1
+                else
+                    if (.not. absolute) then
+                        canon_path = canon_path // nixpath(istart:iend) // "/"
+                    end if
                 end if
-
-            end if
-
+            case default
+                nn = nn + 1
+                canon_path = canon_path // nixpath(istart:iend) // "/"
+            end select
         end if
-
-        if (i > 1 .and. j > 1) then
-
-            ! Ignore current directory reference
-            if (nixpath(i-1:i) == './') then
-
-                j = j - 1
-                cycle
-
-            end if
-
-            ! Ignore repeated separators
-            if (nixpath(i-1:i) == '//') then
-
-                cycle
-
-            end if
-
-            ! Do NOT include trailing slash
-            if (i == len(nixpath) .and. nixpath(i:i) == '/') then
-                cycle
-            end if
-
-        end if
-
-
-        temp(j:j) = nixpath(i:i)
-        j = j + 1
-
     end do
 
-    canon = temp(1:j-1)
+    if (len(canon_path) == 0) canon_path = "."
+    if (len(canon_path) > 1 .and. canon_path(len(canon_path):) == "/") then
+        canon_path = canon_path(:len(canon_path)-1)
+    end if
 
+contains
+
+    subroutine next(string, istart, iend, is_path)
+        character(len=*), intent(in) :: string
+        integer, intent(inout) :: istart
+        integer, intent(inout) :: iend
+        logical, intent(inout) :: is_path
+
+        integer :: ii, nn
+        character :: tok, last
+
+        nn = len(string)
+
+        if (iend >= nn) then
+            istart = nn
+            iend = nn
+            return
+        end if
+
+        ii = min(iend + 1, nn)
+        tok = string(ii:ii)
+
+        is_path = tok /= '/'
+
+        if (.not.is_path) then
+            is_path = .false.
+            istart = ii
+            iend = ii
+            return
+        end if
+
+        istart = ii
+        do ii = min(iend + 1, nn), nn
+            tok = string(ii:ii)
+            select case(tok)
+            case('/')
+                exit
+            case default
+                iend = ii
+                cycle
+            end select
+        end do
+
+    end subroutine next
 end function canon_path
 
 
