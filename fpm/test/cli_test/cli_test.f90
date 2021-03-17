@@ -28,9 +28,9 @@ integer                              :: i, ios
 logical                              :: w_e,act_w_e          ; namelist/act_cli/act_w_e
 logical                              :: w_t,act_w_t          ; namelist/act_cli/act_w_t
 
-character(len=63)                    :: build_name,act_build_name  ; namelist/act_cli/act_build_name
+character(len=63)                    :: profile,act_profile  ; namelist/act_cli/act_profile
 character(len=:),allocatable         :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,name,build_name,args
+namelist/expected/cmd,cstat,estat,w_e,w_t,name,profile,args
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -50,19 +50,21 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="run",                                                                                               ', &
 'CMD="run my_project",                                             NAME="my_project",                     ', &
 'CMD="run proj1 p2 project3",                                      NAME="proj1","p2","project3",          ', &
-'CMD="run proj1 p2 project3 --release",                            NAME="proj1","p2","project3",build_name="release",', &
-'CMD="run proj1 p2 project3 --release -- arg1 -x ""and a long one""", &
-   &NAME="proj1","p2","project3",build_name="release",ARGS="""arg1"" -x ""and a long one""",                         ', &
+'CMD="run proj1 p2 project3 --profile debug",                      NAME="proj1","p2","project3",profile="debug",', &
+'CMD="run proj1 p2 project3 --profile release",                    NAME="proj1","p2","project3",profile="release",', &
+'CMD="run proj1 p2 project3 --profile release -- arg1 -x ""and a long one""", &
+   &NAME="proj1","p2","project3",profile="release",ARGS="""arg1"" -x ""and a long one""",                         ', &
 
 'CMD="test",                                                                                              ', &
 'CMD="test my_project",                                            NAME="my_project",                     ', &
 'CMD="test proj1 p2 project3",                                     NAME="proj1","p2","project3",          ', &
-'CMD="test proj1 p2 project3 --release",                           NAME="proj1","p2","project3",build_name="release",', &
-'CMD="test proj1 p2 project3 --release -- arg1 -x ""and a long one""", &
-   &NAME="proj1","p2","project3",build_name="release" ARGS="""arg1"" -x ""and a long one""",                         ', &
+'CMD="test proj1 p2 project3 --profile debug",                     NAME="proj1","p2","project3",profile="debug",', &
+'CMD="test proj1 p2 project3 --profile release",                   NAME="proj1","p2","project3",profile="release",', &
+'CMD="test proj1 p2 project3 --profile release -- arg1 -x ""and a long one""", &
+   &NAME="proj1","p2","project3",profile="release" ARGS="""arg1"" -x ""and a long one""",                         ', &
 
-'CMD="build",                                                      NAME= build_name="debug",ARGS="",', &
-'CMD="build --release",                                            NAME= build_name="release",ARGS="",', &
+'CMD="build",                                                      NAME= profile="default",ARGS="",', &
+'CMD="build --profile release",                                            NAME= profile="release",ARGS="",', &
 ' ' ]
 character(len=256) :: readme(3)
 
@@ -90,7 +92,7 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
       endif
       ! blank out name group EXPECTED
       name=[(repeat(' ',len(name)),i=1,max_names)] ! the words on the command line sans the subcommand name
-      build_name="debug"             ! --release
+      profile="default"              ! --profile PROF
       w_e=.false.                    ! --app
       w_t=.false.                    ! --test
       args=repeat(' ',132)           ! -- ARGS
@@ -107,7 +109,7 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
           if(estat.eq.0)then
              open(file='_test_cli',newunit=lun,delim='quote')
              act_name=[(repeat(' ',len(act_name)),i=1,max_names)]
-             act_build_name='debug'
+             act_profile='default'
              act_w_e=.false.
              act_w_t=.false.
              act_args=repeat(' ',132)
@@ -119,7 +121,7 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
              ! compare results to expected values
              subtally=[logical ::]
              call test_test('NAME',all(act_name.eq.name))
-             call test_test('RELEASE',act_build_name.eq.build_name)
+             call test_test('PROFILE',act_profile.eq.profile)
              call test_test('WITH_EXPECTED',act_w_e.eqv.w_e)
              call test_test('WITH_TESTED',act_w_t.eqv.w_t)
              call test_test('WITH_TEST',act_w_t.eqv.w_t)
@@ -204,7 +206,7 @@ allocate (character(len=len(name)) :: act_name(0) )
 act_args=''
 act_w_e=.false.
 act_w_t=.false.
-act_build_name='debug'
+act_profile='default'
 
 select type(settings=>cmd_settings)
 type is (fpm_new_settings)
@@ -212,13 +214,13 @@ type is (fpm_new_settings)
     act_w_t=settings%with_test
     act_name=[trim(settings%name)]
 type is (fpm_build_settings)
-    act_build_name=settings%build_name
+    act_profile=settings%profile
 type is (fpm_run_settings)
-    act_build_name=settings%build_name
+    act_profile=settings%profile
     act_name=settings%name
     act_args=settings%args
 type is (fpm_test_settings)
-    act_build_name=settings%build_name
+    act_profile=settings%profile
     act_name=settings%name
     act_args=settings%args
 type is (fpm_install_settings)
