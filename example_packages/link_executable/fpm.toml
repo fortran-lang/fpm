@@ -1,5 +1,4 @@
 name = "link_executable"
-build.auto-executables = false
 
 [[executable]]
 name = "gomp_test"
