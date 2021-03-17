@@ -17,14 +17,35 @@ To report a bug report or suggest a feature, please read our
 
 ## Getting started
 
-### Binary download
+### Setting up fpm
+
+#### Binary download
 `x86-64` binaries are available [to download](https://github.com/fortran-lang/fpm/releases) for Windows, MacOS and Linux.
 
 __Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
 
 _e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
 
-__Github actions:__ to setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
+#### Conda
+
+If you haven't yet, first enable the conda-forge channel:
+
+```
+conda config --add channels conda-forge
+```
+
+Fpm can be installed with:
+
+```
+conda create -n fpm fpm
+conda activate fpm
+```
+
+#### Github Actions
+
+To setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
+
+#### Bootstraping on other platforms
 
 For other platforms and architectures have a look at the [bootstrapping instructions](#bootstrapping-instructions).
 
