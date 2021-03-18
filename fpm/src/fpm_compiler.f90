@@ -142,8 +142,8 @@ subroutine get_debug_compile_flags(id, flags)
             & -Wimplicit-interface&
             & -fPIC -fmax-errors=1&
             & -g&
-            & -fbounds-check&
-            & -fcheck-array-temporaries&
+            & -fcheck=bounds&
+            & -fcheck=array-temps&
             & -fbacktrace&
             &'
 
@@ -154,8 +154,8 @@ subroutine get_debug_compile_flags(id, flags)
             & -Wimplicit-interface&
             & -fPIC -fmax-errors=1&
             & -g&
-            & -fbounds-check&
-            & -fcheck-array-temporaries&
+            & -fcheck=bounds&
+            & -fcheck=array-temps&
             & -fbacktrace&
             & -fcoarray=single&
             &'
@@ -167,8 +167,8 @@ subroutine get_debug_compile_flags(id, flags)
             & -Wimplicit-interface&
             & -fPIC -fmax-errors=1&
             & -g&
-            & -fbounds-check&
-            & -fcheck-array-temporaries&
+            & -fcheck=bounds&
+            & -fcheck=array-temps&
             & -Wno-maybe-uninitialized -Wno-uninitialized&
             & -fbacktrace&
             &'
