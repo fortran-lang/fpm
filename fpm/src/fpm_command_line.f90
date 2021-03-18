@@ -471,7 +471,7 @@ contains
             val_compiler='gfortran'
         endif
 
-        val_flag = sget('flag')
+        val_flag = " " // sget('flag')
         val_profile = sget('profile')
         if (val_flag == '') then
             call get_default_compile_flags(val_compiler, val_profile == "release", val_flag)
@@ -479,7 +479,7 @@ contains
             select case(val_profile)
             case("release", "debug")
                call get_default_compile_flags(val_compiler, val_profile == "release", flags)
-               val_flag = flags // " " // val_flag
+               val_flag = flags // val_flag
             end select
         end if
         allocate(character(len=16) :: val_build)
