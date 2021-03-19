@@ -1,5 +1,5 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob, join
+use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
@@ -44,11 +44,6 @@ subroutine build_model(model, settings, package, error)
     character(len=:), allocatable :: manifest, lib_dir
     type(string_t) :: include_dir
 
-    if(settings%verbose)then
-       write(*,*)'<INFO>BUILD_NAME:',settings%build_name
-       write(*,*)'<INFO>COMPILER:  ',settings%compiler
-    endif
-
     model%package_name = package%name
 
     allocate(model%include_dirs(0))
@@ -67,9 +62,6 @@ subroutine build_model(model, settings, package, error)
     model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
 
     call add_compile_flag_defaults(settings%build_name, basename(model%fortran_compiler), model)
-    if(settings%verbose)then
-       write(*,*)'<INFO>COMPILER OPTIONS:  ', model%fortran_compile_flags 
-    endif
 
     allocate(model%packages(model%deps%ndep))
 
@@ -171,6 +163,13 @@ subroutine build_model(model, settings, package, error)
         end associate
     end do
     if (allocated(error)) return
+
+    if (settings%verbose) then
+        write(*,*)'<INFO> BUILD_NAME: ',settings%build_name
+        write(*,*)'<INFO> COMPILER:  ',settings%compiler
+        write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags 
+        write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']' 
+     end if
 
 end subroutine build_model
 
