@@ -199,7 +199,14 @@ Paths for the source and include directories are given relative to the project r
 source-dir = "lib"
 include-dir = "inc"
 ```
+
+#### Include directory
+
+> Supported in Fortran fpm only
+
+Projects which use the Fortran `include` statement or C preprocessor `#include` statement, can use the *include-dir* key to specify search directories for the included files.
 *include-dir* can contain one or more directories, where multiple directories are specified using a list of strings.
+Include directories from all project dependencies are passed to the compiler using the appropriate compiler flag.
 
 *Example:*
 
@@ -207,6 +214,8 @@ include-dir = "inc"
 [library]
 include-dir = ["include","third_party/include"]
 ```
+
+> *include-dir* does not currently allow using pre-built module `.mod` files
 
 #### Custom build script
 
