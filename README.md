@@ -1,19 +1,28 @@
 # Fortran Package Manager
 
-This is the repository of the Fortran Package Manager (*fpm*). If you are
-looking for *fpm – packaging made simple* instead, see
-[jordansissel/fpm](https://github.com/jordansissel/fpm).
+Fortran Package Manager (fpm) is a package manager and build system for Fortran.
+Its key goal is to improve the user experience of Fortran programmers.
+It does so by making it easier to build your Fortran program or library, run the
+executables, tests, and examples, and distribute it as a dependency to other
+Fortran projects.
+Fpm's user interface is modeled after [Rust's Cargo](https://crates.io/),
+so if you're familiar with that tool, you will feel at home with fpm.
+Fpm's long term vision is help nurture and grow the ecosystem of modern Fortran
+applications and libraries.
 
-Fortran Package Manager is an early prototype. You can use it to build and
-package your Fortran projects, as well as to include supported Fortran
-dependency projects. As a prototype, changes to *fpm*’s behavior and inputs may
-occur as development continues. Please follow the
-[issues](https://github.com/fortran-lang/fpm/issues) to contribute and/or stay
-up to date with the development. As the prototype matures and we enter
-production, we will do our best to stay backwards compatible.
-
+Fpm is an early prototype and is evolving rapidly.
+You can use it to build and package your Fortran projects, as well as to use
+existing fpm packages as dependencies.
+Fpm's behavior and user interface may change as it evolves, however as fpm
+matures and we enter production, we will aim to stay backwards compatible.
+Please follow the [issues](https://github.com/fortran-lang/fpm/issues) to
+contribute and/or stay up to date with the development.
 To report a bug report or suggest a feature, please read our
-[contributor guidelines](CONTRIBUTING.md).
+[Contributor Guide](CONTRIBUTING.md) before opening a new issue.
+
+Fortran Package Manager is not to be confused with
+[Jordan Sissel's fpm](https://github.com/jordansissel/fpm), a more general,
+non-Fortran related package manager.
 
 ## Getting started
 
