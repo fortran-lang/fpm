@@ -17,8 +17,8 @@ Fpm's behavior and user interface may change as it evolves, however as fpm
 matures and we enter production, we will aim to stay backwards compatible.
 Please follow the [issues](https://github.com/fortran-lang/fpm/issues) to
 contribute and/or stay up to date with the development.
-To report a bug report or suggest a feature, please read our
-[Contributor Guide](CONTRIBUTING.md) before opening a new issue.
+Before opening a bug report or a feature suggestion, please read our
+[Contributor Guide](CONTRIBUTING.md).
 
 Fortran Package Manager is not to be confused with
 [Jordan Sissel's fpm](https://github.com/jordansissel/fpm), a more general,
