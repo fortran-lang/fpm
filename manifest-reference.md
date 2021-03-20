@@ -212,7 +212,7 @@ Include directories from all project dependencies are passed to the compiler usi
 
 ```toml
 [library]
-include-dir = ["include","third_party/include"]
+include-dir = ["include", "third_party/include"]
 ```
 
 > *include-dir* does not currently allow using pre-built module `.mod` files
