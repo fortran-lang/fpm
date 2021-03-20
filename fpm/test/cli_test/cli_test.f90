@@ -63,7 +63,7 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="test proj1 p2 project3 --profile release -- arg1 -x ""and a long one""", &
    &NAME="proj1","p2","project3",profile="release" ARGS="""arg1"" -x ""and a long one""",                         ', &
 
-'CMD="build",                                                      NAME= profile="default",ARGS="",', &
+'CMD="build",                                                      NAME= profile="",ARGS="",', &
 'CMD="build --profile release",                                            NAME= profile="release",ARGS="",', &
 ' ' ]
 character(len=256) :: readme(3)
@@ -92,7 +92,7 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
       endif
       ! blank out name group EXPECTED
       name=[(repeat(' ',len(name)),i=1,max_names)] ! the words on the command line sans the subcommand name
-      profile="default"              ! --profile PROF
+      profile=""                     ! --profile PROF
       w_e=.false.                    ! --app
       w_t=.false.                    ! --test
       args=repeat(' ',132)           ! -- ARGS
@@ -109,7 +109,7 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
           if(estat.eq.0)then
              open(file='_test_cli',newunit=lun,delim='quote')
              act_name=[(repeat(' ',len(act_name)),i=1,max_names)]
-             act_profile='default'
+             act_profile=''
              act_w_e=.false.
              act_w_t=.false.
              act_args=repeat(' ',132)
@@ -206,7 +206,7 @@ allocate (character(len=len(name)) :: act_name(0) )
 act_args=''
 act_w_e=.false.
 act_w_t=.false.
-act_profile='default'
+act_profile=''
 
 select type(settings=>cmd_settings)
 type is (fpm_new_settings)
