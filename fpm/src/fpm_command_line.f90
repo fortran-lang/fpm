@@ -673,14 +673,16 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
-    '  --profile PROF Builds or runs with the given profile (either release or debug).', &
-    '                 fpm(1) defaults to using common compiler debug flags with debug', &
-    '                 profile, common compiler optimization flags are used with the', &
-    '                 release profile', &
-    '  --flag FFLAGS  Use compile arguments provided in FFLAGS rather than', &
-    '                 defaults, if a profile (debug or release) is present the', &
-    '                 FFLAGS are appended rather than replaced, module flags are', &
-    '                 provided by fpm(1) and must not be present in FFLAGS', &
+    ' --profile PROF    selects the compilation profile for the build.',&
+    '                   Currently available profiles are "release" for',&
+    '                   high optimization and "debug" for full debug options.',&
+    '                   If --flag is not specified the "debug" flags are the',&
+    '                   default. ',&
+    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
+    '                   added to the profile options if --profile is specified,',&
+    '                   else these options override the defaults.',&
+    '                   Note object and .mod directory locations are always',&
+    '                   built in.',&
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
@@ -765,8 +767,16 @@ contains
     '                   the special characters from shell expansion.        ', &
     ' --all   Run all examples or applications. An alias for --target ''*''.  ', &
     ' --example  Run example programs instead of applications.              ', &
-    ' --profile PROF    Selects the compilation profile for the build.      ', &
-    ' --flags FFLAGS    selects compile arguments for the build', &
+    ' --profile PROF    selects the compilation profile for the build.',&
+    '                   Currently available profiles are "release" for',&
+    '                   high optimization and "debug" for full debug options.',&
+    '                   If --flag is not specified the "debug" flags are the',&
+    '                   default. ',&
+    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
+    '                   added to the profile options if --profile is specified,',&
+    '                   else these options override the defaults.',&
+    '                   Note object and .mod directory locations are always',&
+    '                   built in.',&
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
@@ -829,9 +839,16 @@ contains
     ' specified in the "fpm.toml" file.                                     ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
-    ' --profile PROF  selects the compilation profile for the build         ', &
-    '              high optimization instead of full debug options.         ', &
-    ' --flags FFLAGS  selects compile arguments for the build', &
+    ' --profile PROF    selects the compilation profile for the build.',&
+    '                   Currently available profiles are "release" for',&
+    '                   high optimization and "debug" for full debug options.',&
+    '                   If --flag is not specified the "debug" flags are the',&
+    '                   default. ',&
+    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
+    '                   added to the profile options if --profile is specified,',&
+    '                   else these options override the defaults.',&
+    '                   Note object and .mod directory locations are always',&
+    '                   built in.',&
     ' --compiler   COMPILER_NAME  Specify a compiler name. The default is   ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
@@ -1005,8 +1022,16 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Note The glob string normally needs quoted to       ', &
     '                   protect the special characters from shell expansion.', &
-    ' --profile PROF  selects the compilation profile for the build.', &
-    ' --flags FFLAGS  selects compile arguments for the build', &
+    ' --profile PROF    selects the compilation profile for the build.',&
+    '                   Currently available profiles are "release" for',&
+    '                   high optimization and "debug" for full debug options.',&
+    '                   If --flag is not specified the "debug" flags are the',&
+    '                   default. ',&
+    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
+    '                   added to the profile options if --profile is specified,',&
+    '                   else these options override the defaults.',&
+    '                   Note object and .mod directory locations are always',&
+    '                   built in.',&
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
@@ -1069,8 +1094,16 @@ contains
     'OPTIONS', &
     ' --list            list all installable targets for this project,', &
     '                   but do not install any of them', &
-    ' --profile         selects the compilation profile for installation', &
-    ' --flags FFLAGS    selects compile arguments for the build', &
+    ' --profile PROF    selects the compilation profile for the build.',&
+    '                   Currently available profiles are "release" for',&
+    '                   high optimization and "debug" for full debug options.',&
+    '                   If --flag is not specified the "debug" flags are the',&
+    '                   default. ',&
+    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
+    '                   added to the profile options if --profile is specified,',&
+    '                   else these options override the defaults.',&
+    '                   Note object and .mod directory locations are always',&
+    '                   built in.',&
     ' --no-rebuild      do not rebuild project before installation', &
     ' --prefix DIR      path to installation directory (requires write access),', &
     '                   the default prefix on Unix systems is $HOME/.local', &
