@@ -156,7 +156,7 @@ contains
             & --target " " &
             & --list F &
             & --all F &
-            & --profile "default"&
+            & --profile " "&
             & --example F&
             & --runner " " &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
@@ -206,7 +206,7 @@ contains
 
         case('build')
             call set_args( '&
-            & --profile "default" &
+            & --profile " " &
             & --list F &
             & --show-model F &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
@@ -345,7 +345,7 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('--profile "default" --no-rebuild F --verbose F --prefix " " &
+            call set_args('--profile " " --no-rebuild F --verbose F --prefix " " &
                 & --list F &
                 & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
                 & --flag:: " "&
@@ -382,7 +382,7 @@ contains
             call set_args('&
             & --target " " &
             & --list F&
-            & --profile "default"&
+            & --profile " "&
             & --runner " " &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --flag:: " "&

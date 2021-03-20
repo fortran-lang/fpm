@@ -9,7 +9,7 @@ use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists,
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: get_module_flags
+use fpm_compiler, only: get_module_flags, is_unknown_compiler
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
@@ -62,6 +62,11 @@ subroutine build_model(model, settings, package, error)
         model%fortran_compiler = settings%compiler
     endif
 
+    if (is_unknown_compiler(model%fortran_compiler)) then
+        write(*, '(*(a:,1x))') &
+            "<WARN>", "Unknown compiler", model%fortran_compiler, "requested!", &
+            "Defaults for this compiler might be incorrect"
+    end if
     model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
 
     call get_module_flags(model%fortran_compiler, &

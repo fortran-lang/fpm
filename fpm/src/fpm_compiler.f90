@@ -29,6 +29,7 @@ module fpm_compiler
 use fpm_model, only: fpm_model_t
 use fpm_filesystem, only: join_path, basename
 implicit none
+public :: is_unknown_compiler
 public :: get_module_flags
 public :: get_default_compile_flags
 public :: get_debug_compile_flags
@@ -322,5 +323,11 @@ function check_compiler(compiler, expected) result(match)
         match = index(basename(compiler), expected) > 0
     end if
 end function check_compiler
+
+function is_unknown_compiler(compiler) result(is_unknown)
+    character(len=*), intent(in) :: compiler
+    logical :: is_unknown
+    is_unknown = get_compiler_id(compiler) == id_unknown
+end function is_unknown_compiler
 
 end module fpm_compiler
