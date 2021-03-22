@@ -817,7 +817,7 @@ contains
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm build [--profile PROF] [--flags FFLAGS] [--compiler COMPILER_NAME] [-list]', &
+    ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] [-list]', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
