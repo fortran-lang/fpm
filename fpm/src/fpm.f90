@@ -70,9 +70,6 @@ subroutine build_model(model, settings, package, error)
         & join_path(model%output_directory,model%package_name), &
         & model%fortran_compile_flags)
     model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
-    if(settings%verbose)then
-       write(*,*)'<INFO>COMPILER OPTIONS:  ', model%fortran_compile_flags 
-    endif
 
     allocate(model%packages(model%deps%ndep))
 
