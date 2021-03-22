@@ -1,23 +1,6 @@
-module fpm_compiler
-use fpm_model, only: fpm_model_t
-use fpm_filesystem, only: join_path
-public  add_compile_flag_defaults
-
-contains
-subroutine add_compile_flag_defaults(build_name,compiler,model)
-! Choose compile flags based on cli settings & manifest inputs
-character(len=*),intent(in) :: build_name, compiler
-
-type(fpm_model_t), intent(inout) :: model
-! could just be a function to return a string instead of passing model
-! but likely to change other components like matching C compiler
-
-character(len=:),allocatable :: fflags    ! optional flags that might be overridden by user
-character(len=:),allocatable :: modpath 
-character(len=:),allocatable :: mandatory ! flags required for fpm to function properly;
-                                          ! ie. add module path and module include directory as appropriate
-
-! special reserved names "debug" and "release" are for supported compilers with no user-specified compile or load flags
+!># Define compiler command options
+!!
+!! This module defines compiler options to use for the debug and release builds.
 
 ! vendor            Fortran   C         Module output   Module include OpenMP    Free for OSS
 !                   compiler  compiler  directory       directory
@@ -42,206 +25,309 @@ character(len=:),allocatable :: mandatory ! flags required for fpm to function p
 ! G95               ?          ?       -fmod=          -I            -fopenmp   discontinued
 ! Open64            ?          ?       -module         -I            -mp        discontinued
 ! Unisys            ?          ?       ?               ?             ?          discontinued
-character(len=*),parameter :: names(*)=[ character(len=10) :: &
-& 'caf', &
-& 'gfortran', &
-& 'f95', &
-& 'nvfortran', &
-& 'ifort', &
-& 'ifx', &
-& 'pgfortran', &
-& 'pgf90', &
-& 'pgf95', &
-& 'flang', &
-& 'lfc', &
-& 'nagfor', &
-& 'crayftn', &
-& 'xlf90', &
-& 'unknown']
-integer :: i
+module fpm_compiler
+use fpm_model, only: fpm_model_t
+use fpm_filesystem, only: join_path, basename
+implicit none
+public :: is_unknown_compiler
+public :: get_module_flags
+public :: get_default_compile_flags
+public :: get_debug_compile_flags
+public :: get_release_compile_flags
 
-    modpath=join_path(model%output_directory,model%package_name)
-    fflags=''
-    mandatory=''
+enum, bind(C)
+    enumerator :: &
+        id_unknown, &
+        id_gcc, &
+        id_f95, &
+        id_caf, &
+        id_intel_classic, &
+        id_intel_llvm, &
+        id_pgi, &
+        id_nvhpc, &
+        id_nag, &
+        id_flang, &
+        id_ibmxl, &
+        id_cray, &
+        id_lahey, &
+        id_lfortran
+end enum
+integer, parameter :: compiler_enum = kind(id_unknown)
 
-    select case(build_name//'_'//compiler)
+contains
 
-    case('release_caf')
-       fflags='&
-       & -O3&
-       & -Wimplicit-interface&
-       & -fPIC&
-       & -fmax-errors=1&
-       & -funroll-loops&
-       &'
-       mandatory=' -J '//modpath//' -I '//modpath 
-    case('debug_caf')
-       fflags = '&
-       & -Wall&
-       & -Wextra&
-       & -Wimplicit-interface&
-       & -fPIC -fmax-errors=1&
-       & -g&
-       & -fbounds-check&
-       & -fcheck-array-temporaries&
-       & -fbacktrace&
-       &'
-       mandatory=' -J '//modpath//' -I '//modpath 
-    case('release_gfortran')
-       fflags='&
-       & -O3&
-       & -Wimplicit-interface&
-       & -fPIC&
-       & -fmax-errors=1&
-       & -funroll-loops&
-       & -fcoarray=single&
-       &'
-       mandatory=' -J '//modpath//' -I '//modpath 
-    case('debug_gfortran')
-       fflags = '&
-       & -Wall&
-       & -Wextra&
-       & -Wimplicit-interface&
-       & -fPIC -fmax-errors=1&
-       & -g&
-       & -fbounds-check&
-       & -fcheck-array-temporaries&
-       & -fbacktrace&
-       & -fcoarray=single&
-       &'
-       mandatory=' -J '//modpath//' -I '//modpath 
+subroutine get_default_compile_flags(compiler, release, flags)
+    character(len=*), intent(in) :: compiler
+    logical, intent(in) :: release
+    character(len=:), allocatable, intent(out) :: flags
+    integer :: id
 
-    case('release_f95')
-       fflags='&
-       & -O3&
-       & -Wimplicit-interface&
-       & -fPIC&
-       & -fmax-errors=1&
-       & -ffast-math&
-       & -funroll-loops&
-       &'
-       mandatory=' -J '//modpath//' -I '//modpath 
-    case('debug_f95')
-       fflags = '&
-       & -Wall&
-       & -Wextra&
-       & -Wimplicit-interface&
-       & -fPIC -fmax-errors=1&
-       & -g&
-       & -fbounds-check&
-       & -fcheck-array-temporaries&
-       & -Wno-maybe-uninitialized -Wno-uninitialized&
-       & -fbacktrace&
-       &'
-       mandatory=' -J '//modpath//' -I '//modpath 
+    id = get_compiler_id(compiler)
+    if (release) then
+        call get_release_compile_flags(id, flags)
+    else
+        call get_debug_compile_flags(id, flags)
+    end if
 
-    case('release_nvfortran')
-       fflags = '&
-       & -Mbackslash&
-       &'
-       mandatory=' -module '//modpath//' -I '//modpath 
-    case('debug_nvfortran')
-       fflags = '&
-       & -Minform=inform&
-       & -Mbackslash&
-       & -g&
-       & -Mbounds&
-       & -Mchkptr&
-       & -Mchkstk&
-       & -traceback&
-       &'
-       mandatory=' -module '//modpath//' -I '//modpath 
+end subroutine get_default_compile_flags
 
-    case('release_ifort')
-       fflags = '&
-       & -fp-model precise&
-       & -pc 64&
-       & -align all&
-       & -error-limit 1&
-       & -reentrancy threaded&
-       & -nogen-interfaces&
-       & -assume byterecl&
-       &'
-       mandatory=' -module '//modpath//' -I '//modpath 
-    case('debug_ifort')
-       fflags = '&
-       & -warn all&
-       & -check:all:noarg_temp_created&
-       & -error-limit 1&
-       & -O0&
-       & -g&
-       & -assume byterecl&
-       & -traceback&
-       &'
-       mandatory=' -module '//modpath//' -I '//modpath 
-    case('release_ifx')
-       fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath 
-    case('debug_ifx')
-       fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath 
+subroutine get_release_compile_flags(id, flags)
+    integer(compiler_enum), intent(in) :: id
+    character(len=:), allocatable, intent(out) :: flags
 
-    case('release_pgfortran','release_pgf90','release_pgf95')  ! Portland Group F90/F95 compilers
-       fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath 
-    case('debug_pgfortran','debug_pgf90','debug_pgf95')  ! Portland Group F90/F95 compilers
-       fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath 
-
-    case('release_flang')
-       fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath 
-    case('debug_flang')
-       fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath 
-
-    case('release_lfc')
-       fflags = ' '
-       mandatory=' -M '//modpath//' -I '//modpath 
-    case('debug_lfc')
-       fflags = ' '
-       mandatory=' -M '//modpath//' -I '//modpath 
-
-    case('release_nagfor')
-       fflags = ' &
-       & -O4&
-       & -coarray=single&
-       & -PIC&
-       &'
-       mandatory=' -mdir '//modpath//' -I '//modpath !
-    case('debug_nagfor')
-       fflags = '&
-       & -g&
-       & -C=all&
-       & -O0&
-       & -gline&
-       & -coarray=single&
-       & -PIC&
-       &'
-       mandatory=' -mdir '//modpath//' -I '//modpath !
-    case('release_crayftn')
-       fflags = ' '
-       mandatory=' -J '//modpath//' -I '//modpath 
-    case('debug_crayftn')
-       fflags = ' '
-       mandatory=' -J '//modpath//' -I '//modpath 
-
-    case('release_xlf90')
-       fflags = ' '
-       mandatory=' -qmoddir '//modpath//' -I '//modpath 
-    case('debug_xlf90')
-       fflags = ' '
-       mandatory=' -qmoddir '//modpath//' -I '//modpath 
-
+    select case(id)
     case default
-       fflags = ' '
-       mandatory=' -module '//modpath//' -I '//modpath 
-       write(*,'(*(a))')'<WARNING> unknown compiler (',compiler,') and build name (',build_name,') combination.'
-       write(*,'(a,*(T31,6(a:,", "),/))')'          known compilers are ',(trim(names(i)),i=1,size(names)-1)
+        flags = ""
+
+    case(id_caf)
+        flags='&
+            & -O3&
+            & -Wimplicit-interface&
+            & -fPIC&
+            & -fmax-errors=1&
+            & -funroll-loops&
+            &'
+    case(id_gcc)
+        flags='&
+            & -O3&
+            & -Wimplicit-interface&
+            & -fPIC&
+            & -fmax-errors=1&
+            & -funroll-loops&
+            & -fcoarray=single&
+            &'
+    case(id_f95)
+        flags='&
+            & -O3&
+            & -Wimplicit-interface&
+            & -fPIC&
+            & -fmax-errors=1&
+            & -ffast-math&
+            & -funroll-loops&
+            &'
+    case(id_nvhpc)
+        flags = '&
+            & -Mbackslash&
+            &'
+    case(id_intel_classic)
+        flags = '&
+            & -fp-model precise&
+            & -pc 64&
+            & -align all&
+            & -error-limit 1&
+            & -reentrancy threaded&
+            & -nogen-interfaces&
+            & -assume byterecl&
+            &'
+    case(id_nag)
+        flags = ' &
+            & -O4&
+            & -coarray=single&
+            & -PIC&
+            &'
+    end select
+end subroutine get_release_compile_flags
+
+subroutine get_debug_compile_flags(id, flags)
+    integer(compiler_enum), intent(in) :: id
+    character(len=:), allocatable, intent(out) :: flags
+
+    select case(id)
+    case default
+        flags = ""
+
+    case(id_caf)
+        flags = '&
+            & -Wall&
+            & -Wextra&
+            & -Wimplicit-interface&
+            & -fPIC -fmax-errors=1&
+            & -g&
+            & -fcheck=bounds&
+            & -fcheck=array-temps&
+            & -fbacktrace&
+            &'
+
+    case(id_gcc)
+        flags = '&
+            & -Wall&
+            & -Wextra&
+            & -Wimplicit-interface&
+            & -fPIC -fmax-errors=1&
+            & -g&
+            & -fcheck=bounds&
+            & -fcheck=array-temps&
+            & -fbacktrace&
+            & -fcoarray=single&
+            &'
+
+    case(id_f95)
+        flags = '&
+            & -Wall&
+            & -Wextra&
+            & -Wimplicit-interface&
+            & -fPIC -fmax-errors=1&
+            & -g&
+            & -fcheck=bounds&
+            & -fcheck=array-temps&
+            & -Wno-maybe-uninitialized -Wno-uninitialized&
+            & -fbacktrace&
+            &'
+
+    case(id_nvhpc)
+        flags = '&
+            & -Minform=inform&
+            & -Mbackslash&
+            & -g&
+            & -Mbounds&
+            & -Mchkptr&
+            & -Mchkstk&
+            & -traceback&
+            &'
+
+    case(id_intel_classic)
+        flags = '&
+            & -warn all&
+            & -check:all:noarg_temp_created&
+            & -error-limit 1&
+            & -O0&
+            & -g&
+            & -assume byterecl&
+            & -traceback&
+            &'
+
+    case(id_nag)
+        flags = '&
+            & -g&
+            & -C=all&
+            & -O0&
+            & -gline&
+            & -coarray=single&
+            & -PIC&
+            &'
+    end select
+end subroutine get_debug_compile_flags
+
+subroutine get_module_flags(compiler, modpath, flags)
+    character(len=*), intent(in) :: compiler
+    character(len=*), intent(in) :: modpath
+    character(len=:), allocatable, intent(out) :: flags
+    integer(compiler_enum) :: id
+
+    id = get_compiler_id(compiler)
+
+    select case(id)
+    case default
+        flags=' -module '//modpath//' -I '//modpath
+
+    case(id_caf, id_gcc, id_f95, id_cray)
+        flags=' -J '//modpath//' -I '//modpath
+
+    case(id_intel_classic, id_intel_llvm, id_nvhpc, id_pgi, id_flang)
+        flags=' -module '//modpath//' -I '//modpath
+
+    case(id_lahey)
+        flags=' -M '//modpath//' -I '//modpath
+
+    case(id_nag)
+        flags=' -mdir '//modpath//' -I '//modpath !
+
+    case(id_ibmxl)
+        flags=' -qmoddir '//modpath//' -I '//modpath
+
     end select
 
-    model%fortran_compile_flags = fflags//' '//mandatory
-     
-end subroutine add_compile_flag_defaults
+end subroutine get_module_flags
+
+function get_compiler_id(compiler) result(id)
+    character(len=*), intent(in) :: compiler
+    integer(kind=compiler_enum) :: id
+
+    if (check_compiler(compiler, "gfortran")) then
+        id = id_gcc
+        return
+    end if
+
+    if (check_compiler(compiler, "f95")) then
+        id = id_f95
+        return
+    end if
+
+    if (check_compiler(compiler, "caf")) then
+        id = id_caf
+        return
+    end if
+
+    if (check_compiler(compiler, "ifort")) then
+        id = id_intel_classic
+        return
+    end if
+
+    if (check_compiler(compiler, "ifx")) then
+        id = id_intel_llvm
+        return
+    end if
+
+    if (check_compiler(compiler, "nvfortran")) then
+        id = id_nvhpc
+        return
+    end if
+
+    if (check_compiler(compiler, "pgfortran") &
+        & .or. check_compiler(compiler, "pgf90") &
+        & .or. check_compiler(compiler, "pgf95")) then
+        id = id_pgi
+        return
+    end if
+
+    if (check_compiler(compiler, "nagfor")) then
+        id = id_nag
+        return
+    end if
+
+    if (check_compiler(compiler, "flang")) then
+        id = id_flang
+        return
+    end if
+
+    if (check_compiler(compiler, "xlf90")) then
+        id = id_ibmxl
+        return
+    end if
+
+    if (check_compiler(compiler, "crayftn")) then
+        id = id_cray
+        return
+    end if
+
+    if (check_compiler(compiler, "lfc")) then
+        id = id_lahey
+        return
+    end if
+
+    if (check_compiler(compiler, "lfort")) then
+        id = id_lfortran
+        return
+    end if
+
+    id = id_unknown
+
+end function get_compiler_id
+
+function check_compiler(compiler, expected) result(match)
+    character(len=*), intent(in) :: compiler
+    character(len=*), intent(in) :: expected
+    logical :: match
+    match = compiler == expected
+    if (.not. match) then
+        match = index(basename(compiler), expected) > 0
+    end if
+end function check_compiler
+
+function is_unknown_compiler(compiler) result(is_unknown)
+    character(len=*), intent(in) :: compiler
+    logical :: is_unknown
+    is_unknown = get_compiler_id(compiler) == id_unknown
+end function is_unknown_compiler
 
 end module fpm_compiler

@@ -1,30 +1,63 @@
 # Fortran Package Manager
 
-This is the repository of the Fortran Package Manager (*fpm*). If you are
-looking for *fpm – packaging made simple* instead, see
-[jordansissel/fpm](https://github.com/jordansissel/fpm).
+Fortran Package Manager (fpm) is a package manager and build system for Fortran.
+Its key goal is to improve the user experience of Fortran programmers.
+It does so by making it easier to build your Fortran program or library, run the
+executables, tests, and examples, and distribute it as a dependency to other
+Fortran projects.
+Fpm's user interface is modeled after [Rust's Cargo](https://crates.io/),
+so if you're familiar with that tool, you will feel at home with fpm.
+Fpm's long term vision is to nurture and grow the ecosystem of modern Fortran
+applications and libraries.
 
-Fortran Package Manager is an early prototype. You can use it to build and
-package your Fortran projects, as well as to include supported Fortran
-dependency projects. As a prototype, changes to *fpm*’s behavior and inputs may
-occur as development continues. Please follow the
-[issues](https://github.com/fortran-lang/fpm/issues) to contribute and/or stay
-up to date with the development. As the prototype matures and we enter
-production, we will do our best to stay backwards compatible.
+Fpm is an early prototype and is evolving rapidly.
+You can use it to build and package your Fortran projects, as well as to use
+existing fpm packages as dependencies.
+Fpm's behavior and user interface may change as it evolves, however as fpm
+matures and we enter production, we will aim to stay backwards compatible.
+Please follow the [issues](https://github.com/fortran-lang/fpm/issues) to
+contribute and/or stay up to date with the development.
+Before opening a bug report or a feature suggestion, please read our
+[Contributor Guide](CONTRIBUTING.md).
 
-To report a bug report or suggest a feature, please read our
-[contributor guidelines](CONTRIBUTING.md).
+Fortran Package Manager is not to be confused with
+[Jordan Sissel's fpm](https://github.com/jordansissel/fpm), a more general,
+non-Fortran related package manager.
 
 ## Getting started
 
-### Binary download
+### Setting up fpm
+
+#### Binary download
 `x86-64` binaries are available [to download](https://github.com/fortran-lang/fpm/releases) for Windows, MacOS and Linux.
 
 __Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
 
 _e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
 
-__Github actions:__ to setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
+#### Conda
+
+Fpm is available on conda-forge, to add conda-forge to your channels use:
+
+```
+conda config --add channels conda-forge
+```
+
+Fpm can be installed with:
+
+```
+conda create -n fpm fpm
+conda activate fpm
+```
+
+The conda package manager can be installed from [miniforge](https://github.com/conda-forge/miniforge/releases)
+or from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
+
+#### Github Actions
+
+To setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
+
+#### Bootstraping on other platforms
 
 For other platforms and architectures have a look at the [bootstrapping instructions](#bootstrapping-instructions).
 
@@ -94,4 +127,3 @@ with itself and run the tests with:
 $ cd fpm
 $ fpm test
 ```
-
