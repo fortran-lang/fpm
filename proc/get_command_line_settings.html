@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.0% of total for procedures.">213 statements</a>
+    title=" 8.2% of total for procedures.">226 statements</a>
      </li> 
      
      
@@ -175,7 +175,7 @@
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-cmdarg">cmdarg</a>
       
-      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~8">i</a>
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~7">i</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
@@ -298,7 +298,7 @@ public subroutine get_command_line_settings(cmd_settings)
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-cmdarg">cmdarg</a>
       
-      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~8">i</a>
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~7">i</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
@@ -388,7 +388,7 @@ public subroutine get_command_line_settings(cmd_settings)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~8"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~7"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -569,10 +569,11 @@ subroutine printhelp(lines)
 <span class="s1">            &amp; --target &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --list F &amp;</span>
 <span class="s1">            &amp; --all F &amp;</span>
-<span class="s1">            &amp; --release F&amp;</span>
+<span class="s1">            &amp; --profile &quot; &quot;&amp;</span>
 <span class="s1">            &amp; --example F&amp;</span>
 <span class="s1">            &amp; --runner &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;FPM_COMPILER&#39;</span><span class="p">,</span><span class="s1">&#39;gfortran&#39;</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot; &amp;</span>
+<span class="s1">            &amp; --flag:: &quot; &quot;&amp;</span>
 <span class="s1">            &amp; --verbose F&amp;</span>
 <span class="s1">            &amp; --&#39;</span><span class="p">,</span><span class="n">help_run</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
 
@@ -607,7 +608,9 @@ subroutine printhelp(lines)
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_run_settings</span><span class="p">(&amp;</span>
             <span class="p">&amp;</span> <span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,&amp;</span>
+            <span class="p">&amp;</span> <span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
+            <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">example</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;example&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),&amp;</span>
             <span class="p">&amp;</span> <span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,&amp;</span>
@@ -616,10 +619,11 @@ subroutine printhelp(lines)
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">)</span>
             <span class="k">call </span><span class="n">set_args</span><span class="p">(</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; --release F &amp;</span>
+<span class="s1">            &amp; --profile &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --list F &amp;</span>
 <span class="s1">            &amp; --show-model F &amp;</span>
 <span class="s1">            &amp; --compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;FPM_COMPILER&#39;</span><span class="p">,</span><span class="s1">&#39;gfortran&#39;</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot; &amp;</span>
+<span class="s1">            &amp; --flag:: &quot; &quot;&amp;</span>
 <span class="s1">            &amp; --verbose F&amp;</span>
 <span class="s1">            &amp; --&#39;</span><span class="p">,</span><span class="n">help_build</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
 
@@ -628,7 +632,9 @@ subroutine printhelp(lines)
             <span class="k">allocate</span><span class="p">(</span> <span class="n">fpm_build_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span> <span class="p">)</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_build_settings</span><span class="p">(</span>  <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,&amp;</span>
+            <span class="p">&amp;</span> <span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
+            <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),&amp;</span>
             <span class="p">&amp;</span> <span class="n">show_model</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;show-model&#39;</span><span class="p">),&amp;</span>
             <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
@@ -752,9 +758,10 @@ subroutine printhelp(lines)
 <span class="k">            call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;install&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;--release F --no-rebuild F --verbose F --prefix &quot; &quot; &amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;--profile &quot; &quot; --no-rebuild F --verbose F --prefix &quot; &quot; &amp;</span>
 <span class="s1">                &amp; --list F &amp;</span>
 <span class="s1">                &amp; --compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;FPM_COMPILER&#39;</span><span class="p">,</span><span class="s1">&#39;gfortran&#39;</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot; &amp;</span>
+<span class="s1">                &amp; --flag:: &quot; &quot;&amp;</span>
 <span class="s1">                &amp; --libdir &quot;lib&quot; --bindir &quot;bin&quot; --includedir &quot;include&quot;&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="n">help_install</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
 
@@ -764,7 +771,9 @@ subroutine printhelp(lines)
             <span class="n">install_settings</span> <span class="o">=</span> <span class="n">fpm_install_settings</span><span class="p">(&amp;</span>
                 <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
                 <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span>
                 <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
+                <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="n">no_rebuild</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;no-rebuild&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">))</span>
             <span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;prefix&#39;</span><span class="p">)</span>
@@ -786,9 +795,10 @@ subroutine printhelp(lines)
             <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --target &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --list F&amp;</span>
-<span class="s1">            &amp; --release F&amp;</span>
+<span class="s1">            &amp; --profile &quot; &quot;&amp;</span>
 <span class="s1">            &amp; --runner &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;FPM_COMPILER&#39;</span><span class="p">,</span><span class="s1">&#39;gfortran&#39;</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot; &amp;</span>
+<span class="s1">            &amp; --flag:: &quot; &quot;&amp;</span>
 <span class="s1">            &amp; --verbose F&amp;</span>
 <span class="s1">            &amp; --&#39;</span><span class="p">,</span><span class="n">help_test</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
 
@@ -817,7 +827,9 @@ subroutine printhelp(lines)
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_test_settings</span><span class="p">(&amp;</span>
             <span class="p">&amp;</span> <span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,</span> <span class="p">&amp;</span>
+            <span class="p">&amp;</span> <span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
+            <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">example</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -865,13 +877,26 @@ subroutine printhelp(lines)
 <span class="k">    contains</span>
 
 <span class="k">    subroutine </span><span class="n">check_build_vals</span><span class="p">()</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">flags</span>
 
         <span class="n">val_compiler</span><span class="o">=</span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;compiler&#39;</span><span class="p">)</span>
         <span class="k">if</span><span class="p">(</span><span class="n">val_compiler</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            </span><span class="n">val_compiler</span><span class="o">=</span><span class="s1">&#39;gfortran&#39;</span>
         <span class="k">endif</span>
 
-<span class="k">        </span><span class="n">val_build</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">,</span><span class="s1">&#39;debug  &#39;</span><span class="p">,</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;release&#39;</span><span class="p">)))</span>
+<span class="k">        </span><span class="n">val_flag</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">sget</span><span class="p">(</span><span class="s1">&#39;flag&#39;</span><span class="p">)</span>
+        <span class="n">val_profile</span> <span class="o">=</span> <span class="n">sget</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">val_flag</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            call </span><span class="n">get_default_compile_flags</span><span class="p">(</span><span class="n">val_compiler</span><span class="p">,</span> <span class="n">val_profile</span> <span class="o">==</span> <span class="s2">&quot;release&quot;</span><span class="p">,</span> <span class="n">val_flag</span><span class="p">)</span>
+        <span class="k">else</span>
+<span class="k">            select case</span><span class="p">(</span><span class="n">val_profile</span><span class="p">)</span>
+            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;release&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">)</span>
+               <span class="k">call </span><span class="n">get_default_compile_flags</span><span class="p">(</span><span class="n">val_compiler</span><span class="p">,</span> <span class="n">val_profile</span> <span class="o">==</span> <span class="s2">&quot;release&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+               <span class="n">val_flag</span> <span class="o">=</span> <span class="n">flags</span> <span class="o">//</span> <span class="n">val_flag</span>
+            <span class="k">end select</span>
+<span class="k">        end if</span>
+<span class="k">        allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span> <span class="kd">::</span> <span class="n">val_build</span><span class="p">)</span>
+        <span class="k">write</span><span class="p">(</span><span class="n">val_build</span><span class="p">,</span> <span class="s1">&#39;(z16.16)&#39;</span><span class="p">)</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">val_flag</span><span class="p">)</span>
 
     <span class="k">end subroutine </span><span class="n">check_build_vals</span>
 
@@ -910,7 +935,7 @@ subroutine printhelp(lines)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-21 14:01  
+             on 2021-03-22 07:58  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

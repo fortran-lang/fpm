@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.4% of total for procedures.">36 statements</a>
+    title=" 2.8% of total for procedures.">77 statements</a>
      </li> 
      
      
@@ -173,15 +173,23 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/canon_path.html#variable-i">i</a>
+      <a class="list-group-item" href="../proc/canon_path.html#variable-absolute">absolute</a>
       
-      <a class="list-group-item" href="../proc/canon_path.html#variable-iback">iback</a>
+      <a class="list-group-item" href="../proc/canon_path.html#variable-iend">iend</a>
       
-      <a class="list-group-item" href="../proc/canon_path.html#variable-j">j</a>
+      <a class="list-group-item" href="../proc/canon_path.html#variable-ii">ii</a>
+      
+      <a class="list-group-item" href="../proc/canon_path.html#variable-is_path">is_path</a>
+      
+      <a class="list-group-item" href="../proc/canon_path.html#variable-istart">istart</a>
+      
+      <a class="list-group-item" href="../proc/canon_path.html#variable-last">last</a>
       
       <a class="list-group-item" href="../proc/canon_path.html#variable-nixpath">nixpath</a>
       
-      <a class="list-group-item" href="../proc/canon_path.html#variable-temp">temp</a>
+      <a class="list-group-item" href="../proc/canon_path.html#variable-nn">nn</a>
+      
+      <a class="list-group-item" href="../proc/canon_path.html#variable-stat">stat</a>
       
     </div>
   </div>
@@ -197,6 +205,18 @@
 
 
 
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-0" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../proc/canon_path.html#proc-next">next</a>
+      
+    </div>
+  </div>
+</div>
 
 
 
@@ -221,7 +241,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public function canon_path(path) result(canon)
+public function canon_path(path)
     
     
    
@@ -235,6 +255,7 @@ public function canon_path(path) result(canon)
  * Handles path string redundancies
  * Does not test existence of path</p>
 <p>To be replaced by realpath/_fullname in stdlib_os</p>
+<p>FIXME: Lot&rsquo;s of ugly hacks following here</p>
     
 
     <h3>Arguments</h3>
@@ -274,7 +295,7 @@ public function canon_path(path) result(canon)
     
     
     
-   <h3>Return Value <small><span class="anchor" id="variable-canon"></span>character(len=:),
+   <h3>Return Value <small><span class="anchor" id="variable-canon_path"></span>character(len=:),
   allocatable</small></h3>
     
     
@@ -295,15 +316,23 @@ public function canon_path(path) result(canon)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/canon_path.html#variable-i">i</a>
+      <a class="list-group-item" href="../proc/canon_path.html#variable-absolute">absolute</a>
       
-      <a class="list-group-item" href="../proc/canon_path.html#variable-iback">iback</a>
+      <a class="list-group-item" href="../proc/canon_path.html#variable-iend">iend</a>
       
-      <a class="list-group-item" href="../proc/canon_path.html#variable-j">j</a>
+      <a class="list-group-item" href="../proc/canon_path.html#variable-ii">ii</a>
+      
+      <a class="list-group-item" href="../proc/canon_path.html#variable-is_path">is_path</a>
+      
+      <a class="list-group-item" href="../proc/canon_path.html#variable-istart">istart</a>
+      
+      <a class="list-group-item" href="../proc/canon_path.html#variable-last">last</a>
       
       <a class="list-group-item" href="../proc/canon_path.html#variable-nixpath">nixpath</a>
       
-      <a class="list-group-item" href="../proc/canon_path.html#variable-temp">temp</a>
+      <a class="list-group-item" href="../proc/canon_path.html#variable-nn">nn</a>
+      
+      <a class="list-group-item" href="../proc/canon_path.html#variable-stat">stat</a>
       
     </div>
   </div>
@@ -319,6 +348,18 @@ public function canon_path(path) result(canon)
 
 
 
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-1" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../proc/canon_path.html#proc-next">next</a>
+      
+    </div>
+  </div>
+</div>
 
 
 
@@ -361,11 +402,11 @@ public function canon_path(path) result(canon)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i"></span>integer,</td>
+  <td><span class="anchor" id="variable-absolute"></span>logical,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>i</strong></td><td></td><td></td><td></td>
+  <td><strong>absolute</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -375,11 +416,11 @@ public function canon_path(path) result(canon)
   
 <tr>
   
-  <td><span class="anchor" id="variable-iback"></span>integer,</td>
+  <td><span class="anchor" id="variable-iend"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>iback</strong></td><td></td><td></td><td></td>
+  <td><strong>iend</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -389,11 +430,11 @@ public function canon_path(path) result(canon)
   
 <tr>
   
-  <td><span class="anchor" id="variable-j"></span>integer,</td>
+  <td><span class="anchor" id="variable-ii"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>j</strong></td><td></td><td></td><td></td>
+  <td><strong>ii</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -403,10 +444,52 @@ public function canon_path(path) result(canon)
   
 <tr>
   
-  <td><span class="anchor" id="variable-nixpath"></span>character(len=len(path)),</td>
+  <td><span class="anchor" id="variable-is_path"></span>logical,</td>
   
   <td>public</td>
   <td></td><td>::</td>
+  <td><strong>is_path</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-istart"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>istart</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-last"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>last</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nixpath"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
   <td><strong>nixpath</strong></td><td></td><td></td><td></td>
   
 </tr>
@@ -417,11 +500,25 @@ public function canon_path(path) result(canon)
   
 <tr>
   
-  <td><span class="anchor" id="variable-temp"></span>character(len=len(path)),</td>
+  <td><span class="anchor" id="variable-nn"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>temp</strong></td><td></td><td></td><td></td>
+  <td><strong>nn</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-stat"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>stat</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -444,71 +541,202 @@ public function canon_path(path) result(canon)
 
 
     
+    <section>
+    <h2>Subroutines</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-next"></span><h3>
+subroutine next(string, istart, iend, is_path)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>string</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>istart</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>iend</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>is_path</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    </section>    
+    
     
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">canon_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">canon</span><span class="p">)</span>
-    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">canon</span>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">canon_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">canon_path</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">nixpath</span>
 
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">iback</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span> <span class="kd">::</span> <span class="n">nixpath</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span> <span class="kd">::</span> <span class="n">temp</span>
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="n">last</span>
+    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_path</span><span class="p">,</span> <span class="n">absolute</span>
 
     <span class="n">nixpath</span> <span class="o">=</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-    <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">)</span>
+    <span class="n">istart</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">nn</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">iend</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">absolute</span> <span class="o">=</span> <span class="n">nixpath</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">absolute</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
+    <span class="k">else</span>
+<span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">end if</span>
 
-        <span class="c">! Skip back to last directory for &#39;/../&#39;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="k">then</span>
-
-<span class="k">            if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;/../&#39;</span><span class="p">)</span> <span class="k">then</span>
-
-<span class="k">                </span><span class="n">iback</span> <span class="o">=</span> <span class="nb">scan</span><span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">-</span><span class="mi">4</span><span class="p">),</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="n">back</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">iback</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    </span><span class="n">j</span> <span class="o">=</span> <span class="n">iback</span> <span class="o">+</span> <span class="mi">1</span>
-                    <span class="k">cycle</span>
+<span class="k">    do while</span><span class="p">(</span><span class="n">iend</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">))</span>
+        <span class="k">call </span><span class="n">next</span><span class="p">(</span><span class="n">nixpath</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">is_path</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            select case</span><span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">))</span>
+            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="c">! always drop empty paths</span>
+            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">nn</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    </span><span class="n">last</span> <span class="o">=</span> <span class="nb">scan</span><span class="p">(</span><span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">back</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+                    <span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(:</span><span class="n">last</span><span class="p">)</span>
+                    <span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="k">else</span>
+<span class="k">                    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span> <span class="n">absolute</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span> <span class="o">//</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span> <span class="o">//</span> <span class="s2">&quot;/&quot;</span>
+                    <span class="k">end if</span>
 <span class="k">                end if</span>
+<span class="k">            case </span><span class="n">default</span>
+                <span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span> <span class="o">//</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span> <span class="o">//</span> <span class="s2">&quot;/&quot;</span>
+            <span class="k">end select</span>
+<span class="k">        end if</span>
+<span class="k">    end do</span>
 
-<span class="k">            end if</span>
+<span class="k">    if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">canon_path</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">):)</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">end if</span>
 
+<span class="k">contains</span>
+
+<span class="k">    subroutine </span><span class="n">next</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_path</span><span class="p">)</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
+        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">istart</span>
+        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">iend</span>
+        <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">is_path</span>
+
+        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">nn</span>
+        <span class="kt">character</span> <span class="kd">::</span> <span class="n">tok</span><span class="p">,</span> <span class="n">last</span>
+
+        <span class="n">nn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">iend</span> <span class="o">&gt;=</span> <span class="n">nn</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            </span><span class="n">istart</span> <span class="o">=</span> <span class="n">nn</span>
+            <span class="n">iend</span> <span class="o">=</span> <span class="n">nn</span>
+            <span class="k">return</span>
 <span class="k">        end if</span>
 
-<span class="k">        if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">        </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">)</span>
+        <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
 
-            <span class="c">! Ignore current directory reference</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;./&#39;</span><span class="p">)</span> <span class="k">then</span>
+        <span class="n">is_path</span> <span class="o">=</span> <span class="n">tok</span> <span class="o">/=</span> <span class="s1">&#39;/&#39;</span>
 
-<span class="k">                </span><span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_path</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            </span><span class="n">is_path</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+            <span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
+            <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
+            <span class="k">return</span>
+<span class="k">        end if</span>
+
+<span class="k">        </span><span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
+        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">),</span> <span class="n">nn</span>
+            <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
+            <span class="k">select case</span><span class="p">(</span><span class="n">tok</span><span class="p">)</span>
+            <span class="k">case</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                <span class="k">exit</span>
+<span class="k">            case </span><span class="n">default</span>
+                <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
                 <span class="k">cycle</span>
+<span class="k">            end select</span>
+<span class="k">        end do</span>
 
-<span class="k">            end if</span>
-
-            <span class="c">! Ignore repeated separators</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;//&#39;</span><span class="p">)</span> <span class="k">then</span>
-
-<span class="k">                cycle</span>
-
-<span class="k">            end if</span>
-
-            <span class="c">! Do NOT include trailing slash</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                cycle</span>
-<span class="k">            end if</span>
-
-<span class="k">        end if</span>
-
-
-<span class="k">        </span><span class="n">temp</span><span class="p">(</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span>
-        <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
-
-    <span class="k">end do</span>
-
-<span class="k">    </span><span class="n">canon</span> <span class="o">=</span> <span class="n">temp</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
+<span class="k">    end subroutine </span><span class="n">next</span>
 <span class="k">end function </span><span class="n">canon_path</span>
 </pre></div>
 
@@ -531,7 +759,7 @@ public function canon_path(path) result(canon)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-21 14:01  
+             on 2021-03-22 07:58  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
