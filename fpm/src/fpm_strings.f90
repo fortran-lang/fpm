@@ -418,12 +418,13 @@ end subroutine resize_string
 
 !>AUTHOR: John S. Urban
 !!LICENSE: Public Domain
-!!## NAME
-!!    join(3f) - [fpm_strings:EDITING] append CHARACTER variable array into
+!>
+!!##NAME
+!!    join(3f) - [M_strings:EDITING] append CHARACTER variable array into
 !!    a single CHARACTER variable with specified separator
 !!    (LICENSE:PD)
 !!
-!!## SYNOPSIS
+!!##SYNOPSIS
 !!
 !!    pure function join(str,sep,trm,left,right,start,end) result (string)
 !!
@@ -436,13 +437,13 @@ end subroutine resize_string
 !!     character(len=*),intent(in),optional :: end
 !!     character(len=:),allocatable         :: string
 !!
-!!## DESCRIPTION
+!!##DESCRIPTION
 !!   JOIN(3f) appends the elements of a CHARACTER array into a single
 !!   CHARACTER variable, with elements 1 to N joined from left to right.
 !!   By default each element is trimmed of trailing spaces and the
 !!   default separator is a null string.
 !!
-!!## OPTIONS
+!!##OPTIONS
 !!      STR(:)  array of CHARACTER variables to be joined
 !!      SEP     separator string to place between each variable. defaults
 !!              to a null string.
@@ -453,80 +454,70 @@ end subroutine resize_string
 !!      TRM     option to trim each element of STR of trailing
 !!              spaces. Defaults to .TRUE.
 !!
-!!## RESULT
+!!##RESULT
 !!      STRING  CHARACTER variable composed of all of the elements of STR()
 !!              appended together with the optional separator SEP placed
 !!              between the elements.
 !!
-!!## EXAMPLE
+!!##EXAMPLE
 !!
 !!  Sample program:
-!!```fortran
-!!    program demo_join
-!!    use fpm_strings, only: join
-!!    implicit none
-!!    character(len=:),allocatable  :: s(:)
-!!    character(len=:),allocatable  :: out
-!!    integer                       :: i
-!!      s=[character(len=10) :: 'United',' we',' stand,', &
-!!      & ' divided',' we fall.']
-!!      out=join(s)
-!!      write(*,'(a)') out
-!!      write(*,'(a)') join(s,trm=.false.)
-!!      write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
-!!      write(*,'(a)') join(s,sep='<>')
-!!      write(*,'(a)') join(s,sep=';',left='[',right=']')
-!!      write(*,'(a)') join(s,left='[',right=']')
-!!      write(*,'(a)') join(s,left='>>')
-!!    end program demo_join
-!!```fortran
+!!
+!!   program demo_join
+!!   use M_strings, only: join
+!!   implicit none
+!!   character(len=:),allocatable  :: s(:)
+!!   character(len=:),allocatable  :: out
+!!   integer                       :: i
+!!     s=[character(len=10) :: 'United',' we',' stand,', &
+!!     & ' divided',' we fall.']
+!!     out=join(s)
+!!     write(*,'(a)') out
+!!     write(*,'(a)') join(s,trm=.false.)
+!!     write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
+!!     write(*,'(a)') join(s,sep='<>')
+!!     write(*,'(a)') join(s,sep=';',left='[',right=']')
+!!     write(*,'(a)') join(s,left='[',right=']')
+!!     write(*,'(a)') join(s,left='>>')
+!!   end program demo_join
 !!
 !!  Expected output:
 !!
-!!    United we stand, divided we fall.
-!!    United     we        stand,    divided   we fall.
-!!    United    | we       | stand,   | divided  | we fall.
-!!    United    | we       | stand,   | divided  | we fall.
-!!    United    | we       | stand,   | divided  | we fall.
-!!    United<> we<> stand,<> divided<> we fall.
-!!    [United];[ we];[ stand,];[ divided];[ we fall.]
-!!    [United][ we][ stand,][ divided][ we fall.]
-!!    >>United>> we>> stand,>> divided>> we fall.
-!!
+!!   United we stand, divided we fall.
+!!   United     we        stand,    divided   we fall.
+!!   United    | we       | stand,   | divided  | we fall.
+!!   United    | we       | stand,   | divided  | we fall.
+!!   United    | we       | stand,   | divided  | we fall.
+!!   United<> we<> stand,<> divided<> we fall.
+!!   [United];[ we];[ stand,];[ divided];[ we fall.]
+!!   [United][ we][ stand,][ divided][ we fall.]
+!!   >>United>> we>> stand,>> divided>> we fall.
 pure function join(str,sep,trm,left,right,start,end) result (string)
 
-! @(#)join(3f): append an array of character variables with specified separator into a single CHARACTER variable
+! @(#)M_strings::join(3f): merge string array into a single CHARACTER value adding specified separators, caps, prefix and suffix
 
 character(len=*),intent(in)          :: str(:)
-character(len=*),intent(in),optional :: sep
-character(len=*),intent(in),optional :: right
-character(len=*),intent(in),optional :: left
-character(len=*),intent(in),optional :: start
-character(len=*),intent(in),optional :: end
+character(len=*),intent(in),optional :: sep, right, left, start, end
 logical,intent(in),optional          :: trm
+character(len=:),allocatable         :: sep_local, left_local, right_local
 character(len=:),allocatable         :: string
-integer                              :: i
 logical                              :: trm_local
-character(len=:),allocatable         :: sep_local
-character(len=:),allocatable         :: left_local
-character(len=:),allocatable         :: right_local
-
-   if(present(sep))then    ;  sep_local=sep      ;  else  ;  sep_local=''      ;  endif
-   if(present(trm))then    ;  trm_local=trm      ;  else  ;  trm_local=.true.  ;  endif
-   if(present(left))then   ;  left_local=left    ;  else  ;  left_local=''     ;  endif
-   if(present(right))then  ;  right_local=right  ;  else  ;  right_local=''    ;  endif
-
+integer                              :: i
+   if(present(sep))then   ; sep_local=sep     ; else ; sep_local=''     ; endif
+   if(present(trm))then   ; trm_local=trm     ; else ; trm_local=.true. ; endif
+   if(present(left))then  ; left_local=left   ; else ; left_local=''    ; endif
+   if(present(right))then ; right_local=right ; else ; right_local=''   ; endif
    string=''
-   do i = 1,size(str)-1
-      if(trm_local)then
-         string=string//left_local//trim(str(i))//right_local//sep_local
-      else
-         string=string//left_local//str(i)//right_local//sep_local
-      endif
-   enddo
-   if(size(str).lt.i)then ! if str is zero-sized i will be 1, not zero
+   if(size(str).eq.0)then
       string=string//left_local//right_local
    else
+      do i = 1,size(str)-1
+         if(trm_local)then
+            string=string//left_local//trim(str(i))//right_local//sep_local
+         else
+            string=string//left_local//str(i)//right_local//sep_local
+         endif
+      enddo
       if(trm_local)then
          string=string//left_local//trim(str(i))//right_local
       else
