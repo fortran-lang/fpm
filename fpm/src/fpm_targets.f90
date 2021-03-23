@@ -1,14 +1,14 @@
 !># Build target handling
 !>
 !> This module handles the construction of the build target list
-!> from the sources list (`[[targets_from_sources]]`), the 
+!> from the sources list (`[[targets_from_sources]]`), the
 !> resolution of module-dependencies between build targets
 !> (`[[resolve_module_dependencies]]`), and the enumeration of
 !> objects required for link targets (`[[resolve_target_linking]]`).
 !>
 !> A build target (`[[build_target_t]]`) is a file to be generated
 !> by the backend (compilation and linking).
-!> 
+!>
 !> @note The current implementation is ignorant to the existence of
 !> module files (`.mod`,`.smod`). Dependencies arising from modules
 !> are based on the corresponding object files (`.o`) only.
@@ -83,13 +83,13 @@ type build_target_t
 
     !> Link flags for this build target
     character(:), allocatable :: link_flags
-    
+
     !> Compile flags for this build target
     character(:), allocatable :: compile_flags
 
     !> Flag set when first visited to check for circular dependencies
     logical :: touched = .false.
-    
+
     !> Flag set if build target is sorted for building
     logical :: sorted = .false.
 
@@ -120,10 +120,10 @@ subroutine targets_from_sources(targets,model,error)
     type(error_t), intent(out), allocatable :: error
 
     call build_target_list(targets,model)
-    
+
     call resolve_module_dependencies(targets,error)
     if (allocated(error)) return
-    
+
     call resolve_target_linking(targets,model)
 
 end subroutine targets_from_sources
@@ -176,18 +176,18 @@ subroutine build_target_list(targets,model)
                                    model%package_name,'lib'//model%package_name//'.a'))
 
     do j=1,size(model%packages)
-        
+
         associate(sources=>model%packages(j)%sources)
 
             do i=1,size(sources)
-                
+
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
                     call add_target(targets,source = sources(i), &
                                 type = FPM_TARGET_OBJECT,&
                                 output_file = get_object_name(sources(i)))
-                    
+
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
                         call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
@@ -199,7 +199,7 @@ subroutine build_target_list(targets,model)
                                 output_file = get_object_name(sources(i)), &
                                 source = sources(i) &
                                 )
-                    
+
                     if (sources(i)%unit_scope == FPM_SCOPE_APP) then
 
                         exe_dir = 'app'
@@ -226,7 +226,7 @@ subroutine build_target_list(targets,model)
                         ! Executable depends on library
                         call add_dependency(targets(size(targets))%ptr, targets(1)%ptr)
                     end if
-                    
+
                 end select
 
             end do
@@ -239,15 +239,15 @@ subroutine build_target_list(targets,model)
 
     function get_object_name(source) result(object_file)
         ! Generate object target path from source name and model params
-        !  
+        !
         !
         type(srcfile_t), intent(in) :: source
         character(:), allocatable :: object_file
-    
+
         integer :: i
         character(1), parameter :: filesep = '/'
         character(:), allocatable :: dir
-        
+
         object_file = canon_path(source%file_name)
 
         ! Convert any remaining directory separators to underscores
@@ -258,7 +258,7 @@ subroutine build_target_list(targets,model)
         end do
 
         object_file = join_path(model%output_directory,model%package_name,object_file)//'.o'
-    
+
     end function get_object_name
 
 end subroutine build_target_list
@@ -298,7 +298,7 @@ subroutine add_target(targets,type,output_file,source,link_libraries)
     if (present(source)) new_target%source = source
     if (present(link_libraries)) new_target%link_libraries = link_libraries
     allocate(new_target%dependencies(0))
-    
+
     targets = [targets, build_target_ptr(new_target)]
 
 end subroutine add_target
@@ -314,22 +314,22 @@ subroutine add_dependency(target, dependency)
 end subroutine add_dependency
 
 
-!> Add dependencies to source-based targets (`FPM_TARGET_OBJECT`) 
+!> Add dependencies to source-based targets (`FPM_TARGET_OBJECT`)
 !> based on any modules used by the corresponding source file.
 !>
 !>### Source file scoping
-!> 
-!> Source files are assigned a scope of either `FPM_SCOPE_LIB`, 
+!>
+!> Source files are assigned a scope of either `FPM_SCOPE_LIB`,
 !> `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`. The scope controls which
 !> modules may be used by the source file:
-!> 
+!>
 !> - Library sources (`FPM_SCOPE_LIB`) may only use modules
 !>   also with library scope. This includes library modules
 !>   from dependencies.
 !>
 !> - Executable sources (`FPM_SCOPE_APP`,`FPM_SCOPE_TEST`) may use
 !>   library modules (including dependencies) as well as any modules
-!>   corresponding to source files __in the same directory__ as the 
+!>   corresponding to source files __in the same directory__ as the
 !>   executable source.
 !>
 !> @warning If a module used by a source file cannot be resolved to
@@ -345,7 +345,7 @@ subroutine resolve_module_dependencies(targets,error)
     integer :: i, j
 
     do i=1,size(targets)
-        
+
         if (.not.allocated(targets(i)%ptr%source)) cycle
 
             do j=1,size(targets(i)%ptr%source%modules_used)
@@ -354,7 +354,7 @@ subroutine resolve_module_dependencies(targets,error)
                     ! Dependency satisfied in same file, skip
                     cycle
                 end if
-            
+
                 if (any(targets(i)%ptr%source%unit_scope == &
                     [FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST])) then
                     dep%ptr => &
@@ -377,7 +377,7 @@ subroutine resolve_module_dependencies(targets,error)
 
             end do
 
-    end do    
+    end do
 
 end subroutine resolve_module_dependencies
 
@@ -409,7 +409,7 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
                     exit
                 case default
                     if (present(include_dir)) then
-                        if (dirname(targets(k)%ptr%source%file_name) == include_dir) then
+                        if (index(dirname(targets(k)%ptr%source%file_name), include_dir) > 0) then ! source file is within the include_dir or a subdirectory
                             target_ptr => targets(k)%ptr
                             exit
                         end if
@@ -418,7 +418,7 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
             end if
 
         end do
-        
+
     end do
 
 end function find_module_dependency
@@ -502,13 +502,13 @@ contains
         do i=1,size(target%dependencies)
 
             associate(dep => target%dependencies(i)%ptr)
-            
+
                 if (.not.allocated(dep%source)) cycle
-                
+
                 ! Skip library dependencies for executable targets
-                !  since the library archive will always be linked 
+                !  since the library archive will always be linked
                 if (is_exe.and.(dep%source%unit_scope == FPM_SCOPE_LIB)) cycle
-                
+
                 ! Skip if dependency object already listed
                 if (dep%output_file .in. link_objects) cycle
 
@@ -516,10 +516,10 @@ contains
                 temp_str%s = dep%output_file
                 link_objects = [link_objects, temp_str]
 
-                ! For executable objects, also need to include non-library 
+                ! For executable objects, also need to include non-library
                 !  dependencies from dependencies (recurse)
                 if (is_exe) call get_link_objects(link_objects,dep,is_exe=.true.)
-            
+
             end associate
 
         end do

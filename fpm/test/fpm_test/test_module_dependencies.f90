@@ -39,10 +39,10 @@ contains
                             test_missing_program_use, should_fail=.true.), &
             & new_unittest("invalid-library-use", &
                             test_invalid_library_use, should_fail=.true.), &
-            & new_unittest("invalid-own-module-use", &
-                            test_invalid_own_module_use, should_fail=.true.) &
+            & new_unittest("subdirectory-module-use", &
+                            test_subdirectory_module_use) &
             ]
-            
+
     end subroutine collect_module_dependencies
 
 
@@ -62,7 +62,7 @@ contains
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
-        
+
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_2')], &
@@ -82,27 +82,27 @@ contains
         call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
                           deps = [targets(2),targets(3)], &
                           links = targets(2:3), error=error)
-        
+
         if (allocated(error)) return
 
 
         call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                           source=model%packages(1)%sources(1),error=error)
-        
+
         if (allocated(error)) return
-        
+
 
         call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
                           deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
-        
+
         if (allocated(error)) return
-        
+
     end subroutine test_library_module_use
 
 
     !> Check a program using a library module
     !>  Each program generates two targets: object file and executable
-    !> 
+    !>
     subroutine test_program_module_use(error)
 
         !> Error handling
@@ -128,13 +128,13 @@ contains
         model%output_directory = ''
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
-        
+
         scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
-        
+
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=exe_scope, &
                                     uses=[string_t('my_mod_1')])
@@ -149,7 +149,7 @@ contains
 
         call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=1, &
                           deps=[targets(2)],links=[targets(2)],error=error)
-        
+
         if (allocated(error)) return
 
         call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
@@ -204,17 +204,17 @@ contains
 
         call check_target(targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                           source=model%packages(1)%sources(1),error=error)
-        
+
         if (allocated(error)) return
 
         call check_target(targets(2)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
                           deps=[targets(1)],links=[targets(1)],error=error)
-        
+
         if (allocated(error)) return
-        
+
     end subroutine test_program_with_module
 
-    
+
     !> Check program using modules in same directory
     subroutine test_program_own_module_use(error)
 
@@ -246,7 +246,7 @@ contains
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod1.f90", &
                                     scope = exe_scope, &
                                     provides=[string_t('app_mod1')])
-        
+
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod2.f90", &
                                     scope = exe_scope, &
                                     provides=[string_t('app_mod2')],uses=[string_t('app_mod1')])
@@ -265,17 +265,17 @@ contains
 
         call check_target(targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
                           source=model%packages(1)%sources(1),error=error)
-        
+
         if (allocated(error)) return
 
         call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
                           source=model%packages(1)%sources(2),deps=[targets(1)],error=error)
-        
+
         if (allocated(error)) return
 
         call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
                           source=model%packages(1)%sources(3),deps=[targets(2)],error=error)
-        
+
         if (allocated(error)) return
 
         call check_target(targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
@@ -303,14 +303,14 @@ contains
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
-        
+
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_2')], &
                                     uses=[string_t('my_mod_3')])
 
         call targets_from_sources(targets,model,error)
-        
+
     end subroutine test_missing_library_use
 
 
@@ -336,7 +336,7 @@ contains
                                     uses=[string_t('my_mod_2')])
 
         call targets_from_sources(targets,model,error)
-        
+
     end subroutine test_missing_program_use
 
 
@@ -356,19 +356,19 @@ contains
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')])
-        
+
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod')], &
                                     uses=[string_t('app_mod')])
 
         call targets_from_sources(targets,model,error)
-        
+
     end subroutine test_invalid_library_use
 
 
     !> Check program using a non-library module in a different directory
-    subroutine test_invalid_own_module_use(error)
+    subroutine test_subdirectory_module_use(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -383,14 +383,14 @@ contains
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/subdir/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')])
-        
+
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('app_mod')])
 
         call targets_from_sources(targets,model,error)
-        
-    end subroutine test_invalid_own_module_use
+
+    end subroutine test_subdirectory_module_use
 
 
     !> Helper to create a new srcfile_t
@@ -476,7 +476,7 @@ contains
                 call test_failed(error,'There are missing link objects for target "'&
                                  //target%output_file//'"')
                 return
-                
+
             elseif (size(links) < size(target%link_objects)) then
 
                 call test_failed(error,'There are more link objects than expected for target "'&
@@ -523,7 +523,7 @@ contains
 
         target_in = .false.
         do i=1,size(haystack)
-            
+
             if (associated(haystack(i)%ptr,needle)) then
                 target_in = .true.
                 return
@@ -532,6 +532,6 @@ contains
         end do
 
     end function target_in
-    
+
 
 end module test_module_dependencies
