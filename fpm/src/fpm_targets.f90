@@ -409,7 +409,7 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
                     exit
                 case default
                     if (present(include_dir)) then
-                        if (index(dirname(targets(k)%ptr%source%file_name), include_dir) > 0) then ! source file is within the include_dir or a subdirectory
+                        if (index(dirname(targets(k)%ptr%source%file_name), include_dir) == 1) then ! source file is within the include_dir or a subdirectory
                             target_ptr => targets(k)%ptr
                             exit
                         end if
