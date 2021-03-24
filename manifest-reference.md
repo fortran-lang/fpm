@@ -188,16 +188,34 @@ Library targets are exported and useable for other projects.
 ### Library configuration
 
 Defines the exported library target of the project.
-A library is generated if the source directory is found in a project.
-The default source directory is ``src`` but can be modified in the *library* section using the *source-dir* entry.
-Paths for the source directory are given relative to the project root and use ``/`` as path separator on all platforms.
+A library is generated if the source directory or include directory is found in a project.
+The default source and include directories are ``src`` and ``include``; these can be modified in the *library* section using the *source-dir* and *include-dir* entries.
+Paths for the source and include directories are given relative to the project root and use ``/`` as path separator on all platforms.
 
 *Example:*
 
 ```toml
 [library]
 source-dir = "lib"
+include-dir = "inc"
 ```
+
+#### Include directory
+
+> Supported in Fortran fpm only
+
+Projects which use the Fortran `include` statement or C preprocessor `#include` statement, can use the *include-dir* key to specify search directories for the included files.
+*include-dir* can contain one or more directories, where multiple directories are specified using a list of strings.
+Include directories from all project dependencies are passed to the compiler using the appropriate compiler flag.
+
+*Example:*
+
+```toml
+[library]
+include-dir = ["include", "third_party/include"]
+```
+
+> *include-dir* does not currently allow using pre-built module `.mod` files
 
 #### Custom build script
 

@@ -1,5 +1,5 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob, join
+use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
@@ -39,17 +39,14 @@ subroutine build_model(model, settings, package, error)
     type(package_config_t), intent(in) :: package
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: i
+    integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir
-
-    if(settings%verbose)then
-       write(*,*)'<INFO>BUILD_NAME:',settings%build_name
-       write(*,*)'<INFO>COMPILER:  ',settings%compiler
-    endif
+    type(string_t) :: include_dir
 
     model%package_name = package%name
 
+    allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
 
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
@@ -73,9 +70,6 @@ subroutine build_model(model, settings, package, error)
         & join_path(model%output_directory,model%package_name), &
         & model%fortran_compile_flags)
     model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
-    if(settings%verbose)then
-       write(*,*)'<INFO>COMPILER OPTIONS:  ', model%fortran_compile_flags 
-    endif
 
     allocate(model%packages(model%deps%ndep))
 
@@ -147,12 +141,28 @@ subroutine build_model(model, settings, package, error)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
+            if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
             if (allocated(dependency%library)) then
-                lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
-                call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                    error=error)
-                if (allocated(error)) exit
+                
+                if (allocated(dependency%library%source_dir)) then
+                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
+                    if (is_dir(lib_dir)) then
+                        call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
+                            error=error)
+                        if (allocated(error)) exit
+                    end if
+                end if
+
+                if (allocated(dependency%library%include_dir)) then
+                    do j=1,size(dependency%library%include_dir)
+                        include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir(j)%s)
+                        if (is_dir(include_dir%s)) then
+                            model%include_dirs = [model%include_dirs, include_dir]
+                        end if
+                    end do
+                end if
+                
             end if
 
             if (allocated(dependency%build%link)) then
@@ -161,6 +171,13 @@ subroutine build_model(model, settings, package, error)
         end associate
     end do
     if (allocated(error)) return
+
+    if (settings%verbose) then
+        write(*,*)'<INFO> BUILD_NAME: ',settings%build_name
+        write(*,*)'<INFO> COMPILER:  ',settings%compiler
+        write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags 
+        write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']' 
+     end if
 
 end subroutine build_model
 

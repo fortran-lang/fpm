@@ -66,6 +66,10 @@ interface str
     module procedure str_int, str_int64, str_logical
 end interface
 
+interface string_t
+    module procedure new_string_t
+end interface string_t
+
 contains
 
 !> test if a CHARACTER string ends with a specified suffix
@@ -193,6 +197,15 @@ elemental pure function lower(str,begin,end) result (string)
 
 end function lower
 
+!> Helper function to generate a new string_t instance
+!>  (Required due to the allocatable component)
+function new_string_t(s) result(string)
+    character(*), intent(in) :: s
+    type(string_t) :: string
+
+    string%s = s
+
+end function new_string_t
 
 !> Check if array of TYPE(STRING_T) matches a particular CHARACTER string
 !!

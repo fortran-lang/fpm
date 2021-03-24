@@ -16,7 +16,8 @@ module fpm_manifest
     use fpm_error, only : error_t, fatal_error, file_not_found_error
     use fpm_toml, only : toml_table, read_package_file
     use fpm_manifest_test, only : test_config_t
-    use fpm_filesystem, only: join_path, exists, dirname
+    use fpm_filesystem, only: join_path, exists, dirname, is_dir
+    use fpm_strings, only: string_t
     implicit none
     private
 
@@ -35,6 +36,7 @@ contains
         type(library_config_t), intent(out) :: self
 
         self%source_dir = "src"
+        self%include_dir = [string_t("include")]
 
     end subroutine default_library
 
@@ -140,7 +142,9 @@ contains
 
         ! Populate library in case we find the default src directory
         if (.not.allocated(package%library) .and. &
-            & exists(join_path(root, "src"))) then
+            & (is_dir(join_path(root, "src")) .or. &
+            &  is_dir(join_path(root, "include")))) then
+
             allocate(package%library)
             call default_library(package%library)
         end if

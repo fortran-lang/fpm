@@ -5,10 +5,12 @@
 !>```toml
 !>[library]
 !>source-dir = "path"
+!>include-dir = ["path1","path2"]
 !>build-script = "file"
 !>```
 module fpm_manifest_library
     use fpm_error, only : error_t, syntax_error
+    use fpm_strings, only: string_t, string_cat
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     implicit none
     private
@@ -21,6 +23,9 @@ module fpm_manifest_library
 
         !> Source path prefix
         character(len=:), allocatable :: source_dir
+
+        !> Include path prefix
+        type(string_t), allocatable :: include_dir(:)
 
         !> Alternative build script to be invoked
         character(len=:), allocatable :: build_script
@@ -54,6 +59,14 @@ contains
         call get_value(table, "source-dir", self%source_dir, "src")
         call get_value(table, "build-script", self%build_script)
 
+        call get_value(table, "include-dir", self%include_dir, error)
+        if (allocated(error)) return
+
+        ! Set default value of include-dir if not found in manifest
+        if (.not.allocated(self%include_dir)) then
+            self%include_dir = [string_t("include")]
+        end if
+
     end subroutine new_library
 
 
@@ -80,7 +93,7 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
                 exit
 
-            case("source-dir", "build-script")
+            case("source-dir", "include-dir", "build-script")
                 continue
 
             end select
@@ -115,6 +128,9 @@ contains
         write(unit, fmt) "Library target"
         if (allocated(self%source_dir)) then
             write(unit, fmt) "- source directory", self%source_dir
+        end if
+        if (allocated(self%include_dir)) then
+            write(unit, fmt) "- include directory", string_cat(self%include_dir,",")
         end if
         if (allocated(self%build_script)) then
             write(unit, fmt) "- custom build", self%build_script
