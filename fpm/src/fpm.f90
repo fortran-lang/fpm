@@ -162,15 +162,17 @@ end subroutine build_model
 subroutine check_modules(model) 
     type(fpm_model_t), intent(in) :: model
     integer :: maxsize
-    integer :: i,j,k,modi
+    integer :: i,j,k,l,m,modi
     type(string_t), allocatable :: modules(:)
     ! Initialise the size of array
     maxsize = 0
-    ! Get number of modules provided by each source file
-    do i=1,size(model%packages(1)%sources)
-      if (allocated(model%packages(1)%sources(j)%modules_provided)) then
-        maxsize = maxsize + size(model%packages(1)%sources(i)%modules_provided)
-      end if
+    ! Get number of modules provided by each source file of every package
+    do i=1,size(model%packages)
+      do j=1,size(model%packages(i)%sources)
+        if (allocated(model%packages(i)%sources(j)%modules_provided)) then
+          maxsize = maxsize + size(model%packages(i)%sources(j)%modules_provided)
+        end if
+      end do
     end do
     ! Allocate array to contain distinct names of modules
     allocate(modules(1:maxsize))
@@ -178,19 +180,21 @@ subroutine check_modules(model)
     ! Initialise index to point at start of the newly allocated array
     modi = 1
 
-    ! Loop through modules provided by each source file
+    ! Loop through modules provided by each source file of every package
     ! Add it to the array if it is not already there
     ! Otherwise print out warning about duplicates
-    do j=1,size(model%packages(1)%sources)
-      if (allocated(model%packages(1)%sources(j)%modules_provided)) then
-        do k=1,size(model%packages(1)%sources(j)%modules_provided)
-          if (model%packages(1)%sources(j)%modules_provided(k)%s.in.modules) then
-            print *,"Warning: Module ",model%packages(1)%sources(j)%modules_provided(k)%s," is duplicate"
-          else
-            modules(modi) = model%packages(1)%sources(j)%modules_provided(k)
-          end if
-        end do
-      end if
+    do k=1,size(model%packages)
+      do l=1,size(model%packages(k)%sources)
+        if (allocated(model%packages(k)%sources(l)%modules_provided)) then
+          do m=1,size(model%packages(k)%sources(l)%modules_provided)
+            if (model%packages(k)%sources(l)%modules_provided(m)%s.in.modules) then
+              print *,"Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s," is duplicate"
+            else
+              modules(modi) = model%packages(k)%sources(l)%modules_provided(m)
+            end if
+          end do
+        end if
+      end do
     end do
 end subroutine check_modules
 
