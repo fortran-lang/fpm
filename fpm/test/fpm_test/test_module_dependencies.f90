@@ -40,7 +40,9 @@ contains
             & new_unittest("invalid-library-use", &
                             test_invalid_library_use, should_fail=.true.), &
             & new_unittest("subdirectory-module-use", &
-                            test_subdirectory_module_use) &
+                            test_subdirectory_module_use), &
+            & new_unittest("invalid-subdirectory-module-use", &
+                            test_invalid_subdirectory_module_use, should_fail=.true.) &
             ]
 
     end subroutine collect_module_dependencies
@@ -367,7 +369,7 @@ contains
     end subroutine test_invalid_library_use
 
 
-    !> Check program using a non-library module in a different directory
+    !> Check program using a non-library module in a sub-directory
     subroutine test_subdirectory_module_use(error)
 
         !> Error handling
@@ -392,6 +394,30 @@ contains
 
     end subroutine test_subdirectory_module_use
 
+    !> Check program using a non-library module in a differente sub-directory
+    subroutine test_invalid_subdirectory_module_use(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+
+        model%output_directory = ''
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
+
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/diff_dir/app_mod.f90", &
+                                    scope = FPM_SCOPE_APP, &
+                                    provides=[string_t('app_mod')])
+
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/prog_dir/my_program.f90", &
+                                    scope=FPM_SCOPE_APP, &
+                                    uses=[string_t('app_mod')])
+
+        call targets_from_sources(targets,model,error)
+
+    end subroutine test_invalid_subdirectory_module_use
 
     !> Helper to create a new srcfile_t
     function new_test_source(type,file_name, scope, uses, provides) result(src)
