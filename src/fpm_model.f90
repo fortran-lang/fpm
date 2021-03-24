@@ -123,6 +123,9 @@ type :: fpm_model_t
     !> Base directory for build
     character(:), allocatable :: output_directory
 
+    !> Include directories
+    type(string_t), allocatable :: include_dirs(:)
+
     !> Native libraries to link against
     type(string_t), allocatable :: link_libraries(:)
     

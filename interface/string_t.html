@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>get_value &ndash; Fortran-lang/fpm</title>
+    <title>string_t &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,7 +110,7 @@
     
   
   <div class="row">
-    <h1>get_value
+    <h1>string_t
    <small>Interface</small>
     
     </h1>
@@ -128,24 +128,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.1% of total for procedures.</p>Including implementation: 36 statements,  1.3% of total for procedures.">3 statements</a>
+    title="<p> 0.1% of total for procedures.</p>Including implementation: 8 statements,  0.3% of total for procedures.">3 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/toml.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_strings.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/toml.f90.html'>toml.f90</a></li>
+     <li><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
     
-     <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
+     <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     
   
-     <li class="active">get_value</li>
+     <li class="active">string_t</li>
   </ol>
 </div>
 </div>
@@ -190,7 +190,7 @@
   <div id="modprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/get_value.html#moduleprocedure-get_child_value_string_list">get_child_value_string_list</a>
+      <a class="list-group-item" href="../interface/string_t.html#moduleprocedure-new_string_t">new_string_t</a>
       
     </div>
   </div>
@@ -204,7 +204,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>public interface get_value</h2>
+      <h2>public interface string_t</h2>
    
      
      
@@ -239,7 +239,7 @@
   <div id="modprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/get_value.html#moduleprocedure-get_child_value_string_list">get_child_value_string_list</a>
+      <a class="list-group-item" href="../interface/string_t.html#moduleprocedure-new_string_t">new_string_t</a>
       
     </div>
   </div>
@@ -260,8 +260,8 @@
    
     
   <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-get_child_value_string_list"></span><h3>
-private subroutine get_child_value_string_list(table, key, list, error)
+  <div class="panel-heading codesum"><span class="anchor" id="proc-new_string_t"></span><h3>
+private function new_string_t(s) result(string)
     
     
    
@@ -269,6 +269,11 @@ private subroutine get_child_value_string_list(table, key, list, error)
   <div class="panel-body">
        
     
+
+
+
+<p>Helper function to generate a new string_t instance
+  (Required due to the allocatable component)</p>
     
     <h4>Arguments</h4>
     
@@ -289,57 +294,12 @@ private subroutine get_child_value_string_list(table, key, list, error)
   
 <tr>
   
-  <td><span class="anchor" ></span>type(toml_table),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>table</strong></td><td><p>Instance of the TOML data structure</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
   <td><span class="anchor" ></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>key</strong></td><td><p>Key to read from</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  <td>intent(out),</td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>list</strong>(:)</td><td><p>List of strings to read</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
-  <td>intent(out),</td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td><p>Error handling</p></td>
+  <td><strong>s</strong></td><td></td>
   
 </tr>
 
@@ -348,6 +308,15 @@ private subroutine get_child_value_string_list(table, key, list, error)
 
       
     
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>type(<a href='../type/string_t.html'>string_t</a>)
+  </small></h4>
+  
     
 
   </div>
