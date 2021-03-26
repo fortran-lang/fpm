@@ -1,0 +1,4 @@
+name = "fortran_includes"
+
+[library]
+include-dir = "inc"

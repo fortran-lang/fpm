@@ -39,7 +39,7 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\hello_world
+%fpm_path% run --target hello_world
 if errorlevel 1 exit 1
 
 %fpm_path% run
@@ -53,7 +53,7 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\hello_fpm
+%fpm_path% run --target hello_fpm
 if errorlevel 1 exit 1
 
 
@@ -83,16 +83,16 @@ if errorlevel 1 exit 1
 %fpm_path% test
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\say_Hello
+%fpm_path% run --target say_Hello
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\say_goodbye
+%fpm_path% run --target say_goodbye
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\test\greet_test
+%fpm_path% test --target greet_test
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\test\farewell_test
+%fpm_path% test --target farewell_test
 if errorlevel 1 exit 1
 
 
@@ -103,16 +103,16 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\say_hello_world
+%fpm_path% run --target say_hello_world
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\say_goodbye
+%fpm_path% run --target say_goodbye
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\test\greet_test
+%fpm_path% test --target greet_test
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\test\farewell_test
+%fpm_path% test --target farewell_test
 
 
 cd ..\with_examples
@@ -122,10 +122,10 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\example\demo-prog
+%fpm_path% run --example --target demo-prog
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\demo-prog
+%fpm_path% run --target demo-prog
 if errorlevel 1 exit 1
 
 
@@ -136,15 +136,15 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\auto_discovery_off
+%fpm_path% run --target auto_discovery_off
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\test\my_test
+%fpm_path% test --target my_test
 if errorlevel 1 exit 1
 
-if exist .\build\gfortran_debug\app\unused exit /B 1
+if exist .\build\gfortran_*\app\unused exit /B 1
 
-if exist .\build\gfortran_debug\test\unused_test exit /B 1
+if exist .\build\gfortran_*\test\unused_test exit /B 1
 
 
 cd ..\with_c
@@ -154,7 +154,7 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\with_c
+%fpm_path% run --target with_c
 if errorlevel 1 exit 1
 
 
@@ -173,7 +173,7 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\Program_with_module
+%fpm_path% run --target Program_with_module
 if errorlevel 1 exit 1
 
 
@@ -184,7 +184,31 @@ del /q /f build
 %fpm_path% build
 if errorlevel 1 exit 1
 
-.\build\gfortran_debug\app\gomp_test
+%fpm_path% run --target gomp_test
+if errorlevel 1 exit 1
+
+
+cd ..\fortran_includes
+if errorlevel 1 exit 1
+
+del /q /f build
+%fpm_path% build
+if errorlevel 1 exit 1
+
+
+cd ..\c_includes
+if errorlevel 1 exit 1
+
+del /q /f build
+%fpm_path% build
+if errorlevel 1 exit 1
+
+
+cd ..\c_header_only
+if errorlevel 1 exit 1
+
+del /q /f build
+%fpm_path% build
 if errorlevel 1 exit 1
 
 cd ..\..

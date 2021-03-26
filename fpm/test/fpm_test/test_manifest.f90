@@ -4,6 +4,7 @@ module test_manifest
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_manifest
+    use fpm_strings, only: operator(.in.)
     implicit none
     private
 
@@ -182,6 +183,16 @@ contains
         call check_string(error, package%library%source_dir, "src", &
             & "Default library source-dir")
         if (allocated(error)) return
+
+        if (.not.allocated(package%library%include_dir)) then
+            call test_failed(error,"Default include-dir list not allocated")
+            return
+        end if
+
+        if (.not.("include".in.package%library%include_dir)) then
+            call test_failed(error,"'include' not in default include-dir list")
+            return
+        end if
 
     end subroutine test_default_library
 
@@ -578,6 +589,16 @@ contains
         call check_string(error, library%source_dir, "src", &
             & "Default library source-dir")
         if (allocated(error)) return
+
+        if (.not.allocated(library%include_dir)) then
+            call test_failed(error,"Default include-dir list not allocated")
+            return
+        end if
+
+        if (.not.("include".in.library%include_dir)) then
+            call test_failed(error,"'include' not in default include-dir list")
+            return
+        end if
 
     end subroutine test_library_empty
 
