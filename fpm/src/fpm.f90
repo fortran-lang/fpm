@@ -45,12 +45,12 @@ subroutine build_model(model, settings, package, error)
     character(len=:), allocatable :: manifest, lib_dir
 
     logical :: duplicates_found = .false.
+    type(string_t) :: include_dir
 
     if(settings%verbose)then
        write(*,*)'<INFO>BUILD_NAME:',settings%build_name
        write(*,*)'<INFO>COMPILER:  ',settings%compiler
     endif
-    type(string_t) :: include_dir
 
     model%package_name = package%name
 
