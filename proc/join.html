@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.8% of total for procedures.">50 statements</a>
+    title=" 1.7% of total for procedures.">48 statements</a>
      </li> 
      
      
@@ -236,7 +236,7 @@ public pure function join(str, sep, trm, left, right, start, end) result(string)
 
     
     <h2 id="name">NAME</h2>
-<div class="codehilite"><pre><span></span><code><span class="n">join</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="p">[</span><span class="n">fpm_strings</span><span class="p">:</span><span class="n">EDITING</span><span class="p">]</span> <span class="n">append</span> <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">array</span> <span class="n">into</span>
+<div class="codehilite"><pre><span></span><code><span class="n">join</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="p">[</span><span class="n">M_strings</span><span class="p">:</span><span class="n">EDITING</span><span class="p">]</span> <span class="n">append</span> <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">array</span> <span class="n">into</span>
 <span class="n">a</span> <span class="n">single</span> <span class="n">CHARACTER</span> <span class="n">variable</span> <span class="n">with</span> <span class="n">specified</span> <span class="n">separator</span>
 <span class="p">(</span><span class="n">LICENSE</span><span class="p">:</span><span class="n">PD</span><span class="p">)</span>
 </code></pre></div>
@@ -278,36 +278,38 @@ public pure function join(str, sep, trm, left, right, start, end) result(string)
 </code></pre></div>
 
 <h2 id="example">EXAMPLE</h2>
-<p>Sample program:
-<code>fortran
-    program demo_join
-    use fpm_strings, only: join
-    implicit none
-    character(len=:),allocatable  :: s(:)
-    character(len=:),allocatable  :: out
-    integer                       :: i
-      s=[character(len=10) :: 'United',' we',' stand,', &amp;
-      &amp; ' divided',' we fall.']
-      out=join(s)
-      write(*,'(a)') out
-      write(*,'(a)') join(s,trm=.false.)
-      write(*,'(a)') (join(s,trm=.false.,sep='|'),i=1,3)
-      write(*,'(a)') join(s,sep='&lt;&gt;')
-      write(*,'(a)') join(s,sep=';',left='[',right=']')
-      write(*,'(a)') join(s,left='[',right=']')
-      write(*,'(a)') join(s,left='&gt;&gt;')
-    end program demo_join</code>fortran</p>
+<p>Sample program:</p>
+<p>program demo_join
+   use M_strings, only: join
+   implicit none
+   character(len=:),allocatable  :: s(:)
+   character(len=:),allocatable  :: out
+   integer                       :: i
+     s=[character(len=10) :: &lsquo;United&rsquo;,&rsquo; we&rsquo;,&rsquo; stand,&rsquo;, &amp;
+     &amp; &lsquo; divided&rsquo;,&rsquo; we fall.&rsquo;]
+     out=join(s)
+     write(<em>,&rsquo;(a)&rsquo;) out
+     write(</em>,&rsquo;(a)&rsquo;) join(s,trm=.false.)
+     write(<em>,&rsquo;(a)&rsquo;) (join(s,trm=.false.,sep=&rsquo;|&rsquo;),i=1,3)
+     write(</em>,&rsquo;(a)&rsquo;) join(s,sep=&rsquo;&lt;&gt;&rsquo;)
+     write(<em>,&rsquo;(a)&rsquo;) join(s,sep=&rsquo;;&rsquo;,left=&rsquo;[&lsquo;,right=&rsquo;]&rsquo;)
+     write(</em>,&rsquo;(a)&rsquo;) join(s,left=&rsquo;[&lsquo;,right=&rsquo;]&rsquo;)
+     write(*,&rsquo;(a)&rsquo;) join(s,left=&rsquo;&gt;&gt;&rsquo;)
+   end program demo_join</p>
 <p>Expected output:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">United</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="w"> </span><span class="n">divided</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
-<span class="n">United</span><span class="w">     </span><span class="n">we</span><span class="w">        </span><span class="n">stand</span><span class="p">,</span><span class="w">    </span><span class="n">divided</span><span class="w">   </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
-<span class="n">United</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">divided</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
-<span class="n">United</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">divided</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
-<span class="n">United</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">divided</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
-<span class="n">United</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">we</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">divided</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
-<span class="o">[</span><span class="n">United</span><span class="o">]</span><span class="p">;</span><span class="o">[</span><span class="n"> we</span><span class="o">]</span><span class="p">;</span><span class="o">[</span><span class="n"> stand,</span><span class="o">]</span><span class="p">;</span><span class="o">[</span><span class="n"> divided</span><span class="o">]</span><span class="p">;</span><span class="o">[</span><span class="n"> we fall.</span><span class="o">]</span><span class="w"></span>
-<span class="o">[</span><span class="n">United</span><span class="o">][</span><span class="n"> we</span><span class="o">][</span><span class="n"> stand,</span><span class="o">][</span><span class="n"> divided</span><span class="o">][</span><span class="n"> we fall.</span><span class="o">]</span><span class="w"></span>
-<span class="o">&gt;&gt;</span><span class="n">United</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">we</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">stand</span><span class="p">,</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">divided</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">fall</span><span class="p">.</span><span class="w"></span>
-</code></pre></div>
+<p>United we stand, divided we fall.
+   United     we        stand,    divided   we fall.
+   United    | we       | stand,   | divided  | we fall.
+   United    | we       | stand,   | divided  | we fall.
+   United    | we       | stand,   | divided  | we fall.
+   United&lt;&gt; we&lt;&gt; stand,&lt;&gt; divided&lt;&gt; we fall.
+   [United];[ we];[ stand,];[ divided];[ we fall.]
+   [United][ we][ stand,][ divided][ we fall.]</p>
+<blockquote>
+<blockquote>
+<p>United&gt;&gt; we&gt;&gt; stand,&gt;&gt; divided&gt;&gt; we fall.</p>
+</blockquote>
+</blockquote>
     
 
     <h3>Arguments</h3>
@@ -613,40 +615,36 @@ public pure function join(str, sep, trm, left, right, start, end) result(string)
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="k">pure function </span><span class="n">join</span><span class="p">(</span><span class="n">str</span><span class="p">,</span><span class="n">sep</span><span class="p">,</span><span class="n">trm</span><span class="p">,</span><span class="n">left</span><span class="p">,</span><span class="n">right</span><span class="p">,</span><span class="n">start</span><span class="p">,</span><span class="k">end</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
 
-<span class="c">! @(#)join(3f): append an array of character variables with specified separator into a single CHARACTER variable</span>
+<span class="c">! @(#)M_strings::join(3f): merge string array into a single CHARACTER value adding specified separators, caps, prefix and suffix</span>
 
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">str</span><span class="p">(:)</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">sep</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">right</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">left</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">start</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="k">end</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">sep</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="k">end</span>
 <span class="kt">logical</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span>          <span class="kd">::</span> <span class="n">trm</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="n">sep_local</span><span class="p">,</span> <span class="n">left_local</span><span class="p">,</span> <span class="n">right_local</span>
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="n">string</span>
-<span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">i</span>
 <span class="kt">logical</span>                              <span class="kd">::</span> <span class="n">trm_local</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="n">sep_local</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="n">left_local</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="n">right_local</span>
-
-   <span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">sep</span><span class="p">))</span><span class="k">then</span>    <span class="p">;</span>  <span class="n">sep_local</span><span class="o">=</span><span class="n">sep</span>      <span class="p">;</span>  <span class="k">else</span>  <span class="p">;</span>  <span class="n">sep_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span>      <span class="p">;</span>  <span class="k">endif</span>
-<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">trm</span><span class="p">))</span><span class="k">then</span>    <span class="p">;</span>  <span class="n">trm_local</span><span class="o">=</span><span class="n">trm</span>      <span class="p">;</span>  <span class="k">else</span>  <span class="p">;</span>  <span class="n">trm_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>  <span class="p">;</span>  <span class="k">endif</span>
-<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">left</span><span class="p">))</span><span class="k">then</span>   <span class="p">;</span>  <span class="n">left_local</span><span class="o">=</span><span class="n">left</span>    <span class="p">;</span>  <span class="k">else</span>  <span class="p">;</span>  <span class="n">left_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span>     <span class="p">;</span>  <span class="k">endif</span>
-<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">right</span><span class="p">))</span><span class="k">then</span>  <span class="p">;</span>  <span class="n">right_local</span><span class="o">=</span><span class="n">right</span>  <span class="p">;</span>  <span class="k">else</span>  <span class="p">;</span>  <span class="n">right_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span>    <span class="p">;</span>  <span class="k">endif</span>
-
+<span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">i</span>
+   <span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">sep</span><span class="p">))</span><span class="k">then</span>   <span class="p">;</span> <span class="n">sep_local</span><span class="o">=</span><span class="n">sep</span>     <span class="p">;</span> <span class="k">else</span> <span class="p">;</span> <span class="n">sep_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span>     <span class="p">;</span> <span class="k">endif</span>
+<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">trm</span><span class="p">))</span><span class="k">then</span>   <span class="p">;</span> <span class="n">trm_local</span><span class="o">=</span><span class="n">trm</span>     <span class="p">;</span> <span class="k">else</span> <span class="p">;</span> <span class="n">trm_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span> <span class="p">;</span> <span class="k">endif</span>
+<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">left</span><span class="p">))</span><span class="k">then</span>  <span class="p">;</span> <span class="n">left_local</span><span class="o">=</span><span class="n">left</span>   <span class="p">;</span> <span class="k">else</span> <span class="p">;</span> <span class="n">left_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span>    <span class="p">;</span> <span class="k">endif</span>
+<span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">right</span><span class="p">))</span><span class="k">then</span> <span class="p">;</span> <span class="n">right_local</span><span class="o">=</span><span class="n">right</span> <span class="p">;</span> <span class="k">else</span> <span class="p">;</span> <span class="n">right_local</span><span class="o">=</span><span class="s1">&#39;&#39;</span>   <span class="p">;</span> <span class="k">endif</span>
 <span class="k">   </span><span class="n">string</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-   <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">str</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
-      <span class="k">if</span><span class="p">(</span><span class="n">trm_local</span><span class="p">)</span><span class="k">then</span>
-<span class="k">         </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">//</span><span class="n">right_local</span><span class="o">//</span><span class="n">sep_local</span>
-      <span class="k">else</span>
-<span class="k">         </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">//</span><span class="n">right_local</span><span class="o">//</span><span class="n">sep_local</span>
-      <span class="k">endif</span>
-<span class="k">   enddo</span>
-<span class="k">   if</span><span class="p">(</span><span class="n">trm_local</span><span class="p">)</span><span class="k">then</span>
-<span class="k">      </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">//</span><span class="n">right_local</span>
+   <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">str</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<span class="k">      </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="n">right_local</span>
    <span class="k">else</span>
-<span class="k">      </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">//</span><span class="n">right_local</span>
-   <span class="k">endif</span>
+<span class="k">      do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">str</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+         <span class="k">if</span><span class="p">(</span><span class="n">trm_local</span><span class="p">)</span><span class="k">then</span>
+<span class="k">            </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">//</span><span class="n">right_local</span><span class="o">//</span><span class="n">sep_local</span>
+         <span class="k">else</span>
+<span class="k">            </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">//</span><span class="n">right_local</span><span class="o">//</span><span class="n">sep_local</span>
+         <span class="k">endif</span>
+<span class="k">      enddo</span>
+<span class="k">      if</span><span class="p">(</span><span class="n">trm_local</span><span class="p">)</span><span class="k">then</span>
+<span class="k">         </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">//</span><span class="n">right_local</span>
+      <span class="k">else</span>
+<span class="k">         </span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="n">left_local</span><span class="o">//</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">//</span><span class="n">right_local</span>
+      <span class="k">endif</span>
+<span class="k">   endif</span>
 <span class="k">   if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">start</span><span class="p">))</span><span class="n">string</span><span class="o">=</span><span class="n">start</span><span class="o">//</span><span class="n">string</span>
    <span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="k">end</span><span class="p">))</span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="o">//</span><span class="k">end</span>
 <span class="k">end function </span><span class="n">join</span>
@@ -671,7 +669,7 @@ public pure function join(str, sep, trm, left, right, start, end) result(string)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-03-27 19:16  
+             on 2021-03-27 20:31  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
