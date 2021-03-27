@@ -5,7 +5,7 @@ Its key goal is to improve the user experience of Fortran programmers.
 It does so by making it easier to build your Fortran program or library, run the
 executables, tests, and examples, and distribute it as a dependency to other
 Fortran projects.
-Fpm's user interface is modeled after [Rust's Cargo](https://doc.rust-lang.org/cargo/) ([Github Repo](https://github.com/rust-lang/cargo)),
+Fpm's user interface is modeled after [Rust's Cargo](https://doc.rust-lang.org/cargo/),
 so if you're familiar with that tool, you will feel at home with fpm.
 Fpm's long term vision is to nurture and grow the ecosystem of modern Fortran
 applications and libraries.
