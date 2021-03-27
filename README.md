@@ -5,20 +5,20 @@ Its key goal is to improve the user experience of Fortran programmers.
 It does so by making it easier to build your Fortran program or library, run the
 executables, tests, and examples, and distribute it as a dependency to other
 Fortran projects.
-Fpm's user interface is modeled after [Rust's Cargo](https://crates.io/),
+Fpm's user interface is modeled after [Rust's Cargo](https://doc.rust-lang.org/cargo/),
 so if you're familiar with that tool, you will feel at home with fpm.
 Fpm's long term vision is to nurture and grow the ecosystem of modern Fortran
 applications and libraries.
 
 Fpm is an early prototype and is evolving rapidly.
 You can use it to build and package your Fortran projects, as well as to use
-existing fpm packages as dependencies.
+[existing fpm packages](https://github.com/fortran-lang/fpm-registry) as dependencies.
 Fpm's behavior and user interface may change as it evolves, however as fpm
 matures and we enter production, we will aim to stay backwards compatible.
 Please follow the [issues](https://github.com/fortran-lang/fpm/issues) to
 contribute and/or stay up to date with the development.
 Before opening a bug report or a feature suggestion, please read our
-[Contributor Guide](CONTRIBUTING.md).
+[Contributor Guide](CONTRIBUTING.md). You can also discuss your ideas and queries with the community in [fpm discussions](https://github.com/fortran-lang/fpm/discussions), or more broadly on [Fortran-Lang Discourse](https://fortran-lang.discourse.group/)
 
 Fortran Package Manager is not to be confused with
 [Jordan Sissel's fpm](https://github.com/jordansissel/fpm), a more general,
