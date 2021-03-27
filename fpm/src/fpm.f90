@@ -47,11 +47,6 @@ subroutine build_model(model, settings, package, error)
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
 
-    if(settings%verbose)then
-       write(*,*)'<INFO>BUILD_NAME:',settings%build_name
-       write(*,*)'<INFO>COMPILER:  ',settings%compiler
-    endif
-
     model%package_name = package%name
 
     allocate(model%include_dirs(0))
