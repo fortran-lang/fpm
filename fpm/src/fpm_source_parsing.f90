@@ -33,7 +33,8 @@ character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
                               'iso_fortran_env', &
                               'ieee_arithmetic', &
                               'ieee_exceptions', &
-                              'ieee_features  ']
+                              'ieee_features  ', &
+                              'omp_lib        ']
 
 contains
 
