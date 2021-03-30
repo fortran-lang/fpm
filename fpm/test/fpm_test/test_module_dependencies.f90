@@ -40,8 +40,6 @@ contains
                             test_missing_program_use, should_fail=.true.), &
             & new_unittest("invalid-library-use", &
                             test_invalid_library_use, should_fail=.true.), &
-            & new_unittest("invalid-own-module-use", &
-                            test_invalid_own_module_use, should_fail=.true.), &
             & new_unittest("package-with-no-duplicates", &
                             test_package_with_no_module_duplicates), &
             & new_unittest("package-with-duplicates-in-same-source", &
@@ -404,6 +402,8 @@ contains
                                     uses=[string_t('app_mod')])
 
         call targets_from_sources(targets,model,error)
+    
+    end subroutine test_subdirectory_module_use
 
     !> Check program with no duplicate modules
     subroutine test_package_with_no_module_duplicates(error)
@@ -411,7 +411,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(fpm_model_t) :: model
-        logical :: duplicates_found
+        logical :: duplicates_found = .false.
 
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
@@ -498,8 +498,6 @@ contains
             return
         end if
     end subroutine test_package_module_duplicates_two_packages
-    
-    end subroutine test_subdirectory_module_use
 
     !> Check program using a non-library module in a differente sub-directory
     subroutine test_invalid_subdirectory_module_use(error)
