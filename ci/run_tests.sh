@@ -1,102 +1,98 @@
 #!/bin/bash
 set -ex
 
-cd $(dirname $0)/../fpm
+cd "$(dirname $0)/.."
 
-fpm build $@
-
-# Run fpm executable
-fpm run $@
-fpm run $@ -- --version
-fpm run $@ -- --help
-
-# Run tests
-rm -rf fpm_scratch_*/
-fpm test $@
-rm -rf fpm_scratch_*/
-
-f_fpm_path="$(fpm run $@ --runner echo)"
-
-# Let fpm build itself
-"${f_fpm_path}" build
-
-# Install fpm into local directory
-"${f_fpm_path}" install --prefix "$PWD/_dist" --no-rebuild
+if [ "$1" ]; then
+   fpm="$1"
+else
+   fpm=fpm
+fi
 
 # Build example packages
-cd ../example_packages/
+pushd example_packages/
 rm -rf ./*/build
 
-cd hello_world
+pushd hello_world
+"$fpm" build
+"$fpm" run --target hello_world
+"$fpm" run
+popd
 
-"${f_fpm_path}" build
-"${f_fpm_path}" run --target hello_world
-"${f_fpm_path}" run
+pushd hello_fpm
+"$fpm" build
+"$fpm" run --target hello_fpm
+popd
 
-cd ../hello_fpm
-"${f_fpm_path}" build
-"${f_fpm_path}" run --target hello_fpm
+pushd circular_test
+"$fpm" build
+popd
 
-cd ../circular_test
-"${f_fpm_path}" build
+pushd circular_example
+"$fpm" build
+popd
 
-cd ../circular_example
-"${f_fpm_path}" build
+pushd hello_complex
+"$fpm" build
+"$fpm" test
+"$fpm" run --target say_Hello
+"$fpm" run --target say_goodbye
+"$fpm" test --target greet_test
+"$fpm" test --target farewell_test
+popd
 
-cd ../hello_complex
-"${f_fpm_path}" build
-"${f_fpm_path}" test
-"${f_fpm_path}" run --target say_Hello
-"${f_fpm_path}" run --target say_goodbye
-"${f_fpm_path}" test --target greet_test
-"${f_fpm_path}" test --target farewell_test
+pushd hello_complex_2
+"$fpm" build
+"$fpm" run --target say_hello_world
+"$fpm" run --target say_goodbye
+"$fpm" test --target greet_test
+"$fpm" test --target farewell_test
+popd
 
-cd ../hello_complex_2
-"${f_fpm_path}" build
-"${f_fpm_path}" run --target say_hello_world
-"${f_fpm_path}" run --target say_goodbye
-"${f_fpm_path}" test --target greet_test
-"${f_fpm_path}" test --target farewell_test
+pushd with_examples
+"$fpm" build
+"$fpm" run --example --target demo-prog
+"$fpm" run --target demo-prog
+popd
 
-cd ../with_examples
-"${f_fpm_path}" build
-"${f_fpm_path}" run --example --target demo-prog
-"${f_fpm_path}" run --target demo-prog
-
-cd ../auto_discovery_off
-"${f_fpm_path}" build
-"${f_fpm_path}" run --target auto_discovery_off
-"${f_fpm_path}" test --target my_test
+pushd auto_discovery_off
+"$fpm" build
+"$fpm" run --target auto_discovery_off
+"$fpm" test --target my_test
 test ! -x ./build/gfortran_*/app/unused
 test ! -x ./build/gfortran_*/test/unused_test
+popd
 
-cd ../with_c
-"${f_fpm_path}" build
-"${f_fpm_path}" run --target with_c
+pushd with_c
+"$fpm" build
+"$fpm" run --target with_c
+popd
 
-cd ../submodules
-"${f_fpm_path}" build
+pushd submodules
+"$fpm" build
+popd
 
-cd ../program_with_module
-"${f_fpm_path}" build
-"${f_fpm_path}" run --target Program_with_module
+pushd program_with_module
+"$fpm" build
+"$fpm" run --target Program_with_module
+popd
 
-cd ../link_external
-"${f_fpm_path}" build
-"${f_fpm_path}" run --target link_external
+pushd link_executable
+"$fpm" build
+"$fpm" run --target gomp_test
+popd
 
-cd ../link_executable
-"${f_fpm_path}" build
-"${f_fpm_path}" run --target gomp_test
+pushd fortran_includes
+"$fpm" build
+popd
 
-cd ../fortran_includes
-"${f_fpm_path}" build
+pushd c_includes
+"$fpm" build
+popd
 
-cd ../c_includes
-"${f_fpm_path}" build
-
-cd ../c_header_only
-"${f_fpm_path}" build
+pushd c_header_only
+"$fpm" build
+popd
 
 # Cleanup
 rm -rf ./*/build
