@@ -190,7 +190,7 @@ subroutine build_model(model, settings, package, error)
     ! Check for duplicate modules
     call check_modules_for_duplicates(model, duplicates_found)
     if (duplicates_found) then
-      error stop
+      error stop 'Error: One or more duplicate module names found.'
     end if
 end subroutine build_model
 
@@ -225,7 +225,7 @@ subroutine check_modules_for_duplicates(model, duplicates_found)
         if (allocated(model%packages(k)%sources(l)%modules_provided)) then
           do m=1,size(model%packages(k)%sources(l)%modules_provided)
             if (model%packages(k)%sources(l)%modules_provided(m)%s.in.modules(:modi-1)) then
-              write(error_unit, *) "Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s," is duplicate"
+              write(error_unit, *) "Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s," is a duplicate"
               duplicates_found = .true.
             else
               modules(modi) = model%packages(k)%sources(l)%modules_provided(m)
