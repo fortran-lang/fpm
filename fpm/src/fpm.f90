@@ -27,7 +27,7 @@ use, intrinsic :: iso_fortran_env, only: error_unit
 implicit none
 private
 public :: cmd_build, cmd_run
-public :: build_model
+public :: build_model, check_modules_for_duplicates
 
 contains
 
