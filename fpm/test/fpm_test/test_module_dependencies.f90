@@ -44,8 +44,6 @@ contains
                             test_package_with_no_module_duplicates), &
             & new_unittest("package-with-duplicates-in-same-source", &
                             test_package_module_duplicates_same_source, should_fail=.true.), &
-            & new_unittest("package-with-duplicates-in-same-source", &
-                            test_package_module_duplicates_same_source, should_fail=.true.), &
             & new_unittest("package-with-duplicates-in-one-package", &
                             test_package_module_duplicates_one_package, should_fail=.true.), &
             & new_unittest("package-with-duplicates-in-two-packages", &
