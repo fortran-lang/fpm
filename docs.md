@@ -9,12 +9,12 @@ author_email: fortran-lang@groups.io
 github: https://github.com/fortran-lang
 twitter: https://twitter.com/fortranlang
 website: https://fortran-lang.org
-src_dir: ./fpm/src
+src_dir: ./src
+         ./app
 output_dir: ./fpm-doc
 page_dir: ./doc
 media_dir: ./doc/media
-exclude_dir: ./bootstrap
-             ./archive
+exclude_dir: ./example_packages
              ./test
 display: public
          protected

@@ -217,27 +217,6 @@ include-dir = ["include", "third_party/include"]
 
 > *include-dir* does not currently allow using pre-built module `.mod` files
 
-#### Custom build script
-
-> Supported in Bootstrap fpm only
-
-Projects with custom build scripts can specify those in the *build-script* entry.
-The custom build script will be executed when the library build step is reached.
-
-*Example:*
-
-```toml
-[library]
-build-script = "build.sh"
-```
-
-Build scripts written in ``make`` are automatically detected and executed with ``make``
-
-```toml
-[library]
-build-script = "Makefile"
-```
-
 
 ### Executable targets
 
