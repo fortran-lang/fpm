@@ -18,7 +18,10 @@ matures and we enter production, we will aim to stay backwards compatible.
 Please follow the [issues](https://github.com/fortran-lang/fpm/issues) to
 contribute and/or stay up to date with the development.
 Before opening a bug report or a feature suggestion, please read our
-[Contributor Guide](CONTRIBUTING.md). You can also discuss your ideas and queries with the community in [fpm discussions](https://github.com/fortran-lang/fpm/discussions), or more broadly on [Fortran-Lang Discourse](https://fortran-lang.discourse.group/)
+[Contributor Guide](CONTRIBUTING.md). You can also discuss your ideas and
+queries with the community in
+[fpm discussions](https://github.com/fortran-lang/fpm/discussions),
+or more broadly on [Fortran-Lang Discourse](https://fortran-lang.discourse.group/).
 
 Fortran Package Manager is not to be confused with
 [Jordan Sissel's fpm](https://github.com/jordansissel/fpm), a more general,
@@ -71,8 +74,8 @@ with the following contents and initialized as a git repository.
 * `README.md` – with your project’s name
 * `.gitignore`
 * `src/project_name.f90` – with a simple hello world subroutine
-* `app/main.f90` (if `--with-executable` flag used) – a program that calls the subroutine
-* `test/main.f90` (if `--with-test` flag used) – an empty test program
+* `app/main.f90` (if `--app` flag used) – a program that calls the subroutine
+* `test/main.f90` (if `--test` flag used) – an empty test program
 
 ### Building your Fortran project with fpm
 
@@ -81,6 +84,7 @@ with the following contents and initialized as a git repository.
 * `fpm build` – build your library, executables and tests
 * `fpm run` – run executables
 * `fpm test` – run tests
+* `fpm install` - installs the executables locally
 
 The command `fpm run` can optionally accept the name of the specific executable
 to run, as can `fpm test`; like `fpm run specific_executable`. Command line
@@ -94,36 +98,24 @@ the [manifest reference](manifest-reference.md).
 ### Bootstrapping instructions
 
 This guide explains the process of building *fpm* on a platform for the first time.
-If your platform and architecture are already supported, download the binary from the [release page](https://github.com/fortran-lang/fpm/releases) instead.
+To build *fpm* without a prior *fpm* version a single source file version is available
+at each release.
 
-#### Download this repository
+To build manually using the single source distribution use
 
-```bash
-$ git clone https://github.com/fortran-lang/fpm
-$ cd fpm/
+```
+mkdir _tmp
+curl -LJ https://github.com/fortran-lang/fpm/releases/download/v0.2.0/fpm-0.2.0.f90 > _tmp/fpm.f90
+gfortran -J _tmp _tmp/fpm.f90 -o _tmp/fpm
+_tmp/fpm install --flag "-g -fbacktrace -O3"
+rm -r _tmp
 ```
 
-#### Build a bootstrap version of fpm
+To automatically bootstrap using this appoach run the install script
 
-You can use the install script to bootstrap and install *fpm*:
-
-```bash
-$ ./install.sh
+```
+./install.sh
 ```
 
-By default, the above command installs `fpm` to `${HOME}/.local/bin/`.
-To specify an alternative destination use the `--prefix=` flag, for example:
-
-```bash
-$ ./install.sh --prefix=/usr/local
-```
-
-which will install *fpm* to `/usr/local/bin`.
-
-To test that everything is working as expected you can now build *fpm*
-with itself and run the tests with:
-
-```bash
-$ cd fpm
-$ fpm test
-```
+You can set your Fortran compiler and the compiler flags with the ``FC`` and ``FFLAGS``
+environment variables.
