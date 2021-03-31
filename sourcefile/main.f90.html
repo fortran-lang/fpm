@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>check_compiler &ndash; Fortran-lang/fpm</title>
+    <title>main.f90 &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -114,8 +114,8 @@
     
   
   <div class="row">
-    <h1>check_compiler
-      <small>Function</small>
+    <h1>main.f90
+    <small>Source File</small>
     
     </h1>
     
@@ -132,24 +132,20 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.3% of total for procedures.">9 statements</a>
+    title=" 0.5% of total for source files.">24 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_compiler.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/main.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.f90</a></li>
-    
-     <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
-    
   
-     <li class="active">check_compiler</li>
+     <li class="active">main.f90</li>
   </ol>
 </div>
 </div>
@@ -161,7 +157,6 @@
 </script>
 
   </div>
-  
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
     
@@ -175,6 +170,18 @@
 
 
 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#progs-0">Programs</a></h3></div>
+  <div id="progs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/main.html">main</a>
+      
+    </div>
+  </div>
+</div>
+
+
 
 
 
@@ -193,7 +200,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/check_compiler.html#src">check_compiler</a>
+    <a class="list-group-item" href="../sourcefile/main.f90.html#src">main.f90</a>
   </div>
 </div>
 
@@ -202,80 +209,12 @@
 </div>
 
     </div>
-    
     <div class="col-md-9" id='text'>
-    <h2>
-public function check_compiler(compiler, expected) result(match)
-    
-    
-   
-</h2>
-    
-  
-
-
-    
-
-    <h3>Arguments</h3>
+      
+      <br>
     
       
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-compiler~2"></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>compiler</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-expected"></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>expected</strong></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-    
-    
-    
-    
-    
-    
-    
-   <h3>Return Value <small><span class="anchor" id="variable-match"></span>logical
-  </small></h3>
-    
-    
-    
-    
-     
-    <br>
+      
 
     <section class="visible-xs visible-sm hidden-md">
       
@@ -287,6 +226,18 @@ public function check_compiler(compiler, expected) result(match)
 
 
 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#progs-1">Programs</a></h3></div>
+  <div id="progs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/main.html">main</a>
+      
+    </div>
+  </div>
+</div>
+
+
 
 
 
@@ -305,7 +256,7 @@ public function check_compiler(compiler, expected) result(match)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/check_compiler.html#src">check_compiler</a>
+    <a class="list-group-item" href="../sourcefile/main.f90.html#src">main.f90</a>
   </div>
 </div>
 
@@ -314,45 +265,52 @@ public function check_compiler(compiler, expected) result(match)
     </section>
     <br class="visible-xs visible-sm hidden-md">
 
-    
-
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-
-
-    
-    
-    
     <section>
-    <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">expected</span>
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">match</span>
-    <span class="n">match</span> <span class="o">=</span> <span class="n">compiler</span> <span class="o">==</span> <span class="n">expected</span>
-    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span> <span class="n">match</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">match</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">compiler</span><span class="p">),</span> <span class="n">expected</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-    <span class="k">end if</span>
-<span class="k">end function </span><span class="n">check_compiler</span>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">program </span><span class="n">main</span>
+<a name="ln-2"></a><span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="p">&amp;</span>
+<a name="ln-3"></a>        <span class="n">fpm_cmd_settings</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-4"></a>        <span class="n">fpm_new_settings</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-5"></a>        <span class="n">fpm_build_settings</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-6"></a>        <span class="n">fpm_run_settings</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-7"></a>        <span class="n">fpm_test_settings</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-8"></a>        <span class="n">fpm_install_settings</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-9"></a>        <span class="n">fpm_update_settings</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-10"></a>        <span class="n">get_command_line_settings</span>
+<a name="ln-11"></a><span class="k">use </span><span class="n">fpm</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">cmd_build</span><span class="p">,</span> <span class="n">cmd_run</span>
+<a name="ln-12"></a><span class="k">use </span><span class="n">fpm_cmd_install</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">cmd_install</span>
+<a name="ln-13"></a><span class="k">use </span><span class="n">fpm_cmd_new</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">cmd_new</span>
+<a name="ln-14"></a><span class="k">use </span><span class="n">fpm_cmd_update</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">cmd_update</span>
+<a name="ln-15"></a>
+<a name="ln-16"></a><span class="k">implicit none</span>
+<a name="ln-17"></a>
+<a name="ln-18"></a><span class="k">class</span><span class="p">(</span><span class="n">fpm_cmd_settings</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">cmd_settings</span>
+<a name="ln-19"></a>
+<a name="ln-20"></a><span class="k">call </span><span class="n">get_command_line_settings</span><span class="p">(</span><span class="n">cmd_settings</span><span class="p">)</span>
+<a name="ln-21"></a>
+<a name="ln-22"></a><span class="k">select type</span><span class="p">(</span><span class="n">settings</span><span class="o">=&gt;</span><span class="n">cmd_settings</span><span class="p">)</span>
+<a name="ln-23"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_new_settings</span><span class="p">)</span>
+<a name="ln-24"></a>    <span class="k">call </span><span class="n">cmd_new</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<a name="ln-25"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_build_settings</span><span class="p">)</span>
+<a name="ln-26"></a>    <span class="k">call </span><span class="n">cmd_build</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<a name="ln-27"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_run_settings</span><span class="p">)</span>
+<a name="ln-28"></a>    <span class="k">call </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+<a name="ln-29"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_test_settings</span><span class="p">)</span>
+<a name="ln-30"></a>    <span class="k">call </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<a name="ln-31"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_install_settings</span><span class="p">)</span>
+<a name="ln-32"></a>    <span class="k">call </span><span class="n">cmd_install</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<a name="ln-33"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_update_settings</span><span class="p">)</span>
+<a name="ln-34"></a>    <span class="k">call </span><span class="n">cmd_update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<a name="ln-35"></a><span class="k">end select</span>
+<a name="ln-36"></a>
+<a name="ln-37"></a><span class="k">end program </span><span class="n">main</span>
 </pre></div>
 
     </section>
-    <br>
-    
-    
     </div>
   </div>
 
-
+  
     <hr>    
     </div> <!-- /container -->
     <footer>
