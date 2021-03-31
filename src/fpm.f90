@@ -23,10 +23,11 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
 use fpm_manifest_dependency, only: dependency_config_t
+use, intrinsic :: iso_fortran_env, only: error_unit
 implicit none
 private
 public :: cmd_build, cmd_run
-public :: build_model
+public :: build_model, check_modules_for_duplicates
 
 contains
 
@@ -42,6 +43,8 @@ subroutine build_model(model, settings, package, error)
     integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir
+
+    logical :: duplicates_found = .false.
     type(string_t) :: include_dir
 
     model%package_name = package%name
@@ -179,8 +182,56 @@ subroutine build_model(model, settings, package, error)
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']' 
      end if
 
+    ! Check for duplicate modules
+    call check_modules_for_duplicates(model, duplicates_found)
+    if (duplicates_found) then
+      error stop 'Error: One or more duplicate module names found.'
+    end if
 end subroutine build_model
 
+! Check for duplicate modules
+subroutine check_modules_for_duplicates(model, duplicates_found) 
+    type(fpm_model_t), intent(in) :: model
+    integer :: maxsize
+    integer :: i,j,k,l,m,modi
+    type(string_t), allocatable :: modules(:)
+    logical :: duplicates_found
+    ! Initialise the size of array
+    maxsize = 0
+    ! Get number of modules provided by each source file of every package
+    do i=1,size(model%packages)
+      do j=1,size(model%packages(i)%sources)
+        if (allocated(model%packages(i)%sources(j)%modules_provided)) then
+          maxsize = maxsize + size(model%packages(i)%sources(j)%modules_provided)
+        end if
+      end do
+    end do
+    ! Allocate array to contain distinct names of modules
+    allocate(modules(maxsize))
+
+    ! Initialise index to point at start of the newly allocated array
+    modi = 1
+
+    ! Loop through modules provided by each source file of every package
+    ! Add it to the array if it is not already there
+    ! Otherwise print out warning about duplicates
+    do k=1,size(model%packages)
+      do l=1,size(model%packages(k)%sources)
+        if (allocated(model%packages(k)%sources(l)%modules_provided)) then
+          do m=1,size(model%packages(k)%sources(l)%modules_provided)
+            if (model%packages(k)%sources(l)%modules_provided(m)%s.in.modules(:modi-1)) then
+              write(error_unit, *) "Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s, &
+                " in ",model%packages(k)%sources(l)%file_name," is a duplicate"
+              duplicates_found = .true.
+            else
+              modules(modi) = model%packages(k)%sources(l)%modules_provided(m)
+              modi = modi + 1
+            end if
+          end do
+        end if
+      end do
+    end do
+end subroutine check_modules_for_duplicates
 
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
