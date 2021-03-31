@@ -10,6 +10,7 @@ module test_module_dependencies
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
     use fpm_strings, only: string_t, operator(.in.)
+    use fpm, only: check_modules_for_duplicates
     implicit none
     private
 
@@ -39,6 +40,14 @@ contains
                             test_missing_program_use, should_fail=.true.), &
             & new_unittest("invalid-library-use", &
                             test_invalid_library_use, should_fail=.true.), &
+            & new_unittest("package-with-no-duplicates", &
+                            test_package_with_no_module_duplicates), &
+            & new_unittest("package-with-duplicates-in-same-source", &
+                            test_package_module_duplicates_same_source, should_fail=.true.), &
+            & new_unittest("package-with-duplicates-in-one-package", &
+                            test_package_module_duplicates_one_package, should_fail=.true.), &
+            & new_unittest("package-with-duplicates-in-two-packages", &
+                            test_package_module_duplicates_two_packages, should_fail=.true.), &
             & new_unittest("subdirectory-module-use", &
                             test_subdirectory_module_use), &
             & new_unittest("invalid-subdirectory-module-use", &
@@ -391,8 +400,102 @@ contains
                                     uses=[string_t('app_mod')])
 
         call targets_from_sources(targets,model,error)
-
+    
     end subroutine test_subdirectory_module_use
+
+    !> Check program with no duplicate modules
+    subroutine test_package_with_no_module_duplicates(error)
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        logical :: duplicates_found = .false.
+
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
+
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
+                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
+                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_2')])
+
+        call check_modules_for_duplicates(model, duplicates_found)
+        if (duplicates_found) then
+            call test_failed(error,'Duplicate modules found')
+            return
+        end if
+    end subroutine test_package_with_no_module_duplicates
+
+    !> Check program with duplicate modules in same source file
+    subroutine test_package_module_duplicates_same_source(error)
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        logical :: duplicates_found
+
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(1))
+
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
+                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1'), string_t('my_mod_1')])
+
+        call check_modules_for_duplicates(model, duplicates_found)
+        if (duplicates_found) then
+            call test_failed(error,'Duplicate modules found')
+            return
+        end if
+    end subroutine test_package_module_duplicates_same_source
+
+    !> Check program with duplicate modules in two different source files in one package
+    subroutine test_package_module_duplicates_one_package(error)
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        logical :: duplicates_found
+
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(2))
+
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1_a.f90", &
+                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1_b.f90", &
+                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+
+        call check_modules_for_duplicates(model, duplicates_found)
+        if (duplicates_found) then
+            call test_failed(error,'Duplicate modules found')
+            return
+        end if
+    end subroutine test_package_module_duplicates_one_package
+
+    !> Check program with duplicate modules in two different packages
+    subroutine test_package_module_duplicates_two_packages(error)
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        logical :: duplicates_found
+
+        allocate(model%packages(2))
+        allocate(model%packages(1)%sources(1))
+        allocate(model%packages(2)%sources(1))
+
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/subdir1/my_mod_1.f90", &
+                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+
+        model%packages(2)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/subdir2/my_mod_1.f90", &
+                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+
+        call check_modules_for_duplicates(model, duplicates_found)
+        if (duplicates_found) then
+            call test_failed(error,'Duplicate modules found')
+            return
+        end if
+    end subroutine test_package_module_duplicates_two_packages
 
     !> Check program using a non-library module in a differente sub-directory
     subroutine test_invalid_subdirectory_module_use(error)
