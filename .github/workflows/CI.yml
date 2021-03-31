@@ -13,138 +13,8 @@ env:
   HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
   HOMEBREW_NO_GITHUB_API: "ON"
   HOMEBREW_NO_INSTALL_CLEANUP: "ON"
-  RUST_BACKTRACE: "full" # Make Rust print full backtrace on error
 
 jobs:
-  stack-build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        gcc_v: [9] # Version of GFortran we want to use.
-        include:
-        - os: ubuntu-latest
-          STACK_CACHE: "/home/runner/.stack/"
-          STACK_CACHE_VERSION: ""
-          TEST_SCRIPT: ci/run_tests.sh
-          GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
-          CHECK_VERSION_CMD: grep $(cat fpm_version)
-          RELEASE_CMD: "cp -- fpm-$(cat fpm_version)-linux-x86_64"
-          BOOTSTRAP_RELEASE_CMD: cp /home/runner/.local/bin/fpm fpm-haskell-$(cat fpm_version)-linux-x86_64
-          HASH_CMD: ls fpm-*|xargs -i{} sh -c 'sha256sum $1 > $1.sha256' -- {}
-          RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
-
-        - os: macos-latest
-          STACK_CACHE: |
-           /Users/runner/.stack/snapshots
-           /Users/runner/.stack/setup-exe-src
-          STACK_CACHE_VERSION: "v2"
-          TEST_SCRIPT: ci/run_tests.sh
-          GET_VERSION_CMD: echo ${{ github.ref }} | cut -dv -f2
-          CHECK_VERSION_CMD: grep $(cat fpm_version)
-          RELEASE_CMD: "cp -- fpm-$(cat fpm_version)-macos-x86_64"
-          BOOTSTRAP_RELEASE_CMD: cp /Users/runner/.local/bin/fpm fpm-haskell-$(cat fpm_version)-macos-x86_64
-          HASH_CMD: ls fpm-*|xargs -I{} sh -c 'shasum -a 256 $1 > $1.sha256' -- {}
-          RELEASE_FLAGS: --flag -g --flag -fbacktrace --flag -O3
-
-        - os: windows-latest
-          STACK_CACHE: |
-           C:\Users\runneradmin\AppData\Roaming\stack
-           C:\Users\runneradmin\AppData\Local\Programs\stack
-          STACK_CACHE_VERSION: "v2"
-          TEST_SCRIPT: ci\run_tests.bat
-          GET_VERSION_CMD: ("${{ github.ref }}" -Split "v")[1]
-          CHECK_VERSION_CMD: Select-String -Pattern Version | Where-Object { if ($_ -like -join("*",(Get-Content fpm_version),"*")) {echo $_} else {Throw} }
-          RELEASE_CMD: copy -- (-join("fpm-",(Get-Content fpm_version),"-windows-x86_64.exe"))
-          BOOTSTRAP_RELEASE_CMD: copy C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe (-join("fpm-haskell-",(Get-Content fpm_version),"-windows-x86_64.exe"))
-          HASH_CMD: Get-ChildItem -File -Filter "fpm-*" | Foreach-Object {echo (Get-FileHash -Algorithm SHA256 $PSItem | Select-Object hash | Format-Table -HideTableHeaders | Out-String) > (-join($PSItem,".sha256"))}
-          RELEASE_FLAGS: --flag --static --flag -g --flag -fbacktrace --flag -O3
-
-    env:
-      FC: gfortran
-      GCC_V: ${{ matrix.gcc_v }}
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v1
-
-    - name: Install GFortran macOS
-      if: contains(matrix.os, 'macos')
-      run: |
-          ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
-          which gfortran-${GCC_V}
-          which gfortran
-
-    - name: Install GFortran Linux
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
-        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
-        --slave /usr/bingcov gcov /usr/bin/gcov-${GCC_V}
-
-    - name: Get Time
-      id: time
-      uses: nanzm/get-time-action@v1.0
-      with:
-        format: 'YYYY-MM'
-
-    - name: Setup github actions cache
-      id: cache
-      uses: actions/cache@v2
-      with:
-        path: ${{matrix.STACK_CACHE}}
-        key: ${{ runner.os }}-${{ steps.time.outputs.time }}${{matrix.STACK_CACHE_VERSION}}
-
-    - name: Build Haskell fpm
-      run: |
-        stack build
-        stack install
-      working-directory: bootstrap
-
-    - name: put fpm to PATH (macOS)
-      if: contains(matrix.os, 'macos')
-      run: |
-          cp /Users/runner/.local/bin/fpm /usr/local/bin
-
-    - name: put fpm to PATH (Windows)
-      if: contains(matrix.os, 'windows')
-      run: |
-          copy "C:\Users\runneradmin\AppData\Roaming\local\bin\fpm.exe" "C:\Program Files\Git\usr\bin"
-
-    - name: put fpm to PATH (Linux)
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-          sudo cp /home/runner/.local/bin/fpm /usr/local/bin
-
-    - name: Run tests on Haskell fpm
-      run: |
-        stack test
-      working-directory: bootstrap
-
-    # ----- Upload binaries if creating a release -----
-    - name: Check that fpm --version matches release tag
-      if: github.event_name == 'release'
-      run: |
-        ${{ matrix.GET_VERSION_CMD }} > fpm_version
-      working-directory: fpm
-
-    - name: Stage release files for upload
-      if: github.event_name == 'release'
-      run: |
-        ${{ matrix.BOOTSTRAP_RELEASE_CMD }}
-        ${{ matrix.HASH_CMD }}
-      working-directory: fpm
-
-    - name: Upload assets
-      if: github.event_name == 'release'
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm/fpm-*
-        file_glob: true
-        tag: ${{ github.ref }}
-        overwrite: true
 
   build:
     runs-on: ${{ matrix.os }}
@@ -208,7 +78,6 @@ jobs:
       shell: bash
       run: |
         ${{ env.BOOTSTRAP }} build
-      working-directory: fpm
 
     - name: Run Fortran fpm (bootstrap)
       shell: bash
@@ -216,19 +85,16 @@ jobs:
         ${{ env.BOOTSTRAP }} run
         ${{ env.BOOTSTRAP }} run -- --version
         ${{ env.BOOTSTRAP }} run -- --help
-      working-directory: fpm
 
     - name: Test Fortran fpm (bootstrap)
       shell: bash
       run: |
         ${{ env.BOOTSTRAP }} test
-      working-directory: fpm
 
     - name: Install Fortran fpm (bootstrap)
       shell: bash
       run: |
         ${{ env.BOOTSTRAP }} install
-      working-directory: fpm
 
     # Phase 2: Bootstrap fpm with itself
     - name: Replace bootstrapping version
@@ -237,7 +103,6 @@ jobs:
         ${{ env.BOOTSTRAP }} run --runner cp -- fpm-debug${{ matrix.exe }}
         rm -v ${{ env.BOOTSTRAP }}
         echo "FPM=$PWD/fpm-debug" | cat >> $GITHUB_ENV
-      working-directory: fpm
 
     - name: Get version (normal)
       if: github.event_name != 'release'
@@ -266,7 +131,6 @@ jobs:
       shell: bash
       run: |
         ${{ env.FPM }} build ${{ matrix.release-flags }}
-      working-directory: fpm
 
     - name: Run Fortran fpm
       shell: bash
@@ -274,19 +138,16 @@ jobs:
         ${{ env.FPM }} run ${{ matrix.release-flags }}
         ${{ env.FPM }} run ${{ matrix.release-flags }} -- --version
         ${{ env.FPM }} run ${{ matrix.release-flags }} -- --help
-      working-directory: fpm
 
     - name: Test Fortran fpm
       shell: bash
       run: |
         ${{ env.FPM }} test ${{ matrix.release-flags }}
-      working-directory: fpm
 
     - name: Install Fortran fpm
       shell: bash
       run: |
         ${{ env.FPM }} install ${{ matrix.release-flags }}
-      working-directory: fpm
 
     - name: Package release version
       shell: bash
@@ -294,7 +155,6 @@ jobs:
         ${{ env.FPM }} run ${{ matrix.release-flags }} --runner cp -- ${{ env.EXE }}
         rm -v ${{ env.FPM }}
         echo "FPM_RELEASE=$PWD/${{ env.EXE }}" | cat >> $GITHUB_ENV
-      working-directory: fpm
       env:
         EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
 
@@ -308,14 +168,13 @@ jobs:
       shell: bash
       run: |
         ${{ matrix.sha256sum }} ${{ env.FPM_RELEASE }} > ${{ env.FPM_RELEASE }}.sha256
-      working-directory: fpm
 
     - name: Upload assets
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm/fpm-*
+        file: fpm-*
         file_glob: true
         tag: ${{ github.ref }}
         overwrite: true
