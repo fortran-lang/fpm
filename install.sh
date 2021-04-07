@@ -42,7 +42,8 @@ done
 
 set -u # error on use of undefined variable
 
-SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v0.2.0/fpm-0.2.0.f90"
+SOURCE="fpm-0.2.0.f90"
+SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v0.2.0/$SOURCE"
 BOOTSTRAP_DIR="build/bootstrap"
 if [ -z ${FC+x} ]; then
     FC="gfortran"
@@ -51,11 +52,9 @@ if [ -z ${FFLAGS+x} ]; then
     FFLAGS="-g -fbacktrace -O3"
 fi
 
-mkdir -p $BOOTSTRAP_DIR
-
 if command -v curl > /dev/null 2>&1; then
   fetch=curl
-  fetch_flag="-LJ"
+  fetch_flag="-LO"
 elif command -v wget > /dev/null 2>&1; then
   fetch=wget
 else
@@ -63,7 +62,10 @@ else
   exit 1
 fi
 
-$fetch ${fetch_flag:-} $SOURCE_URL > $BOOTSTRAP_DIR/fpm.f90
+$fetch ${fetch_flag:-} $SOURCE_URL
+
+mkdir -p $BOOTSTRAP_DIR
+mv $SOURCE $BOOTSTRAP_DIR/fpm.f90
 
 $FC $FFLAGS -J $BOOTSTRAP_DIR $BOOTSTRAP_DIR/fpm.f90 -o $BOOTSTRAP_DIR/fpm
 
