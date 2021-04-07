@@ -58,6 +58,7 @@ if command -v curl > /dev/null 2>&1; then
   fetch_flag="-LJ"
 elif command -v wget > /dev/null 2>&1; then
   fetch=wget
+  fetch_flag="-O -"
 else
   echo "No download mechanism found.  Tried curl and wget."
   exit 1
