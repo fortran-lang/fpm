@@ -54,17 +54,15 @@ fi
 mkdir -p $BOOTSTRAP_DIR
 
 if command -v curl > /dev/null 2>&1; then
-  fetch=curl
-  fetch_flag="-LJ"
+    FETCH="curl -L"
 elif command -v wget > /dev/null 2>&1; then
-  fetch=wget
-  fetch_flag="-O -"
+    FETCH="wget -O -"
 else
-  echo "No download mechanism found.  Tried curl and wget."
-  exit 1
+    echo "No download mechanism found. Install curl or wget first."
+    exit 1
 fi
 
-$fetch ${fetch_flag:-} $SOURCE_URL > $BOOTSTRAP_DIR/fpm.f90
+$FETCH $SOURCE_URL > $BOOTSTRAP_DIR/fpm.f90
 
 $FC $FFLAGS -J $BOOTSTRAP_DIR $BOOTSTRAP_DIR/fpm.f90 -o $BOOTSTRAP_DIR/fpm
 
