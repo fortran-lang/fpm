@@ -52,7 +52,18 @@ if [ -z ${FFLAGS+x} ]; then
 fi
 
 mkdir -p $BOOTSTRAP_DIR
-curl -LJ $SOURCE_URL > $BOOTSTRAP_DIR/fpm.f90
+
+if command -v curl > /dev/null 2>&1; then
+    FETCH="curl -L"
+elif command -v wget > /dev/null 2>&1; then
+    FETCH="wget -O -"
+else
+    echo "No download mechanism found. Install curl or wget first."
+    exit 1
+fi
+
+$FETCH $SOURCE_URL > $BOOTSTRAP_DIR/fpm.f90
+
 $FC $FFLAGS -J $BOOTSTRAP_DIR $BOOTSTRAP_DIR/fpm.f90 -o $BOOTSTRAP_DIR/fpm
 
 $BOOTSTRAP_DIR/fpm install --compiler "$FC" --flag "$FFLAGS" --prefix "$PREFIX"
