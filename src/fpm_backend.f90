@@ -242,7 +242,7 @@ subroutine build_target(model,target)
               // " -o " // target%output_file)
 
     case (FPM_TARGET_C_OBJECT)
-        call run(model%c_compiler//" -c " // target%source%file_name  &
+        call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
                 // " -o " // target%output_file)
 
     case (FPM_TARGET_EXECUTABLE)
