@@ -336,6 +336,33 @@ subroutine get_module_flags(compiler, modpath, flags)
 
 end subroutine get_module_flags
 
+subroutine get_default_c_compiler(f_compiler, c_compiler)
+    character(len=*), intent(in) :: f_compiler
+    character(len=:), allocatable, intent(out) :: c_compiler
+    integer(compiler_enum) :: id
+
+    id = get_compiler_id(f_compiler)
+
+    select case(id)
+    case default
+        c_compiler = 'gcc'
+
+    case(id_intel_classic)
+        c_compiler = 'icc'
+
+    case(id_intel_llvm)
+        c_compiler = 'icx'
+
+    case(id_flang)
+        c_compiler='clang'
+
+    case(id_ibmxl)
+        c_compiler='xlc'
+
+    end select
+
+end subroutine get_default_c_compiler
+
 function get_compiler_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id

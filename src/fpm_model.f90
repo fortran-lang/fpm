@@ -117,6 +117,9 @@ type :: fpm_model_t
     !> Command line name to invoke fortran compiler
     character(:), allocatable :: fortran_compiler
 
+    !> Command line name to invoke c compiler
+    character(:), allocatable :: c_compiler
+
     !> Command line flags passed to fortran for compilation
     character(:), allocatable :: fortran_compile_flags
 
