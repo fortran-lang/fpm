@@ -285,8 +285,12 @@ subroutine mkdir(dir)
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
             call execute_command_line('mkdir -p ' // dir, exitstat=stat)
-            write (*, '(" + ",2a)') 'mkdir -p ' // dir
-
+            if (stat/=0) then
+              call execute_command_line('sudo mkdir -p ' // dir, exitstat=stat)
+              write (*, '(" + ",2a)') 'sudo mkdir -p ' // dir
+            else  
+              write (*, '(" + ",2a)') 'mkdir -p ' // dir
+            end if
         case (OS_WINDOWS)
             call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
             write (*, '(" + ",2a)') 'mkdir ' // windows_path(dir)

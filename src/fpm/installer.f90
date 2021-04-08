@@ -238,7 +238,17 @@ contains
       end if
     end if
 
-    call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
+
+    block
+      integer write_permission_stat
+
+      call execute_command_line("test -w " // install_dest, exitstat=write_permission_stat)
+      associate(sudo_if_needed => merge("     ","sudo ", write_permission_stat==0))
+        call self%run(sudo_if_needed // self%copy//' "'//source//'" "'//install_dest//'"', error)
+      end associate
+    end block
+
+
     if (allocated(error)) return
 
   end subroutine install
