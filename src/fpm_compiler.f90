@@ -344,8 +344,6 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     id = get_compiler_id(f_compiler)
 
     select case(id)
-    case default
-        c_compiler = 'gcc'
 
     case(id_intel_classic)
         c_compiler = 'icc'
@@ -359,6 +357,9 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     case(id_ibmxl)
         c_compiler='xlc'
 
+    case default
+        ! Fall-back to using Fortran compiler
+        c_compiler = f_compiler
     end select
 
 end subroutine get_default_c_compiler
