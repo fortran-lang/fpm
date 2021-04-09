@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.7% of total for procedures.">20 statements</a>
+    title=" 1.0% of total for procedures.">28 statements</a>
      </li> 
      
      
@@ -332,7 +332,6 @@ public subroutine get_release_compile_flags(id, flags)
     <span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
     <span class="k">case </span><span class="n">default</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-
     <span class="k">case</span><span class="p">(</span><span class="n">id_caf</span><span class="p">)</span>
         <span class="n">flags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -O3&amp;</span>
@@ -363,15 +362,57 @@ public subroutine get_release_compile_flags(id, flags)
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -Mbackslash&amp;</span>
 <span class="s1">            &amp;&#39;</span>
-    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic</span><span class="p">)</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span> <span class="n">id_intel_classic_unknown</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -fp-model precise&amp;</span>
-<span class="s1">            &amp; -pc 64&amp;</span>
+<span class="s1">            &amp; -pc64&amp;</span>
 <span class="s1">            &amp; -align all&amp;</span>
 <span class="s1">            &amp; -error-limit 1&amp;</span>
 <span class="s1">            &amp; -reentrancy threaded&amp;</span>
 <span class="s1">            &amp; -nogen-interfaces&amp;</span>
 <span class="s1">            &amp; -assume byterecl&amp;</span>
+<span class="s1">            &amp; -coarray=single&amp;</span>
+<span class="s1">            &amp;&#39;</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_mac</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; -fp-model precise&amp;</span>
+<span class="s1">            &amp; -pc64&amp;</span>
+<span class="s1">            &amp; -align all&amp;</span>
+<span class="s1">            &amp; -error-limit 1&amp;</span>
+<span class="s1">            &amp; -reentrancy threaded&amp;</span>
+<span class="s1">            &amp; -nogen-interfaces&amp;</span>
+<span class="s1">            &amp; -assume byterecl&amp;</span>
+<span class="s1">            &amp;&#39;</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; /fp:precise&amp;</span>
+<span class="s1">            &amp; /align:all&amp;</span>
+<span class="s1">            &amp; /error-limit:1&amp;</span>
+<span class="s1">            &amp; /reentrancy:threaded&amp;</span>
+<span class="s1">            &amp; /nogen-interfaces&amp;</span>
+<span class="s1">            &amp; /assume:byterecl&amp;</span>
+<span class="s1">            &amp; /Qcoarray:single&amp;</span>
+<span class="s1">            &amp;&#39;</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">,</span> <span class="n">id_intel_llvm_unknown</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; -fp-model=precise&amp;</span>
+<span class="s1">            &amp; -pc64&amp;</span>
+<span class="s1">            &amp; -align all&amp;</span>
+<span class="s1">            &amp; -error-limit 1&amp;</span>
+<span class="s1">            &amp; -reentrancy threaded&amp;</span>
+<span class="s1">            &amp; -nogen-interfaces&amp;</span>
+<span class="s1">            &amp; -assume byterecl&amp;</span>
+<span class="s1">            &amp; -coarray=single&amp;</span>
+<span class="s1">            &amp;&#39;</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; /fp:precise&amp;</span>
+<span class="s1">            &amp; /align:all&amp;</span>
+<span class="s1">            &amp; /error-limit:1&amp;</span>
+<span class="s1">            &amp; /reentrancy:threaded&amp;</span>
+<span class="s1">            &amp; /nogen-interfaces&amp;</span>
+<span class="s1">            &amp; /assume:byterecl&amp;</span>
+<span class="s1">            &amp; /Qcoarray:single&amp;</span>
 <span class="s1">            &amp;&#39;</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_nag</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39; &amp;</span>
@@ -402,7 +443,7 @@ public subroutine get_release_compile_flags(id, flags)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-04-07 20:05  
+             on 2021-04-09 01:51  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

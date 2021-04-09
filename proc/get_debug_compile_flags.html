@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.7% of total for procedures.">20 statements</a>
+    title=" 1.0% of total for procedures.">28 statements</a>
      </li> 
      
      
@@ -332,7 +332,6 @@ public subroutine get_debug_compile_flags(id, flags)
     <span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
     <span class="k">case </span><span class="n">default</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-
     <span class="k">case</span><span class="p">(</span><span class="n">id_caf</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -Wall&amp;</span>
@@ -344,7 +343,6 @@ public subroutine get_debug_compile_flags(id, flags)
 <span class="s1">            &amp; -fcheck=array-temps&amp;</span>
 <span class="s1">            &amp; -fbacktrace&amp;</span>
 <span class="s1">            &amp;&#39;</span>
-
     <span class="k">case</span><span class="p">(</span><span class="n">id_gcc</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -Wall&amp;</span>
@@ -357,7 +355,6 @@ public subroutine get_debug_compile_flags(id, flags)
 <span class="s1">            &amp; -fbacktrace&amp;</span>
 <span class="s1">            &amp; -fcoarray=single&amp;</span>
 <span class="s1">            &amp;&#39;</span>
-
     <span class="k">case</span><span class="p">(</span><span class="n">id_f95</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -Wall&amp;</span>
@@ -370,7 +367,6 @@ public subroutine get_debug_compile_flags(id, flags)
 <span class="s1">            &amp; -Wno-maybe-uninitialized -Wno-uninitialized&amp;</span>
 <span class="s1">            &amp; -fbacktrace&amp;</span>
 <span class="s1">            &amp;&#39;</span>
-
     <span class="k">case</span><span class="p">(</span><span class="n">id_nvhpc</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -Minform=inform&amp;</span>
@@ -381,18 +377,59 @@ public subroutine get_debug_compile_flags(id, flags)
 <span class="s1">            &amp; -Mchkstk&amp;</span>
 <span class="s1">            &amp; -traceback&amp;</span>
 <span class="s1">            &amp;&#39;</span>
-
-    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic</span><span class="p">)</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span> <span class="n">id_intel_classic_unknown</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -warn all&amp;</span>
-<span class="s1">            &amp; -check:all:noarg_temp_created&amp;</span>
+<span class="s1">            &amp; -check all&amp;</span>
+<span class="s1">            &amp; -error-limit 1&amp;</span>
+<span class="s1">            &amp; -O0&amp;</span>
+<span class="s1">            &amp; -g&amp;</span>
+<span class="s1">            &amp; -assume byterecl&amp;</span>
+<span class="s1">            &amp; -traceback&amp;</span>
+<span class="s1">            &amp; -coarray=single&amp;</span>
+<span class="s1">            &amp;&#39;</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_mac</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; -warn all&amp;</span>
+<span class="s1">            &amp; -check all&amp;</span>
 <span class="s1">            &amp; -error-limit 1&amp;</span>
 <span class="s1">            &amp; -O0&amp;</span>
 <span class="s1">            &amp; -g&amp;</span>
 <span class="s1">            &amp; -assume byterecl&amp;</span>
 <span class="s1">            &amp; -traceback&amp;</span>
 <span class="s1">            &amp;&#39;</span>
-
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; /warn:all&amp;</span>
+<span class="s1">            &amp; /check:all&amp;</span>
+<span class="s1">            &amp; /error-limit:1&amp;</span>
+<span class="s1">            &amp; /Od&amp;</span>
+<span class="s1">            &amp; /Z7&amp;</span>
+<span class="s1">            &amp; /assume:byterecl&amp;</span>
+<span class="s1">            &amp; /traceback&amp;</span>
+<span class="s1">            &amp; /Qcoarray:single&amp;</span>
+<span class="s1">            &amp;&#39;</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">,</span> <span class="n">id_intel_llvm_unknown</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; -warn all&amp;</span>
+<span class="s1">            &amp; -check all&amp;</span>
+<span class="s1">            &amp; -error-limit 1&amp;</span>
+<span class="s1">            &amp; -O0&amp;</span>
+<span class="s1">            &amp; -g&amp;</span>
+<span class="s1">            &amp; -assume byterecl&amp;</span>
+<span class="s1">            &amp; -traceback&amp;</span>
+<span class="s1">            &amp; -coarray=single&amp;</span>
+<span class="s1">            &amp;&#39;</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">            &amp; /warn:all&amp;</span>
+<span class="s1">            &amp; /check:all&amp;</span>
+<span class="s1">            &amp; /error-limit:1&amp;</span>
+<span class="s1">            &amp; /Od&amp;</span>
+<span class="s1">            &amp; /Z7&amp;</span>
+<span class="s1">            &amp; /assume:byterecl&amp;</span>
+<span class="s1">            &amp; /Qcoarray:single&amp;</span>
+<span class="s1">            &amp;&#39;</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_nag</span><span class="p">)</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; -g&amp;</span>
@@ -425,7 +462,7 @@ public subroutine get_debug_compile_flags(id, flags)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-04-07 20:05  
+             on 2021-04-09 01:51  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
