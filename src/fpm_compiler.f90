@@ -28,6 +28,14 @@
 module fpm_compiler
 use fpm_model, only: fpm_model_t
 use fpm_filesystem, only: join_path, basename
+use fpm_environment, only: &
+        get_os_type, &
+        OS_LINUX, &
+        OS_MACOS, &
+        OS_WINDOWS, &
+        OS_CYGWIN, &
+        OS_SOLARIS, &
+        OS_FREEBSD
 implicit none
 public :: is_unknown_compiler
 public :: get_module_flags
@@ -41,8 +49,13 @@ enum, bind(C)
         id_gcc, &
         id_f95, &
         id_caf, &
-        id_intel_classic, &
-        id_intel_llvm, &
+        id_intel_classic_nix, &
+        id_intel_classic_mac, &
+        id_intel_classic_windows, &
+        id_intel_classic_unknown, &
+        id_intel_llvm_nix, &
+        id_intel_llvm_windows, &
+        id_intel_llvm_unknown, &
         id_pgi, &
         id_nvhpc, &
         id_nag, &
@@ -78,7 +91,6 @@ subroutine get_release_compile_flags(id, flags)
     select case(id)
     case default
         flags = ""
-
     case(id_caf)
         flags='&
             & -O3&
@@ -109,15 +121,57 @@ subroutine get_release_compile_flags(id, flags)
         flags = '&
             & -Mbackslash&
             &'
-    case(id_intel_classic)
+    case(id_intel_classic_nix, id_intel_classic_unknown)
         flags = '&
             & -fp-model precise&
-            & -pc 64&
+            & -pc64&
             & -align all&
             & -error-limit 1&
             & -reentrancy threaded&
             & -nogen-interfaces&
             & -assume byterecl&
+            & -coarray=single&
+            &'
+    case(id_intel_classic_mac)
+        flags = '&
+            & -fp-model precise&
+            & -pc64&
+            & -align all&
+            & -error-limit 1&
+            & -reentrancy threaded&
+            & -nogen-interfaces&
+            & -assume byterecl&
+            &'
+    case(id_intel_classic_windows)
+        flags = '&
+            & /fp:precise&
+            & /align:all&
+            & /error-limit:1&
+            & /reentrancy:threaded&
+            & /nogen-interfaces&
+            & /assume:byterecl&
+            & /Qcoarray:single&
+            &'
+    case(id_intel_llvm_nix, id_intel_llvm_unknown)
+        flags = '&
+            & -fp-model=precise&
+            & -pc64&
+            & -align all&
+            & -error-limit 1&
+            & -reentrancy threaded&
+            & -nogen-interfaces&
+            & -assume byterecl&
+            & -coarray=single&
+            &'
+    case(id_intel_llvm_windows)
+        flags = '&
+            & /fp:precise&
+            & /align:all&
+            & /error-limit:1&
+            & /reentrancy:threaded&
+            & /nogen-interfaces&
+            & /assume:byterecl&
+            & /Qcoarray:single&
             &'
     case(id_nag)
         flags = ' &
@@ -135,7 +189,6 @@ subroutine get_debug_compile_flags(id, flags)
     select case(id)
     case default
         flags = ""
-
     case(id_caf)
         flags = '&
             & -Wall&
@@ -147,7 +200,6 @@ subroutine get_debug_compile_flags(id, flags)
             & -fcheck=array-temps&
             & -fbacktrace&
             &'
-
     case(id_gcc)
         flags = '&
             & -Wall&
@@ -160,7 +212,6 @@ subroutine get_debug_compile_flags(id, flags)
             & -fbacktrace&
             & -fcoarray=single&
             &'
-
     case(id_f95)
         flags = '&
             & -Wall&
@@ -173,7 +224,6 @@ subroutine get_debug_compile_flags(id, flags)
             & -Wno-maybe-uninitialized -Wno-uninitialized&
             & -fbacktrace&
             &'
-
     case(id_nvhpc)
         flags = '&
             & -Minform=inform&
@@ -184,18 +234,59 @@ subroutine get_debug_compile_flags(id, flags)
             & -Mchkstk&
             & -traceback&
             &'
-
-    case(id_intel_classic)
+    case(id_intel_classic_nix, id_intel_classic_unknown)
         flags = '&
             & -warn all&
-            & -check:all:noarg_temp_created&
+            & -check all&
+            & -error-limit 1&
+            & -O0&
+            & -g&
+            & -assume byterecl&
+            & -traceback&
+            & -coarray=single&
+            &'
+    case(id_intel_classic_mac)
+        flags = '&
+            & -warn all&
+            & -check all&
             & -error-limit 1&
             & -O0&
             & -g&
             & -assume byterecl&
             & -traceback&
             &'
-
+    case(id_intel_classic_windows)
+        flags = '&
+            & /warn:all&
+            & /check:all&
+            & /error-limit:1&
+            & /Od&
+            & /Z7&
+            & /assume:byterecl&
+            & /traceback&
+            & /Qcoarray:single&
+            &'
+    case(id_intel_llvm_nix, id_intel_llvm_unknown)
+        flags = '&
+            & -warn all&
+            & -check all&
+            & -error-limit 1&
+            & -O0&
+            & -g&
+            & -assume byterecl&
+            & -traceback&
+            & -coarray=single&
+            &'
+    case(id_intel_llvm_windows)
+        flags = '&
+            & /warn:all&
+            & /check:all&
+            & /error-limit:1&
+            & /Od&
+            & /Z7&
+            & /assume:byterecl&
+            & /Qcoarray:single&
+            &'
     case(id_nag)
         flags = '&
             & -g&
@@ -223,8 +314,14 @@ subroutine get_module_flags(compiler, modpath, flags)
     case(id_caf, id_gcc, id_f95, id_cray)
         flags=' -J '//modpath//' -I '//modpath
 
-    case(id_intel_classic, id_intel_llvm, id_nvhpc, id_pgi, id_flang)
+    case(id_nvhpc, id_pgi, id_flang)
         flags=' -module '//modpath//' -I '//modpath
+
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_unknown, id_intel_llvm_nix, id_intel_llvm_unknown)
+        flags=' -module '//modpath//' -I'//modpath
+
+    case(id_intel_classic_windows, id_intel_llvm_windows)
+        flags=' /module:'//modpath//' /I'//modpath
 
     case(id_lahey)
         flags=' -M '//modpath//' -I '//modpath
@@ -259,12 +356,28 @@ function get_compiler_id(compiler) result(id)
     end if
 
     if (check_compiler(compiler, "ifort")) then
-        id = id_intel_classic
+        select case (get_os_type())
+        case (OS_LINUX, OS_SOLARIS, OS_FREEBSD)
+            id = id_intel_classic_nix
+        case (OS_MACOS)
+            id = id_intel_classic_mac
+        case (OS_WINDOWS, OS_CYGWIN)
+            id = id_intel_classic_windows
+        case default
+            id = id_intel_classic_unknown
+        end select
         return
     end if
 
     if (check_compiler(compiler, "ifx")) then
-        id = id_intel_llvm
+        select case (get_os_type())
+        case (OS_LINUX, OS_SOLARIS, OS_FREEBSD)
+            id = id_intel_llvm_nix
+        case (OS_WINDOWS, OS_CYGWIN)
+            id = id_intel_llvm_windows
+        case default
+            id = id_intel_llvm_unknown
+        end select
         return
     end if
 
