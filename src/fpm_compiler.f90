@@ -345,10 +345,10 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
 
     select case(id)
 
-    case(id_intel_classic)
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, id_intel_classic_unknown)
         c_compiler = 'icc'
 
-    case(id_intel_llvm)
+    case(id_intel_llvm_nix,id_intel_llvm_windows, id_intel_llvm_unknown)
         c_compiler = 'icx'
 
     case(id_flang)
