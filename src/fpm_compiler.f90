@@ -130,7 +130,6 @@ subroutine get_release_compile_flags(id, flags)
             & -reentrancy threaded&
             & -nogen-interfaces&
             & -assume byterecl&
-            & -coarray=single&
             &'
     case(id_intel_classic_mac)
         flags = '&
@@ -150,7 +149,6 @@ subroutine get_release_compile_flags(id, flags)
             & /reentrancy:threaded&
             & /nogen-interfaces&
             & /assume:byterecl&
-            & /Qcoarray:single&
             &'
     case(id_intel_llvm_nix, id_intel_llvm_unknown)
         flags = '&
@@ -161,7 +159,6 @@ subroutine get_release_compile_flags(id, flags)
             & -reentrancy threaded&
             & -nogen-interfaces&
             & -assume byterecl&
-            & -coarray=single&
             &'
     case(id_intel_llvm_windows)
         flags = '&
@@ -171,7 +168,6 @@ subroutine get_release_compile_flags(id, flags)
             & /reentrancy:threaded&
             & /nogen-interfaces&
             & /assume:byterecl&
-            & /Qcoarray:single&
             &'
     case(id_nag)
         flags = ' &
