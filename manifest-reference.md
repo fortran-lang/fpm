@@ -364,7 +364,7 @@ specify the module name using the *external-modules* key in the *build* table.
 
 ```toml
 [build]
-external-modules = "netcdff"
+external-modules = "netcdf"
 ```
 
 Multiple external modules can be specified as a list.
