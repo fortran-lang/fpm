@@ -101,7 +101,7 @@ This guide explains the process of building *fpm* on a platform for the first ti
 To build *fpm* without a prior *fpm* version a single source file version is available
 at each release.
 
-To build manually using the single source distribution use
+To build manually using the single source distribution, run the following code (from within the current directory)
 
 ```
 mkdir _tmp
