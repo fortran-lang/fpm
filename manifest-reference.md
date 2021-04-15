@@ -360,6 +360,10 @@ link = ["blas", "lapack"]
 To use modules that are not defined within your fpm package or its dependencies,
 specify the module name using the *external-modules* key in the *build* table.
 
+> __Important:__ *fpm* cannot automatically locate external module files; it is the responsibility
+> of the user to specify the necessary include directories using compiler flags such that
+> the compiler can locate external module files during compilation.
+
 *Example:*
 
 ```toml
