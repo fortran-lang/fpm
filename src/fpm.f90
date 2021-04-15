@@ -4,7 +4,7 @@ use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: run
+use fpm_environment, only: get_os_type, run, OS_UNKNOWN, OS_WINDOWS
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
@@ -61,6 +61,23 @@ subroutine build_model(model, settings, package, error)
     else
         model%fortran_compiler = settings%compiler
     endif
+
+    associate(os_type => get_os_type())
+        if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
+            model%archiver = "ar -rs "
+        else
+            block
+                integer :: estat
+
+                call execute_command_line("ar --version", exitstat=estat)
+                if (estat /= 0) then
+                    model%archiver = "lib /OUT:"
+                else
+                    model%archiver = "ar -rs "
+                end if
+            end block
+        end if
+    end associate
 
     if (is_unknown_compiler(model%fortran_compiler)) then
         write(*, '(*(a:,1x))') &
@@ -147,7 +164,7 @@ subroutine build_model(model, settings, package, error)
             if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
             if (allocated(dependency%library)) then
-                
+
                 if (allocated(dependency%library%source_dir)) then
                     lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
                     if (is_dir(lib_dir)) then
@@ -165,7 +182,7 @@ subroutine build_model(model, settings, package, error)
                         end if
                     end do
                 end if
-                
+
             end if
 
             if (allocated(dependency%build%link)) then
@@ -178,8 +195,8 @@ subroutine build_model(model, settings, package, error)
     if (settings%verbose) then
         write(*,*)'<INFO> BUILD_NAME: ',settings%build_name
         write(*,*)'<INFO> COMPILER:  ',settings%compiler
-        write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags 
-        write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']' 
+        write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
+        write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
      end if
 
     ! Check for duplicate modules
@@ -190,7 +207,7 @@ subroutine build_model(model, settings, package, error)
 end subroutine build_model
 
 ! Check for duplicate modules
-subroutine check_modules_for_duplicates(model, duplicates_found) 
+subroutine check_modules_for_duplicates(model, duplicates_found)
     type(fpm_model_t), intent(in) :: model
     integer :: maxsize
     integer :: i,j,k,l,m,modi
@@ -370,7 +387,7 @@ subroutine cmd_run(settings,test)
 
     ! Check all names are valid
     ! or no name and found more than one file
-    toomany= size(settings%name).eq.0 .and. size(executables).gt.1 
+    toomany= size(settings%name).eq.0 .and. size(executables).gt.1
     if ( any(.not.found) &
     & .or. &
     & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner .ne. '') ) &
@@ -420,7 +437,7 @@ subroutine cmd_run(settings,test)
             end if
         end do
     endif
-    contains 
+    contains
     subroutine compact_list_all()
     integer, parameter :: LINE_WIDTH = 80
     integer :: i, j, nCol
