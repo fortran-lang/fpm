@@ -35,7 +35,10 @@ use fpm_environment, only: &
         OS_WINDOWS, &
         OS_CYGWIN, &
         OS_SOLARIS, &
-        OS_FREEBSD
+        OS_FREEBSD, &
+        os_is_unix, &
+        get_env
+use fpm_strings, only : split
 implicit none
 public :: is_unknown_compiler
 public :: get_module_flags
@@ -310,6 +313,8 @@ subroutine get_module_flags(compiler, modpath, flags)
     case(id_caf, id_gcc, id_f95, id_cray)
         flags=' -J '//modpath//' -I '//modpath
 
+        call append_cpath(flags)
+
     case(id_nvhpc, id_pgi, id_flang)
         flags=' -module '//modpath//' -I '//modpath
 
@@ -438,5 +443,21 @@ function is_unknown_compiler(compiler) result(is_unknown)
     logical :: is_unknown
     is_unknown = get_compiler_id(compiler) == id_unknown
 end function is_unknown_compiler
+
+subroutine append_cpath(flags)
+    character(len=:), allocatable, intent(inout) :: flags
+    character(len=:), allocatable :: cpath, dirs(:)
+    integer :: i
+    cpath = get_env('CPATH')
+    if (len(cpath) > 0) then
+        call split(cpath, dirs, delimiters=merge(":", ";", os_is_unix()))
+        do i = 1, size(dirs)
+            ! dir can be an empty string for leading or trailing delimiters
+            if (len_trim(dirs(i)) > 0) then
+                flags = flags // ' -I ' // trim(dirs(i))
+            end if
+        end do
+    end if
+end subroutine append_cpath
 
 end module fpm_compiler
