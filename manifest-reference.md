@@ -368,7 +368,7 @@ specify the module name using the *external-modules* key in the *build* table.
 
 ```toml
 [build]
-external-modules = "netcdff"
+external-modules = "netcdf"
 ```
 
 Multiple external modules can be specified as a list.
@@ -377,7 +377,7 @@ Multiple external modules can be specified as a list.
 
 ```toml
 [build]
-external-modules = ["netcdff","h5lt"]
+external-modules = ["netcdf", "h5lt"]
 ```
 
 ## Automatic target discovery
