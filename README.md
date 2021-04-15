@@ -102,6 +102,7 @@ To build *fpm* without a prior *fpm* version a single source file version is ava
 at each release.
 
 To build manually using the single source distribution, run the following code (from within the current directory)
+
 ```
 mkdir _tmp
 curl -LJ https://github.com/fortran-lang/fpm/releases/download/v0.2.0/fpm-0.2.0.f90 > _tmp/fpm.f90
