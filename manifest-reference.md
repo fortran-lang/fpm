@@ -33,6 +33,8 @@ Every manifest file consists of the following sections:
     Toggle automatic discovery of executables
   - [*link*](#link-external-libraries):
     Link with external dependencies
+  - [*external-modules*](#use-system-installed-modules):
+    Specify modules used that are not within your fpm package
 - Target sections:
   - [*library*](#library-configuration)
     Configuration of the library target
@@ -353,6 +355,30 @@ In this case the order of the libraries matters:
 link = ["blas", "lapack"]
 ```
 
+## Use system-installed modules
+
+To use modules that are not defined within your fpm package or its dependencies,
+specify the module name using the *external-modules* key in the *build* table.
+
+> __Important:__ *fpm* cannot automatically locate external module files; it is the responsibility
+> of the user to specify the necessary include directories using compiler flags such that
+> the compiler can locate external module files during compilation.
+
+*Example:*
+
+```toml
+[build]
+external-modules = "netcdf"
+```
+
+Multiple external modules can be specified as a list.
+
+*Example:*
+
+```toml
+[build]
+external-modules = ["netcdf", "h5lt"]
+```
 
 ## Automatic target discovery
 

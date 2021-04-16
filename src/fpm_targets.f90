@@ -121,7 +121,7 @@ subroutine targets_from_sources(targets,model,error)
 
     call build_target_list(targets,model)
 
-    call resolve_module_dependencies(targets,error)
+    call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
 
     call resolve_target_linking(targets,model)
@@ -345,8 +345,9 @@ end subroutine add_dependency
 !> a source file in the package of the correct scope, then a __fatal error__
 !> is returned by the procedure and model construction fails.
 !>
-subroutine resolve_module_dependencies(targets,error)
+subroutine resolve_module_dependencies(targets,external_modules,error)
     type(build_target_ptr), intent(inout), target :: targets(:)
+    type(string_t), intent(in) :: external_modules(:)
     type(error_t), allocatable, intent(out) :: error
 
     type(build_target_ptr) :: dep
@@ -361,6 +362,11 @@ subroutine resolve_module_dependencies(targets,error)
 
                 if (targets(i)%ptr%source%modules_used(j)%s .in. targets(i)%ptr%source%modules_provided) then
                     ! Dependency satisfied in same file, skip
+                    cycle
+                end if
+
+                if (targets(i)%ptr%source%modules_used(j)%s .in. external_modules) then
+                    ! Dependency satisfied in system-installed module
                     cycle
                 end if
 
