@@ -51,6 +51,7 @@ subroutine build_model(model, settings, package, error)
 
     allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
+    allocate(model%external_modules(0))
 
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
     call model%deps%add(package, error)
@@ -170,6 +171,10 @@ subroutine build_model(model, settings, package, error)
 
             if (allocated(dependency%build%link)) then
                 model%link_libraries = [model%link_libraries, dependency%build%link]
+            end if
+
+            if (allocated(dependency%build%external_modules)) then
+                model%external_modules = [model%external_modules, dependency%build%external_modules]
             end if
         end associate
     end do
