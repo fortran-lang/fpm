@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>read_lines &ndash; Fortran-lang/fpm</title>
+    <title>get_default_c_compiler &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -114,8 +114,8 @@
     
   
   <div class="row">
-    <h1>read_lines
-      <small>Function</small>
+    <h1>get_default_c_compiler
+      <small>Subroutine</small>
     
     </h1>
     
@@ -132,24 +132,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.4% of total for procedures.">11 statements</a>
+    title=" 0.6% of total for procedures.">18 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_filesystem.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_compiler.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_filesystem.f90.html'>fpm_filesystem.f90</a></li>
+     <li><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.f90</a></li>
     
-     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+     <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
     
   
-     <li class="active">read_lines</li>
+     <li class="active">get_default_c_compiler</li>
   </ol>
 </div>
 </div>
@@ -177,9 +177,7 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/read_lines.html#variable-i">i</a>
-      
-      <a class="list-group-item" href="../proc/read_lines.html#variable-line_buffer">line_buffer</a>
+      <a class="list-group-item" href="../proc/get_default_c_compiler.html#variable-id~3">id</a>
       
     </div>
   </div>
@@ -207,7 +205,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/read_lines.html#src">read_lines</a>
+    <a class="list-group-item" href="../proc/get_default_c_compiler.html#src">get_default_c_compiler</a>
   </div>
 </div>
 
@@ -219,7 +217,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public function read_lines(fh) result(lines)
+public subroutine get_default_c_compiler(f_compiler, c_compiler)
     
     
    
@@ -228,8 +226,6 @@ public function read_lines(fh) result(lines)
   
 
 
-    
-    <p>read lines into an array of TYPE(STRING_T) variables</p>
     
 
     <h3>Arguments</h3>
@@ -250,27 +246,33 @@ public function read_lines(fh) result(lines)
   
 <tr>
   
-  <td><span class="anchor" id="variable-fh"></span>integer,</td>
+  <td><span class="anchor" id="variable-f_compiler"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>fh</strong></td><td></td>
+  <td><strong>f_compiler</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-c_compiler~2"></span>character(len=:),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>c_compiler</strong></td><td></td>
   
 </tr>
 
 </tbody>
 </table>
 
-    
-    
-    
-    
-    
-    
-    
-   <h3>Return Value <small><span class="anchor" id="variable-lines"></span>type(<a href='../type/string_t.html'>string_t</a>),
-  allocatable,(:)</small></h3>
     
     
     
@@ -290,9 +292,7 @@ public function read_lines(fh) result(lines)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/read_lines.html#variable-i">i</a>
-      
-      <a class="list-group-item" href="../proc/read_lines.html#variable-line_buffer">line_buffer</a>
+      <a class="list-group-item" href="../proc/get_default_c_compiler.html#variable-id~3">id</a>
       
     </div>
   </div>
@@ -320,7 +320,7 @@ public function read_lines(fh) result(lines)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/read_lines.html#src">read_lines</a>
+    <a class="list-group-item" href="../proc/get_default_c_compiler.html#src">get_default_c_compiler</a>
   </div>
 </div>
 
@@ -350,25 +350,11 @@ public function read_lines(fh) result(lines)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i"></span>integer,</td>
+  <td><span class="anchor" id="variable-id~3"></span>integer(kind=compiler_enum),</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>i</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-line_buffer"></span>character(len=LINE_BUFFER_LEN),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>line_buffer</strong></td><td></td><td></td><td></td>
+  <td><strong>id</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -395,20 +381,33 @@ public function read_lines(fh) result(lines)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">read_lines</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
-    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">fh</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">lines</span><span class="p">(:)</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">get_default_c_compiler</span><span class="p">(</span><span class="n">f_compiler</span><span class="p">,</span> <span class="n">c_compiler</span><span class="p">)</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">f_compiler</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">c_compiler</span>
+    <span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
 
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-    <span class="kt">character</span><span class="p">(</span><span class="n">LINE_BUFFER_LEN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">line_buffer</span>
+    <span class="n">id</span> <span class="o">=</span> <span class="n">get_compiler_id</span><span class="p">(</span><span class="n">f_compiler</span><span class="p">)</span>
 
-    <span class="k">allocate</span><span class="p">(</span><span class="n">lines</span><span class="p">(</span><span class="n">number_of_rows</span><span class="p">(</span><span class="n">fh</span><span class="p">)))</span>
-    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
-        <span class="k">read</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="s1">&#39;(A)&#39;</span><span class="p">)</span> <span class="n">line_buffer</span>
-        <span class="n">lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">line_buffer</span><span class="p">)</span>
-    <span class="k">end do</span>
+    <span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
 
-<span class="k">end function </span><span class="n">read_lines</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span> <span class="n">id_intel_classic_mac</span><span class="p">,</span> <span class="n">id_intel_classic_windows</span><span class="p">,</span> <span class="n">id_intel_classic_unknown</span><span class="p">)</span>
+        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;icc&#39;</span>
+
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="n">id_intel_llvm_windows</span><span class="p">,</span> <span class="n">id_intel_llvm_unknown</span><span class="p">)</span>
+        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;icx&#39;</span>
+
+    <span class="k">case</span><span class="p">(</span><span class="n">id_flang</span><span class="p">)</span>
+        <span class="n">c_compiler</span><span class="o">=</span><span class="s1">&#39;clang&#39;</span>
+
+    <span class="k">case</span><span class="p">(</span><span class="n">id_ibmxl</span><span class="p">)</span>
+        <span class="n">c_compiler</span><span class="o">=</span><span class="s1">&#39;xlc&#39;</span>
+
+    <span class="k">case </span><span class="n">default</span>
+        <span class="c">! Fall-back to using Fortran compiler</span>
+        <span class="n">c_compiler</span> <span class="o">=</span> <span class="n">f_compiler</span>
+    <span class="k">end select</span>
+
+<span class="k">end subroutine </span><span class="n">get_default_c_compiler</span>
 </pre></div>
 
     </section>

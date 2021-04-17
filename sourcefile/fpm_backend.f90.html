@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.3% of total for source files.">121 statements</a>
+    title=" 2.3% of total for source files.">123 statements</a>
      </li> 
      
      
@@ -299,8 +299,8 @@
 <a name="ln-30"></a><span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">run</span>
 <a name="ln-31"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">mkdir</span>
 <a name="ln-32"></a><span class="k">use </span><span class="n">fpm_model</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">fpm_model_t</span>
-<a name="ln-33"></a><span class="k">use </span><span class="n">fpm_targets</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">build_target_t</span><span class="p">,</span> <span class="n">build_target_ptr</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-34"></a>                     <span class="n">FPM_TARGET_OBJECT</span><span class="p">,</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,</span> <span class="n">FPM_TARGET_EXECUTABLE</span>
+<a name="ln-33"></a><span class="k">use </span><span class="n">fpm_targets</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">build_target_t</span><span class="p">,</span> <span class="n">build_target_ptr</span><span class="p">,</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-34"></a>                       <span class="n">FPM_TARGET_C_OBJECT</span><span class="p">,</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,</span> <span class="n">FPM_TARGET_EXECUTABLE</span>
 <a name="ln-35"></a>                     
 <a name="ln-36"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">string_cat</span>
 <a name="ln-37"></a>
@@ -510,25 +510,29 @@
 <a name="ln-241"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span><span class="o">//</span><span class="s2">&quot; -c &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="p">&amp;</span>
 <a name="ln-242"></a>              <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)</span>
 <a name="ln-243"></a>
-<a name="ln-244"></a>    <span class="k">case</span> <span class="p">(</span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">)</span>
-<a name="ln-245"></a>        
-<a name="ln-246"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span><span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="p">&amp;</span>
-<a name="ln-247"></a>              <span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="k">target</span><span class="p">%</span><span class="n">link_flags</span><span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)</span>
-<a name="ln-248"></a>
-<a name="ln-249"></a>    <span class="k">case</span> <span class="p">(</span><span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span>
-<a name="ln-250"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;ar -rs &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
-<a name="ln-251"></a>
-<a name="ln-252"></a>    <span class="k">end select</span>
-<a name="ln-253"></a>
-<a name="ln-254"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-255"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s1">&#39;.digest&#39;</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span>
-<a name="ln-256"></a>        <span class="k">write</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">digest</span>
-<a name="ln-257"></a>        <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
-<a name="ln-258"></a>    <span class="k">end if</span>
-<a name="ln-259"></a>
-<a name="ln-260"></a><span class="k">end subroutine </span><span class="n">build_target</span>
-<a name="ln-261"></a>
-<a name="ln-262"></a><span class="k">end module </span><span class="n">fpm_backend</span>
+<a name="ln-244"></a>    <span class="k">case</span> <span class="p">(</span><span class="n">FPM_TARGET_C_OBJECT</span><span class="p">)</span>
+<a name="ln-245"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">c_compiler</span><span class="o">//</span><span class="s2">&quot; -c &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="p">&amp;</span>
+<a name="ln-246"></a>                <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)</span>
+<a name="ln-247"></a>
+<a name="ln-248"></a>    <span class="k">case</span> <span class="p">(</span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="p">)</span>
+<a name="ln-249"></a>        
+<a name="ln-250"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span><span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="p">&amp;</span>
+<a name="ln-251"></a>              <span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="k">target</span><span class="p">%</span><span class="n">link_flags</span><span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)</span>
+<a name="ln-252"></a>
+<a name="ln-253"></a>    <span class="k">case</span> <span class="p">(</span><span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span>
+<a name="ln-254"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;ar -rs &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
+<a name="ln-255"></a>
+<a name="ln-256"></a>    <span class="k">end select</span>
+<a name="ln-257"></a>
+<a name="ln-258"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">then</span>
+<a name="ln-259"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s1">&#39;.digest&#39;</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span>
+<a name="ln-260"></a>        <span class="k">write</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">digest</span>
+<a name="ln-261"></a>        <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+<a name="ln-262"></a>    <span class="k">end if</span>
+<a name="ln-263"></a>
+<a name="ln-264"></a><span class="k">end subroutine </span><span class="n">build_target</span>
+<a name="ln-265"></a>
+<a name="ln-266"></a><span class="k">end module </span><span class="n">fpm_backend</span>
 </pre></div>
 
     </section>
@@ -547,7 +551,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-04-16 15:08  
+             on 2021-04-17 16:19  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
