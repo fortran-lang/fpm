@@ -30,8 +30,8 @@ module fpm_backend
 use fpm_environment, only: run
 use fpm_filesystem, only: dirname, join_path, exists, mkdir
 use fpm_model, only: fpm_model_t
-use fpm_targets, only: build_target_t, build_target_ptr, &
-                     FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
+use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
+                       FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
                      
 use fpm_strings, only: string_cat
 
@@ -240,6 +240,10 @@ subroutine build_target(model,target)
     case (FPM_TARGET_OBJECT)
         call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
               // " -o " // target%output_file)
+
+    case (FPM_TARGET_C_OBJECT)
+        call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
+                // " -o " // target%output_file)
 
     case (FPM_TARGET_EXECUTABLE)
         
