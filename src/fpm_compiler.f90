@@ -239,7 +239,6 @@ subroutine get_debug_compile_flags(id, flags)
             & -g&
             & -assume byterecl&
             & -traceback&
-            & -coarray=single&
             &'
     case(id_intel_classic_mac)
         flags = '&
@@ -260,7 +259,6 @@ subroutine get_debug_compile_flags(id, flags)
             & /Z7&
             & /assume:byterecl&
             & /traceback&
-            & /Qcoarray:single&
             &'
     case(id_intel_llvm_nix, id_intel_llvm_unknown)
         flags = '&
@@ -271,7 +269,6 @@ subroutine get_debug_compile_flags(id, flags)
             & -g&
             & -assume byterecl&
             & -traceback&
-            & -coarray=single&
             &'
     case(id_intel_llvm_windows)
         flags = '&
@@ -281,7 +278,6 @@ subroutine get_debug_compile_flags(id, flags)
             & /Od&
             & /Z7&
             & /assume:byterecl&
-            & /Qcoarray:single&
             &'
     case(id_nag)
         flags = '&
