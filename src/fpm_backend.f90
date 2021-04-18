@@ -238,20 +238,18 @@ subroutine build_target(model,target)
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
-              // " -o " // target%output_file)
+        call model%compiler%compile(target%output_file, target%source%file_name, &
+            target%compile_flags)
 
     case (FPM_TARGET_C_OBJECT)
-        call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
-                // " -o " // target%output_file)
+        call model%c_compiler%compile(target%output_file, target%source%file_name, &
+            target%compile_flags)
 
     case (FPM_TARGET_EXECUTABLE)
-        
-        call run(model%fortran_compiler// " " // target%compile_flags &
-              //" "//target%link_flags// " -o " // target%output_file)
+        call model%compiler%link(target%output_file, target%link_flags, target%compile_flags)
 
     case (FPM_TARGET_ARCHIVE)
-        call run("ar -rs " // target%output_file // " " // string_cat(target%link_objects," "))
+        call model%archiver%archive(target%output_file, target%link_objects)
 
     end select
 

@@ -19,6 +19,7 @@
 !>
 module fpm_model
 use iso_fortran_env, only: int64
+use fpm_compiler, only : archiver_t, compiler_t
 use fpm_strings, only: string_t, str
 use fpm_dependency, only: dependency_tree_t
 implicit none
@@ -114,15 +115,6 @@ type :: fpm_model_t
     !> Array of packages (including the root package)
     type(package_t), allocatable :: packages(:)
 
-    !> Command line name to invoke fortran compiler
-    character(:), allocatable :: fortran_compiler
-
-    !> Command line name to invoke c compiler
-    character(:), allocatable :: c_compiler
-
-    !> Command line flags passed to fortran for compilation
-    character(:), allocatable :: fortran_compile_flags
-
     !> Base directory for build
     character(:), allocatable :: output_directory
 
@@ -137,6 +129,15 @@ type :: fpm_model_t
 
     !> Project dependencies
     type(dependency_tree_t) :: deps
+
+    !> Compiler command
+    type(compiler_t) :: compiler
+
+    !> Compiler command
+    type(compiler_t) :: c_compiler
+
+    !> Archiver command
+    type(archiver_t) :: archiver
 
 end type fpm_model_t
 
@@ -270,9 +271,9 @@ function info_model(model) result(s)
     end do
     s = s // "]"
     !    character(:), allocatable :: fortran_compiler
-    s = s // ', fortran_compiler="' // model%fortran_compiler // '"'
+    s = s // ', fortran_compiler="' // model%compiler%prog // '"'
     !    character(:), allocatable :: fortran_compile_flags
-    s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
+    s = s // ', fortran_compile_flags="' // model%compiler%flags // '"'
     !    character(:), allocatable :: output_directory
     s = s // ', output_directory="' // model%output_directory // '"'
     !    type(string_t), allocatable :: link_libraries(:)

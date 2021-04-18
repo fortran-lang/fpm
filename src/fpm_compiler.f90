@@ -26,9 +26,10 @@
 ! Open64            ?          ?       -module         -I            -mp        discontinued
 ! Unisys            ?          ?       ?               ?             ?          discontinued
 module fpm_compiler
-use fpm_model, only: fpm_model_t
 use fpm_filesystem, only: join_path, basename
+use fpm_strings, only : string_t, string_cat
 use fpm_environment, only: &
+        run, &
         get_os_type, &
         OS_LINUX, &
         OS_MACOS, &
@@ -67,7 +68,85 @@ enum, bind(C)
 end enum
 integer, parameter :: compiler_enum = kind(id_unknown)
 
+!> Abstraction for the compiler
+type :: compiler_t
+    character(len=:), allocatable :: prog
+    character(len=:), allocatable :: flags
 contains
+    procedure :: compile
+    procedure :: link
+end type compiler_t
+interface compiler_t
+    module procedure :: new_compiler
+end interface compiler_t
+
+!> Abstraction for the archive / static library creation
+type :: archiver_t
+    character(len=:), allocatable :: prog
+    character(len=:), allocatable :: flags
+contains
+    procedure :: archive
+end type archiver_t
+interface archiver_t
+    module procedure :: new_archiver
+end interface archiver_t
+
+contains
+
+!> Create a new archiver object
+function new_archiver() result(new)
+    type(archiver_t) :: new
+    character(len=*), parameter :: default_archiver = "ar"
+    character(len=*), parameter :: default_archiver_flags = "-rs"
+    new%prog = default_archiver
+    new%flags = default_archiver_flags
+end function new_archiver
+
+!> Create an archive / static library from a given set of object files
+subroutine archive(self, output, objects)
+    class(archiver_t), intent(in) :: self
+    character(len=*), intent(in) :: output
+    type(string_t), intent(in) :: objects(:)
+
+    call run(self%prog //" "// self%flags //" "// output //" "// string_cat(objects, " "))
+end subroutine archive
+
+!> Create a new compiler object
+function new_compiler(compiler, compiler_flags) result(new)
+    type(compiler_t) :: new
+    character(len=*), intent(in) :: compiler
+    character(len=*), intent(in) :: compiler_flags
+    new%prog = compiler
+    new%flags = compiler_flags
+end function new_compiler
+
+!> Compile an object file from a given source file
+subroutine compile(self, output, input, flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: output
+    character(len=*), intent(in) :: input
+    character(len=*), intent(in), optional :: flags
+
+    if (present(flags)) then
+        call run(self%prog // " " // flags // " -o " // output // " -c " // input)
+    else
+        call run(self%prog // " " // self%flags // " -o " // output // " -c " // input)
+    end if
+end subroutine compile
+
+!> Link an executable from a given set of object files (might contain link flags as well)
+subroutine link(self, output, objects, flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: output
+    character(len=*), intent(in) :: objects
+    character(len=*), intent(in), optional :: flags
+
+    if (present(flags)) then
+        call run(self%prog // " " // flags // " -o " // output // " " // objects)
+    else
+        call run(self%prog // " " // self%flags // " -o " // output // " " // objects)
+    end if
+end subroutine link
 
 subroutine get_default_compile_flags(compiler, release, flags)
     character(len=*), intent(in) :: compiler

@@ -480,9 +480,9 @@ subroutine resolve_target_linking(targets, model)
         associate(target => targets(i)%ptr)
 
             if (target%target_type /= FPM_TARGET_C_OBJECT) then
-                target%compile_flags = model%fortran_compile_flags//" "//global_include_flags
+                target%compile_flags = model%compiler%flags//" "//global_include_flags
             else
-                target%compile_flags = global_include_flags
+                target%compile_flags = model%c_compiler%flags//" "//global_include_flags
             end if
 
             allocate(target%link_objects(0))
