@@ -4,7 +4,7 @@ use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: get_os_type, run, OS_UNKNOWN, OS_WINDOWS
+use fpm_environment, only: get_archiver, run
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
@@ -62,22 +62,7 @@ subroutine build_model(model, settings, package, error)
         model%fortran_compiler = settings%compiler
     endif
 
-    associate(os_type => get_os_type())
-        if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
-            model%archiver = "ar -rs "
-        else
-            block
-                integer :: estat
-
-                call execute_command_line("ar --version", exitstat=estat)
-                if (estat /= 0) then
-                    model%archiver = "lib /OUT:"
-                else
-                    model%archiver = "ar -rs "
-                end if
-            end block
-        end if
-    end associate
+    model%archiver = get_archiver()
 
     if (is_unknown_compiler(model%fortran_compiler)) then
         write(*, '(*(a:,1x))') &
