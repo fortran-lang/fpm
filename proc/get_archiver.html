@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>git_target_tag &ndash; Fortran-lang/fpm</title>
+    <title>get_archiver &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -114,7 +114,7 @@
     
   
   <div class="row">
-    <h1>git_target_tag
+    <h1>get_archiver
       <small>Function</small>
     
     </h1>
@@ -132,24 +132,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.3% of total for procedures.">8 statements</a>
+    title=" 0.6% of total for procedures.">18 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/git.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_environment.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/git.f90.html'>git.f90</a></li>
+     <li><a href='../sourcefile/fpm_environment.f90.html'>fpm_environment.f90</a></li>
     
-     <li><a href='../module/fpm_git.html'>fpm_git</a></li>
+     <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
     
   
-     <li class="active">git_target_tag</li>
+     <li class="active">get_archiver</li>
   </ol>
 </div>
 </div>
@@ -190,13 +190,7 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/git_target_tag.html#src">git_target_tag</a>
-  </div>
-</div>
-
+<em>None</em>
 
 
 </div>
@@ -205,7 +199,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public function git_target_tag(url, tag) result(self)
+public function get_archiver() result(archiver)
     
     
    
@@ -215,54 +209,11 @@ public function git_target_tag(url, tag) result(self)
 
 
     
-    <p>Target a git tag</p>
-    
 
     <h3>Arguments</h3>
     
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-url~5"></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>url</strong></td><td><p>Target URL of the git repository</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-tag~2"></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>tag</strong></td><td><p>Tag name of interest</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
+    <em>None</em>
+    <br>
     
     
     
@@ -270,9 +221,9 @@ public function git_target_tag(url, tag) result(self)
     
     
     
-   <h3>Return Value <small><span class="anchor" id="variable-self~4"></span>type(<a href='../type/git_target_t.html'>git_target_t</a>)
-  </small></h3>
-    <p>New git target</p>
+   <h3>Return Value <small><span class="anchor" id="variable-archiver~2"></span>character(len=:),
+  allocatable</small></h3>
+    
     
     
     
@@ -304,13 +255,7 @@ public function git_target_tag(url, tag) result(self)
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/git_target_tag.html#src">git_target_tag</a>
-  </div>
-</div>
-
+<em>None</em>
 
 
     </section>
@@ -333,29 +278,6 @@ public function git_target_tag(url, tag) result(self)
 
     
     
-    
-    <section>
-    <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">function </span><span class="n">git_target_tag</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
-
-        <span class="c">!&gt; Target URL of the git repository</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">url</span>
-
-        <span class="c">!&gt; Tag name of interest</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tag</span>
-
-        <span class="c">!&gt; New git target</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-
-        <span class="n">self</span><span class="p">%</span><span class="n">descriptor</span> <span class="o">=</span> <span class="n">git_descriptor</span><span class="p">%</span><span class="n">tag</span>
-        <span class="n">self</span><span class="p">%</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
-        <span class="n">self</span><span class="p">%</span><span class="n">object</span> <span class="o">=</span> <span class="n">tag</span>
-
-    <span class="k">end function </span><span class="n">git_target_tag</span>
-</pre></div>
-
-    </section>
-    <br>
     
     
     </div>
