@@ -34,6 +34,9 @@ module fpm_manifest_build
         !> Libraries to link against
         type(string_t), allocatable :: link(:)
 
+        !> External modules to use
+        type(string_t), allocatable :: external_modules(:)
+
     contains
 
         !> Print information on this instance
@@ -87,6 +90,9 @@ contains
         call get_value(table, "link", self%link, error)
         if (allocated(error)) return
 
+        call get_value(table, "external-modules", self%external_modules, error)
+        if (allocated(error)) return
+
     end subroutine new_build_config
 
 
@@ -110,7 +116,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("auto-executables", "auto-examples", "auto-tests", "link")
+            case("auto-executables", "auto-examples", "auto-tests", "link", "external-modules")
                 continue
 
             case default
@@ -135,7 +141,7 @@ contains
         !> Verbosity of the printout
         integer, intent(in), optional :: verbosity
 
-        integer :: pr, ilink
+        integer :: pr, ilink, imod
         character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
 
         if (present(verbosity)) then
@@ -154,6 +160,12 @@ contains
             write(unit, fmt) " - link against"
             do ilink = 1, size(self%link)
                 write(unit, fmt) "   - " // self%link(ilink)%s
+            end do
+        end if
+        if (allocated(self%external_modules)) then
+            write(unit, fmt) " - external modules"
+            do imod = 1, size(self%external_modules)
+                write(unit, fmt) "   - " // self%external_modules(imod)%s
             end do
         end if
 

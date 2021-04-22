@@ -35,7 +35,8 @@ implicit none
 private
 
 public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
-       FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT
+       FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
+       FPM_TARGET_C_OBJECT
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public resolve_target_linking, add_target, add_dependency
@@ -50,7 +51,8 @@ integer, parameter :: FPM_TARGET_EXECUTABLE = 1
 integer, parameter :: FPM_TARGET_ARCHIVE = 2
 !> Target type is compiled object
 integer, parameter :: FPM_TARGET_OBJECT = 3
-
+!> Target type is c compiled object
+integer, parameter :: FPM_TARGET_C_OBJECT = 4
 
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
@@ -121,7 +123,7 @@ subroutine targets_from_sources(targets,model,error)
 
     call build_target_list(targets,model)
 
-    call resolve_module_dependencies(targets,error)
+    call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
 
     call resolve_target_linking(targets,model)
@@ -194,7 +196,8 @@ subroutine build_target_list(targets,model)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
                     call add_target(targets,source = sources(i), &
-                                type = FPM_TARGET_OBJECT,&
+                                type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
+                                               sources(i)%unit_type==FPM_UNIT_CSOURCE), &
                                 output_file = get_object_name(sources(i)))
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
@@ -345,8 +348,9 @@ end subroutine add_dependency
 !> a source file in the package of the correct scope, then a __fatal error__
 !> is returned by the procedure and model construction fails.
 !>
-subroutine resolve_module_dependencies(targets,error)
+subroutine resolve_module_dependencies(targets,external_modules,error)
     type(build_target_ptr), intent(inout), target :: targets(:)
+    type(string_t), intent(in) :: external_modules(:)
     type(error_t), allocatable, intent(out) :: error
 
     type(build_target_ptr) :: dep
@@ -361,6 +365,11 @@ subroutine resolve_module_dependencies(targets,error)
 
                 if (targets(i)%ptr%source%modules_used(j)%s .in. targets(i)%ptr%source%modules_provided) then
                     ! Dependency satisfied in same file, skip
+                    cycle
+                end if
+
+                if (targets(i)%ptr%source%modules_used(j)%s .in. external_modules) then
+                    ! Dependency satisfied in system-installed module
                     cycle
                 end if
 
@@ -442,7 +451,7 @@ subroutine resolve_target_linking(targets, model)
 
     integer :: i
     character(:), allocatable :: global_link_flags
-    character(:), allocatable :: global_compile_flags
+    character(:), allocatable :: global_include_flags
 
     if (size(targets) == 0) return
 
@@ -452,17 +461,16 @@ subroutine resolve_target_linking(targets, model)
         allocate(character(0) :: global_link_flags)
     end if
 
-    global_compile_flags = model%fortran_compile_flags
-
     if (allocated(model%link_libraries)) then
         if (size(model%link_libraries) > 0) then
             global_link_flags = global_link_flags // " -l" // string_cat(model%link_libraries," -l")
         end if
     end if
 
+    allocate(character(0) :: global_include_flags)
     if (allocated(model%include_dirs)) then
         if (size(model%include_dirs) > 0) then
-            global_compile_flags = global_compile_flags // &
+            global_include_flags = global_include_flags // &
             & " -I" // string_cat(model%include_dirs," -I")
         end if
     end if
@@ -471,7 +479,11 @@ subroutine resolve_target_linking(targets, model)
 
         associate(target => targets(i)%ptr)
 
-            target%compile_flags = global_compile_flags
+            if (target%target_type /= FPM_TARGET_C_OBJECT) then
+                target%compile_flags = model%fortran_compile_flags//" "//global_include_flags
+            else
+                target%compile_flags = global_include_flags
+            end if
 
             allocate(target%link_objects(0))
 
