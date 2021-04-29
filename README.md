@@ -60,7 +60,7 @@ or from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 To setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
 
-#### Bootstraping on other platforms
+#### Bootstrapping on other platforms
 
 For other platforms and architectures have a look at the [bootstrapping instructions](#bootstrapping-instructions).
 
