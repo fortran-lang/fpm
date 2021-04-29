@@ -18,12 +18,13 @@ module fpm_environment
     integer, parameter, public :: OS_CYGWIN  = 4
     integer, parameter, public :: OS_SOLARIS = 5
     integer, parameter, public :: OS_FREEBSD = 6
+    integer, parameter, public :: OS_OPENBSD = 7
 contains
     !> Determine the OS type
     integer function get_os_type() result(r)
         !!
         !! Returns one of OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN,
-        !! OS_SOLARIS, OS_FREEBSD.
+        !! OS_SOLARIS, OS_FREEBSD, OS_OPENBSD.
         !!
         !! At first, the environment variable `OS` is checked, which is usually
         !! found on Windows. Then, `OSTYPE` is read in and compared with common
@@ -82,6 +83,12 @@ contains
             ! FreeBSD
             if (index(val, 'FreeBSD') > 0 .or. index(val, 'freebsd') > 0) then
                 r = OS_FREEBSD
+                return
+            end if
+
+            ! OpenBSD
+            if (index(val, 'OpenBSD') > 0 .or. index(val, 'openbsd') > 0) then
+                r = OS_OPENBSD
                 return
             end if
         end if
