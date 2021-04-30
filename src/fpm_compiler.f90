@@ -35,7 +35,8 @@ use fpm_environment, only: &
         OS_WINDOWS, &
         OS_CYGWIN, &
         OS_SOLARIS, &
-        OS_FREEBSD
+        OS_FREEBSD, &
+        OS_OPENBSD
 implicit none
 public :: is_unknown_compiler
 public :: get_module_flags

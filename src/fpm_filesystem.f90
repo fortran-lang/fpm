@@ -4,7 +4,7 @@ module fpm_filesystem
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                               OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
+                               OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_strings, only: f_string, replace, string_t, split
     implicit none
     private
@@ -192,7 +192,7 @@ logical function is_dir(dir)
 
     select case (get_os_type())
 
-    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
         call execute_command_line("test -d " // dir , exitstat=stat)
 
     case (OS_WINDOWS)
@@ -214,7 +214,7 @@ function join_path(a1,a2,a3,a4,a5) result(path)
     character(len=1)                       :: filesep
 
     select case (get_os_type())
-        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
             filesep = '/'
         case (OS_WINDOWS)
             filesep = '\'
@@ -283,7 +283,7 @@ subroutine mkdir(dir)
     if (is_dir(dir)) return
 
     select case (get_os_type())
-        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
             call execute_command_line('mkdir -p ' // dir, exitstat=stat)
             write (*, '(" + ",2a)') 'mkdir -p ' // dir
 
@@ -322,7 +322,7 @@ recursive subroutine list_files(dir, files, recurse)
     allocate (temp_file, source=get_temp_filename())
 
     select case (get_os_type())
-        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)
+        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
             call execute_command_line('ls -A ' // dir // ' > ' // temp_file, &
                                       exitstat=stat)
         case (OS_WINDOWS)

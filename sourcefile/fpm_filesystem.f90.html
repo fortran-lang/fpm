@@ -273,7 +273,7 @@
 <a name="ln-4"></a><span class="k">use</span><span class="p">,</span><span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">stdin</span><span class="o">=&gt;</span><span class="n">input_unit</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=&gt;</span><span class="n">output_unit</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=&gt;</span><span class="n">error_unit</span>
 <a name="ln-5"></a>    <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-6"></a>                               <span class="n">OS_UNKNOWN</span><span class="p">,</span> <span class="n">OS_LINUX</span><span class="p">,</span> <span class="n">OS_MACOS</span><span class="p">,</span> <span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-7"></a>                               <span class="n">OS_CYGWIN</span><span class="p">,</span> <span class="n">OS_SOLARIS</span><span class="p">,</span> <span class="n">OS_FREEBSD</span>
+<a name="ln-7"></a>                               <span class="n">OS_CYGWIN</span><span class="p">,</span> <span class="n">OS_SOLARIS</span><span class="p">,</span> <span class="n">OS_FREEBSD</span><span class="p">,</span> <span class="n">OS_OPENBSD</span>
 <a name="ln-8"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">f_string</span><span class="p">,</span> <span class="n">replace</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">split</span>
 <a name="ln-9"></a>    <span class="k">implicit none</span>
 <a name="ln-10"></a><span class="k">    private</span>
@@ -461,7 +461,7 @@
 <a name="ln-192"></a>
 <a name="ln-193"></a><span class="s1">    select case (get_os_type())</span>
 <a name="ln-194"></a>
-<a name="ln-195"></a><span class="s1">    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)</span>
+<a name="ln-195"></a><span class="s1">    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
 <a name="ln-196"></a><span class="s1">        call execute_command_line(&quot;test -d &quot; // dir , exitstat=stat)</span>
 <a name="ln-197"></a>
 <a name="ln-198"></a><span class="s1">    case (OS_WINDOWS)</span>
@@ -483,7 +483,7 @@
 <a name="ln-214"></a><span class="s1">    character(len=1)                       :: filesep</span>
 <a name="ln-215"></a>
 <a name="ln-216"></a><span class="s1">    select case (get_os_type())</span>
-<a name="ln-217"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)</span>
+<a name="ln-217"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
 <a name="ln-218"></a><span class="s1">            filesep = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <a name="ln-219"></a><span class="s1">        case (OS_WINDOWS)</span>
 <a name="ln-220"></a><span class="s1">            filesep = &#39;</span><span class="err">\</span><span class="s1">&#39;</span>
@@ -552,7 +552,7 @@
 <a name="ln-283"></a><span class="s1">    if (is_dir(dir)) return</span>
 <a name="ln-284"></a>
 <a name="ln-285"></a><span class="s1">    select case (get_os_type())</span>
-<a name="ln-286"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)</span>
+<a name="ln-286"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
 <a name="ln-287"></a><span class="s1">            call execute_command_line(&#39;</span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="s1">&#39; // dir, exitstat=stat)</span>
 <a name="ln-288"></a><span class="s1">            write (*, &#39;</span><span class="p">(</span><span class="s2">&quot; + &quot;</span><span class="p">,</span><span class="mi">2</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;) &#39;</span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="s1">&#39; // dir</span>
 <a name="ln-289"></a>
@@ -591,7 +591,7 @@
 <a name="ln-322"></a><span class="s1">    allocate (temp_file, source=get_temp_filename())</span>
 <a name="ln-323"></a>
 <a name="ln-324"></a><span class="s1">    select case (get_os_type())</span>
-<a name="ln-325"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD)</span>
+<a name="ln-325"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
 <a name="ln-326"></a><span class="s1">            call execute_command_line(&#39;</span><span class="n">ls</span> <span class="o">-</span><span class="n">A</span> <span class="s1">&#39; // dir // &#39;</span> <span class="o">&gt;</span> <span class="s1">&#39; // temp_file, &amp;</span>
 <a name="ln-327"></a><span class="s1">                                      exitstat=stat)</span>
 <a name="ln-328"></a><span class="s1">        case (OS_WINDOWS)</span>
@@ -897,7 +897,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-04-29 21:18  
+             on 2021-04-30 00:29  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

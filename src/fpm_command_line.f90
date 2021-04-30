@@ -25,7 +25,7 @@
 module fpm_command_line
 use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use fpm_strings,      only : lower, split, fnv_1a
 use fpm_filesystem,   only : basename, canon_path, to_fortran_name
@@ -129,6 +129,7 @@ contains
             case (OS_CYGWIN);  os_type =  "OS Type:     Cygwin"
             case (OS_SOLARIS); os_type =  "OS Type:     Solaris"
             case (OS_FREEBSD); os_type =  "OS Type:     FreeBSD"
+            case (OS_OPENBSD); os_type =  "OS Type:     OpenBSD"
             case (OS_UNKNOWN); os_type =  "OS Type:     Unknown"
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
