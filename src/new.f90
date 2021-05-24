@@ -347,7 +347,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  # git repository.                                                             ',&
         &'  #                                                                             ',&
         &'  # You can be specific about which version of a dependency you would           ',&
-        &'  # like. By default the latest master master branch is used. You can           ',&
+        &'  # like. By default the latest default branch is used. You can           ',&
         &'  # optionally specify a branch, a tag or a commit value.                       ',&
         &'  #                                                                             ',&
         &'  # So here are several alternates for specifying a remote dependency (you      ',&

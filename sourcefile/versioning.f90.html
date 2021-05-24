@@ -267,418 +267,418 @@
 
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="c">!&gt; Implementation of versioning data for comparing packages</span>
-<a name="ln-2"></a><span class="k">module </span><span class="n">fpm_versioning</span>
-<a name="ln-3"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">syntax_error</span>
-<a name="ln-4"></a>    <span class="k">implicit none</span>
-<a name="ln-5"></a><span class="k">    private</span>
-<a name="ln-6"></a>
-<a name="ln-7"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">version_t</span><span class="p">,</span> <span class="n">new_version</span><span class="p">,</span> <span class="nb">char</span>
-<a name="ln-8"></a>
-<a name="ln-9"></a>
-<a name="ln-10"></a><span class="nb">    </span><span class="k">type</span> <span class="kd">::</span> <span class="n">version_t</span>
-<a name="ln-11"></a>        <span class="k">private</span>
-<a name="ln-12"></a>
-<a name="ln-13"></a>        <span class="c">!&gt; Version numbers found</span>
-<a name="ln-14"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">num</span><span class="p">(:)</span>
-<a name="ln-15"></a>
-<a name="ln-16"></a>    <span class="k">contains</span>
-<a name="ln-17"></a>
-<a name="ln-18"></a><span class="k">        generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">==</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">equals</span>
-<a name="ln-19"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">equals</span>
-<a name="ln-20"></a>
-<a name="ln-21"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">/=</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">not_equals</span>
-<a name="ln-22"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">not_equals</span>
-<a name="ln-23"></a>
-<a name="ln-24"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">greater</span>
-<a name="ln-25"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">greater</span>
-<a name="ln-26"></a>
-<a name="ln-27"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">&lt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">less</span>
-<a name="ln-28"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">less</span>
-<a name="ln-29"></a>
-<a name="ln-30"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">&gt;=</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">greater_equals</span>
-<a name="ln-31"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">greater_equals</span>
-<a name="ln-32"></a>
-<a name="ln-33"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">&lt;=</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">less_equals</span>
-<a name="ln-34"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">less_equals</span>
-<a name="ln-35"></a>
-<a name="ln-36"></a>        <span class="c">!&gt; Compare a version against a version constraint (x.x.0 &lt;= v &lt; x.x.HUGE)</span>
-<a name="ln-37"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(.</span><span class="n">match</span><span class="p">.)</span> <span class="o">=&gt;</span> <span class="n">match</span>
-<a name="ln-38"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">match</span>
-<a name="ln-39"></a>
-<a name="ln-40"></a>        <span class="c">!&gt; Create a printable string from a version data type</span>
-<a name="ln-41"></a>        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">to_string</span>
-<a name="ln-42"></a>
-<a name="ln-43"></a>    <span class="k">end type </span><span class="n">version_t</span>
-<a name="ln-44"></a>
-<a name="ln-45"></a>
-<a name="ln-46"></a>    <span class="c">!&gt; Arbitrary internal limit of the version parser</span>
-<a name="ln-47"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">max_limit</span> <span class="o">=</span> <span class="mi">3</span>
-<a name="ln-48"></a>
-<a name="ln-49"></a>
-<a name="ln-50"></a>    <span class="k">interface </span><span class="nb">char</span>
-<a name="ln-51"></a><span class="nb">        </span><span class="k">module procedure</span> <span class="kd">::</span> <span class="n">as_string</span>
-<a name="ln-52"></a>    <span class="k">end interface </span><span class="nb">char</span>
-<a name="ln-53"></a>
-<a name="ln-54"></a>
-<a name="ln-55"></a><span class="nb">    </span><span class="k">interface </span><span class="n">new_version</span>
-<a name="ln-56"></a>        <span class="k">module procedure</span> <span class="kd">::</span> <span class="n">new_version_from_string</span>
-<a name="ln-57"></a>        <span class="k">module procedure</span> <span class="kd">::</span> <span class="n">new_version_from_int</span>
-<a name="ln-58"></a>    <span class="k">end interface </span><span class="n">new_version</span>
-<a name="ln-59"></a>
-<a name="ln-60"></a>
-<a name="ln-61"></a><span class="k">contains</span>
-<a name="ln-62"></a>
-<a name="ln-63"></a>
-<a name="ln-64"></a>    <span class="c">!&gt; Create a new version from a string</span>
-<a name="ln-65"></a>    <span class="k">subroutine </span><span class="n">new_version_from_int</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
-<a name="ln-66"></a>
-<a name="ln-67"></a>        <span class="c">!&gt; Instance of the versioning data</span>
-<a name="ln-68"></a>        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-69"></a>
-<a name="ln-70"></a>        <span class="c">!&gt; Subversion numbers to define version data</span>
-<a name="ln-71"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">num</span><span class="p">(:)</span>
-<a name="ln-72"></a>
-<a name="ln-73"></a>        <span class="n">self</span><span class="p">%</span><span class="n">num</span> <span class="o">=</span> <span class="n">num</span>
-<a name="ln-74"></a>
-<a name="ln-75"></a>    <span class="k">end subroutine </span><span class="n">new_version_from_int</span>
-<a name="ln-76"></a>
-<a name="ln-77"></a>
-<a name="ln-78"></a>    <span class="c">!&gt; Create a new version from a string</span>
-<a name="ln-79"></a>    <span class="k">subroutine </span><span class="n">new_version_from_string</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-80"></a>
-<a name="ln-81"></a>        <span class="c">!&gt; Instance of the versioning data</span>
-<a name="ln-82"></a>        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-83"></a>
-<a name="ln-84"></a>        <span class="c">!&gt; String describing the version information</span>
-<a name="ln-85"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
-<a name="ln-86"></a>
-<a name="ln-87"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-88"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-89"></a>
-<a name="ln-90"></a>        <span class="kt">character</span> <span class="kd">::</span> <span class="n">tok</span>
-<a name="ln-91"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">nn</span>
-<a name="ln-92"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">num</span><span class="p">(</span><span class="n">max_limit</span><span class="p">)</span>
-<a name="ln-93"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_number</span>
-<a name="ln-94"></a>
-<a name="ln-95"></a>        <span class="n">nn</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-96"></a>        <span class="n">iend</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-97"></a>        <span class="n">istart</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-98"></a>        <span class="n">is_number</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-99"></a>
-<a name="ln-100"></a>        <span class="k">do while</span><span class="p">(</span><span class="n">iend</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">))</span>
-<a name="ln-101"></a>            <span class="k">call </span><span class="n">next</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_number</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-102"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
-<a name="ln-103"></a><span class="k">            if</span> <span class="p">(</span><span class="n">is_number</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-104"></a><span class="k">                if</span> <span class="p">(</span><span class="n">nn</span> <span class="o">&gt;=</span> <span class="n">max_limit</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-105"></a><span class="k">                    call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-106"></a>                        <span class="p">&amp;</span> <span class="s2">&quot;Too many subversions found&quot;</span><span class="p">)</span>
-<a name="ln-107"></a>                    <span class="k">exit</span>
-<a name="ln-108"></a><span class="k">                end if</span>
-<a name="ln-109"></a><span class="k">                </span><span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-110"></a>                <span class="k">read</span><span class="p">(</span><span class="n">string</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span> <span class="n">num</span><span class="p">(</span><span class="n">nn</span><span class="p">)</span>
-<a name="ln-111"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-112"></a><span class="k">                    call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-113"></a>                        <span class="p">&amp;</span> <span class="s2">&quot;Failed to parse version number&quot;</span><span class="p">)</span>
-<a name="ln-114"></a>                    <span class="k">exit</span>
-<a name="ln-115"></a><span class="k">                end if</span>
-<a name="ln-116"></a><span class="k">            end if</span>
-<a name="ln-117"></a><span class="k">        end do</span>
-<a name="ln-118"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-119"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_number</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-120"></a><span class="k">            call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-121"></a>                <span class="p">&amp;</span> <span class="s2">&quot;Expected version number, but no characters are left&quot;</span><span class="p">)</span>
-<a name="ln-122"></a>            <span class="k">return</span>
-<a name="ln-123"></a><span class="k">        end if</span>
-<a name="ln-124"></a>
-<a name="ln-125"></a><span class="k">        call </span><span class="n">new_version</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">num</span><span class="p">(:</span><span class="n">nn</span><span class="p">))</span>
-<a name="ln-126"></a>
-<a name="ln-127"></a>    <span class="k">end subroutine </span><span class="n">new_version_from_string</span>
-<a name="ln-128"></a>
-<a name="ln-129"></a>
-<a name="ln-130"></a>    <span class="c">!&gt; Tokenize a version string</span>
-<a name="ln-131"></a>    <span class="k">subroutine </span><span class="n">next</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_number</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-132"></a>
-<a name="ln-133"></a>        <span class="c">!&gt; String describing the version information</span>
-<a name="ln-134"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
-<a name="ln-135"></a>
-<a name="ln-136"></a>        <span class="c">!&gt; Start of last token, start of next token on exit</span>
-<a name="ln-137"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">istart</span>
-<a name="ln-138"></a>
-<a name="ln-139"></a>        <span class="c">!&gt; End of last token on entry, end of next token on exit</span>
-<a name="ln-140"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">iend</span>
-<a name="ln-141"></a>
-<a name="ln-142"></a>        <span class="c">!&gt; Token produced is a number</span>
-<a name="ln-143"></a>        <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">is_number</span>
-<a name="ln-144"></a>
-<a name="ln-145"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-146"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-147"></a>
-<a name="ln-148"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">nn</span>
-<a name="ln-149"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">was_number</span>
-<a name="ln-150"></a>        <span class="kt">character</span> <span class="kd">::</span> <span class="n">tok</span><span class="p">,</span> <span class="n">last</span>
-<a name="ln-151"></a>
-<a name="ln-152"></a>        <span class="n">was_number</span> <span class="o">=</span> <span class="n">is_number</span>
-<a name="ln-153"></a>        <span class="n">nn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
-<a name="ln-154"></a>
-<a name="ln-155"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">iend</span> <span class="o">&gt;=</span> <span class="n">nn</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-156"></a><span class="k">            </span><span class="n">istart</span> <span class="o">=</span> <span class="n">nn</span>
-<a name="ln-157"></a>            <span class="n">iend</span> <span class="o">=</span> <span class="n">nn</span>
-<a name="ln-158"></a>            <span class="k">return</span>
-<a name="ln-159"></a><span class="k">        end if</span>
-<a name="ln-160"></a>
-<a name="ln-161"></a><span class="k">        </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">)</span>
-<a name="ln-162"></a>        <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
-<a name="ln-163"></a>
-<a name="ln-164"></a>        <span class="n">is_number</span> <span class="o">=</span> <span class="n">tok</span> <span class="o">/=</span> <span class="s1">&#39;.&#39;</span>
-<a name="ln-165"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">is_number</span> <span class="p">.</span><span class="n">eqv</span><span class="p">.</span> <span class="n">was_number</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-166"></a><span class="k">            call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-167"></a>                <span class="p">&amp;</span> <span class="s2">&quot;Unexpected token found&quot;</span><span class="p">)</span>
-<a name="ln-168"></a>            <span class="k">return</span>
-<a name="ln-169"></a><span class="k">        end if</span>
-<a name="ln-170"></a>
-<a name="ln-171"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_number</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-172"></a><span class="k">            </span><span class="n">is_number</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a name="ln-173"></a>            <span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
-<a name="ln-174"></a>            <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
-<a name="ln-175"></a>            <span class="k">return</span>
-<a name="ln-176"></a><span class="k">        end if</span>
-<a name="ln-177"></a>
-<a name="ln-178"></a><span class="k">        </span><span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
-<a name="ln-179"></a>        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">),</span> <span class="n">nn</span>
-<a name="ln-180"></a>            <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
-<a name="ln-181"></a>            <span class="k">select case</span><span class="p">(</span><span class="n">tok</span><span class="p">)</span>
-<a name="ln-182"></a>            <span class="k">case </span><span class="n">default</span>
-<a name="ln-183"></a>                <span class="k">call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-184"></a>                    <span class="p">&amp;</span> <span class="s2">&quot;Invalid character in version number&quot;</span><span class="p">)</span>
-<a name="ln-185"></a>                <span class="k">exit</span>
-<a name="ln-186"></a><span class="k">            case</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
-<a name="ln-187"></a>                <span class="k">exit</span>
-<a name="ln-188"></a><span class="k">            case</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;6&#39;</span><span class="p">,</span> <span class="s1">&#39;7&#39;</span><span class="p">,</span> <span class="s1">&#39;8&#39;</span><span class="p">,</span> <span class="s1">&#39;9&#39;</span><span class="p">)</span>
-<a name="ln-189"></a>                <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
-<a name="ln-190"></a>                <span class="k">cycle</span>
-<a name="ln-191"></a><span class="k">            end select</span>
-<a name="ln-192"></a><span class="k">        end do</span>
-<a name="ln-193"></a>
-<a name="ln-194"></a><span class="k">    end subroutine </span><span class="n">next</span>
-<a name="ln-195"></a>
-<a name="ln-196"></a>
-<a name="ln-197"></a>    <span class="c">!&gt; Create an error on an invalid token, provide some visual context as well</span>
-<a name="ln-198"></a>    <span class="k">subroutine </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
-<a name="ln-199"></a>
-<a name="ln-200"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-201"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-202"></a>
-<a name="ln-203"></a>        <span class="c">!&gt; String describing the version information</span>
-<a name="ln-204"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
-<a name="ln-205"></a>
-<a name="ln-206"></a>        <span class="c">!&gt; Start of last token, start of next token on exit</span>
-<a name="ln-207"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">istart</span>
-<a name="ln-208"></a>
-<a name="ln-209"></a>        <span class="c">!&gt; End of last token on entry, end of next token on exit</span>
-<a name="ln-210"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">iend</span>
-<a name="ln-211"></a>
-<a name="ln-212"></a>        <span class="c">!&gt; Error message</span>
-<a name="ln-213"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">message</span>
-<a name="ln-214"></a>
-<a name="ln-215"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">nl</span> <span class="o">=</span> <span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
-<a name="ln-216"></a>
-<a name="ln-217"></a>        <span class="k">allocate</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a name="ln-218"></a>        <span class="n">error</span><span class="p">%</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span> <span class="o">//</span> <span class="n">nl</span> <span class="o">//</span> <span class="s2">&quot;  | &quot;</span> <span class="o">//</span> <span class="n">string</span> <span class="o">//</span> <span class="n">nl</span> <span class="o">//</span> <span class="p">&amp;</span>
-<a name="ln-219"></a>            <span class="p">&amp;</span> <span class="s2">&quot;  |&quot;</span> <span class="o">//</span> <span class="nb">repeat</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">istart</span><span class="p">)</span> <span class="o">//</span> <span class="nb">repeat</span><span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="n">iend</span> <span class="o">-</span> <span class="n">istart</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-<a name="ln-220"></a>
-<a name="ln-221"></a>    <span class="k">end subroutine </span><span class="n">token_error</span>
-<a name="ln-222"></a>
-<a name="ln-223"></a>
-<a name="ln-224"></a>    <span class="k">subroutine </span><span class="n">to_string</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
-<a name="ln-225"></a>
-<a name="ln-226"></a>        <span class="c">!&gt; Version number</span>
-<a name="ln-227"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-228"></a>
-<a name="ln-229"></a>        <span class="c">!&gt; Character representation of the version</span>
-<a name="ln-230"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
-<a name="ln-231"></a>
-<a name="ln-232"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">buffersize</span> <span class="o">=</span> <span class="mi">64</span>
-<a name="ln-233"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">buffersize</span><span class="p">)</span> <span class="kd">::</span> <span class="n">buffer</span>
-<a name="ln-234"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
-<a name="ln-235"></a>
-<a name="ln-236"></a>        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">num</span><span class="p">)</span>
-<a name="ln-237"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">string</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-238"></a><span class="k">                write</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="s1">&#39;(&quot;.&quot;, i0)&#39;</span><span class="p">)</span> <span class="n">self</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
-<a name="ln-239"></a>                <span class="n">string</span> <span class="o">=</span> <span class="n">string</span> <span class="o">//</span> <span class="nb">trim</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
-<a name="ln-240"></a>            <span class="k">else</span>
-<a name="ln-241"></a><span class="k">                write</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="s1">&#39;(i0)&#39;</span><span class="p">)</span> <span class="n">self</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
-<a name="ln-242"></a>                <span class="n">string</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
-<a name="ln-243"></a>            <span class="k">end if</span>
-<a name="ln-244"></a><span class="k">        end do</span>
-<a name="ln-245"></a>
-<a name="ln-246"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">string</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-247"></a><span class="k">            </span><span class="n">string</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
-<a name="ln-248"></a>        <span class="k">end if</span>
-<a name="ln-249"></a>
-<a name="ln-250"></a><span class="k">    end subroutine </span><span class="n">to_string</span>
-<a name="ln-251"></a>
-<a name="ln-252"></a>
-<a name="ln-253"></a>    <span class="k">function </span><span class="n">as_string</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
-<a name="ln-254"></a>
-<a name="ln-255"></a>        <span class="c">!&gt; Version number</span>
-<a name="ln-256"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-257"></a>
-<a name="ln-258"></a>        <span class="c">!&gt; Character representation of the version</span>
-<a name="ln-259"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">string</span>
-<a name="ln-260"></a>
-<a name="ln-261"></a>        <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">to_string</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
-<a name="ln-262"></a>
-<a name="ln-263"></a>    <span class="k">end function </span><span class="n">as_string</span>
-<a name="ln-264"></a>
-<a name="ln-265"></a>
-<a name="ln-266"></a>    <span class="c">!&gt; Check to version numbers for equality</span>
-<a name="ln-267"></a>    <span class="k">elemental function </span><span class="n">equals</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_equal</span><span class="p">)</span>
-<a name="ln-268"></a>
-<a name="ln-269"></a>        <span class="c">!&gt; First version number</span>
-<a name="ln-270"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
-<a name="ln-271"></a>
-<a name="ln-272"></a>        <span class="c">!&gt; Second version number</span>
-<a name="ln-273"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
-<a name="ln-274"></a>
-<a name="ln-275"></a>        <span class="c">!&gt; Version match</span>
-<a name="ln-276"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_equal</span>
-<a name="ln-277"></a>
-<a name="ln-278"></a>        <span class="n">is_equal</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.(</span><span class="n">lhs</span> <span class="o">&gt;</span> <span class="n">rhs</span><span class="p">)</span>
-<a name="ln-279"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-280"></a><span class="k">            </span><span class="n">is_equal</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.(</span><span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span><span class="p">)</span>
-<a name="ln-281"></a>        <span class="k">end if</span>
-<a name="ln-282"></a>
-<a name="ln-283"></a><span class="k">    end function </span><span class="n">equals</span>
-<a name="ln-284"></a>
-<a name="ln-285"></a>
-<a name="ln-286"></a>    <span class="c">!&gt; Check two versions for inequality</span>
-<a name="ln-287"></a>    <span class="k">elemental function </span><span class="n">not_equals</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">not_equal</span><span class="p">)</span>
-<a name="ln-288"></a>
-<a name="ln-289"></a>        <span class="c">!&gt; First version number</span>
-<a name="ln-290"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
-<a name="ln-291"></a>
-<a name="ln-292"></a>        <span class="c">!&gt; Second version number</span>
-<a name="ln-293"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
-<a name="ln-294"></a>
-<a name="ln-295"></a>        <span class="c">!&gt; Version mismatch</span>
-<a name="ln-296"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">not_equal</span>
-<a name="ln-297"></a>
-<a name="ln-298"></a>        <span class="n">not_equal</span> <span class="o">=</span> <span class="n">lhs</span> <span class="o">&gt;</span> <span class="n">rhs</span>
-<a name="ln-299"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">not_equal</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-300"></a><span class="k">            </span><span class="n">not_equal</span> <span class="o">=</span> <span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span>
-<a name="ln-301"></a>        <span class="k">end if</span>
-<a name="ln-302"></a>
-<a name="ln-303"></a><span class="k">    end function </span><span class="n">not_equals</span>
-<a name="ln-304"></a>
-<a name="ln-305"></a>
-<a name="ln-306"></a>    <span class="c">!&gt; Relative comparison of two versions</span>
-<a name="ln-307"></a>    <span class="k">elemental function </span><span class="n">greater</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_greater</span><span class="p">)</span>
-<a name="ln-308"></a>
-<a name="ln-309"></a>        <span class="c">!&gt; First version number</span>
-<a name="ln-310"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
-<a name="ln-311"></a>
-<a name="ln-312"></a>        <span class="c">!&gt; Second version number</span>
-<a name="ln-313"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
-<a name="ln-314"></a>
-<a name="ln-315"></a>        <span class="c">!&gt; First version is greater</span>
-<a name="ln-316"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_greater</span>
-<a name="ln-317"></a>
-<a name="ln-318"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
-<a name="ln-319"></a>
-<a name="ln-320"></a>        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">),</span> <span class="n">size</span><span class="p">(</span><span class="n">rhs</span><span class="p">%</span><span class="n">num</span><span class="p">))</span>
-<a name="ln-321"></a>            <span class="n">is_greater</span> <span class="o">=</span> <span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">rhs</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
-<a name="ln-322"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">is_greater</span><span class="p">)</span> <span class="k">exit</span>
-<a name="ln-323"></a><span class="k">        end do</span>
-<a name="ln-324"></a><span class="k">        if</span> <span class="p">(</span><span class="n">is_greater</span><span class="p">)</span> <span class="k">return</span>
-<a name="ln-325"></a>
-<a name="ln-326"></a><span class="k">        </span><span class="n">is_greater</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">(</span><span class="n">rhs</span><span class="p">%</span><span class="n">num</span><span class="p">)</span>
-<a name="ln-327"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">is_greater</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-328"></a><span class="k">            do </span><span class="n">ii</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">rhs</span><span class="p">%</span><span class="n">num</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">)</span>
-<a name="ln-329"></a>                <span class="n">is_greater</span> <span class="o">=</span> <span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-<a name="ln-330"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">is_greater</span><span class="p">)</span> <span class="k">exit</span>
-<a name="ln-331"></a><span class="k">            end do</span>
-<a name="ln-332"></a><span class="k">        end if</span>
-<a name="ln-333"></a>
-<a name="ln-334"></a><span class="k">    end function </span><span class="n">greater</span>
-<a name="ln-335"></a>
-<a name="ln-336"></a>
-<a name="ln-337"></a>    <span class="c">!&gt; Relative comparison of two versions</span>
-<a name="ln-338"></a>    <span class="k">elemental function </span><span class="n">less</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_less</span><span class="p">)</span>
-<a name="ln-339"></a>
-<a name="ln-340"></a>        <span class="c">!&gt; First version number</span>
-<a name="ln-341"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
-<a name="ln-342"></a>
-<a name="ln-343"></a>        <span class="c">!&gt; Second version number</span>
-<a name="ln-344"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
-<a name="ln-345"></a>
-<a name="ln-346"></a>        <span class="c">!&gt; First version is less</span>
-<a name="ln-347"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_less</span>
-<a name="ln-348"></a>
-<a name="ln-349"></a>        <span class="n">is_less</span> <span class="o">=</span> <span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span>
-<a name="ln-350"></a>
-<a name="ln-351"></a>    <span class="k">end function </span><span class="n">less</span>
-<a name="ln-352"></a>
-<a name="ln-353"></a>
-<a name="ln-354"></a>    <span class="c">!&gt; Relative comparison of two versions</span>
-<a name="ln-355"></a>    <span class="k">elemental function </span><span class="n">greater_equals</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_greater_equal</span><span class="p">)</span>
-<a name="ln-356"></a>
-<a name="ln-357"></a>        <span class="c">!&gt; First version number</span>
-<a name="ln-358"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
-<a name="ln-359"></a>
-<a name="ln-360"></a>        <span class="c">!&gt; Second version number</span>
-<a name="ln-361"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
-<a name="ln-362"></a>
-<a name="ln-363"></a>        <span class="c">!&gt; First version is greater or equal</span>
-<a name="ln-364"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_greater_equal</span>
-<a name="ln-365"></a>
-<a name="ln-366"></a>        <span class="n">is_greater_equal</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.</span> <span class="p">(</span><span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span><span class="p">)</span>
-<a name="ln-367"></a>
-<a name="ln-368"></a>    <span class="k">end function </span><span class="n">greater_equals</span>
-<a name="ln-369"></a>
-<a name="ln-370"></a>
-<a name="ln-371"></a>    <span class="c">!&gt; Relative comparison of two versions</span>
-<a name="ln-372"></a>    <span class="k">elemental function </span><span class="n">less_equals</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_less_equal</span><span class="p">)</span>
-<a name="ln-373"></a>
-<a name="ln-374"></a>        <span class="c">!&gt; First version number</span>
-<a name="ln-375"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
-<a name="ln-376"></a>
-<a name="ln-377"></a>        <span class="c">!&gt; Second version number</span>
-<a name="ln-378"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
-<a name="ln-379"></a>
-<a name="ln-380"></a>        <span class="c">!&gt; First version is less or equal</span>
-<a name="ln-381"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_less_equal</span>
-<a name="ln-382"></a>
-<a name="ln-383"></a>        <span class="n">is_less_equal</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.</span> <span class="p">(</span><span class="n">lhs</span> <span class="o">&gt;</span> <span class="n">rhs</span><span class="p">)</span>
-<a name="ln-384"></a>
-<a name="ln-385"></a>    <span class="k">end function </span><span class="n">less_equals</span>
-<a name="ln-386"></a>
-<a name="ln-387"></a>
-<a name="ln-388"></a>    <span class="c">!&gt; Try to match first version against second version</span>
-<a name="ln-389"></a>    <span class="k">elemental function </span><span class="n">match</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-<a name="ln-390"></a>
-<a name="ln-391"></a>        <span class="c">!&gt; First version number</span>
-<a name="ln-392"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
-<a name="ln-393"></a>
-<a name="ln-394"></a>        <span class="c">!&gt; Second version number</span>
-<a name="ln-395"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
-<a name="ln-396"></a>
-<a name="ln-397"></a>        <span class="c">!&gt; Version match following semantic versioning rules</span>
-<a name="ln-398"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">match</span>
-<a name="ln-399"></a>
-<a name="ln-400"></a>        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tmp</span>
-<a name="ln-401"></a>
-<a name="ln-402"></a>        <span class="n">match</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.(</span><span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span><span class="p">)</span>
-<a name="ln-403"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">match</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-404"></a><span class="k">            </span><span class="n">tmp</span><span class="p">%</span><span class="n">num</span> <span class="o">=</span> <span class="n">rhs</span><span class="p">%</span><span class="n">num</span>
-<a name="ln-405"></a>            <span class="n">tmp</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">tmp</span><span class="p">%</span><span class="n">num</span><span class="p">))</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">tmp</span><span class="p">%</span><span class="n">num</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-406"></a>            <span class="n">match</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">&gt;</span> <span class="n">lhs</span>
-<a name="ln-407"></a>        <span class="k">end if</span>
-<a name="ln-408"></a>
-<a name="ln-409"></a><span class="k">    end function </span><span class="n">match</span>
-<a name="ln-410"></a>
-<a name="ln-411"></a>
-<a name="ln-412"></a><span class="k">end module </span><span class="n">fpm_versioning</span>
+    <div class="hl"><pre><span></span><a id="ln-1" name="ln-1"></a><span class="c">!&gt; Implementation of versioning data for comparing packages</span>
+<a id="ln-2" name="ln-2"></a><span class="k">module </span><span class="n">fpm_versioning</span>
+<a id="ln-3" name="ln-3"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">syntax_error</span>
+<a id="ln-4" name="ln-4"></a>    <span class="k">implicit none</span>
+<a id="ln-5" name="ln-5"></a><span class="k">    private</span>
+<a id="ln-6" name="ln-6"></a>
+<a id="ln-7" name="ln-7"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">version_t</span><span class="p">,</span> <span class="n">new_version</span><span class="p">,</span> <span class="nb">char</span>
+<a id="ln-8" name="ln-8"></a>
+<a id="ln-9" name="ln-9"></a>
+<a id="ln-10" name="ln-10"></a><span class="nb">    </span><span class="k">type</span> <span class="kd">::</span> <span class="n">version_t</span>
+<a id="ln-11" name="ln-11"></a>        <span class="k">private</span>
+<a id="ln-12" name="ln-12"></a>
+<a id="ln-13" name="ln-13"></a>        <span class="c">!&gt; Version numbers found</span>
+<a id="ln-14" name="ln-14"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">num</span><span class="p">(:)</span>
+<a id="ln-15" name="ln-15"></a>
+<a id="ln-16" name="ln-16"></a>    <span class="k">contains</span>
+<a id="ln-17" name="ln-17"></a>
+<a id="ln-18" name="ln-18"></a><span class="k">        generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">==</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">equals</span>
+<a id="ln-19" name="ln-19"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">equals</span>
+<a id="ln-20" name="ln-20"></a>
+<a id="ln-21" name="ln-21"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">/=</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">not_equals</span>
+<a id="ln-22" name="ln-22"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">not_equals</span>
+<a id="ln-23" name="ln-23"></a>
+<a id="ln-24" name="ln-24"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">greater</span>
+<a id="ln-25" name="ln-25"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">greater</span>
+<a id="ln-26" name="ln-26"></a>
+<a id="ln-27" name="ln-27"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">&lt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">less</span>
+<a id="ln-28" name="ln-28"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">less</span>
+<a id="ln-29" name="ln-29"></a>
+<a id="ln-30" name="ln-30"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">&gt;=</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">greater_equals</span>
+<a id="ln-31" name="ln-31"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">greater_equals</span>
+<a id="ln-32" name="ln-32"></a>
+<a id="ln-33" name="ln-33"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(</span><span class="o">&lt;=</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">less_equals</span>
+<a id="ln-34" name="ln-34"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">less_equals</span>
+<a id="ln-35" name="ln-35"></a>
+<a id="ln-36" name="ln-36"></a>        <span class="c">!&gt; Compare a version against a version constraint (x.x.0 &lt;= v &lt; x.x.HUGE)</span>
+<a id="ln-37" name="ln-37"></a>        <span class="k">generic</span> <span class="kd">::</span> <span class="n">operator</span><span class="p">(.</span><span class="n">match</span><span class="p">.)</span> <span class="o">=&gt;</span> <span class="n">match</span>
+<a id="ln-38" name="ln-38"></a>        <span class="k">procedure</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">match</span>
+<a id="ln-39" name="ln-39"></a>
+<a id="ln-40" name="ln-40"></a>        <span class="c">!&gt; Create a printable string from a version data type</span>
+<a id="ln-41" name="ln-41"></a>        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">to_string</span>
+<a id="ln-42" name="ln-42"></a>
+<a id="ln-43" name="ln-43"></a>    <span class="k">end type </span><span class="n">version_t</span>
+<a id="ln-44" name="ln-44"></a>
+<a id="ln-45" name="ln-45"></a>
+<a id="ln-46" name="ln-46"></a>    <span class="c">!&gt; Arbitrary internal limit of the version parser</span>
+<a id="ln-47" name="ln-47"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">max_limit</span> <span class="o">=</span> <span class="mi">3</span>
+<a id="ln-48" name="ln-48"></a>
+<a id="ln-49" name="ln-49"></a>
+<a id="ln-50" name="ln-50"></a>    <span class="k">interface </span><span class="nb">char</span>
+<a id="ln-51" name="ln-51"></a><span class="nb">        </span><span class="k">module procedure</span> <span class="kd">::</span> <span class="n">as_string</span>
+<a id="ln-52" name="ln-52"></a>    <span class="k">end interface </span><span class="nb">char</span>
+<a id="ln-53" name="ln-53"></a>
+<a id="ln-54" name="ln-54"></a>
+<a id="ln-55" name="ln-55"></a><span class="nb">    </span><span class="k">interface </span><span class="n">new_version</span>
+<a id="ln-56" name="ln-56"></a>        <span class="k">module procedure</span> <span class="kd">::</span> <span class="n">new_version_from_string</span>
+<a id="ln-57" name="ln-57"></a>        <span class="k">module procedure</span> <span class="kd">::</span> <span class="n">new_version_from_int</span>
+<a id="ln-58" name="ln-58"></a>    <span class="k">end interface </span><span class="n">new_version</span>
+<a id="ln-59" name="ln-59"></a>
+<a id="ln-60" name="ln-60"></a>
+<a id="ln-61" name="ln-61"></a><span class="k">contains</span>
+<a id="ln-62" name="ln-62"></a>
+<a id="ln-63" name="ln-63"></a>
+<a id="ln-64" name="ln-64"></a>    <span class="c">!&gt; Create a new version from a string</span>
+<a id="ln-65" name="ln-65"></a>    <span class="k">subroutine </span><span class="n">new_version_from_int</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
+<a id="ln-66" name="ln-66"></a>
+<a id="ln-67" name="ln-67"></a>        <span class="c">!&gt; Instance of the versioning data</span>
+<a id="ln-68" name="ln-68"></a>        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-69" name="ln-69"></a>
+<a id="ln-70" name="ln-70"></a>        <span class="c">!&gt; Subversion numbers to define version data</span>
+<a id="ln-71" name="ln-71"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">num</span><span class="p">(:)</span>
+<a id="ln-72" name="ln-72"></a>
+<a id="ln-73" name="ln-73"></a>        <span class="n">self</span><span class="p">%</span><span class="n">num</span> <span class="o">=</span> <span class="n">num</span>
+<a id="ln-74" name="ln-74"></a>
+<a id="ln-75" name="ln-75"></a>    <span class="k">end subroutine </span><span class="n">new_version_from_int</span>
+<a id="ln-76" name="ln-76"></a>
+<a id="ln-77" name="ln-77"></a>
+<a id="ln-78" name="ln-78"></a>    <span class="c">!&gt; Create a new version from a string</span>
+<a id="ln-79" name="ln-79"></a>    <span class="k">subroutine </span><span class="n">new_version_from_string</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a id="ln-80" name="ln-80"></a>
+<a id="ln-81" name="ln-81"></a>        <span class="c">!&gt; Instance of the versioning data</span>
+<a id="ln-82" name="ln-82"></a>        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-83" name="ln-83"></a>
+<a id="ln-84" name="ln-84"></a>        <span class="c">!&gt; String describing the version information</span>
+<a id="ln-85" name="ln-85"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
+<a id="ln-86" name="ln-86"></a>
+<a id="ln-87" name="ln-87"></a>        <span class="c">!&gt; Error handling</span>
+<a id="ln-88" name="ln-88"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a id="ln-89" name="ln-89"></a>
+<a id="ln-90" name="ln-90"></a>        <span class="kt">character</span> <span class="kd">::</span> <span class="n">tok</span>
+<a id="ln-91" name="ln-91"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">nn</span>
+<a id="ln-92" name="ln-92"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">num</span><span class="p">(</span><span class="n">max_limit</span><span class="p">)</span>
+<a id="ln-93" name="ln-93"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_number</span>
+<a id="ln-94" name="ln-94"></a>
+<a id="ln-95" name="ln-95"></a>        <span class="n">nn</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="ln-96" name="ln-96"></a>        <span class="n">iend</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="ln-97" name="ln-97"></a>        <span class="n">istart</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="ln-98" name="ln-98"></a>        <span class="n">is_number</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a id="ln-99" name="ln-99"></a>
+<a id="ln-100" name="ln-100"></a>        <span class="k">do while</span><span class="p">(</span><span class="n">iend</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">))</span>
+<a id="ln-101" name="ln-101"></a>            <span class="k">call </span><span class="n">next</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_number</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a id="ln-102" name="ln-102"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
+<a id="ln-103" name="ln-103"></a><span class="k">            if</span> <span class="p">(</span><span class="n">is_number</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-104" name="ln-104"></a><span class="k">                if</span> <span class="p">(</span><span class="n">nn</span> <span class="o">&gt;=</span> <span class="n">max_limit</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-105" name="ln-105"></a><span class="k">                    call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-106" name="ln-106"></a>                        <span class="p">&amp;</span> <span class="s2">&quot;Too many subversions found&quot;</span><span class="p">)</span>
+<a id="ln-107" name="ln-107"></a>                    <span class="k">exit</span>
+<a id="ln-108" name="ln-108"></a><span class="k">                end if</span>
+<a id="ln-109" name="ln-109"></a><span class="k">                </span><span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">+</span> <span class="mi">1</span>
+<a id="ln-110" name="ln-110"></a>                <span class="k">read</span><span class="p">(</span><span class="n">string</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span> <span class="n">num</span><span class="p">(</span><span class="n">nn</span><span class="p">)</span>
+<a id="ln-111" name="ln-111"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-112" name="ln-112"></a><span class="k">                    call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-113" name="ln-113"></a>                        <span class="p">&amp;</span> <span class="s2">&quot;Failed to parse version number&quot;</span><span class="p">)</span>
+<a id="ln-114" name="ln-114"></a>                    <span class="k">exit</span>
+<a id="ln-115" name="ln-115"></a><span class="k">                end if</span>
+<a id="ln-116" name="ln-116"></a><span class="k">            end if</span>
+<a id="ln-117" name="ln-117"></a><span class="k">        end do</span>
+<a id="ln-118" name="ln-118"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a id="ln-119" name="ln-119"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_number</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-120" name="ln-120"></a><span class="k">            call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-121" name="ln-121"></a>                <span class="p">&amp;</span> <span class="s2">&quot;Expected version number, but no characters are left&quot;</span><span class="p">)</span>
+<a id="ln-122" name="ln-122"></a>            <span class="k">return</span>
+<a id="ln-123" name="ln-123"></a><span class="k">        end if</span>
+<a id="ln-124" name="ln-124"></a>
+<a id="ln-125" name="ln-125"></a><span class="k">        call </span><span class="n">new_version</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">num</span><span class="p">(:</span><span class="n">nn</span><span class="p">))</span>
+<a id="ln-126" name="ln-126"></a>
+<a id="ln-127" name="ln-127"></a>    <span class="k">end subroutine </span><span class="n">new_version_from_string</span>
+<a id="ln-128" name="ln-128"></a>
+<a id="ln-129" name="ln-129"></a>
+<a id="ln-130" name="ln-130"></a>    <span class="c">!&gt; Tokenize a version string</span>
+<a id="ln-131" name="ln-131"></a>    <span class="k">subroutine </span><span class="n">next</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_number</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a id="ln-132" name="ln-132"></a>
+<a id="ln-133" name="ln-133"></a>        <span class="c">!&gt; String describing the version information</span>
+<a id="ln-134" name="ln-134"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
+<a id="ln-135" name="ln-135"></a>
+<a id="ln-136" name="ln-136"></a>        <span class="c">!&gt; Start of last token, start of next token on exit</span>
+<a id="ln-137" name="ln-137"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">istart</span>
+<a id="ln-138" name="ln-138"></a>
+<a id="ln-139" name="ln-139"></a>        <span class="c">!&gt; End of last token on entry, end of next token on exit</span>
+<a id="ln-140" name="ln-140"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">iend</span>
+<a id="ln-141" name="ln-141"></a>
+<a id="ln-142" name="ln-142"></a>        <span class="c">!&gt; Token produced is a number</span>
+<a id="ln-143" name="ln-143"></a>        <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">is_number</span>
+<a id="ln-144" name="ln-144"></a>
+<a id="ln-145" name="ln-145"></a>        <span class="c">!&gt; Error handling</span>
+<a id="ln-146" name="ln-146"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a id="ln-147" name="ln-147"></a>
+<a id="ln-148" name="ln-148"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">nn</span>
+<a id="ln-149" name="ln-149"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">was_number</span>
+<a id="ln-150" name="ln-150"></a>        <span class="kt">character</span> <span class="kd">::</span> <span class="n">tok</span><span class="p">,</span> <span class="n">last</span>
+<a id="ln-151" name="ln-151"></a>
+<a id="ln-152" name="ln-152"></a>        <span class="n">was_number</span> <span class="o">=</span> <span class="n">is_number</span>
+<a id="ln-153" name="ln-153"></a>        <span class="n">nn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<a id="ln-154" name="ln-154"></a>
+<a id="ln-155" name="ln-155"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">iend</span> <span class="o">&gt;=</span> <span class="n">nn</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-156" name="ln-156"></a><span class="k">            </span><span class="n">istart</span> <span class="o">=</span> <span class="n">nn</span>
+<a id="ln-157" name="ln-157"></a>            <span class="n">iend</span> <span class="o">=</span> <span class="n">nn</span>
+<a id="ln-158" name="ln-158"></a>            <span class="k">return</span>
+<a id="ln-159" name="ln-159"></a><span class="k">        end if</span>
+<a id="ln-160" name="ln-160"></a>
+<a id="ln-161" name="ln-161"></a><span class="k">        </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">)</span>
+<a id="ln-162" name="ln-162"></a>        <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
+<a id="ln-163" name="ln-163"></a>
+<a id="ln-164" name="ln-164"></a>        <span class="n">is_number</span> <span class="o">=</span> <span class="n">tok</span> <span class="o">/=</span> <span class="s1">&#39;.&#39;</span>
+<a id="ln-165" name="ln-165"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">is_number</span> <span class="p">.</span><span class="n">eqv</span><span class="p">.</span> <span class="n">was_number</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-166" name="ln-166"></a><span class="k">            call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-167" name="ln-167"></a>                <span class="p">&amp;</span> <span class="s2">&quot;Unexpected token found&quot;</span><span class="p">)</span>
+<a id="ln-168" name="ln-168"></a>            <span class="k">return</span>
+<a id="ln-169" name="ln-169"></a><span class="k">        end if</span>
+<a id="ln-170" name="ln-170"></a>
+<a id="ln-171" name="ln-171"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_number</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-172" name="ln-172"></a><span class="k">            </span><span class="n">is_number</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a id="ln-173" name="ln-173"></a>            <span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
+<a id="ln-174" name="ln-174"></a>            <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
+<a id="ln-175" name="ln-175"></a>            <span class="k">return</span>
+<a id="ln-176" name="ln-176"></a><span class="k">        end if</span>
+<a id="ln-177" name="ln-177"></a>
+<a id="ln-178" name="ln-178"></a><span class="k">        </span><span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
+<a id="ln-179" name="ln-179"></a>        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">),</span> <span class="n">nn</span>
+<a id="ln-180" name="ln-180"></a>            <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
+<a id="ln-181" name="ln-181"></a>            <span class="k">select case</span><span class="p">(</span><span class="n">tok</span><span class="p">)</span>
+<a id="ln-182" name="ln-182"></a>            <span class="k">case </span><span class="n">default</span>
+<a id="ln-183" name="ln-183"></a>                <span class="k">call </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-184" name="ln-184"></a>                    <span class="p">&amp;</span> <span class="s2">&quot;Invalid character in version number&quot;</span><span class="p">)</span>
+<a id="ln-185" name="ln-185"></a>                <span class="k">exit</span>
+<a id="ln-186" name="ln-186"></a><span class="k">            case</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<a id="ln-187" name="ln-187"></a>                <span class="k">exit</span>
+<a id="ln-188" name="ln-188"></a><span class="k">            case</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;6&#39;</span><span class="p">,</span> <span class="s1">&#39;7&#39;</span><span class="p">,</span> <span class="s1">&#39;8&#39;</span><span class="p">,</span> <span class="s1">&#39;9&#39;</span><span class="p">)</span>
+<a id="ln-189" name="ln-189"></a>                <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
+<a id="ln-190" name="ln-190"></a>                <span class="k">cycle</span>
+<a id="ln-191" name="ln-191"></a><span class="k">            end select</span>
+<a id="ln-192" name="ln-192"></a><span class="k">        end do</span>
+<a id="ln-193" name="ln-193"></a>
+<a id="ln-194" name="ln-194"></a><span class="k">    end subroutine </span><span class="n">next</span>
+<a id="ln-195" name="ln-195"></a>
+<a id="ln-196" name="ln-196"></a>
+<a id="ln-197" name="ln-197"></a>    <span class="c">!&gt; Create an error on an invalid token, provide some visual context as well</span>
+<a id="ln-198" name="ln-198"></a>    <span class="k">subroutine </span><span class="n">token_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+<a id="ln-199" name="ln-199"></a>
+<a id="ln-200" name="ln-200"></a>        <span class="c">!&gt; Error handling</span>
+<a id="ln-201" name="ln-201"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a id="ln-202" name="ln-202"></a>
+<a id="ln-203" name="ln-203"></a>        <span class="c">!&gt; String describing the version information</span>
+<a id="ln-204" name="ln-204"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
+<a id="ln-205" name="ln-205"></a>
+<a id="ln-206" name="ln-206"></a>        <span class="c">!&gt; Start of last token, start of next token on exit</span>
+<a id="ln-207" name="ln-207"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">istart</span>
+<a id="ln-208" name="ln-208"></a>
+<a id="ln-209" name="ln-209"></a>        <span class="c">!&gt; End of last token on entry, end of next token on exit</span>
+<a id="ln-210" name="ln-210"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">iend</span>
+<a id="ln-211" name="ln-211"></a>
+<a id="ln-212" name="ln-212"></a>        <span class="c">!&gt; Error message</span>
+<a id="ln-213" name="ln-213"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">message</span>
+<a id="ln-214" name="ln-214"></a>
+<a id="ln-215" name="ln-215"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">nl</span> <span class="o">=</span> <span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<a id="ln-216" name="ln-216"></a>
+<a id="ln-217" name="ln-217"></a>        <span class="k">allocate</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<a id="ln-218" name="ln-218"></a>        <span class="n">error</span><span class="p">%</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span> <span class="o">//</span> <span class="n">nl</span> <span class="o">//</span> <span class="s2">&quot;  | &quot;</span> <span class="o">//</span> <span class="n">string</span> <span class="o">//</span> <span class="n">nl</span> <span class="o">//</span> <span class="p">&amp;</span>
+<a id="ln-219" name="ln-219"></a>            <span class="p">&amp;</span> <span class="s2">&quot;  |&quot;</span> <span class="o">//</span> <span class="nb">repeat</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">istart</span><span class="p">)</span> <span class="o">//</span> <span class="nb">repeat</span><span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="n">iend</span> <span class="o">-</span> <span class="n">istart</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<a id="ln-220" name="ln-220"></a>
+<a id="ln-221" name="ln-221"></a>    <span class="k">end subroutine </span><span class="n">token_error</span>
+<a id="ln-222" name="ln-222"></a>
+<a id="ln-223" name="ln-223"></a>
+<a id="ln-224" name="ln-224"></a>    <span class="k">subroutine </span><span class="n">to_string</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+<a id="ln-225" name="ln-225"></a>
+<a id="ln-226" name="ln-226"></a>        <span class="c">!&gt; Version number</span>
+<a id="ln-227" name="ln-227"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-228" name="ln-228"></a>
+<a id="ln-229" name="ln-229"></a>        <span class="c">!&gt; Character representation of the version</span>
+<a id="ln-230" name="ln-230"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
+<a id="ln-231" name="ln-231"></a>
+<a id="ln-232" name="ln-232"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">buffersize</span> <span class="o">=</span> <span class="mi">64</span>
+<a id="ln-233" name="ln-233"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">buffersize</span><span class="p">)</span> <span class="kd">::</span> <span class="n">buffer</span>
+<a id="ln-234" name="ln-234"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
+<a id="ln-235" name="ln-235"></a>
+<a id="ln-236" name="ln-236"></a>        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">num</span><span class="p">)</span>
+<a id="ln-237" name="ln-237"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">string</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-238" name="ln-238"></a><span class="k">                write</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="s1">&#39;(&quot;.&quot;, i0)&#39;</span><span class="p">)</span> <span class="n">self</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
+<a id="ln-239" name="ln-239"></a>                <span class="n">string</span> <span class="o">=</span> <span class="n">string</span> <span class="o">//</span> <span class="nb">trim</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+<a id="ln-240" name="ln-240"></a>            <span class="k">else</span>
+<a id="ln-241" name="ln-241"></a><span class="k">                write</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="s1">&#39;(i0)&#39;</span><span class="p">)</span> <span class="n">self</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
+<a id="ln-242" name="ln-242"></a>                <span class="n">string</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+<a id="ln-243" name="ln-243"></a>            <span class="k">end if</span>
+<a id="ln-244" name="ln-244"></a><span class="k">        end do</span>
+<a id="ln-245" name="ln-245"></a>
+<a id="ln-246" name="ln-246"></a><span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">string</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-247" name="ln-247"></a><span class="k">            </span><span class="n">string</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+<a id="ln-248" name="ln-248"></a>        <span class="k">end if</span>
+<a id="ln-249" name="ln-249"></a>
+<a id="ln-250" name="ln-250"></a><span class="k">    end subroutine </span><span class="n">to_string</span>
+<a id="ln-251" name="ln-251"></a>
+<a id="ln-252" name="ln-252"></a>
+<a id="ln-253" name="ln-253"></a>    <span class="k">function </span><span class="n">as_string</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<a id="ln-254" name="ln-254"></a>
+<a id="ln-255" name="ln-255"></a>        <span class="c">!&gt; Version number</span>
+<a id="ln-256" name="ln-256"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-257" name="ln-257"></a>
+<a id="ln-258" name="ln-258"></a>        <span class="c">!&gt; Character representation of the version</span>
+<a id="ln-259" name="ln-259"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">string</span>
+<a id="ln-260" name="ln-260"></a>
+<a id="ln-261" name="ln-261"></a>        <span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">to_string</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<a id="ln-262" name="ln-262"></a>
+<a id="ln-263" name="ln-263"></a>    <span class="k">end function </span><span class="n">as_string</span>
+<a id="ln-264" name="ln-264"></a>
+<a id="ln-265" name="ln-265"></a>
+<a id="ln-266" name="ln-266"></a>    <span class="c">!&gt; Check to version numbers for equality</span>
+<a id="ln-267" name="ln-267"></a>    <span class="k">elemental function </span><span class="n">equals</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_equal</span><span class="p">)</span>
+<a id="ln-268" name="ln-268"></a>
+<a id="ln-269" name="ln-269"></a>        <span class="c">!&gt; First version number</span>
+<a id="ln-270" name="ln-270"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
+<a id="ln-271" name="ln-271"></a>
+<a id="ln-272" name="ln-272"></a>        <span class="c">!&gt; Second version number</span>
+<a id="ln-273" name="ln-273"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
+<a id="ln-274" name="ln-274"></a>
+<a id="ln-275" name="ln-275"></a>        <span class="c">!&gt; Version match</span>
+<a id="ln-276" name="ln-276"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_equal</span>
+<a id="ln-277" name="ln-277"></a>
+<a id="ln-278" name="ln-278"></a>        <span class="n">is_equal</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.(</span><span class="n">lhs</span> <span class="o">&gt;</span> <span class="n">rhs</span><span class="p">)</span>
+<a id="ln-279" name="ln-279"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-280" name="ln-280"></a><span class="k">            </span><span class="n">is_equal</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.(</span><span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span><span class="p">)</span>
+<a id="ln-281" name="ln-281"></a>        <span class="k">end if</span>
+<a id="ln-282" name="ln-282"></a>
+<a id="ln-283" name="ln-283"></a><span class="k">    end function </span><span class="n">equals</span>
+<a id="ln-284" name="ln-284"></a>
+<a id="ln-285" name="ln-285"></a>
+<a id="ln-286" name="ln-286"></a>    <span class="c">!&gt; Check two versions for inequality</span>
+<a id="ln-287" name="ln-287"></a>    <span class="k">elemental function </span><span class="n">not_equals</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">not_equal</span><span class="p">)</span>
+<a id="ln-288" name="ln-288"></a>
+<a id="ln-289" name="ln-289"></a>        <span class="c">!&gt; First version number</span>
+<a id="ln-290" name="ln-290"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
+<a id="ln-291" name="ln-291"></a>
+<a id="ln-292" name="ln-292"></a>        <span class="c">!&gt; Second version number</span>
+<a id="ln-293" name="ln-293"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
+<a id="ln-294" name="ln-294"></a>
+<a id="ln-295" name="ln-295"></a>        <span class="c">!&gt; Version mismatch</span>
+<a id="ln-296" name="ln-296"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">not_equal</span>
+<a id="ln-297" name="ln-297"></a>
+<a id="ln-298" name="ln-298"></a>        <span class="n">not_equal</span> <span class="o">=</span> <span class="n">lhs</span> <span class="o">&gt;</span> <span class="n">rhs</span>
+<a id="ln-299" name="ln-299"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">not_equal</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-300" name="ln-300"></a><span class="k">            </span><span class="n">not_equal</span> <span class="o">=</span> <span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span>
+<a id="ln-301" name="ln-301"></a>        <span class="k">end if</span>
+<a id="ln-302" name="ln-302"></a>
+<a id="ln-303" name="ln-303"></a><span class="k">    end function </span><span class="n">not_equals</span>
+<a id="ln-304" name="ln-304"></a>
+<a id="ln-305" name="ln-305"></a>
+<a id="ln-306" name="ln-306"></a>    <span class="c">!&gt; Relative comparison of two versions</span>
+<a id="ln-307" name="ln-307"></a>    <span class="k">elemental function </span><span class="n">greater</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_greater</span><span class="p">)</span>
+<a id="ln-308" name="ln-308"></a>
+<a id="ln-309" name="ln-309"></a>        <span class="c">!&gt; First version number</span>
+<a id="ln-310" name="ln-310"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
+<a id="ln-311" name="ln-311"></a>
+<a id="ln-312" name="ln-312"></a>        <span class="c">!&gt; Second version number</span>
+<a id="ln-313" name="ln-313"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
+<a id="ln-314" name="ln-314"></a>
+<a id="ln-315" name="ln-315"></a>        <span class="c">!&gt; First version is greater</span>
+<a id="ln-316" name="ln-316"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_greater</span>
+<a id="ln-317" name="ln-317"></a>
+<a id="ln-318" name="ln-318"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
+<a id="ln-319" name="ln-319"></a>
+<a id="ln-320" name="ln-320"></a>        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">),</span> <span class="n">size</span><span class="p">(</span><span class="n">rhs</span><span class="p">%</span><span class="n">num</span><span class="p">))</span>
+<a id="ln-321" name="ln-321"></a>            <span class="n">is_greater</span> <span class="o">=</span> <span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">rhs</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
+<a id="ln-322" name="ln-322"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">is_greater</span><span class="p">)</span> <span class="k">exit</span>
+<a id="ln-323" name="ln-323"></a><span class="k">        end do</span>
+<a id="ln-324" name="ln-324"></a><span class="k">        if</span> <span class="p">(</span><span class="n">is_greater</span><span class="p">)</span> <span class="k">return</span>
+<a id="ln-325" name="ln-325"></a>
+<a id="ln-326" name="ln-326"></a><span class="k">        </span><span class="n">is_greater</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">(</span><span class="n">rhs</span><span class="p">%</span><span class="n">num</span><span class="p">)</span>
+<a id="ln-327" name="ln-327"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">is_greater</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-328" name="ln-328"></a><span class="k">            do </span><span class="n">ii</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">rhs</span><span class="p">%</span><span class="n">num</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">)</span>
+<a id="ln-329" name="ln-329"></a>                <span class="n">is_greater</span> <span class="o">=</span> <span class="n">lhs</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<a id="ln-330" name="ln-330"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">is_greater</span><span class="p">)</span> <span class="k">exit</span>
+<a id="ln-331" name="ln-331"></a><span class="k">            end do</span>
+<a id="ln-332" name="ln-332"></a><span class="k">        end if</span>
+<a id="ln-333" name="ln-333"></a>
+<a id="ln-334" name="ln-334"></a><span class="k">    end function </span><span class="n">greater</span>
+<a id="ln-335" name="ln-335"></a>
+<a id="ln-336" name="ln-336"></a>
+<a id="ln-337" name="ln-337"></a>    <span class="c">!&gt; Relative comparison of two versions</span>
+<a id="ln-338" name="ln-338"></a>    <span class="k">elemental function </span><span class="n">less</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_less</span><span class="p">)</span>
+<a id="ln-339" name="ln-339"></a>
+<a id="ln-340" name="ln-340"></a>        <span class="c">!&gt; First version number</span>
+<a id="ln-341" name="ln-341"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
+<a id="ln-342" name="ln-342"></a>
+<a id="ln-343" name="ln-343"></a>        <span class="c">!&gt; Second version number</span>
+<a id="ln-344" name="ln-344"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
+<a id="ln-345" name="ln-345"></a>
+<a id="ln-346" name="ln-346"></a>        <span class="c">!&gt; First version is less</span>
+<a id="ln-347" name="ln-347"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_less</span>
+<a id="ln-348" name="ln-348"></a>
+<a id="ln-349" name="ln-349"></a>        <span class="n">is_less</span> <span class="o">=</span> <span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span>
+<a id="ln-350" name="ln-350"></a>
+<a id="ln-351" name="ln-351"></a>    <span class="k">end function </span><span class="n">less</span>
+<a id="ln-352" name="ln-352"></a>
+<a id="ln-353" name="ln-353"></a>
+<a id="ln-354" name="ln-354"></a>    <span class="c">!&gt; Relative comparison of two versions</span>
+<a id="ln-355" name="ln-355"></a>    <span class="k">elemental function </span><span class="n">greater_equals</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_greater_equal</span><span class="p">)</span>
+<a id="ln-356" name="ln-356"></a>
+<a id="ln-357" name="ln-357"></a>        <span class="c">!&gt; First version number</span>
+<a id="ln-358" name="ln-358"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
+<a id="ln-359" name="ln-359"></a>
+<a id="ln-360" name="ln-360"></a>        <span class="c">!&gt; Second version number</span>
+<a id="ln-361" name="ln-361"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
+<a id="ln-362" name="ln-362"></a>
+<a id="ln-363" name="ln-363"></a>        <span class="c">!&gt; First version is greater or equal</span>
+<a id="ln-364" name="ln-364"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_greater_equal</span>
+<a id="ln-365" name="ln-365"></a>
+<a id="ln-366" name="ln-366"></a>        <span class="n">is_greater_equal</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.</span> <span class="p">(</span><span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span><span class="p">)</span>
+<a id="ln-367" name="ln-367"></a>
+<a id="ln-368" name="ln-368"></a>    <span class="k">end function </span><span class="n">greater_equals</span>
+<a id="ln-369" name="ln-369"></a>
+<a id="ln-370" name="ln-370"></a>
+<a id="ln-371" name="ln-371"></a>    <span class="c">!&gt; Relative comparison of two versions</span>
+<a id="ln-372" name="ln-372"></a>    <span class="k">elemental function </span><span class="n">less_equals</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">is_less_equal</span><span class="p">)</span>
+<a id="ln-373" name="ln-373"></a>
+<a id="ln-374" name="ln-374"></a>        <span class="c">!&gt; First version number</span>
+<a id="ln-375" name="ln-375"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
+<a id="ln-376" name="ln-376"></a>
+<a id="ln-377" name="ln-377"></a>        <span class="c">!&gt; Second version number</span>
+<a id="ln-378" name="ln-378"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
+<a id="ln-379" name="ln-379"></a>
+<a id="ln-380" name="ln-380"></a>        <span class="c">!&gt; First version is less or equal</span>
+<a id="ln-381" name="ln-381"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_less_equal</span>
+<a id="ln-382" name="ln-382"></a>
+<a id="ln-383" name="ln-383"></a>        <span class="n">is_less_equal</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.</span> <span class="p">(</span><span class="n">lhs</span> <span class="o">&gt;</span> <span class="n">rhs</span><span class="p">)</span>
+<a id="ln-384" name="ln-384"></a>
+<a id="ln-385" name="ln-385"></a>    <span class="k">end function </span><span class="n">less_equals</span>
+<a id="ln-386" name="ln-386"></a>
+<a id="ln-387" name="ln-387"></a>
+<a id="ln-388" name="ln-388"></a>    <span class="c">!&gt; Try to match first version against second version</span>
+<a id="ln-389" name="ln-389"></a>    <span class="k">elemental function </span><span class="n">match</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+<a id="ln-390" name="ln-390"></a>
+<a id="ln-391" name="ln-391"></a>        <span class="c">!&gt; First version number</span>
+<a id="ln-392" name="ln-392"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lhs</span>
+<a id="ln-393" name="ln-393"></a>
+<a id="ln-394" name="ln-394"></a>        <span class="c">!&gt; Second version number</span>
+<a id="ln-395" name="ln-395"></a>        <span class="k">class</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">rhs</span>
+<a id="ln-396" name="ln-396"></a>
+<a id="ln-397" name="ln-397"></a>        <span class="c">!&gt; Version match following semantic versioning rules</span>
+<a id="ln-398" name="ln-398"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">match</span>
+<a id="ln-399" name="ln-399"></a>
+<a id="ln-400" name="ln-400"></a>        <span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tmp</span>
+<a id="ln-401" name="ln-401"></a>
+<a id="ln-402" name="ln-402"></a>        <span class="n">match</span> <span class="o">=</span> <span class="p">.</span><span class="nb">not</span><span class="p">.(</span><span class="n">rhs</span> <span class="o">&gt;</span> <span class="n">lhs</span><span class="p">)</span>
+<a id="ln-403" name="ln-403"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">match</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-404" name="ln-404"></a><span class="k">            </span><span class="n">tmp</span><span class="p">%</span><span class="n">num</span> <span class="o">=</span> <span class="n">rhs</span><span class="p">%</span><span class="n">num</span>
+<a id="ln-405" name="ln-405"></a>            <span class="n">tmp</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">tmp</span><span class="p">%</span><span class="n">num</span><span class="p">))</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">%</span><span class="n">num</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">tmp</span><span class="p">%</span><span class="n">num</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+<a id="ln-406" name="ln-406"></a>            <span class="n">match</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">&gt;</span> <span class="n">lhs</span>
+<a id="ln-407" name="ln-407"></a>        <span class="k">end if</span>
+<a id="ln-408" name="ln-408"></a>
+<a id="ln-409" name="ln-409"></a><span class="k">    end function </span><span class="n">match</span>
+<a id="ln-410" name="ln-410"></a>
+<a id="ln-411" name="ln-411"></a>
+<a id="ln-412" name="ln-412"></a><span class="k">end module </span><span class="n">fpm_versioning</span>
 </pre></div>
 
     </section>
@@ -697,7 +697,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-04-30 00:29  
+             on 2021-05-24 16:02  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

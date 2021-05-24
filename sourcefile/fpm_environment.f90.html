@@ -267,219 +267,219 @@
 
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="c">!&gt; This module contains procedures that interact with the programming environment.</span>
-<a name="ln-2"></a><span class="c">!!</span>
-<a name="ln-3"></a><span class="c">!! * [get_os_type] -- Determine the OS type</span>
-<a name="ln-4"></a><span class="c">!! * [get_env] -- return the value of an environment variable</span>
-<a name="ln-5"></a><span class="k">module </span><span class="n">fpm_environment</span>
-<a name="ln-6"></a>    <span class="k">implicit none</span>
-<a name="ln-7"></a><span class="k">    private</span>
-<a name="ln-8"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">get_os_type</span>
-<a name="ln-9"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">os_is_unix</span>
-<a name="ln-10"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">run</span>
-<a name="ln-11"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">get_env</span>
-<a name="ln-12"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">get_archiver</span>
-<a name="ln-13"></a>
-<a name="ln-14"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_UNKNOWN</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-15"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_LINUX</span>   <span class="o">=</span> <span class="mi">1</span>
-<a name="ln-16"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_MACOS</span>   <span class="o">=</span> <span class="mi">2</span>
-<a name="ln-17"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_WINDOWS</span> <span class="o">=</span> <span class="mi">3</span>
-<a name="ln-18"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_CYGWIN</span>  <span class="o">=</span> <span class="mi">4</span>
-<a name="ln-19"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_SOLARIS</span> <span class="o">=</span> <span class="mi">5</span>
-<a name="ln-20"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_FREEBSD</span> <span class="o">=</span> <span class="mi">6</span>
-<a name="ln-21"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_OPENBSD</span> <span class="o">=</span> <span class="mi">7</span>
-<a name="ln-22"></a><span class="k">contains</span>
-<a name="ln-23"></a>    <span class="c">!&gt; Determine the OS type</span>
-<a name="ln-24"></a>    <span class="kt">integer </span><span class="k">function </span><span class="n">get_os_type</span><span class="p">()</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-<a name="ln-25"></a>        <span class="c">!!</span>
-<a name="ln-26"></a>        <span class="c">!! Returns one of OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN,</span>
-<a name="ln-27"></a>        <span class="c">!! OS_SOLARIS, OS_FREEBSD, OS_OPENBSD.</span>
-<a name="ln-28"></a>        <span class="c">!!</span>
-<a name="ln-29"></a>        <span class="c">!! At first, the environment variable `OS` is checked, which is usually</span>
-<a name="ln-30"></a>        <span class="c">!! found on Windows. Then, `OSTYPE` is read in and compared with common</span>
-<a name="ln-31"></a>        <span class="c">!! names. If this fails too, check the existence of files that can be</span>
-<a name="ln-32"></a>        <span class="c">!! found on specific system types only.</span>
-<a name="ln-33"></a>        <span class="c">!!</span>
-<a name="ln-34"></a>        <span class="c">!! Returns OS_UNKNOWN if the operating system cannot be determined.</span>
-<a name="ln-35"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span> <span class="kd">::</span> <span class="n">val</span>
-<a name="ln-36"></a>        <span class="kt">integer</span>           <span class="kd">::</span> <span class="n">length</span><span class="p">,</span> <span class="n">rc</span>
-<a name="ln-37"></a>        <span class="kt">logical</span>           <span class="kd">::</span> <span class="n">file_exists</span>
-<a name="ln-38"></a>
-<a name="ln-39"></a>        <span class="n">r</span> <span class="o">=</span> <span class="n">OS_UNKNOWN</span>
-<a name="ln-40"></a>
-<a name="ln-41"></a>        <span class="c">! Check environment variable `OS`.</span>
-<a name="ln-42"></a>        <span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OS&#39;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span>
-<a name="ln-43"></a>
-<a name="ln-44"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">rc</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;Windows_NT&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-45"></a><span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_WINDOWS</span>
-<a name="ln-46"></a>            <span class="k">return</span>
-<a name="ln-47"></a><span class="k">        end if</span>
-<a name="ln-48"></a>
-<a name="ln-49"></a>        <span class="c">! Check environment variable `OSTYPE`.</span>
-<a name="ln-50"></a>        <span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OSTYPE&#39;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span>
-<a name="ln-51"></a>
-<a name="ln-52"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">rc</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-53"></a>            <span class="c">! Linux</span>
-<a name="ln-54"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;linux&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-55"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_LINUX</span>
-<a name="ln-56"></a>                <span class="k">return</span>
-<a name="ln-57"></a><span class="k">            end if</span>
-<a name="ln-58"></a>
-<a name="ln-59"></a>            <span class="c">! macOS</span>
-<a name="ln-60"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;darwin&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-61"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_MACOS</span>
-<a name="ln-62"></a>                <span class="k">return</span>
-<a name="ln-63"></a><span class="k">            end if</span>
-<a name="ln-64"></a>
-<a name="ln-65"></a>            <span class="c">! Windows, MSYS, MinGW, Git Bash</span>
-<a name="ln-66"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;win&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;msys&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-67"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_WINDOWS</span>
-<a name="ln-68"></a>                <span class="k">return</span>
-<a name="ln-69"></a><span class="k">            end if</span>
-<a name="ln-70"></a>
-<a name="ln-71"></a>            <span class="c">! Cygwin</span>
-<a name="ln-72"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;cygwin&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-73"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_CYGWIN</span>
-<a name="ln-74"></a>                <span class="k">return</span>
-<a name="ln-75"></a><span class="k">            end if</span>
-<a name="ln-76"></a>
-<a name="ln-77"></a>            <span class="c">! Solaris, OpenIndiana, ...</span>
-<a name="ln-78"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;SunOS&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;solaris&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-79"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_SOLARIS</span>
-<a name="ln-80"></a>                <span class="k">return</span>
-<a name="ln-81"></a><span class="k">            end if</span>
-<a name="ln-82"></a>
-<a name="ln-83"></a>            <span class="c">! FreeBSD</span>
-<a name="ln-84"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;FreeBSD&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;freebsd&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-85"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_FREEBSD</span>
-<a name="ln-86"></a>                <span class="k">return</span>
-<a name="ln-87"></a><span class="k">            end if</span>
-<a name="ln-88"></a>
-<a name="ln-89"></a>            <span class="c">! OpenBSD</span>
-<a name="ln-90"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;OpenBSD&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;openbsd&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-91"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_OPENBSD</span>
-<a name="ln-92"></a>                <span class="k">return</span>
-<a name="ln-93"></a><span class="k">            end if</span>
-<a name="ln-94"></a><span class="k">        end if</span>
-<a name="ln-95"></a>
-<a name="ln-96"></a>        <span class="c">! Linux</span>
-<a name="ln-97"></a>        <span class="k">inquire</span> <span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/etc/os-release&#39;</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span>
-<a name="ln-98"></a>
-<a name="ln-99"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-100"></a><span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_LINUX</span>
-<a name="ln-101"></a>            <span class="k">return</span>
-<a name="ln-102"></a><span class="k">        end if</span>
-<a name="ln-103"></a>
-<a name="ln-104"></a>        <span class="c">! macOS</span>
-<a name="ln-105"></a>        <span class="k">inquire</span> <span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/usr/bin/sw_vers&#39;</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span>
-<a name="ln-106"></a>
-<a name="ln-107"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-108"></a><span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_MACOS</span>
-<a name="ln-109"></a>            <span class="k">return</span>
-<a name="ln-110"></a><span class="k">        end if</span>
-<a name="ln-111"></a>
-<a name="ln-112"></a>        <span class="c">! FreeBSD</span>
-<a name="ln-113"></a>        <span class="k">inquire</span> <span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/bin/freebsd-version&#39;</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span>
-<a name="ln-114"></a>
-<a name="ln-115"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-116"></a><span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_FREEBSD</span>
-<a name="ln-117"></a>            <span class="k">return</span>
-<a name="ln-118"></a><span class="k">        end if</span>
-<a name="ln-119"></a><span class="k">    end function </span><span class="n">get_os_type</span>
-<a name="ln-120"></a>
-<a name="ln-121"></a>    <span class="c">!&gt; Compare the output of [[get_os_type]] or the optional</span>
-<a name="ln-122"></a>    <span class="c">!! passed INTEGER value to the value for OS_WINDOWS</span>
-<a name="ln-123"></a>    <span class="c">!! and return .TRUE. if they match and .FALSE. otherwise</span>
-<a name="ln-124"></a>    <span class="kt">logical </span><span class="k">function </span><span class="n">os_is_unix</span><span class="p">(</span><span class="n">os</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">unix</span><span class="p">)</span>
-<a name="ln-125"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">os</span>
-<a name="ln-126"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">build_os</span>
-<a name="ln-127"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">os</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-128"></a><span class="k">            </span><span class="n">build_os</span> <span class="o">=</span> <span class="n">os</span>
-<a name="ln-129"></a>        <span class="k">else</span>
-<a name="ln-130"></a><span class="k">            </span><span class="n">build_os</span> <span class="o">=</span> <span class="n">get_os_type</span><span class="p">()</span>
-<a name="ln-131"></a>        <span class="k">end if</span>
-<a name="ln-132"></a><span class="k">        </span><span class="n">unix</span> <span class="o">=</span> <span class="n">os</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span>
-<a name="ln-133"></a>    <span class="k">end function </span><span class="n">os_is_unix</span>
-<a name="ln-134"></a>
-<a name="ln-135"></a>    <span class="c">!&gt; echo command string and pass it to the system for execution</span>
-<a name="ln-136"></a>    <span class="k">subroutine </span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">echo</span><span class="p">)</span>
-<a name="ln-137"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">cmd</span>
-<a name="ln-138"></a>        <span class="kt">logical</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span>  <span class="kd">::</span> <span class="n">echo</span>
-<a name="ln-139"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">echo_local</span>
-<a name="ln-140"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
-<a name="ln-141"></a>
-<a name="ln-142"></a><span class="nb">        </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">echo</span><span class="p">))</span><span class="k">then</span>
-<a name="ln-143"></a><span class="k">           </span><span class="n">echo_local</span><span class="o">=</span><span class="n">echo</span>
-<a name="ln-144"></a>        <span class="k">else</span>
-<a name="ln-145"></a><span class="k">           </span><span class="n">echo_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a name="ln-146"></a>        <span class="k">endif</span>
-<a name="ln-147"></a><span class="k">        if</span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span> <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;+ &#39;</span><span class="p">,</span> <span class="n">cmd</span>
-<a name="ln-148"></a>
-<a name="ln-149"></a>        <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-150"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-151"></a><span class="k">            print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;Command failed&#39;</span>
-<a name="ln-152"></a>            <span class="k">error stop</span>
-<a name="ln-153"></a><span class="k">        end if</span>
-<a name="ln-154"></a><span class="k">    end subroutine </span><span class="n">run</span>
-<a name="ln-155"></a>
-<a name="ln-156"></a>    <span class="c">!&gt; get named environment variable value. It it is blank or</span>
-<a name="ln-157"></a>    <span class="c">!! not set return the optional default value</span>
-<a name="ln-158"></a>    <span class="k">function </span><span class="n">get_env</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="n">DEFAULT</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="k">VALUE</span><span class="p">)</span>
-<a name="ln-159"></a>    <span class="k">implicit none</span>
-<a name="ln-160"></a>    <span class="c">!&gt; name of environment variable to get the value of</span>
-<a name="ln-161"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">NAME</span>
-<a name="ln-162"></a>    <span class="c">!&gt; default value to return if the requested value is undefined or blank</span>
-<a name="ln-163"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">DEFAULT</span>
-<a name="ln-164"></a>    <span class="c">!&gt; the returned value</span>
-<a name="ln-165"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="k">VALUE</span>
-<a name="ln-166"></a><span class="k">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">howbig</span>
-<a name="ln-167"></a>    <span class="kt">integer</span>                              <span class="kd">::</span> <span class="nb">stat</span>
-<a name="ln-168"></a><span class="nb">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">length</span>
-<a name="ln-169"></a>        <span class="c">! get length required to hold value</span>
-<a name="ln-170"></a>        <span class="n">length</span><span class="o">=</span><span class="mi">0</span>
-<a name="ln-171"></a>        <span class="k">if</span><span class="p">(</span><span class="n">NAME</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
-<a name="ln-172"></a><span class="k">           call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">howbig</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<a name="ln-173"></a>           <span class="k">select case</span> <span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
-<a name="ln-174"></a>           <span class="k">case</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<a name="ln-175"></a>               <span class="c">!*!print *, NAME, &quot; is not defined in the environment. Strange...&quot;</span>
-<a name="ln-176"></a>               <span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-<a name="ln-177"></a>           <span class="k">case</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<a name="ln-178"></a>               <span class="c">!*!print *, &quot;This processor doesn&#39;t support environment variables. Boooh!&quot;</span>
-<a name="ln-179"></a>               <span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-<a name="ln-180"></a>           <span class="k">case </span><span class="n">default</span>
-<a name="ln-181"></a>               <span class="c">! make string to hold value of sufficient size</span>
-<a name="ln-182"></a>               <span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">howbig</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="kd">::</span> <span class="k">VALUE</span><span class="p">)</span>
-<a name="ln-183"></a>               <span class="c">! get value</span>
-<a name="ln-184"></a>               <span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="k">VALUE</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<a name="ln-185"></a>               <span class="k">if</span><span class="p">(</span><span class="nb">stat</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-<a name="ln-186"></a>           <span class="k">end select</span>
-<a name="ln-187"></a><span class="k">        else</span>
-<a name="ln-188"></a><span class="k">           VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-<a name="ln-189"></a>        <span class="k">endif</span>
-<a name="ln-190"></a><span class="k">        if</span><span class="p">(</span><span class="k">VALUE</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">DEFAULT</span><span class="p">))</span><span class="k">VALUE</span><span class="o">=</span><span class="n">DEFAULT</span>
-<a name="ln-191"></a>     <span class="k">end function </span><span class="n">get_env</span>
-<a name="ln-192"></a>
-<a name="ln-193"></a>    <span class="k">function </span><span class="n">get_archiver</span><span class="p">()</span> <span class="k">result</span><span class="p">(</span><span class="n">archiver</span><span class="p">)</span>
-<a name="ln-194"></a>        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">archiver</span>
-<a name="ln-195"></a>
-<a name="ln-196"></a>        <span class="k">associate</span><span class="p">(</span><span class="n">os_type</span> <span class="o">=&gt;</span> <span class="n">get_os_type</span><span class="p">())</span>
-<a name="ln-197"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-198"></a><span class="k">                </span><span class="n">archiver</span> <span class="o">=</span> <span class="s2">&quot;ar -rs &quot;</span>
-<a name="ln-199"></a>            <span class="k">else</span>
-<a name="ln-200"></a><span class="k">                block</span>
-<a name="ln-201"></a><span class="k">                    </span><span class="kt">integer</span> <span class="kd">::</span> <span class="n">estat</span>
-<a name="ln-202"></a>
-<a name="ln-203"></a>                    <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;ar --version&quot;</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span>
-<a name="ln-204"></a>                    <span class="k">if</span> <span class="p">(</span><span class="n">estat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a name="ln-205"></a><span class="k">                        </span><span class="n">archiver</span> <span class="o">=</span> <span class="s2">&quot;lib /OUT:&quot;</span>
-<a name="ln-206"></a>                    <span class="k">else</span>
-<a name="ln-207"></a><span class="k">                        </span><span class="n">archiver</span> <span class="o">=</span> <span class="s2">&quot;ar -rs &quot;</span>
-<a name="ln-208"></a>                    <span class="k">end if</span>
-<a name="ln-209"></a><span class="k">                end block</span>
-<a name="ln-210"></a><span class="k">            end if</span>
-<a name="ln-211"></a><span class="k">        end associate</span>
-<a name="ln-212"></a><span class="k">    end function</span>
-<a name="ln-213"></a><span class="k">end module </span><span class="n">fpm_environment</span>
+    <div class="hl"><pre><span></span><a id="ln-1" name="ln-1"></a><span class="c">!&gt; This module contains procedures that interact with the programming environment.</span>
+<a id="ln-2" name="ln-2"></a><span class="c">!!</span>
+<a id="ln-3" name="ln-3"></a><span class="c">!! * [get_os_type] -- Determine the OS type</span>
+<a id="ln-4" name="ln-4"></a><span class="c">!! * [get_env] -- return the value of an environment variable</span>
+<a id="ln-5" name="ln-5"></a><span class="k">module </span><span class="n">fpm_environment</span>
+<a id="ln-6" name="ln-6"></a>    <span class="k">implicit none</span>
+<a id="ln-7" name="ln-7"></a><span class="k">    private</span>
+<a id="ln-8" name="ln-8"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">get_os_type</span>
+<a id="ln-9" name="ln-9"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">os_is_unix</span>
+<a id="ln-10" name="ln-10"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">run</span>
+<a id="ln-11" name="ln-11"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">get_env</span>
+<a id="ln-12" name="ln-12"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">get_archiver</span>
+<a id="ln-13" name="ln-13"></a>
+<a id="ln-14" name="ln-14"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_UNKNOWN</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="ln-15" name="ln-15"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_LINUX</span>   <span class="o">=</span> <span class="mi">1</span>
+<a id="ln-16" name="ln-16"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_MACOS</span>   <span class="o">=</span> <span class="mi">2</span>
+<a id="ln-17" name="ln-17"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_WINDOWS</span> <span class="o">=</span> <span class="mi">3</span>
+<a id="ln-18" name="ln-18"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_CYGWIN</span>  <span class="o">=</span> <span class="mi">4</span>
+<a id="ln-19" name="ln-19"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_SOLARIS</span> <span class="o">=</span> <span class="mi">5</span>
+<a id="ln-20" name="ln-20"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_FREEBSD</span> <span class="o">=</span> <span class="mi">6</span>
+<a id="ln-21" name="ln-21"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span><span class="p">,</span> <span class="k">public</span> <span class="kd">::</span> <span class="n">OS_OPENBSD</span> <span class="o">=</span> <span class="mi">7</span>
+<a id="ln-22" name="ln-22"></a><span class="k">contains</span>
+<a id="ln-23" name="ln-23"></a>    <span class="c">!&gt; Determine the OS type</span>
+<a id="ln-24" name="ln-24"></a>    <span class="kt">integer </span><span class="k">function </span><span class="n">get_os_type</span><span class="p">()</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<a id="ln-25" name="ln-25"></a>        <span class="c">!!</span>
+<a id="ln-26" name="ln-26"></a>        <span class="c">!! Returns one of OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN,</span>
+<a id="ln-27" name="ln-27"></a>        <span class="c">!! OS_SOLARIS, OS_FREEBSD, OS_OPENBSD.</span>
+<a id="ln-28" name="ln-28"></a>        <span class="c">!!</span>
+<a id="ln-29" name="ln-29"></a>        <span class="c">!! At first, the environment variable `OS` is checked, which is usually</span>
+<a id="ln-30" name="ln-30"></a>        <span class="c">!! found on Windows. Then, `OSTYPE` is read in and compared with common</span>
+<a id="ln-31" name="ln-31"></a>        <span class="c">!! names. If this fails too, check the existence of files that can be</span>
+<a id="ln-32" name="ln-32"></a>        <span class="c">!! found on specific system types only.</span>
+<a id="ln-33" name="ln-33"></a>        <span class="c">!!</span>
+<a id="ln-34" name="ln-34"></a>        <span class="c">!! Returns OS_UNKNOWN if the operating system cannot be determined.</span>
+<a id="ln-35" name="ln-35"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span> <span class="kd">::</span> <span class="n">val</span>
+<a id="ln-36" name="ln-36"></a>        <span class="kt">integer</span>           <span class="kd">::</span> <span class="n">length</span><span class="p">,</span> <span class="n">rc</span>
+<a id="ln-37" name="ln-37"></a>        <span class="kt">logical</span>           <span class="kd">::</span> <span class="n">file_exists</span>
+<a id="ln-38" name="ln-38"></a>
+<a id="ln-39" name="ln-39"></a>        <span class="n">r</span> <span class="o">=</span> <span class="n">OS_UNKNOWN</span>
+<a id="ln-40" name="ln-40"></a>
+<a id="ln-41" name="ln-41"></a>        <span class="c">! Check environment variable `OS`.</span>
+<a id="ln-42" name="ln-42"></a>        <span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OS&#39;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span>
+<a id="ln-43" name="ln-43"></a>
+<a id="ln-44" name="ln-44"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">rc</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;Windows_NT&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-45" name="ln-45"></a><span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_WINDOWS</span>
+<a id="ln-46" name="ln-46"></a>            <span class="k">return</span>
+<a id="ln-47" name="ln-47"></a><span class="k">        end if</span>
+<a id="ln-48" name="ln-48"></a>
+<a id="ln-49" name="ln-49"></a>        <span class="c">! Check environment variable `OSTYPE`.</span>
+<a id="ln-50" name="ln-50"></a>        <span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OSTYPE&#39;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span>
+<a id="ln-51" name="ln-51"></a>
+<a id="ln-52" name="ln-52"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">rc</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-53" name="ln-53"></a>            <span class="c">! Linux</span>
+<a id="ln-54" name="ln-54"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;linux&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-55" name="ln-55"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_LINUX</span>
+<a id="ln-56" name="ln-56"></a>                <span class="k">return</span>
+<a id="ln-57" name="ln-57"></a><span class="k">            end if</span>
+<a id="ln-58" name="ln-58"></a>
+<a id="ln-59" name="ln-59"></a>            <span class="c">! macOS</span>
+<a id="ln-60" name="ln-60"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;darwin&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-61" name="ln-61"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_MACOS</span>
+<a id="ln-62" name="ln-62"></a>                <span class="k">return</span>
+<a id="ln-63" name="ln-63"></a><span class="k">            end if</span>
+<a id="ln-64" name="ln-64"></a>
+<a id="ln-65" name="ln-65"></a>            <span class="c">! Windows, MSYS, MinGW, Git Bash</span>
+<a id="ln-66" name="ln-66"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;win&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;msys&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-67" name="ln-67"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_WINDOWS</span>
+<a id="ln-68" name="ln-68"></a>                <span class="k">return</span>
+<a id="ln-69" name="ln-69"></a><span class="k">            end if</span>
+<a id="ln-70" name="ln-70"></a>
+<a id="ln-71" name="ln-71"></a>            <span class="c">! Cygwin</span>
+<a id="ln-72" name="ln-72"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;cygwin&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-73" name="ln-73"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_CYGWIN</span>
+<a id="ln-74" name="ln-74"></a>                <span class="k">return</span>
+<a id="ln-75" name="ln-75"></a><span class="k">            end if</span>
+<a id="ln-76" name="ln-76"></a>
+<a id="ln-77" name="ln-77"></a>            <span class="c">! Solaris, OpenIndiana, ...</span>
+<a id="ln-78" name="ln-78"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;SunOS&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;solaris&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-79" name="ln-79"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_SOLARIS</span>
+<a id="ln-80" name="ln-80"></a>                <span class="k">return</span>
+<a id="ln-81" name="ln-81"></a><span class="k">            end if</span>
+<a id="ln-82" name="ln-82"></a>
+<a id="ln-83" name="ln-83"></a>            <span class="c">! FreeBSD</span>
+<a id="ln-84" name="ln-84"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;FreeBSD&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;freebsd&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-85" name="ln-85"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_FREEBSD</span>
+<a id="ln-86" name="ln-86"></a>                <span class="k">return</span>
+<a id="ln-87" name="ln-87"></a><span class="k">            end if</span>
+<a id="ln-88" name="ln-88"></a>
+<a id="ln-89" name="ln-89"></a>            <span class="c">! OpenBSD</span>
+<a id="ln-90" name="ln-90"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;OpenBSD&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;openbsd&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-91" name="ln-91"></a><span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_OPENBSD</span>
+<a id="ln-92" name="ln-92"></a>                <span class="k">return</span>
+<a id="ln-93" name="ln-93"></a><span class="k">            end if</span>
+<a id="ln-94" name="ln-94"></a><span class="k">        end if</span>
+<a id="ln-95" name="ln-95"></a>
+<a id="ln-96" name="ln-96"></a>        <span class="c">! Linux</span>
+<a id="ln-97" name="ln-97"></a>        <span class="k">inquire</span> <span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/etc/os-release&#39;</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span>
+<a id="ln-98" name="ln-98"></a>
+<a id="ln-99" name="ln-99"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-100" name="ln-100"></a><span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_LINUX</span>
+<a id="ln-101" name="ln-101"></a>            <span class="k">return</span>
+<a id="ln-102" name="ln-102"></a><span class="k">        end if</span>
+<a id="ln-103" name="ln-103"></a>
+<a id="ln-104" name="ln-104"></a>        <span class="c">! macOS</span>
+<a id="ln-105" name="ln-105"></a>        <span class="k">inquire</span> <span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/usr/bin/sw_vers&#39;</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span>
+<a id="ln-106" name="ln-106"></a>
+<a id="ln-107" name="ln-107"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-108" name="ln-108"></a><span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_MACOS</span>
+<a id="ln-109" name="ln-109"></a>            <span class="k">return</span>
+<a id="ln-110" name="ln-110"></a><span class="k">        end if</span>
+<a id="ln-111" name="ln-111"></a>
+<a id="ln-112" name="ln-112"></a>        <span class="c">! FreeBSD</span>
+<a id="ln-113" name="ln-113"></a>        <span class="k">inquire</span> <span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/bin/freebsd-version&#39;</span><span class="p">,</span> <span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span>
+<a id="ln-114" name="ln-114"></a>
+<a id="ln-115" name="ln-115"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-116" name="ln-116"></a><span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_FREEBSD</span>
+<a id="ln-117" name="ln-117"></a>            <span class="k">return</span>
+<a id="ln-118" name="ln-118"></a><span class="k">        end if</span>
+<a id="ln-119" name="ln-119"></a><span class="k">    end function </span><span class="n">get_os_type</span>
+<a id="ln-120" name="ln-120"></a>
+<a id="ln-121" name="ln-121"></a>    <span class="c">!&gt; Compare the output of [[get_os_type]] or the optional</span>
+<a id="ln-122" name="ln-122"></a>    <span class="c">!! passed INTEGER value to the value for OS_WINDOWS</span>
+<a id="ln-123" name="ln-123"></a>    <span class="c">!! and return .TRUE. if they match and .FALSE. otherwise</span>
+<a id="ln-124" name="ln-124"></a>    <span class="kt">logical </span><span class="k">function </span><span class="n">os_is_unix</span><span class="p">(</span><span class="n">os</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">unix</span><span class="p">)</span>
+<a id="ln-125" name="ln-125"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">os</span>
+<a id="ln-126" name="ln-126"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">build_os</span>
+<a id="ln-127" name="ln-127"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">os</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-128" name="ln-128"></a><span class="k">            </span><span class="n">build_os</span> <span class="o">=</span> <span class="n">os</span>
+<a id="ln-129" name="ln-129"></a>        <span class="k">else</span>
+<a id="ln-130" name="ln-130"></a><span class="k">            </span><span class="n">build_os</span> <span class="o">=</span> <span class="n">get_os_type</span><span class="p">()</span>
+<a id="ln-131" name="ln-131"></a>        <span class="k">end if</span>
+<a id="ln-132" name="ln-132"></a><span class="k">        </span><span class="n">unix</span> <span class="o">=</span> <span class="n">os</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span>
+<a id="ln-133" name="ln-133"></a>    <span class="k">end function </span><span class="n">os_is_unix</span>
+<a id="ln-134" name="ln-134"></a>
+<a id="ln-135" name="ln-135"></a>    <span class="c">!&gt; echo command string and pass it to the system for execution</span>
+<a id="ln-136" name="ln-136"></a>    <span class="k">subroutine </span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">echo</span><span class="p">)</span>
+<a id="ln-137" name="ln-137"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">cmd</span>
+<a id="ln-138" name="ln-138"></a>        <span class="kt">logical</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span>  <span class="kd">::</span> <span class="n">echo</span>
+<a id="ln-139" name="ln-139"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">echo_local</span>
+<a id="ln-140" name="ln-140"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
+<a id="ln-141" name="ln-141"></a>
+<a id="ln-142" name="ln-142"></a><span class="nb">        </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">echo</span><span class="p">))</span><span class="k">then</span>
+<a id="ln-143" name="ln-143"></a><span class="k">           </span><span class="n">echo_local</span><span class="o">=</span><span class="n">echo</span>
+<a id="ln-144" name="ln-144"></a>        <span class="k">else</span>
+<a id="ln-145" name="ln-145"></a><span class="k">           </span><span class="n">echo_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a id="ln-146" name="ln-146"></a>        <span class="k">endif</span>
+<a id="ln-147" name="ln-147"></a><span class="k">        if</span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span> <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;+ &#39;</span><span class="p">,</span> <span class="n">cmd</span>
+<a id="ln-148" name="ln-148"></a>
+<a id="ln-149" name="ln-149"></a>        <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-150" name="ln-150"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-151" name="ln-151"></a><span class="k">            print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;Command failed&#39;</span>
+<a id="ln-152" name="ln-152"></a>            <span class="k">error stop</span>
+<a id="ln-153" name="ln-153"></a><span class="k">        end if</span>
+<a id="ln-154" name="ln-154"></a><span class="k">    end subroutine </span><span class="n">run</span>
+<a id="ln-155" name="ln-155"></a>
+<a id="ln-156" name="ln-156"></a>    <span class="c">!&gt; get named environment variable value. It it is blank or</span>
+<a id="ln-157" name="ln-157"></a>    <span class="c">!! not set return the optional default value</span>
+<a id="ln-158" name="ln-158"></a>    <span class="k">function </span><span class="n">get_env</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="n">DEFAULT</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="k">VALUE</span><span class="p">)</span>
+<a id="ln-159" name="ln-159"></a>    <span class="k">implicit none</span>
+<a id="ln-160" name="ln-160"></a>    <span class="c">!&gt; name of environment variable to get the value of</span>
+<a id="ln-161" name="ln-161"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">NAME</span>
+<a id="ln-162" name="ln-162"></a>    <span class="c">!&gt; default value to return if the requested value is undefined or blank</span>
+<a id="ln-163" name="ln-163"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span> <span class="kd">::</span> <span class="n">DEFAULT</span>
+<a id="ln-164" name="ln-164"></a>    <span class="c">!&gt; the returned value</span>
+<a id="ln-165" name="ln-165"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>         <span class="kd">::</span> <span class="k">VALUE</span>
+<a id="ln-166" name="ln-166"></a><span class="k">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">howbig</span>
+<a id="ln-167" name="ln-167"></a>    <span class="kt">integer</span>                              <span class="kd">::</span> <span class="nb">stat</span>
+<a id="ln-168" name="ln-168"></a><span class="nb">    </span><span class="kt">integer</span>                              <span class="kd">::</span> <span class="n">length</span>
+<a id="ln-169" name="ln-169"></a>        <span class="c">! get length required to hold value</span>
+<a id="ln-170" name="ln-170"></a>        <span class="n">length</span><span class="o">=</span><span class="mi">0</span>
+<a id="ln-171" name="ln-171"></a>        <span class="k">if</span><span class="p">(</span><span class="n">NAME</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-172" name="ln-172"></a><span class="k">           call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">howbig</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<a id="ln-173" name="ln-173"></a>           <span class="k">select case</span> <span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-174" name="ln-174"></a>           <span class="k">case</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="ln-175" name="ln-175"></a>               <span class="c">!*!print *, NAME, &quot; is not defined in the environment. Strange...&quot;</span>
+<a id="ln-176" name="ln-176"></a>               <span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+<a id="ln-177" name="ln-177"></a>           <span class="k">case</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<a id="ln-178" name="ln-178"></a>               <span class="c">!*!print *, &quot;This processor doesn&#39;t support environment variables. Boooh!&quot;</span>
+<a id="ln-179" name="ln-179"></a>               <span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+<a id="ln-180" name="ln-180"></a>           <span class="k">case </span><span class="n">default</span>
+<a id="ln-181" name="ln-181"></a>               <span class="c">! make string to hold value of sufficient size</span>
+<a id="ln-182" name="ln-182"></a>               <span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">howbig</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="kd">::</span> <span class="k">VALUE</span><span class="p">)</span>
+<a id="ln-183" name="ln-183"></a>               <span class="c">! get value</span>
+<a id="ln-184" name="ln-184"></a>               <span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="k">VALUE</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<a id="ln-185" name="ln-185"></a>               <span class="k">if</span><span class="p">(</span><span class="nb">stat</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+<a id="ln-186" name="ln-186"></a>           <span class="k">end select</span>
+<a id="ln-187" name="ln-187"></a><span class="k">        else</span>
+<a id="ln-188" name="ln-188"></a><span class="k">           VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+<a id="ln-189" name="ln-189"></a>        <span class="k">endif</span>
+<a id="ln-190" name="ln-190"></a><span class="k">        if</span><span class="p">(</span><span class="k">VALUE</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">DEFAULT</span><span class="p">))</span><span class="k">VALUE</span><span class="o">=</span><span class="n">DEFAULT</span>
+<a id="ln-191" name="ln-191"></a>     <span class="k">end function </span><span class="n">get_env</span>
+<a id="ln-192" name="ln-192"></a>
+<a id="ln-193" name="ln-193"></a>    <span class="k">function </span><span class="n">get_archiver</span><span class="p">()</span> <span class="k">result</span><span class="p">(</span><span class="n">archiver</span><span class="p">)</span>
+<a id="ln-194" name="ln-194"></a>        <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">archiver</span>
+<a id="ln-195" name="ln-195"></a>
+<a id="ln-196" name="ln-196"></a>        <span class="k">associate</span><span class="p">(</span><span class="n">os_type</span> <span class="o">=&gt;</span> <span class="n">get_os_type</span><span class="p">())</span>
+<a id="ln-197" name="ln-197"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-198" name="ln-198"></a><span class="k">                </span><span class="n">archiver</span> <span class="o">=</span> <span class="s2">&quot;ar -rs &quot;</span>
+<a id="ln-199" name="ln-199"></a>            <span class="k">else</span>
+<a id="ln-200" name="ln-200"></a><span class="k">                block</span>
+<a id="ln-201" name="ln-201"></a><span class="k">                    </span><span class="kt">integer</span> <span class="kd">::</span> <span class="n">estat</span>
+<a id="ln-202" name="ln-202"></a>
+<a id="ln-203" name="ln-203"></a>                    <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;ar --version&quot;</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span>
+<a id="ln-204" name="ln-204"></a>                    <span class="k">if</span> <span class="p">(</span><span class="n">estat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-205" name="ln-205"></a><span class="k">                        </span><span class="n">archiver</span> <span class="o">=</span> <span class="s2">&quot;lib /OUT:&quot;</span>
+<a id="ln-206" name="ln-206"></a>                    <span class="k">else</span>
+<a id="ln-207" name="ln-207"></a><span class="k">                        </span><span class="n">archiver</span> <span class="o">=</span> <span class="s2">&quot;ar -rs &quot;</span>
+<a id="ln-208" name="ln-208"></a>                    <span class="k">end if</span>
+<a id="ln-209" name="ln-209"></a><span class="k">                end block</span>
+<a id="ln-210" name="ln-210"></a><span class="k">            end if</span>
+<a id="ln-211" name="ln-211"></a><span class="k">        end associate</span>
+<a id="ln-212" name="ln-212"></a><span class="k">    end function</span>
+<a id="ln-213" name="ln-213"></a><span class="k">end module </span><span class="n">fpm_environment</span>
 </pre></div>
 
     </section>
@@ -498,7 +498,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-04-30 00:29  
+             on 2021-05-24 16:02  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

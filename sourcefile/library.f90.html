@@ -267,148 +267,148 @@
 
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="c">!&gt; Implementation of the meta data for libraries.</span>
-<a name="ln-2"></a><span class="c">!&gt;</span>
-<a name="ln-3"></a><span class="c">!&gt; A library table can currently have the following fields</span>
-<a name="ln-4"></a><span class="c">!&gt;</span>
-<a name="ln-5"></a><span class="c">!&gt;```toml</span>
-<a name="ln-6"></a><span class="c">!&gt;[library]</span>
-<a name="ln-7"></a><span class="c">!&gt;source-dir = &quot;path&quot;</span>
-<a name="ln-8"></a><span class="c">!&gt;include-dir = [&quot;path1&quot;,&quot;path2&quot;]</span>
-<a name="ln-9"></a><span class="c">!&gt;build-script = &quot;file&quot;</span>
-<a name="ln-10"></a><span class="c">!&gt;```</span>
-<a name="ln-11"></a><span class="k">module </span><span class="n">fpm_manifest_library</span>
-<a name="ln-12"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">syntax_error</span>
-<a name="ln-13"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">string_cat</span>
-<a name="ln-14"></a>    <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_stat</span><span class="p">,</span> <span class="n">get_value</span>
-<a name="ln-15"></a>    <span class="k">implicit none</span>
-<a name="ln-16"></a><span class="k">    private</span>
-<a name="ln-17"></a>
-<a name="ln-18"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">library_config_t</span><span class="p">,</span> <span class="n">new_library</span>
-<a name="ln-19"></a>
-<a name="ln-20"></a>
-<a name="ln-21"></a>    <span class="c">!&gt; Configuration meta data for a library</span>
-<a name="ln-22"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">library_config_t</span>
-<a name="ln-23"></a>
-<a name="ln-24"></a>        <span class="c">!&gt; Source path prefix</span>
-<a name="ln-25"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">source_dir</span>
-<a name="ln-26"></a>
-<a name="ln-27"></a>        <span class="c">!&gt; Include path prefix</span>
-<a name="ln-28"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">include_dir</span><span class="p">(:)</span>
-<a name="ln-29"></a>
-<a name="ln-30"></a>        <span class="c">!&gt; Alternative build script to be invoked</span>
-<a name="ln-31"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">build_script</span>
-<a name="ln-32"></a>
-<a name="ln-33"></a>    <span class="k">contains</span>
-<a name="ln-34"></a>
-<a name="ln-35"></a>        <span class="c">!&gt; Print information on this instance</span>
-<a name="ln-36"></a>        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
-<a name="ln-37"></a>
-<a name="ln-38"></a>    <span class="k">end type </span><span class="n">library_config_t</span>
-<a name="ln-39"></a>
-<a name="ln-40"></a>
-<a name="ln-41"></a><span class="k">contains</span>
-<a name="ln-42"></a>
-<a name="ln-43"></a>
-<a name="ln-44"></a>    <span class="c">!&gt; Construct a new library configuration from a TOML data structure</span>
-<a name="ln-45"></a>    <span class="k">subroutine </span><span class="n">new_library</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-46"></a>
-<a name="ln-47"></a>        <span class="c">!&gt; Instance of the library configuration</span>
-<a name="ln-48"></a>        <span class="k">type</span><span class="p">(</span><span class="n">library_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-49"></a>
-<a name="ln-50"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
-<a name="ln-51"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
-<a name="ln-52"></a>
-<a name="ln-53"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-54"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-55"></a>
-<a name="ln-56"></a>        <span class="k">call </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-57"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-58"></a>
-<a name="ln-59"></a><span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;source-dir&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span><span class="p">,</span> <span class="s2">&quot;src&quot;</span><span class="p">)</span>
-<a name="ln-60"></a>        <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;build-script&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">build_script</span><span class="p">)</span>
-<a name="ln-61"></a>
-<a name="ln-62"></a>        <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;include-dir&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">include_dir</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-63"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
-<a name="ln-64"></a>
-<a name="ln-65"></a>        <span class="c">! Set default value of include-dir if not found in manifest</span>
-<a name="ln-66"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">include_dir</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-67"></a><span class="k">            </span><span class="n">self</span><span class="p">%</span><span class="n">include_dir</span> <span class="o">=</span> <span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;include&quot;</span><span class="p">)]</span>
-<a name="ln-68"></a>        <span class="k">end if</span>
-<a name="ln-69"></a>
-<a name="ln-70"></a><span class="k">    end subroutine </span><span class="n">new_library</span>
-<a name="ln-71"></a>
-<a name="ln-72"></a>
-<a name="ln-73"></a>    <span class="c">!&gt; Check local schema for allowed entries</span>
-<a name="ln-74"></a>    <span class="k">subroutine </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a name="ln-75"></a>
-<a name="ln-76"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
-<a name="ln-77"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
-<a name="ln-78"></a>
-<a name="ln-79"></a>        <span class="c">!&gt; Error handling</span>
-<a name="ln-80"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a name="ln-81"></a>
-<a name="ln-82"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
-<a name="ln-83"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ikey</span>
-<a name="ln-84"></a>
-<a name="ln-85"></a>        <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-<a name="ln-86"></a>
-<a name="ln-87"></a>        <span class="c">! table can be empty</span>
-<a name="ln-88"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
-<a name="ln-89"></a>
-<a name="ln-90"></a><span class="k">        do </span><span class="n">ikey</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-<a name="ln-91"></a>            <span class="k">select case</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="p">)</span>
-<a name="ln-92"></a>            <span class="k">case </span><span class="n">default</span>
-<a name="ln-93"></a>                <span class="k">call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Key &quot;</span><span class="o">//</span><span class="n">list</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; is not allowed in library&quot;</span><span class="p">)</span>
-<a name="ln-94"></a>                <span class="k">exit</span>
-<a name="ln-95"></a>
-<a name="ln-96"></a><span class="k">            case</span><span class="p">(</span><span class="s2">&quot;source-dir&quot;</span><span class="p">,</span> <span class="s2">&quot;include-dir&quot;</span><span class="p">,</span> <span class="s2">&quot;build-script&quot;</span><span class="p">)</span>
-<a name="ln-97"></a>                <span class="k">continue</span>
-<a name="ln-98"></a>
-<a name="ln-99"></a><span class="k">            end select</span>
-<a name="ln-100"></a><span class="k">        end do</span>
-<a name="ln-101"></a>
-<a name="ln-102"></a><span class="k">    end subroutine </span><span class="n">check</span>
-<a name="ln-103"></a>
-<a name="ln-104"></a>
-<a name="ln-105"></a>    <span class="c">!&gt; Write information on instance</span>
-<a name="ln-106"></a>    <span class="k">subroutine </span><span class="n">info</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">)</span>
-<a name="ln-107"></a>
-<a name="ln-108"></a>        <span class="c">!&gt; Instance of the library configuration</span>
-<a name="ln-109"></a>        <span class="k">class</span><span class="p">(</span><span class="n">library_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a name="ln-110"></a>
-<a name="ln-111"></a>        <span class="c">!&gt; Unit for IO</span>
-<a name="ln-112"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">unit</span>
-<a name="ln-113"></a>
-<a name="ln-114"></a>        <span class="c">!&gt; Verbosity of the printout</span>
-<a name="ln-115"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">verbosity</span>
-<a name="ln-116"></a>
-<a name="ln-117"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">pr</span>
-<a name="ln-118"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;(&quot;#&quot;, 1x, a, t30, a)&#39;</span>
-<a name="ln-119"></a>
-<a name="ln-120"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbosity</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-121"></a><span class="k">            </span><span class="n">pr</span> <span class="o">=</span> <span class="n">verbosity</span>
-<a name="ln-122"></a>        <span class="k">else</span>
-<a name="ln-123"></a><span class="k">            </span><span class="n">pr</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="ln-124"></a>        <span class="k">end if</span>
-<a name="ln-125"></a>
-<a name="ln-126"></a><span class="k">        if</span> <span class="p">(</span><span class="n">pr</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
-<a name="ln-127"></a>
-<a name="ln-128"></a><span class="k">        write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;Library target&quot;</span>
-<a name="ln-129"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">source_dir</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-130"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- source directory&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span>
-<a name="ln-131"></a>        <span class="k">end if</span>
-<a name="ln-132"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">include_dir</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-133"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- include directory&quot;</span><span class="p">,</span> <span class="n">string_cat</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">include_dir</span><span class="p">,</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
-<a name="ln-134"></a>        <span class="k">end if</span>
-<a name="ln-135"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">build_script</span><span class="p">))</span> <span class="k">then</span>
-<a name="ln-136"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- custom build&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">build_script</span>
-<a name="ln-137"></a>        <span class="k">end if</span>
-<a name="ln-138"></a>
-<a name="ln-139"></a><span class="k">    end subroutine </span><span class="n">info</span>
-<a name="ln-140"></a>
-<a name="ln-141"></a>
-<a name="ln-142"></a><span class="k">end module </span><span class="n">fpm_manifest_library</span>
+    <div class="hl"><pre><span></span><a id="ln-1" name="ln-1"></a><span class="c">!&gt; Implementation of the meta data for libraries.</span>
+<a id="ln-2" name="ln-2"></a><span class="c">!&gt;</span>
+<a id="ln-3" name="ln-3"></a><span class="c">!&gt; A library table can currently have the following fields</span>
+<a id="ln-4" name="ln-4"></a><span class="c">!&gt;</span>
+<a id="ln-5" name="ln-5"></a><span class="c">!&gt;```toml</span>
+<a id="ln-6" name="ln-6"></a><span class="c">!&gt;[library]</span>
+<a id="ln-7" name="ln-7"></a><span class="c">!&gt;source-dir = &quot;path&quot;</span>
+<a id="ln-8" name="ln-8"></a><span class="c">!&gt;include-dir = [&quot;path1&quot;,&quot;path2&quot;]</span>
+<a id="ln-9" name="ln-9"></a><span class="c">!&gt;build-script = &quot;file&quot;</span>
+<a id="ln-10" name="ln-10"></a><span class="c">!&gt;```</span>
+<a id="ln-11" name="ln-11"></a><span class="k">module </span><span class="n">fpm_manifest_library</span>
+<a id="ln-12" name="ln-12"></a>    <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">syntax_error</span>
+<a id="ln-13" name="ln-13"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">string_cat</span>
+<a id="ln-14" name="ln-14"></a>    <span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_key</span><span class="p">,</span> <span class="n">toml_stat</span><span class="p">,</span> <span class="n">get_value</span>
+<a id="ln-15" name="ln-15"></a>    <span class="k">implicit none</span>
+<a id="ln-16" name="ln-16"></a><span class="k">    private</span>
+<a id="ln-17" name="ln-17"></a>
+<a id="ln-18" name="ln-18"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">library_config_t</span><span class="p">,</span> <span class="n">new_library</span>
+<a id="ln-19" name="ln-19"></a>
+<a id="ln-20" name="ln-20"></a>
+<a id="ln-21" name="ln-21"></a>    <span class="c">!&gt; Configuration meta data for a library</span>
+<a id="ln-22" name="ln-22"></a>    <span class="k">type</span> <span class="kd">::</span> <span class="n">library_config_t</span>
+<a id="ln-23" name="ln-23"></a>
+<a id="ln-24" name="ln-24"></a>        <span class="c">!&gt; Source path prefix</span>
+<a id="ln-25" name="ln-25"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">source_dir</span>
+<a id="ln-26" name="ln-26"></a>
+<a id="ln-27" name="ln-27"></a>        <span class="c">!&gt; Include path prefix</span>
+<a id="ln-28" name="ln-28"></a>        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">include_dir</span><span class="p">(:)</span>
+<a id="ln-29" name="ln-29"></a>
+<a id="ln-30" name="ln-30"></a>        <span class="c">!&gt; Alternative build script to be invoked</span>
+<a id="ln-31" name="ln-31"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">build_script</span>
+<a id="ln-32" name="ln-32"></a>
+<a id="ln-33" name="ln-33"></a>    <span class="k">contains</span>
+<a id="ln-34" name="ln-34"></a>
+<a id="ln-35" name="ln-35"></a>        <span class="c">!&gt; Print information on this instance</span>
+<a id="ln-36" name="ln-36"></a>        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
+<a id="ln-37" name="ln-37"></a>
+<a id="ln-38" name="ln-38"></a>    <span class="k">end type </span><span class="n">library_config_t</span>
+<a id="ln-39" name="ln-39"></a>
+<a id="ln-40" name="ln-40"></a>
+<a id="ln-41" name="ln-41"></a><span class="k">contains</span>
+<a id="ln-42" name="ln-42"></a>
+<a id="ln-43" name="ln-43"></a>
+<a id="ln-44" name="ln-44"></a>    <span class="c">!&gt; Construct a new library configuration from a TOML data structure</span>
+<a id="ln-45" name="ln-45"></a>    <span class="k">subroutine </span><span class="n">new_library</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a id="ln-46" name="ln-46"></a>
+<a id="ln-47" name="ln-47"></a>        <span class="c">!&gt; Instance of the library configuration</span>
+<a id="ln-48" name="ln-48"></a>        <span class="k">type</span><span class="p">(</span><span class="n">library_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-49" name="ln-49"></a>
+<a id="ln-50" name="ln-50"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
+<a id="ln-51" name="ln-51"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
+<a id="ln-52" name="ln-52"></a>
+<a id="ln-53" name="ln-53"></a>        <span class="c">!&gt; Error handling</span>
+<a id="ln-54" name="ln-54"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a id="ln-55" name="ln-55"></a>
+<a id="ln-56" name="ln-56"></a>        <span class="k">call </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a id="ln-57" name="ln-57"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a id="ln-58" name="ln-58"></a>
+<a id="ln-59" name="ln-59"></a><span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;source-dir&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span><span class="p">,</span> <span class="s2">&quot;src&quot;</span><span class="p">)</span>
+<a id="ln-60" name="ln-60"></a>        <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;build-script&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">build_script</span><span class="p">)</span>
+<a id="ln-61" name="ln-61"></a>
+<a id="ln-62" name="ln-62"></a>        <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;include-dir&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">include_dir</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a id="ln-63" name="ln-63"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<a id="ln-64" name="ln-64"></a>
+<a id="ln-65" name="ln-65"></a>        <span class="c">! Set default value of include-dir if not found in manifest</span>
+<a id="ln-66" name="ln-66"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">include_dir</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-67" name="ln-67"></a><span class="k">            </span><span class="n">self</span><span class="p">%</span><span class="n">include_dir</span> <span class="o">=</span> <span class="p">[</span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;include&quot;</span><span class="p">)]</span>
+<a id="ln-68" name="ln-68"></a>        <span class="k">end if</span>
+<a id="ln-69" name="ln-69"></a>
+<a id="ln-70" name="ln-70"></a><span class="k">    end subroutine </span><span class="n">new_library</span>
+<a id="ln-71" name="ln-71"></a>
+<a id="ln-72" name="ln-72"></a>
+<a id="ln-73" name="ln-73"></a>    <span class="c">!&gt; Check local schema for allowed entries</span>
+<a id="ln-74" name="ln-74"></a>    <span class="k">subroutine </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<a id="ln-75" name="ln-75"></a>
+<a id="ln-76" name="ln-76"></a>        <span class="c">!&gt; Instance of the TOML data structure</span>
+<a id="ln-77" name="ln-77"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
+<a id="ln-78" name="ln-78"></a>
+<a id="ln-79" name="ln-79"></a>        <span class="c">!&gt; Error handling</span>
+<a id="ln-80" name="ln-80"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a id="ln-81" name="ln-81"></a>
+<a id="ln-82" name="ln-82"></a>        <span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
+<a id="ln-83" name="ln-83"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ikey</span>
+<a id="ln-84" name="ln-84"></a>
+<a id="ln-85" name="ln-85"></a>        <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+<a id="ln-86" name="ln-86"></a>
+<a id="ln-87" name="ln-87"></a>        <span class="c">! table can be empty</span>
+<a id="ln-88" name="ln-88"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
+<a id="ln-89" name="ln-89"></a>
+<a id="ln-90" name="ln-90"></a><span class="k">        do </span><span class="n">ikey</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+<a id="ln-91" name="ln-91"></a>            <span class="k">select case</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="p">)</span>
+<a id="ln-92" name="ln-92"></a>            <span class="k">case </span><span class="n">default</span>
+<a id="ln-93" name="ln-93"></a>                <span class="k">call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Key &quot;</span><span class="o">//</span><span class="n">list</span><span class="p">(</span><span class="n">ikey</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; is not allowed in library&quot;</span><span class="p">)</span>
+<a id="ln-94" name="ln-94"></a>                <span class="k">exit</span>
+<a id="ln-95" name="ln-95"></a>
+<a id="ln-96" name="ln-96"></a><span class="k">            case</span><span class="p">(</span><span class="s2">&quot;source-dir&quot;</span><span class="p">,</span> <span class="s2">&quot;include-dir&quot;</span><span class="p">,</span> <span class="s2">&quot;build-script&quot;</span><span class="p">)</span>
+<a id="ln-97" name="ln-97"></a>                <span class="k">continue</span>
+<a id="ln-98" name="ln-98"></a>
+<a id="ln-99" name="ln-99"></a><span class="k">            end select</span>
+<a id="ln-100" name="ln-100"></a><span class="k">        end do</span>
+<a id="ln-101" name="ln-101"></a>
+<a id="ln-102" name="ln-102"></a><span class="k">    end subroutine </span><span class="n">check</span>
+<a id="ln-103" name="ln-103"></a>
+<a id="ln-104" name="ln-104"></a>
+<a id="ln-105" name="ln-105"></a>    <span class="c">!&gt; Write information on instance</span>
+<a id="ln-106" name="ln-106"></a>    <span class="k">subroutine </span><span class="n">info</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">)</span>
+<a id="ln-107" name="ln-107"></a>
+<a id="ln-108" name="ln-108"></a>        <span class="c">!&gt; Instance of the library configuration</span>
+<a id="ln-109" name="ln-109"></a>        <span class="k">class</span><span class="p">(</span><span class="n">library_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-110" name="ln-110"></a>
+<a id="ln-111" name="ln-111"></a>        <span class="c">!&gt; Unit for IO</span>
+<a id="ln-112" name="ln-112"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">unit</span>
+<a id="ln-113" name="ln-113"></a>
+<a id="ln-114" name="ln-114"></a>        <span class="c">!&gt; Verbosity of the printout</span>
+<a id="ln-115" name="ln-115"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">verbosity</span>
+<a id="ln-116" name="ln-116"></a>
+<a id="ln-117" name="ln-117"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">pr</span>
+<a id="ln-118" name="ln-118"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;(&quot;#&quot;, 1x, a, t30, a)&#39;</span>
+<a id="ln-119" name="ln-119"></a>
+<a id="ln-120" name="ln-120"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbosity</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-121" name="ln-121"></a><span class="k">            </span><span class="n">pr</span> <span class="o">=</span> <span class="n">verbosity</span>
+<a id="ln-122" name="ln-122"></a>        <span class="k">else</span>
+<a id="ln-123" name="ln-123"></a><span class="k">            </span><span class="n">pr</span> <span class="o">=</span> <span class="mi">1</span>
+<a id="ln-124" name="ln-124"></a>        <span class="k">end if</span>
+<a id="ln-125" name="ln-125"></a>
+<a id="ln-126" name="ln-126"></a><span class="k">        if</span> <span class="p">(</span><span class="n">pr</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
+<a id="ln-127" name="ln-127"></a>
+<a id="ln-128" name="ln-128"></a><span class="k">        write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;Library target&quot;</span>
+<a id="ln-129" name="ln-129"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">source_dir</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-130" name="ln-130"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- source directory&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">source_dir</span>
+<a id="ln-131" name="ln-131"></a>        <span class="k">end if</span>
+<a id="ln-132" name="ln-132"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">include_dir</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-133" name="ln-133"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- include directory&quot;</span><span class="p">,</span> <span class="n">string_cat</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">include_dir</span><span class="p">,</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+<a id="ln-134" name="ln-134"></a>        <span class="k">end if</span>
+<a id="ln-135" name="ln-135"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">build_script</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-136" name="ln-136"></a><span class="k">            write</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="s2">&quot;- custom build&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">build_script</span>
+<a id="ln-137" name="ln-137"></a>        <span class="k">end if</span>
+<a id="ln-138" name="ln-138"></a>
+<a id="ln-139" name="ln-139"></a><span class="k">    end subroutine </span><span class="n">info</span>
+<a id="ln-140" name="ln-140"></a>
+<a id="ln-141" name="ln-141"></a>
+<a id="ln-142" name="ln-142"></a><span class="k">end module </span><span class="n">fpm_manifest_library</span>
 </pre></div>
 
     </section>
@@ -427,7 +427,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-04-30 00:29  
+             on 2021-05-24 16:02  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
