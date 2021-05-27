@@ -13,86 +13,70 @@ fi
 pushd example_packages/
 rm -rf ./*/build
 
-pushd hello_world
-"$fpm" build
-"$fpm" run --target hello_world
-"$fpm" run
-popd
+dir=hello_world
+"$fpm" -C $dir build
+"$fpm" -C $dir run --target hello_world
+"$fpm" -C $dir run
 
-pushd hello_fpm
-"$fpm" build
-"$fpm" run --target hello_fpm
-popd
+dir=hello_fpm
+"$fpm" -C $dir build
+"$fpm" -C $dir run --target hello_fpm
 
-pushd circular_test
-"$fpm" build
-popd
+dir=circular_test
+"$fpm" -C $dir build
 
-pushd circular_example
-"$fpm" build
-popd
+dir=circular_example
+"$fpm" -C $dir build
 
-pushd hello_complex
-"$fpm" build
-"$fpm" test
-"$fpm" run --target say_Hello
-"$fpm" run --target say_goodbye
-"$fpm" test --target greet_test
-"$fpm" test --target farewell_test
-popd
+dir=hello_complex
+"$fpm" -C $dir build
+"$fpm" -C $dir test
+"$fpm" -C $dir run --target say_Hello
+"$fpm" -C $dir run --target say_goodbye
+"$fpm" -C $dir test --target greet_test
+"$fpm" -C $dir test --target farewell_test
 
-pushd hello_complex_2
-"$fpm" build
-"$fpm" run --target say_hello_world
-"$fpm" run --target say_goodbye
-"$fpm" test --target greet_test
-"$fpm" test --target farewell_test
-popd
+dir=hello_complex_2
+"$fpm" -C $dir build
+"$fpm" -C $dir run --target say_hello_world
+"$fpm" -C $dir run --target say_goodbye
+"$fpm" -C $dir test --target greet_test
+"$fpm" -C $dir test --target farewell_test
 
-pushd with_examples
-"$fpm" build
-"$fpm" run --example --target demo-prog
-"$fpm" run --target demo-prog
-popd
+dir=with_examples
+"$fpm" -C $dir build
+"$fpm" -C $dir run --example --target demo-prog
+"$fpm" -C $dir run --target demo-prog
 
-pushd auto_discovery_off
-"$fpm" build
-"$fpm" run --target auto_discovery_off
-"$fpm" test --target my_test
-test ! -x ./build/gfortran_*/app/unused
-test ! -x ./build/gfortran_*/test/unused_test
-popd
+dir=auto_discovery_off
+"$fpm" -C $dir build
+"$fpm" -C $dir run --target auto_discovery_off
+"$fpm" -C $dir test --target my_test
+test ! -x $dir/build/gfortran_*/app/unused
+test ! -x $dir/build/gfortran_*/test/unused_test
 
-pushd with_c
-"$fpm" build
-"$fpm" run --target with_c
-popd
+dir=with_c
+"$fpm" -C $dir build
+"$fpm" -C $dir run --target with_c
 
-pushd submodules
-"$fpm" build
-popd
+"$fpm" -C $dir build
 
-pushd program_with_module
-"$fpm" build
-"$fpm" run --target Program_with_module
-popd
+dir=program_with_module
+"$fpm" -C $dir build
+"$fpm" -C $dir run --target Program_with_module
 
-pushd link_executable
-"$fpm" build
-"$fpm" run --target gomp_test
-popd
+dir=link_executable
+"$fpm" -C $dir build
+"$fpm" -C $dir run --target gomp_test
 
-pushd fortran_includes
-"$fpm" build
-popd
+dir=fortran_includes
+"$fpm" -C $dir build
 
-pushd c_includes
-"$fpm" build
-popd
+dir=c_includes
+"$fpm" -C $dir build
 
-pushd c_header_only
-"$fpm" build
-popd
+dir=c_header_only
+"$fpm" -C $dir build
 
 # Cleanup
 rm -rf ./*/build

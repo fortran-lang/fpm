@@ -26,7 +26,9 @@ module fpm_command_line
 use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
+use fpm_error,        only : error_t
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
+use fpm_os,           only : change_directory, get_current_directory
 use fpm_strings,      only : lower, split, fnv_1a
 use fpm_filesystem,   only : basename, canon_path, to_fortran_name
 use fpm_compiler, only : get_default_compile_flags
@@ -119,6 +121,9 @@ contains
         integer                       :: i
         integer                       :: widest
         type(fpm_install_settings), allocatable :: install_settings
+        character(len=:), allocatable :: pwd_start, working_dir
+        character(len=:), allocatable :: common_args
+        type(error_t), allocatable :: error
 
         call set_help()
         ! text for --version switch,
@@ -148,12 +153,16 @@ contains
            if(adjustl(cmdarg(1:1)) .ne. '-')exit
         enddo
 
+        call get_current_directory(pwd_start)
+
+        common_args = '--directory:C " " '
+
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
         select case(trim(cmdarg))
 
         case('run')
-            call set_args('&
+            call set_args(common_args //'&
             & --target " " &
             & --list F &
             & --all F &
@@ -206,7 +215,7 @@ contains
             & verbose=lget('verbose') )
 
         case('build')
-            call set_args( '&
+            call set_args(common_args // '&
             & --profile " " &
             & --list F &
             & --show-model F &
@@ -228,7 +237,7 @@ contains
             & verbose=lget('verbose') )
 
         case('new')
-            call set_args('&
+            call set_args(common_args // '&
             & --src F &
             & --lib F &
             & --app F &
@@ -298,7 +307,7 @@ contains
             endif
 
         case('help','manual')
-            call set_args('&
+            call set_args(common_args // '&
             & --verbose F &
             & ',help_help,version_text)
             if(size(unnamed).lt.2)then
@@ -346,7 +355,8 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('--profile " " --no-rebuild F --verbose F --prefix " " &
+            call set_args(common_args // '&
+                & --profile " " --no-rebuild F --verbose F --prefix " " &
                 & --list F &
                 & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
                 & --flag:: " "&
@@ -371,7 +381,7 @@ contains
             call move_alloc(install_settings, cmd_settings)
 
         case('list')
-            call set_args('&
+            call set_args(common_args // '&
             & --list F&
             & --verbose F&
             &', help_list, version_text)
@@ -380,7 +390,7 @@ contains
                call printhelp(help_list_dash)
             endif
         case('test')
-            call set_args('&
+            call set_args(common_args // '&
             & --target " " &
             & --list F&
             & --profile " "&
@@ -425,7 +435,7 @@ contains
             & verbose=lget('verbose') )
 
         case('update')
-            call set_args('--fetch-only F --verbose F --clean F', &
+            call set_args(common_args // ' --fetch-only F --verbose F --clean F', &
                 help_update, version_text)
 
             if( size(unnamed) .gt. 1 )then
@@ -441,7 +451,7 @@ contains
 
         case default
 
-            call set_args('&
+            call set_args(common_args // '&
             & --list F&
             & --verbose F&
             &', help_fpm, version_text)
@@ -462,6 +472,18 @@ contains
             call printhelp(help_text)
 
         end select
+
+        ! Change working directory if requested
+        working_dir = sget("directory")
+        if (len_trim(working_dir) > 0) then
+            call change_directory(working_dir, error)
+            if (allocated(error)) then
+                write(stderr, '(*(a, 1x))') "<ERROR>", error%message
+                stop 1
+            end if
+            write(stdout, '(*(a))') "fpm: Entering directory '"//working_dir//"'"
+        end if
+
     contains
 
     subroutine check_build_vals()
@@ -674,6 +696,8 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
+    ' -C, --directory PATH', &
+    '             Change working directory to PATH before running any command', &
     ' --profile PROF    selects the compilation profile for the build.',&
     '                   Currently available profiles are "release" for',&
     '                   high optimization and "debug" for full debug options.',&
