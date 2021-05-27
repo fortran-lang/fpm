@@ -1,5 +1,5 @@
 module fpm_os
-    use, intrinsic :: iso_c_binding, only : c_char, c_int, c_null_char
+    use, intrinsic :: iso_c_binding, only : c_char, c_int, c_null_char, c_ptr, c_associated
     use fpm_error, only : error_t, fatal_error
     implicit none
     private
@@ -22,6 +22,18 @@ module fpm_os
             character(kind=c_char, len=1), intent(in) :: path(*)
             integer(c_int) :: stat
         end function chdir
+
+        function getcwd(buf, bufsize) result(path) &
+#ifndef _WIN32
+                bind(C, name="getcwd")
+#else
+                bind(C, name="_getcwd")
+#endif
+            import :: c_char, c_int, c_ptr
+            character(kind=c_char, len=1), intent(in) :: buf(*)
+            integer(c_int), value, intent(in) :: bufsize
+            type(c_ptr) :: path
+        end function getcwd
     end interface
 
 contains
@@ -43,6 +55,25 @@ contains
         end if
     end subroutine change_directory
 
+    subroutine get_current_directory(path, error)
+        character(len=:), allocatable, intent(out) :: path
+        type(error_t), allocatable, intent(out) :: error
+
+        character(kind=c_char, len=1), allocatable :: cpath(:)
+        integer(c_int), parameter :: buffersize = 1000_c_int
+        type(c_ptr) :: tmp
+
+        allocate(cpath(buffersize))
+
+        tmp = getcwd(cpath, buffersize)
+        if (c_associated(tmp)) then
+            call c_f_character(cpath, path)
+        else
+            call fatal_error(error, "Failed to retrieve current directory")
+        end if
+
+    end subroutine get_current_directory
+
     subroutine f_c_character(rhs, lhs, len)
         character(kind=c_char), intent(out) :: lhs(*)
         character(len=*), intent(in) :: rhs
@@ -55,25 +86,20 @@ contains
 
     end subroutine f_c_character
 
-    subroutine get_current_directory(path)
-        character(len=:), allocatable, intent(out) :: path
+    subroutine c_f_character(rhs, lhs)
+        character(kind=c_char), intent(in) :: rhs(*)
+        character(len=:), allocatable, intent(out) :: lhs
 
-        integer :: length, stat
+        integer :: ii
 
-        call get_environment_variable(pwd_env, length=length, status=stat)
-        if (stat /= 0) return
-
-        allocate(character(len=length) :: path, stat=stat)
-        if (stat /= 0) return
-
-        if (length > 0) then
-            call get_environment_variable(pwd_env, path, status=stat)
-            if (stat /= 0) then
-                deallocate(path)
-                return
+        do ii = 1, huge(ii) - 1
+            if (rhs(ii) == c_null_char) then
+                exit
             end if
-        end if
+        end do
+        allocate(character(len=ii-1) :: lhs)
+        lhs = transfer(rhs(1:ii-1), lhs)
 
-    end subroutine get_current_directory
+    end subroutine c_f_character
 
 end module fpm_os
