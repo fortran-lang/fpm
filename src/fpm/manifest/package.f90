@@ -33,6 +33,7 @@
 module fpm_manifest_package
     use fpm_manifest_build, only: build_config_t, new_build_config
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
+    use fpm_manifest_profile, only : profile_config_t, new_profiles
     use fpm_manifest_example, only : example_config_t, new_example
     use fpm_manifest_executable, only : executable_config_t, new_executable
     use fpm_manifest_library, only : library_config_t, new_library
@@ -80,6 +81,9 @@ module fpm_manifest_package
 
         !> Development dependency meta data
         type(dependency_config_t), allocatable :: dev_dependency(:)
+
+        !> Profiles meta data
+        type(profile_config_t), allocatable :: profiles(:)
 
         !> Example meta data
         type(example_config_t), allocatable :: example(:)
@@ -175,6 +179,12 @@ contains
         if (associated(child)) then
             allocate(self%library)
             call new_library(self%library, child, error)
+            if (allocated(error)) return
+        end if
+        
+        call get_value(table, "profiles", child, requested=.false.)
+        if (associated(child)) then
+            call new_profiles(self%profiles, child, error)
             if (allocated(error)) return
         end if
 
@@ -276,7 +286,7 @@ contains
 
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
-                    & "dependencies", "dev-dependencies", "test", "executable", &
+                    & "dependencies", "dev-dependencies", "profiles", "test", "executable", &
                     & "example", "library", "install")
                 continue
 
@@ -371,6 +381,15 @@ contains
             end if
             do ii = 1, size(self%dev_dependency)
                 call self%dev_dependency(ii)%info(unit, pr - 1)
+            end do
+        end if
+        
+        if (allocated(self%profiles)) then
+            if (size(self%profiles) > 1 .or. pr > 2) then
+                write(unit, fmti) "- profiles", size(self%profiles)
+            end if
+            do ii = 1, size(self%profiles)
+                call self%profiles(ii)%info(unit, pr - 1)
             end do
         end if
 
