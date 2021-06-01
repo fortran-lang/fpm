@@ -698,6 +698,37 @@ contains
     '  --verbose  Display additional information when available             ', &
     '  --version  Show version information and exit.                        ', &
     '                                                                       ', &
+    '@file                                                                  ', &
+    '   You may replace the default options for the fpm(1) command from a   ', &
+    '   file if your first options begin with @file. Initial options will   ', &
+    '   then be read from the "response file" "file.rsp" in the current     ', &
+    '   directory.                                                          ', &
+    '                                                                       ', &
+    '   If "file" does not exist or cannot be read, then an error occurs and', &
+    '   the program stops.  Each line of the file is prefixed with "options"', &
+    '   and interpreted as a separate argument. The file itself may not     ', &
+    '   contain @file arguments. That is, it is not processed recursively.  ', &
+    '                                                                       ', &
+    '   For more information on response files see                          ', &
+    '                                                                       ', &
+    '      https://urbanjost.github.io/M_CLI2/set_args.3m_cli2.html         ', &
+    '                                                                       ', &
+    '   The basic functionality described here will remain the same, but    ', &
+    '   other features described at the above reference may change.         ', &
+    '                                                                       ', &
+    '   An example file:                                                    ', &
+    '                                                                       ', &
+    '     # my build options                                                ', &
+    '     options build                                                     ', &
+    '     options --compiler gfortran                                       ', &
+    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused \', &
+    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring \', &
+    '      -frecord-marker=4 -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"     ', &
+    '                                                                       ', &
+    '   Note --flag would have to be on one line as response files do not   ', &
+    '   (currently) allow for continued lines or multiple specifications of ', &
+    '   the same option.                                                    ', &
+    '                                                                       ', &
     'EXAMPLES                                                               ', &
     '   sample commands:                                                    ', &
     '                                                                       ', &
