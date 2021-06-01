@@ -53,6 +53,7 @@ module fpm_manifest_profile
         self%compiler = compiler
         self%os = os
         self%compiler_flags = compiler_flags
+        print *,self%profile_name//" "//self%compiler//" "//self%os//" "//self%compiler_flags
       end subroutine new_profile
 
       !> Check if compiler name is a valid compiler name
@@ -106,22 +107,29 @@ module fpm_manifest_profile
             profiles_size = profiles_size + 1
           else
             if (.not.(present(profiles).and.present(profindex))) then
-                    print *,"Error in traverse_oss"
-                    return
+              print *,"Error in traverse_oss"
+              return
             end if
             os_name = os_list(ios)%key       
             call get_value(table, os_name, os_node, stat=stat)
             if (stat /= toml_stat%success) then
-              call syntax_error(error, "OS "//os_list(ios)%key//" must be a table entry")
-              exit
+              call get_value(table, 'flags', compiler_flags, stat=stat)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
+                exit
+              end if
+              os_name = "all"
+              call new_profile(profiles(profindex), profile_name, compiler_name, os_name, compiler_flags, error)
+              profindex = profindex + 1
+            else
+              call get_value(os_node, 'flags', compiler_flags, stat=stat)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
+                compiler_flags="did not work"
+              end if
+              call new_profile(profiles(profindex), profile_name, compiler_name, os_name, compiler_flags, error)
+              profindex = profindex + 1
             end if
-            call get_value(os_node, 'flags', compiler_flags, stat=stat)
-            if (stat /= toml_stat%success) then
-              call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
-              exit
-            end if
-            call new_profile(profiles(profindex), profile_name, compiler_name, os_name, compiler_flags, error)
-            profindex = profindex + 1
           end if
         end do
       end subroutine traverse_oss
@@ -171,10 +179,24 @@ module fpm_manifest_profile
               call traverse_oss(profile_name, compiler_name, os_list, comp_node, error, profiles_size=profiles_size)
             else
               if (.not.(present(profiles).and.present(profindex))) then
-                      print *,"Error in traverse_compilers"
-                      return
+                print *,"Error in traverse_compilers"
+                return
               end if
               call traverse_oss(profile_name, compiler_name, os_list, comp_node, &
+                                & error, profiles=profiles, profindex=profindex)
+            end if
+          else
+            os_list = comp_list(icomp:icomp)
+            compiler_name = "default"
+
+            if (present(profiles_size)) then
+              call traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size=profiles_size)
+            else
+              if (.not.(present(profiles).and.present(profindex))) then
+                print *,"Error in traverse_compilers"
+                return
+              end if
+              call traverse_oss(profile_name, compiler_name, os_list, table, &
                                 & error, profiles=profiles, profindex=profindex)
             end if
           end if
@@ -188,7 +210,7 @@ module fpm_manifest_profile
         type(profile_config_t), allocatable, intent(out) :: profiles(:)
 
         !> Instance of the TOML data structure
-        type(toml_table), intent(inout) :: table
+        type(toml_table), target, intent(inout) :: table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -198,6 +220,7 @@ module fpm_manifest_profile
         type(toml_key), allocatable :: comp_list(:)
         character(len=:), allocatable :: profile_name
         integer :: profiles_size, iprof, stat, profindex
+        logical :: is_valid
 
         call table%get_keys(prof_list)
         
@@ -207,24 +230,41 @@ module fpm_manifest_profile
 
         do iprof = 1, size(prof_list)
           profile_name = prof_list(iprof)%key
-          call get_value(table, profile_name, prof_node, stat=stat)
-          if (stat /= toml_stat%success) then
-            call syntax_error(error, "Profile "//prof_list(iprof)%key//" must be a table entry")
-            exit
+          call validate_compiler_name(profile_name, is_valid)
+          if (is_valid) then
+            profile_name = "all"
+            comp_list = prof_list(iprof:iprof)
+            prof_node=>table
+            call traverse_compilers(profile_name, comp_list, prof_node, error, profiles_size=profiles_size)
+          else
+            call get_value(table, profile_name, prof_node, stat=stat)
+            if (stat /= toml_stat%success) then
+              call syntax_error(error, "Profile "//prof_list(iprof)%key//" must be a table entry")
+              exit
+            end if
+            call prof_node%get_keys(comp_list)
+            call traverse_compilers(profile_name, comp_list, prof_node, error, profiles_size=profiles_size)
           end if
-          call prof_node%get_keys(comp_list)
-          call traverse_compilers(profile_name, comp_list, prof_node, error, profiles_size=profiles_size)
         end do
-        
+       
+        print *,"profiles_size is ", profiles_size 
         allocate(profiles(profiles_size))
         
         profindex = 1
 
         do iprof = 1, size(prof_list)
           profile_name = prof_list(iprof)%key
-          call get_value(table, profile_name, prof_node, stat=stat)
-          call prof_node%get_keys(comp_list)
-          call traverse_compilers(profile_name, comp_list, prof_node, error, profiles=profiles, profindex=profindex)
+          call validate_compiler_name(profile_name, is_valid)
+          if (is_valid) then
+            profile_name = "all"
+            comp_list = prof_list(iprof:iprof)
+            prof_node=>table
+            call traverse_compilers(profile_name, comp_list, prof_node, error, profiles=profiles, profindex=profindex)
+          else
+            call get_value(table, profile_name, prof_node, stat=stat)
+            call prof_node%get_keys(comp_list)
+            call traverse_compilers(profile_name, comp_list, prof_node, error, profiles=profiles, profindex=profindex)
+          end if
         end do
       end subroutine new_profiles
       
