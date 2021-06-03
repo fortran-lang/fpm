@@ -1,12 +1,13 @@
 module fpm_manifest_profile
     use fpm_error, only : error_t, syntax_error
-    use fpm_git, only : git_target_t, git_target_tag, git_target_branch, &
-        & git_target_revision, git_target_default
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_strings, only: lower
+    use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     implicit none
     private
 
-    public :: profile_config_t, new_profile, new_profiles
+    public :: profile_config_t, new_profile, new_profiles, find_profile
 
     !> Configuration meta data for a profile
     type :: profile_config_t
@@ -53,7 +54,6 @@ module fpm_manifest_profile
         self%compiler = compiler
         self%os = os
         self%compiler_flags = compiler_flags
-        print *,self%profile_name//" "//self%compiler//" "//self%os//" "//self%compiler_flags
       end subroutine new_profile
 
       !> Check if compiler name is a valid compiler name
@@ -68,6 +68,18 @@ module fpm_manifest_profile
             is_valid = .false.
         end select
       end subroutine validate_compiler_name
+        
+      subroutine validate_os_name(os_name, is_valid)
+        character(len=:), allocatable, intent(in) :: os_name
+        logical, intent(out) :: is_valid
+        select case (os_name)
+          case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
+                          & "openbsd", "unknown", "UNKNOWN")
+            is_valid = .true.
+          case default
+            is_valid = .false.
+        end select
+      end subroutine validate_os_name
 
       !> Traverse operating system tables
       subroutine traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size, profiles, profindex)
@@ -110,8 +122,9 @@ module fpm_manifest_profile
               print *,"Error in traverse_oss"
               return
             end if
-            os_name = os_list(ios)%key       
+            os_name = os_list(ios)%key
             call get_value(table, os_name, os_node, stat=stat)
+            os_name = lower(os_name)
             if (stat /= toml_stat%success) then
               call get_value(table, 'flags', compiler_flags, stat=stat)
               if (stat /= toml_stat%success) then
@@ -247,7 +260,6 @@ module fpm_manifest_profile
           end if
         end do
        
-        print *,"profiles_size is ", profiles_size 
         allocate(profiles(profiles_size))
         
         profindex = 1
@@ -307,4 +319,62 @@ module fpm_manifest_profile
         end if
 
       end subroutine info
+
+      subroutine find_profile(profiles, profile_name, compiler, compiler_flags)
+        type(profile_config_t), allocatable, intent(in) :: profiles(:)
+        character(:), allocatable, intent(in) :: profile_name
+        character(:), allocatable, intent(in) :: compiler
+        character(:), allocatable, intent(out) :: compiler_flags
+        character(:), allocatable :: curr_profile_name
+        character(:), allocatable :: curr_compiler
+        character(:), allocatable :: curr_os
+        character(len=:),allocatable :: os_type
+        type(profile_config_t) :: chosen_profile
+        integer :: i, priority, curr_priority
+
+        select case (get_os_type())
+          case (OS_LINUX);   os_type =  "linux"
+          case (OS_MACOS);   os_type =  "macos"
+          case (OS_WINDOWS); os_type =  "windows"
+          case (OS_CYGWIN);  os_type =  "cygwin"
+          case (OS_SOLARIS); os_type =  "solaris"
+          case (OS_FREEBSD); os_type =  "freebsd"
+          case (OS_OPENBSD); os_type =  "openbsd"
+          case (OS_UNKNOWN); os_type =  "unknown"
+          case default     ; os_type =  "UNKNOWN"
+        end select
+        
+        print *, os_type
+        priority = 0
+        print *,profile_name,compiler,os_type
+        do i=1,size(profiles)
+          curr_priority = 0
+          curr_profile_name = profiles(i)%profile_name
+          curr_compiler = profiles(i)%compiler
+          curr_os = profiles(i)%os
+          if (curr_profile_name.eq.profile_name.or.curr_profile_name.eq.'all') then
+            if (curr_profile_name.eq.'all') then
+              curr_priority= curr_priority + 4
+            end if
+            if (curr_compiler.eq.compiler.or.curr_compiler.eq.'default') then
+              if (curr_compiler.eq.'default') then
+                curr_priority = curr_priority + 2
+              end if
+              if (curr_os.eq.os_type.or.curr_os.eq.'all') then
+                if (curr_os.eq.'all') then
+                  curr_priority = curr_priority + 1
+                end if
+                print *,"found matching profile with priority ",curr_priority, curr_profile_name//" "//curr_compiler &
+                        &//" "//curr_os//" "//profiles(i)%compiler_flags
+                if (curr_priority > priority) then
+                  chosen_profile = profiles(i)
+                  priority = curr_priority
+                  print *, priority
+                end if
+              end if
+            end if
+          end if
+        end do
+        compiler_flags = chosen_profile%compiler_flags
+      end subroutine find_profile
 end module fpm_manifest_profile
