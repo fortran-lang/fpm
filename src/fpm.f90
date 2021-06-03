@@ -23,6 +23,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
 use fpm_manifest_dependency, only: dependency_config_t
+use fpm_manifest_profile, only: profile_config_t, find_profile
 use, intrinsic :: iso_fortran_env, only: error_unit
 implicit none
 private
@@ -42,7 +43,7 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir
+    character(len=:), allocatable :: manifest, lib_dir, compiler_flags
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
@@ -63,6 +64,10 @@ subroutine build_model(model, settings, package, error)
         model%fortran_compiler = settings%compiler
     endif
 
+    if (allocated(package%profiles)) then
+      call find_profile(package%profiles, settings%profile, model%fortran_compiler, compiler_flags)
+      print *,"found profile has the following flags: "//compiler_flags
+    end if
     model%archiver = get_archiver()
     call get_default_c_compiler(model%fortran_compiler, model%c_compiler)
     model%c_compiler = get_env('FPM_C_COMPILER',model%c_compiler)
@@ -77,7 +82,11 @@ subroutine build_model(model, settings, package, error)
     call get_module_flags(model%fortran_compiler, &
         & join_path(model%output_directory,model%package_name), &
         & model%fortran_compile_flags)
-    model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
+    if (allocated(compiler_flags)) then
+      model%fortran_compile_flags = " "//compiler_flags // settings%flag // model%fortran_compile_flags
+    else
+      model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
+    end if
 
     allocate(model%packages(model%deps%ndep))
 
