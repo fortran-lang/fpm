@@ -429,7 +429,7 @@ To use a specific upstream branch declare the *branch* name with
 
 ```toml
 [dependencies]
-toml-f = { git = "https://github.com/toml-f/toml-f", branch = "master" }
+toml-f = { git = "https://github.com/toml-f/toml-f", branch = "main" }
 ```
 
 Alternatively, reference tags by using the *tag* entry

@@ -1,28 +1,28 @@
 !># Build backend
-!> Uses a list of `[[build_target_ptr]]` and a valid `[[fpm_model]]` instance 
+!> Uses a list of `[[build_target_ptr]]` and a valid `[[fpm_model]]` instance
 !> to schedule and execute the compilation and linking of package targets.
-!> 
+!>
 !> The package build process (`[[build_package]]`) comprises three steps:
 !>
 !> 1. __Target sorting:__ topological sort of the target dependency graph (`[[sort_target]]`)
 !> 2. __Target scheduling:__ group targets into schedule regions based on the sorting (`[[schedule_targets]]`)
 !> 3. __Target building:__ generate targets by compilation or linking
-!> 
+!>
 !> @note If compiled with OpenMP, targets will be build in parallel where possible.
 !>
 !>### Incremental compilation
-!> The backend process supports *incremental* compilation whereby targets are not 
+!> The backend process supports *incremental* compilation whereby targets are not
 !> re-compiled if their corresponding dependencies have not been modified.
-!> 
+!>
 !> - Source-based targets (*i.e.* objects) are not re-compiled if the corresponding source
 !>   file is unmodified AND all of the target dependencies are not marked for re-compilation
 !>
-!> - Link targets (*i.e.* executables and libraries) are not re-compiled if the 
+!> - Link targets (*i.e.* executables and libraries) are not re-compiled if the
 !>   target output file already exists AND all of the target dependencies are not marked for
 !>   re-compilation
 !>
 !> Source file modification is determined by a file digest (hash) which is calculated during
-!> the source parsing phase ([[fpm_source_parsing]]) and cached to disk after a target is 
+!> the source parsing phase ([[fpm_source_parsing]]) and cached to disk after a target is
 !> successfully generated.
 !>
 module fpm_backend
@@ -30,9 +30,8 @@ module fpm_backend
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: dirname, join_path, exists, mkdir, unix_path
 use fpm_model, only: fpm_model_t
-use fpm_targets, only: build_target_t, build_target_ptr, &
-                     FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
-                     
+use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
+                       FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
 use fpm_strings, only: string_cat, string_t
 
 implicit none
@@ -58,9 +57,9 @@ subroutine build_package(targets,model)
 
     ! Perform depth-first topological sort of targets
     do i=1,size(targets)
-        
+
         call sort_target(targets(i)%ptr)
-        
+
     end do
 
     ! Construct build schedule queue
@@ -78,20 +77,20 @@ subroutine build_package(targets,model)
         end do
 
     end do
-    
+
 end subroutine build_package
 
 
-!> Topologically sort a target for scheduling by 
+!> Topologically sort a target for scheduling by
 !>  recursing over its dependencies.
-!> 
+!>
 !> Checks disk-cached source hashes to determine if objects are
 !>  up-to-date. Up-to-date sources are tagged as skipped.
 !>
-!> On completion, `target` should either be marked as 
+!> On completion, `target` should either be marked as
 !> sorted (`target%sorted=.true.`) or skipped (`target%skip=.true.`)
 !>
-!> If `target` is marked as sorted, `target%schedule` should be an 
+!> If `target` is marked as sorted, `target%schedule` should be an
 !> integer greater than zero indicating the region for scheduling
 !>
 recursive subroutine sort_target(target)
@@ -162,7 +161,7 @@ recursive subroutine sort_target(target)
         end if
 
     end do
-    
+
     ! Mark flag as processed: either sorted or skipped
     target%sorted = .not.target%skip
 
@@ -241,8 +240,12 @@ subroutine build_target(model,target)
         call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
               // " -o " // target%output_file)
 
+    case (FPM_TARGET_C_OBJECT)
+        call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
+                // " -o " // target%output_file)
+
     case (FPM_TARGET_EXECUTABLE)
-        
+
         call run(model%fortran_compiler// " " // target%compile_flags &
               //" "//target%link_flags// " -o " // target%output_file)
 
@@ -251,10 +254,10 @@ subroutine build_target(model,target)
         select case (get_os_type())
         case (OS_WINDOWS)
             call write_response_file(target%output_file//".resp" ,target%link_objects)
-            call run("ar -rs " // target%output_file // " @" // target%output_file//".resp")
+            call run(model%archiver // target%output_file // " @" // target%output_file//".resp")
 
         case default
-            call run("ar -rs " // target%output_file // " " // string_cat(target%link_objects," "))
+            call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "))
 
         end select
 

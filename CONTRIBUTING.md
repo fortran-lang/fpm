@@ -8,8 +8,7 @@ help address your problem, evaluate changes, and guide you through your pull
 requests.
 
 By contributing to *fpm*, you certify that you own or are allowed to share the
-content of your contribution under the
-[fpm license](https://github.com/fortran-lang/fpm/blob/master/LICENSE).
+content of your contribution under the [fpm license](LICENSE).
 
 * [Style](#style)
 * [Reporting a bug](#reporting-a-bug)
@@ -35,7 +34,7 @@ Before opening a bug report:
 1. Check if the issue has already been reported
    ([issues](https://github.com/fortran-lang/fpm/issues)).
 2. Check if it is still an issue or it has been fixed?
-   Try to reproduce it with the latest version from the master branch.
+   Try to reproduce it with the latest version from the default branch.
 3. Isolate the problem and create a minimal test case.
 
 A good bug report should include all information needed to reproduce the bug.
