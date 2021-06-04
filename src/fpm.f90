@@ -4,7 +4,7 @@ use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: run, get_env, get_archiver
+use fpm_environment, only: run, get_env, get_archiver, get_os_type
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
@@ -23,7 +23,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
 use fpm_manifest_dependency, only: dependency_config_t
-use fpm_manifest_profile, only: profile_config_t, find_profile
+use fpm_manifest_profile, only: profile_config_t, find_profile, DEFAULT_COMPILER
 use, intrinsic :: iso_fortran_env, only: error_unit
 implicit none
 private
@@ -43,7 +43,7 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, compiler_flags
+    character(len=:), allocatable :: manifest, lib_dir, profile, compiler_flags
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
@@ -59,13 +59,20 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     if(settings%compiler.eq.'')then
-        model%fortran_compiler = 'gfortran'
+        model%fortran_compiler = DEFAULT_COMPILER
     else
         model%fortran_compiler = settings%compiler
     endif
 
-    if (allocated(package%profiles)) then
-      call find_profile(package%profiles, settings%profile, model%fortran_compiler, compiler_flags)
+    if(settings%profile.eq.'')then
+      if (trim(settings%flag).eq.'') then
+        profile = 'debug'
+      end if
+    else
+      profile = settings%profile
+    endif
+    if (allocated(package%profiles).and.allocated(profile)) then
+      call find_profile(package%profiles, profile, model%fortran_compiler, get_os_type(), compiler_flags)
       print *,"found profile has the following flags: "//compiler_flags
     end if
     model%archiver = get_archiver()

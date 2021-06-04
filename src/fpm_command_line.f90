@@ -474,15 +474,15 @@ contains
 
         val_flag = " " // sget('flag')
         val_profile = sget('profile')
-        if (val_flag == '') then
-            call get_default_compile_flags(val_compiler, val_profile == "release", val_flag)
-        else
-            select case(val_profile)
-            case("release", "debug")
-               call get_default_compile_flags(val_compiler, val_profile == "release", flags)
-               val_flag = flags // val_flag
-            end select
-        end if
+!        if (val_flag == '') then
+!            call get_default_compile_flags(val_compiler, val_profile == "release", val_flag)
+!        else
+!            select case(val_profile)
+!            case("release", "debug")
+!               call get_default_compile_flags(val_compiler, val_profile == "release", flags)
+!               val_flag = flags // val_flag
+!            end select
+!        end if
         allocate(character(len=16) :: val_build)
         write(val_build, '(z16.16)') fnv_1a(val_flag)
 

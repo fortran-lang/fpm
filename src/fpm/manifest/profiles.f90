@@ -6,9 +6,11 @@ module fpm_manifest_profile
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     implicit none
     private
+    public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
+            & find_profile, DEFAULT_COMPILER, NO_DEF_PROF
 
-    public :: profile_config_t, new_profile, new_profiles, find_profile
-
+    character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran' 
+    integer, parameter :: NO_DEF_PROF = 18 ! Number of default profiles
     !> Configuration meta data for a profile
     type :: profile_config_t
       !> Name of the profile
@@ -16,9 +18,9 @@ module fpm_manifest_profile
 
       !> Name of the compiler
       character(len=:), allocatable :: compiler
-      
-      !> Name of the OS
-      character(len=:), allocatable :: os
+
+      !> Value repesenting OS
+      integer :: os_type
       
       !> Compiler flags
       character(len=:), allocatable :: compiler_flags
@@ -32,7 +34,7 @@ module fpm_manifest_profile
     contains
 
       !> Construct a new profile configuration from a TOML data structure
-      subroutine new_profile(self, profile_name, compiler, os, compiler_flags, error)
+      subroutine new_profile(self, profile_name, compiler, os_type, compiler_flags)
         type(profile_config_t), intent(out) :: self
         
         !> Name of the profile
@@ -41,19 +43,17 @@ module fpm_manifest_profile
         !> Name of the compiler
         character(len=:), allocatable, intent(in) :: compiler
         
-        !> Name of the OS
-        character(len=:), allocatable, intent(in) :: os
+        !> Type of the OS
+        integer, intent(in) :: os_type
         
         !> Compiler flags
         character(len=:), allocatable, intent(in) :: compiler_flags
-        
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
        
         self%profile_name = profile_name
         self%compiler = compiler
-        self%os = os
+        self%os_type = os_type
         self%compiler_flags = compiler_flags
+    !    print *,profile_name," ",compiler," ",self%os_type," ",compiler_flags
       end subroutine new_profile
 
       !> Check if compiler name is a valid compiler name
@@ -61,7 +61,7 @@ module fpm_manifest_profile
         character(len=:), allocatable, intent(in) :: compiler_name
         logical, intent(out) :: is_valid
         select case(compiler_name)
-          case("gfortran", "ifort", "ifx", "pgfortran", "nvfrotran", "flang", &
+          case("gfortran", "ifort", "ifx", "pgfortran", "nvfrotran", "flang", "caf", &
                         &"lfortran", "lfc", "nagfor", "crayftn", "xlf90", "ftn95")
             is_valid = .true.
           case default
@@ -80,6 +80,22 @@ module fpm_manifest_profile
             is_valid = .false.
         end select
       end subroutine validate_os_name
+
+      subroutine match_os_type(os_name, os_type)
+        character(len=:), allocatable, intent(in) :: os_name
+        integer, intent(out) :: os_type
+        select case (os_name)
+          case ("linux");   os_type = OS_LINUX
+          case ("macos");   os_type = OS_WINDOWS
+          case ("cygwin");  os_type = OS_CYGWIN
+          case ("solaris"); os_type = OS_SOLARIS
+          case ("freebsd"); os_type = OS_FREEBSD
+          case ("openbsd"); os_type = OS_OPENBSD
+          case ("all");     os_type = -1
+          case default;     os_type = OS_UNKNOWN
+        end select
+      end subroutine match_os_type
+
 
       !> Traverse operating system tables
       subroutine traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size, profiles, profindex)
@@ -111,7 +127,7 @@ module fpm_manifest_profile
         character(len=:), allocatable :: os_name
         type(toml_table), pointer :: os_node
         character(len=:), allocatable :: compiler_flags
-        integer :: ios, stat
+        integer :: ios, stat, os_type
 
         if (size(os_list)<1) return
         do ios = 1, size(os_list)
@@ -127,20 +143,22 @@ module fpm_manifest_profile
             os_name = lower(os_name)
             if (stat /= toml_stat%success) then
               call get_value(table, 'flags', compiler_flags, stat=stat)
-              if (stat /= toml_stat%success) then
-                call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
-                exit
-              end if
+!              if (stat /= toml_stat%success) then
+!                call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
+!                exit
+!              end if
               os_name = "all"
-              call new_profile(profiles(profindex), profile_name, compiler_name, os_name, compiler_flags, error)
+              call match_os_type(os_name, os_type)
+              call new_profile(profiles(profindex), profile_name, compiler_name, os_type, compiler_flags)
               profindex = profindex + 1
             else
               call get_value(os_node, 'flags', compiler_flags, stat=stat)
-              if (stat /= toml_stat%success) then
-                call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
-                compiler_flags="did not work"
-              end if
-              call new_profile(profiles(profindex), profile_name, compiler_name, os_name, compiler_flags, error)
+!              if (stat /= toml_stat%success) then
+!                call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
+!                compiler_flags="did not work"
+!              end if
+              call match_os_type(os_name, os_type)
+              call new_profile(profiles(profindex), profile_name, compiler_name, os_type, compiler_flags)
               profindex = profindex + 1
             end if
           end if
@@ -200,7 +218,7 @@ module fpm_manifest_profile
             end if
           else
             os_list = comp_list(icomp:icomp)
-            compiler_name = "default"
+            compiler_name = DEFAULT_COMPILER
 
             if (present(profiles_size)) then
               call traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size=profiles_size)
@@ -235,6 +253,7 @@ module fpm_manifest_profile
         integer :: profiles_size, iprof, stat, profindex
         logical :: is_valid
 
+        ! call get defaults
         call table%get_keys(prof_list)
         
         if (size(prof_list) < 1) return
@@ -259,10 +278,12 @@ module fpm_manifest_profile
             call traverse_compilers(profile_name, comp_list, prof_node, error, profiles_size=profiles_size)
           end if
         end do
-       
+
+        profiles_size=profiles_size+NO_DEF_PROF
         allocate(profiles(profiles_size))
         
-        profindex = 1
+        call get_default_profiles(profiles)
+        profindex = 1 + NO_DEF_PROF
 
         do iprof = 1, size(prof_list)
           profile_name = prof_list(iprof)%key
@@ -278,8 +299,233 @@ module fpm_manifest_profile
             call traverse_compilers(profile_name, comp_list, prof_node, error, profiles=profiles, profindex=profindex)
           end if
         end do
+
+        do iprof = 1,size(profiles)
+          if (profiles(iprof)%profile_name.eq.'all') then
+            do profindex = 1,size(profiles)
+              if (.not.(profiles(profindex)%profile_name.eq.'all') &
+                      & .and.(profiles(profindex)%compiler.eq.profiles(iprof)%compiler) &
+                      & .and.((profiles(profindex)%os_type.eq.profiles(iprof)%os_type) &
+                      & .or.(profiles(profindex)%os_type.eq.-1))) then
+                profiles(profindex)%compiler_flags=profiles(profindex)%compiler_flags// &
+                        & " "//profiles(iprof)%compiler_flags
+              end if
+            end do
+          end if
+        end do
       end subroutine new_profiles
       
+      subroutine get_default_profiles(profiles)
+        type(profile_config_t), allocatable, intent(inout) :: profiles(:)
+        character(len=:), allocatable :: profile_name
+        character(len=:), allocatable :: compiler
+        character(len=:), allocatable :: flags
+        integer :: os_type, i
+
+        do i=1,NO_DEF_PROF
+          if (i.le.9) then
+            profile_name = 'release'
+          else
+            profile_name = 'debug'
+          end if
+
+          os_type = -1
+          select case(i)
+          ! release profiles
+          case(1) !caf
+            compiler='caf'
+            flags='&
+                & -O3&
+                & -Wimplicit-interface&
+                & -fPIC&
+                & -fmax-errors=1&
+                & -funroll-loops&
+                &'
+          case(2) !gcc
+            compiler='gfortran'
+            flags='&
+                & -O3&
+                & -Wimplicit-interface&
+                & -fPIC&
+                & -fmax-errors=1&
+                & -funroll-loops&
+                & -fcoarray=single&
+                &'
+          case(3) !f95
+            flags='&
+                & -O3&
+                & -Wimplicit-interface&
+                & -fPIC&
+                & -fmax-errors=1&
+                & -ffast-math&
+                & -funroll-loops&
+                &'
+          case(4) !nvhpc
+            compiler='nvfrotran'
+            flags = '&
+                & -Mbackslash&
+                &'
+          case(5) !intel_classic
+            compiler='ifort'
+            flags = '&
+                & -fp-model precise&
+                & -pc64&
+                & -align all&
+                & -error-limit 1&
+                & -reentrancy threaded&
+                & -nogen-interfaces&
+                & -assume byterecl&
+                &'
+          case(6) !intel_classic_windows
+            compiler='ifort'
+            os_type=OS_WINDOWS
+            flags = '&
+                & /fp:precise&
+                & /align:all&
+                & /error-limit:1&
+                & /reentrancy:threaded&
+                & /nogen-interfaces&
+                & /assume:byterecl&
+                &'
+          case(7) !intel_llvm
+            compiler='ifx'
+            flags = '&
+                & -fp-model=precise&
+                & -pc64&
+                & -align all&
+                & -error-limit 1&
+                & -reentrancy threaded&
+                & -nogen-interfaces&
+                & -assume byterecl&
+                &'
+          case(8) !intel_llvm_windows
+            compiler='ifx'
+            os_type = OS_WINDOWS
+            flags = '&
+                & /fp:precise&
+                & /align:all&
+                & /error-limit:1&
+                & /reentrancy:threaded&
+                & /nogen-interfaces&
+                & /assume:byterecl&
+                &'
+          case(9) !nag
+            compiler='nagfor'
+            flags = ' &
+                & -O4&
+                & -coarray=single&
+                & -PIC&
+                &'
+
+          ! debug profiles
+          case(10) !caf
+            compiler='caf'
+            flags = '&
+                & -Wall&
+                & -Wextra&
+                & -Wimplicit-interface&
+                & -fPIC -fmax-errors=1&
+                & -g&
+                & -fcheck=bounds&
+                & -fcheck=array-temps&
+                & -fbacktrace&
+                &'
+          case(11) !gcc
+            compiler='gfortran'
+            flags = '&
+                & -Wall&
+                & -Wextra&
+                & -Wimplicit-interface&
+                & -fPIC -fmax-errors=1&
+                & -g&
+                & -fcheck=bounds&
+                & -fcheck=array-temps&
+                & -fbacktrace&
+                & -fcoarray=single&
+                &'
+          case(12) !f95
+            flags = '&
+                & -Wall&
+                & -Wextra&
+                & -Wimplicit-interface&
+                & -fPIC -fmax-errors=1&
+                & -g&
+                & -fcheck=bounds&
+                & -fcheck=array-temps&
+                & -Wno-maybe-uninitialized -Wno-uninitialized&
+                & -fbacktrace&
+                &'
+          case(13) !nvhpc
+            compiler='nvfrotran'
+            flags = '&
+                & -Minform=inform&
+                & -Mbackslash&
+                & -g&
+                & -Mbounds&
+                & -Mchkptr&
+                & -Mchkstk&
+                & -traceback&
+                &'
+          case(14) !intel_classic
+            compiler='ifort'
+            flags = '&
+                & -warn all&
+                & -check all&
+                & -error-limit 1&
+                & -O0&
+                & -g&
+                & -assume byterecl&
+                & -traceback&
+                &'
+          case(15) !intel_classic_windows
+            compiler='ifort'
+            os_type=OS_WINDOWS
+            flags = '&
+                & /warn:all&
+                & /check:all&
+                & /error-limit:1&
+                & /Od&
+                & /Z7&
+                & /assume:byterecl&
+                & /traceback&
+                &'
+          case(16) !intel_llvm
+            compiler='ifx'
+            flags = '&
+                & -warn all&
+                & -check all&
+                & -error-limit 1&
+                & -O0&
+                & -g&
+                & -assume byterecl&
+                & -traceback&
+                &'
+          case(17) !intel_llvm_windows
+            compiler='ifx'
+            os_type=OS_WINDOWS
+            flags = '&
+                & /warn:all&
+                & /check:all&
+                & /error-limit:1&
+                & /Od&
+                & /Z7&
+                & /assume:byterecl&
+                &'
+          case(18) !nag
+            compiler='nagfor'
+            flags = '&
+                & -g&
+                & -C=all&
+                & -O0&
+                & -gline&
+                & -coarray=single&
+                & -PIC&
+                &'
+          end select
+          call new_profile(profiles(i), profile_name, compiler, os_type, flags)
+        end do
+      end subroutine get_default_profiles
+
       !> Write information on instance
       subroutine info(self, unit, verbosity)
 
@@ -310,9 +556,7 @@ module fpm_manifest_profile
             write(unit, fmt) "- compiler", self%compiler
         end if
 
-        if (allocated(self%os)) then
-            write(unit, fmt) "- os", self%os
-        end if
+        write(unit, fmt) "- os", self%os_type
 
         if (allocated(self%compiler_flags)) then
             write(unit, fmt) "- compiler flags", self%compiler_flags
@@ -320,61 +564,78 @@ module fpm_manifest_profile
 
       end subroutine info
 
-      subroutine find_profile(profiles, profile_name, compiler, compiler_flags)
+      subroutine find_profile(profiles, profile_name, compiler, os_type, compiler_flags)
         type(profile_config_t), allocatable, intent(in) :: profiles(:)
         character(:), allocatable, intent(in) :: profile_name
         character(:), allocatable, intent(in) :: compiler
+        integer, intent(in) :: os_type
         character(:), allocatable, intent(out) :: compiler_flags
         character(:), allocatable :: curr_profile_name
         character(:), allocatable :: curr_compiler
-        character(:), allocatable :: curr_os
-        character(len=:),allocatable :: os_type
+        integer :: curr_os
         type(profile_config_t) :: chosen_profile
         integer :: i, priority, curr_priority
-
-        select case (get_os_type())
-          case (OS_LINUX);   os_type =  "linux"
-          case (OS_MACOS);   os_type =  "macos"
-          case (OS_WINDOWS); os_type =  "windows"
-          case (OS_CYGWIN);  os_type =  "cygwin"
-          case (OS_SOLARIS); os_type =  "solaris"
-          case (OS_FREEBSD); os_type =  "freebsd"
-          case (OS_OPENBSD); os_type =  "openbsd"
-          case (OS_UNKNOWN); os_type =  "unknown"
-          case default     ; os_type =  "UNKNOWN"
-        end select
+        logical :: found_matching
         
-        print *, os_type
-        priority = 0
-        print *,profile_name,compiler,os_type
+        found_matching = .false.
         do i=1,size(profiles)
-          curr_priority = 0
           curr_profile_name = profiles(i)%profile_name
           curr_compiler = profiles(i)%compiler
-          curr_os = profiles(i)%os
-          if (curr_profile_name.eq.profile_name.or.curr_profile_name.eq.'all') then
-            if (curr_profile_name.eq.'all') then
-              curr_priority= curr_priority + 4
-            end if
-            if (curr_compiler.eq.compiler.or.curr_compiler.eq.'default') then
-              if (curr_compiler.eq.'default') then
-                curr_priority = curr_priority + 2
-              end if
-              if (curr_os.eq.os_type.or.curr_os.eq.'all') then
-                if (curr_os.eq.'all') then
-                  curr_priority = curr_priority + 1
-                end if
-                print *,"found matching profile with priority ",curr_priority, curr_profile_name//" "//curr_compiler &
-                        &//" "//curr_os//" "//profiles(i)%compiler_flags
-                if (curr_priority > priority) then
-                  chosen_profile = profiles(i)
-                  priority = curr_priority
-                  print *, priority
-                end if
+          curr_os = profiles(i)%os_type
+          if (curr_profile_name.eq.profile_name) then
+            if (curr_compiler.eq.compiler) then
+              if (curr_os.eq.os_type) then
+                chosen_profile = profiles(i)
+                found_matching = .true.
               end if
             end if
           end if
         end do
+        if (.not. found_matching) then
+          do i=1,size(profiles)
+            curr_profile_name = profiles(i)%profile_name
+            curr_compiler = profiles(i)%compiler
+            curr_os = profiles(i)%os_type
+            if (curr_profile_name.eq.profile_name) then
+              if (curr_compiler.eq.compiler) then
+                if (curr_os.eq.-1) then
+                  chosen_profile = profiles(i)
+                  found_matching = .true.
+                end if
+              end if
+            end if
+          end do
+        end if
+        if (.not. found_matching) then
+          do i=1,size(profiles)
+            curr_profile_name = profiles(i)%profile_name
+            curr_compiler = profiles(i)%compiler
+            curr_os = profiles(i)%os_type
+            if (curr_profile_name.eq.'all') then
+              if (curr_compiler.eq.compiler) then
+                if (curr_os.eq.os_type) then
+                  chosen_profile = profiles(i)
+                  found_matching = .true.
+                end if
+              end if
+            end if
+          end do
+        end if
+        if (.not. found_matching) then
+          do i=1,size(profiles)
+            curr_profile_name = profiles(i)%profile_name
+            curr_compiler = profiles(i)%compiler
+            curr_os = profiles(i)%os_type
+            if (curr_profile_name.eq.'all') then
+              if (curr_compiler.eq.compiler) then
+                if (curr_os.eq.-1) then
+                  chosen_profile = profiles(i)
+                  found_matching = .true.
+                end if
+              end if
+            end if
+          end do
+        end if
         compiler_flags = chosen_profile%compiler_flags
       end subroutine find_profile
 end module fpm_manifest_profile
