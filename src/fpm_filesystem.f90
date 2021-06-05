@@ -11,7 +11,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, to_fortran_name
-    public :: fileopen, fileclose, filewrite, warnwrite
+    public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
     public :: which
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
@@ -186,6 +186,15 @@ function dirname(path) result (dir)
     dir = path(1:scan(path,'/\',back=.true.))
 
 end function dirname
+
+!> Extract dirname from path
+function parent_dir(path) result (dir)
+    character(*), intent(in) :: path
+    character(:), allocatable :: dir
+
+    dir = path(1:scan(path,'/\',back=.true.)-1)
+
+end function parent_dir
 
 
 !> test if a name matches an existing directory path
