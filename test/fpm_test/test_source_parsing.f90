@@ -328,9 +328,9 @@ contains
             & 'module function g()', &
             & 'end function g', &
             & 'module integer function h()', &
-            & 'end function h()', &
+            & 'end function h', &
             & 'module real function i()', &
-            & 'end function i()', &
+            & 'end function i', &
             & 'end module test'
         close(unit)
 
