@@ -1,5 +1,5 @@
 !> This module contains procedures that interact with the programming environment.
-!! 
+!!
 !! * [get_os_type] -- Determine the OS type
 !! * [get_env] -- return the value of an environment variable
 module fpm_environment
@@ -9,6 +9,7 @@ module fpm_environment
     public :: os_is_unix
     public :: run
     public :: get_env
+    public :: get_archiver
 
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
@@ -17,12 +18,13 @@ module fpm_environment
     integer, parameter, public :: OS_CYGWIN  = 4
     integer, parameter, public :: OS_SOLARIS = 5
     integer, parameter, public :: OS_FREEBSD = 6
+    integer, parameter, public :: OS_OPENBSD = 7
 contains
     !> Determine the OS type
     integer function get_os_type() result(r)
         !!
         !! Returns one of OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN,
-        !! OS_SOLARIS, OS_FREEBSD.
+        !! OS_SOLARIS, OS_FREEBSD, OS_OPENBSD.
         !!
         !! At first, the environment variable `OS` is checked, which is usually
         !! found on Windows. Then, `OSTYPE` is read in and compared with common
@@ -83,6 +85,12 @@ contains
                 r = OS_FREEBSD
                 return
             end if
+
+            ! OpenBSD
+            if (index(val, 'OpenBSD') > 0 .or. index(val, 'openbsd') > 0) then
+                r = OS_OPENBSD
+                return
+            end if
         end if
 
         ! Linux
@@ -110,7 +118,7 @@ contains
         end if
     end function get_os_type
 
-    !> Compare the output of [[get_os_type]] or the optional 
+    !> Compare the output of [[get_os_type]] or the optional
     !! passed INTEGER value to the value for OS_WINDOWS
     !! and return .TRUE. if they match and .FALSE. otherwise
     logical function os_is_unix(os) result(unix)
@@ -157,7 +165,7 @@ contains
     function get_env(NAME,DEFAULT) result(VALUE)
     implicit none
     !> name of environment variable to get the value of
-    character(len=*),intent(in)          :: NAME     
+    character(len=*),intent(in)          :: NAME
     !> default value to return if the requested value is undefined or blank
     character(len=*),intent(in),optional :: DEFAULT
     !> the returned value
@@ -189,4 +197,24 @@ contains
         if(VALUE.eq.''.and.present(DEFAULT))VALUE=DEFAULT
      end function get_env
 
+    function get_archiver() result(archiver)
+        character(:), allocatable :: archiver
+
+        associate(os_type => get_os_type())
+            if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
+                archiver = "ar -rs "
+            else
+                block
+                    integer :: estat
+
+                    call execute_command_line("ar --version", exitstat=estat)
+                    if (estat /= 0) then
+                        archiver = "lib /OUT:"
+                    else
+                        archiver = "ar -rs "
+                    end if
+                end block
+            end if
+        end associate
+    end function
 end module fpm_environment

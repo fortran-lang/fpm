@@ -1,6 +1,6 @@
 !># The fpm package model
 !>
-!> Defines the fpm model data types which encapsulate all information 
+!> Defines the fpm model data types which encapsulate all information
 !> required to correctly build a package and its dependencies.
 !>
 !> The process (see `[[build_model(subroutine)]]`) for generating a valid `[[fpm_model]]` involves
@@ -117,6 +117,12 @@ type :: fpm_model_t
     !> Command line name to invoke fortran compiler
     character(:), allocatable :: fortran_compiler
 
+    !> Command line to invoke for creating static library
+    character(:), allocatable :: archiver
+
+    !> Command line name to invoke c compiler
+    character(:), allocatable :: c_compiler
+
     !> Command line flags passed to fortran for compilation
     character(:), allocatable :: fortran_compile_flags
 
@@ -128,7 +134,10 @@ type :: fpm_model_t
 
     !> Native libraries to link against
     type(string_t), allocatable :: link_libraries(:)
-    
+
+    !> External modules used
+    type(string_t), allocatable :: external_modules(:)
+
     !> Project dependencies
     type(dependency_tree_t) :: deps
 
@@ -274,6 +283,13 @@ function info_model(model) result(s)
     do i = 1, size(model%link_libraries)
         s = s // '"' // model%link_libraries(i)%s // '"'
         if (i < size(model%link_libraries)) s = s // ", "
+    end do
+    s = s // "]"
+    !    type(string_t), allocatable :: external_modules(:)
+    s = s // ", external_modules=["
+    do i = 1, size(model%external_modules)
+        s = s // '"' // model%external_modules(i)%s // '"'
+        if (i < size(model%external_modules)) s = s // ", "
     end do
     s = s // "]"
     !    type(dependency_tree_t) :: deps

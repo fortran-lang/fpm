@@ -13,11 +13,10 @@ fi
 pushd example_packages/
 rm -rf ./*/build
 
-pushd hello_world
-"$fpm" build
-"$fpm" run --target hello_world
-"$fpm" run
-popd
+dir=hello_world
+"$fpm" -C $dir build
+"$fpm" -C $dir run --target hello_world
+"$fpm" -C $dir/app run
 
 pushd hello_fpm
 "$fpm" build

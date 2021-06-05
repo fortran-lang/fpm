@@ -60,7 +60,7 @@ or from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 To setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
 
-#### Bootstraping on other platforms
+#### Bootstrapping on other platforms
 
 For other platforms and architectures have a look at the [bootstrapping instructions](#bootstrapping-instructions).
 
@@ -101,7 +101,7 @@ This guide explains the process of building *fpm* on a platform for the first ti
 To build *fpm* without a prior *fpm* version a single source file version is available
 at each release.
 
-To build manually using the single source distribution use
+To build manually using the single source distribution, run the following code (from within the current directory)
 
 ```
 mkdir _tmp

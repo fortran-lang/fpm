@@ -35,7 +35,8 @@ use fpm_environment, only: &
         OS_WINDOWS, &
         OS_CYGWIN, &
         OS_SOLARIS, &
-        OS_FREEBSD
+        OS_FREEBSD, &
+        OS_OPENBSD
 implicit none
 public :: is_unknown_compiler
 public :: get_module_flags
@@ -239,7 +240,6 @@ subroutine get_debug_compile_flags(id, flags)
             & -g&
             & -assume byterecl&
             & -traceback&
-            & -coarray=single&
             &'
     case(id_intel_classic_mac)
         flags = '&
@@ -260,7 +260,6 @@ subroutine get_debug_compile_flags(id, flags)
             & /Z7&
             & /assume:byterecl&
             & /traceback&
-            & /Qcoarray:single&
             &'
     case(id_intel_llvm_nix, id_intel_llvm_unknown)
         flags = '&
@@ -271,7 +270,6 @@ subroutine get_debug_compile_flags(id, flags)
             & -g&
             & -assume byterecl&
             & -traceback&
-            & -coarray=single&
             &'
     case(id_intel_llvm_windows)
         flags = '&
@@ -281,7 +279,6 @@ subroutine get_debug_compile_flags(id, flags)
             & /Od&
             & /Z7&
             & /assume:byterecl&
-            & /Qcoarray:single&
             &'
     case(id_nag)
         flags = '&
@@ -331,6 +328,34 @@ subroutine get_module_flags(compiler, modpath, flags)
     end select
 
 end subroutine get_module_flags
+
+subroutine get_default_c_compiler(f_compiler, c_compiler)
+    character(len=*), intent(in) :: f_compiler
+    character(len=:), allocatable, intent(out) :: c_compiler
+    integer(compiler_enum) :: id
+
+    id = get_compiler_id(f_compiler)
+
+    select case(id)
+
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, id_intel_classic_unknown)
+        c_compiler = 'icc'
+
+    case(id_intel_llvm_nix,id_intel_llvm_windows, id_intel_llvm_unknown)
+        c_compiler = 'icx'
+
+    case(id_flang)
+        c_compiler='clang'
+
+    case(id_ibmxl)
+        c_compiler='xlc'
+
+    case default
+        ! Fall-back to using Fortran compiler
+        c_compiler = f_compiler
+    end select
+
+end subroutine get_default_c_compiler
 
 function get_compiler_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
