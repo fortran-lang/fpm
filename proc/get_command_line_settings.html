@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 7.8% of total for procedures.">228 statements</a>
+    title=" 7.8% of total for procedures.">234 statements</a>
      </li> 
      
      
@@ -179,11 +179,15 @@
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-cmdarg">cmdarg</a>
       
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-common_args">common_args</a>
+      
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~17">i</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-widest">widest</a>
+      
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-working_dir~2">working_dir</a>
       
     </div>
   </div>
@@ -302,11 +306,15 @@ public subroutine get_command_line_settings(cmd_settings)
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-cmdarg">cmdarg</a>
       
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-common_args">common_args</a>
+      
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~17">i</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-widest">widest</a>
+      
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-working_dir~2">working_dir</a>
       
     </div>
   </div>
@@ -392,6 +400,20 @@ public subroutine get_command_line_settings(cmd_settings)
   
 <tr>
   
+  <td><span class="anchor" id="variable-common_args"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>common_args</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-i~17"></span>integer,</td>
   
   <td>public</td>
@@ -425,6 +447,20 @@ public subroutine get_command_line_settings(cmd_settings)
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>widest</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-working_dir~2"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -536,6 +572,7 @@ subroutine printhelp(lines)
         <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">i</span>
         <span class="kt">integer</span>                       <span class="kd">::</span> <span class="n">widest</span>
         <span class="k">type</span><span class="p">(</span><span class="n">fpm_install_settings</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">install_settings</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">common_args</span><span class="p">,</span> <span class="n">working_dir</span>
 
         <span class="k">call </span><span class="n">set_help</span><span class="p">()</span>
         <span class="c">! text for --version switch,</span>
@@ -565,12 +602,14 @@ subroutine printhelp(lines)
            <span class="k">if</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">cmdarg</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">))</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="k">exit</span>
 <span class="k">        enddo</span>
 
+<span class="k">        </span><span class="n">common_args</span> <span class="o">=</span> <span class="s1">&#39;--directory:C &quot; &quot; &#39;</span>
+
         <span class="c">! now set subcommand-specific help text and process commandline</span>
         <span class="c">! arguments. Then call subcommand routine</span>
         <span class="k">select case</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">cmdarg</span><span class="p">))</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;run&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span><span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --target &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --list F &amp;</span>
 <span class="s1">            &amp; --all F &amp;</span>
@@ -623,7 +662,7 @@ subroutine printhelp(lines)
             <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span> <span class="s1">&#39;&amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --profile &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --list F &amp;</span>
 <span class="s1">            &amp; --show-model F &amp;</span>
@@ -645,7 +684,7 @@ subroutine printhelp(lines)
             <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;new&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --src F &amp;</span>
 <span class="s1">            &amp; --lib F &amp;</span>
 <span class="s1">            &amp; --app F &amp;</span>
@@ -715,7 +754,7 @@ subroutine printhelp(lines)
             <span class="k">endif</span>
 
 <span class="k">        case</span><span class="p">(</span><span class="s1">&#39;help&#39;</span><span class="p">,</span><span class="s1">&#39;manual&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --verbose F &amp;</span>
 <span class="s1">            &amp; &#39;</span><span class="p">,</span><span class="n">help_help</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
             <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">).</span><span class="n">lt</span><span class="p">.</span><span class="mi">2</span><span class="p">)</span><span class="k">then</span>
@@ -763,7 +802,8 @@ subroutine printhelp(lines)
 <span class="k">            call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;install&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;--profile &quot; &quot; --no-rebuild F --verbose F --prefix &quot; &quot; &amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span> <span class="s1">&#39;&amp;</span>
+<span class="s1">                &amp; --profile &quot; &quot; --no-rebuild F --verbose F --prefix &quot; &quot; &amp;</span>
 <span class="s1">                &amp; --list F &amp;</span>
 <span class="s1">                &amp; --compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;FPM_COMPILER&#39;</span><span class="p">,</span><span class="s1">&#39;gfortran&#39;</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot; &amp;</span>
 <span class="s1">                &amp; --flag:: &quot; &quot;&amp;</span>
@@ -788,7 +828,7 @@ subroutine printhelp(lines)
             <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">install_settings</span><span class="p">,</span> <span class="n">cmd_settings</span><span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --list F&amp;</span>
 <span class="s1">            &amp; --verbose F&amp;</span>
 <span class="s1">            &amp;&#39;</span><span class="p">,</span> <span class="n">help_list</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
@@ -797,7 +837,7 @@ subroutine printhelp(lines)
 <span class="k">               call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_list_dash</span><span class="p">)</span>
             <span class="k">endif</span>
 <span class="k">        case</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --target &quot; &quot; &amp;</span>
 <span class="s1">            &amp; --list F&amp;</span>
 <span class="s1">            &amp; --profile &quot; &quot;&amp;</span>
@@ -842,7 +882,7 @@ subroutine printhelp(lines)
             <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;update&#39;</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;--fetch-only F --verbose F --clean F&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span> <span class="s1">&#39; --fetch-only F --verbose F --clean F&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="n">help_update</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
 
             <span class="k">if</span><span class="p">(</span> <span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">)</span> <span class="p">.</span><span class="n">gt</span><span class="p">.</span> <span class="mi">1</span> <span class="p">)</span><span class="k">then</span>
@@ -858,7 +898,7 @@ subroutine printhelp(lines)
 
         <span class="k">case </span><span class="n">default</span>
 
-            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="s1">&#39;&amp;</span>
+            <span class="k">call </span><span class="n">set_args</span><span class="p">(</span><span class="n">common_args</span> <span class="o">//</span> <span class="s1">&#39;&amp;</span>
 <span class="s1">            &amp; --list F&amp;</span>
 <span class="s1">            &amp; --verbose F&amp;</span>
 <span class="s1">            &amp;&#39;</span><span class="p">,</span> <span class="n">help_fpm</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
@@ -879,6 +919,12 @@ subroutine printhelp(lines)
 <span class="k">            call </span><span class="n">printhelp</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
 
         <span class="k">end select</span>
+
+<span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cmd_settings</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">            </span><span class="n">working_dir</span> <span class="o">=</span> <span class="n">sget</span><span class="p">(</span><span class="s2">&quot;directory&quot;</span><span class="p">)</span>
+            <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">cmd_settings</span><span class="p">%</span><span class="n">working_dir</span><span class="p">)</span>
+        <span class="k">end if</span>
+
 <span class="k">    contains</span>
 
 <span class="k">    subroutine </span><span class="n">check_build_vals</span><span class="p">()</span>
@@ -940,7 +986,7 @@ subroutine printhelp(lines)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-05 12:34  
+             on 2021-06-05 12:36  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
