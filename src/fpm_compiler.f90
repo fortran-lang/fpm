@@ -27,7 +27,7 @@
 ! Unisys            ?          ?       ?               ?             ?          discontinued
 module fpm_compiler
 use fpm_model, only: fpm_model_t
-use fpm_filesystem, only: join_path, basename
+use fpm_filesystem, only: join_path, basename, get_temp_filename
 use fpm_environment, only: &
         get_os_type, &
         OS_LINUX, &
@@ -36,13 +36,15 @@ use fpm_environment, only: &
         OS_CYGWIN, &
         OS_SOLARIS, &
         OS_FREEBSD, &
-        OS_OPENBSD
+        OS_OPENBSD, &
+        OS_UNKNOWN
 implicit none
 public :: is_unknown_compiler
 public :: get_module_flags
 public :: get_default_compile_flags
 public :: get_debug_compile_flags
 public :: get_release_compile_flags
+public :: get_archiver
 
 enum, bind(C)
     enumerator :: &
@@ -463,5 +465,24 @@ function is_unknown_compiler(compiler) result(is_unknown)
     logical :: is_unknown
     is_unknown = get_compiler_id(compiler) == id_unknown
 end function is_unknown_compiler
+
+
+function get_archiver() result(archiver)
+    character(:), allocatable :: archiver
+    integer :: estat, os_type
+
+    os_type = get_os_type()
+    if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
+        archiver = "ar -rs "
+    else
+        call execute_command_line("ar --version > "//get_temp_filename(), &
+            & exitstat=estat)
+        if (estat /= 0) then
+            archiver = "lib /OUT:"
+        else
+            archiver = "ar -rs "
+        end if
+    end if
+end function
 
 end module fpm_compiler
