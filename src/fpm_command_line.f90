@@ -46,6 +46,7 @@ public :: fpm_cmd_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
+    character(len=:), allocatable :: working_dir
     logical                      :: verbose=.true.
 end type
 
@@ -119,6 +120,7 @@ contains
         integer                       :: i
         integer                       :: widest
         type(fpm_install_settings), allocatable :: install_settings
+        character(len=:), allocatable :: common_args, working_dir
 
         call set_help()
         ! text for --version switch,
@@ -148,12 +150,14 @@ contains
            if(adjustl(cmdarg(1:1)) .ne. '-')exit
         enddo
 
+        common_args = '--directory:C " " '
+
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
         select case(trim(cmdarg))
 
         case('run')
-            call set_args('&
+            call set_args(common_args //'&
             & --target " " &
             & --list F &
             & --all F &
@@ -206,7 +210,7 @@ contains
             & verbose=lget('verbose') )
 
         case('build')
-            call set_args( '&
+            call set_args(common_args // '&
             & --profile " " &
             & --list F &
             & --show-model F &
@@ -228,7 +232,7 @@ contains
             & verbose=lget('verbose') )
 
         case('new')
-            call set_args('&
+            call set_args(common_args // '&
             & --src F &
             & --lib F &
             & --app F &
@@ -298,7 +302,7 @@ contains
             endif
 
         case('help','manual')
-            call set_args('&
+            call set_args(common_args // '&
             & --verbose F &
             & ',help_help,version_text)
             if(size(unnamed).lt.2)then
@@ -346,7 +350,8 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('--profile " " --no-rebuild F --verbose F --prefix " " &
+            call set_args(common_args // '&
+                & --profile " " --no-rebuild F --verbose F --prefix " " &
                 & --list F &
                 & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
                 & --flag:: " "&
@@ -371,7 +376,7 @@ contains
             call move_alloc(install_settings, cmd_settings)
 
         case('list')
-            call set_args('&
+            call set_args(common_args // '&
             & --list F&
             & --verbose F&
             &', help_list, version_text)
@@ -380,7 +385,7 @@ contains
                call printhelp(help_list_dash)
             endif
         case('test')
-            call set_args('&
+            call set_args(common_args // '&
             & --target " " &
             & --list F&
             & --profile " "&
@@ -425,7 +430,7 @@ contains
             & verbose=lget('verbose') )
 
         case('update')
-            call set_args('--fetch-only F --verbose F --clean F', &
+            call set_args(common_args // ' --fetch-only F --verbose F --clean F', &
                 help_update, version_text)
 
             if( size(unnamed) .gt. 1 )then
@@ -441,7 +446,7 @@ contains
 
         case default
 
-            call set_args('&
+            call set_args(common_args // '&
             & --list F&
             & --verbose F&
             &', help_fpm, version_text)
@@ -462,6 +467,12 @@ contains
             call printhelp(help_text)
 
         end select
+
+        if (allocated(cmd_settings)) then
+            working_dir = sget("directory")
+            call move_alloc(working_dir, cmd_settings%working_dir)
+        end if
+
     contains
 
     subroutine check_build_vals()
@@ -674,6 +685,8 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
+    ' -C, --directory PATH', &
+    '             Change working directory to PATH before running any command', &
     ' --profile PROF    selects the compilation profile for the build.',&
     '                   Currently available profiles are "release" for',&
     '                   high optimization and "debug" for full debug options.',&
