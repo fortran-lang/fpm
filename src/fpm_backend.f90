@@ -27,12 +27,12 @@
 !>
 module fpm_backend
 
-use fpm_environment, only: run
-use fpm_filesystem, only: dirname, join_path, exists, mkdir
+use fpm_environment, only: run, get_os_type, OS_WINDOWS
+use fpm_filesystem, only: dirname, join_path, exists, mkdir, unix_path
 use fpm_model, only: fpm_model_t
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
-use fpm_strings, only: string_cat
+use fpm_strings, only: string_cat, string_t
 
 implicit none
 
@@ -250,7 +250,16 @@ subroutine build_target(model,target)
               //" "//target%link_flags// " -o " // target%output_file)
 
     case (FPM_TARGET_ARCHIVE)
-        call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "))
+
+        select case (get_os_type())
+        case (OS_WINDOWS)
+            call write_response_file(target%output_file//".resp" ,target%link_objects)
+            call run(model%archiver // target%output_file // " @" // target%output_file//".resp")
+
+        case default
+            call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "))
+
+        end select
 
     end select
 
@@ -261,5 +270,20 @@ subroutine build_target(model,target)
     end if
 
 end subroutine build_target
+
+!> Response files allow to read command line options from files.
+!> Whitespace is used to separate the arguments, we will use newlines
+!> as separator to create readable response files which can be inspected
+!> in case of errors.
+subroutine write_response_file(name, argv)
+    character(len=*), intent(in) :: name
+    type(string_t), intent(in) :: argv(:)
+    integer :: iarg, io
+    open(file=name, newunit=io)
+    do iarg = 1, size(argv)
+        write(io, '(a)') unix_path(argv(iarg)%s)
+    end do
+    close(io)
+end subroutine write_response_file
 
 end module fpm_backend
