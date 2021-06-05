@@ -271,7 +271,7 @@ subroutine build_target(model,target,stat)
 
     case (FPM_TARGET_C_OBJECT)
         call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
-                // " -o " // target%output_file)
+                // " -o " // target%output_file, echo=.true., exitstat=stat)
 
     case (FPM_TARGET_EXECUTABLE)
 
