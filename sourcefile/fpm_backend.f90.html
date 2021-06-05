@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.3% of total for source files.">123 statements</a>
+    title=" 2.6% of total for source files.">139 statements</a>
      </li> 
      
      
@@ -296,12 +296,12 @@
 <a id="ln-27" name="ln-27"></a><span class="c">!&gt;</span>
 <a id="ln-28" name="ln-28"></a><span class="k">module </span><span class="n">fpm_backend</span>
 <a id="ln-29" name="ln-29"></a>
-<a id="ln-30" name="ln-30"></a><span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">run</span>
-<a id="ln-31" name="ln-31"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">mkdir</span>
+<a id="ln-30" name="ln-30"></a><span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">run</span><span class="p">,</span> <span class="n">get_os_type</span><span class="p">,</span> <span class="n">OS_WINDOWS</span>
+<a id="ln-31" name="ln-31"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">unix_path</span>
 <a id="ln-32" name="ln-32"></a><span class="k">use </span><span class="n">fpm_model</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">fpm_model_t</span>
 <a id="ln-33" name="ln-33"></a><span class="k">use </span><span class="n">fpm_targets</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">build_target_t</span><span class="p">,</span> <span class="n">build_target_ptr</span><span class="p">,</span> <span class="n">FPM_TARGET_OBJECT</span><span class="p">,</span> <span class="p">&amp;</span>
 <a id="ln-34" name="ln-34"></a>                       <span class="n">FPM_TARGET_C_OBJECT</span><span class="p">,</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">,</span> <span class="n">FPM_TARGET_EXECUTABLE</span>
-<a id="ln-35" name="ln-35"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">string_cat</span>
+<a id="ln-35" name="ln-35"></a><span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">string_cat</span><span class="p">,</span> <span class="n">string_t</span>
 <a id="ln-36" name="ln-36"></a>
 <a id="ln-37" name="ln-37"></a><span class="k">implicit none</span>
 <a id="ln-38" name="ln-38"></a>
@@ -519,19 +519,43 @@
 <a id="ln-250" name="ln-250"></a>              <span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="k">target</span><span class="p">%</span><span class="n">link_flags</span><span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)</span>
 <a id="ln-251" name="ln-251"></a>
 <a id="ln-252" name="ln-252"></a>    <span class="k">case</span> <span class="p">(</span><span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span>
-<a id="ln-253" name="ln-253"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">archiver</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
-<a id="ln-254" name="ln-254"></a>
-<a id="ln-255" name="ln-255"></a>    <span class="k">end select</span>
-<a id="ln-256" name="ln-256"></a>
-<a id="ln-257" name="ln-257"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-258" name="ln-258"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s1">&#39;.digest&#39;</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span>
-<a id="ln-259" name="ln-259"></a>        <span class="k">write</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">digest</span>
-<a id="ln-260" name="ln-260"></a>        <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
-<a id="ln-261" name="ln-261"></a>    <span class="k">end if</span>
-<a id="ln-262" name="ln-262"></a>
-<a id="ln-263" name="ln-263"></a><span class="k">end subroutine </span><span class="n">build_target</span>
-<a id="ln-264" name="ln-264"></a>
-<a id="ln-265" name="ln-265"></a><span class="k">end module </span><span class="n">fpm_backend</span>
+<a id="ln-253" name="ln-253"></a>
+<a id="ln-254" name="ln-254"></a>        <span class="k">select case</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
+<a id="ln-255" name="ln-255"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">)</span>
+<a id="ln-256" name="ln-256"></a>            <span class="k">call </span><span class="n">write_response_file</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span> <span class="p">,</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">)</span>
+<a id="ln-257" name="ln-257"></a>            <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">archiver</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">//</span> <span class="s2">&quot; @&quot;</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span>
+<a id="ln-258" name="ln-258"></a>
+<a id="ln-259" name="ln-259"></a>        <span class="k">case </span><span class="n">default</span>
+<a id="ln-260" name="ln-260"></a>            <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">archiver</span> <span class="o">//</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
+<a id="ln-261" name="ln-261"></a>
+<a id="ln-262" name="ln-262"></a>        <span class="k">end select</span>
+<a id="ln-263" name="ln-263"></a>
+<a id="ln-264" name="ln-264"></a><span class="k">    end select</span>
+<a id="ln-265" name="ln-265"></a>
+<a id="ln-266" name="ln-266"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-267" name="ln-267"></a><span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="o">//</span><span class="s1">&#39;.digest&#39;</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span>
+<a id="ln-268" name="ln-268"></a>        <span class="k">write</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">digest</span>
+<a id="ln-269" name="ln-269"></a>        <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+<a id="ln-270" name="ln-270"></a>    <span class="k">end if</span>
+<a id="ln-271" name="ln-271"></a>
+<a id="ln-272" name="ln-272"></a><span class="k">end subroutine </span><span class="n">build_target</span>
+<a id="ln-273" name="ln-273"></a>
+<a id="ln-274" name="ln-274"></a><span class="c">!&gt; Response files allow to read command line options from files.</span>
+<a id="ln-275" name="ln-275"></a><span class="c">!&gt; Whitespace is used to separate the arguments, we will use newlines</span>
+<a id="ln-276" name="ln-276"></a><span class="c">!&gt; as separator to create readable response files which can be inspected</span>
+<a id="ln-277" name="ln-277"></a><span class="c">!&gt; in case of errors.</span>
+<a id="ln-278" name="ln-278"></a><span class="k">subroutine </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+<a id="ln-279" name="ln-279"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a id="ln-280" name="ln-280"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">argv</span><span class="p">(:)</span>
+<a id="ln-281" name="ln-281"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">iarg</span><span class="p">,</span> <span class="n">io</span>
+<a id="ln-282" name="ln-282"></a>    <span class="k">open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">)</span>
+<a id="ln-283" name="ln-283"></a>    <span class="k">do </span><span class="n">iarg</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+<a id="ln-284" name="ln-284"></a>        <span class="k">write</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="s1">&#39;(a)&#39;</span><span class="p">)</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">argv</span><span class="p">(</span><span class="n">iarg</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a id="ln-285" name="ln-285"></a>    <span class="k">end do</span>
+<a id="ln-286" name="ln-286"></a><span class="k">    close</span><span class="p">(</span><span class="n">io</span><span class="p">)</span>
+<a id="ln-287" name="ln-287"></a><span class="k">end subroutine </span><span class="n">write_response_file</span>
+<a id="ln-288" name="ln-288"></a>
+<a id="ln-289" name="ln-289"></a><span class="k">end module </span><span class="n">fpm_backend</span>
 </pre></div>
 
     </section>
@@ -550,7 +574,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-05-24 16:04  
+             on 2021-06-05 12:34  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
