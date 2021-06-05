@@ -309,7 +309,7 @@ contains
 
         open(file=temp_file, newunit=unit)
         write(unit, '(a)') &
-            & 'module  my_mod', &
+            & 'module  my_mod ! A trailing comment', &
             & 'use module_one', &
             & 'interface', &
             & '  module subroutine f()', &
@@ -320,8 +320,17 @@ contains
             & 'program =1', &
             & 'program (i) =1', &
             & 'contains', &
-            & 'module procedure f()', &
-            & 'end procedure f', &
+            & 'module subroutine&', &
+            & ' e()', &
+            & 'end subroutine e', &
+            & 'module subroutine f()', &
+            & 'end subroutine f', &
+            & 'module function g()', &
+            & 'end function g', &
+            & 'module integer function h()', &
+            & 'end function h()', &
+            & 'module real function i()', &
+            & 'end function i()', &
             & 'end module test'
         close(unit)
 
@@ -712,7 +721,7 @@ contains
 
         open(file=temp_file, newunit=unit)
         write(unit, '(a)') &
-            & 'module :: my_mod', &
+            & 'module ::my_mod', &
             & 'end module test'
         close(unit)
 
@@ -720,8 +729,6 @@ contains
         if (allocated(error)) then
             return
         end if
-
-        write(*,*) '"',f_source%modules_used(1)%s,'"'
 
     end subroutine test_invalid_module
 
