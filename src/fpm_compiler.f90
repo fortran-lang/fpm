@@ -475,7 +475,7 @@ function get_archiver() result(archiver)
     if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
         archiver = "ar -rs "
     else
-        call execute_command_line("ar --version > "//get_temp_filename(), &
+        call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
             & exitstat=estat)
         if (estat /= 0) then
             archiver = "lib /OUT:"
