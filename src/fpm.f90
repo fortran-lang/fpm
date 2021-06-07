@@ -4,12 +4,13 @@ use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: run, get_env, get_archiver
+use fpm_environment, only: run, get_env
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: get_module_flags, is_unknown_compiler, get_default_c_compiler
+use fpm_compiler, only: get_module_flags, is_unknown_compiler, get_default_c_compiler, &
+                        get_archiver
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
