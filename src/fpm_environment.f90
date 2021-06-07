@@ -12,7 +12,6 @@ module fpm_environment
     public :: os_is_unix
     public :: run
     public :: get_env
-    public :: get_archiver
     public :: get_command_arguments_quoted
     public :: separator
 
@@ -195,26 +194,6 @@ contains
         if(VALUE.eq.''.and.present(DEFAULT))VALUE=DEFAULT
      end function get_env
 
-    function get_archiver() result(archiver)
-        character(:), allocatable :: archiver
-
-        associate(os_type => get_os_type())
-            if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
-                archiver = "ar -rs "
-            else
-                block
-                    integer :: estat
-
-                    call execute_command_line("ar --version", exitstat=estat)
-                    if (estat /= 0) then
-                        archiver = "lib /OUT:"
-                    else
-                        archiver = "ar -rs "
-                    end if
-                end block
-            end if
-        end associate
-    end function
     function get_command_arguments_quoted() result(args)
     character(len=:),allocatable :: args
     character(len=:),allocatable :: arg
