@@ -1,5 +1,5 @@
 module fpm_manifest_profile
-    use fpm_error, only : error_t, syntax_error
+    use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     use fpm_strings, only: lower
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
@@ -11,6 +11,7 @@ module fpm_manifest_profile
 
     character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran' 
     integer, parameter :: NO_DEF_PROF = 18 ! Number of default profiles
+    integer, parameter :: OS_ALL = -1
     !> Configuration meta data for a profile
     type :: profile_config_t
       !> Name of the profile
@@ -22,8 +23,14 @@ module fpm_manifest_profile
       !> Value repesenting OS
       integer :: os_type
       
-      !> Compiler flags
-      character(len=:), allocatable :: compiler_flags
+      !> Fortran compiler flags
+      character(len=:), allocatable :: flags
+
+      !> C compiler flags
+      character(len=:), allocatable :: c_flags
+
+      !> Link time compiler flags
+      character(len=:), allocatable :: link_time_flags
 
       contains
 
@@ -34,7 +41,7 @@ module fpm_manifest_profile
     contains
 
       !> Construct a new profile configuration from a TOML data structure
-      subroutine new_profile(self, profile_name, compiler, os_type, compiler_flags)
+      subroutine new_profile(self, profile_name, compiler, os_type, flags, c_flags, link_time_flags)
         type(profile_config_t), intent(out) :: self
         
         !> Name of the profile
@@ -46,14 +53,35 @@ module fpm_manifest_profile
         !> Type of the OS
         integer, intent(in) :: os_type
         
-        !> Compiler flags
-        character(len=:), allocatable, intent(in) :: compiler_flags
+        !> Fortran compiler flags
+        character(len=:), allocatable, optional, intent(in) :: flags
+
+        !> C compiler flags
+        character(len=:), allocatable, optional, intent(in) :: c_flags
+
+        !> Link time compiler flags
+        character(len=:), allocatable, optional, intent(in) :: link_time_flags
        
         self%profile_name = profile_name
         self%compiler = compiler
         self%os_type = os_type
-        self%compiler_flags = compiler_flags
-    !    print *,profile_name," ",compiler," ",self%os_type," ",compiler_flags
+        if (present(flags)) then
+          self%flags = flags
+        else
+          self%flags = ""
+        end if
+        if (present(c_flags)) then
+          self%c_flags = c_flags
+        else
+          self%c_flags = ""
+        end if
+        if (present(link_time_flags)) then
+          self%link_time_flags = link_time_flags
+        else
+          self%link_time_flags = ""
+        end if
+!        print *,profile_name," ",compiler," ",os_type," ",flags
+!        print *,profile_name," ",compiler," ",os_type," ",flags, " ",c_flags," ", link_time_flags
       end subroutine new_profile
 
       !> Check if compiler name is a valid compiler name
@@ -62,7 +90,7 @@ module fpm_manifest_profile
         logical, intent(out) :: is_valid
         select case(compiler_name)
           case("gfortran", "ifort", "ifx", "pgfortran", "nvfrotran", "flang", "caf", &
-                        &"lfortran", "lfc", "nagfor", "crayftn", "xlf90", "ftn95")
+                        & "f95", "lfortran", "lfc", "nagfor", "crayftn", "xlf90", "ftn95")
             is_valid = .true.
           case default
             is_valid = .false.
@@ -81,6 +109,17 @@ module fpm_manifest_profile
         end select
       end subroutine validate_os_name
 
+      subroutine validate_key_name(key_name, is_valid)
+        character(len=:), allocatable, intent(in) :: key_name
+        logical, intent(out) :: is_valid
+        select case (key_name)
+          case ("flags", "c_flags", "link_time_flags")
+            is_valid = .true.
+          case default
+            is_valid = .false.
+        end select
+      end subroutine validate_key_name
+
       subroutine match_os_type(os_name, os_type)
         character(len=:), allocatable, intent(in) :: os_name
         integer, intent(out) :: os_type
@@ -91,11 +130,78 @@ module fpm_manifest_profile
           case ("solaris"); os_type = OS_SOLARIS
           case ("freebsd"); os_type = OS_FREEBSD
           case ("openbsd"); os_type = OS_OPENBSD
-          case ("all");     os_type = -1
+          case ("all");     os_type = OS_ALL
           case default;     os_type = OS_UNKNOWN
         end select
       end subroutine match_os_type
 
+      subroutine get_flags(profile_name, compiler_name, os_type, key_list, table, profiles, profindex, error)
+
+        !> Name of profile
+        character(len=:), allocatable, intent(in) :: profile_name
+
+        !> Name of compiler
+        character(len=:), allocatable, intent(in) :: compiler_name
+
+        !> OS type
+        integer, intent(in) :: os_type
+
+        !> List of keys in the table
+        type(toml_key), allocatable, intent(in) :: key_list(:)
+
+        !> Table containing OS tables
+        type(toml_table), pointer, intent(in) :: table
+
+        !> List of profiles
+        type(profile_config_t), allocatable, intent(inout) :: profiles(:)
+
+        !> Index in the list of profiles
+        integer, intent(inout) :: profindex
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name
+        integer :: ikey, stat
+        logical :: is_valid
+
+        if (size(key_list).ge.1) then
+          do ikey=1,size(key_list)
+            key_name = key_list(ikey)%key
+!            call validate_key_name(key_name, is_valid)
+!            if (.not. is_valid) then
+!              call syntax_error(error, "Only flags, c_flags and link_time_flags are valid keys in profiles table")
+!              return
+!            end if
+            if (key_name.eq.'flags') then
+              call get_value(table, 'flags', flags, stat=stat)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "flags has to be a key-value pair")
+                return
+              end if
+            else if (key_name.eq.'c_flags') then
+              call get_value(table, 'c_flags', c_flags, stat=stat)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "c_flags has to be a key-value pair")
+                return
+              end if
+            else
+              call get_value(table, 'link_time_flags', link_time_flags, stat=stat)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "link_time_flags has to be a key-value pair")
+                return
+              end if
+            end if
+          end do
+        end if
+
+        if (.not.allocated(flags)) flags=''
+        if (.not.allocated(c_flags)) c_flags=''
+        if (.not.allocated(link_time_flags)) link_time_flags=''
+
+        call new_profile(profiles(profindex), profile_name, compiler_name, os_type, flags, c_flags, link_time_flags)
+        profindex = profindex + 1
+      end subroutine get_flags
 
       !> Traverse operating system tables
       subroutine traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size, profiles, profindex)
@@ -124,42 +230,62 @@ module fpm_manifest_profile
         !> Index in the list of profiles
         integer, intent(inout), optional :: profindex
         
+        type(toml_key), allocatable :: key_list(:)
         character(len=:), allocatable :: os_name
         type(toml_table), pointer :: os_node
-        character(len=:), allocatable :: compiler_flags
+        character(len=:), allocatable :: flags
         integer :: ios, stat, os_type
+        logical :: is_valid, key_val_added, is_key_val
 
         if (size(os_list)<1) return
+        key_val_added = .false.
         do ios = 1, size(os_list)
-          if (present(profiles_size)) then
-            profiles_size = profiles_size + 1
-          else
-            if (.not.(present(profiles).and.present(profindex))) then
-              print *,"Error in traverse_oss"
-              return
+          os_name = lower(os_list(ios)%key)
+          call validate_os_name(os_name, is_valid)
+          if (is_valid) then
+            if (present(profiles_size)) then
+              profiles_size = profiles_size + 1
+            else
+              if (.not.(present(profiles).and.present(profindex))) then
+                call fatal_error(error, "Both profiles and profindex have to be present")
+                return
+              end if
+              os_name = os_list(ios)%key
+              call get_value(table, os_name, os_node, stat=stat)
+              os_name = lower(os_name)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "os "//os_name//" has to be a table")
+                return
+              end if
+              call match_os_type(os_name, os_type)
+              call os_node%get_keys(key_list)
+              call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, error)
+              if (allocated(error)) return
             end if
+          else
+            is_key_val = .false.
             os_name = os_list(ios)%key
             call get_value(table, os_name, os_node, stat=stat)
-            os_name = lower(os_name)
             if (stat /= toml_stat%success) then
-              call get_value(table, 'flags', compiler_flags, stat=stat)
-!              if (stat /= toml_stat%success) then
-!                call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
-!                exit
-!              end if
-              os_name = "all"
-              call match_os_type(os_name, os_type)
-              call new_profile(profiles(profindex), profile_name, compiler_name, os_type, compiler_flags)
-              profindex = profindex + 1
+              is_key_val = .true.
+            end if
+            if (present(profiles_size)) then
+              if (is_key_val.and..not.key_val_added) then
+                key_val_added = .true.
+                is_key_val = .false.
+                profiles_size = profiles_size + 1
+              else if (.not.is_key_val) then
+                profiles_size = profiles_size + 1
+              end if
             else
-              call get_value(os_node, 'flags', compiler_flags, stat=stat)
-!              if (stat /= toml_stat%success) then
-!                call syntax_error(error, "Compiler flags "//compiler_flags//" must be a table entry")
-!                compiler_flags="did not work"
-!              end if
-              call match_os_type(os_name, os_type)
-              call new_profile(profiles(profindex), profile_name, compiler_name, os_type, compiler_flags)
-              profindex = profindex + 1
+              if (.not.(present(profiles).and.present(profindex))) then
+                call fatal_error(error, "Both profiles and profindex have to be present")
+                return
+              end if
+              os_type = OS_ALL
+              os_node=>table
+              call get_flags(profile_name, compiler_name, os_type, os_list, os_node, profiles, profindex, error)
+              if (allocated(error)) return
             end if
           end if
         end do
@@ -208,13 +334,15 @@ module fpm_manifest_profile
             call comp_node%get_keys(os_list)
             if (present(profiles_size)) then
               call traverse_oss(profile_name, compiler_name, os_list, comp_node, error, profiles_size=profiles_size)
+              if (allocated(error)) return
             else
               if (.not.(present(profiles).and.present(profindex))) then
-                print *,"Error in traverse_compilers"
+                call fatal_error(error, "Both profiles and profindex have to be present")
                 return
               end if
               call traverse_oss(profile_name, compiler_name, os_list, comp_node, &
                                 & error, profiles=profiles, profindex=profindex)
+              if (allocated(error)) return
             end if
           else
             os_list = comp_list(icomp:icomp)
@@ -222,13 +350,15 @@ module fpm_manifest_profile
 
             if (present(profiles_size)) then
               call traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size=profiles_size)
+              if (allocated(error)) return
             else
               if (.not.(present(profiles).and.present(profindex))) then
-                print *,"Error in traverse_compilers"
+                call fatal_error(error, "Both profiles and profindex have to be present")
                 return
               end if
               call traverse_oss(profile_name, compiler_name, os_list, table, &
                                 & error, profiles=profiles, profindex=profindex)
+              if (allocated(error)) return
             end if
           end if
         end do        
@@ -249,7 +379,8 @@ module fpm_manifest_profile
         type(toml_table), pointer :: prof_node
         type(toml_key), allocatable :: prof_list(:)
         type(toml_key), allocatable :: comp_list(:)
-        character(len=:), allocatable :: profile_name
+        type(toml_key), allocatable :: os_list(:)
+        character(len=:), allocatable :: profile_name, compiler_name
         integer :: profiles_size, iprof, stat, profindex
         logical :: is_valid
 
@@ -268,14 +399,25 @@ module fpm_manifest_profile
             comp_list = prof_list(iprof:iprof)
             prof_node=>table
             call traverse_compilers(profile_name, comp_list, prof_node, error, profiles_size=profiles_size)
+            if (allocated(error)) return
           else
-            call get_value(table, profile_name, prof_node, stat=stat)
-            if (stat /= toml_stat%success) then
-              call syntax_error(error, "Profile "//prof_list(iprof)%key//" must be a table entry")
-              exit
+            call validate_os_name(profile_name, is_valid)
+            if (is_valid) then
+              os_list = prof_list(iprof:iprof)
+              profile_name = 'all'
+              compiler_name = DEFAULT_COMPILER
+              call traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size=profiles_size)
+              if (allocated(error)) return
+            else
+              call get_value(table, profile_name, prof_node, stat=stat)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "Profile "//prof_list(iprof)%key//" must be a table entry")
+                exit
+              end if
+              call prof_node%get_keys(comp_list)
+              call traverse_compilers(profile_name, comp_list, prof_node, error, profiles_size=profiles_size)
+              if (allocated(error)) return
             end if
-            call prof_node%get_keys(comp_list)
-            call traverse_compilers(profile_name, comp_list, prof_node, error, profiles_size=profiles_size)
           end if
         end do
 
@@ -293,22 +435,38 @@ module fpm_manifest_profile
             comp_list = prof_list(iprof:iprof)
             prof_node=>table
             call traverse_compilers(profile_name, comp_list, prof_node, error, profiles=profiles, profindex=profindex)
+            if (allocated(error)) return
           else
-            call get_value(table, profile_name, prof_node, stat=stat)
-            call prof_node%get_keys(comp_list)
-            call traverse_compilers(profile_name, comp_list, prof_node, error, profiles=profiles, profindex=profindex)
+            call validate_os_name(profile_name, is_valid)
+            if (is_valid) then
+              os_list = prof_list(iprof:iprof)
+              profile_name = 'all'
+              compiler_name = DEFAULT_COMPILER
+              prof_node=>table
+              call traverse_oss(profile_name, compiler_name, os_list, prof_node, error, profiles=profiles, profindex=profindex)
+              if (allocated(error)) return
+            else
+              call get_value(table, profile_name, prof_node, stat=stat)
+              call prof_node%get_keys(comp_list)
+              call traverse_compilers(profile_name, comp_list, prof_node, error, profiles=profiles, profindex=profindex)
+              if (allocated(error)) return
+            end if
           end if
         end do
 
+        ! Apply profiles with profile name 'all' to matching profiles
         do iprof = 1,size(profiles)
           if (profiles(iprof)%profile_name.eq.'all') then
             do profindex = 1,size(profiles)
               if (.not.(profiles(profindex)%profile_name.eq.'all') &
                       & .and.(profiles(profindex)%compiler.eq.profiles(iprof)%compiler) &
-                      & .and.((profiles(profindex)%os_type.eq.profiles(iprof)%os_type) &
-                      & .or.(profiles(profindex)%os_type.eq.-1))) then
-                profiles(profindex)%compiler_flags=profiles(profindex)%compiler_flags// &
-                        & " "//profiles(iprof)%compiler_flags
+                      & .and.(profiles(profindex)%os_type.eq.profiles(iprof)%os_type)) then
+                profiles(profindex)%flags=profiles(profindex)%flags// &
+                        & " "//profiles(iprof)%flags
+                profiles(profindex)%c_flags=profiles(profindex)%c_flags// &
+                        & " "//profiles(iprof)%c_flags
+                profiles(profindex)%link_time_flags=profiles(profindex)%link_time_flags// &
+                        & " "//profiles(iprof)%link_time_flags
               end if
             end do
           end if
@@ -323,13 +481,13 @@ module fpm_manifest_profile
         integer :: os_type, i
 
         do i=1,NO_DEF_PROF
-          if (i.le.9) then
+          if (i.le.(9)) then
             profile_name = 'release'
           else
             profile_name = 'debug'
           end if
 
-          os_type = -1
+          os_type = OS_ALL
           select case(i)
           ! release profiles
           case(1) !caf
@@ -352,6 +510,7 @@ module fpm_manifest_profile
                 & -fcoarray=single&
                 &'
           case(3) !f95
+            compiler='f95'
             flags='&
                 & -O3&
                 & -Wimplicit-interface&
@@ -444,6 +603,7 @@ module fpm_manifest_profile
                 & -fcoarray=single&
                 &'
           case(12) !f95
+            compiler='f95'
             flags = '&
                 & -Wall&
                 & -Wextra&
@@ -558,18 +718,20 @@ module fpm_manifest_profile
 
         write(unit, fmt) "- os", self%os_type
 
-        if (allocated(self%compiler_flags)) then
-            write(unit, fmt) "- compiler flags", self%compiler_flags
+        if (allocated(self%flags)) then
+            write(unit, fmt) "- compiler flags", self%flags
         end if
 
       end subroutine info
 
-      subroutine find_profile(profiles, profile_name, compiler, os_type, compiler_flags)
+      subroutine find_profile(profiles, profile_name, compiler, os_type, flags, c_flags, link_time_flags)
         type(profile_config_t), allocatable, intent(in) :: profiles(:)
         character(:), allocatable, intent(in) :: profile_name
         character(:), allocatable, intent(in) :: compiler
         integer, intent(in) :: os_type
-        character(:), allocatable, intent(out) :: compiler_flags
+        character(:), allocatable, intent(out), optional :: flags
+        character(:), allocatable, intent(out), optional :: c_flags
+        character(:), allocatable, intent(out), optional :: link_time_flags
         character(:), allocatable :: curr_profile_name
         character(:), allocatable :: curr_compiler
         integer :: curr_os
@@ -598,7 +760,7 @@ module fpm_manifest_profile
             curr_os = profiles(i)%os_type
             if (curr_profile_name.eq.profile_name) then
               if (curr_compiler.eq.compiler) then
-                if (curr_os.eq.-1) then
+                if (curr_os.eq.OS_ALL) then
                   chosen_profile = profiles(i)
                   found_matching = .true.
                 end if
@@ -606,36 +768,8 @@ module fpm_manifest_profile
             end if
           end do
         end if
-        if (.not. found_matching) then
-          do i=1,size(profiles)
-            curr_profile_name = profiles(i)%profile_name
-            curr_compiler = profiles(i)%compiler
-            curr_os = profiles(i)%os_type
-            if (curr_profile_name.eq.'all') then
-              if (curr_compiler.eq.compiler) then
-                if (curr_os.eq.os_type) then
-                  chosen_profile = profiles(i)
-                  found_matching = .true.
-                end if
-              end if
-            end if
-          end do
-        end if
-        if (.not. found_matching) then
-          do i=1,size(profiles)
-            curr_profile_name = profiles(i)%profile_name
-            curr_compiler = profiles(i)%compiler
-            curr_os = profiles(i)%os_type
-            if (curr_profile_name.eq.'all') then
-              if (curr_compiler.eq.compiler) then
-                if (curr_os.eq.-1) then
-                  chosen_profile = profiles(i)
-                  found_matching = .true.
-                end if
-              end if
-            end if
-          end do
-        end if
-        compiler_flags = chosen_profile%compiler_flags
+        if (present(flags)) flags = chosen_profile%flags
+        if (present(c_flags)) c_flags = chosen_profile%c_flags
+        if (present(link_time_flags)) link_time_flags = chosen_profile%link_time_flags
       end subroutine find_profile
 end module fpm_manifest_profile
