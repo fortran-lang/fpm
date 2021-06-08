@@ -330,6 +330,10 @@ contains
             & 'module integer function h()', &
             & 'end function h', &
             & 'module real function i()', &
+            & 'string = " &', &
+            & 'module name"', &
+            & 'string = " &', &
+            & 'module name !"', &
             & 'end function i', &
             & 'end module test'
         close(unit)
