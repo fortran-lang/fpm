@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.4% of total for procedures.">166 statements</a>
+    title=" 5.5% of total for procedures.">171 statements</a>
      </li> 
      
      
@@ -198,6 +198,8 @@
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-pass~2">pass</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-stat~2">stat</a>
+      
+      <a class="list-group-item" href="../proc/parse_f_source.html#variable-string_parts">string_parts</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-temp_string">temp_string</a>
       
@@ -380,6 +382,8 @@ public function parse_f_source(f_filename, error) result(f_source)
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-pass~2">pass</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-stat~2">stat</a>
+      
+      <a class="list-group-item" href="../proc/parse_f_source.html#variable-string_parts">string_parts</a>
       
       <a class="list-group-item" href="../proc/parse_f_source.html#variable-temp_string">temp_string</a>
       
@@ -605,6 +609,20 @@ public function parse_f_source(f_filename, error) result(f_source)
   
 <tr>
   
+  <td><span class="anchor" id="variable-string_parts"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>string_parts</strong>(:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-temp_string"></span>character(len=:),</td>
   
   <td>public,</td>
@@ -710,7 +728,7 @@ function validate_name(name) result(valid)
     <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
 <span class="nb">    </span><span class="kt">integer</span> <span class="kd">::</span> <span class="n">fh</span><span class="p">,</span> <span class="n">n_use</span><span class="p">,</span> <span class="n">n_include</span><span class="p">,</span> <span class="n">n_mod</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">ic</span><span class="p">,</span> <span class="k">pass</span>
 <span class="k">    type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_lines</span><span class="p">(:)</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">temp_string</span><span class="p">,</span> <span class="n">mod_name</span>
+    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">temp_string</span><span class="p">,</span> <span class="n">mod_name</span><span class="p">,</span> <span class="n">string_parts</span><span class="p">(:)</span>
 
     <span class="n">f_source</span><span class="p">%</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">f_filename</span>
 
@@ -822,22 +840,25 @@ function validate_name(name) result(valid)
             <span class="c">! Extract name of module if is module</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;module &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
 
-<span class="k">                </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">))</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="s1">&#39;unable to find module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-                    <span class="k">return</span>
+                <span class="c">! Remove any trailing comments</span>
+                <span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;!&#39;</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">ic</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+                <span class="k">end if</span>
+<span class="k">                </span><span class="n">temp_string</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">ic</span><span class="p">))</span>
+
+                <span class="c">! R1405 module-stmt := &quot;MODULE&quot; module-name</span>
+                <span class="c">! module-stmt has two space-delimited parts only</span>
+                <span class="c">! (no line continuations)</span>
+                <span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">string_parts</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">string_parts</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    cycle</span>
 <span class="k">                end if</span>
 
-<span class="k">                if</span> <span class="p">(</span><span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;procedure&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-                    <span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;subroutine&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-                    <span class="n">mod_name</span> <span class="o">==</span> <span class="s1">&#39;function&#39;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-                    <span class="nb">scan</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span><span class="s1">&#39;=(&#39;</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">)</span> <span class="k">then</span>
+<span class="k">                </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">lower</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">string_parts</span><span class="p">(</span><span class="mi">2</span><span class="p">))))</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">scan</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span><span class="s1">&#39;=(&amp;&#39;</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">)</span> <span class="k">then</span>
                     <span class="c">! Ignore these cases:</span>
-                    <span class="c">! module procedure *</span>
-                    <span class="c">! module function *</span>
-                    <span class="c">! module subroutine *</span>
+                    <span class="c">! module &lt;something&gt;&amp;</span>
                     <span class="c">! module =*</span>
                     <span class="c">! module (i)</span>
                     <span class="k">cycle</span>
@@ -1009,7 +1030,7 @@ function validate_name(name) result(valid)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-07 08:35  
+             on 2021-06-09 08:26  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

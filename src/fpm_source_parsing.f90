@@ -79,7 +79,7 @@ function parse_f_source(f_filename,error) result(f_source)
     integer :: stat
     integer :: fh, n_use, n_include, n_mod, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:)
-    character(:), allocatable :: temp_string, mod_name
+    character(:), allocatable :: temp_string, mod_name, string_parts(:)
 
     f_source%file_name = f_filename
 
@@ -191,22 +191,25 @@ function parse_f_source(f_filename,error) result(f_source)
             ! Extract name of module if is module
             if (index(adjustl(lower(file_lines(i)%s)),'module ') == 1) then
 
-                mod_name = lower(split_n(file_lines(i)%s,n=2,delims=' ',stat=stat))
-                if (stat /= 0) then
-                    call file_parse_error(error,f_filename, &
-                          'unable to find module name',i, &
-                          file_lines(i)%s)
-                    return
+                ! Remove any trailing comments
+                ic = index(file_lines(i)%s,'!')-1
+                if (ic < 1) then
+                    ic = len(file_lines(i)%s)
+                end if
+                temp_string = trim(file_lines(i)%s(1:ic))
+
+                ! R1405 module-stmt := "MODULE" module-name
+                ! module-stmt has two space-delimited parts only
+                ! (no line continuations)
+                call split(temp_string,string_parts,' ')
+                if (size(string_parts) /= 2) then
+                    cycle
                 end if
 
-                if (mod_name == 'procedure' .or. &
-                    mod_name == 'subroutine' .or. &
-                    mod_name == 'function' .or. &
-                    scan(mod_name,'=(')>0 ) then
+                mod_name = lower(trim(adjustl(string_parts(2))))
+                if (scan(mod_name,'=(&')>0 ) then
                     ! Ignore these cases:
-                    ! module procedure *
-                    ! module function *
-                    ! module subroutine *
+                    ! module <something>&
                     ! module =*
                     ! module (i)
                     cycle
