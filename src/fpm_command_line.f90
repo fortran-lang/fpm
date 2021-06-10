@@ -27,8 +27,10 @@ use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
+use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, fnv_1a
-use fpm_filesystem,   only : basename, canon_path, to_fortran_name
+use fpm_filesystem,   only : basename, canon_path, to_fortran_name, which
+use fpm_environment,  only : run, get_command_arguments_quoted
 use fpm_compiler, only : get_default_compile_flags
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
@@ -46,6 +48,7 @@ public :: fpm_cmd_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
+    character(len=:), allocatable :: working_dir
     logical                      :: verbose=.true.
 end type
 
@@ -119,6 +122,7 @@ contains
         integer                       :: i
         integer                       :: widest
         type(fpm_install_settings), allocatable :: install_settings
+        character(len=:), allocatable :: common_args, working_dir
 
         call set_help()
         ! text for --version switch,
@@ -142,18 +146,17 @@ contains
          &  os_type]
         ! find the subcommand name by looking for first word on command
         ! not starting with dash
-        cmdarg=' '
-        do i = 1, command_argument_count()
-           call get_command_argument(i, cmdarg)
-           if(adjustl(cmdarg(1:1)) .ne. '-')exit
-        enddo
+        CLI_RESPONSE_FILE=.true.
+        cmdarg = get_subcommand()
+
+        common_args = '--directory:C " " '
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
         select case(trim(cmdarg))
 
         case('run')
-            call set_args('&
+            call set_args(common_args //'&
             & --target " " &
             & --list F &
             & --all F &
@@ -206,7 +209,7 @@ contains
             & verbose=lget('verbose') )
 
         case('build')
-            call set_args( '&
+            call set_args(common_args // '&
             & --profile " " &
             & --list F &
             & --show-model F &
@@ -228,7 +231,7 @@ contains
             & verbose=lget('verbose') )
 
         case('new')
-            call set_args('&
+            call set_args(common_args // '&
             & --src F &
             & --lib F &
             & --app F &
@@ -298,7 +301,7 @@ contains
             endif
 
         case('help','manual')
-            call set_args('&
+            call set_args(common_args // '&
             & --verbose F &
             & ',help_help,version_text)
             if(size(unnamed).lt.2)then
@@ -346,7 +349,8 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args('--profile " " --no-rebuild F --verbose F --prefix " " &
+            call set_args(common_args // '&
+                & --profile " " --no-rebuild F --verbose F --prefix " " &
                 & --list F &
                 & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
                 & --flag:: " "&
@@ -371,7 +375,7 @@ contains
             call move_alloc(install_settings, cmd_settings)
 
         case('list')
-            call set_args('&
+            call set_args(common_args // '&
             & --list F&
             & --verbose F&
             &', help_list, version_text)
@@ -380,7 +384,7 @@ contains
                call printhelp(help_list_dash)
             endif
         case('test')
-            call set_args('&
+            call set_args(common_args // '&
             & --target " " &
             & --list F&
             & --profile " "&
@@ -425,7 +429,7 @@ contains
             & verbose=lget('verbose') )
 
         case('update')
-            call set_args('--fetch-only F --verbose F --clean F', &
+            call set_args(common_args // ' --fetch-only F --verbose F --clean F', &
                 help_update, version_text)
 
             if( size(unnamed) .gt. 1 )then
@@ -441,27 +445,37 @@ contains
 
         case default
 
-            call set_args('&
-            & --list F&
-            & --verbose F&
-            &', help_fpm, version_text)
-            ! Note: will not get here if --version or --usage or --help
-            ! is present on commandline
-            help_text=help_usage
-            if(lget('list'))then
-               help_text=help_list_dash
-            elseif(len_trim(cmdarg).eq.0)then
-                write(stdout,'(*(a))')'Fortran Package Manager:'
-                write(stdout,'(*(a))')' '
-                call printhelp(help_list_nodash)
+            if(which('fpm-'//cmdarg).ne.'')then
+                call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted(),.false.)
             else
-                write(stderr,'(*(a))')'<ERROR> unknown subcommand [', &
-                 & trim(cmdarg), ']'
-                call printhelp(help_list_dash)
+                call set_args('&
+                & --list F&
+                & --verbose F&
+                &', help_fpm, version_text)
+                ! Note: will not get here if --version or --usage or --help
+                ! is present on commandline
+                help_text=help_usage
+                if(lget('list'))then
+                   help_text=help_list_dash
+                elseif(len_trim(cmdarg).eq.0)then
+                    write(stdout,'(*(a))')'Fortran Package Manager:'
+                    write(stdout,'(*(a))')' '
+                    call printhelp(help_list_nodash)
+                else
+                    write(stderr,'(*(a))')'<ERROR> unknown subcommand [', &
+                     & trim(cmdarg), ']'
+                    call printhelp(help_list_dash)
+                endif
+                call printhelp(help_text)
             endif
-            call printhelp(help_text)
 
         end select
+
+        if (allocated(cmd_settings)) then
+            working_dir = sget("directory")
+            call move_alloc(working_dir, cmd_settings%working_dir)
+        end if
+
     contains
 
     subroutine check_build_vals()
@@ -655,7 +669,7 @@ contains
     '  + run   Run the local package binaries. defaults to all binaries for ', &
     '          that release.                                                ', &
     '  + test  Run the tests.                                               ', &
-    '  + help  Alternate method for displaying subcommand help.             ', &
+    '  + help  Alternate to the --help switch for displaying help text.     ', &
     '  + list  Display brief descriptions of all subcommands.               ', &
     '  + install Install project                                            ', &
     '                                                                       ', &
@@ -674,6 +688,8 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
+    ' -C, --directory PATH', &
+    '             Change working directory to PATH before running any command', &
     ' --profile PROF    selects the compilation profile for the build.',&
     '                   Currently available profiles are "release" for',&
     '                   high optimization and "debug" for full debug options.',&
@@ -695,6 +711,37 @@ contains
     '  --help     Show help text and exit                                   ', &
     '  --verbose  Display additional information when available             ', &
     '  --version  Show version information and exit.                        ', &
+    '                                                                       ', &
+    '@file                                                                  ', &
+    '   You may replace the default options for the fpm(1) command from a   ', &
+    '   file if your first options begin with @file. Initial options will   ', &
+    '   then be read from the "response file" "file.rsp" in the current     ', &
+    '   directory.                                                          ', &
+    '                                                                       ', &
+    '   If "file" does not exist or cannot be read, then an error occurs and', &
+    '   the program stops.  Each line of the file is prefixed with "options"', &
+    '   and interpreted as a separate argument. The file itself may not     ', &
+    '   contain @file arguments. That is, it is not processed recursively.  ', &
+    '                                                                       ', &
+    '   For more information on response files see                          ', &
+    '                                                                       ', &
+    '      https://urbanjost.github.io/M_CLI2/set_args.3m_cli2.html         ', &
+    '                                                                       ', &
+    '   The basic functionality described here will remain the same, but    ', &
+    '   other features described at the above reference may change.         ', &
+    '                                                                       ', &
+    '   An example file:                                                    ', &
+    '                                                                       ', &
+    '     # my build options                                                ', &
+    '     options build                                                     ', &
+    '     options --compiler gfortran                                       ', &
+    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused \', &
+    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring \', &
+    '      -frecord-marker=4 -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"     ', &
+    '                                                                       ', &
+    '   Note --flag would have to be on one line as response files do not   ', &
+    '   (currently) allow for continued lines or multiple specifications of ', &
+    '   the same option.                                                    ', &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     '   sample commands:                                                    ', &
