@@ -7,10 +7,9 @@ module fpm_manifest_profile
     implicit none
     private
     public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
-            & find_profile, DEFAULT_COMPILER, NO_DEF_PROF
+            & find_profile, DEFAULT_COMPILER
 
     character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran' 
-    integer, parameter :: NO_DEF_PROF = 18 ! Number of default profiles
     integer, parameter :: OS_ALL = -1
     !> Configuration meta data for a profile
     type :: profile_config_t
@@ -41,48 +40,49 @@ module fpm_manifest_profile
     contains
 
       !> Construct a new profile configuration from a TOML data structure
-      subroutine new_profile(self, profile_name, compiler, os_type, flags, c_flags, link_time_flags)
-        type(profile_config_t), intent(out) :: self
+      function new_profile(profile_name, compiler, os_type, flags, c_flags, link_time_flags) result(profile)
         
         !> Name of the profile
-        character(len=:), allocatable, intent(in) :: profile_name
+        character(len=*), intent(in) :: profile_name
         
         !> Name of the compiler
-        character(len=:), allocatable, intent(in) :: compiler
+        character(len=*), intent(in) :: compiler
         
         !> Type of the OS
         integer, intent(in) :: os_type
         
         !> Fortran compiler flags
-        character(len=:), allocatable, optional, intent(in) :: flags
+        character(len=*), optional, intent(in) :: flags
 
         !> C compiler flags
-        character(len=:), allocatable, optional, intent(in) :: c_flags
+        character(len=*), optional, intent(in) :: c_flags
 
         !> Link time compiler flags
-        character(len=:), allocatable, optional, intent(in) :: link_time_flags
+        character(len=*), optional, intent(in) :: link_time_flags
        
-        self%profile_name = profile_name
-        self%compiler = compiler
-        self%os_type = os_type
+        type(profile_config_t) :: profile
+
+        profile%profile_name = profile_name
+        profile%compiler = compiler
+        profile%os_type = os_type
         if (present(flags)) then
-          self%flags = flags
+          profile%flags = flags
         else
-          self%flags = ""
+          profile%flags = ""
         end if
         if (present(c_flags)) then
-          self%c_flags = c_flags
+          profile%c_flags = c_flags
         else
-          self%c_flags = ""
+          profile%c_flags = ""
         end if
         if (present(link_time_flags)) then
-          self%link_time_flags = link_time_flags
+          profile%link_time_flags = link_time_flags
         else
-          self%link_time_flags = ""
+          profile%link_time_flags = ""
         end if
 !        print *,profile_name," ",compiler," ",os_type," ",flags
 !        print *,profile_name," ",compiler," ",os_type," ",flags, " ",c_flags," ", link_time_flags
-      end subroutine new_profile
+      end function new_profile
 
       !> Check if compiler name is a valid compiler name
       subroutine validate_compiler_name(compiler_name, is_valid)
@@ -199,7 +199,8 @@ module fpm_manifest_profile
         if (.not.allocated(c_flags)) c_flags=''
         if (.not.allocated(link_time_flags)) link_time_flags=''
 
-        call new_profile(profiles(profindex), profile_name, compiler_name, os_type, flags, c_flags, link_time_flags)
+!        call new_profile(profiles(profindex), profile_name, compiler_name, os_type, flags, c_flags, link_time_flags)
+        profiles(profindex) = new_profile(profile_name, compiler_name, os_type, flags, c_flags, link_time_flags)
         profindex = profindex + 1
       end subroutine get_flags
 
@@ -383,8 +384,10 @@ module fpm_manifest_profile
         character(len=:), allocatable :: profile_name, compiler_name
         integer :: profiles_size, iprof, stat, profindex
         logical :: is_valid
+        type(profile_config_t), allocatable :: default_profiles(:)
 
-        ! call get defaults
+        default_profiles = get_default_profiles(error)
+        if (allocated(error)) return
         call table%get_keys(prof_list)
         
         if (size(prof_list) < 1) return
@@ -421,11 +424,12 @@ module fpm_manifest_profile
           end if
         end do
 
-        profiles_size=profiles_size+NO_DEF_PROF
+        profiles_size=profiles_size+size(default_profiles)
         allocate(profiles(profiles_size))
         
-        call get_default_profiles(profiles)
-        profindex = 1 + NO_DEF_PROF
+        do profindex=1, size(default_profiles)
+          profiles(profindex) = default_profiles(profindex)
+        end do
 
         do iprof = 1, size(prof_list)
           profile_name = prof_list(iprof)%key
@@ -472,219 +476,54 @@ module fpm_manifest_profile
           end if
         end do
       end subroutine new_profiles
-      
-      subroutine get_default_profiles(profiles)
-        type(profile_config_t), allocatable, intent(inout) :: profiles(:)
-        character(len=:), allocatable :: profile_name
-        character(len=:), allocatable :: compiler
-        character(len=:), allocatable :: flags
-        integer :: os_type, i
 
-        do i=1,NO_DEF_PROF
-          if (i.le.(9)) then
-            profile_name = 'release'
-          else
-            profile_name = 'debug'
-          end if
-
-          os_type = OS_ALL
-          select case(i)
-          ! release profiles
-          case(1) !caf
-            compiler='caf'
-            flags='&
-                & -O3&
-                & -Wimplicit-interface&
-                & -fPIC&
-                & -fmax-errors=1&
-                & -funroll-loops&
-                &'
-          case(2) !gcc
-            compiler='gfortran'
-            flags='&
-                & -O3&
-                & -Wimplicit-interface&
-                & -fPIC&
-                & -fmax-errors=1&
-                & -funroll-loops&
-                & -fcoarray=single&
-                &'
-          case(3) !f95
-            compiler='f95'
-            flags='&
-                & -O3&
-                & -Wimplicit-interface&
-                & -fPIC&
-                & -fmax-errors=1&
-                & -ffast-math&
-                & -funroll-loops&
-                &'
-          case(4) !nvhpc
-            compiler='nvfrotran'
-            flags = '&
-                & -Mbackslash&
-                &'
-          case(5) !intel_classic
-            compiler='ifort'
-            flags = '&
-                & -fp-model precise&
-                & -pc64&
-                & -align all&
-                & -error-limit 1&
-                & -reentrancy threaded&
-                & -nogen-interfaces&
-                & -assume byterecl&
-                &'
-          case(6) !intel_classic_windows
-            compiler='ifort'
-            os_type=OS_WINDOWS
-            flags = '&
-                & /fp:precise&
-                & /align:all&
-                & /error-limit:1&
-                & /reentrancy:threaded&
-                & /nogen-interfaces&
-                & /assume:byterecl&
-                &'
-          case(7) !intel_llvm
-            compiler='ifx'
-            flags = '&
-                & -fp-model=precise&
-                & -pc64&
-                & -align all&
-                & -error-limit 1&
-                & -reentrancy threaded&
-                & -nogen-interfaces&
-                & -assume byterecl&
-                &'
-          case(8) !intel_llvm_windows
-            compiler='ifx'
-            os_type = OS_WINDOWS
-            flags = '&
-                & /fp:precise&
-                & /align:all&
-                & /error-limit:1&
-                & /reentrancy:threaded&
-                & /nogen-interfaces&
-                & /assume:byterecl&
-                &'
-          case(9) !nag
-            compiler='nagfor'
-            flags = ' &
-                & -O4&
-                & -coarray=single&
-                & -PIC&
-                &'
-
-          ! debug profiles
-          case(10) !caf
-            compiler='caf'
-            flags = '&
-                & -Wall&
-                & -Wextra&
-                & -Wimplicit-interface&
-                & -fPIC -fmax-errors=1&
-                & -g&
-                & -fcheck=bounds&
-                & -fcheck=array-temps&
-                & -fbacktrace&
-                &'
-          case(11) !gcc
-            compiler='gfortran'
-            flags = '&
-                & -Wall&
-                & -Wextra&
-                & -Wimplicit-interface&
-                & -fPIC -fmax-errors=1&
-                & -g&
-                & -fcheck=bounds&
-                & -fcheck=array-temps&
-                & -fbacktrace&
-                & -fcoarray=single&
-                &'
-          case(12) !f95
-            compiler='f95'
-            flags = '&
-                & -Wall&
-                & -Wextra&
-                & -Wimplicit-interface&
-                & -fPIC -fmax-errors=1&
-                & -g&
-                & -fcheck=bounds&
-                & -fcheck=array-temps&
-                & -Wno-maybe-uninitialized -Wno-uninitialized&
-                & -fbacktrace&
-                &'
-          case(13) !nvhpc
-            compiler='nvfrotran'
-            flags = '&
-                & -Minform=inform&
-                & -Mbackslash&
-                & -g&
-                & -Mbounds&
-                & -Mchkptr&
-                & -Mchkstk&
-                & -traceback&
-                &'
-          case(14) !intel_classic
-            compiler='ifort'
-            flags = '&
-                & -warn all&
-                & -check all&
-                & -error-limit 1&
-                & -O0&
-                & -g&
-                & -assume byterecl&
-                & -traceback&
-                &'
-          case(15) !intel_classic_windows
-            compiler='ifort'
-            os_type=OS_WINDOWS
-            flags = '&
-                & /warn:all&
-                & /check:all&
-                & /error-limit:1&
-                & /Od&
-                & /Z7&
-                & /assume:byterecl&
-                & /traceback&
-                &'
-          case(16) !intel_llvm
-            compiler='ifx'
-            flags = '&
-                & -warn all&
-                & -check all&
-                & -error-limit 1&
-                & -O0&
-                & -g&
-                & -assume byterecl&
-                & -traceback&
-                &'
-          case(17) !intel_llvm_windows
-            compiler='ifx'
-            os_type=OS_WINDOWS
-            flags = '&
-                & /warn:all&
-                & /check:all&
-                & /error-limit:1&
-                & /Od&
-                & /Z7&
-                & /assume:byterecl&
-                &'
-          case(18) !nag
-            compiler='nagfor'
-            flags = '&
-                & -g&
-                & -C=all&
-                & -O0&
-                & -gline&
-                & -coarray=single&
-                & -PIC&
-                &'
-          end select
-          call new_profile(profiles(i), profile_name, compiler, os_type, flags)
-        end do
-      end subroutine get_default_profiles
+      function get_default_profiles(error) result(default_profiles)
+        type(error_t), allocatable, intent(out) :: error
+        type(profile_config_t), allocatable :: default_profiles(:)
+        default_profiles = [ &
+              & new_profile('release', 'caf', OS_ALL, flags=' -O3 -Wimplicit-interface&
+                                                & -fPIC -fmax-errors=1 -funroll-loops'), &
+              & new_profile('release', 'gfortran', OS_ALL, flags=' -O3 -Wimplicit-interface -fPIC&
+                                                & -fmax-errors=1 -funroll-loops -fcoarray=single'), &
+              & new_profile('release', 'f95', OS_ALL, flags=' -O3 -Wimplicit-interface -fPIC&
+                                                & -fmax-errors=1 -ffast-math -funroll-loops'), &
+              & new_profile('release', 'nvfortran', OS_ALL, flags = ' -Mbackslash'), &
+              & new_profile('release', 'ifort', OS_ALL, flags = ' -fp-model precise -pc64 -align all&
+                                                & -error-limit 1 -reentrancy threaded&
+                                                & -nogen-interfaces -assume byterecl'), &
+              & new_profile('release', 'ifort', OS_WINDOWS, flags = ' /fp:precise /align:all&
+                                                & /error-limit:1 /reentrancy:threaded&
+                                                & /nogen-interfaces /assume:byterecl'), &
+              & new_profile('release', 'ifx', OS_ALL, flags = ' -fp-model=precise -pc64&
+                                                & -align all -error-limit 1 -reentrancy threaded&
+                                                & -nogen-interfaces -assume byterecl'), &
+              & new_profile('release', 'ifx', OS_WINDOWS, flags = ' /fp:precise /align:all&
+                                                & /error-limit:1 /reentrancy:threaded&
+                                                & /nogen-interfaces /assume:byterecl'), &
+              & new_profile('release', 'nagfor', OS_ALL, flags = ' -O4 -coarray=single -PIC'), &
+              & new_profile('debug', 'caf', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
+                                                & -fPIC -fmax-errors=1  -g -fcheck=bounds&
+                                                & -fcheck=array-temps -fbacktrace'), &
+              & new_profile('debug', 'gfortran', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
+                                                & -fPIC -fmax-errors=1 -g -fcheck=bounds&
+                                                & -fcheck=array-temps -fbacktrace -fcoarray=single'), &
+              & new_profile('debug', 'f95', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
+                                                & -fPIC -fmax-errors=1 -g -fcheck=bounds&
+                                                & -fcheck=array-temps -Wno-maybe-uninitialized&
+                                                & -Wno-uninitialized -fbacktrace'), &
+              & new_profile('debug', 'nvfortran', OS_ALL, flags = ' -Minform=inform -Mbackslash -g&
+                                                & -Mbounds -Mchkptr -Mchkstk -traceback'), &
+              & new_profile('debug', 'ifort', OS_ALL, flags = ' -warn all -check all -error-limit 1&
+                                                & -O0 -g -assume byterecl -traceback'), &
+              & new_profile('debug', 'ifort', OS_WINDOWS, flags = ' /warn:all /check:all /error-limit:1&
+                                                & /Od /Z7 /assume:byterecl /traceback'), &
+              & new_profile('debug', 'ifx', OS_ALL, flags = ' -warn all -check all -error-limit 1&
+                                                & -O0 -g -assume byterecl -traceback'), &
+              & new_profile('debug', 'ifx', OS_WINDOWS, flags = ' /warn:all /check:all /error-limit:1&
+                                                & /Od /Z7 /assume:byterecl'), &
+              & new_profile('debug', 'nagfor', OS_ALL, flags = ' -g -C=all -O0 -gline -coarray=single -PIC') &
+              &]
+      end function get_default_profiles
 
       !> Write information on instance
       subroutine info(self, unit, verbosity)

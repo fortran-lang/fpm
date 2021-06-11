@@ -65,37 +65,6 @@ subroutine build_model(model, settings, package, error)
         model%fortran_compiler = settings%compiler
     endif
 
-    if(settings%profile.eq.'')then
-      if (trim(settings%flag).eq.'') then
-        profile = 'debug'
-      end if
-    else
-      profile = settings%profile
-    endif
-    if (allocated(package%profiles).and.allocated(profile)) then
-      call find_profile(package%profiles, profile, model%fortran_compiler, get_os_type(), compiler_flags)
-      print *,"found profile has the following flags: "//compiler_flags
-    end if
-    model%archiver = get_archiver()
-    call get_default_c_compiler(model%fortran_compiler, model%c_compiler)
-    model%c_compiler = get_env('FPM_C_COMPILER',model%c_compiler)
-
-    if (is_unknown_compiler(model%fortran_compiler)) then
-        write(*, '(*(a:,1x))') &
-            "<WARN>", "Unknown compiler", model%fortran_compiler, "requested!", &
-            "Defaults for this compiler might be incorrect"
-    end if
-    model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
-
-    call get_module_flags(model%fortran_compiler, &
-        & join_path(model%output_directory,model%package_name), &
-        & model%fortran_compile_flags)
-    if (allocated(compiler_flags)) then
-      model%fortran_compile_flags = " "//compiler_flags // settings%flag // model%fortran_compile_flags
-    else
-      model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
-    end if
-
     allocate(model%packages(model%deps%ndep))
 
     ! Add sources from executable directories
@@ -166,6 +135,7 @@ subroutine build_model(model, settings, package, error)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
+            model%packages(i)%profiles = dependency%profiles
             if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
             if (allocated(dependency%library)) then
@@ -214,6 +184,39 @@ subroutine build_model(model, settings, package, error)
     if (duplicates_found) then
       error stop 'Error: One or more duplicate module names found.'
     end if
+
+    ! Compiler flags logic
+    if(settings%profile.eq.'')then
+      if (trim(settings%flag).eq.'') then
+        profile = 'debug'
+      end if
+    else
+      profile = settings%profile
+    endif
+    if (allocated(package%profiles).and.allocated(profile)) then
+      call find_profile(package%profiles, profile, model%fortran_compiler, get_os_type(), compiler_flags)
+      print *,"Matching profile has the following flags: "//compiler_flags
+    end if
+    model%archiver = get_archiver()
+    call get_default_c_compiler(model%fortran_compiler, model%c_compiler)
+    model%c_compiler = get_env('FPM_C_COMPILER',model%c_compiler)
+
+    if (is_unknown_compiler(model%fortran_compiler)) then
+        write(*, '(*(a:,1x))') &
+            "<WARN>", "Unknown compiler", model%fortran_compiler, "requested!", &
+            "Defaults for this compiler might be incorrect"
+    end if
+    model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
+
+    call get_module_flags(model%fortran_compiler, &
+        & join_path(model%output_directory,model%package_name), &
+        & model%fortran_compile_flags)
+    if (allocated(compiler_flags)) then
+      model%fortran_compile_flags = " "//compiler_flags // settings%flag // model%fortran_compile_flags
+    else
+      model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
+    end if
+
 end subroutine build_model
 
 ! Check for duplicate modules

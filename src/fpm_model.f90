@@ -21,6 +21,7 @@ module fpm_model
 use iso_fortran_env, only: int64
 use fpm_strings, only: string_t, str
 use fpm_dependency, only: dependency_tree_t
+use fpm_manifest_profile, only: profile_config_t
 implicit none
 
 private
@@ -86,6 +87,15 @@ type srcfile_t
     !> Native libraries to link against
     type(string_t), allocatable :: link_libraries(:)
 
+    !> Fortran compiler flags
+    character(len=:), allocatable :: flags
+
+    !> C compiler flags
+    character(len=:), allocatable :: c_flags
+
+    !> Link time compiler flags
+    character(len=:), allocatable :: link_time_flags
+
     !> Current hash
     integer(int64) :: digest
 
@@ -100,6 +110,9 @@ type package_t
 
     !> Array of sources
     type(srcfile_t), allocatable :: sources(:)
+
+    !> Array of compiler profiles
+    type(profile_config_t), allocatable :: profiles(:)
 
 end type package_t
 
