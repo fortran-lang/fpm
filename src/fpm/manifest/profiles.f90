@@ -563,21 +563,18 @@ module fpm_manifest_profile
 
       end subroutine info
 
-      subroutine find_profile(profiles, profile_name, compiler, os_type, flags, c_flags, link_time_flags)
+      subroutine find_profile(profiles, profile_name, compiler, os_type, found_matching, chosen_profile)
         type(profile_config_t), allocatable, intent(in) :: profiles(:)
         character(:), allocatable, intent(in) :: profile_name
         character(:), allocatable, intent(in) :: compiler
         integer, intent(in) :: os_type
-        character(:), allocatable, intent(out), optional :: flags
-        character(:), allocatable, intent(out), optional :: c_flags
-        character(:), allocatable, intent(out), optional :: link_time_flags
+        logical, intent(out) :: found_matching
+        type(profile_config_t), intent(out) :: chosen_profile
         character(:), allocatable :: curr_profile_name
         character(:), allocatable :: curr_compiler
         integer :: curr_os
-        type(profile_config_t) :: chosen_profile
         integer :: i, priority, curr_priority
-        logical :: found_matching
-        
+
         found_matching = .false.
         do i=1,size(profiles)
           curr_profile_name = profiles(i)%profile_name
@@ -607,8 +604,5 @@ module fpm_manifest_profile
             end if
           end do
         end if
-        if (present(flags)) flags = chosen_profile%flags
-        if (present(c_flags)) c_flags = chosen_profile%c_flags
-        if (present(link_time_flags)) link_time_flags = chosen_profile%link_time_flags
       end subroutine find_profile
 end module fpm_manifest_profile

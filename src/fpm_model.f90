@@ -114,6 +114,7 @@ type package_t
     !> Array of compiler profiles
     type(profile_config_t), allocatable :: profiles(:)
 
+    type(profile_config_t) :: chosen_profile
 end type package_t
 
 

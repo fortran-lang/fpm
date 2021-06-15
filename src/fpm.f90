@@ -44,9 +44,10 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
+    type(profile_config_t) :: primary_pkg_profile, current_pkg_profile
     character(len=:), allocatable :: manifest, lib_dir, profile, compiler_flags
 
-    logical :: duplicates_found = .false.
+    logical :: duplicates_found = .false., profile_found
     type(string_t) :: include_dir
 
     model%package_name = package%name
@@ -182,21 +183,37 @@ subroutine build_model(model, settings, package, error)
     ! Check for duplicate modules
     call check_modules_for_duplicates(model, duplicates_found)
     if (duplicates_found) then
-      error stop 'Error: One or more duplicate module names found.'
+        error stop 'Error: One or more duplicate module names found.'
     end if
 
     ! Compiler flags logic
     if(settings%profile.eq.'')then
-      if (trim(settings%flag).eq.'') then
-        profile = 'debug'
-      end if
+        if (trim(settings%flag).eq.'') then
+          profile = 'debug'
+        end if
     else
-      profile = settings%profile
+        profile = settings%profile
     endif
-    if (allocated(package%profiles).and.allocated(profile)) then
-      call find_profile(package%profiles, profile, model%fortran_compiler, get_os_type(), compiler_flags)
-      print *,"Matching profile has the following flags: "//compiler_flags
+
+    if (allocated(profile)) then
+        do i=1,size(model%packages)
+            associate(pkg => model%packages(i))
+                if (allocated(pkg%profiles)) then
+                    call find_profile(pkg%profiles, profile, model%fortran_compiler, &
+                            & get_os_type(), profile_found, current_pkg_profile)
+                    if (.not.profile_found .and. i.gt.1) then
+                        current_pkg_profile = primary_pkg_profile
+                    else if (i.eq.1) then
+                        primary_pkg_profile = current_pkg_profile
+                    end if
+                else
+                    current_pkg_profile = primary_pkg_profile
+                end if
+                pkg%chosen_profile = current_pkg_profile
+            end associate
+        end do
     end if
+
     model%archiver = get_archiver()
     call get_default_c_compiler(model%fortran_compiler, model%c_compiler)
     model%c_compiler = get_env('FPM_C_COMPILER',model%c_compiler)
@@ -205,16 +222,6 @@ subroutine build_model(model, settings, package, error)
         write(*, '(*(a:,1x))') &
             "<WARN>", "Unknown compiler", model%fortran_compiler, "requested!", &
             "Defaults for this compiler might be incorrect"
-    end if
-    model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
-
-    call get_module_flags(model%fortran_compiler, &
-        & join_path(model%output_directory,model%package_name), &
-        & model%fortran_compile_flags)
-    if (allocated(compiler_flags)) then
-      model%fortran_compile_flags = " "//compiler_flags // settings%flag // model%fortran_compile_flags
-    else
-      model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
     end if
 
 end subroutine build_model

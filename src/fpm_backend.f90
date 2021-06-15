@@ -51,9 +51,9 @@ subroutine build_package(targets,model)
     integer, allocatable :: schedule_ptr(:)
 
     ! Need to make output directory for include (mod) files
-    if (.not.exists(join_path(model%output_directory,model%package_name))) then
-        call mkdir(join_path(model%output_directory,model%package_name))
-    end if
+!    if (.not.exists(join_path(model%output_directory,model%package_name))) then
+!        call mkdir(join_path(model%output_directory,model%package_name))
+!    end if
 
     ! Perform depth-first topological sort of targets
     do i=1,size(targets)

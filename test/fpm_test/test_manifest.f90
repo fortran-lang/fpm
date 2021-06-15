@@ -4,7 +4,7 @@ module test_manifest
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_manifest
-    use fpm_manifest_profile, only: find_profile
+    use fpm_manifest_profile, only: profile_config_t, find_profile
     use fpm_strings, only: operator(.in.)
     implicit none
     private
@@ -403,6 +403,8 @@ contains
         character(len=*), parameter :: manifest = 'fpm-profiles.toml'
         integer :: unit
         character(:), allocatable :: profile_name, compiler, flags
+        logical :: profile_found
+        type(profile_config_t) :: chosen_profile
 
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
@@ -434,40 +436,40 @@ contains
 
         profile_name = 'release'
         compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 1, flags)
-        if (.not.flags.eq.'4 3 7') then
+        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+        if (.not.(chosen_profile%flags.eq.'4 3 7')) then
             call test_failed(error, "Failed to append flags from profiles named 'all'")
             return
         end if
 
         profile_name = 'release'
         compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 3, flags)
-        if (.not.flags.eq.'5 6') then
+        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
+        if (.not.(chosen_profile%flags.eq.'5 6')) then
             call test_failed(error, "Failed to choose profile with OS 'all'")
             return
         end if
 
         profile_name = 'publish'
         compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 1, flags)
-        if (.not.flags.eq.'') then
+        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+        if (allocated(chosen_profile%flags)) then
             call test_failed(error, "Profile named "//profile_name//" should not exist")
             return
         end if
 
         profile_name = 'debug'
         compiler = 'ifort'
-        call find_profile(package%profiles, profile_name, compiler, 3, flags)
-        if (.not.flags.eq.' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback') then
+        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
+        if (.not.(chosen_profile%flags.eq.' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
             call test_failed(error, "Failed to load built-in profile"//flags)
             return
         end if
 
         profile_name = 'release'
         compiler = 'ifort'
-        call find_profile(package%profiles, profile_name, compiler, 1, flags)
-        if (.not.flags.eq.'8') then
+        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+        if (.not.(chosen_profile%flags.eq.'8')) then
             call test_failed(error, "Failed to overwrite built-in profile")
             return
         end if
