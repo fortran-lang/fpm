@@ -47,6 +47,7 @@ Every manifest file consists of the following sections:
     Project library dependencies
   - [*dev-dependencies*](#development-dependencies):
     Dependencies only needed for tests
+- [*compiler profiles*](#compiler-flags-profiles):
 - [*install*](#installation-configuration):
   Installation configuration
 
@@ -459,6 +460,37 @@ rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"
 
 Development dependencies allow to declare *dev-dependencies* in the manifest root, which are available to all tests but not exported with the project.
 
+## Compiler flags profiles
+Compiler flags profiles can be declared in the *profiles* table. They are organised into subtables in the following order:
+
+| Subtable | Profile name | Compiler | Operating system |
+|---|:---:|:---:|:---:|
+| Example | `debug` | `gfortran` | `linux` |
+
+There are 4 fields that can be specified for each of the profiles:
+- `'flags'` - Fortran compiler flags
+- `'c_flags'` - C compiler flags
+- `'link_time_flags'` - Compiler flags applied at linking time to executables
+- `'files'` - A subtable containing file name-flags pairs with flags applied to single source files (these overwrite profile flags)
+
+An example of a complete table follows:
+```toml
+[profiles.debug.gfortran.linux]
+flags = '-g -Wall'
+files={"source/greet_m.f90"="-Wall -g -fcheck=all", "source/farewell_m.f90"="-Og"}
+```
+
+All the subtables can be omitted in the definition. In such case the following behaviour is applied:
+- *Profile name* is omitted - Fields of this subtable are added to fields of all profiles with matching compiler and OS definitions (this is not the case for `files` field)
+- *Compiler* is omitted - Compiler is set to *default* value (currently `gfortran`)
+- *Operating system* is omitted - Fields of this subtable are used if and only if there is no profile with perfectly matching OS definition
+
+Example:
+- The flags field of the following profile is appended to flags fields of all profiles using `gfortran` on `linux` OS
+```toml
+[profiles.linux]
+flags = '-g -Wall'
+```
 
 ## Installation configuration
 

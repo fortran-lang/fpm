@@ -132,7 +132,7 @@ subroutine build_model(model, settings, package, error)
             manifest = join_path(dep%proj_dir, "fpm.toml")
 
             call get_package_data(dependency, manifest, error, &
-                apply_defaults=.true.)
+                apply_defaults=.true., proj_dir=dep%proj_dir)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
@@ -172,12 +172,17 @@ subroutine build_model(model, settings, package, error)
     end do
     if (allocated(error)) return
 
+    if (.not.(trim(settings%flag).eq.'')) then
+        model%cmd_compile_flags = settings%flag
+    else
+        model%cmd_compile_flags = ''
+    end if
+
     if (settings%verbose) then
-        write(*,*)'<INFO> BUILD_NAME: ',settings%build_name
         write(*,*)'<INFO> COMPILER:  ',settings%compiler
         write(*,*)'<INFO> C COMPILER:  ',model%c_compiler
-        write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
-        write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
+        write(*,*)'<INFO> COMMAND LINE COMPILER OPTIONS:  ', model%cmd_compile_flags
+!        write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
      end if
 
     ! Check for duplicate modules
@@ -189,7 +194,7 @@ subroutine build_model(model, settings, package, error)
     ! Compiler flags logic
     if(settings%profile.eq.'')then
         if (trim(settings%flag).eq.'') then
-          profile = 'debug'
+            profile = 'debug'
         end if
     else
         profile = settings%profile
@@ -204,6 +209,9 @@ subroutine build_model(model, settings, package, error)
                     if (.not.profile_found .and. i.gt.1) then
                         current_pkg_profile = primary_pkg_profile
                     else if (i.eq.1) then
+                        if (.not.profile_found) then
+                          error stop 'Error: primary package does not have given profile.'
+                        end if
                         primary_pkg_profile = current_pkg_profile
                     end if
                 else

@@ -1,16 +1,69 @@
+!> Implementation of the meta data for compiler flag profiles.
+!>
+!> A profiles table can currently have the following subtables:
+!> Profile names - any string, if omitted, flags are appended to all matching profiles
+!> Compiler - any from the following list, if omitted, `DEFAULT_COMPILER` is used
+!> - "gfortran"
+!> - "ifort"
+!> - "ifx"
+!> - "pgfortran"
+!> - "nvfrotran"
+!> - "flang"
+!> - "caf"
+!> - "f95"
+!> - "lfortran"
+!> - "lfc"
+!> - "nagfor"
+!> - "crayftn"
+!> - "xlf90"
+!> - "ftn95"
+!> OS - any from the following list, if omitted, the profile is used if and only
+!> if there is no profile perfectly matching the current configuration
+!> - "linux"
+!> - "macos"
+!> - "windows"
+!> - "cygwin"
+!> - "solaris"
+!> - "freebsd"
+!> - "openbsd"
+!> - "unknown"
+!> - "UNKNOWN"
+!>
+!> Each of the subtables currently supports the following fields:
+!>```toml
+!>[profile.debug.gfortran.linux]
+!> flags="-Wall -g -Og"
+!> c_flags="-g O1"
+!> link_time_flags="-xlinkopt"
+!> files={"hello_world.f90"="-Wall -O3"}
+!>```
+!>
 module fpm_manifest_profile
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     use fpm_strings, only: lower
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
+    use fpm_filesystem, only: join_path
     implicit none
     private
     public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
-            & find_profile, DEFAULT_COMPILER
+            & info_profile, find_profile, DEFAULT_COMPILER
 
     character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran' 
     integer, parameter :: OS_ALL = -1
+    character(len=:), allocatable :: path
+
+    !> Type storing file name - file scope compiler flags pairs
+    type :: file_scope_flag
+
+      !> Name of the file
+      character(len=:), allocatable :: file_name
+
+      !> File scope flags
+      character(len=:), allocatable :: flags
+    end type file_scope_flag
+
     !> Configuration meta data for a profile
     type :: profile_config_t
       !> Name of the profile
@@ -31,16 +84,20 @@ module fpm_manifest_profile
       !> Link time compiler flags
       character(len=:), allocatable :: link_time_flags
 
+      !> File scope flags
+      type(file_scope_flag), allocatable :: file_scope_flags(:)
+
       contains
 
         !> Print information on this instance
         procedure :: info
+
     end type profile_config_t
 
     contains
 
       !> Construct a new profile configuration from a TOML data structure
-      function new_profile(profile_name, compiler, os_type, flags, c_flags, link_time_flags) result(profile)
+      function new_profile(profile_name, compiler, os_type, flags, c_flags, link_time_flags, file_scope_flags) result(profile)
         
         !> Name of the profile
         character(len=*), intent(in) :: profile_name
@@ -59,7 +116,10 @@ module fpm_manifest_profile
 
         !> Link time compiler flags
         character(len=*), optional, intent(in) :: link_time_flags
-       
+
+        !> File scope flags
+        type(file_scope_flag), optional, intent(in) :: file_scope_flags(:)
+
         type(profile_config_t) :: profile
 
         profile%profile_name = profile_name
@@ -80,8 +140,9 @@ module fpm_manifest_profile
         else
           profile%link_time_flags = ""
         end if
-!        print *,profile_name," ",compiler," ",os_type," ",flags
-!        print *,profile_name," ",compiler," ",os_type," ",flags, " ",c_flags," ", link_time_flags
+        if (present(file_scope_flags)) then
+           profile%file_scope_flags = file_scope_flags
+        end if
       end function new_profile
 
       !> Check if compiler name is a valid compiler name
@@ -108,17 +169,6 @@ module fpm_manifest_profile
             is_valid = .false.
         end select
       end subroutine validate_os_name
-
-      subroutine validate_key_name(key_name, is_valid)
-        character(len=:), allocatable, intent(in) :: key_name
-        logical, intent(out) :: is_valid
-        select case (key_name)
-          case ("flags", "c_flags", "link_time_flags")
-            is_valid = .true.
-          case default
-            is_valid = .false.
-        end select
-      end subroutine validate_key_name
 
       subroutine match_os_type(os_name, os_type)
         character(len=:), allocatable, intent(in) :: os_name
@@ -161,18 +211,16 @@ module fpm_manifest_profile
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name
-        integer :: ikey, stat
+        character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name, file_name, file_flags
+        type(toml_table), pointer :: files
+        type(toml_key), allocatable :: file_list(:)
+        type(file_scope_flag), allocatable :: file_scope_flags(:)
+        integer :: ikey, ifile, stat
         logical :: is_valid
 
         if (size(key_list).ge.1) then
           do ikey=1,size(key_list)
             key_name = key_list(ikey)%key
-!            call validate_key_name(key_name, is_valid)
-!            if (.not. is_valid) then
-!              call syntax_error(error, "Only flags, c_flags and link_time_flags are valid keys in profiles table")
-!              return
-!            end if
             if (key_name.eq.'flags') then
               call get_value(table, 'flags', flags, stat=stat)
               if (stat /= toml_stat%success) then
@@ -185,12 +233,33 @@ module fpm_manifest_profile
                 call syntax_error(error, "c_flags has to be a key-value pair")
                 return
               end if
-            else
+            else if (key_name.eq.'link_time_flags') then
               call get_value(table, 'link_time_flags', link_time_flags, stat=stat)
               if (stat /= toml_stat%success) then
                 call syntax_error(error, "link_time_flags has to be a key-value pair")
                 return
               end if
+            else if (key_name.eq.'files') then
+              call get_value(table, 'files', files, stat=stat)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "files has to be a table")
+                return
+              end if
+              call files%get_keys(file_list)
+              allocate(file_scope_flags(size(file_list)))
+              do ifile=1,size(file_list)
+                file_name = file_list(ifile)%key
+                call get_value(files, file_name, file_flags, stat=stat)
+                if (stat /= toml_stat%success) then
+                  call syntax_error(error, "file scope flags has to be a key-value pair")
+                  return
+                end if
+                associate(cur_file=>file_scope_flags(ifile))
+                  if (.not.(path.eq."")) file_name = join_path(path, file_name)
+                  cur_file%file_name = file_name
+                  cur_file%flags = file_flags
+                end associate
+              end do
             end if
           end do
         end if
@@ -199,8 +268,12 @@ module fpm_manifest_profile
         if (.not.allocated(c_flags)) c_flags=''
         if (.not.allocated(link_time_flags)) link_time_flags=''
 
-!        call new_profile(profiles(profindex), profile_name, compiler_name, os_type, flags, c_flags, link_time_flags)
-        profiles(profindex) = new_profile(profile_name, compiler_name, os_type, flags, c_flags, link_time_flags)
+        if (allocated(file_scope_flags)) then
+          profiles(profindex) = new_profile(profile_name, compiler_name, os_type, &
+                 & flags, c_flags, link_time_flags, file_scope_flags)
+        else
+          profiles(profindex) = new_profile(profile_name, compiler_name, os_type, flags, c_flags, link_time_flags)
+        end if
         profindex = profindex + 1
       end subroutine get_flags
 
@@ -366,7 +439,7 @@ module fpm_manifest_profile
       end subroutine traverse_compilers
 
       !> Construct new profiles array from a TOML data structure
-      subroutine new_profiles(profiles, table, error)
+      subroutine new_profiles(profiles, table, error, file_scope_path)
 
         !> Instance of the dependency configuration
         type(profile_config_t), allocatable, intent(out) :: profiles(:)
@@ -377,6 +450,9 @@ module fpm_manifest_profile
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
+        !> Path to project directory of the current package
+        character(len=*), intent(in), optional :: file_scope_path
+
         type(toml_table), pointer :: prof_node
         type(toml_key), allocatable :: prof_list(:)
         type(toml_key), allocatable :: comp_list(:)
@@ -386,6 +462,11 @@ module fpm_manifest_profile
         logical :: is_valid
         type(profile_config_t), allocatable :: default_profiles(:)
 
+        if (present(file_scope_path)) then
+          path = file_scope_path
+        else
+          path = ''
+        end if
         default_profiles = get_default_profiles(error)
         if (allocated(error)) return
         call table%get_keys(prof_list)
@@ -562,6 +643,49 @@ module fpm_manifest_profile
         end if
 
       end subroutine info
+
+      function info_profile(profile) result(s)
+        ! Prints a representation of profile_config_t
+        type(profile_config_t), intent(in) :: profile
+        character(:), allocatable :: s
+        integer :: i
+        s = "profile_config_t("
+        s = s // 'profile_name="' // profile%profile_name // '"'
+        s = s // ', compiler="' // profile%compiler // '"'
+        s = s // ", os_type="
+        select case(profile%os_type)
+        case (OS_UNKNOWN)
+          s = s // "OS_UNKNOWN"
+        case (OS_LINUX)
+          s = s // "OS_LINUX"
+        case (OS_MACOS)
+          s = s // "OS_MACOS"
+        case (OS_WINDOWS)
+          s = s // "OS_WINDOWS"
+        case (OS_CYGWIN)
+          s = s // "OS_CYGWIN"
+        case (OS_SOLARIS)
+          s = s // "OS_SOLARIS"
+        case (OS_FREEBSD)
+          s = s // "OS_FREEBSD"
+        case (OS_OPENBSD)
+          s = s // "OS_OPENBSD"
+        case (OS_ALL)
+          s = s // "OS_ALL"
+        case default
+          s = s // "INVALID"
+        end select
+        if (allocated(profile%flags)) s = s // ', flags="' // profile%flags // '"'
+        if (allocated(profile%c_flags)) s = s // ', c_flags="' // profile%c_flags // '"'
+        if (allocated(profile%link_time_flags)) s = s // ', link_time_flags="' // profile%link_time_flags // '"'
+        if (allocated(profile%file_scope_flags)) then
+          do i=1,size(profile%file_scope_flags)
+            s = s // ', flags for '//profile%file_scope_flags(i)%file_name// &
+                    & ' ="' // profile%file_scope_flags(i)%flags // '"'
+          end do
+        end if
+        s = s // ")"
+      end function info_profile
 
       subroutine find_profile(profiles, profile_name, compiler, os_type, found_matching, chosen_profile)
         type(profile_config_t), allocatable, intent(in) :: profiles(:)

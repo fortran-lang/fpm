@@ -43,6 +43,7 @@ module fpm_manifest_package
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & len
     use fpm_versioning, only : version_t, new_version
+    use fpm_filesystem, only: join_path
     implicit none
     private
 
@@ -103,7 +104,7 @@ contains
 
 
     !> Construct a new package configuration from a TOML data structure
-    subroutine new_package(self, table, error)
+    subroutine new_package(self, table, error, proj_dir)
 
         !> Instance of the package configuration
         type(package_config_t), intent(out) :: self
@@ -114,13 +115,16 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
+        !> Path to project directory of the current package
+        character(len=*), intent(in), optional :: proj_dir
+
         ! Backspace (8), tabulator (9), newline (10), formfeed (12) and carriage
         ! return (13) are invalid in package names
         character(len=*), parameter :: invalid_chars = &
            achar(8) // achar(9) // achar(10) // achar(12) // achar(13)
         type(toml_table), pointer :: child, node
         type(toml_array), pointer :: children
-        character(len=:), allocatable :: version
+        character(len=:), allocatable :: version, file_scope_path
         integer :: ii, nn, stat
 
         call check(table, error)
@@ -183,8 +187,10 @@ contains
         end if
         
         call get_value(table, "profiles", child, requested=.false.)
+        file_scope_path = ""
         if (associated(child)) then
-            call new_profiles(self%profiles, child, error)
+            if (present(proj_dir)) file_scope_path = proj_dir
+            call new_profiles(self%profiles, child, error, file_scope_path)
             if (allocated(error)) return
         else
             self%profiles = get_default_profiles(error)

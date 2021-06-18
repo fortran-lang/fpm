@@ -304,28 +304,28 @@ subroutine get_module_flags(compiler, modpath, flags)
 
     select case(id)
     case default
-        flags=' -module '//modpath//' -I '//modpath
+        flags=' -module '//modpath
 
     case(id_caf, id_gcc, id_f95, id_cray)
-        flags=' -J '//modpath//' -I '//modpath
+        flags=' -J '//modpath
 
     case(id_nvhpc, id_pgi, id_flang)
-        flags=' -module '//modpath//' -I '//modpath
+        flags=' -module '//modpath
 
     case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_unknown, id_intel_llvm_nix, id_intel_llvm_unknown)
-        flags=' -module '//modpath//' -I'//modpath
+        flags=' -module '//modpath
 
     case(id_intel_classic_windows, id_intel_llvm_windows)
-        flags=' /module:'//modpath//' /I'//modpath
+        flags=' /module:'//modpath
 
     case(id_lahey)
-        flags=' -M '//modpath//' -I '//modpath
+        flags=' -M '//modpath
 
     case(id_nag)
-        flags=' -mdir '//modpath//' -I '//modpath !
+        flags=' -mdir '//modpath !
 
     case(id_ibmxl)
-        flags=' -qmoddir '//modpath//' -I '//modpath
+        flags=' -qmoddir '//modpath
 
     end select
 

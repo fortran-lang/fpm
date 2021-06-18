@@ -65,6 +65,13 @@ subroutine build_package(targets,model)
     ! Construct build schedule queue
     call schedule_targets(queue, schedule_ptr, targets)
 
+    ! Create all build directories
+    if (allocated(model%include_dirs)) then
+        do i=1,size(model%include_dirs)
+            call mkdir(model%include_dirs(i)%s)
+        end do
+    end if
+
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
 

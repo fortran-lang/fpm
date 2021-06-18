@@ -69,7 +69,6 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: show_model=.false.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: profile
-    character(len=:),allocatable :: build_name
     character(len=:),allocatable :: flag
 end type
 
@@ -198,7 +197,6 @@ contains
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
-            & build_name=val_build,&
             & profile=val_profile,&
             & compiler=val_compiler, &
             & flag=val_flag, &
@@ -222,7 +220,6 @@ contains
 
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
-            & build_name=val_build,&
             & profile=val_profile,&
             & compiler=val_compiler, &
             & flag=val_flag, &
@@ -362,7 +359,6 @@ contains
             allocate(install_settings)
             install_settings = fpm_install_settings(&
                 list=lget('list'), &
-                build_name=val_build, &
                 profile=val_profile,&
                 compiler=val_compiler, &
                 flag=val_flag, &
@@ -418,7 +414,6 @@ contains
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
-            & build_name=val_build, &
             & profile=val_profile, &
             & compiler=val_compiler, &
             & flag=val_flag, &
@@ -479,7 +474,6 @@ contains
     contains
 
     subroutine check_build_vals()
-        character(len=:), allocatable :: flags
 
         val_compiler=sget('compiler')
         if(val_compiler.eq.'') then
@@ -488,17 +482,6 @@ contains
 
         val_flag = " " // sget('flag')
         val_profile = sget('profile')
-!        if (val_flag == '') then
-!            call get_default_compile_flags(val_compiler, val_profile == "release", val_flag)
-!        else
-!            select case(val_profile)
-!            case("release", "debug")
-!               call get_default_compile_flags(val_compiler, val_profile == "release", flags)
-!               val_flag = flags // val_flag
-!            end select
-!        end if
-        allocate(character(len=16) :: val_build)
-        write(val_build, '(z16.16)') fnv_1a(val_flag)
 
     end subroutine check_build_vals
 

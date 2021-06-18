@@ -21,7 +21,7 @@ module fpm_model
 use iso_fortran_env, only: int64
 use fpm_strings, only: string_t, str
 use fpm_dependency, only: dependency_tree_t
-use fpm_manifest_profile, only: profile_config_t
+use fpm_manifest_profile, only: profile_config_t, info_profile
 implicit none
 
 private
@@ -114,6 +114,7 @@ type package_t
     !> Array of compiler profiles
     type(profile_config_t), allocatable :: profiles(:)
 
+    !> Chosen compiler profile
     type(profile_config_t) :: chosen_profile
 end type package_t
 
@@ -137,8 +138,8 @@ type :: fpm_model_t
     !> Command line name to invoke c compiler
     character(:), allocatable :: c_compiler
 
-    !> Command line flags passed to fortran for compilation
-    character(:), allocatable :: fortran_compile_flags
+    !> Command line flags passed for compilation
+    character(:), allocatable :: cmd_compile_flags
 
     !> Base directory for build
     character(:), allocatable :: output_directory
@@ -175,6 +176,14 @@ function info_package(p) result(s)
         if (i < size(p%sources)) s = s // ", "
     end do
     s = s // "]"
+    if (allocated(p%profiles)) then
+        s = s // ', profiles=['
+        do i=1,size(p%profiles)
+            s = s // info_profile(p%profiles(i))
+            if (i < size(p%profiles)) s = s // ", "
+        end do
+        s = s // "]"
+    end if
     s = s // ")"
 
 end function info_package
@@ -209,10 +218,12 @@ function info_srcfile(source) result(s)
     end select
     !    type(string_t), allocatable :: modules_provided(:)
     s = s // ", modules_provided=["
-    do i = 1, size(source%modules_provided)
-        s = s // '"' // source%modules_provided(i)%s // '"'
-        if (i < size(source%modules_provided)) s = s // ", "
-    end do
+    if (allocated(source%modules_provided)) then
+        do i = 1, size(source%modules_provided)
+            s = s // '"' // source%modules_provided(i)%s // '"'
+            if (i < size(source%modules_provided)) s = s // ", "
+        end do
+    end if
     s = s // "]"
     !    integer :: unit_type = FPM_UNIT_UNKNOWN
     s = s // ", unit_type="
@@ -236,24 +247,30 @@ function info_srcfile(source) result(s)
     end select
     !    type(string_t), allocatable :: modules_used(:)
     s = s // ", modules_used=["
-    do i = 1, size(source%modules_used)
-        s = s // '"' // source%modules_used(i)%s // '"'
-        if (i < size(source%modules_used)) s = s // ", "
-    end do
+    if (allocated(source%modules_used)) then
+        do i = 1, size(source%modules_used)
+            s = s // '"' // source%modules_used(i)%s // '"'
+            if (i < size(source%modules_used)) s = s // ", "
+        end do
+    end if
     s = s // "]"
     !    type(string_t), allocatable :: include_dependencies(:)
     s = s // ", include_dependencies=["
-    do i = 1, size(source%include_dependencies)
-        s = s // '"' // source%include_dependencies(i)%s // '"'
-        if (i < size(source%include_dependencies)) s = s // ", "
-    end do
+    if (allocated(source%include_dependencies)) then
+        do i = 1, size(source%include_dependencies)
+            s = s // '"' // source%include_dependencies(i)%s // '"'
+            if (i < size(source%include_dependencies)) s = s // ", "
+        end do
+    end if
     s = s // "]"
     !    type(string_t), allocatable :: link_libraries(:)
     s = s // ", link_libraries=["
-    do i = 1, size(source%link_libraries)
-        s = s // '"' // source%link_libraries(i)%s // '"'
-        if (i < size(source%link_libraries)) s = s // ", "
-    end do
+    if (allocated(source%link_libraries)) then
+        do i = 1, size(source%link_libraries)
+            s = s // '"' // source%link_libraries(i)%s // '"'
+            if (i < size(source%link_libraries)) s = s // ", "
+        end do
+    end if
     s = s // "]"
     !    integer(int64) :: digest
     s = s // ", digest=" // str(source%digest)
@@ -289,7 +306,7 @@ function info_model(model) result(s)
     !    character(:), allocatable :: fortran_compiler
     s = s // ', fortran_compiler="' // model%fortran_compiler // '"'
     !    character(:), allocatable :: fortran_compile_flags
-    s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
+    s = s // ', cmd_compile_flags="' // model%cmd_compile_flags // '"'
     !    character(:), allocatable :: output_directory
     s = s // ', output_directory="' // model%output_directory // '"'
     !    type(string_t), allocatable :: link_libraries(:)

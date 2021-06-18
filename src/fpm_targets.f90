@@ -31,6 +31,7 @@ use fpm_environment, only: get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, string_t
 use fpm_compiler, only: get_module_flags
+use fpm_manifest_profile, only: profile_config_t
 implicit none
 
 private
@@ -160,7 +161,8 @@ subroutine build_target_list(targets,model)
     type(fpm_model_t), intent(inout), target :: model
 
     integer :: i, j, n_source
-    character(:), allocatable :: xsuffix, exe_dir
+    character(:), allocatable :: xsuffix, exe_dir, file_scope_flag, flags_for_archive
+    character(len=16) :: build_name
     type(build_target_t), pointer :: dep
     logical :: with_lib
 
@@ -183,22 +185,38 @@ subroutine build_target_list(targets,model)
                       i=1,size(model%packages(j)%sources)), &
                       j=1,size(model%packages))])
 
-    if (with_lib) call add_target(targets,type = FPM_TARGET_ARCHIVE,&
-                            output_file = join_path('build_libs',&
-                                   model%package_name,'lib'//model%package_name//'.a'))
+    if (with_lib) then
+            if (allocated(model%packages(1)%profiles)) then
+                flags_for_archive = model%cmd_compile_flags//" "//model%packages(1)%chosen_profile%flags
+            else
+                flags_for_archive = model%cmd_compile_flags
+            end if
+            write(build_name, '(z16.16)') fnv_1a(flags_for_archive)
+            call add_target(targets,type = FPM_TARGET_ARCHIVE,&
+                            output_file = join_path('build',basename(model%fortran_compiler)//'_'// &
+                            & build_name, model%package_name, 'lib'//model%package_name//'.a'))
+    end if
 
     do j=1,size(model%packages)
-        associate(package=>model%packages(j))
-        associate(sources=>package%sources)
-
+        associate(package=>model%packages(j), sources=>model%packages(j)%sources, profile=>model%packages(j)%chosen_profile)
             do i=1,size(sources)
 
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
+                    ! make file scope flag override flags, use just one or the other
+                    file_scope_flag = get_file_scope_flags(sources(i), profile)
                     if (sources(i)%unit_type.eq.FPM_UNIT_CSOURCE) then
-                        sources(i)%c_flags=package%chosen_profile%c_flags
+                        if (file_scope_flag.eq."") then
+                            sources(i)%c_flags=model%cmd_compile_flags//" "//profile%c_flags
+                        else
+                            sources(i)%c_flags=model%cmd_compile_flags//" "//file_scope_flag
+                        end if
                     else
-                        sources(i)%flags=package%chosen_profile%flags
+                        if (file_scope_flag.eq."") then
+                            sources(i)%flags=model%cmd_compile_flags//" "//profile%flags
+                        else
+                            sources(i)%flags=model%cmd_compile_flags//" "//file_scope_flag
+                        end if
                     end if
                     call add_target(targets,source = sources(i), &
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
@@ -211,8 +229,8 @@ subroutine build_target_list(targets,model)
                     end if
 
                 case (FPM_UNIT_PROGRAM)
-                    sources(i)%flags=package%chosen_profile%flags
-                    sources(i)%link_time_flags=package%chosen_profile%link_time_flags
+                    sources(i)%flags=model%cmd_compile_flags//" "//get_file_scope_flags(sources(i), profile)//profile%flags
+                    sources(i)%link_time_flags=profile%link_time_flags
 
                     call add_target(targets,type = FPM_TARGET_OBJECT,&
                                 output_file = get_object_name(sources(i)), &
@@ -251,11 +269,33 @@ subroutine build_target_list(targets,model)
             end do
 
         end associate
-        end associate
 
     end do
 
     contains
+
+    function get_file_scope_flags(source, profile) result(file_scope_flag)
+        ! Try to match source%file_name in profile%file_scope_flags
+        !
+        !
+        type(srcfile_t), intent(in) :: source
+        type(profile_config_t), intent(in) :: profile
+
+        character(:), allocatable :: file_scope_flag, current
+        integer :: i
+
+        file_scope_flag = ""
+
+        if (allocated(profile%file_scope_flags)) then
+            associate(fflags=>profile%file_scope_flags)
+                do i=1,size(fflags)
+                    if (source%file_name.eq.fflags(i)%file_name) then
+                        file_scope_flag = fflags(i)%flags//" "
+                    end if
+                end do
+            end associate
+        end if
+    end function get_file_scope_flags
 
     function get_object_name(source) result(object_file)
         ! Generate object target path from source name and model params
@@ -292,7 +332,11 @@ subroutine build_target_list(targets,model)
     end function get_object_name
 
     function get_output_directory(source) result(out_dir)
+        ! Generate build directory name by hashing the flags of the source
+        !
+        !
         type(srcfile_t), intent(in) :: source
+
         character(len=16) :: build_name
         character(:), allocatable :: out_dir
         type(string_t) :: include_dir
