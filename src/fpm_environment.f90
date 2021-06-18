@@ -215,8 +215,6 @@ contains
                     write(stderr,'(*(g0,1x))')'<ERROR>*get_command_arguments_stack* error obtaining argument ',i
                     exit
                 elseif(ilength.gt.0)then
-                    !TODO! should escape or double quotes depending on system
-                    !TODO! on some systems might have to do more to requote
                     if(index(arg//' ','-').ne.1)then
                         args=args//quote//arg//quote//' '
                     elseif(index(arg,' ').ne.0)then
