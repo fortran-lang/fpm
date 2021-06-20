@@ -605,7 +605,7 @@ character(len=*),intent(in) :: filename
     call set_value(table, "copyright",  'Copyright '//date(1:4)//', Jane Doe')
     ! continue building of manifest
     ! ...
-    call new_package(package, table, error)
+    call new_package(package, table, error=error)
     if (allocated(error)) stop 3
     if(settings%verbose)then
        call table%accept(ser)

@@ -38,6 +38,7 @@ module fpm_manifest_package
     use fpm_manifest_library, only : library_config_t, new_library
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
+    use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & len
@@ -99,13 +100,16 @@ contains
 
 
     !> Construct a new package configuration from a TOML data structure
-    subroutine new_package(self, table, error)
+    subroutine new_package(self, table, root, error)
 
         !> Instance of the package configuration
         type(package_config_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
+
+        !> Root directory of the manifest
+        character(len=*), intent(in), optional :: root
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -116,8 +120,8 @@ contains
            achar(8) // achar(9) // achar(10) // achar(12) // achar(13)
         type(toml_table), pointer :: child, node
         type(toml_array), pointer :: children
-        character(len=:), allocatable :: version
-        integer :: ii, nn, stat
+        character(len=:), allocatable :: version, version_file
+        integer :: ii, nn, stat, io
 
         call check(table, error)
         if (allocated(error)) return
@@ -157,7 +161,25 @@ contains
         
         call get_value(table, "version", version, "0")
         call new_version(self%version, version, error)
-        if (allocated(error)) return
+        if (allocated(error) .and. present(root)) then
+            version_file = join_path(root, version)
+            if (exists(version_file)) then
+                deallocate(error)
+                open(file=version_file, unit=io, iostat=stat)
+                if (stat == 0) then
+                    call getline(io, version, iostat=stat)
+                end if
+                if (stat == 0) then
+                    close(io, iostat=stat)
+                end if
+                if (stat == 0) then
+                    call new_version(self%version, version, error)
+                else
+                    call fatal_error(error, "Reading version number from file '" &
+                        & //version_file//"' failed")
+                end if
+            end if
+        end if
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then

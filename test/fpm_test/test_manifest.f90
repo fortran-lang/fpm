@@ -658,7 +658,7 @@ contains
         call add_table(children, child, stat)
         call set_value(child, 'name', '"tester"', stat)
 
-        call new_package(package, table, error)
+        call new_package(package, table, error=error)
 
     end subroutine test_package_simple
 
@@ -676,7 +676,7 @@ contains
 
         call new_table(table)
 
-        call new_package(package, table, error)
+        call new_package(package, table, error=error)
 
     end subroutine test_package_empty
 
@@ -697,7 +697,7 @@ contains
         call new_table(table)
         call add_array(table, "name", child, stat)
 
-        call new_package(package, table, error)
+        call new_package(package, table, error=error)
 
     end subroutine test_package_typeerror
 
@@ -720,7 +720,7 @@ contains
         call add_table(table, "dev-dependencies", child, stat)
         call add_table(table, "dependencies", child, stat)
 
-        call new_package(package, table, error)
+        call new_package(package, table, error=error)
 
     end subroutine test_package_noname
 
@@ -743,7 +743,7 @@ contains
         call add_array(table, 'executable', children, stat)
         call add_array(children, children2, stat)
 
-        call new_package(package, table, error)
+        call new_package(package, table, error=error)
 
     end subroutine test_package_wrongexe
 
@@ -766,7 +766,7 @@ contains
         call add_array(table, 'test', children, stat)
         call add_array(children, children2, stat)
 
-        call new_package(package, table, error)
+        call new_package(package, table, error=error)
 
     end subroutine test_package_wrongtest
 
@@ -793,7 +793,7 @@ contains
         call add_table(children, child, stat)
         call set_value(child, 'name', '"prog"', stat)
 
-        call new_package(package, table, error)
+        call new_package(package, table, error=error)
 
     end subroutine test_package_duplicate
 
