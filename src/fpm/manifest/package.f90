@@ -165,7 +165,7 @@ contains
             version_file = join_path(root, version)
             if (exists(version_file)) then
                 deallocate(error)
-                open(file=version_file, unit=io, iostat=stat)
+                open(file=version_file, newunit=io, iostat=stat)
                 if (stat == 0) then
                     call getline(io, version, iostat=stat)
                 end if
@@ -180,6 +180,7 @@ contains
                 end if
             end if
         end if
+        if (allocated(error)) return
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
