@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.6% of total for source files.">206 statements</a>
+    title=" 3.7% of total for source files.">208 statements</a>
      </li> 
      
      
@@ -486,107 +486,109 @@
 <a id="ln-217" name="ln-217"></a><span class="s1">                elseif(ilength.gt.0)then</span>
 <a id="ln-218" name="ln-218"></a><span class="s1">                    if(index(arg//&#39;</span> <span class="s1">&#39;,&#39;</span><span class="o">-</span><span class="s1">&#39;).ne.1)then</span>
 <a id="ln-219" name="ln-219"></a><span class="s1">                        args=args//quote//arg//quote//&#39;</span> <span class="s1">&#39;</span>
-<a id="ln-220" name="ln-220"></a><span class="s1">                    else</span>
-<a id="ln-221" name="ln-221"></a><span class="s1">                        args=args//arg//&#39;</span> <span class="s1">&#39;</span>
-<a id="ln-222" name="ln-222"></a><span class="s1">                    endif</span>
-<a id="ln-223" name="ln-223"></a><span class="s1">                else</span>
-<a id="ln-224" name="ln-224"></a><span class="s1">                    args=args//repeat(quote,2)//&#39;</span> <span class="s1">&#39;</span>
-<a id="ln-225" name="ln-225"></a><span class="s1">                endif</span>
-<a id="ln-226" name="ln-226"></a><span class="s1">             endif</span>
-<a id="ln-227" name="ln-227"></a><span class="s1">         enddo</span>
-<a id="ln-228" name="ln-228"></a><span class="s1">    end function get_command_arguments_quoted</span>
-<a id="ln-229" name="ln-229"></a>
-<a id="ln-230" name="ln-230"></a><span class="s1">function separator() result(sep)</span>
-<a id="ln-231" name="ln-231"></a><span class="s1">!&gt;</span>
-<a id="ln-232" name="ln-232"></a><span class="s1">!!##NAME</span>
-<a id="ln-233" name="ln-233"></a><span class="s1">!!    separator(3f) - [M_io:ENVIRONMENT] try to determine pathname directory separator character</span>
-<a id="ln-234" name="ln-234"></a><span class="s1">!!    (LICENSE:PD)</span>
-<a id="ln-235" name="ln-235"></a><span class="s1">!!</span>
-<a id="ln-236" name="ln-236"></a><span class="s1">!!##SYNOPSIS</span>
+<a id="ln-220" name="ln-220"></a><span class="s1">                    elseif(index(arg,&#39;</span> <span class="s1">&#39;).ne.0)then</span>
+<a id="ln-221" name="ln-221"></a><span class="s1">                        args=args//quote//arg//quote//&#39;</span> <span class="s1">&#39;</span>
+<a id="ln-222" name="ln-222"></a><span class="s1">                    else</span>
+<a id="ln-223" name="ln-223"></a><span class="s1">                        args=args//arg//&#39;</span> <span class="s1">&#39;</span>
+<a id="ln-224" name="ln-224"></a><span class="s1">                    endif</span>
+<a id="ln-225" name="ln-225"></a><span class="s1">                else</span>
+<a id="ln-226" name="ln-226"></a><span class="s1">                    args=args//repeat(quote,2)//&#39;</span> <span class="s1">&#39;</span>
+<a id="ln-227" name="ln-227"></a><span class="s1">                endif</span>
+<a id="ln-228" name="ln-228"></a><span class="s1">             endif</span>
+<a id="ln-229" name="ln-229"></a><span class="s1">         enddo</span>
+<a id="ln-230" name="ln-230"></a><span class="s1">    end function get_command_arguments_quoted</span>
+<a id="ln-231" name="ln-231"></a>
+<a id="ln-232" name="ln-232"></a><span class="s1">function separator() result(sep)</span>
+<a id="ln-233" name="ln-233"></a><span class="s1">!&gt;</span>
+<a id="ln-234" name="ln-234"></a><span class="s1">!!##NAME</span>
+<a id="ln-235" name="ln-235"></a><span class="s1">!!    separator(3f) - [M_io:ENVIRONMENT] try to determine pathname directory separator character</span>
+<a id="ln-236" name="ln-236"></a><span class="s1">!!    (LICENSE:PD)</span>
 <a id="ln-237" name="ln-237"></a><span class="s1">!!</span>
-<a id="ln-238" name="ln-238"></a><span class="s1">!!    function separator() result(sep)</span>
+<a id="ln-238" name="ln-238"></a><span class="s1">!!##SYNOPSIS</span>
 <a id="ln-239" name="ln-239"></a><span class="s1">!!</span>
-<a id="ln-240" name="ln-240"></a><span class="s1">!!     character(len=1) :: sep</span>
+<a id="ln-240" name="ln-240"></a><span class="s1">!!    function separator() result(sep)</span>
 <a id="ln-241" name="ln-241"></a><span class="s1">!!</span>
-<a id="ln-242" name="ln-242"></a><span class="s1">!!##DESCRIPTION</span>
-<a id="ln-243" name="ln-243"></a><span class="s1">!!    First using the name the program was invoked with, then the name</span>
-<a id="ln-244" name="ln-244"></a><span class="s1">!!    returned by an INQUIRE(3f) of that name, then &quot;.\NAME&quot; and &quot;./NAME&quot;</span>
-<a id="ln-245" name="ln-245"></a><span class="s1">!!    try to determine the separator character used to separate directory</span>
-<a id="ln-246" name="ln-246"></a><span class="s1">!!    names from file basenames.</span>
-<a id="ln-247" name="ln-247"></a><span class="s1">!!</span>
-<a id="ln-248" name="ln-248"></a><span class="s1">!!    If a slash or backslash is not found in the name, the environment</span>
-<a id="ln-249" name="ln-249"></a><span class="s1">!!    variable PATH is examined first for a backslash, then a slash.</span>
-<a id="ln-250" name="ln-250"></a><span class="s1">!!</span>
-<a id="ln-251" name="ln-251"></a><span class="s1">!!    Can be very system dependent. If the queries fail the default returned</span>
-<a id="ln-252" name="ln-252"></a><span class="s1">!!    is &quot;/&quot;.</span>
-<a id="ln-253" name="ln-253"></a><span class="s1">!!</span>
-<a id="ln-254" name="ln-254"></a><span class="s1">!!##EXAMPLE</span>
+<a id="ln-242" name="ln-242"></a><span class="s1">!!     character(len=1) :: sep</span>
+<a id="ln-243" name="ln-243"></a><span class="s1">!!</span>
+<a id="ln-244" name="ln-244"></a><span class="s1">!!##DESCRIPTION</span>
+<a id="ln-245" name="ln-245"></a><span class="s1">!!    First using the name the program was invoked with, then the name</span>
+<a id="ln-246" name="ln-246"></a><span class="s1">!!    returned by an INQUIRE(3f) of that name, then &quot;.\NAME&quot; and &quot;./NAME&quot;</span>
+<a id="ln-247" name="ln-247"></a><span class="s1">!!    try to determine the separator character used to separate directory</span>
+<a id="ln-248" name="ln-248"></a><span class="s1">!!    names from file basenames.</span>
+<a id="ln-249" name="ln-249"></a><span class="s1">!!</span>
+<a id="ln-250" name="ln-250"></a><span class="s1">!!    If a slash or backslash is not found in the name, the environment</span>
+<a id="ln-251" name="ln-251"></a><span class="s1">!!    variable PATH is examined first for a backslash, then a slash.</span>
+<a id="ln-252" name="ln-252"></a><span class="s1">!!</span>
+<a id="ln-253" name="ln-253"></a><span class="s1">!!    Can be very system dependent. If the queries fail the default returned</span>
+<a id="ln-254" name="ln-254"></a><span class="s1">!!    is &quot;/&quot;.</span>
 <a id="ln-255" name="ln-255"></a><span class="s1">!!</span>
-<a id="ln-256" name="ln-256"></a><span class="s1">!!   sample usage</span>
+<a id="ln-256" name="ln-256"></a><span class="s1">!!##EXAMPLE</span>
 <a id="ln-257" name="ln-257"></a><span class="s1">!!</span>
-<a id="ln-258" name="ln-258"></a><span class="s1">!!    program demo_separator</span>
-<a id="ln-259" name="ln-259"></a><span class="s1">!!    use M_io, only : separator</span>
-<a id="ln-260" name="ln-260"></a><span class="s1">!!    implicit none</span>
-<a id="ln-261" name="ln-261"></a><span class="s1">!!       write(*,*)&#39;</span><span class="n">separator</span><span class="o">=</span><span class="s1">&#39;,separator()</span>
-<a id="ln-262" name="ln-262"></a><span class="s1">!!    end program demo_separator</span>
-<a id="ln-263" name="ln-263"></a>
-<a id="ln-264" name="ln-264"></a><span class="s1">! use the pathname returned as arg0 to determine pathname separator</span>
-<a id="ln-265" name="ln-265"></a><span class="s1">implicit none</span>
-<a id="ln-266" name="ln-266"></a><span class="s1">character(len=:),allocatable :: arg0</span>
-<a id="ln-267" name="ln-267"></a><span class="s1">integer                      :: arg0_length</span>
-<a id="ln-268" name="ln-268"></a><span class="s1">integer                      :: istat</span>
-<a id="ln-269" name="ln-269"></a><span class="s1">logical                      :: existing</span>
-<a id="ln-270" name="ln-270"></a><span class="s1">character(len=1)             :: sep</span>
-<a id="ln-271" name="ln-271"></a><span class="s1">!*ifort_bug*!character(len=1),save        :: sep_cache=&#39;</span> <span class="s1">&#39;</span>
-<a id="ln-272" name="ln-272"></a><span class="s1">character(len=4096)          :: name</span>
-<a id="ln-273" name="ln-273"></a><span class="s1">character(len=:),allocatable :: fname</span>
-<a id="ln-274" name="ln-274"></a>
-<a id="ln-275" name="ln-275"></a><span class="s1">   !*ifort_bug*!   if(sep_cache.ne.&#39;</span> <span class="s1">&#39;)then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS</span>
-<a id="ln-276" name="ln-276"></a><span class="s1">   !*ifort_bug*!      sep=sep_cache</span>
-<a id="ln-277" name="ln-277"></a><span class="s1">   !*ifort_bug*!      return</span>
-<a id="ln-278" name="ln-278"></a><span class="s1">   !*ifort_bug*!   endif</span>
-<a id="ln-279" name="ln-279"></a>
-<a id="ln-280" name="ln-280"></a><span class="s1">   arg0_length=0</span>
-<a id="ln-281" name="ln-281"></a><span class="s1">   name=&#39;</span> <span class="s1">&#39;</span>
-<a id="ln-282" name="ln-282"></a><span class="s1">   call get_command_argument(0,length=arg0_length,status=istat)</span>
-<a id="ln-283" name="ln-283"></a><span class="s1">   if(allocated(arg0))deallocate(arg0)</span>
-<a id="ln-284" name="ln-284"></a><span class="s1">   allocate(character(len=arg0_length) :: arg0)</span>
-<a id="ln-285" name="ln-285"></a><span class="s1">   call get_command_argument(0,arg0,status=istat)</span>
-<a id="ln-286" name="ln-286"></a><span class="s1">   ! check argument name</span>
-<a id="ln-287" name="ln-287"></a><span class="s1">   if(index(arg0,&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)then</span>
-<a id="ln-288" name="ln-288"></a><span class="s1">      sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<a id="ln-289" name="ln-289"></a><span class="s1">   elseif(index(arg0,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
-<a id="ln-290" name="ln-290"></a><span class="s1">      sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
-<a id="ln-291" name="ln-291"></a><span class="s1">   else</span>
-<a id="ln-292" name="ln-292"></a><span class="s1">      ! try name returned by INQUIRE(3f)</span>
-<a id="ln-293" name="ln-293"></a><span class="s1">      existing=.false.</span>
-<a id="ln-294" name="ln-294"></a><span class="s1">      name=&#39;</span> <span class="s1">&#39;</span>
-<a id="ln-295" name="ln-295"></a><span class="s1">      inquire(file=arg0,iostat=istat,exist=existing,name=name)</span>
-<a id="ln-296" name="ln-296"></a><span class="s1">      if(index(name,&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)then</span>
-<a id="ln-297" name="ln-297"></a><span class="s1">         sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<a id="ln-298" name="ln-298"></a><span class="s1">      elseif(index(name,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
-<a id="ln-299" name="ln-299"></a><span class="s1">         sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
-<a id="ln-300" name="ln-300"></a><span class="s1">      else</span>
-<a id="ln-301" name="ln-301"></a><span class="s1">         ! well, try some common syntax and assume in current directory</span>
-<a id="ln-302" name="ln-302"></a><span class="s1">         fname=&#39;</span><span class="p">.</span><span class="err">\</span><span class="s1">&#39;//arg0</span>
-<a id="ln-303" name="ln-303"></a><span class="s1">         inquire(file=fname,iostat=istat,exist=existing)</span>
-<a id="ln-304" name="ln-304"></a><span class="s1">         if(existing)then</span>
-<a id="ln-305" name="ln-305"></a><span class="s1">            sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<a id="ln-306" name="ln-306"></a><span class="s1">         else</span>
-<a id="ln-307" name="ln-307"></a><span class="s1">            fname=&#39;</span><span class="p">.</span><span class="o">/</span><span class="s1">&#39;//arg0</span>
-<a id="ln-308" name="ln-308"></a><span class="s1">            inquire(file=fname,iostat=istat,exist=existing)</span>
-<a id="ln-309" name="ln-309"></a><span class="s1">            if(existing)then</span>
-<a id="ln-310" name="ln-310"></a><span class="s1">               sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
-<a id="ln-311" name="ln-311"></a><span class="s1">            else ! check environment variable PATH</span>
-<a id="ln-312" name="ln-312"></a><span class="s1">               sep=merge(&#39;</span><span class="err">\</span><span class="s1">&#39;,&#39;</span><span class="o">/</span><span class="s1">&#39;,index(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)</span>
-<a id="ln-313" name="ln-313"></a><span class="s1">               !*!write(*,*)&#39;</span><span class="o">&lt;</span><span class="n">WARNING</span><span class="o">&gt;</span><span class="n">unknown</span> <span class="nb">system </span><span class="n">directory</span> <span class="n">path</span> <span class="n">separator</span><span class="err">&#39;</span>
-<a id="ln-314" name="ln-314"></a>            <span class="k">endif</span>
-<a id="ln-315" name="ln-315"></a><span class="k">         endif</span>
-<a id="ln-316" name="ln-316"></a><span class="k">      endif</span>
-<a id="ln-317" name="ln-317"></a><span class="k">   endif</span>
-<a id="ln-318" name="ln-318"></a>   <span class="c">!*ifort_bug*!sep_cache=sep</span>
-<a id="ln-319" name="ln-319"></a><span class="k">end function </span><span class="n">separator</span>
-<a id="ln-320" name="ln-320"></a><span class="k">end module </span><span class="n">fpm_environment</span>
+<a id="ln-258" name="ln-258"></a><span class="s1">!!   sample usage</span>
+<a id="ln-259" name="ln-259"></a><span class="s1">!!</span>
+<a id="ln-260" name="ln-260"></a><span class="s1">!!    program demo_separator</span>
+<a id="ln-261" name="ln-261"></a><span class="s1">!!    use M_io, only : separator</span>
+<a id="ln-262" name="ln-262"></a><span class="s1">!!    implicit none</span>
+<a id="ln-263" name="ln-263"></a><span class="s1">!!       write(*,*)&#39;</span><span class="n">separator</span><span class="o">=</span><span class="s1">&#39;,separator()</span>
+<a id="ln-264" name="ln-264"></a><span class="s1">!!    end program demo_separator</span>
+<a id="ln-265" name="ln-265"></a>
+<a id="ln-266" name="ln-266"></a><span class="s1">! use the pathname returned as arg0 to determine pathname separator</span>
+<a id="ln-267" name="ln-267"></a><span class="s1">implicit none</span>
+<a id="ln-268" name="ln-268"></a><span class="s1">character(len=:),allocatable :: arg0</span>
+<a id="ln-269" name="ln-269"></a><span class="s1">integer                      :: arg0_length</span>
+<a id="ln-270" name="ln-270"></a><span class="s1">integer                      :: istat</span>
+<a id="ln-271" name="ln-271"></a><span class="s1">logical                      :: existing</span>
+<a id="ln-272" name="ln-272"></a><span class="s1">character(len=1)             :: sep</span>
+<a id="ln-273" name="ln-273"></a><span class="s1">!*ifort_bug*!character(len=1),save        :: sep_cache=&#39;</span> <span class="s1">&#39;</span>
+<a id="ln-274" name="ln-274"></a><span class="s1">character(len=4096)          :: name</span>
+<a id="ln-275" name="ln-275"></a><span class="s1">character(len=:),allocatable :: fname</span>
+<a id="ln-276" name="ln-276"></a>
+<a id="ln-277" name="ln-277"></a><span class="s1">   !*ifort_bug*!   if(sep_cache.ne.&#39;</span> <span class="s1">&#39;)then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS</span>
+<a id="ln-278" name="ln-278"></a><span class="s1">   !*ifort_bug*!      sep=sep_cache</span>
+<a id="ln-279" name="ln-279"></a><span class="s1">   !*ifort_bug*!      return</span>
+<a id="ln-280" name="ln-280"></a><span class="s1">   !*ifort_bug*!   endif</span>
+<a id="ln-281" name="ln-281"></a>
+<a id="ln-282" name="ln-282"></a><span class="s1">   arg0_length=0</span>
+<a id="ln-283" name="ln-283"></a><span class="s1">   name=&#39;</span> <span class="s1">&#39;</span>
+<a id="ln-284" name="ln-284"></a><span class="s1">   call get_command_argument(0,length=arg0_length,status=istat)</span>
+<a id="ln-285" name="ln-285"></a><span class="s1">   if(allocated(arg0))deallocate(arg0)</span>
+<a id="ln-286" name="ln-286"></a><span class="s1">   allocate(character(len=arg0_length) :: arg0)</span>
+<a id="ln-287" name="ln-287"></a><span class="s1">   call get_command_argument(0,arg0,status=istat)</span>
+<a id="ln-288" name="ln-288"></a><span class="s1">   ! check argument name</span>
+<a id="ln-289" name="ln-289"></a><span class="s1">   if(index(arg0,&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-290" name="ln-290"></a><span class="s1">      sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
+<a id="ln-291" name="ln-291"></a><span class="s1">   elseif(index(arg0,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-292" name="ln-292"></a><span class="s1">      sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
+<a id="ln-293" name="ln-293"></a><span class="s1">   else</span>
+<a id="ln-294" name="ln-294"></a><span class="s1">      ! try name returned by INQUIRE(3f)</span>
+<a id="ln-295" name="ln-295"></a><span class="s1">      existing=.false.</span>
+<a id="ln-296" name="ln-296"></a><span class="s1">      name=&#39;</span> <span class="s1">&#39;</span>
+<a id="ln-297" name="ln-297"></a><span class="s1">      inquire(file=arg0,iostat=istat,exist=existing,name=name)</span>
+<a id="ln-298" name="ln-298"></a><span class="s1">      if(index(name,&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-299" name="ln-299"></a><span class="s1">         sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
+<a id="ln-300" name="ln-300"></a><span class="s1">      elseif(index(name,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-301" name="ln-301"></a><span class="s1">         sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
+<a id="ln-302" name="ln-302"></a><span class="s1">      else</span>
+<a id="ln-303" name="ln-303"></a><span class="s1">         ! well, try some common syntax and assume in current directory</span>
+<a id="ln-304" name="ln-304"></a><span class="s1">         fname=&#39;</span><span class="p">.</span><span class="err">\</span><span class="s1">&#39;//arg0</span>
+<a id="ln-305" name="ln-305"></a><span class="s1">         inquire(file=fname,iostat=istat,exist=existing)</span>
+<a id="ln-306" name="ln-306"></a><span class="s1">         if(existing)then</span>
+<a id="ln-307" name="ln-307"></a><span class="s1">            sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
+<a id="ln-308" name="ln-308"></a><span class="s1">         else</span>
+<a id="ln-309" name="ln-309"></a><span class="s1">            fname=&#39;</span><span class="p">.</span><span class="o">/</span><span class="s1">&#39;//arg0</span>
+<a id="ln-310" name="ln-310"></a><span class="s1">            inquire(file=fname,iostat=istat,exist=existing)</span>
+<a id="ln-311" name="ln-311"></a><span class="s1">            if(existing)then</span>
+<a id="ln-312" name="ln-312"></a><span class="s1">               sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
+<a id="ln-313" name="ln-313"></a><span class="s1">            else ! check environment variable PATH</span>
+<a id="ln-314" name="ln-314"></a><span class="s1">               sep=merge(&#39;</span><span class="err">\</span><span class="s1">&#39;,&#39;</span><span class="o">/</span><span class="s1">&#39;,index(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)</span>
+<a id="ln-315" name="ln-315"></a><span class="s1">               !*!write(*,*)&#39;</span><span class="o">&lt;</span><span class="n">WARNING</span><span class="o">&gt;</span><span class="n">unknown</span> <span class="nb">system </span><span class="n">directory</span> <span class="n">path</span> <span class="n">separator</span><span class="err">&#39;</span>
+<a id="ln-316" name="ln-316"></a>            <span class="k">endif</span>
+<a id="ln-317" name="ln-317"></a><span class="k">         endif</span>
+<a id="ln-318" name="ln-318"></a><span class="k">      endif</span>
+<a id="ln-319" name="ln-319"></a><span class="k">   endif</span>
+<a id="ln-320" name="ln-320"></a>   <span class="c">!*ifort_bug*!sep_cache=sep</span>
+<a id="ln-321" name="ln-321"></a><span class="k">end function </span><span class="n">separator</span>
+<a id="ln-322" name="ln-322"></a><span class="k">end module </span><span class="n">fpm_environment</span>
 </pre></div>
 
     </section>
@@ -605,7 +607,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-09 08:26  
+             on 2021-06-21 11:10  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
