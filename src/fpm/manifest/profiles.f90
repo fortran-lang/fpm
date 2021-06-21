@@ -33,8 +33,8 @@
 !>```toml
 !>[profile.debug.gfortran.linux]
 !> flags="-Wall -g -Og"
-!> c_flags="-g O1"
-!> link_time_flags="-xlinkopt"
+!> c-flags="-g O1"
+!> link-time-flags="-xlinkopt"
 !> files={"hello_world.f90"="-Wall -O3"}
 !>```
 !>
@@ -227,16 +227,16 @@ module fpm_manifest_profile
                 call syntax_error(error, "flags has to be a key-value pair")
                 return
               end if
-            else if (key_name.eq.'c_flags') then
-              call get_value(table, 'c_flags', c_flags, stat=stat)
+            else if (key_name.eq.'c-flags') then
+              call get_value(table, 'c-flags', c_flags, stat=stat)
               if (stat /= toml_stat%success) then
-                call syntax_error(error, "c_flags has to be a key-value pair")
+                call syntax_error(error, "c-flags has to be a key-value pair")
                 return
               end if
-            else if (key_name.eq.'link_time_flags') then
-              call get_value(table, 'link_time_flags', link_time_flags, stat=stat)
+            else if (key_name.eq.'link-time-flags') then
+              call get_value(table, 'link-time-flags', link_time_flags, stat=stat)
               if (stat /= toml_stat%success) then
-                call syntax_error(error, "link_time_flags has to be a key-value pair")
+                call syntax_error(error, "link-time-flags has to be a key-value pair")
                 return
               end if
             else if (key_name.eq.'files') then
@@ -264,16 +264,8 @@ module fpm_manifest_profile
           end do
         end if
 
-        if (.not.allocated(flags)) flags=''
-        if (.not.allocated(c_flags)) c_flags=''
-        if (.not.allocated(link_time_flags)) link_time_flags=''
-
-        if (allocated(file_scope_flags)) then
-          profiles(profindex) = new_profile(profile_name, compiler_name, os_type, &
+        profiles(profindex) = new_profile(profile_name, compiler_name, os_type, &
                  & flags, c_flags, link_time_flags, file_scope_flags)
-        else
-          profiles(profindex) = new_profile(profile_name, compiler_name, os_type, flags, c_flags, link_time_flags)
-        end if
         profindex = profindex + 1
       end subroutine get_flags
 

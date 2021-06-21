@@ -469,8 +469,8 @@ Compiler flags profiles can be declared in the *profiles* table. They are organi
 
 There are 4 fields that can be specified for each of the profiles:
 - `'flags'` - Fortran compiler flags
-- `'c_flags'` - C compiler flags
-- `'link_time_flags'` - Compiler flags applied at linking time to executables
+- `'c-flags'` - C compiler flags
+- `'link-time-flags'` - Compiler flags applied at linking time to executables
 - `'files'` - A subtable containing file name-flags pairs with flags applied to single source files (these overwrite profile flags)
 
 An example of a complete table follows:
