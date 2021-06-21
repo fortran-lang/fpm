@@ -217,6 +217,8 @@ contains
                 elseif(ilength.gt.0)then
                     if(index(arg//' ','-').ne.1)then
                         args=args//quote//arg//quote//' '
+                    elseif(index(arg,' ').ne.0)then
+                        args=args//quote//arg//quote//' '
                     else
                         args=args//arg//' '
                     endif

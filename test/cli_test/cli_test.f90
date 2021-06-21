@@ -53,7 +53,7 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="run proj1 p2 project3 --profile debug",                      NAME="proj1","p2","project3",profile="debug",', &
 'CMD="run proj1 p2 project3 --profile release",                    NAME="proj1","p2","project3",profile="release",', &
 'CMD="run proj1 p2 project3 --profile release -- arg1 -x ""and a long one""", &
-   &NAME="proj1","p2","project3",profile="release",ARGS="""arg1"" -x ""and a long one""",                         ', &
+   &NAME="proj1","p2","project3",profile="release",ARGS="""arg1"" ""-x"" ""and a long one""",                         ', &
 
 'CMD="test",                                                                                              ', &
 'CMD="test my_project",                                            NAME="my_project",                     ', &
@@ -61,7 +61,7 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="test proj1 p2 project3 --profile debug",                     NAME="proj1","p2","project3",profile="debug",', &
 'CMD="test proj1 p2 project3 --profile release",                   NAME="proj1","p2","project3",profile="release",', &
 'CMD="test proj1 p2 project3 --profile release -- arg1 -x ""and a long one""", &
-   &NAME="proj1","p2","project3",profile="release" ARGS="""arg1"" -x ""and a long one""",                         ', &
+   &NAME="proj1","p2","project3",profile="release" ARGS="""arg1"" ""-x"" ""and a long one""",                         ', &
 
 'CMD="build",                                                      NAME= profile="",ARGS="",', &
 'CMD="build --profile release",                                            NAME= profile="release",ARGS="",', &
