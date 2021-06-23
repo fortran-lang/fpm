@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.7% of total for procedures.">114 statements</a>
+    title=" 4.3% of total for procedures.">133 statements</a>
      </li> 
      
      
@@ -185,6 +185,8 @@
       
       <a class="list-group-item" href="../proc/new_package.html#variable-invalid_chars">invalid_chars</a>
       
+      <a class="list-group-item" href="../proc/new_package.html#variable-io">io</a>
+      
       <a class="list-group-item" href="../proc/new_package.html#variable-nn~2">nn</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-node">node</a>
@@ -192,6 +194,8 @@
       <a class="list-group-item" href="../proc/new_package.html#variable-stat~15">stat</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-version~4">version</a>
+      
+      <a class="list-group-item" href="../proc/new_package.html#variable-version_file">version_file</a>
       
     </div>
   </div>
@@ -231,7 +235,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine new_package(self, table, error)
+public subroutine new_package(self, table, root, error)
     
     
    
@@ -292,6 +296,21 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
+  <td><span class="anchor" id="variable-root~2"></span>character(len=*),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>root</strong></td><td><p>Root directory of the manifest</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-error~19"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
@@ -331,6 +350,8 @@ public subroutine new_package(self, table, error)
       
       <a class="list-group-item" href="../proc/new_package.html#variable-invalid_chars">invalid_chars</a>
       
+      <a class="list-group-item" href="../proc/new_package.html#variable-io">io</a>
+      
       <a class="list-group-item" href="../proc/new_package.html#variable-nn~2">nn</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-node">node</a>
@@ -338,6 +359,8 @@ public subroutine new_package(self, table, error)
       <a class="list-group-item" href="../proc/new_package.html#variable-stat~15">stat</a>
       
       <a class="list-group-item" href="../proc/new_package.html#variable-version~4">version</a>
+      
+      <a class="list-group-item" href="../proc/new_package.html#variable-version_file">version_file</a>
       
     </div>
   </div>
@@ -451,6 +474,20 @@ public subroutine new_package(self, table, error)
   
 <tr>
   
+  <td><span class="anchor" id="variable-io"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>io</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-nn~2"></span>integer,</td>
   
   <td>public</td>
@@ -501,6 +538,20 @@ public subroutine new_package(self, table, error)
   
 </tr>
 
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-version_file"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>version_file</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
 </tbody>
 </table>
 
@@ -524,13 +575,16 @@ public subroutine new_package(self, table, error)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">new_package</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">new_package</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 
         <span class="c">!&gt; Instance of the package configuration</span>
         <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
 
         <span class="c">!&gt; Instance of the TOML data structure</span>
         <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
+
+        <span class="c">!&gt; Root directory of the manifest</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">root</span>
 
         <span class="c">!&gt; Error handling</span>
         <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
@@ -541,10 +595,10 @@ public subroutine new_package(self, table, error)
            <span class="nb">achar</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">//</span> <span class="nb">achar</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span> <span class="o">//</span> <span class="nb">achar</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">//</span> <span class="nb">achar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="o">//</span> <span class="nb">achar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span>
         <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">child</span><span class="p">,</span> <span class="n">node</span>
         <span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">children</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">version</span>
-        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="nb">stat</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">version</span><span class="p">,</span> <span class="n">version_file</span>
+        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">io</span>
 
-<span class="nb">        </span><span class="k">call </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="k">call </span><span class="n">check</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
 <span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
@@ -582,7 +636,26 @@ public subroutine new_package(self, table, error)
 <span class="k">        </span>
 <span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span>
         <span class="k">call </span><span class="n">new_version</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">version</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">present</span><span class="p">(</span><span class="n">root</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">            </span><span class="n">version_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">version_file</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">                deallocate</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+                <span class="k">open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">version_file</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    call </span><span class="n">getline</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+                <span class="k">end if</span>
+<span class="k">                if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    close</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+                <span class="k">end if</span>
+<span class="k">                if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    call </span><span class="n">new_version</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">version</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+                <span class="k">else</span>
+<span class="k">                    call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Reading version number from file &#39;&quot;</span> <span class="p">&amp;</span>
+                        <span class="p">&amp;</span> <span class="o">//</span><span class="n">version_file</span><span class="o">//</span><span class="s2">&quot;&#39; failed&quot;</span><span class="p">)</span>
+                <span class="k">end if</span>
+<span class="k">            end if</span>
+<span class="k">        end if</span>
+<span class="k">        if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
 <span class="k">        call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;dependencies&quot;</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">associated</span><span class="p">(</span><span class="n">child</span><span class="p">))</span> <span class="k">then</span>
@@ -687,7 +760,7 @@ public subroutine new_package(self, table, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-21 11:10  
+             on 2021-06-23 10:02  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
