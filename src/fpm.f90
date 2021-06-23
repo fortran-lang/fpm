@@ -298,6 +298,7 @@ subroutine cmd_run(settings,test)
     type(build_target_t), pointer :: exe_target
     type(srcfile_t), pointer :: exe_source
     integer :: run_scope
+    integer, allocatable :: stat(:)
     character(len=:),allocatable :: line
     logical :: toomany
 
@@ -418,18 +419,31 @@ subroutine cmd_run(settings,test)
          call compact_list()
     else
 
+        allocate(stat(size(executables)))
         do i=1,size(executables)
             if (exists(executables(i)%s)) then
                 if(settings%runner .ne. ' ')then
-                    call run(settings%runner//' '//executables(i)%s//" "//settings%args,echo=settings%verbose)
+                    call run(settings%runner//' '//executables(i)%s//" "//settings%args, &
+                             echo=settings%verbose, exitstat=stat(i))
                 else
-                    call run(executables(i)%s//" "//settings%args,echo=settings%verbose)
+                    call run(executables(i)%s//" "//settings%args,echo=settings%verbose, &
+                             exitstat=stat(i))
                 endif
             else
                 write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
                 stop 1
             end if
         end do
+
+        if (any(stat /= 0)) then
+            do i=1,size(stat)
+                if (stat(i) /= 0) then
+                    write(*,*) '<ERROR> Execution failed for "',basename(executables(i)%s),'"'
+                end if
+            end do
+            stop 1
+        end if
+
     endif
     contains
     subroutine compact_list_all()
