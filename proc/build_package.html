@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.6% of total for procedures.">19 statements</a>
+    title=" 1.2% of total for procedures.">37 statements</a>
      </li> 
      
      
@@ -177,6 +177,8 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../proc/build_package.html#variable-build_failed">build_failed</a>
+      
       <a class="list-group-item" href="../proc/build_package.html#variable-i~8">i</a>
       
       <a class="list-group-item" href="../proc/build_package.html#variable-j~5">j</a>
@@ -184,6 +186,10 @@
       <a class="list-group-item" href="../proc/build_package.html#variable-queue">queue</a>
       
       <a class="list-group-item" href="../proc/build_package.html#variable-schedule_ptr">schedule_ptr</a>
+      
+      <a class="list-group-item" href="../proc/build_package.html#variable-skip_current">skip_current</a>
+      
+      <a class="list-group-item" href="../proc/build_package.html#variable-stat~5">stat</a>
       
     </div>
   </div>
@@ -300,6 +306,8 @@ public subroutine build_package(targets, model)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../proc/build_package.html#variable-build_failed">build_failed</a>
+      
       <a class="list-group-item" href="../proc/build_package.html#variable-i~8">i</a>
       
       <a class="list-group-item" href="../proc/build_package.html#variable-j~5">j</a>
@@ -307,6 +315,10 @@ public subroutine build_package(targets, model)
       <a class="list-group-item" href="../proc/build_package.html#variable-queue">queue</a>
       
       <a class="list-group-item" href="../proc/build_package.html#variable-schedule_ptr">schedule_ptr</a>
+      
+      <a class="list-group-item" href="../proc/build_package.html#variable-skip_current">skip_current</a>
+      
+      <a class="list-group-item" href="../proc/build_package.html#variable-stat~5">stat</a>
       
     </div>
   </div>
@@ -364,6 +376,20 @@ public subroutine build_package(targets, model)
   
 <tr>
   
+  <td><span class="anchor" id="variable-build_failed"></span>logical,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>build_failed</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-i~8"></span>integer,</td>
   
   <td>public</td>
@@ -414,6 +440,34 @@ public subroutine build_package(targets, model)
   
 </tr>
 
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-skip_current"></span>logical,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>skip_current</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-stat~5"></span>integer,</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>stat</strong>(:)</td><td></td><td></td><td></td>
+  
+</tr>
+
 </tbody>
 </table>
 
@@ -443,7 +497,8 @@ public subroutine build_package(targets, model)
 
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">queue</span><span class="p">(:)</span>
-    <span class="kt">integer</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">schedule_ptr</span><span class="p">(:)</span>
+    <span class="kt">integer</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">schedule_ptr</span><span class="p">(:),</span> <span class="nb">stat</span><span class="p">(:)</span>
+    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">build_failed</span><span class="p">,</span> <span class="n">skip_current</span>
 
     <span class="c">! Need to make output directory for include (mod) files</span>
     <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">)))</span> <span class="k">then</span>
@@ -460,16 +515,43 @@ public subroutine build_package(targets, model)
     <span class="c">! Construct build schedule queue</span>
     <span class="k">call </span><span class="n">schedule_targets</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="n">schedule_ptr</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
 
+    <span class="c">! Initialise build status flags</span>
+    <span class="k">allocate</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">queue</span><span class="p">)))</span>
+    <span class="nb">stat</span><span class="p">(:)</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">build_failed</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+
     <span class="c">! Loop over parallel schedule regions</span>
     <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">schedule_ptr</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
 
         <span class="c">! Build targets in schedule region i</span>
-        <span class="c">!$omp parallel do default(shared) schedule(dynamic,1)</span>
+        <span class="c">!$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)</span>
         <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">i</span><span class="p">),(</span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-            <span class="k">call </span><span class="n">build_target</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+            <span class="c">! Check if build already failed</span>
+            <span class="c">!$omp atomic read</span>
+            <span class="n">skip_current</span> <span class="o">=</span> <span class="n">build_failed</span>
+            
+            <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">skip_current</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                call </span><span class="n">build_target</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+            <span class="k">end if</span>
 
-        <span class="k">end do</span>
+            <span class="c">! Set global flag if this target failed to build</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+                <span class="c">!$omp atomic write</span>
+                <span class="n">build_failed</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
+            <span class="k">end if</span>
+
+<span class="k">        end do</span>
+
+        <span class="c">! Check if this schedule region failed: exit with message if failed</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">build_failed</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;&lt;ERROR&gt; Compilation failed for object &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span>
+                <span class="k">end if</span>
+<span class="k">            end do</span>
+<span class="k">            stop </span><span class="mi">1</span>
+        <span class="k">end if</span>
 
 <span class="k">    end do</span>
 
@@ -495,7 +577,7 @@ public subroutine build_package(targets, model)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-23 10:02  
+             on 2021-06-23 10:03  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

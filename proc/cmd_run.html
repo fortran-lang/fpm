@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.5% of total for procedures.">140 statements</a>
+    title=" 4.8% of total for procedures.">150 statements</a>
      </li> 
      
      
@@ -202,6 +202,8 @@
       <a class="list-group-item" href="../proc/cmd_run.html#variable-package~3">package</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-run_scope">run_scope</a>
+      
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-stat">stat</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-targets~2">targets</a>
       
@@ -359,6 +361,8 @@ public subroutine cmd_run(settings, test)
       <a class="list-group-item" href="../proc/cmd_run.html#variable-package~3">package</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-run_scope">run_scope</a>
+      
+      <a class="list-group-item" href="../proc/cmd_run.html#variable-stat">stat</a>
       
       <a class="list-group-item" href="../proc/cmd_run.html#variable-targets~2">targets</a>
       
@@ -616,6 +620,20 @@ public subroutine cmd_run(settings, test)
   
 <tr>
   
+  <td><span class="anchor" id="variable-stat"></span>integer,</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>stat</strong>(:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-targets~2"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
   
   <td>public,</td>
@@ -725,6 +743,7 @@ subroutine compact_list_all()
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">exe_target</span>
     <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">exe_source</span>
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">run_scope</span>
+    <span class="kt">integer</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="nb">stat</span><span class="p">(:)</span>
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">line</span>
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">toomany</span>
 
@@ -845,18 +864,31 @@ subroutine compact_list_all()
 <span class="k">         call </span><span class="n">compact_list</span><span class="p">()</span>
     <span class="k">else</span>
 
-<span class="k">        do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
+<span class="k">        allocate</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)))</span>
+        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">                if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="k">then</span>
-<span class="k">                    call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span>
+<span class="k">                    call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span> <span class="p">&amp;</span>
+                             <span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
                 <span class="k">else</span>
-<span class="k">                    call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span>
+<span class="k">                    call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="p">&amp;</span>
+                             <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
                 <span class="k">endif</span>
 <span class="k">            else</span>
 <span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;fpm::run&lt;ERROR&gt;&#39;</span><span class="p">,</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39; not found&#39;</span>
                 <span class="k">stop </span><span class="mi">1</span>
             <span class="k">end if</span>
 <span class="k">        end do</span>
+
+<span class="k">        if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">            do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;&lt;ERROR&gt; Execution failed for &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span>
+                <span class="k">end if</span>
+<span class="k">            end do</span>
+<span class="k">            stop </span><span class="mi">1</span>
+        <span class="k">end if</span>
+
 <span class="k">    endif</span>
 <span class="k">    contains</span>
 <span class="k">    subroutine </span><span class="n">compact_list_all</span><span class="p">()</span>
@@ -922,7 +954,7 @@ subroutine compact_list_all()
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-23 10:02  
+             on 2021-06-23 10:03  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
