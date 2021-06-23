@@ -113,7 +113,7 @@ contains
             return
         end if
 
-        call new_package(package, table, error)
+        call new_package(package, table, dirname(file), error)
         if (allocated(error)) return
 
         if (present(apply_defaults)) then

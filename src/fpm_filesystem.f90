@@ -184,6 +184,7 @@ function dirname(path) result (dir)
     character(:), allocatable :: dir
 
     dir = path(1:scan(path,'/\',back=.true.))
+    if (len_trim(dir) == 0) dir = "."
 
 end function dirname
 

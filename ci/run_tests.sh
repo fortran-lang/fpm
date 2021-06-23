@@ -62,6 +62,11 @@ test ! -x ./build/gfortran_*/app/unused
 test ! -x ./build/gfortran_*/test/unused_test
 popd
 
+pushd version_file
+"$fpm" build
+"$fpm" run
+popd
+
 pushd with_c
 "$fpm" build
 "$fpm" run --target with_c
