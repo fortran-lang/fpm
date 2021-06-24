@@ -79,6 +79,14 @@ A standardized way to manage and specify versions is the [Semantic Versioning] s
 version = "1.0.0"
 ```
 
+The version entry can also contain a filename relative to the project root, which contains the version number of the project
+
+*Example:*
+
+```toml
+version = "VERSION"
+```
+
 [Semantic Versioning]: https://semver.org
 
 

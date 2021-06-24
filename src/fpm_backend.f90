@@ -28,7 +28,7 @@
 module fpm_backend
 
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
-use fpm_filesystem, only: dirname, join_path, exists, mkdir, unix_path
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, unix_path
 use fpm_model, only: fpm_model_t
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
@@ -48,7 +48,8 @@ subroutine build_package(targets,model)
 
     integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
-    integer, allocatable :: schedule_ptr(:)
+    integer, allocatable :: schedule_ptr(:), stat(:)
+    logical :: build_failed, skip_current
 
     ! Need to make output directory for include (mod) files
 !    if (.not.exists(join_path(model%output_directory,model%package_name))) then
@@ -71,17 +72,43 @@ subroutine build_package(targets,model)
             call mkdir(model%include_dirs(i)%s)
         end do
     end if
+    ! Initialise build status flags
+    allocate(stat(size(queue)))
+    stat(:) = 0
+    build_failed = .false.
 
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
 
         ! Build targets in schedule region i
-        !$omp parallel do default(shared) schedule(dynamic,1)
+        !$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)
         do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
 
-            call build_target(model,queue(j)%ptr)
+            ! Check if build already failed
+            !$omp atomic read
+            skip_current = build_failed
+            
+            if (.not.skip_current) then
+                call build_target(model,queue(j)%ptr,stat(j))
+            end if
+
+            ! Set global flag if this target failed to build
+            if (stat(j) /= 0) then
+                !$omp atomic write
+                build_failed = .true.
+            end if
 
         end do
+
+        ! Check if this schedule region failed: exit with message if failed
+        if (build_failed) then
+            do j=1,size(stat)
+                if (stat(j) /= 0) then
+                    write(*,*) '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
+                end if
+            end do
+            stop 1
+        end if
 
     end do
 
@@ -230,9 +257,10 @@ end subroutine schedule_targets
 !>
 !> If successful, also caches the source file digest to disk.
 !>
-subroutine build_target(model,target)
+subroutine build_target(model,target,stat)
     type(fpm_model_t), intent(in) :: model
     type(build_target_t), intent(in), target :: target
+    integer, intent(out) :: stat
 
     integer :: ilib, fh
     character(:), allocatable :: link_flags
@@ -245,32 +273,34 @@ subroutine build_target(model,target)
 
     case (FPM_TARGET_OBJECT)
         call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
-              // " -o " // target%output_file)
+              // " -o " // target%output_file, echo=.true., exitstat=stat)
 
     case (FPM_TARGET_C_OBJECT)
         call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
-                // " -o " // target%output_file)
+                // " -o " // target%output_file, echo=.true., exitstat=stat)
 
     case (FPM_TARGET_EXECUTABLE)
 
         call run(model%fortran_compiler// " " // target%compile_flags &
-              //" "//target%link_flags// " -o " // target%output_file)
+              //" "//target%link_flags// " -o " // target%output_file, echo=.true., exitstat=stat)
 
     case (FPM_TARGET_ARCHIVE)
 
         select case (get_os_type())
         case (OS_WINDOWS)
             call write_response_file(target%output_file//".resp" ,target%link_objects)
-            call run(model%archiver // target%output_file // " @" // target%output_file//".resp")
+            call run(model%archiver // target%output_file // " @" // target%output_file//".resp", &
+                     echo=.true., exitstat=stat)
 
         case default
-            call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "))
+            call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "), &
+                     echo=.true., exitstat=stat)
 
         end select
 
     end select
 
-    if (allocated(target%source)) then
+    if (stat == 0 .and. allocated(target%source)) then
         open(newunit=fh,file=target%output_file//'.digest',status='unknown')
         write(fh,*) target%source%digest
         close(fh)

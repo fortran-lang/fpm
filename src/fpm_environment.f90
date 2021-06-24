@@ -137,9 +137,10 @@ contains
     end function os_is_unix
 
     !> echo command string and pass it to the system for execution
-    subroutine run(cmd,echo)
+    subroutine run(cmd,echo,exitstat)
         character(len=*), intent(in) :: cmd
         logical,intent(in),optional  :: echo
+        integer, intent(out),optional  :: exitstat
         logical :: echo_local
         integer :: stat
 
@@ -151,10 +152,16 @@ contains
         if(echo_local) print *, '+ ', cmd
 
         call execute_command_line(cmd, exitstat=stat)
-        if (stat /= 0) then
-            print *, 'Command failed'
-            error stop
+
+        if (present(exitstat)) then
+            exitstat = stat
+        else
+            if (stat /= 0) then
+                print *, 'Command failed'
+                error stop
+            end if
         end if
+
     end subroutine run
 
     !> get named environment variable value. It it is blank or
@@ -216,6 +223,8 @@ contains
                     exit
                 elseif(ilength.gt.0)then
                     if(index(arg//' ','-').ne.1)then
+                        args=args//quote//arg//quote//' '
+                    elseif(index(arg,' ').ne.0)then
                         args=args//quote//arg//quote//' '
                     else
                         args=args//arg//' '

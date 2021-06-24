@@ -115,11 +115,8 @@ contains
             call fatal_error(error, "Unclassified error while reading: '"//file//"'")
             return
         end if
-        if (present(proj_dir)) then
-          call new_package(package, table, error, proj_dir)
-        else
-          call new_package(package, table, error)
-        end if
+
+        call new_package(package, table, dirname(file), error, proj_dir)
         if (allocated(error)) return
 
         if (present(apply_defaults)) then
