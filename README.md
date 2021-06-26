@@ -36,7 +36,7 @@ non-Fortran related package manager.
 
 __Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
 
-_e.g._ `$ chmod u+x fpm-v0.1.0-linux-x86_64`
+_e.g._ `$ chmod u+x fpm-0.3.0-linux-x86_64`
 
 #### Conda
 
@@ -105,8 +105,8 @@ To build manually using the single source distribution, run the following code (
 
 ```
 mkdir _tmp
-curl -LJ https://github.com/fortran-lang/fpm/releases/download/v0.2.0/fpm-0.2.0.f90 > _tmp/fpm.f90
-gfortran -J _tmp _tmp/fpm.f90 -o _tmp/fpm
+curl -LJ https://github.com/fortran-lang/fpm/releases/download/v0.3.0/fpm-0.3.0.F90 > _tmp/fpm.F90
+gfortran -J _tmp _tmp/fpm.F90 -o _tmp/fpm
 _tmp/fpm install --flag "-g -fbacktrace -O3"
 rm -r _tmp
 ```
