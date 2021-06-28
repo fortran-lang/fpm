@@ -1,4 +1,5 @@
 module fpm_cmd_update
+  use fpm_global, only : config
   use fpm_environment, only : fpm_stop
   use fpm_command_line, only : fpm_update_settings
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
@@ -35,7 +36,7 @@ contains
     end if
 
     call new_dependency_tree(deps, cache=cache, &
-      verbosity=merge(2, 1, settings%verbose))
+      verbosity=merge(2, 1, config%verbose))
 
     call deps%add(package, error)
     call handle_error(error)

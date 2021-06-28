@@ -23,7 +23,8 @@
 !> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
 !> is complete and consistent as well.
 module fpm_command_line
-use fpm_environment,  only : get_os_type, get_env, CONFIG_VERBOSE, &
+use fpm_global,       only : config
+use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
@@ -50,7 +51,6 @@ public :: fpm_cmd_settings, &
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
-    logical                      :: verbose=.true.
 end type
 
 integer,parameter :: ibug=4096
@@ -171,10 +171,10 @@ contains
             & --runner " " &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --flag:: " "&
-            & --verbose F&
+            & --verbose:V F&
             & --',help_run,version_text)
 
-            CONFIG_VERBOSE=lget('verbose')
+            config%verbose=lget('verbose')
 
             call check_build_vals()
 
@@ -213,8 +213,7 @@ contains
             & example=lget('example'), &
             & list=lget('list'),&
             & name=names,&
-            & runner=val_runner,&
-            & verbose=lget('verbose') )
+            & runner=val_runner) 
 
         case('build')
             call set_args(common_args // '&
@@ -223,10 +222,10 @@ contains
             & --show-model F &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --flag:: " "&
-            & --verbose F&
+            & --verbose:V F&
             & --',help_build,version_text)
 
-            CONFIG_VERBOSE=lget('verbose')
+            config%verbose=lget('verbose')
 
             call check_build_vals()
 
@@ -237,8 +236,7 @@ contains
             & compiler=val_compiler, &
             & flag=val_flag, &
             & list=lget('list'),&
-            & show_model=lget('show-model'),&
-            & verbose=lget('verbose') )
+            & show_model=lget('show-model') )
 
         case('new')
             call set_args(common_args // '&
@@ -253,18 +251,18 @@ contains
             & --verbose:V F',&
             & help_new, version_text)
 
-            CONFIG_VERBOSE=lget('verbose')
+            config%verbose=lget('verbose')
 
             select case(size(unnamed))
             case(1)
-                write(stderr,'(*(g0,/))')esc('<r> ERROR:: </r><bo>directory name required')
+                write(stderr,'(*(g0,/))')esc('<r>error:</r> <bo>directory name required')
                 write(stderr,'(*(7x,g0,/))') &
                 & esc('<g>USAGE::</g> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]')
                 stop 1
             case(2)
                 name=trim(unnamed(2))
             case default
-                write(stderr,'(g0)')esc('<r> ERROR:: </r><bo>only one directory name allowed')
+                write(stderr,'(g0)')esc('<r>error:</r> <bo>only one directory name allowed')
                 write(stderr,'(7x,g0)') &
                 & esc('<g> USAGE::</g> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]')
                 stop 2
@@ -273,8 +271,8 @@ contains
             name=canon_path(name)
             if( .not.is_fortran_name(to_fortran_name(basename(name))) )then
                 write(stderr,'(g0)') &
-                & esc('<r> ERROR:: </r><bo> the fpm project name must be made of up to 63 ASCII letters,'), &
-                & esc('<bo>            numbers, underscores, or hyphens, and start with a letter.')
+                & esc('<r>error:</r> <bo>the fpm project name must be made of up to 63 ASCII letters,'), &
+                & esc('<bo>          numbers, underscores, or hyphens, and start with a letter.')
                 stop 4
             endif
 
@@ -282,13 +280,13 @@ contains
             if (any( specified([character(len=10) :: 'src','lib','app','test','example','bare'])) &
             & .and.lget('full') )then
                 write(stderr,'(*(a))')&
-                & esc('<r> ERROR::</r><bo> --full and any of [--src|--lib,--app,--test,--example,--bare]'), &
+                & esc('<r>error:</r><bo> --full and any of [--src|--lib,--app,--test,--example,--bare]'), &
                 & esc('<bo>        are mutually exclusive.')
                 stop 5
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example','full'])) &
             & .and.lget('bare') )then
                 write(stderr,'(*(a))')&
-                & esc('<r> ERROR::</r><bo> --bare and any of [--src|--lib,--app,--test,--example,--full]'), &
+                & esc('<r>error:</r><bo> --bare and any of [--src|--lib,--app,--test,--example,--full]'), &
                 & esc('<bo>        are mutually exclusive.')
                 stop 3
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example']) ) )then
@@ -298,8 +296,7 @@ contains
                  & with_executable=lget('app'),             &
                  & with_lib=any([lget('lib'),lget('src')]), &
                  & with_test=lget('test'),                  &
-                 & with_example=lget('example'),            &
-                 & verbose=lget('verbose') )
+                 & with_example=lget('example') )
             else  ! default if no specific directories are requested
                 cmd_settings=fpm_new_settings(&
                  & backfill=lget('backfill') ,           &
@@ -309,18 +306,16 @@ contains
                  & with_test=.true.,                     &
                  & with_example=lget('full'),            &
                  & with_full=lget('full'),               &
-                 & with_bare=lget('bare'),               &
-                 & verbose=lget('verbose') )
+                 & with_bare=lget('bare') )
             endif
 
         case('help','manual')
             call set_args(common_args // '&
-            & --verbose F &
+            & --verbose:V F &
             & ',help_help,version_text)
 
-            CONFIG_VERBOSE=lget('verbose')
+            config%verbose=lget('verbose')
 
-            CONFIG_VERBOSE=lget('verbose')
             if(size(unnamed).lt.2)then
                 if(unnamed(1).eq.'help')then
                    unnamed=['   ', 'fpm']
@@ -359,21 +354,21 @@ contains
                    help_text=[character(len=widest) :: help_text, version_text]
                 case default
                    help_text=[character(len=widest) :: help_text, &
-                   & esc('<r> ERROR::</r><bo> unknown help topic "')//trim(unnamed(i))//'"']
+                   & esc('<r><bo>error:</r> unknown help topic </bo>"')//trim(unnamed(i))//'"']
                 end select
             enddo
             call printhelp(help_text)
 
         case('install')
             call set_args(common_args // '&
-                & --profile " " --no-rebuild F --verbose F --prefix " " &
+                & --profile " " --no-rebuild F --verbose:V F --prefix " " &
                 & --list F &
                 & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
                 & --flag:: " "&
                 & --libdir "lib" --bindir "bin" --includedir "include"', &
                 help_install, version_text)
 
-            CONFIG_VERBOSE=lget('verbose')
+            config%verbose=lget('verbose')
 
             call check_build_vals()
 
@@ -384,8 +379,7 @@ contains
                 profile=val_profile,&
                 compiler=val_compiler, &
                 flag=val_flag, &
-                no_rebuild=lget('no-rebuild'), &
-                verbose=lget('verbose') )
+                no_rebuild=lget('no-rebuild') ) 
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
             call get_char_arg(install_settings%bindir, 'bindir')
@@ -395,10 +389,10 @@ contains
         case('list')
             call set_args(common_args // '&
             & --list F&
-            & --verbose F&
+            & --verbose:V F&
             &', help_list, version_text)
 
-            CONFIG_VERBOSE=lget('verbose')
+            config%verbose=lget('verbose')
 
             call printhelp(help_list_nodash)
             if(lget('list'))then
@@ -412,10 +406,10 @@ contains
             & --runner " " &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --flag:: " "&
-            & --verbose F&
+            & --verbose:V F&
             & --',help_test,version_text)
 
-            CONFIG_VERBOSE=lget('verbose')
+            config%verbose=lget('verbose')
 
             call check_build_vals()
 
@@ -448,14 +442,13 @@ contains
             & example=.false., &
             & list=lget('list'), &
             & name=names, &
-            & runner=val_runner, &
-            & verbose=lget('verbose') )
+            & runner=val_runner ) 
 
         case('update')
-            call set_args(common_args // ' --fetch-only F --verbose F --clean F', &
+            call set_args(common_args // ' --fetch-only F --verbose:V F --clean F', &
                 help_update, version_text)
 
-            CONFIG_VERBOSE=lget('verbose')
+            config%verbose=lget('verbose')
 
             if( size(unnamed) .gt. 1 )then
                 names=unnamed(2:)
@@ -465,7 +458,7 @@ contains
 
             allocate(fpm_update_settings :: cmd_settings)
             cmd_settings=fpm_update_settings(name=names, &
-                fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
+                fetch_only=lget('fetch-only'), &
                 clean=lget('clean'))
 
         case default
@@ -475,10 +468,10 @@ contains
             else
                 call set_args('&
                 & --list F&
-                & --verbose F&
+                & --verbose:V F&
                 &', help_fpm, version_text)
 
-                CONFIG_VERBOSE=lget('verbose')
+                config%verbose=lget('verbose')
 
                 ! Note: will not get here if --version or --usage or --help
                 ! is present on commandline
@@ -490,7 +483,7 @@ contains
                     write(stdout,'(*(a))')' '
                     call printhelp(help_list_nodash)
                 else
-                    write(stderr,'(*(a))')esc('<r> ERROR::</r><bo> unknown subcommand ['), &
+                    write(stderr,'(*(a))')esc('<r>error:</r><bo> unknown subcommand ['), &
                      & trim(cmdarg), ']'
                     call printhelp(help_list_dash)
                 endif

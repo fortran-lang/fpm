@@ -1,4 +1,6 @@
 module fpm
+use M_escape, only : esc
+use fpm_global, only : config
 use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
@@ -185,12 +187,12 @@ subroutine build_model(model, settings, package, error)
     end do
     if (allocated(error)) return
 
-    if (settings%verbose) then
-        write(*,*)'<INFO> BUILD_NAME: ',settings%build_name
-        write(*,*)'<INFO> COMPILER:  ',settings%compiler
-        write(*,*)'<INFO> C COMPILER:  ',model%c_compiler
-        write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
-        write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
+    if (config%verbose) then
+        write(*,*)esc('<y><bo><E>  info:'),'          BUILD_NAME: ',settings%build_name
+        write(*,*)esc('<y><bo><E>  info:'),'            COMPILER: ',settings%compiler
+        write(*,*)esc('<y><bo><E>  info:'),'          C COMPILER: ',model%c_compiler
+        write(*,*)esc('<y><bo><E>  info:'),'    COMPILER OPTIONS: ', model%fortran_compile_flags
+        write(*,*)esc('<y><bo><E>  info:'),' INCLUDE DIRECTORIES: [', string_cat(model%include_dirs,','),']'
      end if
 
     ! Check for duplicate modules
@@ -391,15 +393,15 @@ subroutine cmd_run(settings,test)
         line=join(settings%name)
         if(line.ne.'.')then ! do not report these special strings
            if(any(.not.found))then
-              write(stderr,'(A)',advance="no")'fpm::run<ERROR> specified names '
+              write(stderr,'(A)',advance="no") esc('<r><bo>error:')//' specified names '
               do j=1,size(settings%name)
                   if (.not.found(j)) write(stderr,'(A)',advance="no") '"'//trim(settings%name(j))//'" '
               end do
               write(stderr,'(A)') 'not found.'
               write(stderr,*)
-           else if(settings%verbose)then
-              write(stderr,'(A)',advance="yes")'<INFO>when more than one executable is available'
-              write(stderr,'(A)',advance="yes")'      program names must be specified.'
+           else if(config%verbose)then
+              write(stderr,'(A)',advance="yes")esc('<y><bo>  info:')//' when more than one executable is available'
+              write(stderr,'(A)',advance="yes")'       program names must be specified.'
            endif
         endif
 
@@ -424,13 +426,13 @@ subroutine cmd_run(settings,test)
             if (exists(executables(i)%s)) then
                 if(settings%runner .ne. ' ')then
                     call run(settings%runner//' '//executables(i)%s//" "//settings%args, &
-                             echo=settings%verbose, exitstat=stat(i))
+                             echo=config%verbose, exitstat=stat(i))
                 else
-                    call run(executables(i)%s//" "//settings%args,echo=settings%verbose, &
+                    call run(executables(i)%s//" "//settings%args,echo=config%verbose, &
                              exitstat=stat(i))
                 endif
             else
-                write(stderr,*)'fpm::run<ERROR>',executables(i)%s,' not found'
+                write(stderr,*) esc('<r><bo>error:'),executables(i)%s,' not found'
                 stop 1
             end if
         end do
@@ -438,7 +440,7 @@ subroutine cmd_run(settings,test)
         if (any(stat /= 0)) then
             do i=1,size(stat)
                 if (stat(i) /= 0) then
-                    write(*,*) '<ERROR> Execution failed for "',basename(executables(i)%s),'"'
+                    write(*,*) esc('<r><bo>error:'),' Execution failed for "',basename(executables(i)%s),'"'
                 end if
             end do
             stop 1

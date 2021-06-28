@@ -6,6 +6,7 @@ module fpm_environment
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                            & stdout=>output_unit, &
                                            & stderr=>error_unit
+    use fpm_global, only : config
     use M_escape, only : esc
     implicit none
     private
@@ -25,8 +26,6 @@ module fpm_environment
     integer, parameter, public :: OS_SOLARIS = 5
     integer, parameter, public :: OS_FREEBSD = 6
     integer, parameter, public :: OS_OPENBSD = 7
-
-    logical,save,public :: CONFIG_VERBOSE=.true.
 
 contains
     !> Determine the OS type
@@ -177,7 +176,7 @@ contains
     integer                              :: ios
        if(present(stopcode))then;local_code=stopcode;else;local_code=0;endif
        if(present(stopmsg)) write(stderr,'(a)',iostat=ios)esc('<r><bo>'//stopmsg)
-       if(CONFIG_VERBOSE)then
+       if(config%verbose)then
           error stop local_code
        else
           stop local_code
@@ -232,14 +231,14 @@ contains
         do i=2,command_argument_count() ! look at all arguments after subcommand
             call get_command_argument(number=i,length=ilength,status=istatus)
             if(istatus /= 0) then
-                write(stderr,'(*(g0,1x))')'<ERROR>*get_command_arguments_stack* error obtaining argument ',i
+                write(stderr,'(*(g0,1x))')esc('<r><bo>error:'),'get_command_arguments_stack* error obtaining argument ',i
                 exit
             else
                 if(allocated(arg))deallocate(arg)
                 allocate(character(len=ilength) :: arg)
                 call get_command_argument(number=i,value=arg,length=ilength,status=istatus)
                 if(istatus /= 0) then
-                    write(stderr,'(*(g0,1x))')'<ERROR>*get_command_arguments_stack* error obtaining argument ',i
+                    write(stderr,'(*(g0,1x))') esc('<r><bo>error:'),'get_command_arguments_stack* error obtaining argument ',i
                     exit
                 elseif(ilength.gt.0)then
                     if(index(arg//' ','-').ne.1)then

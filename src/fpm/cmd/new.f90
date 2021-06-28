@@ -53,6 +53,8 @@ module fpm_cmd_new
 !> although some other command might provide that (and the help command should
 !> be the first go-to for a CLI utility).
 
+use M_escape, only : esc
+use fpm_global, only : config
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
 use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir, to_fortran_name
@@ -75,8 +77,8 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
     !> TOP DIRECTORY NAME PROCESSING
     !> see if requested new directory already exists and process appropriately
     if(exists(settings%name) .and. .not.settings%backfill )then
-        write(stderr,'(*(g0,1x))')&
-        & '<ERROR>',settings%name,'already exists.'
+        write(stderr,'(*(g0,1x))') esc('<r><bo>error:'), &
+        & settings%name,'already exists.'
         write(stderr,'(*(g0,1x))')&
         & '        perhaps you wanted to add --backfill ?'
         return
@@ -84,7 +86,8 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         write(*,'(*(g0))')'backfilling ',settings%name
     elseif(exists(settings%name) )then
         write(stderr,'(*(g0,1x))')&
-        & '<ERROR>',settings%name,'already exists and is not a directory.'
+        & esc('<r><bo>error:'), &
+        & settings%name,'already exists and is not a directory.'
         return
     else
         ! make new directory
@@ -607,7 +610,7 @@ character(len=*),intent(in) :: filename
     ! ...
     call new_package(package, table, error=error)
     if (allocated(error)) stop 3
-    if(settings%verbose)then
+    if(config%verbose)then
        call table%accept(ser)
     endif
     ser%unit=lun
@@ -636,7 +639,7 @@ joined_string = join(input,right=nl)
 if (allocated(table)) deallocate(table)
 call toml_parse(table, joined_string)
 if (allocated(table)) then
-   if(settings%verbose)then
+   if(config%verbose)then
       ! If the TOML file is successfully parsed the table will be allocated and
       ! can be written to the standard output by passing the `toml_serializer`
       ! as visitor to the table.

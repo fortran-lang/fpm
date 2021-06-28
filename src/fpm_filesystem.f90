@@ -2,6 +2,7 @@
 !!
 module fpm_filesystem
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+    use M_escape, only : esc
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
@@ -554,8 +555,7 @@ character(len=256)            :: message
         ios=0
     endif
     if(ios.ne.0)then
-        write(stderr,'(*(a:,1x))')&
-        & '<ERROR> *filewrite*:',filename,trim(message)
+        write(stderr,'(*(a:,1x))') esc('<r><bo>error:'),'*fileopen*:',filename,trim(message)
         lun=-1
         if(present(ier))then
            ier=ios
@@ -575,7 +575,7 @@ integer               :: ios
     if(lun.ne.-1)then
         close(unit=lun,iostat=ios,iomsg=message)
         if(ios.ne.0)then
-            write(stderr,'(*(a:,1x))')'<ERROR> *filewrite*:',trim(message)
+            write(stderr,'(*(a:,1x))') esc('<r><bo>error:'),'*fileclose*:',trim(message)
             if(present(ier))then
                ier=ios
             else
@@ -599,8 +599,7 @@ character(len=256)                    :: message
        do i=1,size(filedata)
            write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
            if(ios.ne.0)then
-               write(stderr,'(*(a:,1x))')&
-               & '<ERROR> *filewrite*:',filename,trim(message)
+               write(stderr,'(*(a:,1x))') esc('<r><bo>error:'),'*filewrite*:',filename,trim(message)
                stop 4
            endif
        enddo

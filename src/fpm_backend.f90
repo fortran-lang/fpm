@@ -27,7 +27,8 @@
 !>
 module fpm_backend
 
-use fpm_environment, only: run, get_os_type, OS_WINDOWS, CONFIG_VERBOSE
+use fpm_global, only : config
+use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, unix_path
 use fpm_model, only: fpm_model_t
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
@@ -99,7 +100,7 @@ subroutine build_package(targets,model)
         if (build_failed) then
             do j=1,size(stat)
                 if (stat(j) /= 0) then
-                    write(*,*) '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
+                    write(*,*) esc('<r><bo>error:')//' Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
                 end if
             end do
             stop 1
@@ -267,39 +268,34 @@ subroutine build_target(model,target,stat)
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        if(.not.CONFIG_VERBOSE) write(*,('(a)')) &
-                esc('<B><bo><w>compile:')//target%source%file_name
+        if(.not.config%verbose) write(*,('(a)')) esc('<B><bo><w>compile:')//' '//target%source%file_name
         call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
-              // " -o " // target%output_file, echo=CONFIG_VERBOSE, exitstat=stat)
+              // " -o " // target%output_file, echo=config%verbose, exitstat=stat)
 
     case (FPM_TARGET_C_OBJECT)
-        if(.not.CONFIG_VERBOSE) write(*,('(a)')) &
-                esc('<B><bo><w>compile:')//target%source%file_name
+        if(.not.config%verbose) write(*,('(a)')) esc('<B><bo><w>compile:')//' '//target%source%file_name
         call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
-                // " -o " // target%output_file, echo=CONFIG_VERBOSE, exitstat=stat)
+                // " -o " // target%output_file, echo=config%verbose, exitstat=stat)
 
     case (FPM_TARGET_EXECUTABLE)
 
-        if(.not.CONFIG_VERBOSE) write(*,('(a)')) &
-                esc('<W><bo><b>load   :')//target%output_file
+        if(.not.config%verbose) write(*,('(a)')) esc('<W><bo><b>   load:')//' '//target%output_file
         call run(model%fortran_compiler// " " // target%compile_flags &
-              //" "//target%link_flags// " -o " // target%output_file, echo=CONFIG_VERBOSE, exitstat=stat)
+              //" "//target%link_flags// " -o " // target%output_file, echo=config%verbose, exitstat=stat)
 
     case (FPM_TARGET_ARCHIVE)
 
         select case (get_os_type())
         case (OS_WINDOWS)
             call write_response_file(target%output_file//".resp" ,target%link_objects)
-            if(.not.CONFIG_VERBOSE) write(*,('(a)')) &
-                    esc('<W><bo><b>archive:')//target%output_file
+            if(.not.config%verbose) write(*,('(a)')) esc('<W><bo><b>archive:')//' '//target%output_file
             call run(model%archiver // target%output_file // " @" // target%output_file//".resp", &
-                     echo=CONFIG_VERBOSE, exitstat=stat)
+                     echo=config%verbose, exitstat=stat)
 
         case default
-            if(.not.CONFIG_VERBOSE) write(*,('(a)')) &
-                    esc('<W><bo><b>archive:')//string_cat(target%link_objects," ")
+            if(.not.config%verbose) write(*,('(a)')) esc('<W><bo><b>archive:')//' '//target%output_file
             call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "), &
-                     echo=CONFIG_VERBOSE, exitstat=stat)
+                     echo=config%verbose, exitstat=stat)
 
         end select
 
