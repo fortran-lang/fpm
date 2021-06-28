@@ -1,4 +1,5 @@
 module fpm_cmd_update
+  use fpm_environment, only : fpm_stop
   use fpm_command_line, only : fpm_update_settings
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t
@@ -60,8 +61,7 @@ contains
     !> Potential error
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      print '(a)', error%message
-      error stop 1
+      call fpm_stop(stopcode=1,stopmsg=error%message)
     end if
   end subroutine handle_error
 

@@ -1,6 +1,7 @@
 !> Driver for unit testing
 program fpm_testing
     use, intrinsic :: iso_fortran_env, only : error_unit
+    use fpm_environment, only : fpm_stop
     use testsuite, only : run_testsuite, new_testsuite, testsuite_t, &
         & select_suite, run_selected
     use test_toml, only : collect_toml
@@ -42,7 +43,7 @@ program fpm_testing
                 write(error_unit, fmt) "Suite:", suite(is)%name
                 call run_selected(suite(is)%collect, test_name, error_unit, stat)
                 if (stat < 0) then
-                    error stop 1
+                    call fpm_stop(1)
                 end if
             else
                 write(error_unit, fmt) "Testing:", suite(is)%name
@@ -53,7 +54,7 @@ program fpm_testing
             do is = 1, size(suite)
                 write(error_unit, fmt) "-", suite(is)%name
             end do
-            error stop 1
+            call fpm_stop(1)
         end if
     else
         do is = 1, size(suite)
@@ -64,7 +65,7 @@ program fpm_testing
 
     if (stat > 0) then
        write(error_unit, '(i0, 1x, a)') stat, "test(s) failed!"
-       error stop 1
+       call fpm_stop(1)
     end if
 
 

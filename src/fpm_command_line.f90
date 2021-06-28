@@ -23,11 +23,12 @@
 !> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
 !> is complete and consistent as well.
 module fpm_command_line
-use fpm_environment,  only : get_os_type, get_env, &
+use fpm_environment,  only : get_os_type, get_env, CONFIG_VERBOSE, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
+use M_escape,         only : esc, esc_mode
 use fpm_strings,      only : lower, split, fnv_1a
 use fpm_filesystem,   only : basename, canon_path, to_fortran_name, which
 use fpm_environment,  only : run, get_command_arguments_quoted
@@ -124,6 +125,11 @@ contains
         type(fpm_install_settings), allocatable :: install_settings
         character(len=:), allocatable :: common_args, working_dir
 
+        if(isatty(stdout))then
+           call esc_mode(get_env('FPM_COLOR','color')) ! color|plain|raw
+        else
+           call esc_mode('plain') ! color|plain|raw
+        endif
         call set_help()
         ! text for --version switch,
         select case (get_os_type())
@@ -167,6 +173,8 @@ contains
             & --flag:: " "&
             & --verbose F&
             & --',help_run,version_text)
+
+            CONFIG_VERBOSE=lget('verbose')
 
             call check_build_vals()
 
@@ -218,6 +226,8 @@ contains
             & --verbose F&
             & --',help_build,version_text)
 
+            CONFIG_VERBOSE=lget('verbose')
+
             call check_build_vals()
 
             allocate( fpm_build_settings :: cmd_settings )
@@ -242,26 +252,29 @@ contains
             & --bare F &
             & --verbose:V F',&
             & help_new, version_text)
+
+            CONFIG_VERBOSE=lget('verbose')
+
             select case(size(unnamed))
             case(1)
-                write(stderr,'(*(g0,/))')'<ERROR> directory name required'
+                write(stderr,'(*(g0,/))')esc('<r> ERROR:: </r><bo>directory name required')
                 write(stderr,'(*(7x,g0,/))') &
-                & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
+                & esc('<g>USAGE::</g> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]')
                 stop 1
             case(2)
                 name=trim(unnamed(2))
             case default
-                write(stderr,'(g0)')'<ERROR> only one directory name allowed'
+                write(stderr,'(g0)')esc('<r> ERROR:: </r><bo>only one directory name allowed')
                 write(stderr,'(7x,g0)') &
-                & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]'
+                & esc('<g> USAGE::</g> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]')
                 stop 2
             end select
             !*! canon_path is not converting ".", etc.
             name=canon_path(name)
             if( .not.is_fortran_name(to_fortran_name(basename(name))) )then
-                write(stderr,'(g0)') [ character(len=72) :: &
-                & '<ERROR> the fpm project name must be made of up to 63 ASCII letters,', &
-                & '        numbers, underscores, or hyphens, and start with a letter.']
+                write(stderr,'(g0)') &
+                & esc('<r> ERROR:: </r><bo> the fpm project name must be made of up to 63 ASCII letters,'), &
+                & esc('<bo>            numbers, underscores, or hyphens, and start with a letter.')
                 stop 4
             endif
 
@@ -269,14 +282,14 @@ contains
             if (any( specified([character(len=10) :: 'src','lib','app','test','example','bare'])) &
             & .and.lget('full') )then
                 write(stderr,'(*(a))')&
-                &'<ERROR> --full and any of [--src|--lib,--app,--test,--example,--bare]', &
-                &'        are mutually exclusive.'
+                & esc('<r> ERROR::</r><bo> --full and any of [--src|--lib,--app,--test,--example,--bare]'), &
+                & esc('<bo>        are mutually exclusive.')
                 stop 5
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example','full'])) &
             & .and.lget('bare') )then
                 write(stderr,'(*(a))')&
-                &'<ERROR> --bare and any of [--src|--lib,--app,--test,--example,--full]', &
-                &'        are mutually exclusive.'
+                & esc('<r> ERROR::</r><bo> --bare and any of [--src|--lib,--app,--test,--example,--full]'), &
+                & esc('<bo>        are mutually exclusive.')
                 stop 3
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example']) ) )then
                 cmd_settings=fpm_new_settings(&
@@ -304,6 +317,10 @@ contains
             call set_args(common_args // '&
             & --verbose F &
             & ',help_help,version_text)
+
+            CONFIG_VERBOSE=lget('verbose')
+
+            CONFIG_VERBOSE=lget('verbose')
             if(size(unnamed).lt.2)then
                 if(unnamed(1).eq.'help')then
                    unnamed=['   ', 'fpm']
@@ -342,8 +359,7 @@ contains
                    help_text=[character(len=widest) :: help_text, version_text]
                 case default
                    help_text=[character(len=widest) :: help_text, &
-                   & '<ERROR> unknown help topic "'//trim(unnamed(i))//'"']
-                   !!& '<ERROR> unknown help topic "'//trim(unnamed(i)).'not found in:',manual]
+                   & esc('<r> ERROR::</r><bo> unknown help topic "')//trim(unnamed(i))//'"']
                 end select
             enddo
             call printhelp(help_text)
@@ -357,6 +373,8 @@ contains
                 & --libdir "lib" --bindir "bin" --includedir "include"', &
                 help_install, version_text)
 
+            CONFIG_VERBOSE=lget('verbose')
+
             call check_build_vals()
 
             allocate(install_settings)
@@ -367,7 +385,7 @@ contains
                 compiler=val_compiler, &
                 flag=val_flag, &
                 no_rebuild=lget('no-rebuild'), &
-                verbose=lget('verbose'))
+                verbose=lget('verbose') )
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
             call get_char_arg(install_settings%bindir, 'bindir')
@@ -379,6 +397,9 @@ contains
             & --list F&
             & --verbose F&
             &', help_list, version_text)
+
+            CONFIG_VERBOSE=lget('verbose')
+
             call printhelp(help_list_nodash)
             if(lget('list'))then
                call printhelp(help_list_dash)
@@ -393,6 +414,8 @@ contains
             & --flag:: " "&
             & --verbose F&
             & --',help_test,version_text)
+
+            CONFIG_VERBOSE=lget('verbose')
 
             call check_build_vals()
 
@@ -432,6 +455,8 @@ contains
             call set_args(common_args // ' --fetch-only F --verbose F --clean F', &
                 help_update, version_text)
 
+            CONFIG_VERBOSE=lget('verbose')
+
             if( size(unnamed) .gt. 1 )then
                 names=unnamed(2:)
             else
@@ -452,6 +477,9 @@ contains
                 & --list F&
                 & --verbose F&
                 &', help_fpm, version_text)
+
+                CONFIG_VERBOSE=lget('verbose')
+
                 ! Note: will not get here if --version or --usage or --help
                 ! is present on commandline
                 help_text=help_usage
@@ -462,7 +490,7 @@ contains
                     write(stdout,'(*(a))')' '
                     call printhelp(help_list_nodash)
                 else
-                    write(stderr,'(*(a))')'<ERROR> unknown subcommand [', &
+                    write(stderr,'(*(a))')esc('<r> ERROR::</r><bo> unknown subcommand ['), &
                      & trim(cmdarg), ']'
                     call printhelp(help_list_dash)
                 endif

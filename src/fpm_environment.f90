@@ -6,6 +6,7 @@ module fpm_environment
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                            & stdout=>output_unit, &
                                            & stderr=>error_unit
+    use M_escape, only : esc
     implicit none
     private
     public :: get_os_type
@@ -14,6 +15,7 @@ module fpm_environment
     public :: get_env
     public :: get_command_arguments_quoted
     public :: separator
+    public :: fpm_stop
 
     integer, parameter, public :: OS_UNKNOWN = 0
     integer, parameter, public :: OS_LINUX   = 1
@@ -23,6 +25,9 @@ module fpm_environment
     integer, parameter, public :: OS_SOLARIS = 5
     integer, parameter, public :: OS_FREEBSD = 6
     integer, parameter, public :: OS_OPENBSD = 7
+
+    logical,save,public :: CONFIG_VERBOSE=.true.
+
 contains
     !> Determine the OS type
     integer function get_os_type() result(r)
@@ -157,12 +162,27 @@ contains
             exitstat = stat
         else
             if (stat /= 0) then
-                print *, 'Command failed'
-                error stop
+                call fpm_stop(stopmsg='Command_failed')
             end if
         end if
 
     end subroutine run
+
+    !> if verbose mode perform an ERROR STOP else perform a STOP
+    subroutine fpm_stop(stopcode,stopmsg)
+    implicit none
+    integer,intent(in),optional          :: stopcode
+    character(len=*),intent(in),optional :: stopmsg
+    integer                              :: local_code
+    integer                              :: ios
+       if(present(stopcode))then;local_code=stopcode;else;local_code=0;endif
+       if(present(stopmsg)) write(stderr,'(a)',iostat=ios)esc('<r><bo>'//stopmsg)
+       if(CONFIG_VERBOSE)then
+          error stop local_code
+       else
+          stop local_code
+       endif
+    end subroutine fpm_stop
 
     !> get named environment variable value. It it is blank or
     !! not set return the optional default value

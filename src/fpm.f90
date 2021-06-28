@@ -4,7 +4,7 @@ use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: run, get_env
+use fpm_environment, only: run, get_env, fpm_stop
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
@@ -196,7 +196,7 @@ subroutine build_model(model, settings, package, error)
     ! Check for duplicate modules
     call check_modules_for_duplicates(model, duplicates_found)
     if (duplicates_found) then
-      error stop 'Error: One or more duplicate module names found.'
+      call fpm_stop(stopmsg='Error: One or more duplicate module names found.')
     end if
 end subroutine build_model
 
@@ -256,19 +256,19 @@ integer :: i
 call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
     print '(a)', error%message
-    error stop 1
+    call fpm_stop(1)
 end if
 
 call build_model(model, settings, package, error)
 if (allocated(error)) then
     print '(a)', error%message
-    error stop 1
+    call fpm_stop(1)
 end if
 
 call targets_from_sources(targets,model,error)
 if (allocated(error)) then
     print '(a)', error%message
-    error stop 1
+    call fpm_stop(1)
 end if
 
 if(settings%list)then
@@ -305,19 +305,19 @@ subroutine cmd_run(settings,test)
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
         print '(a)', error%message
-        error stop 1
+        call fpm_stop(1)
     end if
 
     call build_model(model, settings%fpm_build_settings, package, error)
     if (allocated(error)) then
         print '(a)', error%message
-        error stop 1
+        call fpm_stop(1)
     end if
 
     call targets_from_sources(targets,model,error)
     if (allocated(error)) then
         print '(a)', error%message
-        error stop 1
+        call fpm_stop(1)
     end if
 
     if (test) then

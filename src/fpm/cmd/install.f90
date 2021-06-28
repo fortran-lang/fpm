@@ -1,6 +1,7 @@
 module fpm_cmd_install
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm, only : build_model
+  use fpm_environment, only : fpm_stop
   use fpm_backend, only : build_package
   use fpm_command_line, only : fpm_install_settings
   use fpm_error, only : error_t, fatal_error
@@ -168,8 +169,7 @@ contains
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      print '("[Error]", 1x, a)', error%message
-      error stop 1
+      call fpm_stop(1,"[Error] "//error%message)
     end if
   end subroutine handle_error
 
