@@ -281,7 +281,7 @@ subroutine build_target(model,target,stat)
     case (FPM_TARGET_EXECUTABLE)
 
         if(.not.CONFIG_VERBOSE) write(*,('(a)')) &
-                esc('<G><bo><w>load   :')//target%output_file
+                esc('<W><bo><b>load   :')//target%output_file
         call run(model%fortran_compiler// " " // target%compile_flags &
               //" "//target%link_flags// " -o " // target%output_file, echo=CONFIG_VERBOSE, exitstat=stat)
 
@@ -291,13 +291,13 @@ subroutine build_target(model,target,stat)
         case (OS_WINDOWS)
             call write_response_file(target%output_file//".resp" ,target%link_objects)
             if(.not.CONFIG_VERBOSE) write(*,('(a)')) &
-                    esc('<G><bo><w>archive:')//target%output_file
+                    esc('<W><bo><b>archive:')//target%output_file
             call run(model%archiver // target%output_file // " @" // target%output_file//".resp", &
                      echo=CONFIG_VERBOSE, exitstat=stat)
 
         case default
             if(.not.CONFIG_VERBOSE) write(*,('(a)')) &
-                    esc('<G><bo><w>archive:')//string_cat(target%link_objects," ")
+                    esc('<W><bo><b>archive:')//string_cat(target%link_objects," ")
             call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "), &
                      echo=CONFIG_VERBOSE, exitstat=stat)
 
