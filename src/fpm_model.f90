@@ -90,9 +90,6 @@ type srcfile_t
     !> Fortran compiler flags
     character(len=:), allocatable :: flags
 
-    !> C compiler flags
-    character(len=:), allocatable :: c_flags
-
     !> Link time compiler flags
     character(len=:), allocatable :: link_time_flags
 

@@ -207,9 +207,9 @@ subroutine build_target_list(targets,model)
                     file_scope_flag = get_file_scope_flags(sources(i), profile)
                     if (sources(i)%unit_type.eq.FPM_UNIT_CSOURCE) then
                         if (file_scope_flag.eq."") then
-                            sources(i)%c_flags=model%cmd_compile_flags//" "//profile%c_flags
+                            sources(i)%flags=model%cmd_compile_flags//" "//profile%c_flags
                         else
-                            sources(i)%c_flags=model%cmd_compile_flags//" "//file_scope_flag
+                            sources(i)%flags=model%cmd_compile_flags//" "//file_scope_flag
                         end if
                     else
                         if (file_scope_flag.eq."") then
@@ -229,7 +229,12 @@ subroutine build_target_list(targets,model)
                     end if
 
                 case (FPM_UNIT_PROGRAM)
-                    sources(i)%flags=model%cmd_compile_flags//" "//get_file_scope_flags(sources(i), profile)//profile%flags
+                    file_scope_flag = get_file_scope_flags(sources(i), profile)
+                    if (file_scope_flag.eq."") then
+                        sources(i)%flags=model%cmd_compile_flags//" "//profile%flags
+                    else
+                        sources(i)%flags=model%cmd_compile_flags//" "//file_scope_flag
+                    end if
                     sources(i)%link_time_flags=profile%link_time_flags
 
                     call add_target(targets,type = FPM_TARGET_OBJECT,&
@@ -316,8 +321,6 @@ subroutine build_target_list(targets,model)
 
         if (allocated(source%flags)) then
             source%flags = source%flags // module_flags
-        else if (allocated(source%c_flags)) then
-            source%c_flags = source%c_flags // module_flags
         end if
 
         ! Convert any remaining directory separators to underscores
@@ -343,8 +346,6 @@ subroutine build_target_list(targets,model)
 
         if (allocated(source%flags)) then
             write(build_name, '(z16.16)') fnv_1a(source%flags)
-        else if (allocated(source%c_flags)) then
-            write(build_name, '(z16.16)') fnv_1a(source%c_flags)
         end if
         out_dir = join_path('build',basename(model%fortran_compiler)//'_'//build_name)
         include_dir = string_t(out_dir)
@@ -392,7 +393,6 @@ subroutine add_target(targets,type,output_file,source,link_libraries)
     if (present(source)) then
         new_target%source = source
         if (allocated(source%flags)) new_target%compile_flags = " "//source%flags
-        if (allocated(source%c_flags)) new_target%compile_flags = " "//source%c_flags
         if (allocated(source%link_time_flags)) new_target%link_flags = " "//source%link_time_flags//" "
     end if
     if (present(link_libraries)) new_target%link_libraries = link_libraries
