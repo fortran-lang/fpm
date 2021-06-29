@@ -134,8 +134,7 @@ contains
            return
         end if
 
-        self%implicit_none = .false.
-        call get_value(table, "implicit_none", self%implicit_none)
+        call get_value(table, "implicit_none", self%implicit_none, .false.)
 
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")
