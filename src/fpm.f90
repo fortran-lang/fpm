@@ -49,6 +49,7 @@ subroutine build_model(model, settings, package, error)
     type(string_t) :: include_dir
 
     model%package_name = package%name
+    model%implicit_none = package%implicit_none
 
     allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))

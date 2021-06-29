@@ -61,6 +61,8 @@ module fpm_manifest_package
         !> Name of the package
         character(len=:), allocatable :: name
 
+        logical :: implicit_none
+
         !> Package version
         type(version_t) :: version
 
