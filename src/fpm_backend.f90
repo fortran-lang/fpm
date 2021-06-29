@@ -257,7 +257,7 @@ subroutine build_target(model,target,stat)
     integer, intent(out) :: stat
 
     integer :: ilib, fh
-    character(:), allocatable :: link_flags
+    character(:), allocatable :: link_flags, implicit_flag
 
     if (.not.exists(dirname(target%output_file))) then
         call mkdir(dirname(target%output_file))
@@ -266,7 +266,12 @@ subroutine build_target(model,target,stat)
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
+        if (model%implicit_none) then
+            implicit_flag = " -fimplicit-none"
+        else
+            implicit_flag = ""
+        end if
+        call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags // implicit_flag &
               // " -o " // target%output_file, echo=.true., exitstat=stat)
 
     case (FPM_TARGET_C_OBJECT)
