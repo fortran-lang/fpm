@@ -134,6 +134,9 @@ contains
            return
         end if
 
+        self%implicit_none = .false.
+        call get_value(table, "implicit_none", self%implicit_none)
+
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")
             return
@@ -302,7 +305,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
-                    & "example", "library", "install")
+                    & "example", "library", "install", "implicit_none")
                 continue
 
             end select

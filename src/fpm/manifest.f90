@@ -178,8 +178,6 @@ contains
             return
         end if
 
-        package%implicit_none = .false.
-
     end subroutine package_defaults
 
 
