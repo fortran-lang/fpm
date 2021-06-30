@@ -7,6 +7,8 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env
     use fpm_strings, only: f_string, replace, string_t, split
+    use iso_c_binding, only: c_int8_t, c_int16_t, c_int32_t, c_int64_t, c_int128_t, c_char, c_ptr, c_int, c_loc, c_long, c_short, &
+        c_null_char, c_associated, c_f_pointer
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
@@ -16,6 +18,143 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
+#if (defined(MINGW64))
+    type, bind(c) :: stat_t
+        integer(kind=c_int32_t) :: st_dev
+        integer(kind=c_int16_t) :: st_ino
+        integer(kind=c_int16_t) :: st_mode
+        integer(kind=c_int16_t) :: st_nlink
+
+        integer(kind=c_int16_t) :: st_uid
+        integer(kind=c_int16_t) :: st_gid
+
+        integer(kind=c_int32_t) :: st_rdev
+        integer(kind=c_int32_t) :: st_size
+
+        integer(kind=c_int64_t) :: st_atime
+        integer(kind=c_int64_t) :: st_mtime
+        integer(kind=c_int64_t) :: st_ctime
+    end type
+#elif (defined(MINGW32))
+    type, bind(c) :: stat_t
+        integer(kind=c_int32_t) :: st_dev
+        integer(kind=c_int16_t) :: st_ino
+        integer(kind=c_int16_t) :: st_mode
+        integer(kind=c_int16_t) :: st_nlink
+
+        integer(kind=c_int16_t) :: st_uid
+        integer(kind=c_int16_t) :: st_gid
+
+        integer(kind=c_int32_t) :: st_rdev
+        integer(kind=c_int32_t) :: st_size
+
+        integer(kind=c_int32_t) :: st_atime
+        integer(kind=c_int32_t) :: st_mtime
+        integer(kind=c_int32_t) :: st_ctime
+    end type
+#elif (defined(LINUX64))
+    type, bind(c) :: stat_t
+        integer(kind=c_int64_t) :: st_dev
+        integer(kind=c_int64_t) :: st_ino
+        integer(kind=c_int64_t) :: st_nlink
+        integer(kind=c_int32_t) :: st_mode
+
+        integer(kind=c_int32_t) :: st_uid
+        integer(kind=c_int32_t) :: st_gid
+        integer(kind=c_int32_t) :: pad0
+
+        integer(kind=c_int64_t) :: st_rdev
+        integer(kind=c_int64_t) :: st_size
+        integer(kind=c_int64_t) :: st_blksize
+        integer(kind=c_int64_t) :: st_blocks
+
+        integer(kind=c_int128_t) :: st_atime
+        integer(kind=c_int128_t) :: st_mtime
+        integer(kind=c_int128_t) :: st_ctime
+
+        integer(kind=c_int64_t) :: glibc_reserved4
+        integer(kind=c_int64_t) :: glibc_reserved5
+        integer(kind=c_int64_t) :: glibc_reserved6
+    end type
+#elif (defined(LINUX32))
+    type, bind(c) :: stat_t
+        integer(kind=c_int64_t) :: st_dev
+        integer(kind=c_int16_t) :: pad1
+        integer(kind=c_int32_t) :: st_ino
+        integer(kind=c_int32_t) :: st_mode
+        integer(kind=c_int32_t) :: st_nlink
+
+        integer(kind=c_int32_t) :: st_uid
+        integer(kind=c_int32_t) :: st_gid
+        integer(kind=c_int64_t) :: st_rdev
+        integer(kind=c_int16_t) :: pad2
+
+        integer(kind=c_int32_t) :: st_size
+        integer(kind=c_int32_t) :: st_blksize
+        integer(kind=c_int32_t) :: st_blocks
+
+        integer(kind=c_int64_t) :: st_atime
+        integer(kind=c_int64_t) :: st_mtime
+        integer(kind=c_int64_t) :: st_ctime
+
+        integer(kind=c_int32_t) :: glibc_reserved4
+        integer(kind=c_int32_t) :: glibc_reserved5
+    end type
+#endif
+
+#if (defined(MINGW64) || defined(MINGW32))
+    type, bind(c) :: dirent
+        integer(kind=c_long)  :: d_ino
+        integer(kind=c_short) :: d_reclen
+        integer(kind=c_short) :: d_namlen
+        character(len=1,kind=c_char) :: d_name(260)
+    end type
+#elif (defined(LINUX64))
+    type, bind(c) :: dirent
+        integer(kind=c_int64_t) :: d_ino
+        integer(kind=c_int64_t) :: d_off
+        integer(kind=c_int16_t) :: d_reclen
+        integer(kind=c_int8_t)  :: d_type
+        character(len=1,kind=c_char) :: d_name(256)
+    end type
+#elif (defined(LINUX32))
+    type, bind(c) :: dirent
+        integer(kind=c_int32_t) :: d_ino
+        integer(kind=c_int32_t) :: d_off
+        integer(kind=c_int16_t) :: d_reclen
+        integer(kind=c_int8_t)  :: d_type
+        character(len=1,kind=c_char) :: d_name(256)
+    end type
+#endif
+
+#if (defined(MINGW64) || defined(MINGW32) || defined(LINUX64) || defined(LINUX32))
+    interface
+        function c_stat(path, buf) result(r) bind(c, name="stat")
+            import c_char, c_ptr, c_int
+            character(kind=c_char), intent(in) :: path(*)
+            type(c_ptr), value :: buf
+            integer(kind=c_int) :: r
+        end function c_stat
+
+        function c_opendir(dir) result(r) bind(c, name="opendir")
+            import c_char, c_ptr
+            character(kind=c_char), intent(in) :: dir(*)
+            type(c_ptr) :: r
+        end function c_opendir
+
+        function c_readdir(dir) result(r) bind(c, name="readdir")
+            import c_ptr
+            type(c_ptr), intent(in), value :: dir
+            type(c_ptr) :: r
+        end function c_readdir
+
+        function c_closedir(dir) result(r) bind(c, name="closedir")
+            import c_ptr, c_int
+            type(c_ptr), intent(in), value :: dir
+            integer(kind=c_int) :: r
+        end function c_closedir
+    end interface
+#endif
 
 contains
 
@@ -312,6 +451,107 @@ subroutine mkdir(dir)
 end subroutine mkdir
 
 
+#if (defined(MINGW64) || defined(MINGW32) || defined(LINUX64) || defined(LINUX32))
+!> Get file & directory names in directory `dir` using iso_c_binding.
+!!
+!!  - File/directory names return are relative to cwd, ie. preprended with `dir`
+!!  - Includes files starting with `.` except current directory and parent directory
+!!
+recursive subroutine list_files(dir, files, recurse)
+    character(len=*), intent(in) :: dir
+    type(string_t), allocatable, intent(out) :: files(:)
+    logical, intent(in), optional :: recurse
+
+    integer :: i
+    type(string_t), allocatable :: dir_files(:)
+    type(string_t), allocatable :: sub_dir_files(:)
+
+    type(c_ptr) :: dir_handle
+    type(c_ptr) :: dir_entry_c
+    type(dirent), pointer :: dir_entry_fortran
+    character(len=:), allocatable :: string_fortran
+    integer, parameter :: N_MAX = 256
+    type(string_t) :: files_tmp(N_MAX)
+    integer(kind=c_int) :: r
+
+    if (.not. is_dir_c(dir(1:len_trim(dir))//c_null_char)) then
+        allocate (files(0))
+        return
+    end if
+
+    dir_handle = c_opendir(dir(1:len_trim(dir))//c_null_char)
+    if (.not. c_associated(dir_handle)) then
+        print *, 'c_opendir() failed'
+        error stop
+    end if
+
+    i = 0
+    allocate(files(0))
+
+    do
+        dir_entry_c = c_readdir(dir_handle)
+        if (.not. c_associated(dir_entry_c)) then
+            exit
+        else
+            call c_f_pointer(dir_entry_c, dir_entry_fortran)
+            string_fortran = f_string(dir_entry_fortran%d_name)
+
+            if ((string_fortran .eq. '.' .or. string_fortran .eq. '..')) then
+                cycle
+            end if
+
+            i = i + 1
+
+            if (i .gt. N_MAX) then
+                files = [files, files_tmp]
+                i = 1
+            end if
+
+            files_tmp(i)%s = join_path(dir, string_fortran)
+        end if
+    end do
+
+    r = c_closedir(dir_handle)
+
+    if (r .ne. 0) then
+        print *, 'c_closedir() failed'
+        error stop
+    end if
+
+    if (i .gt. 0) then
+        files = [files, files_tmp(1:i)]
+    end if
+
+    if (present(recurse)) then
+        if (recurse) then
+
+            allocate(sub_dir_files(0))
+
+            do i=1,size(files)
+                if (is_dir_c(files(i)%s//c_null_char)) then
+                    call list_files(files(i)%s, dir_files, recurse=.true.)
+                    sub_dir_files = [sub_dir_files, dir_files]
+                end if
+            end do
+
+            files = [files, sub_dir_files]
+        end if
+    end if
+end subroutine list_files
+
+function is_dir_c(path) result(r)
+    character(kind=c_char), intent(in) :: path(*)
+    logical :: r
+    type(stat_t), target :: buf
+    integer(kind=c_int) :: exists
+    integer(kind=c_int), parameter :: S_IFMT  = 61440
+    integer(kind=c_int), parameter :: S_IFDIR = 16384
+
+    exists = c_stat(path, c_loc(buf))
+    r = exists .eq. 0 .and. iand(int(buf%st_mode, kind=c_int), S_IFMT) .eq. S_IFDIR
+end function is_dir_c
+
+#else
 !> Get file & directory names in directory `dir`.
 !!
 !!  - File/directory names return are relative to cwd, ie. preprended with `dir`
@@ -376,7 +616,7 @@ recursive subroutine list_files(dir, files, recurse)
     end if
 
 end subroutine list_files
-
+#endif
 
 !> test if pathname already exists
 logical function exists(filename) result(r)
