@@ -46,10 +46,10 @@ module fpm_manifest_profile
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_filesystem, only: join_path
     implicit none
-    private
     public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
             & info_profile, find_profile, DEFAULT_COMPILER
 
+    !> Name of the default compiler
     character(len=*), parameter :: DEFAULT_COMPILER = 'gfortran' 
     integer, parameter :: OS_ALL = -1
     character(len=:), allocatable :: path
@@ -62,6 +62,7 @@ module fpm_manifest_profile
 
       !> File scope flags
       character(len=:), allocatable :: flags
+
     end type file_scope_flag
 
     !> Configuration meta data for a profile
@@ -143,11 +144,16 @@ module fpm_manifest_profile
         if (present(file_scope_flags)) then
            profile%file_scope_flags = file_scope_flags
         end if
+
       end function new_profile
 
       !> Check if compiler name is a valid compiler name
       subroutine validate_compiler_name(compiler_name, is_valid)
+
+        !> Name of a compiler
         character(len=:), allocatable, intent(in) :: compiler_name
+
+        !> Boolean value of whether compiler_name is valid or not
         logical, intent(out) :: is_valid
         select case(compiler_name)
           case("gfortran", "ifort", "ifx", "pgfortran", "nvfrotran", "flang", "caf", &
@@ -158,9 +164,15 @@ module fpm_manifest_profile
         end select
       end subroutine validate_compiler_name
         
+      !> Check if os_name is a valid name of a supported OS
       subroutine validate_os_name(os_name, is_valid)
+
+        !> Name of an operating system
         character(len=:), allocatable, intent(in) :: os_name
+
+        !> Boolean value of whether os_name is valid or not
         logical, intent(out) :: is_valid
+
         select case (os_name)
           case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
                           & "openbsd", "unknown", "UNKNOWN")
@@ -168,11 +180,18 @@ module fpm_manifest_profile
           case default
             is_valid = .false.
         end select
+
       end subroutine validate_os_name
 
+      !> Match os_type enum to a lowercase string with name of OS
       subroutine match_os_type(os_name, os_type)
+
+        !> Name of operating system
         character(len=:), allocatable, intent(in) :: os_name
+
+        !> Enum representing type of OS
         integer, intent(out) :: os_type
+
         select case (os_name)
           case ("linux");   os_type = OS_LINUX
           case ("macos");   os_type = OS_WINDOWS
@@ -183,8 +202,11 @@ module fpm_manifest_profile
           case ("all");     os_type = OS_ALL
           case default;     os_type = OS_UNKNOWN
         end select
+
       end subroutine match_os_type
 
+      !> Look for flags, c-flags, link-time-flags key-val pairs
+      !> and files table in a given table and create new profiles
       subroutine get_flags(profile_name, compiler_name, os_type, key_list, table, profiles, profindex, error)
 
         !> Name of profile
@@ -550,9 +572,14 @@ module fpm_manifest_profile
         end do
       end subroutine new_profiles
 
+      !> Construct an array of built-in profiles
       function get_default_profiles(error) result(default_profiles)
+
+        !> Error handling
         type(error_t), allocatable, intent(out) :: error
+
         type(profile_config_t), allocatable :: default_profiles(:)
+
         default_profiles = [ &
               & new_profile('release', 'caf', OS_ALL, flags=' -O3 -Wimplicit-interface&
                                                 & -fPIC -fmax-errors=1 -funroll-loops'), &
@@ -636,11 +663,17 @@ module fpm_manifest_profile
 
       end subroutine info
 
+      !> Print a representation of profile_config_t
       function info_profile(profile) result(s)
-        ! Prints a representation of profile_config_t
+
+        !> Profile to be represented
         type(profile_config_t), intent(in) :: profile
+
+        !> String representation of given profile
         character(:), allocatable :: s
+
         integer :: i
+
         s = "profile_config_t("
         s = s // 'profile_name="' // profile%profile_name // '"'
         s = s // ', compiler="' // profile%compiler // '"'
@@ -677,21 +710,37 @@ module fpm_manifest_profile
           end do
         end if
         s = s // ")"
+
       end function info_profile
 
+      !> Look for profile with given configuration in array profiles
       subroutine find_profile(profiles, profile_name, compiler, os_type, found_matching, chosen_profile)
+
+        !> Array of profiles
         type(profile_config_t), allocatable, intent(in) :: profiles(:)
+
+        !> Name of profile
         character(:), allocatable, intent(in) :: profile_name
+
+        !> Name of compiler
         character(:), allocatable, intent(in) :: compiler
+
+        !> Type of operating system (enum)
         integer, intent(in) :: os_type
+
+        !> Boolean value containing true if matching profile was found
         logical, intent(out) :: found_matching
+
+        !> Last matching profile in the profiles array
         type(profile_config_t), intent(out) :: chosen_profile
+
         character(:), allocatable :: curr_profile_name
         character(:), allocatable :: curr_compiler
         integer :: curr_os
         integer :: i, priority, curr_priority
 
         found_matching = .false.
+        if (size(profiles) < 1) return
         do i=1,size(profiles)
           curr_profile_name = profiles(i)%profile_name
           curr_compiler = profiles(i)%compiler
