@@ -440,7 +440,7 @@ subroutine cmd_run(settings,test)
         if (any(stat /= 0)) then
             do i=1,size(stat)
                 if (stat(i) /= 0) then
-                    write(*,*) esc('<r><bo>error:'),' Execution failed for "',basename(executables(i)%s),'"'
+                    write(*,*) esc('<r><bo>error: Execution failed for "'),basename(executables(i)%s),'"'
                 end if
             end do
             stop 1

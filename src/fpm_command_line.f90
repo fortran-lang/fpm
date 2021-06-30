@@ -125,11 +125,23 @@ contains
         type(fpm_install_settings), allocatable :: install_settings
         character(len=:), allocatable :: common_args, working_dir
 
-        if(isatty(stdout))then
-           call esc_mode(get_env('FPM_COLOR','color')) ! color|plain|raw
-        else
-           call esc_mode('plain') ! color|plain|raw
-        endif
+        ! conventional GNU keywords for color are "auto", "never", "always" so map to M_escape
+        config%color_mode=get_env('FPM_COLOR','auto')
+        select case(config%color_mode)
+        case('color','always'); config%color_mode='color'
+        case('plain','never');  config%color_mode='plain'
+        case('auto')
+           if(isatty(stdout))then
+              config%color_mode='color'
+           else
+              config%color_mode='plain'
+           endif
+        case default
+           write(stdout,'(*(g0,1x))')'warning: FPM_COLOR should be one of "auto","never","always" but is ',config%color_mode
+           config%color_mode='plain'
+        end select
+        call esc_mode(config%color_mode) ! color|plain|raw
+
         call set_help()
         ! text for --version switch,
         select case (get_os_type())
@@ -213,7 +225,7 @@ contains
             & example=lget('example'), &
             & list=lget('list'),&
             & name=names,&
-            & runner=val_runner) 
+            & runner=val_runner)
 
         case('build')
             call set_args(common_args // '&
@@ -255,24 +267,24 @@ contains
 
             select case(size(unnamed))
             case(1)
-                write(stderr,'(*(g0,/))')esc('<r>error:</r> <bo>directory name required')
+                write(stderr,'(*(g0,/))')esc('<r><bo>error:</r> directory name required')
                 write(stderr,'(*(7x,g0,/))') &
-                & esc('<g>USAGE::</g> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]')
+                & esc('<g><bo>usage:</g> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]')
                 stop 1
             case(2)
                 name=trim(unnamed(2))
             case default
-                write(stderr,'(g0)')esc('<r>error:</r> <bo>only one directory name allowed')
+                write(stderr,'(g0)')esc('<r><bo>error:</r> only one directory name allowed')
                 write(stderr,'(7x,g0)') &
-                & esc('<g> USAGE::</g> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]')
+                & esc('<g><bo>usage:</g> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]')
                 stop 2
             end select
             !*! canon_path is not converting ".", etc.
             name=canon_path(name)
             if( .not.is_fortran_name(to_fortran_name(basename(name))) )then
                 write(stderr,'(g0)') &
-                & esc('<r>error:</r> <bo>the fpm project name must be made of up to 63 ASCII letters,'), &
-                & esc('<bo>          numbers, underscores, or hyphens, and start with a letter.')
+                & esc('<r><bo>error:</r> the fpm project name must be made of up to 63 ASCII letters,'), &
+                & esc('<bo>        numbers, underscores, or hyphens, and start with a letter.')
                 stop 4
             endif
 
@@ -280,13 +292,13 @@ contains
             if (any( specified([character(len=10) :: 'src','lib','app','test','example','bare'])) &
             & .and.lget('full') )then
                 write(stderr,'(*(a))')&
-                & esc('<r>error:</r><bo> --full and any of [--src|--lib,--app,--test,--example,--bare]'), &
+                & esc('<r><bo>error:</r> --full and any of [--src|--lib,--app,--test,--example,--bare]'), &
                 & esc('<bo>        are mutually exclusive.')
                 stop 5
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example','full'])) &
             & .and.lget('bare') )then
                 write(stderr,'(*(a))')&
-                & esc('<r>error:</r><bo> --bare and any of [--src|--lib,--app,--test,--example,--full]'), &
+                & esc('<r><bo>error:</r> --bare and any of [--src|--lib,--app,--test,--example,--full]'), &
                 & esc('<bo>        are mutually exclusive.')
                 stop 3
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example']) ) )then
@@ -379,7 +391,7 @@ contains
                 profile=val_profile,&
                 compiler=val_compiler, &
                 flag=val_flag, &
-                no_rebuild=lget('no-rebuild') ) 
+                no_rebuild=lget('no-rebuild') )
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
             call get_char_arg(install_settings%bindir, 'bindir')
@@ -442,7 +454,7 @@ contains
             & example=.false., &
             & list=lget('list'), &
             & name=names, &
-            & runner=val_runner ) 
+            & runner=val_runner )
 
         case('update')
             call set_args(common_args // ' --fetch-only F --verbose:V F --clean F', &
@@ -479,11 +491,9 @@ contains
                 if(lget('list'))then
                    help_text=help_list_dash
                 elseif(len_trim(cmdarg).eq.0)then
-                    write(stdout,'(*(a))')'Fortran Package Manager:'
-                    write(stdout,'(*(a))')' '
                     call printhelp(help_list_nodash)
                 else
-                    write(stderr,'(*(a))')esc('<r>error:</r><bo> unknown subcommand ['), &
+                    write(stderr,'(*(a))')esc('<r><bo>error:</r> unknown subcommand ['), &
                      & trim(cmdarg), ']'
                     call printhelp(help_list_dash)
                 endif
@@ -525,13 +535,40 @@ contains
 
     subroutine printhelp(lines)
     character(len=:),intent(in),allocatable :: lines(:)
-    integer :: iii,ii
-        if(allocated(lines))then
-           ii=size(lines)
-           if(ii .gt. 0 .and. len(lines).gt. 0) then
-               write(stdout,'(g0)')(trim(lines(iii)), iii=1, ii)
-           else
-               write(stdout,'(a)')'<WARNING> *printhelp* output requested is empty'
+    character(len=:),allocatable :: line
+    integer :: i,ii,iii
+        if(config%color_mode.eq.'color')then
+           if(allocated(lines))then
+              ii=size(lines)
+              if(ii .gt. 0 .and. len(lines).gt. 0) then
+                  do i=1,ii
+                     ! find length as plain text and pad line into 80-column black line with white text
+                     line=trim(lines(i))
+                     call esc_mode('plain')
+                     if(line.eq.'')then
+                        line='<E><w><bo>'//repeat(' ',80)
+                     else
+                        if(verify(line,'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_ -').eq.0.and.line(1:1).ne.' ')then
+                           line='<E><g>'//line//repeat(' ',max(0,80-len(esc(line))))
+			else
+                           line='<E><w>'//line//repeat(' ',max(0,80-len(esc(line))))
+			endif
+                     endif
+                     call esc_mode(config%color_mode)
+                     write(stdout,'(g0)')esc(line)
+                  enddo
+              else
+                  write(stdout,'(a)')esc('<m><bo>warning:</m> *printhelp* output requested is empty')
+              endif
+           endif
+        else  ! monochrome
+           if(allocated(lines))then
+              ii=size(lines)
+              if(ii .gt. 0 .and. len(lines).gt. 0) then
+                  write(stdout,'(a)')(esc(trim(lines(i))),i=1,ii)
+              else
+                  write(stdout,'(a)')esc('<m><bo>warning:</m> *printhelp* output requested is empty')
+              endif
            endif
         endif
     end subroutine printhelp
@@ -560,41 +597,49 @@ contains
     end function is_fortran_name
 
     subroutine set_help()
-   help_list_nodash=[character(len=80) :: &
-   'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ]|[--list|--help|--version]', &
-   '       where SUBCOMMAND is commonly new|build|run|test                  ', &
+   help_list_nodash=[character(len=256) :: &
+   !'<clear>', &
+   '<b><bo>F</bo>ortran <bo>P</bo>ackage <bo>M</bo>anager:</b>', &
    '                                                                        ', &
-   ' subcommand may be one of                                               ', &
+   '<bo>USAGE: <r><un>fpm</un></r><w> [ <r><un>SUBCOMMAND</un></r> <w>[<m>SUBCOMMAND_OPTIONS</m><w>] ]|&
+   &<bo>[<g>--list</g><w>|<g>--help</g><w>|<g>--version</g><w>]', &
    '                                                                        ', &
-   '  build     Compile the package placing results in the "build" directory', &
-   '  help      Display help                                                ', &
-   '  list      Display this list of subcommand descriptions                ', &
-   '  new       Create a new Fortran package directory with sample files    ', &
-   '  run       Run the local package application programs                  ', &
-   '  test      Run the test programs                                       ', &
-   '  update    Update and manage project dependencies                      ', &
-   '  install   Install project                                             ', &
+   ' where <r><un><bo>SUBCOMMAND</bo></un></r> <w>is commonly one of &
+   &<bo><g>new</g><w>|<g>build</g><w>|<g>run</g><w>|<g>test</g></bo> <w>but may be any of', &
    '                                                                        ', &
-   ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
-   ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
+   '  <bo><g>build</g></bo>     <w>Compile the package placing results in the "build" directory', &
+   '  <bo><g>help</g></bo>      <w>Display help                                                ', &
+   '  <bo><g>list</g></bo>      <w>Display this list of subcommand descriptions                ', &
+   '  <bo><g>new</g></bo>       <w>Create a new Fortran package directory with sample files    ', &
+   '  <bo><g>run</g></bo>       <w>Run the local package application programs                  ', &
+   '  <bo><g>test</g></bo>      <w>Run the test programs                                       ', &
+   '  <bo><g>update</g></bo>    <w>Update and manage project dependencies                      ', &
+   '  <bo><g>install</g></bo>   <w>Install project                                             ', &
+   '                                                                        ', &
+   ' <bo>Enter "<r><un>fpm</un></r> <g>--list</g><w></bo>" for a brief list of subcommand options. Enter', &
+   ' "<bo><r><un>fpm</un></r> <g>--help</g></bo><w>" or &
+   &"<bo><r><un>fpm</un> <un>SUBCOMMAND</un></r> <g>--help</g><w></bo>" for detailed descriptions.', &
    ' ']
-   help_list_dash = [character(len=80) :: &
+   help_list_dash = [character(len=90) :: &
+   !'<clear>', &
+   '<b><bo>F</bo>ortran <bo>P</bo>ackage <bo>M</bo>anager:</b>', &
    '                                                                                ', &
-   ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]          ', &
-   ' help [NAME(s)]                                                                 ', &
-   ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
-   '          [--full|--bare][--backfill]                                           ', &
-   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
-   ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]       ', &
-   '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
-   ' test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--runner "CMD"] [--list]', &
-   '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
-   ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]   ', &
+   ' <bo><g>build</g></bo><w> [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]          ', &
+   ' <bo><g>help</g></bo><w> [NAME(s)]                                                                 ', &
+   ' <bo><g>new</g></bo><w> NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
+   '          </bo>[--full|--bare][--backfill]                                           ', &
+   ' <bo><g>update</g></bo><w> [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
+   ' <bo><g>list</g></bo><w> [--list]                                                                  ', &
+   ' <bo><g>run</g></bo><w>  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]       ', &
+   '      </bo>[--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
+   ' <bo><g>test</g></bo><w> [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--runner "CMD"]', &
+   '      </bo>[--list] [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
+   ' <bo><g>install</g></bo><w> [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] ', &
+   '         </bo>[options]   ', &
    ' ']
-    help_usage=[character(len=80) :: &
+    help_usage=[character(len=256) :: &
     '' ]
-    help_runner=[character(len=80) :: &
+    help_runner=[character(len=256) :: &
    'NAME                                                                            ', &
    '   --runner(1) - a shared option for specifying an application to launch        ', &
    '                 executables.                                                   ', &
@@ -659,7 +704,7 @@ contains
    '  "fpm run --profile release --runner ''install -vbp -m 0711 -t ~/.local/bin''" ', &
    '  fpm-install                                                           ', &
     '' ]
-    help_fpm=[character(len=80) :: &
+    help_fpm=[character(len=256) :: &
     'NAME                                                                   ', &
     '   fpm(1) - A Fortran package manager and build system                 ', &
     '                                                                       ', &
@@ -696,17 +741,20 @@ contains
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                       ', &
-    '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]', &
+    '    build [--profile PROF] [--flag FFLAGS] [--list]                    ', &
+    '          [--compiler COMPILER_NAME]', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|             ', &
     '             [--full|--bare][--backfill]                               ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
-    '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--example]', &
+    '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] ', &
+    '        [--example]', &
     '        [--all] [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]  ', &
-    '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]     ', &
+    '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]', &
     '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]         ', &
     '    help [NAME(s)]                                                     ', &
     '    list [--list]                                                      ', &
-    '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]', &
+    '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] ', &
+    '            [--prefix PATH] [options]', &
     '                                                                       ', &
     'SUBCOMMAND OPTIONS                                                     ', &
     ' -C, --directory PATH', &
@@ -783,7 +831,7 @@ contains
     ' + The fpm(1) TOML file format is described at                                  ', &
     '   https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md        ', &
     '']
-    help_list=[character(len=80) :: &
+    help_list=[character(len=256) :: &
     'NAME                                                                   ', &
     ' list(1) - list summary of fpm(1) subcommands                          ', &
     '                                                                       ', &
@@ -805,7 +853,7 @@ contains
     '  fpm list                                                             ', &
     '  fpm --list                                                           ', &
     '' ]
-    help_run=[character(len=80) :: &
+    help_run=[character(len=256) :: &
     'NAME                                                                   ', &
     ' run(1) - the fpm(1) subcommand to run project applications            ', &
     '                                                                       ', &
@@ -881,7 +929,7 @@ contains
     '  # install executables in directory (assuming install(1) exists)      ', &
     '  fpm run --runner ''install -b -m 0711 -p -t /usr/local/bin''         ', &
     '' ]
-    help_build=[character(len=80) :: &
+    help_build=[character(len=256) :: &
     'NAME                                                                   ', &
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
@@ -933,7 +981,7 @@ contains
     '  fpm build --profile release # build with high optimization           ', &
     '' ]
 
-    help_help=[character(len=80) :: &
+    help_help=[character(len=256) :: &
     'NAME                                                                   ', &
     '   help(1) - the fpm(1) subcommand to display help                     ', &
     '                                                                       ', &
@@ -964,7 +1012,7 @@ contains
     '     fpm help manual    # All fpm(1) built-in documentation            ', &
     '                                                                       ', &
     '' ]
-    help_new=[character(len=80) ::                                             &
+    help_new=[character(len=256) ::                                             &
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
     'SYNOPSIS                                                               ', &
@@ -1069,7 +1117,7 @@ contains
     '   create any missing files in current directory                       ', &
     '   fpm new `pwd` --full --backfill                                     ', &
     '' ]
-    help_test=[character(len=80) :: &
+    help_test=[character(len=256) :: &
     'NAME                                                                   ', &
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
     '                                                                       ', &
@@ -1125,7 +1173,7 @@ contains
     '                                                                       ', &
     ' fpm test tst1 tst2 --profile PROF  # run production version of two tests', &
     '' ]
-    help_update=[character(len=80) :: &
+    help_update=[character(len=256) :: &
     'NAME', &
     ' update(1) - manage project dependencies', &
     '', &
@@ -1144,7 +1192,7 @@ contains
     'SEE ALSO', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
     '' ]
-    help_install=[character(len=80) :: &
+    help_install=[character(len=256) :: &
     'NAME', &
     ' install(1) - install fpm projects', &
     '', &
