@@ -23,7 +23,6 @@
 !> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
 !> is complete and consistent as well.
 module fpm_command_line
-use fpm_global,       only : config
 use fpm_environment,  only : get_os_type, get_env, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
@@ -51,6 +50,7 @@ public :: fpm_cmd_settings, &
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
+    logical :: verbose
 end type
 
 integer,parameter :: ibug=4096
@@ -124,23 +124,24 @@ contains
         integer                       :: widest
         type(fpm_install_settings), allocatable :: install_settings
         character(len=:), allocatable :: common_args, working_dir
+        character(len=10)             :: color_mode
 
         ! conventional GNU keywords for color are "auto", "never", "always" so map to M_escape
-        config%color_mode=get_env('FPM_COLOR','auto')
-        select case(config%color_mode)
-        case('color','always'); config%color_mode='color'
-        case('plain','never');  config%color_mode='plain'
+        color_mode=get_env('FPM_COLOR','auto')
+        select case(color_mode)
+        case('color','always'); color_mode='color'
+        case('plain','never');  color_mode='plain'
         case('auto')
            if(isatty(stdout))then
-              config%color_mode='color'
+              color_mode='color'
            else
-              config%color_mode='plain'
+              color_mode='plain'
            endif
         case default
-           write(stdout,'(*(g0,1x))')'warning: FPM_COLOR should be one of "auto","never","always" but is ',config%color_mode
-           config%color_mode='plain'
+           write(stdout,'(*(g0,1x))')'warning: FPM_COLOR should be one of "auto","never","always" but is ',color_mode
+           color_mode='plain'
         end select
-        call esc_mode(config%color_mode) ! color|plain|raw
+        call esc_mode(color_mode) ! color|plain|raw
 
         call set_help()
         ! text for --version switch,
@@ -186,8 +187,6 @@ contains
             & --verbose:V F&
             & --',help_run,version_text)
 
-            config%verbose=lget('verbose')
-
             call check_build_vals()
 
             if( size(unnamed) .gt. 1 )then
@@ -225,6 +224,7 @@ contains
             & example=lget('example'), &
             & list=lget('list'),&
             & name=names,&
+            & verbose=lget('verbose'), &
             & runner=val_runner)
 
         case('build')
@@ -237,8 +237,6 @@ contains
             & --verbose:V F&
             & --',help_build,version_text)
 
-            config%verbose=lget('verbose')
-
             call check_build_vals()
 
             allocate( fpm_build_settings :: cmd_settings )
@@ -248,6 +246,7 @@ contains
             & compiler=val_compiler, &
             & flag=val_flag, &
             & list=lget('list'),&
+            & verbose=lget('verbose'), &
             & show_model=lget('show-model') )
 
         case('new')
@@ -262,8 +261,6 @@ contains
             & --bare F &
             & --verbose:V F',&
             & help_new, version_text)
-
-            config%verbose=lget('verbose')
 
             select case(size(unnamed))
             case(1)
@@ -305,6 +302,7 @@ contains
                 cmd_settings=fpm_new_settings(&
                  & backfill=lget('backfill'),               &
                  & name=name,                               &
+                 & verbose=lget('verbose'),                 &
                  & with_executable=lget('app'),             &
                  & with_lib=any([lget('lib'),lget('src')]), &
                  & with_test=lget('test'),                  &
@@ -313,6 +311,7 @@ contains
                 cmd_settings=fpm_new_settings(&
                  & backfill=lget('backfill') ,           &
                  & name=name,                            &
+                 & verbose=lget('verbose'),              &
                  & with_executable=.true.,               &
                  & with_lib=.true.,                      &
                  & with_test=.true.,                     &
@@ -325,8 +324,6 @@ contains
             call set_args(common_args // '&
             & --verbose:V F &
             & ',help_help,version_text)
-
-            config%verbose=lget('verbose')
 
             if(size(unnamed).lt.2)then
                 if(unnamed(1).eq.'help')then
@@ -380,8 +377,6 @@ contains
                 & --libdir "lib" --bindir "bin" --includedir "include"', &
                 help_install, version_text)
 
-            config%verbose=lget('verbose')
-
             call check_build_vals()
 
             allocate(install_settings)
@@ -391,6 +386,7 @@ contains
                 profile=val_profile,&
                 compiler=val_compiler, &
                 flag=val_flag, &
+                verbose=lget('verbose'), &
                 no_rebuild=lget('no-rebuild') )
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
@@ -403,8 +399,6 @@ contains
             & --list F&
             & --verbose:V F&
             &', help_list, version_text)
-
-            config%verbose=lget('verbose')
 
             call printhelp(help_list_nodash)
             if(lget('list'))then
@@ -420,8 +414,6 @@ contains
             & --flag:: " "&
             & --verbose:V F&
             & --',help_test,version_text)
-
-            config%verbose=lget('verbose')
 
             call check_build_vals()
 
@@ -454,13 +446,12 @@ contains
             & example=.false., &
             & list=lget('list'), &
             & name=names, &
+            & verbose=lget('verbose'), &
             & runner=val_runner )
 
         case('update')
             call set_args(common_args // ' --fetch-only F --verbose:V F --clean F', &
                 help_update, version_text)
-
-            config%verbose=lget('verbose')
 
             if( size(unnamed) .gt. 1 )then
                 names=unnamed(2:)
@@ -471,6 +462,7 @@ contains
             allocate(fpm_update_settings :: cmd_settings)
             cmd_settings=fpm_update_settings(name=names, &
                 fetch_only=lget('fetch-only'), &
+                verbose=lget('verbose'), &
                 clean=lget('clean'))
 
         case default
@@ -482,8 +474,6 @@ contains
                 & --list F&
                 & --verbose:V F&
                 &', help_fpm, version_text)
-
-                config%verbose=lget('verbose')
 
                 ! Note: will not get here if --version or --usage or --help
                 ! is present on commandline
@@ -536,39 +526,28 @@ contains
     subroutine printhelp(lines)
     character(len=:),intent(in),allocatable :: lines(:)
     character(len=:),allocatable :: line
-    integer :: i,ii,iii
-        if(config%color_mode.eq.'color')then
-           if(allocated(lines))then
-              ii=size(lines)
-              if(ii .gt. 0 .and. len(lines).gt. 0) then
-                  do i=1,ii
-                     ! find length as plain text and pad line into 80-column black line with white text
-                     line=trim(lines(i))
-                     call esc_mode('plain')
-                     if(line.eq.'')then
-                        line='<E><w><bo>'//repeat(' ',80)
+    integer :: i,ii
+        if(allocated(lines))then
+           ii=size(lines)
+           if(ii .gt. 0 .and. len(lines).gt. 0) then
+               do i=1,ii
+                  ! find length as plain text and pad line into 80-column black line with white text
+                  line=trim(lines(i))
+                  call esc_mode('plain')
+                  if(line.eq.'')then
+                     line='<E><w>'//repeat(' ',80)
+                  else
+                     if(verify(line,'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_ -').eq.0.and.line(1:1).ne.' ')then
+                        line='<E><g><bo>'//line//repeat(' ',max(0,80-len(esc(line))))
                      else
-                        if(verify(line,'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_ -').eq.0.and.line(1:1).ne.' ')then
-                           line='<E><g>'//line//repeat(' ',max(0,80-len(esc(line))))
-			else
-                           line='<E><w>'//line//repeat(' ',max(0,80-len(esc(line))))
-			endif
+                        line='<E><w>'//line//repeat(' ',max(0,80-len(esc(line))))
                      endif
-                     call esc_mode(config%color_mode)
-                     write(stdout,'(g0)')esc(line)
-                  enddo
-              else
-                  write(stdout,'(a)')esc('<m><bo>warning:</m> *printhelp* output requested is empty')
-              endif
-           endif
-        else  ! monochrome
-           if(allocated(lines))then
-              ii=size(lines)
-              if(ii .gt. 0 .and. len(lines).gt. 0) then
-                  write(stdout,'(a)')(esc(trim(lines(i))),i=1,ii)
-              else
-                  write(stdout,'(a)')esc('<m><bo>warning:</m> *printhelp* output requested is empty')
-              endif
+                  endif
+                  call esc_mode(color_mode)
+                  write(stdout,'(g0)')esc(line)
+               enddo
+           else
+               write(stdout,'(a)')esc('<m><bo>warning:</m> *printhelp* output requested is empty')
            endif
         endif
     end subroutine printhelp
@@ -619,6 +598,9 @@ contains
    ' <bo>Enter "<r><un>fpm</un></r> <g>--list</g><w></bo>" for a brief list of subcommand options. Enter', &
    ' "<bo><r><un>fpm</un></r> <g>--help</g></bo><w>" or &
    &"<bo><r><un>fpm</un> <un>SUBCOMMAND</un></r> <g>--help</g><w></bo>" for detailed descriptions.', &
+   '                                                                        ', &
+   ' <bo>Note:</bo> color mode is controlled by the environment variable FPM_COLOR. The', &
+   '       set of allowable values is {<g><bo>always,never,auto</bo></g><w>}. The default is "<g><bo>auto</bo></g><w>". ', &
    ' ']
    help_list_dash = [character(len=90) :: &
    !'<clear>', &

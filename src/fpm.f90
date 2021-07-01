@@ -1,6 +1,5 @@
 module fpm
 use M_escape, only : esc
-use fpm_global, only : config
 use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
@@ -187,12 +186,12 @@ subroutine build_model(model, settings, package, error)
     end do
     if (allocated(error)) return
 
-    if (config%verbose) then
-        write(*,*)esc('<y><bo><E>  info:'),'          BUILD_NAME: ',settings%build_name
-        write(*,*)esc('<y><bo><E>  info:'),'            COMPILER: ',settings%compiler
-        write(*,*)esc('<y><bo><E>  info:'),'          C COMPILER: ',model%c_compiler
-        write(*,*)esc('<y><bo><E>  info:'),'    COMPILER OPTIONS: ', model%fortran_compile_flags
-        write(*,*)esc('<y><bo><E>  info:'),' INCLUDE DIRECTORIES: [', string_cat(model%include_dirs,','),']'
+    if (settings%verbose) then
+        write(*,'(*(g0,1x))')esc('<y><bo><E>  info:<g>          BUILD_NAME:'),settings%build_name
+        write(*,'(*(g0,1x))')esc('<y><bo><E>  info:<g>            COMPILER:'),settings%compiler
+        write(*,'(*(g0,1x))')esc('<y><bo><E>  info:<g>          C COMPILER:'),model%c_compiler
+        write(*,'(*(g0,1x))')esc('<y><bo><E>  info:<g>    COMPILER OPTIONS:'), model%fortran_compile_flags
+        write(*,'(*(g0,1x))')esc('<y><bo><E>  info:<g> INCLUDE DIRECTORIES:'),'[', string_cat(model%include_dirs,','),']'
      end if
 
     ! Check for duplicate modules
@@ -399,7 +398,7 @@ subroutine cmd_run(settings,test)
               end do
               write(stderr,'(A)') 'not found.'
               write(stderr,*)
-           else if(config%verbose)then
+           else if(settings%verbose)then
               write(stderr,'(A)',advance="yes")esc('<y><bo>  info:')//' when more than one executable is available'
               write(stderr,'(A)',advance="yes")'       program names must be specified.'
            endif
@@ -426,9 +425,9 @@ subroutine cmd_run(settings,test)
             if (exists(executables(i)%s)) then
                 if(settings%runner .ne. ' ')then
                     call run(settings%runner//' '//executables(i)%s//" "//settings%args, &
-                             echo=config%verbose, exitstat=stat(i))
+                             echo=settings%verbose, exitstat=stat(i))
                 else
-                    call run(executables(i)%s//" "//settings%args,echo=config%verbose, &
+                    call run(executables(i)%s//" "//settings%args,echo=settings%verbose, &
                              exitstat=stat(i))
                 endif
             else

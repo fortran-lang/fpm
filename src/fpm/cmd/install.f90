@@ -1,6 +1,5 @@
 module fpm_cmd_install
   use, intrinsic :: iso_fortran_env, only : output_unit
-  use fpm_global, only : config
   use fpm, only : build_model
   use fpm_environment, only : fpm_stop
   use fpm_backend, only : build_package
@@ -60,7 +59,7 @@ contains
     call new_installer(installer, prefix=settings%prefix, &
       bindir=settings%bindir, libdir=settings%libdir, &
       includedir=settings%includedir, &
-      verbosity=merge(2, 1, config%verbose))
+      verbosity=merge(2, 1, settings%verbose))
 
     if (allocated(package%library) .and. package%install%library) then
       dir = join_path(model%output_directory, model%package_name)

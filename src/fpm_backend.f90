@@ -27,7 +27,6 @@
 !>
 module fpm_backend
 
-use fpm_global, only : config
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, unix_path
 use fpm_model, only: fpm_model_t
@@ -83,7 +82,7 @@ subroutine build_package(targets,model)
             ! Check if build already failed
             !$omp atomic read
             skip_current = build_failed
-            
+
             if (.not.skip_current) then
                 call build_target(model,queue(j)%ptr,stat(j))
             end if
@@ -268,34 +267,34 @@ subroutine build_target(model,target,stat)
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        if(.not.config%verbose) write(*,('(a)')) esc('<B><bo><w>compile:')//' '//target%source%file_name
+        write(*,('(a)')) esc('<E><bo><g> compile:')//' '//target%source%file_name
         call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
-              // " -o " // target%output_file, echo=config%verbose, exitstat=stat)
+              // " -o " // target%output_file, echo=.false., exitstat=stat)
 
     case (FPM_TARGET_C_OBJECT)
-        if(.not.config%verbose) write(*,('(a)')) esc('<B><bo><w>compile:')//' '//target%source%file_name
+        write(*,('(a)')) esc('<E><bo><g> compile:')//' '//target%source%file_name
         call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
-                // " -o " // target%output_file, echo=config%verbose, exitstat=stat)
+                // " -o " // target%output_file, echo=.false., exitstat=stat)
 
     case (FPM_TARGET_EXECUTABLE)
 
-        if(.not.config%verbose) write(*,('(a)')) esc('<W><bo><b>   load:')//' '//target%output_file
+        write(*,('(a)')) esc('<E><bo><c>    load:')//' '//target%output_file
         call run(model%fortran_compiler// " " // target%compile_flags &
-              //" "//target%link_flags// " -o " // target%output_file, echo=config%verbose, exitstat=stat)
+              //" "//target%link_flags// " -o " // target%output_file, echo=.false., exitstat=stat)
 
     case (FPM_TARGET_ARCHIVE)
 
         select case (get_os_type())
         case (OS_WINDOWS)
             call write_response_file(target%output_file//".resp" ,target%link_objects)
-            if(.not.config%verbose) write(*,('(a)')) esc('<W><bo><b>archive:')//' '//target%output_file
+            write(*,('(a)')) esc('<E><bo><y> archive:')//' '//target%output_file
             call run(model%archiver // target%output_file // " @" // target%output_file//".resp", &
-                     echo=config%verbose, exitstat=stat)
+                     echo=.false., exitstat=stat)
 
         case default
-            if(.not.config%verbose) write(*,('(a)')) esc('<W><bo><b>archive:')//' '//target%output_file
+            write(*,('(a)')) esc('<E><bo><y> archive:')//' '//target%output_file
             call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "), &
-                     echo=config%verbose, exitstat=stat)
+                     echo=.false., exitstat=stat)
 
         end select
 

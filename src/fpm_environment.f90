@@ -6,7 +6,6 @@ module fpm_environment
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                            & stdout=>output_unit, &
                                            & stderr=>error_unit
-    use fpm_global, only : config
     use M_escape, only : esc
     implicit none
     private
@@ -167,20 +166,17 @@ contains
 
     end subroutine run
 
-    !> if verbose mode perform an ERROR STOP else perform a STOP
+    !> stop displaying optionally displaying potentially colored message
     subroutine fpm_stop(stopcode,stopmsg)
     implicit none
     integer,intent(in),optional          :: stopcode
     character(len=*),intent(in),optional :: stopmsg
     integer                              :: local_code
     integer                              :: ios
-       if(present(stopcode))then;local_code=stopcode;else;local_code=0;endif
+       local_code=0
+       if(present(stopcode))local_code=stopcode
        if(present(stopmsg)) write(stderr,'(a)',iostat=ios)esc('<r><bo>'//stopmsg)
-       if(config%verbose)then
-          error stop local_code
-       else
-          stop local_code
-       endif
+       stop local_code
     end subroutine fpm_stop
 
     !> get named environment variable value. It it is blank or
