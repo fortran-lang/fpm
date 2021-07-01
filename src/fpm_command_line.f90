@@ -794,6 +794,11 @@ contains
     '   (currently) allow for continued lines or multiple specifications of ', &
     '   the same option.                                                    ', &
     '                                                                       ', &
+    'COLOR                                                                  ', &
+    '   Message color mode is controlled by the environment variable        ', &
+    '   FPM_COLOR. The allowable values are "always","never", or "auto".    ', &
+    '   The default is "auto".                                              ', &
+    '                                                                       ', &
     'EXAMPLES                                                               ', &
     '   sample commands:                                                    ', &
     '                                                                       ', &
