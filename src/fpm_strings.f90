@@ -6,7 +6,7 @@
 !!### Types
 !! - **TYPE(STRING_T)** define a type to contain strings of variable length
 !!### Type Conversions
-!! - [[F_STRING]]  return Fortran **CHARACTER** variable when given a C-like array of 
+!! - [[F_STRING]]  return Fortran **CHARACTER** variable when given a C-like array of
 !!                 single characters terminated with a C_NULL_CHAR **CHARACTER**
 !! - [[STR]]  Converts **INTEGER** or** LOGICAL** to **CHARACTER** string
 !!### Case
@@ -14,13 +14,13 @@
 !!### Parsing and joining
 !! - [[SPLIT]]  parse string on delimiter characters and store tokens into an allocatable array
 !! - [[STRING_CAT]]  Concatenate an array of **type(string_t)** into a single **CHARACTER** variable
-!! - [[JOIN]]  append an array of **CHARACTER** variables into a single **CHARACTER** variable 
+!! - [[JOIN]]  append an array of **CHARACTER** variables into a single **CHARACTER** variable
 !!### Testing
 !! - [[STR_ENDS_WITH]]  test if a **CHARACTER** string or array ends with a specified suffix
 !! - [[STRING_ARRAY_CONTAINS]]  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
 !! - **OPERATOR(.IN.)**  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
 !! - [[GLOB]]  function compares text strings, one of which can have wildcards ('*' or '?').
-!!### Whitespace   
+!!### Whitespace
 !! - [[LEN_TRIM]]  Determine total trimmed length of **STRING_T** array
 !! - [[NOTABS]]  Expand tab characters assuming a tab space every eight characters
 !!### Miscellaneous

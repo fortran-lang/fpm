@@ -45,7 +45,7 @@ end subroutine env_variable
 
 !> Extract filename from path with/without suffix
 function basename(path,suffix) result (base)
- 
+
     character(*), intent(In) :: path
     logical, intent(in), optional :: suffix
     character(:), allocatable :: base
@@ -293,7 +293,7 @@ end function read_lines
 function read_lines_expanded(fh) result(lines)
     integer, intent(in) :: fh
     type(string_t), allocatable :: lines(:)
-    
+
     integer :: i
     integer :: ilen
     character(LINE_BUFFER_LEN) :: line_buffer_read, line_buffer_expanded
@@ -301,7 +301,7 @@ function read_lines_expanded(fh) result(lines)
     allocate(lines(number_of_rows(fh)))
     do i = 1, size(lines)
         read(fh, '(A)') line_buffer_read
-	call notabs(line_buffer_read, line_buffer_expanded, ilen)
+        call notabs(line_buffer_read, line_buffer_expanded, ilen)
         lines(i)%s = trim(line_buffer_expanded)
     end do
 
