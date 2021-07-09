@@ -169,7 +169,7 @@ contains
     type(error_t), intent(in), optional :: error
     if (present(error)) then
       print '("[Error]", 1x, a)', error%message
-      error stop 1
+      stop 1
     end if
   end subroutine handle_error
 

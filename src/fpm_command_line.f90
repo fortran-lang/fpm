@@ -28,8 +28,8 @@ use fpm_environment,  only : get_os_type, get_env, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
-use fpm_strings,      only : lower, split, fnv_1a
-use fpm_filesystem,   only : basename, canon_path, to_fortran_name, which
+use fpm_strings,      only : lower, split, fnv_1a, to_fortran_name, is_fortran_name
+use fpm_filesystem,   only : basename, canon_path, which
 use fpm_environment,  only : run, get_command_arguments_quoted
 use fpm_compiler, only : get_default_compile_flags
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
@@ -516,27 +516,6 @@ contains
     end subroutine printhelp
 
     end subroutine get_command_line_settings
-
-    function is_fortran_name(line) result (lout)
-    ! determine if a string is a valid Fortran name ignoring trailing spaces
-    ! (but not leading spaces)
-    character(len=*),parameter   :: int='0123456789'
-    character(len=*),parameter   :: lower='abcdefghijklmnopqrstuvwxyz'
-    character(len=*),parameter   :: upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    character(len=*),parameter   :: allowed=upper//lower//int//'_'
-    character(len=*),intent(in)  :: line
-    character(len=:),allocatable :: name
-    logical                      :: lout
-        name=trim(line)
-        if(len(name).ne.0)then
-            lout = .true.                                  &
-             & .and. verify(name(1:1), lower//upper) == 0  &
-             & .and. verify(name,allowed) == 0             &
-             & .and. len(name) <= 63
-        else
-            lout = .false.
-        endif
-    end function is_fortran_name
 
     subroutine set_help()
    help_list_nodash=[character(len=80) :: &

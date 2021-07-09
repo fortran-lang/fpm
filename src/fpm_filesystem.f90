@@ -10,7 +10,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
-            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, to_fortran_name
+            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
     public :: which
 
@@ -306,8 +306,7 @@ subroutine mkdir(dir)
     end select
 
     if (stat /= 0) then
-        print *, 'execute_command_line() failed'
-        error stop
+        stop 'execute_command_line() failed'
     end if
 end subroutine mkdir
 
@@ -344,8 +343,7 @@ recursive subroutine list_files(dir, files, recurse)
     end select
 
     if (stat /= 0) then
-        print *, 'execute_command_line() failed'
-        error stop
+        stop 'execute_command_line() failed'
     end if
 
     open (newunit=fh, file=temp_file, status='old')
@@ -611,16 +609,6 @@ character(len=256)                    :: message
     call fileclose(lun)
 
 end subroutine filewrite
-
-!> Returns string with special characters replaced with an underscore.
-!! For now, only a hyphen is treated as a special character, but this can be
-!! expanded to other characters if needed.
-pure function to_fortran_name(string) result(res)
-    character(*), intent(in) :: string
-    character(len(string)) :: res
-    character, parameter :: SPECIAL_CHARACTERS(*) = ['-']
-    res = replace(string, SPECIAL_CHARACTERS, '_')
-end function to_fortran_name
 
 function which(command) result(pathname)
 !>

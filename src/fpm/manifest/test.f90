@@ -19,6 +19,7 @@ module fpm_manifest_test
     use fpm_manifest_executable, only : executable_config_t
     use fpm_error, only : error_t, syntax_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_strings, only : to_fortran_name, is_fortran_name
     implicit none
     private
 
@@ -61,6 +62,11 @@ contains
            call syntax_error(error, "Could not retrieve test name")
            return
         end if
+        if(.not.is_fortran_name(to_fortran_name(self%name)))then
+           call syntax_error(error, 'manifest file syntax error: test name must be composed only of &
+           &alphanumerics, "-" and "_"  and start with a letter')
+           return
+        endif
         call get_value(table, "source-dir", self%source_dir, "test")
         call get_value(table, "main", self%main, "main.f90")
 

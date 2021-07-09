@@ -55,9 +55,9 @@ module fpm_cmd_new
 
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir, to_fortran_name
+use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
 use fpm_filesystem, only : fileopen, fileclose, filewrite, warnwrite
-use fpm_strings, only : join
+use fpm_strings, only : join, to_fortran_name
 use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
 implicit none
 private

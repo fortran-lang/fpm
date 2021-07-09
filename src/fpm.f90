@@ -256,19 +256,19 @@ integer :: i
 call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
     print '(a)', error%message
-    error stop 1
+    stop 1
 end if
 
 call build_model(model, settings, package, error)
 if (allocated(error)) then
     print '(a)', error%message
-    error stop 1
+    stop 1
 end if
 
 call targets_from_sources(targets,model,error)
 if (allocated(error)) then
     print '(a)', error%message
-    error stop 1
+    stop 1
 end if
 
 if(settings%list)then
@@ -305,19 +305,19 @@ subroutine cmd_run(settings,test)
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
         print '(a)', error%message
-        error stop 1
+        stop 1
     end if
 
     call build_model(model, settings%fpm_build_settings, package, error)
     if (allocated(error)) then
         print '(a)', error%message
-        error stop 1
+        stop 1
     end if
 
     call targets_from_sources(targets,model,error)
     if (allocated(error)) then
         print '(a)', error%message
-        error stop 1
+        stop 1
     end if
 
     if (test) then

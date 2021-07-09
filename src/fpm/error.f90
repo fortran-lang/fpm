@@ -16,15 +16,7 @@ module fpm_error
 
     end type error_t
 
-
-    !> Alias syntax errors to fatal errors for now
-    interface syntax_error
-        module procedure :: fatal_error
-    end interface syntax_error
-
-
 contains
-
 
     !> Generic fatal runtime error
     subroutine fatal_error(error, message)
@@ -39,6 +31,19 @@ contains
         error%message = message
 
     end subroutine fatal_error
+
+    subroutine syntax_error(error, message)
+
+        !> Instance of the error data
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Error message
+        character(len=*), intent(in) :: message
+
+        allocate(error)
+        error%message = message
+
+    end subroutine syntax_error
 
 
     !> Error created when a file is missing or not found

@@ -158,7 +158,7 @@ contains
         else
             if (stat /= 0) then
                 print *, 'Command failed'
-                error stop
+                stop 
             end if
         end if
 

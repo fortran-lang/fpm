@@ -16,7 +16,7 @@
 !>
 module fpm_source_parsing
 use fpm_error, only: error_t, file_parse_error, fatal_error
-use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a
+use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, is_fortran_name
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
@@ -146,7 +146,7 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 end if
 
-                if (.not.validate_name(mod_name)) then
+                if (.not.is_fortran_name(mod_name)) then
                     cycle
                 end if
 
@@ -215,7 +215,7 @@ function parse_f_source(f_filename,error) result(f_source)
                     cycle
                 end if
 
-                if (.not.validate_name(mod_name)) then
+                if (.not.is_fortran_name(mod_name)) then
                     call file_parse_error(error,f_filename, &
                           'empty or invalid name for module',i, &
                           file_lines(i)%s, index(file_lines(i)%s,mod_name))
@@ -242,7 +242,7 @@ function parse_f_source(f_filename,error) result(f_source)
                           file_lines(i)%s)
                     return
                 end if
-                if (.not.validate_name(mod_name)) then
+                if (.not.is_fortran_name(mod_name)) then
                     call file_parse_error(error,f_filename, &
                           'empty or invalid name for submodule',i, &
                           file_lines(i)%s, index(file_lines(i)%s,mod_name))
@@ -271,7 +271,7 @@ function parse_f_source(f_filename,error) result(f_source)
 
                     end if
 
-                    if (.not.validate_name(temp_string)) then
+                    if (.not.is_fortran_name(temp_string)) then
                         call file_parse_error(error,f_filename, &
                           'empty or invalid name for submodule parent',i, &
                           file_lines(i)%s, index(file_lines(i)%s,temp_string))
@@ -320,44 +320,6 @@ function parse_f_source(f_filename,error) result(f_source)
         end if
 
     end do
-
-    contains
-
-    function validate_name(name) result(valid)
-        character(*), intent(in) :: name
-        logical :: valid
-
-        integer :: i
-
-        if (len_trim(name) < 1) then
-            valid = .false.
-            return
-        end if
-
-        if (lower(name(1:1)) < 'a' .or. &
-            lower(name(1:1)) > 'z') then
-
-            valid = .false.
-            return
-        end if
-
-        do i=1,len(name)
-
-            if (.not.( &
-                (name(i:i) >= '0' .and. name(i:i) <= '9').or. &
-                (lower(name(i:i)) >= 'a' .and. lower(name(i:i)) <= 'z').or. &
-                name(i:i) == '_') ) then
-
-                valid = .false.
-                return
-            end if
-
-        end do
-
-        valid = .true.
-        return
-
-    end function validate_name
 
 end function parse_f_source
 
