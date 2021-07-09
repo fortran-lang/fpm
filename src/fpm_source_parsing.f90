@@ -22,7 +22,7 @@ use fpm_model, only: srcfile_t, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-use fpm_filesystem, only: read_lines
+use fpm_filesystem, only: read_lines, read_lines_expanded
 implicit none
 
 private
@@ -84,7 +84,7 @@ function parse_f_source(f_filename,error) result(f_source)
     f_source%file_name = f_filename
 
     open(newunit=fh,file=f_filename,status='old')
-    file_lines = read_lines(fh)
+    file_lines = read_lines_expanded(fh)
     close(fh)
 
     ! Ignore empty files, returned as FPM_UNIT_UNKNOW
