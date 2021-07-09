@@ -134,7 +134,7 @@ contains
         end if
         if(.not.is_fortran_name(to_fortran_name(self%name)))then
            call syntax_error(error, 'manifest file syntax error: package name must be composed only of &
-           &alphanumerics, "-" and "_"  and start with a letter')
+           &alphanumerics, "-" and "_"  and start with a letter::'//self%name)
            return
         endif
 

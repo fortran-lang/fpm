@@ -74,7 +74,7 @@ contains
         end if
         if(.not.is_fortran_name(to_fortran_name(self%name)))then
            call syntax_error(error, 'manifest file syntax error: executable name must be composed only of &
-           &alphanumerics, "-" and "_"  and start with a letter')
+           &alphanumerics, "-" and "_"  and start with a letter::'//self%name)
            return
         endif
         call get_value(table, "source-dir", self%source_dir, "app")
