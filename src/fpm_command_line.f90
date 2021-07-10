@@ -608,28 +608,27 @@ contains
    '                                                           ', &
    ' <bo><g>build</g><w> [<g>--compiler</g> <m>COMPILER_NAME</m><w>] &
    &[<g>--profile</g> <m>PROF</m><w>] [<g>--flag</g> <m>FFLAGS</m><w>] [<g>--list</g><w>]', &
-
+   '                                                           ', &
    ' <bo><g>help</g><w> [<r><un>NAME(s)</un></r><w>]                       ', &
-
+   '                                                           ', &
    ' <bo><g>new</g><w> <r><un>NAME</un></r><w> [[<g>--lib</g><w>|<g>--src</g><w>] [<g>--app</g><w>] &
    &[<g>--test</g><w>] [<g>--example</g><w>]]|', &
    ' <bo>         [<g>--full</g><w>|<g>--bare</g><w>][<g>--backfill</g><w>]', &
-
+   '                                                           ', &
    ' <bo><g>update</g><w> <w>[<r><un>NAME(s)</un></r><w>] [<g>--fetch-only</g><w>] [<g>--clean</g><w>] [<g>--verbose</g><w>]', &
-
+   '                                                           ', &
    ' <bo><g>list</g><w> [<g>--list</g><w>]', &
-
+   '                                                           ', &
    ' <bo><g>run</g><w>  [[<g>--target</g><w>] <r><un>NAME(s)</un></r> <w>[<g>--example</g><w>]&
    &[<g>--profile</g><w> <m>PROF</m><w>] [<g>--flag</g><w> <m>FFLAGS</m><w>] [<g>--all</g><w>]', &
    ' <bo>     [<g>--runner</g><w> <m>"CMD"</m><w>] [<g>--compiler</g><w> <m>COMPILER_NAME</m><w>] &
    &[<g>--list</g><w>] [-- <m>ARGS</m><w>]', &
-
+   '                                                           ', &
    ' <bo><g>test</g><w> [[<g>--target</g><w>] <r><un>NAME(s)</un></r><w>] [<g>--profile</g><w> <m>PROF</m><w>] &
    &[<g>--flag</g><w> <m>FFLAGS</m><w>] [<g>--runner</g><w> <m>"CMD"</m><w>]', &
    ' <bo>     [<g>--list</g><w>] [<g>--compiler</g><w> <m>COMPILER_NAME</m><w>] [-- <m>ARGS</m><w>]', &
-
+   '                                                           ', &
    ' <bo><g>install</g><w> [<g>--profile</g><w> <m>PROF</m>] [<g>--flag</g><w> <m>FFLAGS</m>] &
-
    &[<g>--no-rebuild</g><w>] [<g>--prefix</g><w> <m>PATH</m><w>] ', &
    ' <bo>        <w>[<m>OPTIONS</m><w>]', &
    ' ']
