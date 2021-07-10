@@ -437,12 +437,12 @@ end subroutine resize_string
 !>AUTHOR: John S. Urban
 !!LICENSE: Public Domain
 !>
-!!##NAME
-!!    join(3f) - [M_strings:EDITING] append CHARACTER variable array into
+!!### NAME
+!!    join(3f) - [fpm_strings:EDITING] append CHARACTER variable array into
 !!    a single CHARACTER variable with specified separator
 !!    (LICENSE:PD)
 !!
-!!##SYNOPSIS
+!!### SYNOPSIS
 !!
 !!    pure function join(str,sep,trm,left,right,start,end) result (string)
 !!
@@ -455,13 +455,13 @@ end subroutine resize_string
 !!     character(len=*),intent(in),optional :: end
 !!     character(len=:),allocatable         :: string
 !!
-!!##DESCRIPTION
+!!### DESCRIPTION
 !!   JOIN(3f) appends the elements of a CHARACTER array into a single
 !!   CHARACTER variable, with elements 1 to N joined from left to right.
 !!   By default each element is trimmed of trailing spaces and the
 !!   default separator is a null string.
 !!
-!!##OPTIONS
+!!### OPTIONS
 !!      STR(:)  array of CHARACTER variables to be joined
 !!      SEP     separator string to place between each variable. defaults
 !!              to a null string.
@@ -472,17 +472,17 @@ end subroutine resize_string
 !!      TRM     option to trim each element of STR of trailing
 !!              spaces. Defaults to .TRUE.
 !!
-!!##RESULT
+!!### RESULT
 !!      STRING  CHARACTER variable composed of all of the elements of STR()
 !!              appended together with the optional separator SEP placed
 !!              between the elements.
 !!
-!!##EXAMPLE
+!!### EXAMPLE
 !!
 !!  Sample program:
 !!
 !!   program demo_join
-!!   use M_strings, only: join
+!!   use fpm_strings, only: join
 !!   implicit none
 !!   character(len=:),allocatable  :: s(:)
 !!   character(len=:),allocatable  :: out
@@ -512,7 +512,7 @@ end subroutine resize_string
 !!   >>United>> we>> stand,>> divided>> we fall.
 pure function join(str,sep,trm,left,right,start,end) result (string)
 
-! @(#)M_strings::join(3f): merge string array into a single CHARACTER value adding specified separators, caps, prefix and suffix
+! @(#)fpm_strings::join(3f): merge string array into a single CHARACTER value adding specified separators, caps, prefix and suffix
 
 character(len=*),intent(in)          :: str(:)
 character(len=*),intent(in),optional :: sep, right, left, start, end
@@ -546,21 +546,21 @@ integer                              :: i
    if(present(end))string=string//end
 end function join
 
-!>##AUTHOR John S. Urban
-!!##LICENSE Public Domain
-!!## NAME
+!>### AUTHOR John S. Urban
+!!### LICENSE Public Domain
+!!### NAME
 !!    glob(3f) - [fpm_strings:COMPARE] compare given string for match to
 !!    pattern which may contain wildcard characters
 !!    (LICENSE:PD)
 !!
-!!## SYNOPSIS
+!!### SYNOPSIS
 !!
 !!    logical function glob(string, pattern )
 !!
 !!     character(len=*),intent(in) :: string
 !!     character(len=*),intent(in) :: pattern
 !!
-!!## DESCRIPTION
+!!### DESCRIPTION
 !!   glob(3f) compares given STRING for match to PATTERN which may
 !!   contain wildcard characters.
 !!
@@ -568,7 +568,7 @@ end function join
 !!   by PATTERN. Trailing whitespace is significant, so trim the input
 !!   string to have trailing whitespace ignored.
 !!
-!!## OPTIONS
+!!### OPTIONS
 !!    string   the input string to test to see if it contains the pattern.
 !!    pattern  the following simple globbing options are available
 !!
@@ -580,7 +580,7 @@ end function join
 !!             o There is no escape character, so matching strings with
 !!               literal question mark and asterisk is problematic.
 !!
-!!## EXAMPLES
+!!### EXAMPLES
 !!
 !!   Example program
 !!
@@ -773,7 +773,7 @@ end function join
 !!   Expected output
 !!
 !!
-!!## REFERENCE
+!!### REFERENCE
 !!   The article "Matching Wildcards: An Empirical Way to Tame an Algorithm"
 !!   in Dr Dobb's Journal, By Kirk J. Krauss, October 07, 2014
 !!
@@ -927,11 +927,11 @@ end if
 end function
 
 !>
-!!##NAME
-!!    notabs(3f) - [M_strings:NONALPHA] expand tab characters
-!!    (LICENSE:PD)
+!!### NAME
+!!   notabs(3f) - [fpm_strings:NONALPHA] expand tab characters
+!!   (LICENSE:PD)
 !!
-!!##SYNOPSIS
+!!### SYNOPSIS
 !!
 !!    subroutine notabs(INSTR,OUTSTR,ILEN)
 !!
@@ -939,29 +939,29 @@ end function
 !!     character(len=*),intent=(out) :: OUTSTR
 !!     integer,intent=(out)          :: ILEN
 !!
-!!##DESCRIPTION
-!!     NOTABS() converts tabs in INSTR to spaces in OUTSTR while maintaining
-!!     columns. It assumes a tab is set every 8 characters. Trailing spaces
-!!     are removed.
+!!### DESCRIPTION
+!!   NOTABS() converts tabs in INSTR to spaces in OUTSTR while maintaining
+!!   columns. It assumes a tab is set every 8 characters. Trailing spaces
+!!   are removed.
 !!
-!!     In addition, trailing carriage returns and line feeds are removed
-!!     (they are usually a problem created by going to and from MSWindows).
+!!   In addition, trailing carriage returns and line feeds are removed
+!!   (they are usually a problem created by going to and from MSWindows).
 !!
-!!     What are some reasons for removing tab characters from an input line?
-!!     Some Fortran compilers have problems with tabs, as tabs are not
-!!     part of the Fortran character set. Some editors and printers will
-!!     have problems with tabs. It is often useful to expand tabs in input
-!!     files to simplify further processing such as tokenizing an input line.
+!!   What are some reasons for removing tab characters from an input line?
+!!   Some Fortran compilers have problems with tabs, as tabs are not
+!!   part of the Fortran character set. Some editors and printers will
+!!   have problems with tabs. It is often useful to expand tabs in input
+!!   files to simplify further processing such as tokenizing an input line.
 !!
-!!##OPTIONS
+!!### OPTIONS
 !!     instr     Input line to remove tabs from
 !!
-!!##RESULTS
+!!### RESULTS
 !!     outstr    Output string with tabs expanded. Assumed to be of sufficient
 !!               length
 !!     ilen      Significant length of returned string
 !!
-!!##EXAMPLES
+!!### EXAMPLES
 !!
 !!   Sample program:
 !!
@@ -969,7 +969,7 @@ end function
 !!
 !!    !  test filter to remove tabs and trailing white space from input
 !!    !  on files up to 1024 characters wide
-!!    use M_strings, only : notabs
+!!    use fpm_strings, only : notabs
 !!    character(len=1024) :: in,out
 !!    integer             :: ios,iout
 !!       do
@@ -980,17 +980,17 @@ end function
 !!       enddo
 !!    end program demo_notabs
 !!
-!!##SEE ALSO
-!!     GNU/Unix commands expand(1) and unexpand(1)
+!!### SEE ALSO
+!!   GNU/Unix commands expand(1) and unexpand(1)
 !!
-!!##AUTHOR
-!!     John S. Urban
+!!### AUTHOR
+!!   John S. Urban
 !!
-!!##LICENSE
-!!    Public Domain
+!!### LICENSE
+!!   Public Domain
 elemental impure subroutine notabs(instr,outstr,ilen)
 
-! ident_31="@(#)M_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars"
+! ident_31="@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars"
 
 character(len=*),intent(in)   :: instr        ! input line to scan for tab characters
 character(len=*),intent(out)  :: outstr       ! tab-expanded version of INSTR produced
