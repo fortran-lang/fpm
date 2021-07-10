@@ -17,9 +17,8 @@
 module fpm_manifest_example
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
     use fpm_manifest_executable, only : executable_config_t
-    use fpm_error, only : error_t, syntax_error
+    use fpm_error, only : error_t, syntax_error, bad_name_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
-    use fpm_strings, only : to_fortran_name, is_fortran_name
     implicit none
     private
 
@@ -62,9 +61,7 @@ contains
            call syntax_error(error, "Could not retrieve example name")
            return
         end if
-        if(.not.is_fortran_name(to_fortran_name(self%name)))then
-           call syntax_error(error, 'manifest file syntax error: example name must be composed only of &
-           &alphanumerics, "-" and "_"  and start with a letter::'//self%name)
+        if (bad_name_error(error,'example',self%name))then
            return
         endif
         call get_value(table, "source-dir", self%source_dir, "example")

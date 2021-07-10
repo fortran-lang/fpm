@@ -1,11 +1,13 @@
 !> Implementation of basic error handling.
 module fpm_error
+    use fpm_strings, only : is_fortran_name, to_fortran_name
     implicit none
     private
 
     public :: error_t
     public :: fatal_error, syntax_error, file_not_found_error
     public :: file_parse_error
+    public :: bad_name_error
 
 
     !> Data type defining an error
@@ -44,6 +46,30 @@ contains
         error%message = message
 
     end subroutine syntax_error
+
+    function bad_name_error(error, label,name)
+
+        !> Instance of the error data
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Error message label to add to message
+        character(len=*), intent(in) :: label
+
+        !> name value to check
+        character(len=*), intent(in) :: name
+
+        logical :: bad_name_error
+
+        if(.not.is_fortran_name(to_fortran_name(name)))then
+           bad_name_error=.true.
+           allocate(error)
+           error%message = 'manifest file syntax error: '//label//' name must be composed only of &
+           &alphanumerics, "-" and "_"  and start with a letter ::'//name
+        else
+          bad_name_error=.false.
+        endif
+
+    end function bad_name_error
 
 
     !> Error created when a file is missing or not found
@@ -87,9 +113,9 @@ contains
 
         allocate(error)
         error%message = 'Parse error: '//message//new_line('a')
-        
+
         error%message = error%message//file_name
-        
+
         if (present(line_num)) then
 
             write(temp_string,'(I0)') line_num
@@ -120,9 +146,9 @@ contains
 
                     error%message = error%message//new_line('a')
                     error%message = error%message//'   | '//repeat(' ',line_col-1)//'^'
-                
+
                 end if
-                
+
             end if
 
         end if

@@ -39,10 +39,9 @@ module fpm_manifest_package
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_filesystem, only : exists, getline, join_path
-    use fpm_error, only : error_t, fatal_error, syntax_error
+    use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & len
-    use fpm_strings, only : is_fortran_name, to_fortran_name
     use fpm_versioning, only : version_t, new_version
     implicit none
     private
@@ -132,9 +131,7 @@ contains
            call syntax_error(error, "Could not retrieve package name")
            return
         end if
-        if(.not.is_fortran_name(to_fortran_name(self%name)))then
-           call syntax_error(error, 'manifest file syntax error: package name must be composed only of &
-           &alphanumerics, "-" and "_"  and start with a letter::'//self%name)
+        if (bad_name_error(error,'package',self%name))then
            return
         endif
 
