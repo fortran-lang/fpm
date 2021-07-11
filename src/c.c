@@ -1,7 +1,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-int is_dir(const char *path)
+int c_is_dir(const char *path)
 {
     struct stat m;
     int r = stat(path, &m);

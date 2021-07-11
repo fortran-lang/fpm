@@ -43,7 +43,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
             type(c_ptr) :: r
         end function c_get_d_name
 
-        function c_is_dir(path) result(r) bind(c, name="is_dir")
+        function c_is_dir(path) result(r) bind(c, name="c_is_dir")
             import c_char, c_int
             character(kind=c_char), intent(in) :: path(*)
             integer(kind=c_int) :: r
