@@ -278,7 +278,7 @@ subroutine build_target(model,target,stat)
 
     case (FPM_TARGET_EXECUTABLE)
 
-        write(*,('(a)')) esc('<E><bo><c>    load:')//' '//target%output_file
+        write(*,('(a)')) esc('<E><bo><c>    load:')//' '//basename(target%output_file)
         call run(model%fortran_compiler// " " // target%compile_flags &
               //" "//target%link_flags// " -o " // target%output_file, echo=.false., exitstat=stat)
 
@@ -287,12 +287,12 @@ subroutine build_target(model,target,stat)
         select case (get_os_type())
         case (OS_WINDOWS)
             call write_response_file(target%output_file//".resp" ,target%link_objects)
-            write(*,('(a)')) esc('<E><bo><y> archive:')//' '//target%output_file
+            write(*,('(a)')) esc('<E><bo><y> archive:')//' '//basename(target%output_file)
             call run(model%archiver // target%output_file // " @" // target%output_file//".resp", &
                      echo=.false., exitstat=stat)
 
         case default
-            write(*,('(a)')) esc('<E><bo><y> archive:')//' '//target%output_file
+            write(*,('(a)')) esc('<E><bo><y> archive:')//' '//basename(target%output_file)
             call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "), &
                      echo=.false., exitstat=stat)
 
