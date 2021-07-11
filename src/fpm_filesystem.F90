@@ -17,7 +17,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
-#ifdef ENABLE_C_WRAPPER
+#ifndef FPM_BOOTSTRAP
     interface
         function c_opendir(dir) result(r) bind(c, name="opendir")
             import c_char, c_ptr
@@ -345,7 +345,7 @@ subroutine mkdir(dir)
     end if
 end subroutine mkdir
 
-#ifdef ENABLE_C_WRAPPER
+#ifndef FPM_BOOTSTRAP
 !> Get file & directory names in directory `dir` using iso_c_binding.
 !!
 !!  - File/directory names return are relative to cwd, ie. preprended with `dir`
