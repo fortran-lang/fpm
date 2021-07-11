@@ -6,6 +6,7 @@ module fpm_environment
     use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                            & stdout=>output_unit, &
                                            & stderr=>error_unit
+    use fpm_error, only : fpm_stop
     implicit none
     private
     public :: get_os_type
@@ -157,8 +158,7 @@ contains
             exitstat = stat
         else
             if (stat /= 0) then
-                print *, 'Command failed'
-                stop 1
+                call fpm_stop(1,'*run*:Command failed')
             end if
         end if
 

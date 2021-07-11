@@ -31,7 +31,8 @@ use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, fnv_1a, to_fortran_name, is_fortran_name
 use fpm_filesystem,   only : basename, canon_path, which
 use fpm_environment,  only : run, get_command_arguments_quoted
-use fpm_compiler, only : get_default_compile_flags
+use fpm_compiler,     only : get_default_compile_flags
+use fpm_error,        only : fpm_stop
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -139,7 +140,6 @@ contains
         end select
         version_text = [character(len=80) :: &
          &  'Version:     0.3.0, alpha',                               &
-         &  'PR:          511',                                        &
          &  'Program:     fpm(1)',                                     &
          &  'Description: A Fortran package manager and build system', &
          &  'Home Page:   https://github.com/fortran-lang/fpm',        &
@@ -245,17 +245,15 @@ contains
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
-                write(stderr,'(*(g0,/))')'<ERROR> directory name required'
                 write(stderr,'(*(7x,g0,/))') &
                 & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
-                stop 1
+                call fpm_stop(1,'directory name required')
             case(2)
                 name=trim(unnamed(2))
             case default
-                write(stderr,'(g0)')'<ERROR> only one directory name allowed'
                 write(stderr,'(7x,g0)') &
                 & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]'
-                stop 2
+                call fpm_stop(2,'only one directory name allowed')
             end select
             !*! canon_path is not converting ".", etc.
             name=canon_path(name)
@@ -263,7 +261,7 @@ contains
                 write(stderr,'(g0)') [ character(len=72) :: &
                 & '<ERROR> the fpm project name must be made of up to 63 ASCII letters,', &
                 & '        numbers, underscores, or hyphens, and start with a letter.']
-                stop 4
+                call fpm_stop(4,' ')
             endif
 
             allocate(fpm_new_settings :: cmd_settings)
@@ -272,13 +270,13 @@ contains
                 write(stderr,'(*(a))')&
                 &'<ERROR> --full and any of [--src|--lib,--app,--test,--example,--bare]', &
                 &'        are mutually exclusive.'
-                stop 5
+                call fpm_stop(5,' ')
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example','full'])) &
             & .and.lget('bare') )then
                 write(stderr,'(*(a))')&
                 &'<ERROR> --bare and any of [--src|--lib,--app,--test,--example,--full]', &
                 &'        are mutually exclusive.'
-                stop 3
+                call fpm_stop(3,' ')
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example']) ) )then
                 cmd_settings=fpm_new_settings(&
                  & backfill=lget('backfill'),               &

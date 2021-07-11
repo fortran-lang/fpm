@@ -25,7 +25,7 @@
 !>
 module fpm_targets
 use iso_fortran_env, only: int64
-use fpm_error, only: error_t, fatal_error
+use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
 use fpm_filesystem, only: dirname, join_path, canon_path
@@ -298,7 +298,7 @@ subroutine add_target(targets,type,output_file,source,link_libraries)
             write(*,*) 'Error while building target list: duplicate output object "',&
                         output_file,'"'
             if (present(source)) write(*,*) ' Source file: "',source%file_name,'"'
-            stop 1
+            call fpm_stop(1,' ')
 
         end if
 
