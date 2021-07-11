@@ -27,6 +27,8 @@
 !>
 module fpm_backend
 
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+use fpm_error, only : fpm_stop
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, unix_path
 use fpm_model, only: fpm_model_t
@@ -98,10 +100,10 @@ subroutine build_package(targets,model)
         if (build_failed) then
             do j=1,size(stat)
                 if (stat(j) /= 0) then
-                    write(*,*) '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
+                    write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
                 end if
             end do
-            stop 1
+            call fpm_stop(1,'stopping due to failed compilation')
         end if
 
     end do
@@ -135,8 +137,7 @@ recursive subroutine sort_target(target)
     ! Check for a circular dependency
     ! (If target has been touched but not processed)
     if (target%touched) then
-        write(*,*) '(!) Circular dependency found with: ',target%output_file
-        stop
+        call fpm_stop(1,'(!) Circular dependency found with: '//target%output_file)
     else
         target%touched = .true.  ! Set touched flag
     end if

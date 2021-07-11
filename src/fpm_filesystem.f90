@@ -1,12 +1,13 @@
 !> This module contains general routines for interacting with the file system
 !!
 module fpm_filesystem
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env
     use fpm_strings, only: f_string, replace, string_t, split
+    use fpm_error, only : fpm_stop
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
@@ -306,7 +307,7 @@ subroutine mkdir(dir)
     end select
 
     if (stat /= 0) then
-        stop 'execute_command_line() failed'
+        call fpm_stop(1, '*mkdir*:directory creation failed')
     end if
 end subroutine mkdir
 
@@ -343,7 +344,7 @@ recursive subroutine list_files(dir, files, recurse)
     end select
 
     if (stat /= 0) then
-        stop 'execute_command_line() failed'
+        call fpm_stop(2,'*list_files*:directory listing failed')
     end if
 
     open (newunit=fh, file=temp_file, status='old')
@@ -554,13 +555,11 @@ character(len=256)            :: message
         ios=0
     endif
     if(ios.ne.0)then
-        write(stderr,'(*(a:,1x))')&
-        & '<ERROR> *filewrite*:',filename,trim(message)
         lun=-1
         if(present(ier))then
            ier=ios
         else
-           stop 1
+           call fpm_stop(3,'*fileopen*:'//filename//':'//trim(message))
         endif
     endif
 
@@ -575,11 +574,10 @@ integer               :: ios
     if(lun.ne.-1)then
         close(unit=lun,iostat=ios,iomsg=message)
         if(ios.ne.0)then
-            write(stderr,'(*(a:,1x))')'<ERROR> *filewrite*:',trim(message)
             if(present(ier))then
                ier=ios
             else
-               stop 2
+               call fpm_stop(4,'*fileclose*:'//trim(message))
             endif
         endif
     endif
@@ -599,9 +597,7 @@ character(len=256)                    :: message
        do i=1,size(filedata)
            write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
            if(ios.ne.0)then
-               write(stderr,'(*(a:,1x))')&
-               & '<ERROR> *filewrite*:',filename,trim(message)
-               stop 4
+               call fpm_stop(5,'*filewrite*:'//filename//':'//trim(message))
            endif
        enddo
     endif

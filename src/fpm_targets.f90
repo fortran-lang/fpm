@@ -341,7 +341,7 @@ end subroutine add_dependency
 !>
 !> - Executable sources (`FPM_SCOPE_APP`,`FPM_SCOPE_TEST`) may use
 !>   library modules (including dependencies) as well as any modules
-!>   corresponding to source files in the same directory or a 
+!>   corresponding to source files in the same directory or a
 !>   subdirectory of the executable source file.
 !>
 !> @warning If a module used by a source file cannot be resolved to

@@ -1,5 +1,6 @@
 !> Implementation of basic error handling.
 module fpm_error
+    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
     use fpm_strings, only : is_fortran_name, to_fortran_name
     implicit none
     private
@@ -8,6 +9,7 @@ module fpm_error
     public :: fatal_error, syntax_error, file_not_found_error
     public :: file_parse_error
     public :: bad_name_error
+    public :: fpm_stop
 
 
     !> Data type defining an error
@@ -155,5 +157,23 @@ contains
 
     end subroutine file_parse_error
 
+    subroutine fpm_stop(value,message)
+    ! TODO: if verbose mode, call ERROR STOP instead of STOP
+    ! TODO: if M_escape is used, add color
+    ! to work with older compilers might need a case statement for values
+
+        !> value to use on STOP
+        integer, intent(in) :: value
+        !> Error message
+        character(len=*), intent(in) :: message
+        if(message.ne.'')then
+           if(value.gt.0)then
+              write(stderr,'("<ERROR>",a)')trim(message)
+           else
+              write(stderr,'("<INFO> ",a)')trim(message)
+           endif
+        endif
+        stop value
+    end subroutine fpm_stop
 
 end module fpm_error
