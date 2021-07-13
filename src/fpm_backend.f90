@@ -278,7 +278,7 @@ subroutine build_target(model,target,stat)
 
     case (FPM_TARGET_EXECUTABLE)
 
-        write(*,('(a)')) esc('<E><bo><c>    load:')//' '//basename(target%output_file)
+        write(*,('(a)')) esc('<E><bo><c>    link:')//' '//basename(target%output_file)
         call run(model%fortran_compiler// " " // target%compile_flags &
               //" "//target%link_flags// " -o " // target%output_file, echo=.false., exitstat=stat)
 
