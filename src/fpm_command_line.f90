@@ -127,7 +127,11 @@ contains
         character(len=10)             :: color_mode
 
         ! conventional GNU keywords for color are "auto", "never", "always" so map to M_escape
-        color_mode=get_env('FPM_COLOR','auto')
+        if(get_os_type().eq.OS_WINDOWS)then
+           color_mode=get_env('FPM_COLOR','plain')
+        else
+           color_mode=get_env('FPM_COLOR','color')
+        endif
         select case(color_mode)
         case('color','always'); color_mode='color'
         case('plain','never');  color_mode='plain'
