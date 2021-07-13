@@ -128,7 +128,7 @@ contains
 
         ! conventional GNU keywords for color are "auto", "never", "always" so map to M_escape
         if(get_os_type().eq.OS_WINDOWS)then
-           color_mode=get_env('FPM_COLOR','color')
+           color_mode=get_env('FPM_COLOR','plain')
         else
            color_mode=get_env('FPM_COLOR','auto')
         endif
