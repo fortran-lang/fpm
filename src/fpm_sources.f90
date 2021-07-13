@@ -201,6 +201,9 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
 
     n = 0
     do i=1,size(executables)
+       dirs_temp(i)%s=' '
+    enddo
+    do i=1,size(executables)
         if (.not.(executables(i)%source_dir .in. dirs_temp)) then
 
             n = n + 1
