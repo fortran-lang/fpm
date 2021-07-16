@@ -55,9 +55,10 @@ module fpm_cmd_new
 
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : run, OS_LINUX, OS_MACOS, OS_WINDOWS
-use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir, to_fortran_name
+use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
 use fpm_filesystem, only : fileopen, fileclose, filewrite, warnwrite
-use fpm_strings, only : join
+use fpm_strings, only : join, to_fortran_name
+use fpm_error, only : fpm_stop
 use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
 implicit none
 private
@@ -606,7 +607,7 @@ character(len=*),intent(in) :: filename
     ! continue building of manifest
     ! ...
     call new_package(package, table, error=error)
-    if (allocated(error)) stop 3
+    if (allocated(error)) call fpm_stop( 3,'')
     if(settings%verbose)then
        call table%accept(ser)
     endif
