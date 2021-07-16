@@ -85,13 +85,13 @@ contains
             & '[dependencies.fpm]', &
             & 'git = "https://github.com/fortran-lang/fpm"', &
             & '[[executable]]', &
-            & 'name = "example-#1" # comment', &
+            & 'name = "example-1" # comment', &
             & 'source-dir = "prog"', &
             & '[dependencies]', &
             & 'toml-f.git = "git@github.com:toml-f/toml-f.git"', &
             & '"toml..f" = { path = ".." }', &
             & '[["executable"]]', &
-            & 'name = "example-#2"', &
+            & 'name = "example-2"', &
             & 'source-dir = "prog"', &
             & '[executable.dependencies]', &
             & '[''library'']', &
