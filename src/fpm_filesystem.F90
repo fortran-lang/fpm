@@ -19,13 +19,13 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
 
 #ifndef FPM_BOOTSTRAP
     interface
-        function c_opendir(dir) result(r) bind(c, name="opendir")
+        function c_opendir(dir) result(r) bind(c, name="c_opendir")
             import c_char, c_ptr
             character(kind=c_char), intent(in) :: dir(*)
             type(c_ptr) :: r
         end function c_opendir
 
-        function c_readdir(dir) result(r) bind(c, name="readdir")
+        function c_readdir(dir) result(r) bind(c, name="c_readdir")
             import c_ptr
             type(c_ptr), intent(in), value :: dir
             type(c_ptr) :: r
