@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.5% of total for modules and submodules.">476 statements</a>
+    title=" 8.8% of total for modules and submodules.">498 statements</a>
      </li> 
      
      
@@ -225,6 +225,8 @@
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-glob">glob</a>
       
+      <a class="list-group-item" href="../module/fpm_strings.html#proc-is_fortran_name">is_fortran_name</a>
+      
       <a class="list-group-item" href="../module/fpm_strings.html#proc-join">join</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-lower">lower</a>
@@ -234,6 +236,8 @@
       <a class="list-group-item" href="../module/fpm_strings.html#proc-string_array_contains">string_array_contains</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-string_cat">string_cat</a>
+      
+      <a class="list-group-item" href="../module/fpm_strings.html#proc-to_fortran_name">to_fortran_name</a>
       
     </div>
   </div>
@@ -295,6 +299,8 @@
 <li><a href="../proc/string_array_contains.html">string_array_contains</a>  Check if array of <strong>TYPE(STRING_T)</strong> matches a particular <strong>CHARACTER</strong> string</li>
 <li><strong>OPERATOR(.IN.)</strong>  Check if array of <strong>TYPE(STRING_T)</strong> matches a particular <strong>CHARACTER</strong> string</li>
 <li><a href="../proc/glob.html">glob</a>  function compares text strings, one of which can have wildcards (&lsquo;*&rsquo; or &lsquo;?&rsquo;).</li>
+<li><a href="../proc/is_fortran_name.html">is_fortran_name</a>  determine whether a string is an acceptable Fortran entity name</li>
+<li><a href="../proc/to_fortran_name.html">to_fortran_name</a>  replace allowed special but unusuable characters in names with underscore</li>
 </ul>
 <h3 id="miscellaneous">Miscellaneous</h3>
 <ul>
@@ -393,6 +399,8 @@
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-glob">glob</a>
       
+      <a class="list-group-item" href="../module/fpm_strings.html#proc-is_fortran_name">is_fortran_name</a>
+      
       <a class="list-group-item" href="../module/fpm_strings.html#proc-join">join</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-lower">lower</a>
@@ -402,6 +410,8 @@
       <a class="list-group-item" href="../module/fpm_strings.html#proc-string_array_contains">string_array_contains</a>
       
       <a class="list-group-item" href="../module/fpm_strings.html#proc-string_cat">string_cat</a>
+      
+      <a class="list-group-item" href="../module/fpm_strings.html#proc-to_fortran_name">to_fortran_name</a>
       
     </div>
   </div>
@@ -1538,6 +1548,66 @@ public function <a href='../proc/glob.html'>glob</a>(tame, wild)
     
     
   <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-is_fortran_name"></span><h3>
+public function <a href='../proc/is_fortran_name.html'>is_fortran_name</a>(line) result(lout)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>line</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-join"></span><h3>
 public pure function <a href='../proc/join.html'>join</a>(str, sep, trm, left, right, start, end) result(string)
     
@@ -2084,6 +2154,76 @@ public function <a href='../proc/string_cat.html'>string_cat</a>(strings, delim)
   </div>
 
     
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-to_fortran_name"></span><h3>
+public pure function <a href='../proc/to_fortran_name.html'>to_fortran_name</a>(string) result(res)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>Returns string with special characters replaced with an underscore.
+ For now, only a hyphen is treated as a special character, but this can be
+ expanded to other characters if needed.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>string</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=len(string))
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
     </section>
     <br>
     
@@ -2244,7 +2384,7 @@ public subroutine <a href='../proc/split.html'>split</a>(input_line, array, deli
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-26 09:35  
+             on 2021-07-16 10:07  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

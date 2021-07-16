@@ -39,7 +39,7 @@ module fpm_manifest_package
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_filesystem, only : exists, getline, join_path
-    use fpm_error, only : error_t, fatal_error, syntax_error
+    use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
         & len
     use fpm_versioning, only : version_t, new_version
@@ -131,6 +131,9 @@ contains
            call syntax_error(error, "Could not retrieve package name")
            return
         end if
+        if (bad_name_error(error,'package',self%name))then
+           return
+        endif
 
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")

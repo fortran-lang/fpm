@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 7.4% of total for procedures.">235 statements</a>
+    title=" 7.3% of total for procedures.">233 statements</a>
      </li> 
      
      
@@ -181,7 +181,7 @@
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-common_args">common_args</a>
       
-      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~7">i</a>
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i">i</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
@@ -308,7 +308,7 @@ public subroutine get_command_line_settings(cmd_settings)
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-common_args">common_args</a>
       
-      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i~7">i</a>
+      <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-i">i</a>
       
       <a class="list-group-item" href="../proc/get_command_line_settings.html#variable-install_settings">install_settings</a>
       
@@ -414,7 +414,7 @@ public subroutine get_command_line_settings(cmd_settings)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~7"></span>integer,</td>
+  <td><span class="anchor" id="variable-i"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -588,7 +588,7 @@ subroutine printhelp(lines)
             <span class="k">case </span><span class="n">default</span>     <span class="p">;</span> <span class="n">os_type</span> <span class="o">=</span>  <span class="s2">&quot;OS Type:     UNKNOWN&quot;</span>
         <span class="k">end select</span>
 <span class="k">        </span><span class="n">version_text</span> <span class="o">=</span> <span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span> <span class="kd">::</span> <span class="p">&amp;</span>
-         <span class="p">&amp;</span>  <span class="s1">&#39;Version:     0.3.0, alpha&#39;</span><span class="p">,</span>                           <span class="p">&amp;</span>
+         <span class="p">&amp;</span>  <span class="s1">&#39;Version:     0.3.0, alpha&#39;</span><span class="p">,</span>                               <span class="p">&amp;</span>
          <span class="p">&amp;</span>  <span class="s1">&#39;Program:     fpm(1)&#39;</span><span class="p">,</span>                                     <span class="p">&amp;</span>
          <span class="p">&amp;</span>  <span class="s1">&#39;Description: A Fortran package manager and build system&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
          <span class="p">&amp;</span>  <span class="s1">&#39;Home Page:   https://github.com/fortran-lang/fpm&#39;</span><span class="p">,</span>        <span class="p">&amp;</span>
@@ -694,17 +694,15 @@ subroutine printhelp(lines)
             <span class="p">&amp;</span> <span class="n">help_new</span><span class="p">,</span> <span class="n">version_text</span><span class="p">)</span>
             <span class="k">select case</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">))</span>
             <span class="k">case</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0,/))&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;ERROR&gt; directory name required&#39;</span>
                 <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(7x,g0,/))&#39;</span><span class="p">)</span> <span class="p">&amp;</span>
                 <span class="p">&amp;</span> <span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]&#39;</span>
-                <span class="k">stop </span><span class="mi">1</span>
+                <span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;directory name required&#39;</span><span class="p">)</span>
             <span class="k">case</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">name</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
             <span class="k">case </span><span class="n">default</span>
-                <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(g0)&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;ERROR&gt; only one directory name allowed&#39;</span>
                 <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(7x,g0)&#39;</span><span class="p">)</span> <span class="p">&amp;</span>
                 <span class="p">&amp;</span> <span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]]| [--full|--bare] [--backfill]&#39;</span>
-                <span class="k">stop </span><span class="mi">2</span>
+                <span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;only one directory name allowed&#39;</span><span class="p">)</span>
             <span class="k">end select</span>
             <span class="c">!*! canon_path is not converting &quot;.&quot;, etc.</span>
             <span class="n">name</span><span class="o">=</span><span class="n">canon_path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -712,7 +710,7 @@ subroutine printhelp(lines)
 <span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(g0)&#39;</span><span class="p">)</span> <span class="p">[</span> <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span> <span class="kd">::</span> <span class="p">&amp;</span>
                 <span class="p">&amp;</span> <span class="s1">&#39;&lt;ERROR&gt; the fpm project name must be made of up to 63 ASCII letters,&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="p">&amp;</span> <span class="s1">&#39;        numbers, underscores, or hyphens, and start with a letter.&#39;</span><span class="p">]</span>
-                <span class="k">stop </span><span class="mi">4</span>
+                <span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
             <span class="k">endif</span>
 
 <span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_new_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span><span class="p">)</span>
@@ -721,13 +719,13 @@ subroutine printhelp(lines)
 <span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)&amp;</span>
                 <span class="p">&amp;</span><span class="s1">&#39;&lt;ERROR&gt; --full and any of [--src|--lib,--app,--test,--example,--bare]&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="p">&amp;</span><span class="s1">&#39;        are mutually exclusive.&#39;</span>
-                <span class="k">stop </span><span class="mi">5</span>
+                <span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
             <span class="n">elseif</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span> <span class="n">specified</span><span class="p">([</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="kd">::</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">,</span><span class="s1">&#39;full&#39;</span><span class="p">]))</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;bare&#39;</span><span class="p">)</span> <span class="p">)</span><span class="k">then</span>
 <span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)&amp;</span>
                 <span class="p">&amp;</span><span class="s1">&#39;&lt;ERROR&gt; --bare and any of [--src|--lib,--app,--test,--example,--full]&#39;</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="p">&amp;</span><span class="s1">&#39;        are mutually exclusive.&#39;</span>
-                <span class="k">stop </span><span class="mi">3</span>
+                <span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
             <span class="n">elseif</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span> <span class="n">specified</span><span class="p">([</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="kd">::</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">])</span> <span class="p">)</span> <span class="p">)</span><span class="k">then</span>
 <span class="k">                </span><span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_new_settings</span><span class="p">(&amp;</span>
                  <span class="p">&amp;</span> <span class="n">backfill</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;backfill&#39;</span><span class="p">),</span>               <span class="p">&amp;</span>
@@ -987,7 +985,7 @@ subroutine printhelp(lines)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-26 09:35  
+             on 2021-07-16 10:07  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

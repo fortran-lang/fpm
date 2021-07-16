@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>git_target_t &ndash; Fortran-lang/fpm </title>
+    <title>is_fortran_name &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -114,8 +114,8 @@
     
   
   <div class="row">
-    <h1>git_target_t
-    <small>Derived Type</small>
+    <h1>is_fortran_name
+      <small>Function</small>
     
     </h1>
     
@@ -132,24 +132,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 3.3% of total for derived types.</p>Including implementation: 64 statements,  4.2% of total for derived types.">8 statements</a>
+    title=" 0.5% of total for procedures.">15 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/git.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_strings.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/git.f90.html'>git.f90</a></li>
+     <li><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
     
-     <li><a href='../module/fpm_git.html'>fpm_git</a></li>
+     <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     
   
-     <li class="active">git_target_t</li>
+     <li class="active">is_fortran_name</li>
   </ol>
 </div>
 </div>
@@ -177,43 +177,35 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/git_target_t.html#variable-object">object</a>
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-allowed">allowed</a>
       
-      <a class="list-group-item" href="../type/git_target_t.html#variable-url">url</a>
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-int">int</a>
       
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#boundprocs-0">Type-Bound Procedures</a></h3></div>
-  <div id="boundprocs-0" class="panel-collapse collapse">
-    <div class="list-group">
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-lower">lower</a>
       
-      <a class="list-group-item" href="../type/git_target_t.html#boundprocedure-checkout">checkout</a>
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-name~7">name</a>
       
-      <a class="list-group-item" href="../type/git_target_t.html#boundprocedure-info~2">info</a>
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-upper">upper</a>
       
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -221,7 +213,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../type/git_target_t.html#src">git_target_t</a>
+    <a class="list-group-item" href="../proc/is_fortran_name.html#src">is_fortran_name</a>
   </div>
 </div>
 
@@ -232,11 +224,62 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>type, public :: git_target_t</h2>
-    <p>Description of an git target</p>
+    <h2>
+public function is_fortran_name(line) result(lout)
+    
+    
+   
+</h2>
+    
+  
+
+
+    
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-line"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>line</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
     
     
     
+    
+    
+    
+    
+   <h3>Return Value <small><span class="anchor" id="variable-lout"></span>logical
+  </small></h3>
+    
+    
+    
+    
+     
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
@@ -251,43 +294,35 @@
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/git_target_t.html#variable-object">object</a>
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-allowed">allowed</a>
       
-      <a class="list-group-item" href="../type/git_target_t.html#variable-url">url</a>
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-int">int</a>
       
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#boundprocs-1">Type-Bound Procedures</a></h3></div>
-  <div id="boundprocs-1" class="panel-collapse collapse">
-    <div class="list-group">
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-lower">lower</a>
       
-      <a class="list-group-item" href="../type/git_target_t.html#boundprocedure-checkout">checkout</a>
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-name~7">name</a>
       
-      <a class="list-group-item" href="../type/git_target_t.html#boundprocedure-info~2">info</a>
+      <a class="list-group-item" href="../proc/is_fortran_name.html#variable-upper">upper</a>
       
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -295,7 +330,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../type/git_target_t.html#src">git_target_t</a>
+    <a class="list-group-item" href="../proc/is_fortran_name.html#src">is_fortran_name</a>
   </div>
 </div>
 
@@ -305,8 +340,10 @@
     <br class="visible-xs visible-sm hidden-md">
 
     
-    <section>
-    <h2>Components</h2>
+
+    
+    <section>    
+      <h2>Variables</h2>
     
 <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Visibility</th>
@@ -323,11 +360,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-object"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-allowed"></span>character(len=*),</td>
   
   <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>object</strong></td><td></td><td></td><td><p>Additional descriptor of the git object</p></td>
+  <td>parameter</td><td>::</td>
+  <td><strong>allowed</strong></td><td> =</td><td>upper//lower//int//'_'</td><td></td>
   
 </tr>
 
@@ -337,11 +374,53 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-url"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-int"></span>character(len=*),</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>int</strong></td><td> =</td><td>'0123456789'</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-lower"></span>character(len=*),</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>lower</strong></td><td> =</td><td>'abcdefghijklmnopqrstuvwxyz'</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-name~7"></span>character(len=:),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
-  <td><strong>url</strong></td><td></td><td></td><td><p>Target URL of the git repository</p></td>
+  <td><strong>name</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-upper"></span>character(len=*),</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>upper</strong></td><td> =</td><td>'ABCDEFGHIJKLMNOPQRSTUVWXYZ'</td><td></td>
   
 </tr>
 
@@ -355,250 +434,43 @@
     
     
     
-    
-     
-    <section>
-    <h2>Type-Bound Procedures</h2>
-    
-     
-<div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-checkout"></span><h3>procedure, public :: <strong>checkout</strong>  
-    
-  </h3></div>
-  
-  <div class="panel-body">
-    
 
-
-    <p>Fetch and checkout in local directory</p>
-  </div>
-  
-  <ul class="list-group">
-    
-      <li class="list-group-item">
-      
-        
-          
-    
-    <h3>
-public subroutine <a href='../proc/checkout.html'>checkout</a>(self, local_path, error)
     
     
-   
-</h3>
     
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>class(<a href='../type/git_target_t.html'>git_target_t</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the git target</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>local_path</strong></td><td><p>Local path to checkout in</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
-  <td>intent(out),</td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td><p>Error</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
     
     
 
-        
-      
-      </li>
-    
-  </ul>
-</div>
 
-    
-     
-<div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~2"></span><h3>procedure, public :: <strong>info</strong>  
-    
-  </h3></div>
-  
-  <div class="panel-body">
-    
-
-
-    <p>Show information on instance</p>
-  </div>
-  
-  <ul class="list-group">
-    
-      <li class="list-group-item">
-      
-        
-          
-    
-    <h3>
-public subroutine <a href='../proc/info.html'>info</a>(self, unit, verbosity)
-    
-    
-   
-</h3>
-    
-
-
-
-
-
-
-
-<p>Show information on git target</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>class(<a href='../type/git_target_t.html'>git_target_t</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the git target</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>integer,</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>unit</strong></td><td><p>Unit for IO</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>integer,</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>verbosity</strong></td><td><p>Verbosity of the printout</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-        
-      
-      </li>
-    
-  </ul>
-</div>
-
-    
-    </section>
     
     
     
     <section>
-    <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="highlight"><pre><span></span>    <span class="k">type</span> <span class="kd">::</span> <span class="n">git_target_t</span>
-
-        <span class="c">!&gt; Kind of the git target</span>
-        <span class="kt">integer</span><span class="p">,</span> <span class="k">private</span> <span class="kd">::</span> <span class="n">descriptor</span> <span class="o">=</span> <span class="n">git_descriptor</span><span class="p">%</span><span class="n">default</span>
-
-        <span class="c">!&gt; Target URL of the git repository</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">url</span>
-
-        <span class="c">!&gt; Additional descriptor of the git object</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">object</span>
-
-    <span class="k">contains</span>
-
-        <span class="c">!&gt; Fetch and checkout in local directory</span>
-        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">checkout</span>
-
-        <span class="c">!&gt; Show information on instance</span>
-        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
-
-    <span class="k">end type </span><span class="n">git_target_t</span>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">lout</span><span class="p">)</span>
+<span class="c">! determine if a string is a valid Fortran name ignoring trailing spaces</span>
+<span class="c">! (but not leading spaces)</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">parameter</span>   <span class="kd">::</span> <span class="nb">int</span><span class="o">=</span><span class="s1">&#39;0123456789&#39;</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">parameter</span>   <span class="kd">::</span> <span class="n">lower</span><span class="o">=</span><span class="s1">&#39;abcdefghijklmnopqrstuvwxyz&#39;</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">parameter</span>   <span class="kd">::</span> <span class="n">upper</span><span class="o">=</span><span class="s1">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#39;</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">parameter</span>   <span class="kd">::</span> <span class="n">allowed</span><span class="o">=</span><span class="n">upper</span><span class="o">//</span><span class="n">lower</span><span class="o">//</span><span class="nb">int</span><span class="o">//</span><span class="s1">&#39;_&#39;</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">line</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
+    <span class="kt">logical</span>                      <span class="kd">::</span> <span class="n">lout</span>
+        <span class="n">name</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">).</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<span class="k">            </span><span class="n">lout</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>                                  <span class="p">&amp;</span>
+             <span class="p">&amp;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">verify</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">),</span> <span class="n">lower</span><span class="o">//</span><span class="n">upper</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>  <span class="p">&amp;</span>
+             <span class="p">&amp;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">verify</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">allowed</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>             <span class="p">&amp;</span>
+             <span class="p">&amp;</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">63</span>
+        <span class="k">else</span>
+<span class="k">            </span><span class="n">lout</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+        <span class="k">endif</span>
+<span class="k">    end function </span><span class="n">is_fortran_name</span>
 </pre></div>
 
     </section>
+    <br>
     
     
     </div>

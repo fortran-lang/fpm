@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>syntax_error &ndash; Fortran-lang/fpm</title>
+    <title>bad_name_error &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -114,8 +114,8 @@
     
   
   <div class="row">
-    <h1>syntax_error
-   <small>Interface</small>
+    <h1>bad_name_error
+      <small>Function</small>
     
     </h1>
     
@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.1% of total for procedures.</p>Including implementation: 9 statements,  0.3% of total for procedures.">3 statements</a>
+    title=" 0.4% of total for procedures.">13 statements</a>
      </li> 
      
      
@@ -149,7 +149,7 @@
      <li><a href='../module/fpm_error.html'>fpm_error</a></li>
     
   
-     <li class="active">syntax_error</li>
+     <li class="active">bad_name_error</li>
   </ol>
 </div>
 </div>
@@ -164,7 +164,7 @@
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-      
+    
 <div id="sidebar">
   
 <h3>Contents</h3>
@@ -189,17 +189,13 @@
 
 
 
+
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
-  <div id="modprocs-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../interface/syntax_error.html#moduleprocedure-fatal_error">fatal_error</a>
-      
-    </div>
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/bad_name_error.html#src">bad_name_error</a>
   </div>
 </div>
-
 
 
 
@@ -208,14 +204,96 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>public interface syntax_error</h2>
-   <p>Alias syntax errors to fatal errors for now</p>
-     
+    <h2>
+public function bad_name_error(error, label, name)
+    
+    
+   
+</h2>
+    
+  
+
+
+    
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-error~12"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>error</strong></td><td><p>Instance of the error data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-label"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>label</strong></td><td><p>Error message label to add to message</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-name~10"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>name</strong></td><td><p>name value to check</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+    
+    
+    
+    
+   <h3>Return Value <small><span class="anchor" id="variable-bad_name_error"></span>logical
+  </small></h3>
+    
+    
+    
+    
      
     <br>
 
-     <section class="visible-xs visible-sm hidden-md">
-       
+    <section class="visible-xs visible-sm hidden-md">
+      
 <h3>Contents</h3>
  
 
@@ -238,108 +316,70 @@
 
 
 
+
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
-  <div id="modprocs-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../interface/syntax_error.html#moduleprocedure-fatal_error">fatal_error</a>
-      
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/bad_name_error.html#src">bad_name_error</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span>    <span class="k">function </span><span class="n">bad_name_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c">!&gt; Instance of the error data</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+
+        <span class="c">!&gt; Error message label to add to message</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">label</span>
+
+        <span class="c">!&gt; name value to check</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+
+        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">bad_name_error</span>
+
+        <span class="k">if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">name</span><span class="p">)))</span><span class="k">then</span>
+<span class="k">           </span><span class="n">bad_name_error</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
+           <span class="k">allocate</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+           <span class="n">error</span><span class="p">%</span><span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;manifest file syntax error: &#39;</span><span class="o">//</span><span class="n">label</span><span class="o">//</span><span class="s1">&#39; name must be composed only of &amp;</span>
+<span class="s1">           &amp;alphanumerics, &quot;-&quot; and &quot;_&quot;  and start with a letter ::&#39;</span><span class="o">//</span><span class="n">name</span>
+        <span class="k">else</span>
+<span class="k">          </span><span class="n">bad_name_error</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
+        <span class="k">endif</span>
+
+<span class="k">    end function </span><span class="n">bad_name_error</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    
     </div>
   </div>
-</div>
-
-
-
-
-     </section>
-     <br class="visible-xs visible-sm hidden-md">
-     
-  
-
-  
-
-  
-   <h2>Module Procedures</h2>
-   
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-fatal_error"></span><h3>
-public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, message)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>Generic fatal runtime error</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
-  <td>intent(out),</td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td><p>Instance of the error data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>message</strong></td><td><p>Error message</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
-   
-     
-
- </div>
-</div>
 
 
     <hr>    
@@ -353,7 +393,7 @@ public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, mess
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-26 09:35  
+             on 2021-07-16 10:07  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

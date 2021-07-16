@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.0% of total for modules and submodules.">58 statements</a>
+    title=" 1.6% of total for modules and submodules.">90 statements</a>
      </li> 
      
      
@@ -177,18 +177,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#inters-0">Interfaces</a></h3></div>
-  <div id="inters-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../module/fpm_error.html#interface-syntax_error">syntax_error</a>
-      
-    </div>
-  </div>
-</div>
-
-
 
 
 <div class="panel panel-primary">
@@ -204,6 +192,18 @@
 
 
 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
+  <div id="funcs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/fpm_error.html#proc-bad_name_error">bad_name_error</a>
+      
+    </div>
+  </div>
+</div>
+
+
 
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
@@ -215,6 +215,10 @@
       <a class="list-group-item" href="../module/fpm_error.html#proc-file_not_found_error">file_not_found_error</a>
       
       <a class="list-group-item" href="../module/fpm_error.html#proc-file_parse_error">file_parse_error</a>
+      
+      <a class="list-group-item" href="../module/fpm_error.html#proc-fpm_stop">fpm_stop</a>
+      
+      <a class="list-group-item" href="../module/fpm_error.html#proc-syntax_error">syntax_error</a>
       
     </div>
   </div>
@@ -235,9 +239,30 @@
     
     <div class="col-md-9" id='text'>
     <p>Implementation of basic error handling.</p>
-      
+      <br>
     
   
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      </ul>
+    </div>
+    
 
     
     
@@ -258,18 +283,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#inters-1">Interfaces</a></h3></div>
-  <div id="inters-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../module/fpm_error.html#interface-syntax_error">syntax_error</a>
-      
-    </div>
-  </div>
-</div>
-
-
 
 
 <div class="panel panel-primary">
@@ -285,6 +298,18 @@
 
 
 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
+  <div id="funcs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/fpm_error.html#proc-bad_name_error">bad_name_error</a>
+      
+    </div>
+  </div>
+</div>
+
+
 
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
@@ -296,6 +321,10 @@
       <a class="list-group-item" href="../module/fpm_error.html#proc-file_not_found_error">file_not_found_error</a>
       
       <a class="list-group-item" href="../module/fpm_error.html#proc-file_parse_error">file_parse_error</a>
+      
+      <a class="list-group-item" href="../module/fpm_error.html#proc-fpm_stop">fpm_stop</a>
+      
+      <a class="list-group-item" href="../module/fpm_error.html#proc-syntax_error">syntax_error</a>
       
     </div>
   </div>
@@ -319,103 +348,6 @@
     
     
     
-    
-    <section>
-   <h2>Interfaces</h2>
-   
-     
-<div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="interface-syntax_error"></span><h3>public interface <a href='../interface/syntax_error.html'>syntax_error</a>
-    
-  </h3></div>
-  
-  <div class="panel-body">
-    
-    <p>Alias syntax errors to fatal errors for now</p>
-  </div>
-  
-  <ul class="list-group">
-  
-  
-  
-    <li class="list-group-item">
-    
-    
-    <h3>
-public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, message)
-    
-    
-   
-</h3>
-    
-
-
-
-
-
-
-
-<p>Generic fatal runtime error</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
-  <td>intent(out),</td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td><p>Instance of the error data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>message</strong></td><td><p>Error message</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-    </li>
-  
-  
-  </ul>
-</div>
-
-    
-    </section>
-  <br>
     
 
     
@@ -475,6 +407,102 @@ public subroutine <a href='../proc/fatal_error.html'>fatal_error</a>(error, mess
   <br>
     
     
+     
+    <section>
+    <h2>Functions</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-bad_name_error"></span><h3>
+public function <a href='../proc/bad_name_error.html'>bad_name_error</a>(error, label, name)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>error</strong></td><td><p>Instance of the error data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>label</strong></td><td><p>Error message label to add to message</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>name</strong></td><td><p>name value to check</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    </section>
+    <br>
     
 
     
@@ -763,6 +791,138 @@ public subroutine <a href='../proc/file_parse_error.html'>file_parse_error</a>(e
   </div>
 
     
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-fpm_stop"></span><h3>
+public subroutine <a href='../proc/fpm_stop.html'>fpm_stop</a>(value, message)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>value</strong></td><td><p>value to use on STOP</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>message</strong></td><td><p>Error message</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-syntax_error"></span><h3>
+public subroutine <a href='../proc/syntax_error.html'>syntax_error</a>(error, message)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>error</strong></td><td><p>Instance of the error data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>message</strong></td><td><p>Error message</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
     </section>    
     <br>
     
@@ -783,7 +943,7 @@ public subroutine <a href='../proc/file_parse_error.html'>file_parse_error</a>(e
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-26 09:35  
+             on 2021-07-16 10:07  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

@@ -179,9 +179,9 @@
       
       <a class="list-group-item" href="../proc/build_package.html#variable-build_failed">build_failed</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-i~8">i</a>
+      <a class="list-group-item" href="../proc/build_package.html#variable-i~19">i</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-j~5">j</a>
+      <a class="list-group-item" href="../proc/build_package.html#variable-j~6">j</a>
       
       <a class="list-group-item" href="../proc/build_package.html#variable-queue">queue</a>
       
@@ -189,7 +189,7 @@
       
       <a class="list-group-item" href="../proc/build_package.html#variable-skip_current">skip_current</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-stat~5">stat</a>
+      <a class="list-group-item" href="../proc/build_package.html#variable-stat~8">stat</a>
       
     </div>
   </div>
@@ -260,7 +260,7 @@ public subroutine build_package(targets, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-targets~3"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td><span class="anchor" id="variable-targets~7"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
   <td>intent(inout)</td>
   <td></td>
   
@@ -275,7 +275,7 @@ public subroutine build_package(targets, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model~6"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-model~7"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -308,9 +308,9 @@ public subroutine build_package(targets, model)
       
       <a class="list-group-item" href="../proc/build_package.html#variable-build_failed">build_failed</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-i~8">i</a>
+      <a class="list-group-item" href="../proc/build_package.html#variable-i~19">i</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-j~5">j</a>
+      <a class="list-group-item" href="../proc/build_package.html#variable-j~6">j</a>
       
       <a class="list-group-item" href="../proc/build_package.html#variable-queue">queue</a>
       
@@ -318,7 +318,7 @@ public subroutine build_package(targets, model)
       
       <a class="list-group-item" href="../proc/build_package.html#variable-skip_current">skip_current</a>
       
-      <a class="list-group-item" href="../proc/build_package.html#variable-stat~5">stat</a>
+      <a class="list-group-item" href="../proc/build_package.html#variable-stat~8">stat</a>
       
     </div>
   </div>
@@ -390,7 +390,7 @@ public subroutine build_package(targets, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~8"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~19"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -404,7 +404,7 @@ public subroutine build_package(targets, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-j~5"></span>integer,</td>
+  <td><span class="anchor" id="variable-j~6"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -460,7 +460,7 @@ public subroutine build_package(targets, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat~5"></span>integer,</td>
+  <td><span class="anchor" id="variable-stat~8"></span>integer,</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
@@ -547,10 +547,10 @@ public subroutine build_package(targets, model)
         <span class="k">if</span> <span class="p">(</span><span class="n">build_failed</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
                 <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;&lt;ERROR&gt; Compilation failed for object &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span>
+<span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0:,1x))&#39;</span><span class="p">)</span> <span class="s1">&#39;&lt;ERROR&gt; Compilation failed for object &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span>
                 <span class="k">end if</span>
 <span class="k">            end do</span>
-<span class="k">            stop </span><span class="mi">1</span>
+<span class="k">            call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;stopping due to failed compilation&#39;</span><span class="p">)</span>
         <span class="k">end if</span>
 
 <span class="k">    end do</span>
@@ -577,7 +577,7 @@ public subroutine build_package(targets, model)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-06-26 09:35  
+             on 2021-07-16 10:07  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

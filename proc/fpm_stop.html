@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>string_t &ndash; Fortran-lang/fpm</title>
+    <title>fpm_stop &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -114,8 +114,8 @@
     
   
   <div class="row">
-    <h1>string_t
-   <small>Interface</small>
+    <h1>fpm_stop
+      <small>Subroutine</small>
     
     </h1>
     
@@ -132,24 +132,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.1% of total for procedures.</p>Including implementation: 8 statements,  0.3% of total for procedures.">3 statements</a>
+    title=" 0.4% of total for procedures.">12 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_strings.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/error.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></li>
+     <li><a href='../sourcefile/error.f90.html'>error.f90</a></li>
     
-     <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+     <li><a href='../module/fpm_error.html'>fpm_error</a></li>
     
   
-     <li class="active">string_t</li>
+     <li class="active">fpm_stop</li>
   </ol>
 </div>
 </div>
@@ -164,7 +164,7 @@
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-      
+    
 <div id="sidebar">
   
 <h3>Contents</h3>
@@ -189,17 +189,13 @@
 
 
 
+
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
-  <div id="modprocs-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../interface/string_t.html#moduleprocedure-new_string_t">new_string_t</a>
-      
-    </div>
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/fpm_stop.html#src">fpm_stop</a>
   </div>
 </div>
-
 
 
 
@@ -208,14 +204,72 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>public interface string_t</h2>
+    <h2>
+public subroutine fpm_stop(value, message)
+    
+    
    
-     
-     
+</h2>
+    
+  
+
+
     
 
-     <section class="visible-xs visible-sm hidden-md">
-       
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-value"></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>value</strong></td><td><p>value to use on STOP</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-message~7"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>message</strong></td><td><p>Error message</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+    
+     
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
 <h3>Contents</h3>
  
 
@@ -238,99 +292,65 @@
 
 
 
+
 <div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
-  <div id="modprocs-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../interface/string_t.html#moduleprocedure-new_string_t">new_string_t</a>
-      
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/fpm_stop.html#src">fpm_stop</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">fpm_stop</span><span class="p">(</span><span class="k">value</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
+    <span class="c">! TODO: if verbose mode, call ERROR STOP instead of STOP</span>
+    <span class="c">! TODO: if M_escape is used, add color</span>
+    <span class="c">! to work with older compilers might need a case statement for values</span>
+
+        <span class="c">!&gt; value to use on STOP</span>
+        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">value</span>
+        <span class="c">!&gt; Error message</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">message</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="k">           if</span><span class="p">(</span><span class="k">value</span><span class="p">.</span><span class="n">gt</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;ERROR&gt;&quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+           <span class="k">else</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;INFO&gt; &quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+           <span class="k">endif</span>
+<span class="k">        endif</span>
+<span class="k">        stop value</span>
+<span class="k">    end subroutine </span><span class="n">fpm_stop</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    
     </div>
   </div>
-</div>
-
-
-
-
-     </section>
-     <br class="visible-xs visible-sm hidden-md">
-     
-  
-
-  
-
-  
-   <h2>Module Procedures</h2>
-   
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-new_string_t"></span><h3>
-private function new_string_t(s) result(string)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-<p>Helper function to generate a new string_t instance
-  (Required due to the allocatable component)</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>s</strong></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  
-  
-  
-  
-     <h4>Return Value <small>type(<a href='../type/string_t.html'>string_t</a>)
-  </small></h4>
-  
-    
-
-  </div>
-  </div>
-
-   
-     
-
- </div>
-</div>
 
 
     <hr>    
