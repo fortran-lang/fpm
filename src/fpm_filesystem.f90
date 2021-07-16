@@ -1,17 +1,19 @@
 !> This module contains general routines for interacting with the file system
 !!
 module fpm_filesystem
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env
     use fpm_strings, only: f_string, replace, string_t, split, notabs
+    use fpm_error, only : fpm_stop
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
-            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, to_fortran_name, &
+            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file,  &
             read_lines, read_lines_expanded
+
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
     public :: which
 
@@ -19,7 +21,6 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
 
 
 contains
-
 
 !> return value of environment variable
 subroutine env_variable(var, name)
@@ -90,7 +91,7 @@ function canon_path(path)
     character(len=:), allocatable :: canon_path
     character(len=:), allocatable :: nixpath
 
-    integer :: ii, istart, iend, stat, nn, last
+    integer :: istart, iend, nn, last
     logical :: is_path, absolute
 
     nixpath = unix_path(path)
@@ -141,7 +142,7 @@ contains
         logical, intent(inout) :: is_path
 
         integer :: ii, nn
-        character :: tok, last
+        character :: tok
 
         nn = len(string)
 
@@ -325,8 +326,7 @@ subroutine mkdir(dir)
     end select
 
     if (stat /= 0) then
-        print *, 'execute_command_line() failed'
-        error stop
+        call fpm_stop(1, '*mkdir*:directory creation failed')
     end if
 end subroutine mkdir
 
@@ -363,8 +363,7 @@ recursive subroutine list_files(dir, files, recurse)
     end select
 
     if (stat /= 0) then
-        print *, 'execute_command_line() failed'
-        error stop
+        call fpm_stop(2,'*list_files*:directory listing failed')
     end if
 
     open (newunit=fh, file=temp_file, status='old')
@@ -575,13 +574,11 @@ character(len=256)            :: message
         ios=0
     endif
     if(ios.ne.0)then
-        write(stderr,'(*(a:,1x))')&
-        & '<ERROR> *filewrite*:',filename,trim(message)
         lun=-1
         if(present(ier))then
            ier=ios
         else
-           stop 1
+           call fpm_stop(3,'*fileopen*:'//filename//':'//trim(message))
         endif
     endif
 
@@ -596,11 +593,10 @@ integer               :: ios
     if(lun.ne.-1)then
         close(unit=lun,iostat=ios,iomsg=message)
         if(ios.ne.0)then
-            write(stderr,'(*(a:,1x))')'<ERROR> *filewrite*:',trim(message)
             if(present(ier))then
                ier=ios
             else
-               stop 2
+               call fpm_stop(4,'*fileclose*:'//trim(message))
             endif
         endif
     endif
@@ -620,9 +616,7 @@ character(len=256)                    :: message
        do i=1,size(filedata)
            write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
            if(ios.ne.0)then
-               write(stderr,'(*(a:,1x))')&
-               & '<ERROR> *filewrite*:',filename,trim(message)
-               stop 4
+               call fpm_stop(5,'*filewrite*:'//filename//':'//trim(message))
            endif
        enddo
     endif
@@ -630,16 +624,6 @@ character(len=256)                    :: message
     call fileclose(lun)
 
 end subroutine filewrite
-
-!> Returns string with special characters replaced with an underscore.
-!! For now, only a hyphen is treated as a special character, but this can be
-!! expanded to other characters if needed.
-pure function to_fortran_name(string) result(res)
-    character(*), intent(in) :: string
-    character(len(string)) :: res
-    character, parameter :: SPECIAL_CHARACTERS(*) = ['-']
-    res = replace(string, SPECIAL_CHARACTERS, '_')
-end function to_fortran_name
 
 function which(command) result(pathname)
 !>
@@ -720,5 +704,4 @@ integer                         :: i, j
       end select
    enddo SEARCH
 end function which
-
 end module fpm_filesystem
