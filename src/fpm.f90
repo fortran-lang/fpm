@@ -416,11 +416,20 @@ subroutine cmd_run(settings,test)
         do i=1,size(executables)
             if (exists(executables(i)%s)) then
                 if(settings%runner .ne. ' ')then
-                    call run(settings%runner//' '//executables(i)%s//" "//settings%args, &
+                    if(.not.allocated(settings%args))then
+                       call run(settings%runner//' '//executables(i)%s, &
                              echo=settings%verbose, exitstat=stat(i))
+                    else
+                       call run(settings%runner//' '//executables(i)%s//" "//settings%args, &
+                             echo=settings%verbose, exitstat=stat(i))
+                    endif
                 else
-                    call run(executables(i)%s//" "//settings%args,echo=settings%verbose, &
+                    if(.not.allocated(settings%args))then
+                       call run(executables(i)%s,echo=settings%verbose, exitstat=stat(i))
+                    else
+                       call run(executables(i)%s//" "//settings%args,echo=settings%verbose, &
                              exitstat=stat(i))
+                    endif
                 endif
             else
                 call fpm_stop(1,'*cmd_run*:'//executables(i)%s//' not found')
