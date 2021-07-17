@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.0% of total for source files.">342 statements</a>
+    title=" 6.1% of total for source files.">350 statements</a>
      </li> 
      
      
@@ -685,72 +685,81 @@
 <a id="ln-416" name="ln-416"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
 <a id="ln-417" name="ln-417"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">))</span> <span class="k">then</span>
 <a id="ln-418" name="ln-418"></a><span class="k">                if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-419" name="ln-419"></a><span class="k">                    call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-420" name="ln-420"></a>                             <span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-<a id="ln-421" name="ln-421"></a>                <span class="k">else</span>
-<a id="ln-422" name="ln-422"></a><span class="k">                    call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-423" name="ln-423"></a>                             <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-<a id="ln-424" name="ln-424"></a>                <span class="k">endif</span>
-<a id="ln-425" name="ln-425"></a><span class="k">            else</span>
-<a id="ln-426" name="ln-426"></a><span class="k">                call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_run*:&#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s1">&#39; not found&#39;</span><span class="p">)</span>
-<a id="ln-427" name="ln-427"></a>            <span class="k">end if</span>
-<a id="ln-428" name="ln-428"></a><span class="k">        end do</span>
-<a id="ln-429" name="ln-429"></a>
-<a id="ln-430" name="ln-430"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-431" name="ln-431"></a><span class="k">            do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-432" name="ln-432"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-433" name="ln-433"></a><span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0:,1x))&#39;</span><span class="p">)</span> <span class="s1">&#39;&lt;ERROR&gt; Execution failed for object &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span>
-<a id="ln-434" name="ln-434"></a>                <span class="k">end if</span>
-<a id="ln-435" name="ln-435"></a><span class="k">            end do</span>
-<a id="ln-436" name="ln-436"></a><span class="k">            call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_run*:stopping due to failed executions&#39;</span><span class="p">)</span>
-<a id="ln-437" name="ln-437"></a>        <span class="k">end if</span>
+<a id="ln-419" name="ln-419"></a><span class="k">                    if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="k">then</span>
+<a id="ln-420" name="ln-420"></a><span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-421" name="ln-421"></a>                             <span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<a id="ln-422" name="ln-422"></a>                    <span class="k">else</span>
+<a id="ln-423" name="ln-423"></a><span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-424" name="ln-424"></a>                             <span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<a id="ln-425" name="ln-425"></a>                    <span class="k">endif</span>
+<a id="ln-426" name="ln-426"></a><span class="k">                else</span>
+<a id="ln-427" name="ln-427"></a><span class="k">                    if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="k">then</span>
+<a id="ln-428" name="ln-428"></a><span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<a id="ln-429" name="ln-429"></a>                    <span class="k">else</span>
+<a id="ln-430" name="ln-430"></a><span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-431" name="ln-431"></a>                             <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<a id="ln-432" name="ln-432"></a>                    <span class="k">endif</span>
+<a id="ln-433" name="ln-433"></a><span class="k">                endif</span>
+<a id="ln-434" name="ln-434"></a><span class="k">            else</span>
+<a id="ln-435" name="ln-435"></a><span class="k">                call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_run*:&#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s1">&#39; not found&#39;</span><span class="p">)</span>
+<a id="ln-436" name="ln-436"></a>            <span class="k">end if</span>
+<a id="ln-437" name="ln-437"></a><span class="k">        end do</span>
 <a id="ln-438" name="ln-438"></a>
-<a id="ln-439" name="ln-439"></a><span class="k">    endif</span>
-<a id="ln-440" name="ln-440"></a><span class="k">    contains</span>
-<a id="ln-441" name="ln-441"></a><span class="k">    subroutine </span><span class="n">compact_list_all</span><span class="p">()</span>
-<a id="ln-442" name="ln-442"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_WIDTH</span> <span class="o">=</span> <span class="mi">80</span>
-<a id="ln-443" name="ln-443"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">nCol</span>
-<a id="ln-444" name="ln-444"></a>        <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
-<a id="ln-445" name="ln-445"></a>        <span class="n">nCol</span> <span class="o">=</span> <span class="n">LINE_WIDTH</span><span class="o">/</span><span class="n">col_width</span>
-<a id="ln-446" name="ln-446"></a>        <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Available names:&#39;</span>
-<a id="ln-447" name="ln-447"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-<a id="ln-448" name="ln-448"></a>
-<a id="ln-449" name="ln-449"></a>            <span class="n">exe_target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
-<a id="ln-450" name="ln-450"></a>
-<a id="ln-451" name="ln-451"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
-<a id="ln-452" name="ln-452"></a>                <span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-453" name="ln-453"></a>
-<a id="ln-454" name="ln-454"></a><span class="k">                </span><span class="n">exe_source</span> <span class="o">=&gt;</span> <span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span>
-<a id="ln-455" name="ln-455"></a>
-<a id="ln-456" name="ln-456"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">run_scope</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-439" name="ln-439"></a><span class="k">        if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-440" name="ln-440"></a><span class="k">            do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-441" name="ln-441"></a>                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-442" name="ln-442"></a><span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0:,1x))&#39;</span><span class="p">)</span> <span class="s1">&#39;&lt;ERROR&gt; Execution failed for object &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span>
+<a id="ln-443" name="ln-443"></a>                <span class="k">end if</span>
+<a id="ln-444" name="ln-444"></a><span class="k">            end do</span>
+<a id="ln-445" name="ln-445"></a><span class="k">            call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_run*:stopping due to failed executions&#39;</span><span class="p">)</span>
+<a id="ln-446" name="ln-446"></a>        <span class="k">end if</span>
+<a id="ln-447" name="ln-447"></a>
+<a id="ln-448" name="ln-448"></a><span class="k">    endif</span>
+<a id="ln-449" name="ln-449"></a><span class="k">    contains</span>
+<a id="ln-450" name="ln-450"></a><span class="k">    subroutine </span><span class="n">compact_list_all</span><span class="p">()</span>
+<a id="ln-451" name="ln-451"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_WIDTH</span> <span class="o">=</span> <span class="mi">80</span>
+<a id="ln-452" name="ln-452"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">nCol</span>
+<a id="ln-453" name="ln-453"></a>        <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+<a id="ln-454" name="ln-454"></a>        <span class="n">nCol</span> <span class="o">=</span> <span class="n">LINE_WIDTH</span><span class="o">/</span><span class="n">col_width</span>
+<a id="ln-455" name="ln-455"></a>        <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Available names:&#39;</span>
+<a id="ln-456" name="ln-456"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 <a id="ln-457" name="ln-457"></a>
-<a id="ln-458" name="ln-458"></a><span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="s2">&quot;no &quot;</span><span class="p">,</span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">nCol</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)))</span> <span class="p">&amp;</span>
-<a id="ln-459" name="ln-459"></a>                                        <span class="p">&amp;</span> <span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">col_width</span><span class="p">)</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)]</span>
-<a id="ln-460" name="ln-460"></a>                    <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
-<a id="ln-461" name="ln-461"></a>
-<a id="ln-462" name="ln-462"></a>                <span class="k">end if</span>
-<a id="ln-463" name="ln-463"></a><span class="k">            end if</span>
-<a id="ln-464" name="ln-464"></a><span class="k">        end do</span>
-<a id="ln-465" name="ln-465"></a><span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
-<a id="ln-466" name="ln-466"></a>    <span class="k">end subroutine </span><span class="n">compact_list_all</span>
-<a id="ln-467" name="ln-467"></a>
-<a id="ln-468" name="ln-468"></a>    <span class="k">subroutine </span><span class="n">compact_list</span><span class="p">()</span>
-<a id="ln-469" name="ln-469"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_WIDTH</span> <span class="o">=</span> <span class="mi">80</span>
-<a id="ln-470" name="ln-470"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">nCol</span>
-<a id="ln-471" name="ln-471"></a>        <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
-<a id="ln-472" name="ln-472"></a>        <span class="n">nCol</span> <span class="o">=</span> <span class="n">LINE_WIDTH</span><span class="o">/</span><span class="n">col_width</span>
-<a id="ln-473" name="ln-473"></a>        <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Matched names:&#39;</span>
-<a id="ln-474" name="ln-474"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
-<a id="ln-475" name="ln-475"></a>            <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="s2">&quot;no &quot;</span><span class="p">,</span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">nCol</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)))</span> <span class="p">&amp;</span>
-<a id="ln-476" name="ln-476"></a>             <span class="p">&amp;</span> <span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">col_width</span><span class="p">)</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)]</span>
-<a id="ln-477" name="ln-477"></a>            <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
-<a id="ln-478" name="ln-478"></a>        <span class="k">enddo</span>
-<a id="ln-479" name="ln-479"></a><span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
-<a id="ln-480" name="ln-480"></a>    <span class="k">end subroutine </span><span class="n">compact_list</span>
-<a id="ln-481" name="ln-481"></a>
-<a id="ln-482" name="ln-482"></a><span class="k">end subroutine </span><span class="n">cmd_run</span>
-<a id="ln-483" name="ln-483"></a>
-<a id="ln-484" name="ln-484"></a><span class="k">end module </span><span class="n">fpm</span>
+<a id="ln-458" name="ln-458"></a>            <span class="n">exe_target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span>
+<a id="ln-459" name="ln-459"></a>
+<a id="ln-460" name="ln-460"></a>            <span class="k">if</span> <span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_EXECUTABLE</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="p">&amp;</span>
+<a id="ln-461" name="ln-461"></a>                <span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-462" name="ln-462"></a>
+<a id="ln-463" name="ln-463"></a><span class="k">                </span><span class="n">exe_source</span> <span class="o">=&gt;</span> <span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span>
+<a id="ln-464" name="ln-464"></a>
+<a id="ln-465" name="ln-465"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">==</span> <span class="n">run_scope</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-466" name="ln-466"></a>
+<a id="ln-467" name="ln-467"></a><span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="s2">&quot;no &quot;</span><span class="p">,</span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">nCol</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)))</span> <span class="p">&amp;</span>
+<a id="ln-468" name="ln-468"></a>                                        <span class="p">&amp;</span> <span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">col_width</span><span class="p">)</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)]</span>
+<a id="ln-469" name="ln-469"></a>                    <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+<a id="ln-470" name="ln-470"></a>
+<a id="ln-471" name="ln-471"></a>                <span class="k">end if</span>
+<a id="ln-472" name="ln-472"></a><span class="k">            end if</span>
+<a id="ln-473" name="ln-473"></a><span class="k">        end do</span>
+<a id="ln-474" name="ln-474"></a><span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+<a id="ln-475" name="ln-475"></a>    <span class="k">end subroutine </span><span class="n">compact_list_all</span>
+<a id="ln-476" name="ln-476"></a>
+<a id="ln-477" name="ln-477"></a>    <span class="k">subroutine </span><span class="n">compact_list</span><span class="p">()</span>
+<a id="ln-478" name="ln-478"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_WIDTH</span> <span class="o">=</span> <span class="mi">80</span>
+<a id="ln-479" name="ln-479"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">nCol</span>
+<a id="ln-480" name="ln-480"></a>        <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+<a id="ln-481" name="ln-481"></a>        <span class="n">nCol</span> <span class="o">=</span> <span class="n">LINE_WIDTH</span><span class="o">/</span><span class="n">col_width</span>
+<a id="ln-482" name="ln-482"></a>        <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Matched names:&#39;</span>
+<a id="ln-483" name="ln-483"></a>        <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
+<a id="ln-484" name="ln-484"></a>            <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="s2">&quot;no &quot;</span><span class="p">,</span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">nCol</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)))</span> <span class="p">&amp;</span>
+<a id="ln-485" name="ln-485"></a>             <span class="p">&amp;</span> <span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">col_width</span><span class="p">)</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)]</span>
+<a id="ln-486" name="ln-486"></a>            <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+<a id="ln-487" name="ln-487"></a>        <span class="k">enddo</span>
+<a id="ln-488" name="ln-488"></a><span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+<a id="ln-489" name="ln-489"></a>    <span class="k">end subroutine </span><span class="n">compact_list</span>
+<a id="ln-490" name="ln-490"></a>
+<a id="ln-491" name="ln-491"></a><span class="k">end subroutine </span><span class="n">cmd_run</span>
+<a id="ln-492" name="ln-492"></a>
+<a id="ln-493" name="ln-493"></a><span class="k">end module </span><span class="n">fpm</span>
 </pre></div>
 
     </section>
@@ -769,7 +778,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-07-17 18:56  
+             on 2021-07-17 18:57  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>

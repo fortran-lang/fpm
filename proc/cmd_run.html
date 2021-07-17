@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.6% of total for procedures.">145 statements</a>
+    title=" 4.8% of total for procedures.">153 statements</a>
      </li> 
      
      
@@ -864,12 +864,21 @@ subroutine compact_list_all()
         <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">                if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="k">then</span>
-<span class="k">                    call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">                    if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="k">then</span>
+<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="p">&amp;</span>
                              <span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-                <span class="k">else</span>
-<span class="k">                    call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="p">&amp;</span>
+                    <span class="k">else</span>
+<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span> <span class="p">&amp;</span>
+                             <span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+                    <span class="k">endif</span>
+<span class="k">                else</span>
+<span class="k">                    if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="k">then</span>
+<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+                    <span class="k">else</span>
+<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span> <span class="p">&amp;</span>
                              <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-                <span class="k">endif</span>
+                    <span class="k">endif</span>
+<span class="k">                endif</span>
 <span class="k">            else</span>
 <span class="k">                call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_run*:&#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s1">&#39; not found&#39;</span><span class="p">)</span>
             <span class="k">end if</span>
@@ -949,7 +958,7 @@ subroutine compact_list_all()
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-07-17 18:56  
+             on 2021-07-17 18:57  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
