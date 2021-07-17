@@ -1,7 +1,7 @@
 !># Discovery of sources
 !>
-!> This module implements subroutines for building a list of 
-!> `[[srcfile_t]]` objects by looking for source files in the filesystem. 
+!> This module implements subroutines for building a list of
+!> `[[srcfile_t]]` objects by looking for source files in the filesystem.
 !>
 module fpm_sources
 use fpm_error, only: error_t
@@ -158,7 +158,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
             if (basename(sources(j)%file_name,suffix=.true.) == executables(i)%main .and.&
                  canon_path(dirname(sources(j)%file_name)) == &
                  canon_path(executables(i)%source_dir) ) then
-                
+
                 sources(j)%exe_name = executables(i)%name
                 if (allocated(executables(i)%link)) then
                     sources(j)%link_libraries = executables(i)%link
@@ -176,7 +176,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
             exe_source%link_libraries = executables(i)%link
         end if
         exe_source%unit_scope = scope
-        
+
         if (allocated(error)) return
 
         if (.not.allocated(sources)) then
@@ -200,6 +200,11 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
     integer :: i, n
 
     n = 0
+
+    do i=1,size(executables)
+       dirs_temp(i)%s=' '
+    enddo
+
     do i=1,size(executables)
         if (.not.(executables(i)%source_dir .in. dirs_temp)) then
 
