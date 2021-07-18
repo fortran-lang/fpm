@@ -111,6 +111,9 @@ type :: fpm_model_t
     !> Name of root package
     character(:), allocatable :: package_name
 
+    !> Should "implicit none" be enforced by the compiler
+    logical :: implicit_none
+
     !> Array of packages (including the root package)
     type(package_t), allocatable :: packages(:)
 
@@ -259,12 +262,20 @@ end function info_srcfile_short
 
 function info_model(model) result(s)
     type(fpm_model_t), intent(in) :: model
-    character(:), allocatable :: s
+    character(:), allocatable :: s, tmp
     integer :: i
     !type :: fpm_model_t
     s = "fpm_model_t("
     !    character(:), allocatable :: package_name
     s = s // 'package_name="' // model%package_name // '"'
+
+    if (model%implicit_none) then
+        tmp = ".true."
+    else
+        tmp = ".false."
+    end if
+    s = s // ', implicit_none=' // tmp
+
     !    type(srcfile_t), allocatable :: sources(:)
     s = s // ", packages=["
     do i = 1, size(model%packages)

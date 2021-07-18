@@ -61,6 +61,8 @@ module fpm_manifest_package
         !> Name of the package
         character(len=:), allocatable :: name
 
+        logical :: implicit_none
+
         !> Package version
         type(version_t) :: version
 
@@ -134,6 +136,8 @@ contains
         if (bad_name_error(error,'package',self%name))then
            return
         endif
+
+        call get_value(table, "implicit_none", self%implicit_none, .false.)
 
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")
@@ -303,7 +307,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
-                    & "example", "library", "install")
+                    & "example", "library", "install", "implicit_none")
                 continue
 
             end select
