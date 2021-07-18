@@ -537,17 +537,18 @@ contains
    ' ']
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
-   ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]          ', &
+   ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
    ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
    ' list [--list]                                                                  ', &
-   ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]       ', &
+   ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]  ', &
    '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
-   ' test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--runner "CMD"] [--list]', &
-   '      [--compiler COMPILER_NAME] [-- ARGS]                                      ', &
-   ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]   ', &
+   ' test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--runner "CMD"]    ', &
+   '      [--list] [--compiler COMPILER_NAME] [-- ARGS]                             ', &
+   ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
+   '         [options]                                                              ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -652,20 +653,21 @@ contains
     '  + install Install project                                            ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
-    '                                                                       ', &
-    '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]', &
-    '    new NAME [[--lib|--src] [--app] [--test] [--example]]|             ', &
-    '             [--full|--bare][--backfill]                               ', &
-    '    update [NAME(s)] [--fetch-only] [--clean]                          ', &
-    '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--example]', &
-    '        [--all] [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]  ', &
-    '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-    '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]         ', &
-    '    help [NAME(s)]                                                     ', &
-    '    list [--list]                                                      ', &
-    '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH] [options]', &
-    '                                                                       ', &
-    'SUBCOMMAND OPTIONS                                                     ', &
+    '                                                                                ', &
+    '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
+    '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
+    '             [--full|--bare][--backfill]                                        ', &
+    '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
+    '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
+    '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]       ', &
+    '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]         ', &
+    '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]                  ', &
+    '    help [NAME(s)]                                                              ', &
+    '    list [--list]                                                               ', &
+    '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
+    '    [options]                                                                   ', &
+    '                                                                                ', &
+    'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
     '             Change working directory to PATH before running any command', &
     ' --profile PROF    selects the compilation profile for the build.',&
@@ -730,11 +732,11 @@ contains
     '    fpm run                                                            ', &
     '    fpm run --example                                                  ', &
     '    fpm new --help                                                     ', &
-    '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"', &
-    '    fpm install --prefix ~/.local                                      ', &
-    '                                                                       ', &
-    'SEE ALSO                                                               ', &
-    '                                                                       ', &
+    '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
+    '    fpm install --prefix ~/.local                                               ', &
+    '                                                                                ', &
+    'SEE ALSO                                                                        ', &
+    '                                                                                ', &
     ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
     ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
     ' + The fpm(1) TOML file format is described at                                  ', &

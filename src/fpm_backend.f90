@@ -83,7 +83,7 @@ subroutine build_package(targets,model)
             ! Check if build already failed
             !$omp atomic read
             skip_current = build_failed
-            
+
             if (.not.skip_current) then
                 call build_target(model,queue(j)%ptr,stat(j))
             end if
@@ -126,8 +126,7 @@ end subroutine build_package
 recursive subroutine sort_target(target)
     type(build_target_t), intent(inout), target :: target
 
-    integer :: i, j, fh, stat
-    type(build_target_t), pointer :: exe_obj
+    integer :: i, fh, stat
 
     ! Check if target has already been processed (as a dependency)
     if (target%sorted .or. target%skip) then
@@ -257,8 +256,7 @@ subroutine build_target(model,target,stat)
     type(build_target_t), intent(in), target :: target
     integer, intent(out) :: stat
 
-    integer :: ilib, fh
-    character(:), allocatable :: link_flags
+    integer :: fh
 
     if (.not.exists(dirname(target%output_file))) then
         call mkdir(dirname(target%output_file))
