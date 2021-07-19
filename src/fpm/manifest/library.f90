@@ -11,7 +11,7 @@
 module fpm_manifest_library
     use fpm_error, only : error_t, syntax_error
     use fpm_strings, only: string_t, string_cat
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
     implicit none
     private
 
@@ -59,7 +59,7 @@ contains
         call get_value(table, "source-dir", self%source_dir, "src")
         call get_value(table, "build-script", self%build_script)
 
-        call get_value(table, "include-dir", self%include_dir, error)
+        call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
 
         ! Set default value of include-dir if not found in manifest

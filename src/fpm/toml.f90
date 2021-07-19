@@ -22,14 +22,9 @@ module fpm_toml
     private
 
     public :: read_package_file
-    public :: toml_table, toml_array, toml_key, toml_stat, get_value, set_value
+    public :: toml_table, toml_array, toml_key, toml_stat, get_value, set_value, get_list
     public :: new_table, add_table, add_array, len
     public :: toml_error, toml_serializer, toml_parse
-
-
-    interface get_value
-        module procedure :: get_child_value_string_list
-    end interface get_value
 
 
 contains
@@ -71,7 +66,7 @@ contains
     end subroutine read_package_file
 
 
-    subroutine get_child_value_string_list(table, key, list, error)
+    subroutine get_list(table, key, list, error)
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -114,7 +109,7 @@ contains
             end if
         end if
 
-    end subroutine get_child_value_string_list
+    end subroutine get_list
 
 
 end module fpm_toml
