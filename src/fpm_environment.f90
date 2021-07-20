@@ -40,7 +40,16 @@ contains
         character(len=32) :: val
         integer           :: length, rc
         logical           :: file_exists
+        logical, save     :: first_run = .true.
+        integer, save     :: ret = OS_UNKNOWN
+        !omp threadprivate(ret, first_run)
 
+        if (.not. first_run) then
+            r = ret
+            return
+        end if
+
+        first_run = .false.
         r = OS_UNKNOWN
 
         ! Check environment variable `OS`.
@@ -48,6 +57,7 @@ contains
 
         if (rc == 0 .and. length > 0 .and. index(val, 'Windows_NT') > 0) then
             r = OS_WINDOWS
+            ret = r
             return
         end if
 
@@ -58,42 +68,49 @@ contains
             ! Linux
             if (index(val, 'linux') > 0) then
                 r = OS_LINUX
+                ret = r
                 return
             end if
 
             ! macOS
             if (index(val, 'darwin') > 0) then
                 r = OS_MACOS
+                ret = r
                 return
             end if
 
             ! Windows, MSYS, MinGW, Git Bash
             if (index(val, 'win') > 0 .or. index(val, 'msys') > 0) then
                 r = OS_WINDOWS
+                ret = r
                 return
             end if
 
             ! Cygwin
             if (index(val, 'cygwin') > 0) then
                 r = OS_CYGWIN
+                ret = r
                 return
             end if
 
             ! Solaris, OpenIndiana, ...
             if (index(val, 'SunOS') > 0 .or. index(val, 'solaris') > 0) then
                 r = OS_SOLARIS
+                ret = r
                 return
             end if
 
             ! FreeBSD
             if (index(val, 'FreeBSD') > 0 .or. index(val, 'freebsd') > 0) then
                 r = OS_FREEBSD
+                ret = r
                 return
             end if
 
             ! OpenBSD
             if (index(val, 'OpenBSD') > 0 .or. index(val, 'openbsd') > 0) then
                 r = OS_OPENBSD
+                ret = r
                 return
             end if
         end if
@@ -103,6 +120,7 @@ contains
 
         if (file_exists) then
             r = OS_LINUX
+            ret = r
             return
         end if
 
@@ -111,6 +129,7 @@ contains
 
         if (file_exists) then
             r = OS_MACOS
+            ret = r
             return
         end if
 
@@ -119,6 +138,7 @@ contains
 
         if (file_exists) then
             r = OS_FREEBSD
+            ret = r
             return
         end if
     end function get_os_type
