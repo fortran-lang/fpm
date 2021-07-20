@@ -132,7 +132,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.5% of total for source files.">86 statements</a>
+    title=" 1.5% of total for source files.">85 statements</a>
      </li> 
      
      
@@ -358,29 +358,27 @@
 <a id="ln-89" name="ln-89"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dir</span>
 <a id="ln-90" name="ln-90"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">has_manifest</span>
 <a id="ln-91" name="ln-91"></a>
-<a id="ln-92" name="ln-92"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">manifest</span>
-<a id="ln-93" name="ln-93"></a>
-<a id="ln-94" name="ln-94"></a>        <span class="n">has_manifest</span> <span class="o">=</span> <span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">))</span>
-<a id="ln-95" name="ln-95"></a>    <span class="k">end function </span><span class="n">has_manifest</span>
-<a id="ln-96" name="ln-96"></a>
-<a id="ln-97" name="ln-97"></a>    <span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-98" name="ln-98"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">optional</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a id="ln-99" name="ln-99"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-100" name="ln-100"></a><span class="k">            write</span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span> <span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">)</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
-<a id="ln-101" name="ln-101"></a>            <span class="k">stop </span><span class="mi">1</span>
-<a id="ln-102" name="ln-102"></a>        <span class="k">end if</span>
-<a id="ln-103" name="ln-103"></a><span class="k">    end subroutine </span><span class="n">handle_error</span>
-<a id="ln-104" name="ln-104"></a>
-<a id="ln-105" name="ln-105"></a>    <span class="c">!&gt; Save access to working directory in settings, in case setting have not been allocated</span>
-<a id="ln-106" name="ln-106"></a>    <span class="k">subroutine </span><span class="n">get_working_dir</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">)</span>
-<a id="ln-107" name="ln-107"></a>        <span class="k">class</span><span class="p">(</span><span class="n">fpm_cmd_settings</span><span class="p">),</span> <span class="k">optional</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">settings</span>
-<a id="ln-108" name="ln-108"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">working_dir</span>
-<a id="ln-109" name="ln-109"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">settings</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-110" name="ln-110"></a><span class="k">            </span><span class="n">working_dir</span> <span class="o">=</span> <span class="n">settings</span><span class="p">%</span><span class="n">working_dir</span>
-<a id="ln-111" name="ln-111"></a>        <span class="k">end if</span>
-<a id="ln-112" name="ln-112"></a><span class="k">    end subroutine </span><span class="n">get_working_dir</span>
-<a id="ln-113" name="ln-113"></a>
-<a id="ln-114" name="ln-114"></a><span class="k">end program </span><span class="n">main</span>
+<a id="ln-92" name="ln-92"></a>        <span class="n">has_manifest</span> <span class="o">=</span> <span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">))</span>
+<a id="ln-93" name="ln-93"></a>    <span class="k">end function </span><span class="n">has_manifest</span>
+<a id="ln-94" name="ln-94"></a>
+<a id="ln-95" name="ln-95"></a>    <span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<a id="ln-96" name="ln-96"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">optional</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<a id="ln-97" name="ln-97"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-98" name="ln-98"></a><span class="k">            write</span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span> <span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">)</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
+<a id="ln-99" name="ln-99"></a>            <span class="k">stop </span><span class="mi">1</span>
+<a id="ln-100" name="ln-100"></a>        <span class="k">end if</span>
+<a id="ln-101" name="ln-101"></a><span class="k">    end subroutine </span><span class="n">handle_error</span>
+<a id="ln-102" name="ln-102"></a>
+<a id="ln-103" name="ln-103"></a>    <span class="c">!&gt; Save access to working directory in settings, in case setting have not been allocated</span>
+<a id="ln-104" name="ln-104"></a>    <span class="k">subroutine </span><span class="n">get_working_dir</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">)</span>
+<a id="ln-105" name="ln-105"></a>        <span class="k">class</span><span class="p">(</span><span class="n">fpm_cmd_settings</span><span class="p">),</span> <span class="k">optional</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">settings</span>
+<a id="ln-106" name="ln-106"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">working_dir</span>
+<a id="ln-107" name="ln-107"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">settings</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-108" name="ln-108"></a><span class="k">            </span><span class="n">working_dir</span> <span class="o">=</span> <span class="n">settings</span><span class="p">%</span><span class="n">working_dir</span>
+<a id="ln-109" name="ln-109"></a>        <span class="k">end if</span>
+<a id="ln-110" name="ln-110"></a><span class="k">    end subroutine </span><span class="n">get_working_dir</span>
+<a id="ln-111" name="ln-111"></a>
+<a id="ln-112" name="ln-112"></a><span class="k">end program </span><span class="n">main</span>
 </pre></div>
 
     </section>
@@ -399,7 +397,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-07-17 18:57  
+             on 2021-07-20 08:06  
           </p>
         </div>
         <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
