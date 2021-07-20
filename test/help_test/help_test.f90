@@ -5,7 +5,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit,
 use fpm_filesystem, only : dirname, join_path, exists
 use fpm_environment, only : get_os_type, OS_WINDOWS
 implicit none
-integer                        :: i, j
+integer                        :: i
 integer                        :: be, af
 character(len=:),allocatable   :: path
 integer                        :: estat, cstat

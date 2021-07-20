@@ -655,7 +655,7 @@ contains
 
     end subroutine test_csource
 
-    
+
     !> Try to parse fortran program with invalid use statement
     subroutine test_invalid_use_stmt(error)
 
