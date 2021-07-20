@@ -351,11 +351,10 @@ end subroutine mkdir
 !!  - File/directory names return are relative to cwd, ie. preprended with `dir`
 !!  - Includes files starting with `.` except current directory and parent directory
 !!
-recursive subroutine list_files(dir, files, recurse, separator)
+recursive subroutine list_files(dir, files, recurse)
     character(len=*), intent(in) :: dir
     type(string_t), allocatable, intent(out) :: files(:)
     logical, intent(in), optional :: recurse
-    character(len=1), optional :: separator
 
     integer :: i
     type(string_t), allocatable :: dir_files(:)
@@ -368,18 +367,6 @@ recursive subroutine list_files(dir, files, recurse, separator)
     integer, parameter :: N_MAX = 256
     type(string_t) :: files_tmp(N_MAX)
     integer(kind=c_int) :: r
-    character(len=1) :: filesep
-
-    if (present(separator)) then
-        filesep = separator
-    else
-        select case (get_os_type())
-            case default
-                filesep = '/'
-            case (OS_WINDOWS)
-                filesep = '\'
-        end select
-    end if
 
     if (c_is_dir(dir(1:len_trim(dir))//c_null_char) .eq. 0) then
         allocate (files(0))
@@ -413,7 +400,7 @@ recursive subroutine list_files(dir, files, recurse, separator)
                 i = 1
             end if
 
-            files_tmp(i)%s = dir // filesep // string_fortran
+            files_tmp(i)%s = join_path(dir, string_fortran)
         end if
     end do
 
@@ -435,7 +422,7 @@ recursive subroutine list_files(dir, files, recurse, separator)
 
             do i=1,size(files)
                 if (c_is_dir(files(i)%s//c_null_char) .ne. 0) then
-                    call list_files(files(i)%s, dir_files, recurse=.true., separator=filesep)
+                    call list_files(files(i)%s, dir_files, recurse=.true.)
                     sub_dir_files = [sub_dir_files, dir_files]
                 end if
             end do
