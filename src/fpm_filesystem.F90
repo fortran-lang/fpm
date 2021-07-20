@@ -260,13 +260,23 @@ function join_path(a1,a2,a3,a4,a5) result(path)
     character(len=*), intent(in), optional :: a3, a4, a5
     character(len=:), allocatable          :: path
     character(len=1)                       :: filesep
+    logical, save                          :: has_cache = .false.
+    character(len=1), save                 :: cache = '/'
+    !$omp threadprivate(has_cache, cache)
 
-    select case (get_os_type())
-        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-            filesep = '/'
-        case (OS_WINDOWS)
-            filesep = '\'
-    end select
+    if (has_cache) then
+        filesep = cache
+    else
+        select case (get_os_type())
+            case default
+                filesep = '/'
+            case (OS_WINDOWS)
+                filesep = '\'
+        end select
+
+        cache = filesep
+        has_cache = .true.
+    end if
 
     path = a1 // filesep // a2
 
