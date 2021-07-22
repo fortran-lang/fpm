@@ -3,7 +3,7 @@ module fpm_cmd_install
   use fpm, only : build_model
   use fpm_backend, only : build_package
   use fpm_command_line, only : fpm_install_settings
-  use fpm_error, only : error_t, fatal_error
+  use fpm_error, only : error_t, fatal_error, fpm_stop
   use fpm_filesystem, only : join_path, list_files
   use fpm_installer, only : installer_t, new_installer
   use fpm_manifest, only : package_config_t, get_package_data
@@ -27,7 +27,7 @@ contains
     type(fpm_model_t) :: model
     type(build_target_ptr), allocatable :: targets(:)
     type(installer_t) :: installer
-    character(len=:), allocatable :: lib, exe, dir
+    character(len=:), allocatable :: lib, dir
     logical :: installable
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
@@ -168,8 +168,7 @@ contains
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      print '("[Error]", 1x, a)', error%message
-      error stop 1
+      call fpm_stop(1,error%message)
     end if
   end subroutine handle_error
 

@@ -1,11 +1,15 @@
 !> Implementation of basic error handling.
 module fpm_error
+    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
+    use fpm_strings, only : is_fortran_name, to_fortran_name
     implicit none
     private
 
     public :: error_t
     public :: fatal_error, syntax_error, file_not_found_error
     public :: file_parse_error
+    public :: bad_name_error
+    public :: fpm_stop
 
 
     !> Data type defining an error
@@ -16,15 +20,7 @@ module fpm_error
 
     end type error_t
 
-
-    !> Alias syntax errors to fatal errors for now
-    interface syntax_error
-        module procedure :: fatal_error
-    end interface syntax_error
-
-
 contains
-
 
     !> Generic fatal runtime error
     subroutine fatal_error(error, message)
@@ -39,6 +35,43 @@ contains
         error%message = message
 
     end subroutine fatal_error
+
+    subroutine syntax_error(error, message)
+
+        !> Instance of the error data
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Error message
+        character(len=*), intent(in) :: message
+
+        allocate(error)
+        error%message = message
+
+    end subroutine syntax_error
+
+    function bad_name_error(error, label,name)
+
+        !> Instance of the error data
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Error message label to add to message
+        character(len=*), intent(in) :: label
+
+        !> name value to check
+        character(len=*), intent(in) :: name
+
+        logical :: bad_name_error
+
+        if(.not.is_fortran_name(to_fortran_name(name)))then
+           bad_name_error=.true.
+           allocate(error)
+           error%message = 'manifest file syntax error: '//label//' name must be composed only of &
+           &alphanumerics, "-" and "_"  and start with a letter ::'//name
+        else
+          bad_name_error=.false.
+        endif
+
+    end function bad_name_error
 
 
     !> Error created when a file is missing or not found
@@ -82,9 +115,9 @@ contains
 
         allocate(error)
         error%message = 'Parse error: '//message//new_line('a')
-        
+
         error%message = error%message//file_name
-        
+
         if (present(line_num)) then
 
             write(temp_string,'(I0)') line_num
@@ -115,14 +148,32 @@ contains
 
                     error%message = error%message//new_line('a')
                     error%message = error%message//'   | '//repeat(' ',line_col-1)//'^'
-                
+
                 end if
-                
+
             end if
 
         end if
 
     end subroutine file_parse_error
 
+    subroutine fpm_stop(value,message)
+    ! TODO: if verbose mode, call ERROR STOP instead of STOP
+    ! TODO: if M_escape is used, add color
+    ! to work with older compilers might need a case statement for values
+
+        !> value to use on STOP
+        integer, intent(in) :: value
+        !> Error message
+        character(len=*), intent(in) :: message
+        if(message.ne.'')then
+           if(value.gt.0)then
+              write(stderr,'("<ERROR>",a)')trim(message)
+           else
+              write(stderr,'("<INFO> ",a)')trim(message)
+           endif
+        endif
+        stop value
+    end subroutine fpm_stop
 
 end module fpm_error

@@ -6,7 +6,7 @@
 !!### Types
 !! - **TYPE(STRING_T)** define a type to contain strings of variable length
 !!### Type Conversions
-!! - [[F_STRING]]  return Fortran **CHARACTER** variable when given a C-like array of 
+!! - [[F_STRING]]  return Fortran **CHARACTER** variable when given a C-like array of
 !!                 single characters terminated with a C_NULL_CHAR **CHARACTER**
 !! - [[STR]]  Converts **INTEGER** or** LOGICAL** to **CHARACTER** string
 !!### Case
@@ -14,12 +14,14 @@
 !!### Parsing and joining
 !! - [[SPLIT]]  parse string on delimiter characters and store tokens into an allocatable array
 !! - [[STRING_CAT]]  Concatenate an array of **type(string_t)** into a single **CHARACTER** variable
-!! - [[JOIN]]  append an array of **CHARACTER** variables into a single **CHARACTER** variable 
+!! - [[JOIN]]  append an array of **CHARACTER** variables into a single **CHARACTER** variable
 !!### Testing
 !! - [[STR_ENDS_WITH]]  test if a **CHARACTER** string or array ends with a specified suffix
 !! - [[STRING_ARRAY_CONTAINS]]  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
 !! - **OPERATOR(.IN.)**  Check if array of **TYPE(STRING_T)** matches a particular **CHARACTER** string
 !! - [[GLOB]]  function compares text strings, one of which can have wildcards ('*' or '?').
+!! - [[IS_FORTRAN_NAME]]  determine whether a string is an acceptable Fortran entity name
+!! - [[TO_FORTRAN_NAME]]  replace allowed special but unusuable characters in names with underscore
 !!### Miscellaneous
 !! - [[LEN_TRIM]]  Determine total trimmed length of **STRING_T** array
 !! - [[FNV_1A]]  Hash a **CHARACTER(*)** string of default kind or a **TYPE(STRING_T)** array
@@ -33,6 +35,7 @@ implicit none
 
 private
 public :: f_string, lower, split, str_ends_with, string_t
+public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
 
@@ -920,5 +923,36 @@ else
     s = ".false."
 end if
 end function
+
+!> Returns string with special characters replaced with an underscore.
+!! For now, only a hyphen is treated as a special character, but this can be
+!! expanded to other characters if needed.
+pure function to_fortran_name(string) result(res)
+    character(*), intent(in) :: string
+    character(len(string)) :: res
+    character, parameter :: SPECIAL_CHARACTERS(*) = ['-']
+    res = replace(string, SPECIAL_CHARACTERS, '_')
+end function to_fortran_name
+
+function is_fortran_name(line) result (lout)
+! determine if a string is a valid Fortran name ignoring trailing spaces
+! (but not leading spaces)
+    character(len=*),parameter   :: int='0123456789'
+    character(len=*),parameter   :: lower='abcdefghijklmnopqrstuvwxyz'
+    character(len=*),parameter   :: upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    character(len=*),parameter   :: allowed=upper//lower//int//'_'
+    character(len=*),intent(in)  :: line
+    character(len=:),allocatable :: name
+    logical                      :: lout
+        name=trim(line)
+        if(len(name).ne.0)then
+            lout = .true.                                  &
+             & .and. verify(name(1:1), lower//upper) == 0  &
+             & .and. verify(name,allowed) == 0             &
+             & .and. len(name) <= 63
+        else
+            lout = .false.
+        endif
+    end function is_fortran_name
 
 end module fpm_strings

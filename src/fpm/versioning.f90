@@ -87,8 +87,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character :: tok
-        integer :: ii, istart, iend, stat, nn
+        integer :: istart, iend, stat, nn
         integer :: num(max_limit)
         logical :: is_number
 
@@ -147,7 +146,7 @@ contains
 
         integer :: ii, nn
         logical :: was_number
-        character :: tok, last
+        character :: tok
 
         was_number = is_number
         nn = len(string)

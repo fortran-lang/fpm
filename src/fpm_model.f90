@@ -279,7 +279,6 @@ function info_srcfile_short(source) result(s)
     ! Prints a shortened version of srcfile_t
     type(srcfile_t), intent(in) :: source
     character(:), allocatable :: s
-    integer :: i
     s = "srcfile_t("
     s = s // 'file_name="' // source%file_name // '"'
     s = s // ", ...)"
