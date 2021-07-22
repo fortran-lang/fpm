@@ -174,7 +174,6 @@ subroutine build_target_list(targets,model, build_dirs)
     character(:), allocatable :: xsuffix, exe_dir, flags_for_archive, output_file, module_flags
     character(len=16) :: build_name
     type(build_target_t), pointer :: dep
-    character(:), allocatable :: xsuffix, exe_dir
     logical :: with_lib
 
     ! Check for empty build (e.g. header-only lib)
