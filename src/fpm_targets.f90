@@ -182,6 +182,7 @@ subroutine build_target_list(targets,model, build_dirs)
 
     if (n_source < 1) then
         allocate(targets(0))
+        allocate(build_dirs(0))
         return
     end if
 
@@ -508,7 +509,7 @@ end function find_module_dependency
 subroutine resolve_target_linking(targets, model, build_dirs)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(fpm_model_t), intent(in) :: model
-    type(string_t), allocatable, intent(in) :: build_dirs(:)
+    type(string_t), intent(in) :: build_dirs(:)
 
     integer :: i
     character(:), allocatable :: global_link_flags
