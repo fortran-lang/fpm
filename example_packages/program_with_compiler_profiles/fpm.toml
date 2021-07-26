@@ -1,8 +1,5 @@
 name = "hello_world"
 
-[profiles.debug]
-flags="-Og"
-
 [profiles.debug.gfortran.linux]
 flags="-g"
 

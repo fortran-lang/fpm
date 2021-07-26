@@ -415,16 +415,10 @@ contains
             & 'flags = "2" #release.gfortran.all', &
             & '[profiles.gfortran.linux]', &
             & 'flags = "3" #all.gfortran.linux', &
-            & '[profiles.release.linux]', &
-            & 'flags = "4" #release.gfortran.linux', &
-            & '[profiles.release]', &
-            & 'flags = "5" #release.gfortran.all', &
             & '[profiles.gfortran]', &
-            & 'flags = "6" #all.gfortran.all', &
-            & '[profiles.linux]', &
-            & 'flags = "7" #all.gfortran.linux', &
+            & 'flags = "4" #all.gfortran.all', &
             & '[profiles.release.ifort]', &
-            & 'flags = "8" #release.ifort.all'
+            & 'flags = "5" #release.ifort.all'
         close(unit)
 
         call get_package_data(package, manifest, error)
@@ -437,7 +431,7 @@ contains
         profile_name = 'release'
         compiler = 'gfortran'
         call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'4 3 7')) then
+        if (.not.(chosen_profile%flags.eq.'1 3')) then
             call test_failed(error, "Failed to append flags from profiles named 'all'")
             return
         end if
@@ -445,7 +439,7 @@ contains
         profile_name = 'release'
         compiler = 'gfortran'
         call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'5 6')) then
+        if (.not.(chosen_profile%flags.eq.'2 4')) then
             call test_failed(error, "Failed to choose profile with OS 'all'")
             return
         end if
@@ -469,7 +463,7 @@ contains
         profile_name = 'release'
         compiler = 'ifort'
         call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'8')) then
+        if (.not.(chosen_profile%flags.eq.'5')) then
             call test_failed(error, "Failed to overwrite built-in profile")
             return
         end if

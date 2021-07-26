@@ -39,7 +39,7 @@
 !>```
 !>
 module fpm_manifest_profile
-    use fpm_error, only : error_t, syntax_error, fatal_error
+    use fpm_error, only : error_t, syntax_error, fatal_error, fpm_stop
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     use fpm_strings, only: lower
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
@@ -88,6 +88,9 @@ module fpm_manifest_profile
       !> File scope flags
       type(file_scope_flag), allocatable :: file_scope_flags(:)
 
+      !> Is this profile one of the built-in ones?
+      logical :: is_built_in
+
       contains
 
         !> Print information on this instance
@@ -98,7 +101,8 @@ module fpm_manifest_profile
     contains
 
       !> Construct a new profile configuration from a TOML data structure
-      function new_profile(profile_name, compiler, os_type, flags, c_flags, link_time_flags, file_scope_flags) result(profile)
+      function new_profile(profile_name, compiler, os_type, flags, c_flags, link_time_flags, file_scope_flags, is_built_in) &
+                      & result(profile)
         
         !> Name of the profile
         character(len=*), intent(in) :: profile_name
@@ -120,6 +124,9 @@ module fpm_manifest_profile
 
         !> File scope flags
         type(file_scope_flag), optional, intent(in) :: file_scope_flags(:)
+
+        !> Is this profile one of the built-in ones?
+        logical, optional, intent(in) :: is_built_in
 
         type(profile_config_t) :: profile
 
@@ -143,6 +150,11 @@ module fpm_manifest_profile
         end if
         if (present(file_scope_flags)) then
            profile%file_scope_flags = file_scope_flags
+        end if
+        if (present(is_built_in)) then
+           profile%is_built_in = is_built_in
+        else
+           profile%is_built_in = .false.
         end if
 
       end function new_profile
@@ -319,7 +331,7 @@ module fpm_manifest_profile
         integer, intent(inout), optional :: profindex
         
         type(toml_key), allocatable :: key_list(:)
-        character(len=:), allocatable :: os_name
+        character(len=:), allocatable :: os_name, l_os_name
         type(toml_table), pointer :: os_node
         character(len=:), allocatable :: flags
         integer :: ios, stat, os_type
@@ -328,7 +340,7 @@ module fpm_manifest_profile
         if (size(os_list)<1) return
         key_val_added = .false.
         do ios = 1, size(os_list)
-          os_name = lower(os_list(ios)%key)
+          os_name = os_list(ios)%key
           call validate_os_name(os_name, is_valid)
           if (is_valid) then
             if (present(profiles_size)) then
@@ -351,6 +363,14 @@ module fpm_manifest_profile
               if (allocated(error)) return
             end if
           else
+            ! Not lowercase OS name
+            l_os_name = lower(os_name)
+            call validate_os_name(l_os_name, is_valid)
+            if (is_valid) then
+              call fpm_stop(1,'*traverse_oss*:Error: Invalid OS name.')
+            end if
+
+            ! Missing OS name
             is_key_val = .false.
             os_name = os_list(ios)%key
             call get_value(table, os_name, os_node, stat=stat)
@@ -433,21 +453,7 @@ module fpm_manifest_profile
               if (allocated(error)) return
             end if
           else
-            os_list = comp_list(icomp:icomp)
-            compiler_name = DEFAULT_COMPILER
-
-            if (present(profiles_size)) then
-              call traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size=profiles_size)
-              if (allocated(error)) return
-            else
-              if (.not.(present(profiles).and.present(profindex))) then
-                call fatal_error(error, "Both profiles and profindex have to be present")
-                return
-              end if
-              call traverse_oss(profile_name, compiler_name, os_list, table, &
-                                & error, profiles=profiles, profindex=profindex)
-              if (allocated(error)) return
-            end if
+            call fpm_stop(1,'*traverse_compilers*:Error: Compiler name not specified or invalid.')
           end if
         end do        
       end subroutine traverse_compilers
@@ -582,46 +588,46 @@ module fpm_manifest_profile
 
         default_profiles = [ &
               & new_profile('release', 'caf', OS_ALL, flags=' -O3 -Wimplicit-interface&
-                                                & -fPIC -fmax-errors=1 -funroll-loops'), &
+                                                & -fPIC -fmax-errors=1 -funroll-loops', is_built_in=.true.), &
               & new_profile('release', 'gfortran', OS_ALL, flags=' -O3 -Wimplicit-interface -fPIC&
-                                                & -fmax-errors=1 -funroll-loops -fcoarray=single'), &
+                                                & -fmax-errors=1 -funroll-loops -fcoarray=single', is_built_in=.true.), &
               & new_profile('release', 'f95', OS_ALL, flags=' -O3 -Wimplicit-interface -fPIC&
-                                                & -fmax-errors=1 -ffast-math -funroll-loops'), &
-              & new_profile('release', 'nvfortran', OS_ALL, flags = ' -Mbackslash'), &
+                                                & -fmax-errors=1 -ffast-math -funroll-loops', is_built_in=.true.), &
+              & new_profile('release', 'nvfortran', OS_ALL, flags = ' -Mbackslash', is_built_in=.true.), &
               & new_profile('release', 'ifort', OS_ALL, flags = ' -fp-model precise -pc64 -align all&
                                                 & -error-limit 1 -reentrancy threaded&
-                                                & -nogen-interfaces -assume byterecl'), &
+                                                & -nogen-interfaces -assume byterecl', is_built_in=.true.), &
               & new_profile('release', 'ifort', OS_WINDOWS, flags = ' /fp:precise /align:all&
                                                 & /error-limit:1 /reentrancy:threaded&
-                                                & /nogen-interfaces /assume:byterecl'), &
+                                                & /nogen-interfaces /assume:byterecl', is_built_in=.true.), &
               & new_profile('release', 'ifx', OS_ALL, flags = ' -fp-model=precise -pc64&
                                                 & -align all -error-limit 1 -reentrancy threaded&
-                                                & -nogen-interfaces -assume byterecl'), &
+                                                & -nogen-interfaces -assume byterecl', is_built_in=.true.), &
               & new_profile('release', 'ifx', OS_WINDOWS, flags = ' /fp:precise /align:all&
                                                 & /error-limit:1 /reentrancy:threaded&
-                                                & /nogen-interfaces /assume:byterecl'), &
-              & new_profile('release', 'nagfor', OS_ALL, flags = ' -O4 -coarray=single -PIC'), &
+                                                & /nogen-interfaces /assume:byterecl', is_built_in=.true.), &
+              & new_profile('release', 'nagfor', OS_ALL, flags = ' -O4 -coarray=single -PIC', is_built_in=.true.), &
               & new_profile('debug', 'caf', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
                                                 & -fPIC -fmax-errors=1  -g -fcheck=bounds&
-                                                & -fcheck=array-temps -fbacktrace'), &
+                                                & -fcheck=array-temps -fbacktrace', is_built_in=.true.), &
               & new_profile('debug', 'gfortran', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
                                                 & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                                                & -fcheck=array-temps -fbacktrace -fcoarray=single'), &
+                                                & -fcheck=array-temps -fbacktrace -fcoarray=single', is_built_in=.true.), &
               & new_profile('debug', 'f95', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
                                                 & -fPIC -fmax-errors=1 -g -fcheck=bounds&
                                                 & -fcheck=array-temps -Wno-maybe-uninitialized&
-                                                & -Wno-uninitialized -fbacktrace'), &
+                                                & -Wno-uninitialized -fbacktrace', is_built_in=.true.), &
               & new_profile('debug', 'nvfortran', OS_ALL, flags = ' -Minform=inform -Mbackslash -g&
-                                                & -Mbounds -Mchkptr -Mchkstk -traceback'), &
+                                                & -Mbounds -Mchkptr -Mchkstk -traceback', is_built_in=.true.), &
               & new_profile('debug', 'ifort', OS_ALL, flags = ' -warn all -check all -error-limit 1&
-                                                & -O0 -g -assume byterecl -traceback'), &
+                                                & -O0 -g -assume byterecl -traceback', is_built_in=.true.), &
               & new_profile('debug', 'ifort', OS_WINDOWS, flags = ' /warn:all /check:all /error-limit:1&
-                                                & /Od /Z7 /assume:byterecl /traceback'), &
+                                                & /Od /Z7 /assume:byterecl /traceback', is_built_in=.true.), &
               & new_profile('debug', 'ifx', OS_ALL, flags = ' -warn all -check all -error-limit 1&
-                                                & -O0 -g -assume byterecl -traceback'), &
+                                                & -O0 -g -assume byterecl -traceback', is_built_in=.true.), &
               & new_profile('debug', 'ifx', OS_WINDOWS, flags = ' /warn:all /check:all /error-limit:1&
-                                                & /Od /Z7 /assume:byterecl'), &
-              & new_profile('debug', 'nagfor', OS_ALL, flags = ' -g -C=all -O0 -gline -coarray=single -PIC') &
+                                                & /Od /Z7 /assume:byterecl', is_built_in=.true.), &
+              & new_profile('debug', 'nagfor', OS_ALL, flags = ' -g -C=all -O0 -gline -coarray=single -PIC', is_built_in=.true.) &
               &]
       end function get_default_profiles
 

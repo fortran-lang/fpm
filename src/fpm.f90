@@ -206,6 +206,8 @@ subroutine build_model(model, settings, package, error)
                             & get_os_type(), profile_found, current_pkg_profile)
                     if (.not.profile_found .and. i.gt.1) then
                         current_pkg_profile = primary_pkg_profile
+                    else if (current_pkg_profile%is_built_in) then
+                        current_pkg_profile = primary_pkg_profile
                     else if (i.eq.1) then
                         if (.not.profile_found) then
                           error stop 'Error: primary package does not have given profile.'
