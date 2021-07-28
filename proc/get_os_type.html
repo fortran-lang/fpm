@@ -74,8 +74,11 @@
         
         
             <li><a href="../program/main.html">Program</a></li>
-      
+               
+        
+        
             </ul>
+        
             </li>
 
 
@@ -94,6 +97,8 @@
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
+
+
 
           </ul>
         
@@ -127,12 +132,13 @@
      
      
      
+     
     
     
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.8% of total for procedures.">57 statements</a>
+    title=" 2.3% of total for procedures.">75 statements</a>
      </li> 
      
      
@@ -179,9 +185,13 @@
       
       <a class="list-group-item" href="../proc/get_os_type.html#variable-file_exists">file_exists</a>
       
+      <a class="list-group-item" href="../proc/get_os_type.html#variable-first_run">first_run</a>
+      
       <a class="list-group-item" href="../proc/get_os_type.html#variable-length~3">length</a>
       
       <a class="list-group-item" href="../proc/get_os_type.html#variable-rc">rc</a>
+      
+      <a class="list-group-item" href="../proc/get_os_type.html#variable-ret">ret</a>
       
       <a class="list-group-item" href="../proc/get_os_type.html#variable-val">val</a>
       
@@ -254,7 +264,7 @@ public function get_os_type() result(r)
     
     
     
-   <h3>Return Value <small><span class="anchor" id="variable-r~3"></span>integer
+   <h3>Return Value <small><span class="anchor" id="variable-r~4"></span>integer
   </small></h3>
     
     
@@ -277,9 +287,13 @@ public function get_os_type() result(r)
       
       <a class="list-group-item" href="../proc/get_os_type.html#variable-file_exists">file_exists</a>
       
+      <a class="list-group-item" href="../proc/get_os_type.html#variable-first_run">first_run</a>
+      
       <a class="list-group-item" href="../proc/get_os_type.html#variable-length~3">length</a>
       
       <a class="list-group-item" href="../proc/get_os_type.html#variable-rc">rc</a>
+      
+      <a class="list-group-item" href="../proc/get_os_type.html#variable-ret">ret</a>
       
       <a class="list-group-item" href="../proc/get_os_type.html#variable-val">val</a>
       
@@ -353,6 +367,20 @@ public function get_os_type() result(r)
   
 <tr>
   
+  <td><span class="anchor" id="variable-first_run"></span>logical,</td>
+  
+  <td>public,</td>
+  <td>save</td><td>::</td>
+  <td><strong>first_run</strong></td><td> =</td><td>.true.</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-length~3"></span>integer,</td>
   
   <td>public</td>
@@ -372,6 +400,20 @@ public function get_os_type() result(r)
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>rc</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ret"></span>integer,</td>
+  
+  <td>public,</td>
+  <td>save</td><td>::</td>
+  <td><strong>ret</strong></td><td> =</td><td>OS_UNKNOWN</td><td></td>
   
 </tr>
 
@@ -426,7 +468,16 @@ public function get_os_type() result(r)
         <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span> <span class="kd">::</span> <span class="n">val</span>
         <span class="kt">integer</span>           <span class="kd">::</span> <span class="n">length</span><span class="p">,</span> <span class="n">rc</span>
         <span class="kt">logical</span>           <span class="kd">::</span> <span class="n">file_exists</span>
+        <span class="kt">logical</span><span class="p">,</span> <span class="k">save</span>     <span class="kd">::</span> <span class="n">first_run</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
+        <span class="kt">integer</span><span class="p">,</span> <span class="k">save</span>     <span class="kd">::</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">OS_UNKNOWN</span>
+        <span class="c">!omp threadprivate(ret, first_run)</span>
 
+        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span> <span class="n">first_run</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">ret</span>
+            <span class="k">return</span>
+<span class="k">        end if</span>
+
+<span class="k">        </span><span class="n">first_run</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">OS_UNKNOWN</span>
 
         <span class="c">! Check environment variable `OS`.</span>
@@ -434,6 +485,7 @@ public function get_os_type() result(r)
 
         <span class="k">if</span> <span class="p">(</span><span class="n">rc</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;Windows_NT&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_WINDOWS</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
             <span class="k">return</span>
 <span class="k">        end if</span>
 
@@ -444,42 +496,49 @@ public function get_os_type() result(r)
             <span class="c">! Linux</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;linux&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_LINUX</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
                 <span class="k">return</span>
 <span class="k">            end if</span>
 
             <span class="c">! macOS</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;darwin&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_MACOS</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
                 <span class="k">return</span>
 <span class="k">            end if</span>
 
             <span class="c">! Windows, MSYS, MinGW, Git Bash</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;win&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;msys&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_WINDOWS</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
                 <span class="k">return</span>
 <span class="k">            end if</span>
 
             <span class="c">! Cygwin</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;cygwin&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_CYGWIN</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
                 <span class="k">return</span>
 <span class="k">            end if</span>
 
             <span class="c">! Solaris, OpenIndiana, ...</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;SunOS&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;solaris&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_SOLARIS</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
                 <span class="k">return</span>
 <span class="k">            end if</span>
 
             <span class="c">! FreeBSD</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;FreeBSD&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;freebsd&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_FREEBSD</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
                 <span class="k">return</span>
 <span class="k">            end if</span>
 
             <span class="c">! OpenBSD</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;OpenBSD&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;openbsd&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_OPENBSD</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
                 <span class="k">return</span>
 <span class="k">            end if</span>
 <span class="k">        end if</span>
@@ -489,6 +548,7 @@ public function get_os_type() result(r)
 
         <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_LINUX</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
             <span class="k">return</span>
 <span class="k">        end if</span>
 
@@ -497,6 +557,7 @@ public function get_os_type() result(r)
 
         <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_MACOS</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
             <span class="k">return</span>
 <span class="k">        end if</span>
 
@@ -505,6 +566,7 @@ public function get_os_type() result(r)
 
         <span class="k">if</span> <span class="p">(</span><span class="n">file_exists</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            </span><span class="n">r</span> <span class="o">=</span> <span class="n">OS_FREEBSD</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">r</span>
             <span class="k">return</span>
 <span class="k">        end if</span>
 <span class="k">    end function </span><span class="n">get_os_type</span>
@@ -523,16 +585,17 @@ public function get_os_type() result(r)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2021 
-                                          </p></div>
-        <div class="col-xs-6 col-md-4 col-md-push-4">
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+                                          </p>
+        </div>
+        <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
-            <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-07-20 08:06  
+            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+             on 2021-07-28 14:59  
+            
           </p>
         </div>
-        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
       </div>
       <br>
       </div> <!-- /container -->    

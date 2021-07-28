@@ -74,8 +74,11 @@
         
         
             <li><a href="../program/main.html">Program</a></li>
-      
+               
+        
+        
             </ul>
+        
             </li>
 
 
@@ -94,6 +97,8 @@
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
+
+
 
           </ul>
         
@@ -127,24 +132,25 @@
      
      
      
+     
     
     
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.0% of total for modules and submodules.">449 statements</a>
+    title=" 8.9% of total for modules and submodules.">507 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_filesystem.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_filesystem.F90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_filesystem.f90.html'>fpm_filesystem.f90</a></li>
+     <li><a href='../sourcefile/fpm_filesystem.f90.html'>fpm_filesystem.F90</a></li>
     
   
      <li class="active">fpm_filesystem</li>
@@ -271,15 +277,15 @@
       <li class="list-group-item">
   <ul class="list-inline">
     
-    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
-    
-    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-    
-    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-    
     <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     
+    <li><a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a></li>
+    
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    
     <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+    
+    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
     
   </ul>
       </li>
@@ -1154,7 +1160,7 @@ public function <a href='../proc/unix_path.html'>unix_path</a>(path) result(nixp
 
 
 
-<p>Replace file system separators for unix</p>
+<p>Replace file system separators for 1</p>
     
     <h4>Arguments</h4>
     
@@ -1240,7 +1246,51 @@ public function <a href='../proc/which.html'>which</a>(command) result(pathname)
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>command</strong></td><td><p>function which(command) result(pathname)</p><a href="None" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+  <td><strong>command</strong></td><td><h2 id="name">NAME</h2>
+<div class="codehilite"><pre><span></span><code> <span class="n">which</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="p">[</span><span class="n">M_io</span><span class="p">:</span><span class="n">ENVIRONMENT</span><span class="p">]</span> <span class="n">given</span> <span class="n">a</span> <span class="n">command</span> <span class="n">name</span> <span class="n">find</span> <span class="n">the</span> <span class="n">pathname</span> <span class="n">by</span> <span class="n">searching</span>
+             <span class="n">the</span> <span class="n">directories</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">environment</span> <span class="n">variable</span> <span class="o">$</span><span class="n">PATH</span>
+ <span class="p">(</span><span class="n">LICENSE</span><span class="p">:</span><span class="n">PD</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="syntax">SYNTAX</h2>
+<p>function which(command) result(pathname)</p>
+<div class="codehilite"><pre><span></span><code>character(len=*),intent(in)  :: command
+character(len=:),allocatable :: pathname
+</code></pre></div>
+
+<h2 id="description">DESCRIPTION</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">Given</span> <span class="n">a</span> <span class="n">command</span> <span class="n">name</span> <span class="n">find</span> <span class="n">the</span> <span class="n">first</span> <span class="n">file</span> <span class="n">with</span> <span class="n">that</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">directories</span>
+<span class="n">specified</span> <span class="n">by</span> <span class="n">the</span> <span class="n">environment</span> <span class="n">variable</span> <span class="o">$</span><span class="n">PATH</span><span class="o">.</span>
+</code></pre></div>
+
+<h2 id="options">OPTIONS</h2>
+<div class="codehilite"><pre><span></span><code><span class="nv">COMMAND</span>   <span class="nv">the</span> <span class="nv">command</span> <span class="nv">to</span> <span class="nv">search</span> <span class="k">for</span>
+</code></pre></div>
+
+<h2 id="returns">RETURNS</h2>
+<div class="codehilite"><pre><span></span><code><span class="nv">PATHNAME</span>  <span class="nv">the</span> <span class="nv">first</span> <span class="nv">pathname</span> <span class="nv">found</span> <span class="nv">in</span> <span class="nv">the</span> <span class="nv">current</span> <span class="nv">user</span> <span class="nv">path</span>. <span class="nv">Returns</span> <span class="nv">blank</span>
+          <span class="k">if</span> <span class="nv">the</span> <span class="nv">command</span> <span class="nv">is</span> <span class="nv">not</span> <span class="nv">found</span>.
+</code></pre></div>
+
+<h2 id="example">EXAMPLE</h2>
+<p>Sample program:</p>
+<p>Checking the error message and counting lines:</p>
+<div class="codehilite"><pre><span></span><code> <span class="nv">program</span> <span class="nv">demo_which</span>
+ <span class="nv">use</span> <span class="nv">M_io</span>, <span class="nv">only</span> : <span class="nv">which</span>
+ <span class="nv">implicit</span> <span class="nv">none</span>
+    <span class="nv">write</span><span class="ss">(</span><span class="o">*</span>,<span class="o">*</span><span class="ss">)</span><span class="s1">&#39;</span><span class="s">ls is </span><span class="s1">&#39;</span>,<span class="nv">which</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">ls</span><span class="s1">&#39;</span><span class="ss">)</span>
+    <span class="nv">write</span><span class="ss">(</span><span class="o">*</span>,<span class="o">*</span><span class="ss">)</span><span class="s1">&#39;</span><span class="s">dir is </span><span class="s1">&#39;</span>,<span class="nv">which</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">dir</span><span class="s1">&#39;</span><span class="ss">)</span>
+    <span class="nv">write</span><span class="ss">(</span><span class="o">*</span>,<span class="o">*</span><span class="ss">)</span><span class="s1">&#39;</span><span class="s">install is </span><span class="s1">&#39;</span>,<span class="nv">which</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">install</span><span class="s1">&#39;</span><span class="ss">)</span>
+ <span class="k">end</span> <span class="nv">program</span> <span class="nv">demo_which</span>
+</code></pre></div>
+
+<h2 id="author">AUTHOR</h2>
+<div class="codehilite"><pre><span></span><code>John S. Urban
+</code></pre></div>
+
+<h2 id="license">LICENSE</h2>
+<div class="codehilite"><pre><span></span><code>Public Domain
+</code></pre></div></td>
   
 </tr>
 
@@ -1832,7 +1882,7 @@ public recursive subroutine <a href='../proc/list_files.html'>list_files</a>(dir
 
 
 
-<p>Get file &amp; directory names in directory <code>dir</code>.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+<p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a>
     
     <h4>Arguments</h4>
     
@@ -2050,16 +2100,17 @@ public subroutine <a href='../proc/warnwrite.html'>warnwrite</a>(fname, data)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2021 
-                                          </p></div>
-        <div class="col-xs-6 col-md-4 col-md-push-4">
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+                                          </p>
+        </div>
+        <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
-            <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-07-20 08:06  
+            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+             on 2021-07-28 14:59  
+            
           </p>
         </div>
-        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
       </div>
       <br>
       </div> <!-- /container -->    

@@ -76,8 +76,11 @@ All Procedures &ndash; Fortran-lang/fpm
         
         
             <li><a href="../program/main.html">Program</a></li>
-      
+               
+        
+        
             </ul>
+        
             </li>
 
 
@@ -96,6 +99,8 @@ All Procedures &ndash; Fortran-lang/fpm
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
+
+
 
           </ul>
         
@@ -255,7 +260,7 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/glob.html'>glob</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>glob(3f) compares given STRING for match to PATTERN which may
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
-			   <tr><td><a href='../proc/handle_error.html'>handle_error</a></td><td><a href='../program/main.html'>main</a></td><td>Subroutine</td><td></td></tr>
+			   <tr><td><a href='../proc/handle_error~2.html'>handle_error</a></td><td><a href='../program/main.html'>main</a></td><td>Subroutine</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/has_manifest.html'>has_manifest</a></td><td><a href='../program/main.html'>main</a></td><td>Function</td><td></td></tr>
 			 
@@ -276,7 +281,7 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../interface/len_trim.html'>len_trim</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/list_files.html'>list_files</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Get file &amp; directory names in directory <code>dir</code>.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
+			   <tr><td><a href='../proc/list_files.html'>list_files</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
 			   <tr><td><a href='../proc/lower.html'>lower</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Changes a string to lowercase over optional specified column range</p></td></tr>
 			 
@@ -328,9 +333,9 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/replace.html'>replace</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Returns string with characters in charset replaced with target_char.</p></td></tr>
 			 
-			   <tr><td><a href='../interface/resize.html'>resize</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
+			   <tr><td><a href='../interface/resize~2.html'>resize</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../interface/resize~2.html'>resize</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Interface</td><td><p>Overloaded reallocation interface</p></td></tr>
+			   <tr><td><a href='../interface/resize.html'>resize</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Interface</td><td><p>Overloaded reallocation interface</p></td></tr>
 			 
 			   <tr><td><a href='../proc/resolve_module_dependencies.html'>resolve_module_dependencies</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Add dependencies to source-based targets (<code>FPM_TARGET_OBJECT</code>)
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
@@ -371,7 +376,7 @@ All Procedures &ndash; Fortran-lang/fpm
  For now, only a hyphen is treated as a special character, but this can be
  expanded to other characters if needed.</p></td></tr>
 			 
-			   <tr><td><a href='../proc/unix_path.html'>unix_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for unix</p></td></tr>
+			   <tr><td><a href='../proc/unix_path.html'>unix_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for 1</p></td></tr>
 			 
 			   <tr><td><a href='../proc/warnwrite.html'>warnwrite</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>write trimmed character data to a file if it does not exist</p></td></tr>
 			 
@@ -389,16 +394,17 @@ All Procedures &ndash; Fortran-lang/fpm
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2021 
-                                          </p></div>
-        <div class="col-xs-6 col-md-4 col-md-push-4">
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+                                          </p>
+        </div>
+        <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
-            <a href="https://github.com/cmacmackin/ford">FORD</a>
-             on 2021-07-20 08:06  
+            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+             on 2021-07-28 14:59  
+            
           </p>
         </div>
-        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran-lang/fpm was developed by fortran-lang/fpm contributors</p></div>
       </div>
       <br>
       </div> <!-- /container -->    

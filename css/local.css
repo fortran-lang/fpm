@@ -12,11 +12,8 @@ body {
       white-space:nowrap;
     }
 
-    :target:before {
-      content:"";
-      display:block;
-      height:60px;
-      margin:-60px 0 0;
+    html {
+      scroll-padding-top: 70px;
     }
 
     ol.hierarchy {
