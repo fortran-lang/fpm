@@ -25,7 +25,7 @@ contains
 
         !> Collection of tests
         type(unittest_t), allocatable, intent(out) :: testsuite(:)
-        
+
         testsuite = [ &
             & new_unittest("cache-load-dump", test_cache_load_dump), &
             & new_unittest("cache-dump-load", test_cache_dump_load), &
@@ -139,7 +139,6 @@ contains
 
         type(toml_table) :: table
         type(toml_table), pointer :: ptr
-        type(toml_key), allocatable :: list(:)
         type(dependency_tree_t) :: deps
 
         table = toml_table()
@@ -169,8 +168,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(toml_table), pointer :: child, ptr
-        type(toml_key), allocatable :: list(:)
+        type(toml_table), pointer :: ptr
         type(mock_dependency_tree_t) :: deps
         type(dependency_config_t), allocatable :: nodes(:)
 
@@ -223,10 +221,6 @@ contains
         character(len=*), intent(in) :: root
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
-
-        type(package_config_t) :: package
-        character(len=:), allocatable :: manifest, proj_dir, revision
-        logical :: fetch
 
         if (dependency%done) then
             call test_failed(error, "Should only visit this node once")

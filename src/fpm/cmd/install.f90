@@ -27,7 +27,7 @@ contains
     type(fpm_model_t) :: model
     type(build_target_ptr), allocatable :: targets(:)
     type(installer_t) :: installer
-    character(len=:), allocatable :: lib, exe, dir
+    character(len=:), allocatable :: lib, dir
     logical :: installable
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)

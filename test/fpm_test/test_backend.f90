@@ -28,7 +28,7 @@ contains
             & new_unittest("schedule-targets", test_schedule_targets), &
             & new_unittest("schedule-targets-empty", test_schedule_empty) &
             ]
-            
+
     end subroutine collect_backend
 
 
@@ -39,7 +39,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(build_target_ptr), allocatable :: targets(:)
-        
+
         integer :: i
 
         targets = new_test_package()
@@ -98,7 +98,7 @@ contains
 
 
 
-    !> Check incremental rebuild for existing archive 
+    !> Check incremental rebuild for existing archive
     !>  all object sources are unmodified: all objects should be skipped
     subroutine test_target_sort_skip_all(error)
 
@@ -106,7 +106,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(build_target_ptr), allocatable :: targets(:)
-        
+
         integer :: fh, i
 
         targets = new_test_package()
@@ -162,7 +162,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(build_target_ptr), allocatable :: targets(:)
-        
+
         integer :: fh, i
 
         targets = new_test_package()
@@ -212,7 +212,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(build_target_ptr), allocatable :: targets(:)
-        
+
         integer :: i, j
         type(build_target_ptr), allocatable :: queue(:)
         integer, allocatable :: schedule_ptr(:)
@@ -259,16 +259,16 @@ contains
         do i=1,size(schedule_ptr)-1
 
             do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
-                
+
                 if (queue(j)%ptr%schedule /= i) then
 
                     call test_failed(error,"Target scheduled in the wrong region")
                     return
 
                 end if
-    
+
             end do
-    
+
         end do
 
     end subroutine test_schedule_targets
@@ -282,7 +282,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(build_target_ptr), allocatable :: targets(:)
-        
+
         integer :: i
         type(build_target_ptr), allocatable :: queue(:)
         integer, allocatable :: schedule_ptr(:)
@@ -310,7 +310,7 @@ contains
 
             call test_failed(error,"Expecting an empty build queue, but not empty")
             return
-        
+
         end if
 
         ! Check schedule loop is not entered
@@ -336,7 +336,7 @@ contains
         call add_target(targets,FPM_TARGET_OBJECT,get_temp_filename())
 
         call add_target(targets,FPM_TARGET_OBJECT,get_temp_filename())
-        
+
         ! Library depends on all objects
         call add_dependency(targets(1)%ptr,targets(2)%ptr)
         call add_dependency(targets(1)%ptr,targets(3)%ptr)
