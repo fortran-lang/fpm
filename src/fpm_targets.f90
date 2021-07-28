@@ -160,7 +160,6 @@ subroutine build_target_list(targets,model)
 
     integer :: i, j, n_source
     character(:), allocatable :: xsuffix, exe_dir
-    type(build_target_t), pointer :: dep
     logical :: with_lib
 
     ! Check for empty build (e.g. header-only lib)
@@ -258,7 +257,6 @@ subroutine build_target_list(targets,model)
 
         integer :: i
         character(1), parameter :: filesep = '/'
-        character(:), allocatable :: dir
 
         object_file = canon_path(source%file_name)
 
@@ -285,7 +283,6 @@ subroutine add_target(targets,type,output_file,source,link_libraries)
     type(string_t), intent(in), optional :: link_libraries(:)
 
     integer :: i
-    type(build_target_ptr), allocatable :: temp(:)
     type(build_target_t), pointer :: new_target
 
     if (.not.allocated(targets)) allocate(targets(0))

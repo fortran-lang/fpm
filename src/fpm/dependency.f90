@@ -233,7 +233,6 @@ contains
 
     type(dependency_config_t) :: dependency
     character(len=:), allocatable :: root
-    logical :: main
 
     if (allocated(self%cache)) then
       call self%load(self%cache, error)
@@ -386,8 +385,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     integer :: id
-    type(package_config_t) :: package
-    character(len=:), allocatable :: manifest, proj_dir, revision, root
+    character(len=:), allocatable :: proj_dir, root
 
     id = self%find(name)
     root = "."
@@ -507,8 +505,6 @@ contains
     !> Index of the dependency
     integer :: pos
 
-    integer :: ii
-
     pos = self%find(dependency%name)
 
   end function find_dependency
@@ -540,7 +536,6 @@ contains
     class(dependency_tree_t), intent(in) :: self
     !> All dependencies are updated
     logical :: finished
-    integer :: ii
 
     finished = all(self%dep(:self%ndep)%done)
 
@@ -561,7 +556,6 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    character(len=:), allocatable :: url
     logical :: update
 
     update = .false.
@@ -649,7 +643,6 @@ contains
     character(len=:), allocatable :: version, url, obj, rev, proj_dir
     type(toml_key), allocatable :: list(:)
     type(toml_table), pointer :: ptr
-    type(dependency_config_t) :: dep
 
     call table%get_keys(list)
 

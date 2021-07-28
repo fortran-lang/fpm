@@ -132,7 +132,6 @@ contains
         integer, intent(in) :: exe_scope
         type(error_t), allocatable, intent(out) :: error
 
-        integer :: i
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
         character(:), allocatable :: scope_str
@@ -193,7 +192,6 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        integer :: i
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
 
@@ -408,7 +406,7 @@ contains
                                     uses=[string_t('app_mod')])
 
         call targets_from_sources(targets,model,error)
-    
+
     end subroutine test_subdirectory_module_use
 
     !> Check program with no duplicate modules

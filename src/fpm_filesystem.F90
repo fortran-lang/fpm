@@ -79,7 +79,7 @@ end subroutine env_variable
 
 !> Extract filename from path with/without suffix
 function basename(path,suffix) result (base)
- 
+
     character(*), intent(In) :: path
     logical, intent(in), optional :: suffix
     character(:), allocatable :: base
@@ -124,7 +124,7 @@ function canon_path(path)
     character(len=:), allocatable :: canon_path
     character(len=:), allocatable :: nixpath
 
-    integer :: ii, istart, iend, stat, nn, last
+    integer :: istart, iend, nn, last
     logical :: is_path, absolute
 
     nixpath = unix_path(path)
@@ -175,7 +175,7 @@ contains
         logical, intent(inout) :: is_path
 
         integer :: ii, nn
-        character :: tok, last
+        character :: tok
 
         nn = len(string)
 

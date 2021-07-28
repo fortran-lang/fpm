@@ -19,7 +19,7 @@ contains
 
         !> Collection of tests
         type(unittest_t), allocatable, intent(out) :: testsuite(:)
-        
+
         testsuite = [ &
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
