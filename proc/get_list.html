@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>new_dependencies &ndash; Fortran-lang/fpm</title>
+    <title>get_list &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -119,7 +119,7 @@
     
   
   <div class="row">
-    <h1>new_dependencies
+    <h1>get_list
       <small>Subroutine</small>
     
     </h1>
@@ -138,24 +138,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.6% of total for procedures.">20 statements</a>
+    title=" 1.0% of total for procedures.">33 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/dependency.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/toml.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/dependency.f90~2.html'>dependency.f90</a></li>
+     <li><a href='../sourcefile/toml.f90.html'>toml.f90</a></li>
     
-     <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+     <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
     
   
-     <li class="active">new_dependencies</li>
+     <li class="active">get_list</li>
   </ol>
 </div>
 </div>
@@ -183,13 +183,15 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/new_dependencies.html#variable-idep">idep</a>
+      <a class="list-group-item" href="../proc/get_list.html#variable-children">children</a>
       
-      <a class="list-group-item" href="../proc/new_dependencies.html#variable-list~3">list</a>
+      <a class="list-group-item" href="../proc/get_list.html#variable-ilist">ilist</a>
       
-      <a class="list-group-item" href="../proc/new_dependencies.html#variable-node">node</a>
+      <a class="list-group-item" href="../proc/get_list.html#variable-nlist">nlist</a>
       
-      <a class="list-group-item" href="../proc/new_dependencies.html#variable-stat~16">stat</a>
+      <a class="list-group-item" href="../proc/get_list.html#variable-stat~15">stat</a>
+      
+      <a class="list-group-item" href="../proc/get_list.html#variable-str~3">str</a>
       
     </div>
   </div>
@@ -217,7 +219,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/new_dependencies.html#src">new_dependencies</a>
+    <a class="list-group-item" href="../proc/get_list.html#src">get_list</a>
   </div>
 </div>
 
@@ -229,7 +231,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine new_dependencies(deps, table, error)
+public subroutine get_list(table, key, list, error)
     
     
    
@@ -238,8 +240,6 @@ public subroutine new_dependencies(deps, table, error)
   
 
 
-    
-    <p>Construct new dependency array from a TOML data structure</p>
     
 
     <h3>Arguments</h3>
@@ -260,22 +260,7 @@ public subroutine new_dependencies(deps, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-deps~2"></span>type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),</td>
-  <td>intent(out),</td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>deps</strong>(:)</td><td><p>Instance of the dependency configuration</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-table~6"></span>type(toml_table),</td>
+  <td><span class="anchor" id="variable-table~2"></span>type(toml_table),</td>
   <td>intent(inout)</td>
   <td></td>
   
@@ -290,7 +275,37 @@ public subroutine new_dependencies(deps, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~24"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-key"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>key</strong></td><td><p>Key to read from</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-list~2"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>list</strong>(:)</td><td><p>List of strings to read</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-error~20"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -321,13 +336,15 @@ public subroutine new_dependencies(deps, table, error)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/new_dependencies.html#variable-idep">idep</a>
+      <a class="list-group-item" href="../proc/get_list.html#variable-children">children</a>
       
-      <a class="list-group-item" href="../proc/new_dependencies.html#variable-list~3">list</a>
+      <a class="list-group-item" href="../proc/get_list.html#variable-ilist">ilist</a>
       
-      <a class="list-group-item" href="../proc/new_dependencies.html#variable-node">node</a>
+      <a class="list-group-item" href="../proc/get_list.html#variable-nlist">nlist</a>
       
-      <a class="list-group-item" href="../proc/new_dependencies.html#variable-stat~16">stat</a>
+      <a class="list-group-item" href="../proc/get_list.html#variable-stat~15">stat</a>
+      
+      <a class="list-group-item" href="../proc/get_list.html#variable-str~3">str</a>
       
     </div>
   </div>
@@ -355,7 +372,7 @@ public subroutine new_dependencies(deps, table, error)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/new_dependencies.html#src">new_dependencies</a>
+    <a class="list-group-item" href="../proc/get_list.html#src">get_list</a>
   </div>
 </div>
 
@@ -385,39 +402,11 @@ public subroutine new_dependencies(deps, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-idep"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>idep</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-list~3"></span>type(toml_key),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>list</strong>(:)</td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-node"></span>type(toml_table),</td>
+  <td><span class="anchor" id="variable-children"></span>type(toml_array),</td>
   
   <td>public,</td>
   <td>pointer</td><td>::</td>
-  <td><strong>node</strong></td><td></td><td></td><td></td>
+  <td><strong>children</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -427,11 +416,53 @@ public subroutine new_dependencies(deps, table, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-stat~16"></span>integer,</td>
+  <td><span class="anchor" id="variable-ilist"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>ilist</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nlist"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>nlist</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-stat~15"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>stat</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-str~3"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>str</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -458,37 +489,50 @@ public subroutine new_dependencies(deps, table, error)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">new_dependencies</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-
-        <span class="c">!&gt; Instance of the dependency configuration</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">deps</span><span class="p">(:)</span>
+    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">get_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">list</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
 
         <span class="c">!&gt; Instance of the TOML data structure</span>
         <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">table</span>
 
+        <span class="c">!&gt; Key to read from</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">key</span>
+
+        <span class="c">!&gt; List of strings to read</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
+
         <span class="c">!&gt; Error handling</span>
         <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
 
-        <span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">node</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">list</span><span class="p">(:)</span>
-        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">idep</span><span class="p">,</span> <span class="nb">stat</span>
+        <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">ilist</span><span class="p">,</span> <span class="n">nlist</span>
+        <span class="k">type</span><span class="p">(</span><span class="n">toml_array</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">children</span>
+        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">str</span>
 
-<span class="nb">        </span><span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="n">get_keys</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-        <span class="c">! An empty table is okay</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
-
-<span class="k">        allocate</span><span class="p">(</span><span class="n">deps</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)))</span>
-        <span class="k">do </span><span class="n">idep</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-            <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="n">idep</span><span class="p">)%</span><span class="n">key</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+        <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="n">requested</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">associated</span><span class="p">(</span><span class="n">children</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">            </span><span class="n">nlist</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
+            <span class="k">allocate</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="n">nlist</span><span class="p">))</span>
+            <span class="k">do </span><span class="n">ilist</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nlist</span>
+                <span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">ilist</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                    call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Entry in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field cannot be read&quot;</span><span class="p">)</span>
+                    <span class="k">exit</span>
+<span class="k">                end if</span>
+<span class="k">                call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="n">ilist</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">end do</span>
+<span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<span class="k">        else</span>
+<span class="k">            call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Dependency &quot;</span><span class="o">//</span><span class="n">list</span><span class="p">(</span><span class="n">idep</span><span class="p">)%</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; must be a table entry&quot;</span><span class="p">)</span>
-                <span class="k">exit</span>
+<span class="k">                call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="s2">&quot;Entry in &quot;</span><span class="o">//</span><span class="n">key</span><span class="o">//</span><span class="s2">&quot; field cannot be read&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
 <span class="k">            end if</span>
-<span class="k">            call </span><span class="n">new_dependency</span><span class="p">(</span><span class="n">deps</span><span class="p">(</span><span class="n">idep</span><span class="p">),</span> <span class="n">node</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">exit</span>
-<span class="k">        end do</span>
+<span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">str</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">                allocate</span><span class="p">(</span><span class="n">list</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                <span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">list</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">end if</span>
+<span class="k">        end if</span>
 
-<span class="k">    end subroutine </span><span class="n">new_dependencies</span>
+<span class="k">    end subroutine </span><span class="n">get_list</span>
 </pre></div>
 
     </section>
