@@ -26,9 +26,8 @@
 ! Open64            ?          ?       -module         -I            -mp        discontinued
 ! Unisys            ?          ?       ?               ?             ?          discontinued
 module fpm_compiler
-use fpm_model, only: fpm_model_t
-use fpm_filesystem, only: join_path, basename, get_temp_filename
 use fpm_environment, only: &
+        run, &
         get_os_type, &
         OS_LINUX, &
         OS_MACOS, &
@@ -38,13 +37,17 @@ use fpm_environment, only: &
         OS_FREEBSD, &
         OS_OPENBSD, &
         OS_UNKNOWN
+use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path
+use fpm_strings, only: string_cat, string_t
 implicit none
 public :: is_unknown_compiler
 public :: get_module_flags
 public :: get_default_compile_flags
 public :: get_debug_compile_flags
 public :: get_release_compile_flags
-public :: get_archiver
+
+public :: compiler_t, archiver_t
+public :: debug
 
 enum, bind(C)
     enumerator :: &
@@ -69,6 +72,52 @@ enum, bind(C)
         id_lfortran
 end enum
 integer, parameter :: compiler_enum = kind(id_unknown)
+
+
+!> Definition of compiler object
+type :: compiler_t
+    !> Path to the Fortran compiler
+    character(len=:), allocatable :: fc
+    !> Path to the C compiler
+    character(len=:), allocatable :: cc
+    !> Print all commands
+    logical :: echo = .true.
+contains
+    !> Compile a Fortran object
+    procedure :: compile_fortran
+    !> Compile a C object
+    procedure :: compile_c
+    !> Link executable
+    procedure :: link
+end type compiler_t
+
+
+!> Definition of archiver object
+type :: archiver_t
+    !> Path to archiver
+    character(len=:), allocatable :: ar
+    !> Use response files to pass arguments
+    logical :: use_response_file = .false.
+    !> Print all command
+    logical :: echo = .true.
+contains
+    !> Create static archive
+    procedure :: make_archive
+end type archiver_t
+
+
+!> Constructor for archiver
+interface archiver_t
+    module procedure :: new_archiver
+end interface archiver_t
+
+
+!> Create debug printout
+interface debug
+    module procedure :: debug_compiler
+    module procedure :: debug_archiver
+end interface debug
+
 
 contains
 
@@ -460,6 +509,7 @@ function check_compiler(compiler, expected) result(match)
     end if
 end function check_compiler
 
+
 function is_unknown_compiler(compiler) result(is_unknown)
     character(len=*), intent(in) :: compiler
     logical :: is_unknown
@@ -467,22 +517,140 @@ function is_unknown_compiler(compiler) result(is_unknown)
 end function is_unknown_compiler
 
 
-function get_archiver() result(archiver)
-    character(:), allocatable :: archiver
+!> Create new archiver
+function new_archiver() result(self)
+    !> New instance of the archiver
+    type(archiver_t) :: self
     integer :: estat, os_type
 
     os_type = get_os_type()
     if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
-        archiver = "ar -rs "
+        self%ar = "ar -rs "
     else
         call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
             & exitstat=estat)
         if (estat /= 0) then
-            archiver = "lib /OUT:"
+            self%ar = "lib /OUT:"
         else
-            archiver = "ar -rs "
+            self%ar = "ar -rs "
         end if
     end if
-end function
+    self%use_response_file = os_type == OS_WINDOWS
+    self%echo = .true.
+end function new_archiver
+
+
+!> Compile a Fortran object
+subroutine compile_fortran(self, input, output, args, stat)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Source file input
+    character(len=*), intent(in) :: input
+    !> Output file of object
+    character(len=*), intent(in) :: output
+    !> Arguments for compiler
+    character(len=*), intent(in) :: args
+    !> Status flag
+    integer, intent(out) :: stat
+
+    call run(self%fc // " -c " // input // " " // args // " -o " // output, &
+        & echo=self%echo, exitstat=stat)
+end subroutine compile_fortran
+
+
+!> Compile a C object
+subroutine compile_c(self, input, output, args, stat)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Source file input
+    character(len=*), intent(in) :: input
+    !> Output file of object
+    character(len=*), intent(in) :: output
+    !> Arguments for compiler
+    character(len=*), intent(in) :: args
+    !> Status flag
+    integer, intent(out) :: stat
+
+    call run(self%cc // " -c " // input // " " // args // " -o " // output, &
+        & echo=self%echo, exitstat=stat)
+end subroutine compile_c
+
+
+!> Link an executable
+subroutine link(self, output, args, stat)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Output file of object
+    character(len=*), intent(in) :: output
+    !> Arguments for compiler
+    character(len=*), intent(in) :: args
+    !> Status flag
+    integer, intent(out) :: stat
+
+    call run(self%fc // " " // args // " -o " // output, echo=self%echo, exitstat=stat)
+end subroutine link
+
+
+!> Create an archive
+subroutine make_archive(self, output, args, stat)
+    !> Instance of the archiver object
+    class(archiver_t), intent(in) :: self
+    !> Name of the archive to generate
+    character(len=*), intent(in) :: output
+    !> Object files to include into the archive
+    type(string_t), intent(in) :: args(:)
+    !> Status flag
+    integer, intent(out) :: stat
+
+    if (self%use_response_file) then
+        call write_response_file(output//".resp" , args)
+        call run(self%ar // output // " @" // output//".resp", echo=self%echo, exitstat=stat)
+        call delete_file(output//".resp")
+    else
+        call run(self%ar // output // " " // string_cat(args, " "), &
+            & echo=self%echo, exitstat=stat)
+    end if
+end subroutine make_archive
+
+
+!> Response files allow to read command line options from files.
+!> Whitespace is used to separate the arguments, we will use newlines
+!> as separator to create readable response files which can be inspected
+!> in case of errors.
+subroutine write_response_file(name, argv)
+    character(len=*), intent(in) :: name
+    type(string_t), intent(in) :: argv(:)
+
+    integer :: iarg, io
+
+    open(file=name, newunit=io)
+    do iarg = 1, size(argv)
+        write(io, '(a)') unix_path(argv(iarg)%s)
+    end do
+    close(io)
+end subroutine write_response_file
+
+
+!> String representation of a compiler object
+pure function debug_compiler(self) result(repr)
+    !> Instance of the compiler object
+    type(compiler_t), intent(in) :: self
+    !> Representation as string
+    character(len=:), allocatable :: repr
+
+    repr = 'fc="'//self%fc//'", cc="'//self%cc//'"'
+end function debug_compiler
+
+
+!> String representation of an archiver object
+pure function debug_archiver(self) result(repr)
+    !> Instance of the archiver object
+    type(archiver_t), intent(in) :: self
+    !> Representation as string
+    character(len=:), allocatable :: repr
+
+    repr = 'ar="'//self%ar//'"'
+end function debug_archiver
+
 
 end module fpm_compiler

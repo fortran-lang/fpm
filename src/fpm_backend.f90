@@ -30,12 +30,10 @@ module fpm_backend
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_error, only : fpm_stop
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, unix_path
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir
 use fpm_model, only: fpm_model_t
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
-use fpm_strings, only: string_cat, string_t
-
 implicit none
 
 private
@@ -265,31 +263,19 @@ subroutine build_target(model,target,stat)
     select case(target%target_type)
 
     case (FPM_TARGET_OBJECT)
-        call run(model%fortran_compiler//" -c " // target%source%file_name // target%compile_flags &
-              // " -o " // target%output_file, echo=.true., exitstat=stat)
+        call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
+            & target%compile_flags, stat)
 
     case (FPM_TARGET_C_OBJECT)
-        call run(model%c_compiler//" -c " // target%source%file_name // target%compile_flags &
-                // " -o " // target%output_file, echo=.true., exitstat=stat)
+        call model%compiler%compile_c(target%source%file_name, target%output_file, &
+            & target%compile_flags, stat)
 
     case (FPM_TARGET_EXECUTABLE)
-
-        call run(model%fortran_compiler// " " // target%compile_flags &
-              //" "//target%link_flags// " -o " // target%output_file, echo=.true., exitstat=stat)
+        call model%compiler%link(target%output_file, &
+            & target%compile_flags//" "//target%link_flags, stat)
 
     case (FPM_TARGET_ARCHIVE)
-
-        select case (get_os_type())
-        case (OS_WINDOWS)
-            call write_response_file(target%output_file//".resp" ,target%link_objects)
-            call run(model%archiver // target%output_file // " @" // target%output_file//".resp", &
-                     echo=.true., exitstat=stat)
-
-        case default
-            call run(model%archiver // target%output_file // " " // string_cat(target%link_objects," "), &
-                     echo=.true., exitstat=stat)
-
-        end select
+        call model%archiver%make_archive(target%output_file, target%link_objects, stat)
 
     end select
 
@@ -301,19 +287,5 @@ subroutine build_target(model,target,stat)
 
 end subroutine build_target
 
-!> Response files allow to read command line options from files.
-!> Whitespace is used to separate the arguments, we will use newlines
-!> as separator to create readable response files which can be inspected
-!> in case of errors.
-subroutine write_response_file(name, argv)
-    character(len=*), intent(in) :: name
-    type(string_t), intent(in) :: argv(:)
-    integer :: iarg, io
-    open(file=name, newunit=io)
-    do iarg = 1, size(argv)
-        write(io, '(a)') unix_path(argv(iarg)%s)
-    end do
-    close(io)
-end subroutine write_response_file
 
 end module fpm_backend
