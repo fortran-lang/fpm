@@ -1,5 +1,5 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat
+use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, fnv_1a
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
@@ -9,8 +9,7 @@ use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists,
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: get_module_flags, is_unknown_compiler, get_default_c_compiler, &
-                        archiver_t
+use fpm_compiler, only: new_compiler, new_archiver
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
@@ -43,10 +42,11 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir
+    character(len=:), allocatable :: manifest, lib_dir, flags
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
+    character(len=16) :: build_name
 
     model%package_name = package%name
 
@@ -58,27 +58,30 @@ subroutine build_model(model, settings, package, error)
     call model%deps%add(package, error)
     if (allocated(error)) return
 
-    if(settings%compiler.eq.'')then
-        model%compiler%fc = "gfortran"
+    call new_compiler(model%compiler, settings%compiler)
+    call new_archiver(model%archiver)
+
+    if (settings%flag == '') then
+        flags = model%compiler%get_default_flags(settings%profile == "release")
     else
-        model%compiler%fc = settings%compiler
-    endif
+        flags = settings%flag
+        select case(settings%profile)
+        case("release", "debug")
+            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
+        end select
+    end if
 
-    model%archiver = archiver_t()
-    call get_default_c_compiler(model%compiler%fc, model%compiler%cc)
-    model%compiler%cc = get_env('FPM_C_COMPILER',model%compiler%cc)
+    write(build_name, '(z16.16)') fnv_1a(flags)
 
-    if (is_unknown_compiler(model%compiler%fc)) then
+    if (model%compiler%is_unknown()) then
         write(*, '(*(a:,1x))') &
             "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
             "Defaults for this compiler might be incorrect"
     end if
-    model%output_directory = join_path('build',basename(model%compiler%fc)//'_'//settings%build_name)
+    model%output_directory = join_path('build',basename(model%compiler%fc)//'_'//build_name)
 
-    call get_module_flags(model%compiler%fc, &
-        & join_path(model%output_directory,model%package_name), &
-        & model%fortran_compile_flags)
-    model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
+    model%fortran_compile_flags = flags // " " // &
+        & model%compiler%get_module_flag(join_path(model%output_directory, model%package_name))
 
     allocate(model%packages(model%deps%ndep))
 
@@ -186,7 +189,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     if (settings%verbose) then
-        write(*,*)'<INFO> BUILD_NAME: ',settings%build_name
+        write(*,*)'<INFO> BUILD_NAME: ',build_name
         write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
         write(*,*)'<INFO> C COMPILER:  ',model%compiler%cc
         write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags

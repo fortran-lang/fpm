@@ -28,6 +28,7 @@
 module fpm_compiler
 use fpm_environment, only: &
         run, &
+        get_env, &
         get_os_type, &
         OS_LINUX, &
         OS_MACOS, &
@@ -40,13 +41,7 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path
 use fpm_strings, only: string_cat, string_t
 implicit none
-public :: is_unknown_compiler
-public :: get_module_flags
-public :: get_default_compile_flags
-public :: get_debug_compile_flags
-public :: get_release_compile_flags
-
-public :: compiler_t, archiver_t
+public :: compiler_t, new_compiler, archiver_t, new_archiver
 public :: debug
 
 enum, bind(C)
@@ -76,6 +71,8 @@ integer, parameter :: compiler_enum = kind(id_unknown)
 
 !> Definition of compiler object
 type :: compiler_t
+    !> Identifier of the compiler
+    integer(compiler_enum) :: id = id_unknown
     !> Path to the Fortran compiler
     character(len=:), allocatable :: fc
     !> Path to the C compiler
@@ -83,12 +80,20 @@ type :: compiler_t
     !> Print all commands
     logical :: echo = .true.
 contains
+    !> Get default compiler flags
+    procedure :: get_default_flags
+    !> Get flag for module output directories
+    procedure :: get_module_flag
+    !> Get flag for include directories
+    procedure :: get_include_flag
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
     procedure :: compile_c
     !> Link executable
     procedure :: link
+    !> Check whether compiler is recognized
+    procedure :: is_unknown
 end type compiler_t
 
 
@@ -106,12 +111,6 @@ contains
 end type archiver_t
 
 
-!> Constructor for archiver
-interface archiver_t
-    module procedure :: new_archiver
-end interface archiver_t
-
-
 !> Create debug printout
 interface debug
     module procedure :: debug_compiler
@@ -121,20 +120,19 @@ end interface debug
 
 contains
 
-subroutine get_default_compile_flags(compiler, release, flags)
-    character(len=*), intent(in) :: compiler
-    logical, intent(in) :: release
-    character(len=:), allocatable, intent(out) :: flags
-    integer :: id
 
-    id = get_compiler_id(compiler)
+function get_default_flags(self, release) result(flags)
+    class(compiler_t), intent(in) :: self
+    logical, intent(in) :: release
+    character(len=:), allocatable :: flags
+
     if (release) then
-        call get_release_compile_flags(id, flags)
+        call get_release_compile_flags(self%id, flags)
     else
-        call get_debug_compile_flags(id, flags)
+        call get_debug_compile_flags(self%id, flags)
     end if
 
-end subroutine get_default_compile_flags
+end function get_default_flags
 
 subroutine get_release_compile_flags(id, flags)
     integer(compiler_enum), intent(in) :: id
@@ -343,42 +341,63 @@ subroutine get_debug_compile_flags(id, flags)
     end select
 end subroutine get_debug_compile_flags
 
-subroutine get_module_flags(compiler, modpath, flags)
-    character(len=*), intent(in) :: compiler
-    character(len=*), intent(in) :: modpath
-    character(len=:), allocatable, intent(out) :: flags
-    integer(compiler_enum) :: id
+function get_include_flag(self, path) result(flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: path
+    character(len=:), allocatable :: flags
 
-    id = get_compiler_id(compiler)
-
-    select case(id)
+    select case(self%id)
     case default
-        flags=' -module '//modpath//' -I '//modpath
+        flags = "-I "//path
 
-    case(id_caf, id_gcc, id_f95, id_cray)
-        flags=' -J '//modpath//' -I '//modpath
-
-    case(id_nvhpc, id_pgi, id_flang)
-        flags=' -module '//modpath//' -I '//modpath
-
-    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_unknown, id_intel_llvm_nix, id_intel_llvm_unknown)
-        flags=' -module '//modpath//' -I'//modpath
+    case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, id_flang, &
+        & id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_unknown, &
+        & id_intel_llvm_nix, id_intel_llvm_unknown, id_lahey, id_nag, &
+        & id_ibmxl)
+        flags = "-I "//path
 
     case(id_intel_classic_windows, id_intel_llvm_windows)
-        flags=' /module:'//modpath//' /I'//modpath
-
-    case(id_lahey)
-        flags=' -M '//modpath//' -I '//modpath
-
-    case(id_nag)
-        flags=' -mdir '//modpath//' -I '//modpath !
-
-    case(id_ibmxl)
-        flags=' -qmoddir '//modpath//' -I '//modpath
+        flags = "/I"//path
 
     end select
+end function get_include_flag
 
-end subroutine get_module_flags
+function get_module_flag(self, path) result(flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: path
+    character(len=:), allocatable :: flags
+
+    select case(self%id)
+    case default
+        flags = "-module "//path
+
+    case(id_caf, id_gcc, id_f95, id_cray)
+        flags = "-J "//path
+
+    case(id_nvhpc, id_pgi, id_flang)
+        flags = "-module "//path
+
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_unknown, &
+        & id_intel_llvm_nix, id_intel_llvm_unknown)
+        flags = "-module "//path
+
+    case(id_intel_classic_windows, id_intel_llvm_windows)
+        flags = "/module:"//path
+
+    case(id_lahey)
+        flags = "-M "//path
+
+    case(id_nag)
+        flags = "-mdir "//path
+
+    case(id_ibmxl)
+        flags = "-qmoddir "//path
+
+    end select
+    flags = flags//" "//self%get_include_flag(path)
+
+end function get_module_flag
+
 
 subroutine get_default_c_compiler(f_compiler, c_compiler)
     character(len=*), intent(in) :: f_compiler
@@ -408,9 +427,12 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
 
 end subroutine get_default_c_compiler
 
+
 function get_compiler_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id
+
+    integer :: stat
 
     if (check_compiler(compiler, "gfortran")) then
         id = id_gcc
@@ -510,17 +532,34 @@ function check_compiler(compiler, expected) result(match)
 end function check_compiler
 
 
-function is_unknown_compiler(compiler) result(is_unknown)
-    character(len=*), intent(in) :: compiler
+pure function is_unknown(self)
+    class(compiler_t), intent(in) :: self
     logical :: is_unknown
-    is_unknown = get_compiler_id(compiler) == id_unknown
-end function is_unknown_compiler
+    is_unknown = self%id == id_unknown
+end function is_unknown
 
 
-!> Create new archiver
-function new_archiver() result(self)
+!> Create new compiler instance
+subroutine new_compiler(self, fc)
+    !> Fortran compiler name or path
+    character(len=*), intent(in) :: fc
+    !> New instance of the compiler
+    type(compiler_t), intent(out) :: self
+
+    character(len=*), parameter :: cc_env = "FPM_C_COMPILER"
+
+    self%id = get_compiler_id(fc)
+
+    self%fc = fc
+    call get_default_c_compiler(self%fc, self%cc)
+    self%cc = get_env(cc_env, self%cc)
+end subroutine new_compiler
+
+
+!> Create new archiver instance
+subroutine new_archiver(self)
     !> New instance of the archiver
-    type(archiver_t) :: self
+    type(archiver_t), intent(out) :: self
     integer :: estat, os_type
 
     os_type = get_os_type()
@@ -537,7 +576,7 @@ function new_archiver() result(self)
     end if
     self%use_response_file = os_type == OS_WINDOWS
     self%echo = .true.
-end function new_archiver
+end subroutine new_archiver
 
 
 !> Compile a Fortran object
