@@ -18,12 +18,9 @@ use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only : error_t, fatal_error, fpm_stop
-use fpm_manifest_test, only : test_config_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
-use fpm_manifest_dependency, only: dependency_config_t
-use, intrinsic :: iso_fortran_env, only: error_unit
 implicit none
 private
 public :: cmd_build, cmd_run
@@ -234,7 +231,7 @@ subroutine check_modules_for_duplicates(model, duplicates_found)
         if (allocated(model%packages(k)%sources(l)%modules_provided)) then
           do m=1,size(model%packages(k)%sources(l)%modules_provided)
             if (model%packages(k)%sources(l)%modules_provided(m)%s.in.modules(:modi-1)) then
-              write(error_unit, *) "Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s, &
+              write(stderr, *) "Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s, &
                 " in ",model%packages(k)%sources(l)%file_name," is a duplicate"
               duplicates_found = .true.
             else

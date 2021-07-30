@@ -38,7 +38,8 @@ use fpm_environment, only: &
         OS_FREEBSD, &
         OS_OPENBSD, &
         OS_UNKNOWN
-use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path
+use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
+    & getline
 use fpm_strings, only: string_cat, string_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver
@@ -53,7 +54,6 @@ enum, bind(C)
         id_intel_classic_nix, &
         id_intel_classic_mac, &
         id_intel_classic_windows, &
-        id_intel_classic_unknown, &
         id_intel_llvm_nix, &
         id_intel_llvm_windows, &
         id_intel_llvm_unknown, &
@@ -117,6 +117,55 @@ interface debug
     module procedure :: debug_archiver
 end interface debug
 
+character(*), parameter :: &
+    flag_gnu_coarray = " -fcoarray=single", &
+    flag_gnu_backtrace = " -fbacktrace", &
+    flag_gnu_opt = " -O3 -funroll-loops", &
+    flag_gnu_debug = " -g", &
+    flag_gnu_pic = " -fPIC", &
+    flag_gnu_warn = " -Wall -Wextra -Wimplicit-interface", &
+    flag_gnu_check = " -fcheck=bounds -fcheck=array-temps", &
+    flag_gnu_limit = " -fmax-errors=1", &
+    flag_gnu_external = " -Wimplicit-interface"
+
+character(*), parameter :: &
+    flag_pgi_backslash = " -Mbackslash", &
+    flag_pgi_traceback = " -traceback", &
+    flag_pgi_debug = " -g", &
+    flag_pgi_check = " -Mbounds -Mchkptr -Mchkstk", &
+    flag_pgi_warn = " -Minform=inform"
+
+character(*), parameter :: &
+    flag_intel_backtrace = " -traceback", &
+    flag_intel_warn = " -warn all", &
+    flag_intel_check = " -check all", &
+    flag_intel_debug = " -O0 -g", &
+    flag_intel_fp = " -fp-model precise -pc64", &
+    flag_intel_align = " -align all", &
+    flag_intel_limit = " -error-limit 1", &
+    flag_intel_pthread = " -reentrancy threaded", &
+    flag_intel_nogen = " -nogen-interfaces", &
+    flag_intel_byterecl = " -assume byterecl"
+
+character(*), parameter :: &
+    flag_intel_backtrace_win = " /traceback", &
+    flag_intel_warn_win = " /warn:all", &
+    flag_intel_check_win = " /check:all", &
+    flag_intel_debug_win = " /Od /Z7", &
+    flag_intel_fp_win = " /fp-model:precise", &
+    flag_intel_align_win = " /align:all", &
+    flag_intel_limit_win = " /error-limit:1", &
+    flag_intel_pthread_win = " /reentrancy:threaded", &
+    flag_intel_nogen_win = " /nogen-interfaces", &
+    flag_intel_byterecl_win = " /assume:byterecl"
+
+character(*), parameter :: &
+    flag_nag_coarray = " -coarray=single", &
+    flag_nag_pic = " -PIC", &
+    flag_nag_check = " -C=all", &
+    flag_nag_debug = " -g -O0", &
+    flag_nag_opt = " -O4", &
+    flag_nag_backtrace = " -gline"
 
 contains
 
@@ -138,93 +187,87 @@ subroutine get_release_compile_flags(id, flags)
     integer(compiler_enum), intent(in) :: id
     character(len=:), allocatable, intent(out) :: flags
 
+
     select case(id)
     case default
         flags = ""
     case(id_caf)
-        flags='&
-            & -O3&
-            & -Wimplicit-interface&
-            & -fPIC&
-            & -fmax-errors=1&
-            & -funroll-loops&
-            &'
+        flags = &
+            flag_gnu_opt//&
+            flag_gnu_external//&
+            flag_gnu_pic//&
+            flag_gnu_limit
+
     case(id_gcc)
-        flags='&
-            & -O3&
-            & -Wimplicit-interface&
-            & -fPIC&
-            & -fmax-errors=1&
-            & -funroll-loops&
-            & -fcoarray=single&
-            &'
+        flags = &
+            flag_gnu_opt//&
+            flag_gnu_external//&
+            flag_gnu_pic//&
+            flag_gnu_limit//&
+            flag_gnu_coarray
+
     case(id_f95)
-        flags='&
-            & -O3&
-            & -Wimplicit-interface&
-            & -fPIC&
-            & -fmax-errors=1&
-            & -ffast-math&
-            & -funroll-loops&
-            &'
+        flags = &
+            flag_gnu_opt//&
+            flag_gnu_external//&
+            flag_gnu_pic//&
+            flag_gnu_limit
+
     case(id_nvhpc)
-        flags = '&
-            & -Mbackslash&
-            &'
-    case(id_intel_classic_nix, id_intel_classic_unknown)
-        flags = '&
-            & -fp-model precise&
-            & -pc64&
-            & -align all&
-            & -error-limit 1&
-            & -reentrancy threaded&
-            & -nogen-interfaces&
-            & -assume byterecl&
-            &'
+        flags = &
+            flag_pgi_backslash
+
+    case(id_intel_classic_nix)
+        flags = &
+            flag_intel_fp//&
+            flag_intel_align//&
+            flag_intel_limit//&
+            flag_intel_pthread//&
+            flag_intel_nogen//&
+            flag_intel_byterecl
+
     case(id_intel_classic_mac)
-        flags = '&
-            & -fp-model precise&
-            & -pc64&
-            & -align all&
-            & -error-limit 1&
-            & -reentrancy threaded&
-            & -nogen-interfaces&
-            & -assume byterecl&
-            &'
+        flags = &
+            flag_intel_fp//&
+            flag_intel_align//&
+            flag_intel_limit//&
+            flag_intel_pthread//&
+            flag_intel_nogen//&
+            flag_intel_byterecl
+
     case(id_intel_classic_windows)
-        flags = '&
-            & /fp:precise&
-            & /align:all&
-            & /error-limit:1&
-            & /reentrancy:threaded&
-            & /nogen-interfaces&
-            & /assume:byterecl&
-            &'
-    case(id_intel_llvm_nix, id_intel_llvm_unknown)
-        flags = '&
-            & -fp-model=precise&
-            & -pc64&
-            & -align all&
-            & -error-limit 1&
-            & -reentrancy threaded&
-            & -nogen-interfaces&
-            & -assume byterecl&
-            &'
+        flags = &
+            & flag_intel_fp_win//&
+            flag_intel_align_win//&
+            flag_intel_limit_win//&
+            flag_intel_pthread_win//&
+            flag_intel_nogen_win//&
+            flag_intel_byterecl_win
+
+    case(id_intel_llvm_nix)
+        flags = &
+            flag_intel_fp//&
+            flag_intel_align//&
+            flag_intel_limit//&
+            flag_intel_pthread//&
+            flag_intel_nogen//&
+            flag_intel_byterecl
+
     case(id_intel_llvm_windows)
-        flags = '&
-            & /fp:precise&
-            & /align:all&
-            & /error-limit:1&
-            & /reentrancy:threaded&
-            & /nogen-interfaces&
-            & /assume:byterecl&
-            &'
+        flags = &
+            flag_intel_fp_win//&
+            flag_intel_align_win//&
+            flag_intel_limit_win//&
+            flag_intel_pthread_win//&
+            flag_intel_nogen_win//&
+            flag_intel_byterecl_win
+
     case(id_nag)
-        flags = ' &
-            & -O4&
-            & -coarray=single&
-            & -PIC&
-            &'
+        flags = &
+            flag_nag_opt//&
+            flag_nag_coarray//&
+            flag_nag_pic
+
     end select
 end subroutine get_release_compile_flags
 
@@ -236,108 +279,83 @@ subroutine get_debug_compile_flags(id, flags)
     case default
         flags = ""
     case(id_caf)
-        flags = '&
-            & -Wall&
-            & -Wextra&
-            & -Wimplicit-interface&
-            & -fPIC -fmax-errors=1&
-            & -g&
-            & -fcheck=bounds&
-            & -fcheck=array-temps&
-            & -fbacktrace&
-            &'
+        flags = &
+            flag_gnu_warn//&
+            flag_gnu_pic//&
+            flag_gnu_limit//&
+            flag_gnu_debug//&
+            flag_gnu_check//&
+            flag_gnu_backtrace
     case(id_gcc)
-        flags = '&
-            & -Wall&
-            & -Wextra&
-            & -Wimplicit-interface&
-            & -fPIC -fmax-errors=1&
-            & -g&
-            & -fcheck=bounds&
-            & -fcheck=array-temps&
-            & -fbacktrace&
-            & -fcoarray=single&
-            &'
+        flags = &
+            flag_gnu_warn//&
+            flag_gnu_pic//&
+            flag_gnu_limit//&
+            flag_gnu_debug//&
+            flag_gnu_check//&
+            flag_gnu_backtrace//&
+            flag_gnu_coarray
     case(id_f95)
-        flags = '&
-            & -Wall&
-            & -Wextra&
-            & -Wimplicit-interface&
-            & -fPIC -fmax-errors=1&
-            & -g&
-            & -fcheck=bounds&
-            & -fcheck=array-temps&
-            & -Wno-maybe-uninitialized -Wno-uninitialized&
-            & -fbacktrace&
-            &'
+        flags = &
+            flag_gnu_warn//&
+            flag_gnu_pic//&
+            flag_gnu_limit//&
+            flag_gnu_debug//&
+            flag_gnu_check//&
+            ' -Wno-maybe-uninitialized -Wno-uninitialized'//&
+            flag_gnu_backtrace
     case(id_nvhpc)
-        flags = '&
-            & -Minform=inform&
-            & -Mbackslash&
-            & -g&
-            & -Mbounds&
-            & -Mchkptr&
-            & -Mchkstk&
-            & -traceback&
-            &'
-    case(id_intel_classic_nix, id_intel_classic_unknown)
-        flags = '&
-            & -warn all&
-            & -check all&
-            & -error-limit 1&
-            & -O0&
-            & -g&
-            & -assume byterecl&
-            & -traceback&
-            &'
+        flags = &
+            flag_pgi_warn//&
+            flag_pgi_backslash//&
+            flag_pgi_check//&
+            flag_pgi_traceback
+    case(id_intel_classic_nix)
+        flags = &
+            flag_intel_warn//&
+            flag_intel_check//&
+            flag_intel_limit//&
+            flag_intel_debug//&
+            flag_intel_byterecl//&
+            flag_intel_backtrace
     case(id_intel_classic_mac)
-        flags = '&
-            & -warn all&
-            & -check all&
-            & -error-limit 1&
-            & -O0&
-            & -g&
-            & -assume byterecl&
-            & -traceback&
-            &'
+        flags = &
+            flag_intel_warn//&
+            flag_intel_check//&
+            flag_intel_limit//&
+            flag_intel_debug//&
+            flag_intel_byterecl//&
+            flag_intel_backtrace
     case(id_intel_classic_windows)
-        flags = '&
-            & /warn:all&
-            & /check:all&
-            & /error-limit:1&
-            & /Od&
-            & /Z7&
-            & /assume:byterecl&
-            & /traceback&
-            &'
-    case(id_intel_llvm_nix, id_intel_llvm_unknown)
-        flags = '&
-            & -warn all&
-            & -check all&
-            & -error-limit 1&
-            & -O0&
-            & -g&
-            & -assume byterecl&
-            & -traceback&
-            &'
+        flags = &
+            flag_intel_warn_win//&
+            flag_intel_check_win//&
+            flag_intel_limit_win//&
+            flag_intel_debug_win//&
+            flag_intel_byterecl_win//&
+            flag_intel_backtrace_win
+    case(id_intel_llvm_nix)
+        flags = &
+            flag_intel_warn//&
+            flag_intel_check//&
+            flag_intel_limit//&
+            flag_intel_debug//&
+            flag_intel_byterecl//&
+            flag_intel_backtrace
     case(id_intel_llvm_windows)
-        flags = '&
-            & /warn:all&
-            & /check:all&
-            & /error-limit:1&
-            & /Od&
-            & /Z7&
-            & /assume:byterecl&
-            &'
+        flags = &
+            flag_intel_warn_win//&
+            flag_intel_check_win//&
+            flag_intel_limit_win//&
+            flag_intel_debug_win//&
+            flag_intel_byterecl_win
     case(id_nag)
-        flags = '&
-            & -g&
-            & -C=all&
-            & -O0&
-            & -gline&
-            & -coarray=single&
-            & -PIC&
-            &'
+        flags = &
+            flag_nag_debug//&
+            flag_nag_check//&
+            flag_nag_backtrace//&
+            flag_nag_coarray//&
+            flag_nag_pic
     end select
 end subroutine get_debug_compile_flags
 
@@ -351,9 +369,8 @@ function get_include_flag(self, path) result(flags)
         flags = "-I "//path
 
     case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, id_flang, &
-        & id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_unknown, &
-        & id_intel_llvm_nix, id_intel_llvm_unknown, id_lahey, id_nag, &
-        & id_ibmxl)
+        & id_intel_classic_nix, id_intel_classic_mac, &
+        & id_intel_llvm_nix, id_lahey, id_nag, id_ibmxl)
         flags = "-I "//path
 
     case(id_intel_classic_windows, id_intel_llvm_windows)
@@ -377,8 +394,8 @@ function get_module_flag(self, path) result(flags)
     case(id_nvhpc, id_pgi, id_flang)
         flags = "-module "//path
 
-    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_unknown, &
-        & id_intel_llvm_nix, id_intel_llvm_unknown)
+    case(id_intel_classic_nix, id_intel_classic_mac, &
+        & id_intel_llvm_nix)
         flags = "-module "//path
 
     case(id_intel_classic_windows, id_intel_llvm_windows)
@@ -408,10 +425,10 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
 
     select case(id)
 
-    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, id_intel_classic_unknown)
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows)
         c_compiler = 'icc'
 
-    case(id_intel_llvm_nix,id_intel_llvm_windows, id_intel_llvm_unknown)
+    case(id_intel_llvm_nix,id_intel_llvm_windows)
         c_compiler = 'icx'
 
     case(id_flang)
@@ -429,6 +446,35 @@ end subroutine get_default_c_compiler
 
 
 function get_compiler_id(compiler) result(id)
+    character(len=*), intent(in) :: compiler
+    integer(kind=compiler_enum) :: id
+
+    character(len=:), allocatable :: command, output
+    integer :: stat, io
+
+    ! Check whether we are dealing with an MPI compiler wrapper first
+    if (check_compiler(compiler, "mpifort")) then
+        output = get_temp_filename()
+        call run(compiler//" -showme:command > "//output//" 2>&1", &
+            & echo=.false., exitstat=stat)
+        if (stat == 0) then
+            open(file=output, newunit=io, iostat=stat)
+            if (stat == 0) call getline(io, command, stat)
+            close(io, iostat=stat)
+
+            ! If we get a command from the wrapper, we will try to identify it
+            if (allocated(command)) then
+                id = get_id(command)
+                if (id /= id_unknown) return
+            end if
+        end if
+    end if
+
+    id = get_id(compiler)
+
+end function get_compiler_id
+
+function get_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id
 
@@ -451,26 +497,22 @@ function get_compiler_id(compiler) result(id)
 
     if (check_compiler(compiler, "ifort")) then
         select case (get_os_type())
-        case (OS_LINUX, OS_SOLARIS, OS_FREEBSD)
+        case default
             id = id_intel_classic_nix
         case (OS_MACOS)
             id = id_intel_classic_mac
         case (OS_WINDOWS, OS_CYGWIN)
             id = id_intel_classic_windows
-        case default
-            id = id_intel_classic_unknown
         end select
         return
     end if
 
     if (check_compiler(compiler, "ifx")) then
         select case (get_os_type())
-        case (OS_LINUX, OS_SOLARIS, OS_FREEBSD)
+        case default
             id = id_intel_llvm_nix
         case (OS_WINDOWS, OS_CYGWIN)
             id = id_intel_llvm_windows
-        case default
-            id = id_intel_llvm_unknown
         end select
         return
     end if
@@ -519,7 +561,7 @@ function get_compiler_id(compiler) result(id)
 
     id = id_unknown
 
-end function get_compiler_id
+end function get_id
 
 function check_compiler(compiler, expected) result(match)
     character(len=*), intent(in) :: compiler
