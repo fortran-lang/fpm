@@ -6,13 +6,13 @@ source-dir="source"
 [[executable]]
 name="d1"
 source-dir="app"
-main="d1.f90"
+main="d1.F90"
 
 [profiles.debug.gfortran]
-flags="-g -O1"
+flags="-g -O1 -Dnot_defined=3"
 
 [profiles.debug.gfortran.windows]
-flags="/g /O1"
+flags="/g /O1 /Dnot_defined=3"
 
 [dependencies]
 "d11" = {path = "../d11"}

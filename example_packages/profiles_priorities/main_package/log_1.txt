@@ -1,7 +1,0 @@
-d11_m.f90  -g -O2
-d12_m.f90  -g -O1
-d21_m.f90  -g -O2
-d22_m.f90  -g
-d1_m.f90  -g -O1
-d2_m.f90  -g
-main.f90  -g

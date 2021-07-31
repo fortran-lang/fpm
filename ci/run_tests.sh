@@ -120,13 +120,8 @@ popd
 
 pushd "profiles_priorities/main_package"
 rm -rf build
-if [ `uname -s` = "Windows" ]; then
-	"$fpm" build | sed -n 's,^.*\\\([^\\ ]*\.f90 .*\) -J .*$,\1,p' | sort > log.txt
-else
-	"$fpm" build | sed -n 's,^.*/\([^/ ]*\.f90 .*\) -J .*$,\1,p' | sort > log.txt
-fi
-cmp log.txt correct_log.txt
-rm log.txt
+"$fpm" build
+"$fpm" run
 popd
 
 # Cleanup

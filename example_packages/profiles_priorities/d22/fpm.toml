@@ -6,5 +6,5 @@ source-dir="source"
 [[executable]]
 name="d22"
 source-dir="app"
-main="d22.f90"
+main="d22.F90"
 

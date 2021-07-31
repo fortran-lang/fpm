@@ -7,6 +7,7 @@ contains
         character(len=*), intent(in) :: name, surname
         character(len=:), allocatable :: full_name
 
+        if (not_defined /= 3) stop
         full_name = surname // " " // name
     end function get_name
 end module d12_m
