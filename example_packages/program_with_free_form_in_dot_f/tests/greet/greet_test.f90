@@ -13,6 +13,6 @@ program greet_test
         write(output_unit, *) "Passed"
     else
         write(error_unit, *) "Failed"
-        call exit(1)
+        stop 1
     end if
 end program greet_test
