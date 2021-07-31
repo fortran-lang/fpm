@@ -100,44 +100,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
 
     littlefile=[character(len=80) :: '# '//bname, 'My cool new project!']
 
-    if(settings%with_full)then
-        ! create NAME/.gitignore file
-        call warnwrite(join_path(settings%name, '.gitignore'), [character(len=80):: &
-         &'# to ignore build/ only in the top level',&
-         &'/build*/',&
-         &'',&
-         &'# GitHub default for Fortran projects',&
-         &'# Prerequisites',&
-         &'*.d',&
-         &'# Compiled Object files',&
-         &'*.slo',&
-         &'*.lo',&
-         &'*.o',&
-         &'*.obj',&
-         &'# Precompiled Headers',&
-         &'*.gch',&
-         &'*.pch',&
-         &'# Compiled Dynamic libraries',&
-         &'*.so',&
-         &'*.dylib',&
-         &'*.dll',&
-         &'# Fortran module files',&
-         &'*.mod',&
-         &'*.smod',&
-         &'# Compiled Static libraries',&
-         &'*.lai',&
-         &'*.la',&
-         &'*.a',&
-         &'*.lib',&
-         &'# Executables',&
-         &'*.exe',&
-         &'*.out',&
-         &'*.app',&
-         &'#'])
-    else
-        call warnwrite(join_path(settings%name, '.gitignore'), ['/build/*'])
-    endif
-
     ! create NAME/README.md
     call warnwrite(join_path(settings%name, 'README.md'), littlefile)
 
