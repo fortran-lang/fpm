@@ -453,7 +453,9 @@ function get_compiler_id(compiler) result(id)
     integer :: stat, io
 
     ! Check whether we are dealing with an MPI compiler wrapper first
-    if (check_compiler(compiler, "mpifort")) then
+    if (check_compiler(compiler, "mpifort") &
+        & .or. check_compiler(compiler, "mpif90") &
+        & .or. check_compiler(compiler, "mpif77")) then
         output = get_temp_filename()
         call run(compiler//" -showme:command > "//output//" 2>&1", &
             & echo=.false., exitstat=stat)
