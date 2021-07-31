@@ -383,9 +383,11 @@ contains
     !> Name of parent package
     character(len=*), intent(in), optional :: parent
 
-    integer :: id, i, parent_id=0
-    logical :: found = .false.
+    integer :: id, i, parent_id
+    logical :: found
 
+    parent_id = 0
+    found = .false.
     if (present(parent)) then
       parent_id = self%find(parent)
       if (parent_id < 1) call fpm_stop(1,'*add_dependency*:Error: No such package in dependency tree.')
@@ -793,7 +795,7 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: ii, iii
+    integer :: ii, ip
     type(toml_table), pointer :: ptr
     type(toml_array), pointer :: parent_ptr
     character(len=:), allocatable :: proj_dir
@@ -821,8 +823,8 @@ contains
         end if
         if (allocated(dep%parent) .and. size(dep%parent) > 0) then
           call add_array(ptr, "parent", parent_ptr)
-          do iii=1,size(dep%parent)
-            call set_value(parent_ptr, iii, self%dep(dep%parent(iii))%name)
+          do ip=1,size(dep%parent)
+            call set_value(parent_ptr, ip, self%dep(dep%parent(ip))%name)
           end do
         end if
       end associate

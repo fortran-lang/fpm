@@ -7,7 +7,7 @@
 !> - "ifort"
 !> - "ifx"
 !> - "pgfortran"
-!> - "nvfrotran"
+!> - "nvfortran"
 !> - "flang"
 !> - "caf"
 !> - "f95"
@@ -27,7 +27,6 @@
 !> - "freebsd"
 !> - "openbsd"
 !> - "unknown"
-!> - "UNKNOWN"
 !>
 !> Each of the subtables currently supports the following fields:
 !>```toml
@@ -168,7 +167,7 @@ module fpm_manifest_profile
         !> Boolean value of whether compiler_name is valid or not
         logical, intent(out) :: is_valid
         select case(compiler_name)
-          case("gfortran", "ifort", "ifx", "pgfortran", "nvfrotran", "flang", "caf", &
+          case("gfortran", "ifort", "ifx", "pgfortran", "nvfortran", "flang", "caf", &
                         & "f95", "lfortran", "lfc", "nagfor", "crayftn", "xlf90", "ftn95")
             is_valid = .true.
           case default
@@ -187,7 +186,7 @@ module fpm_manifest_profile
 
         select case (os_name)
           case ("linux", "macos", "windows", "cygwin", "solaris", "freebsd", &
-                          & "openbsd", "unknown", "UNKNOWN")
+                          & "openbsd", "unknown")
             is_valid = .true.
           case default
             is_valid = .false.

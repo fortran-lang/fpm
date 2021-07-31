@@ -484,7 +484,7 @@ Compiler flags profiles can be declared in the *profiles* table. They are organi
   - "ifort"
   - "ifx"
   - "pgfortran"
-  - "nvfrotran"
+  - "nvfortran"
   - "flang"
   - "caf"
   - "f95"
@@ -503,7 +503,6 @@ Compiler flags profiles can be declared in the *profiles* table. They are organi
   - "freebsd"
   - "openbsd"
   - "unknown"
-  - "UNKNOWN"
 
 There are 4 fields that can be specified for each of the profiles:
 - `'flags'` - Fortran compiler flags

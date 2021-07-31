@@ -8,5 +8,8 @@ name="d11"
 source-dir="app"
 main="d11.f90"
 
-[profiles.debug.gfortran.linux]
+[profiles.debug.gfortran]
 flags="-g -O2"
+
+[profiles.debug.gfortran.windows]
+flags="/g /O2"

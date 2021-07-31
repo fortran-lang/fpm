@@ -8,8 +8,11 @@ name="d1"
 source-dir="app"
 main="d1.f90"
 
-[profiles.debug.gfortran.linux]
+[profiles.debug.gfortran]
 flags="-g -O1"
+
+[profiles.debug.gfortran.windows]
+flags="/g /O1"
 
 [dependencies]
 "d11" = {path = "../d11"}

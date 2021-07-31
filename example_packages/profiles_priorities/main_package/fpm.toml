@@ -1,7 +1,10 @@
 name = "main_package"
 
-[profiles.debug.gfortran.linux]
+[profiles.debug.gfortran]
 flags="-g"
+
+[profiles.debug.gfortran.windows]
+flags="/g"
 
 [dependencies]
 "d1" = {path = "../d1"}
