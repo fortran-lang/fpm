@@ -121,7 +121,6 @@ popd
 pushd "profiles_priorities/main_package"
 rm -rf build
 "$fpm" build
-"$fpm" run
 popd
 
 # Cleanup
