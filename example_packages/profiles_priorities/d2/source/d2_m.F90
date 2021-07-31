@@ -6,7 +6,7 @@ module d2_m
     public :: count_to_ten
 contains
     subroutine count_to_ten()
-        if (not_defined /= 1) stop
+        if (not_defined /= 1) stop 1
         print *,"This is test of counting to ten:"
         print *,"Iterative version"
         call count_iter(10)

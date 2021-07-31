@@ -6,7 +6,7 @@ module d1_m
     public :: say_hi
 contains
     subroutine say_hi()
-        if (not_defined /= 3) stop
+        if (not_defined /= 3) stop 1
         print *, create_greeting("hello"), get_name("developer","fpm") 
     end subroutine say_hi
 end module d1_m

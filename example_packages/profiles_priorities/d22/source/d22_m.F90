@@ -5,7 +5,7 @@ module d22_m
 contains
     recursive subroutine count_rec(c, n)
         integer :: c,n
-        if (not_defined /= 1) stop
+        if (not_defined /= 1) stop 1
         if (n > 0) then
            print *,c
            call count_rec(c+1, n-1)

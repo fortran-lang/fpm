@@ -7,7 +7,7 @@ contains
         character(len=*), intent(in) :: greeting
         character(len=:), allocatable :: created
 
-        if (not_defined /= 4) stop
+        if (not_defined /= 4) stop 1
         created = greeting // " "
     end function create_greeting
 end module d11_m

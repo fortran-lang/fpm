@@ -5,7 +5,7 @@ module d21_m
 contains
     subroutine count_iter(n)
         integer :: n, i
-        if (not_defined /= 2) stop
+        if (not_defined /= 2) stop 1
         do i=1,n
             print *,i
         end do
