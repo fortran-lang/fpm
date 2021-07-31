@@ -42,7 +42,6 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    type(profile_config_t) :: primary_pkg_profile, current_pkg_profile
     character(len=:), allocatable :: manifest, lib_dir, profile, compiler_flags, file_scope_flag
 
     logical :: duplicates_found = .false., profile_found
@@ -134,7 +133,9 @@ subroutine build_model(model, settings, package, error)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
-            model%packages(i)%profiles = dependency%profiles
+            if (allocated(dependency%profiles)) model%packages(i)%profiles = dependency%profiles
+            if (allocated(dep%parent)) model%packages(i)%parent = dep%parent
+
             if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
             if (allocated(dependency%library)) then
@@ -200,25 +201,7 @@ subroutine build_model(model, settings, package, error)
 
     if (allocated(profile)) then
         do i=1,size(model%packages)
-            associate(pkg => model%packages(i))
-                if (allocated(pkg%profiles)) then
-                    call find_profile(pkg%profiles, profile, model%fortran_compiler, &
-                            & get_os_type(), profile_found, current_pkg_profile)
-                    if (.not.profile_found .and. i.gt.1) then
-                        current_pkg_profile = primary_pkg_profile
-                    else if (current_pkg_profile%is_built_in) then
-                        current_pkg_profile = primary_pkg_profile
-                    else if (i.eq.1) then
-                        if (.not.profile_found) then
-                          error stop 'Error: primary package does not have given profile.'
-                        end if
-                        primary_pkg_profile = current_pkg_profile
-                    end if
-                else
-                    current_pkg_profile = primary_pkg_profile
-                end if
-                pkg%chosen_profile = current_pkg_profile
-            end associate
+            model%packages(i)%chosen_profile = look_for_profile(i)
         end do
     end if
 
@@ -266,6 +249,49 @@ subroutine build_model(model, settings, package, error)
     end do
 
     contains
+
+    function look_for_profile(package_id) result (chosen_profile)
+        integer, intent(in) :: package_id
+
+        integer :: idx
+        type(profile_config_t), allocatable :: built_in, chosen_profile
+        type(profile_config_t) :: current
+        logical :: profile_found
+
+        idx = package_id
+        associate(pkgs => model%packages)
+            do while (.true.)
+                profile_found = .false.
+                if (allocated(pkgs(idx)%profiles)) then
+                    call find_profile(pkgs(idx)%profiles, profile, model%fortran_compiler, &
+                        & get_os_type(), profile_found, current)
+                    if (profile_found) then
+                        if (current%is_built_in) then
+                            if (.not. allocated(built_in)) then
+                                built_in = current
+                                chosen_profile = current
+                            end if
+                            if (allocated(pkgs(idx)%parent)) then
+                                idx = pkgs(idx)%parent(1)
+                            else
+                                exit
+                            end if
+                        else
+                            chosen_profile = current
+                            return
+                        end if
+                    end if
+                else
+                    if (allocated(pkgs(idx)%parent)) then
+                        idx = pkgs(idx)%parent(1)
+                    else
+                        call fpm_stop(1,'*look_for_profile*:Error: Orphan package does not have any profiles.')
+                    end if
+                end if
+            end do
+        end associate
+        if (.not. allocated(chosen_profile)) call fpm_stop(1,'*look_for_profile*:Error: No profile found.')
+    end function look_for_profile
 
     function get_file_scope_flags(source, profile) result(file_scope_flag)
         ! Try to match source%file_name in profile%file_scope_flags

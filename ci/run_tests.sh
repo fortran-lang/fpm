@@ -98,5 +98,32 @@ pushd c_header_only
 "$fpm" build
 popd
 
+pushd profiles_with_c
+"$fpm" build
+"$fpm" run
+popd
+
+pushd program_with_compiler_profiles
+"$fpm" build
+"$fpm" run
+popd
+
+pushd program_with_free_form_in_dot_f
+"$fpm" build
+"$fpm" run
+popd
+
+pushd "program_with_profiles_scope/primary_package"
+"$fpm" build
+"$fpm" run
+popd
+
+pushd "profiles_priorities/main_package"
+rm -rf build
+"$fpm" build | sed -n 's,^.*/\([^/ ]*\.f90 .*\) -J .*$,\1,p' | sort > log.txt
+cmp log.txt correct_log.txt
+rm log.txt
+popd
+
 # Cleanup
 rm -rf ./*/build

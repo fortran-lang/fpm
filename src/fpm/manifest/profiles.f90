@@ -2,7 +2,7 @@
 !>
 !> A profiles table can currently have the following subtables:
 !> Profile names - any string, if omitted, flags are appended to all matching profiles
-!> Compiler - any from the following list, if omitted, `DEFAULT_COMPILER` is used
+!> Compiler - any from the following list, omitting it yields an error
 !> - "gfortran"
 !> - "ifort"
 !> - "ifx"
@@ -350,9 +350,7 @@ module fpm_manifest_profile
                 call fatal_error(error, "Both profiles and profindex have to be present")
                 return
               end if
-              os_name = os_list(ios)%key
               call get_value(table, os_name, os_node, stat=stat)
-              os_name = lower(os_name)
               if (stat /= toml_stat%success) then
                 call syntax_error(error, "os "//os_name//" has to be a table")
                 return

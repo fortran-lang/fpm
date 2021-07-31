@@ -1,0 +1,12 @@
+name = "d11"
+
+[library]
+source-dir="source"
+
+[[executable]]
+name="d11"
+source-dir="app"
+main="d11.f90"
+
+[profiles.debug.gfortran.linux]
+flags="-g -O2"

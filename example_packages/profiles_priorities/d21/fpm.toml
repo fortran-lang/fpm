@@ -1,0 +1,13 @@
+name = "d21"
+
+[library]
+source-dir="source"
+
+[[executable]]
+name="d21"
+source-dir="app"
+main="d21.f90"
+
+[profiles.debug.gfortran.linux]
+flags="-g -O2"
+

@@ -113,6 +113,9 @@ type package_t
 
     !> Chosen compiler profile
     type(profile_config_t) :: chosen_profile
+
+    !> Indices of parent packages
+    integer, allocatable :: parent(:)
 end type package_t
 
 

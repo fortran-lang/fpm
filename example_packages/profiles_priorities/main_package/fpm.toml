@@ -1,0 +1,9 @@
+name = "main_package"
+
+[profiles.debug.gfortran.linux]
+flags="-g"
+
+[dependencies]
+"d1" = {path = "../d1"}
+"d2" = {path = "../d2"}
+

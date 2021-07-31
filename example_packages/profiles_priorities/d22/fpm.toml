@@ -1,0 +1,10 @@
+name = "d22"
+
+[library]
+source-dir="source"
+
+[[executable]]
+name="d22"
+source-dir="app"
+main="d22.f90"
+

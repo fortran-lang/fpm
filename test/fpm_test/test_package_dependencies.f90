@@ -212,7 +212,7 @@ contains
 
 
     !> Resolve a single dependency node
-    subroutine resolve_dependency_once(self, dependency, root, error)
+    subroutine resolve_dependency_once(self, dependency, root, error, parent)
         !> Mock instance of the dependency tree
         class(mock_dependency_tree_t), intent(inout) :: self
         !> Dependency configuration to add
@@ -221,6 +221,8 @@ contains
         character(len=*), intent(in) :: root
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        !> Name of the parent package
+        character(len=*), intent(in), optional :: parent
 
         if (dependency%done) then
             call test_failed(error, "Should only visit this node once")

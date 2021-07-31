@@ -57,14 +57,15 @@
 module fpm_dependency
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, OS_WINDOWS
-  use fpm_error, only : error_t, fatal_error
+  use fpm_error, only : error_t, fatal_error, fpm_stop
   use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path
   use fpm_git, only : git_target_revision, git_target_default, git_revision
   use fpm_manifest, only : package_config_t, dependency_config_t, &
     get_package_data
   use fpm_strings, only : string_t, operator(.in.)
-  use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
-    toml_parse, get_value, set_value, add_table
+  use fpm_toml, only : toml_table, toml_array, toml_key, toml_error, &
+    & toml_serializer, toml_parse, toml_stat, get_value, set_value, &
+    & add_table, add_array, len
   use fpm_versioning, only : version_t, new_version, char
   implicit none
   private
@@ -92,6 +93,8 @@ module fpm_dependency
     logical :: done = .false.
     !> Dependency should be updated
     logical :: update = .false.
+    !> List of indices of parent nodes in the tree
+    integer, allocatable :: parent(:)
   contains
     !> Update dependency from project manifest
     procedure :: register
@@ -191,7 +194,8 @@ contains
   end subroutine new_dependency_tree
 
   !> Create a new dependency node from a configuration
-  pure subroutine new_dependency_node(self, dependency, version, proj_dir, update)
+!  pure subroutine new_dependency_node(self, dependency, version, proj_dir, update, parent)
+  subroutine new_dependency_node(self, dependency, version, proj_dir, update, parent)
     !> Instance of the dependency node
     type(dependency_node_t), intent(out) :: self
     !> Dependency configuration data
@@ -202,6 +206,8 @@ contains
     character(len=*), intent(in), optional :: proj_dir
     !> Dependency should be updated
     logical, intent(in), optional :: update
+    !> Index of parent node
+    integer, intent(in), optional :: parent
 
     self%dependency_config_t = dependency
 
@@ -215,6 +221,11 @@ contains
 
     if (present(update)) then
       self%update = update
+    end if
+
+    if (present(parent)) then
+      allocate(self%parent(1))
+      self%parent(1) = parent
     end if
 
   end subroutine new_dependency_node
@@ -252,16 +263,16 @@ contains
     if (allocated(error)) return
 
     ! Resolve the root project
-    call self%resolve(root, error)
+    call self%resolve(root, error, parent=package%name)
     if (allocated(error)) return
 
     ! Add the root project dependencies (depth 1)
-    call self%add(package, root, .true., error)
+    call self%add(package, root, .true., error, parent=package%name)
     if (allocated(error)) return
 
     ! Now decent into the dependency tree, level for level
     do while(.not.self%finished())
-       call self%resolve(root, error)
+       call self%resolve(root, error, parent=package%name)
        if (allocated(error)) exit
     end do
     if (allocated(error)) return
@@ -274,7 +285,7 @@ contains
   end subroutine add_project
 
   !> Add a project and its dependencies to the dependency tree
-  recursive subroutine add_project_dependencies(self, package, root, main, error)
+  recursive subroutine add_project_dependencies(self, package, root, main, error, parent)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Project configuration to add
@@ -285,24 +296,26 @@ contains
     logical, intent(in) :: main
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    !> Name of parent package
+    character(len=*), intent(in), optional :: parent
 
     integer :: ii
 
     if (allocated(package%dependency)) then
-      call self%add(package%dependency, error)
+      call self%add(package%dependency, error, parent=package%name)
       if (allocated(error)) return
     end if
 
     if (main) then
       if (allocated(package%dev_dependency)) then
-        call self%add(package%dev_dependency, error)
+        call self%add(package%dev_dependency, error, parent=package%name)
         if (allocated(error)) return
       end if
 
       if (allocated(package%executable)) then
         do ii = 1, size(package%executable)
           if (allocated(package%executable(ii)%dependency)) then
-            call self%add(package%executable(ii)%dependency, error)
+            call self%add(package%executable(ii)%dependency, error, parent=package%name)
             if (allocated(error)) exit
           end if
         end do
@@ -312,7 +325,7 @@ contains
       if (allocated(package%example)) then
         do ii = 1, size(package%example)
           if (allocated(package%example(ii)%dependency)) then
-            call self%add(package%example(ii)%dependency, error)
+            call self%add(package%example(ii)%dependency, error, parent=package%name)
             if (allocated(error)) exit
           end if
         end do
@@ -322,7 +335,7 @@ contains
       if (allocated(package%test)) then
         do ii = 1, size(package%test)
           if (allocated(package%test(ii)%dependency)) then
-            call self%add(package%test(ii)%dependency, error)
+            call self%add(package%test(ii)%dependency, error, parent=package%name)
             if (allocated(error)) exit
           end if
         end do
@@ -333,13 +346,15 @@ contains
   end subroutine add_project_dependencies
 
   !> Add a list of dependencies to the dependency tree
-  subroutine add_dependencies(self, dependency, error)
+  subroutine add_dependencies(self, dependency, error, parent)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Dependency configuration to add
     type(dependency_config_t), intent(in) :: dependency(:)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    !> Name of parent package
+    character(len=*), intent(in), optional :: parent
 
     integer :: ii, ndep
 
@@ -349,7 +364,7 @@ contains
     end if
 
     do ii = 1, size(dependency)
-      call self%add(dependency(ii), error)
+      call self%add(dependency(ii), error, parent=parent)
       if (allocated(error)) exit
     end do
     if (allocated(error)) return
@@ -357,20 +372,39 @@ contains
   end subroutine add_dependencies
 
   !> Add a single dependency to the dependency tree
-  pure subroutine add_dependency(self, dependency, error)
+!  pure subroutine add_dependency(self, dependency, error, parent)
+  subroutine add_dependency(self, dependency, error, parent)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Dependency configuration to add
     type(dependency_config_t), intent(in) :: dependency
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    !> Name of parent package
+    character(len=*), intent(in), optional :: parent
 
-    integer :: id
+    integer :: id, i, parent_id=0
+    logical :: found = .false.
 
+    if (present(parent)) then
+      parent_id = self%find(parent)
+      if (parent_id < 1) call fpm_stop(1,'*add_dependency*:Error: No such package in dependency tree.')
+    end if
     id = self%find(dependency)
     if (id == 0) then
       self%ndep = self%ndep + 1
-      call new_dependency_node(self%dep(self%ndep), dependency)
+      if (parent_id > 0) then
+        call new_dependency_node(self%dep(self%ndep), dependency, parent=parent_id)
+      else
+        call new_dependency_node(self%dep(self%ndep), dependency)
+      end if
+    else if (present(parent) .and. allocated(self%dep(id)%parent)) then
+      do i=1, size(self%dep(id)%parent)
+        if (self%dep(id)%parent(i)==parent_id) then
+          found=.true.
+        end if
+      end do
+      if (.not. found) self%dep(id)%parent = [self%dep(id)%parent, parent_id]
     end if
 
   end subroutine add_dependency
@@ -420,18 +454,20 @@ contains
   end subroutine update_dependency
 
   !> Resolve all dependencies in the tree
-  subroutine resolve_dependencies(self, root, error)
+  subroutine resolve_dependencies(self, root, error, parent)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Current installation prefix
     character(len=*), intent(in) :: root
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    !> Name of parent package
+    character(len=*), intent(in), optional :: parent
 
     integer :: ii
 
     do ii = 1, self%ndep
-      call self%resolve(self%dep(ii), root, error)
+      call self%resolve(self%dep(ii), root, error, parent=parent)
       if (allocated(error)) exit
     end do
 
@@ -440,7 +476,7 @@ contains
   end subroutine resolve_dependencies
 
   !> Resolve a single dependency node
-  subroutine resolve_dependency(self, dependency, root, error)
+  subroutine resolve_dependency(self, dependency, root, error, parent)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Dependency configuration to add
@@ -449,6 +485,8 @@ contains
     character(len=*), intent(in) :: root
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
+    !> Name of parent package
+    character(len=*), intent(in), optional :: parent
 
     type(package_config_t) :: package
     character(len=:), allocatable :: manifest, proj_dir, revision
@@ -491,7 +529,7 @@ contains
         "at", dependency%proj_dir
     end if
 
-    call self%add(package, proj_dir, .false., error)
+    call self%add(package, proj_dir, .false., error, parent=parent)
     if (allocated(error)) return
 
   end subroutine resolve_dependency
@@ -638,11 +676,12 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: ndep, ii
+    integer :: ndep, ii, ip
     logical :: unix
-    character(len=:), allocatable :: version, url, obj, rev, proj_dir
+    character(len=:), allocatable :: version, url, obj, rev, proj_dir, parent_name
     type(toml_key), allocatable :: list(:)
     type(toml_table), pointer :: ptr
+    type(toml_array), pointer :: p_array
 
     call table%get_keys(list)
 
@@ -660,6 +699,7 @@ contains
       call get_value(ptr, "git", url)
       call get_value(ptr, "obj", obj)
       call get_value(ptr, "rev", rev)
+      call get_value(ptr, "parent", p_array, requested=.false.)
       if (.not.allocated(proj_dir)) cycle
       self%ndep = self%ndep + 1
       associate(dep => self%dep(self%ndep))
@@ -690,6 +730,13 @@ contains
           end if
         else
           dep%path = proj_dir
+        end if
+        if (associated(p_array)) then
+          allocate(dep%parent(len(p_array)))
+          do ip = 1, len(p_array)
+            call get_value(p_array, ip, parent_name)
+            dep%parent(ip) = self%find(parent_name)
+          end do
         end if
       end associate
     end do
@@ -746,12 +793,13 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: ii
+    integer :: ii, iii
     type(toml_table), pointer :: ptr
+    type(toml_array), pointer :: parent_ptr
     character(len=:), allocatable :: proj_dir
 
     do ii = 1, self%ndep
-      associate(dep => self%dep(ii))
+      associate(dep => self%dep(ii), deps => self%dep)
         call add_table(table, dep%name, ptr)
         if (.not.associated(ptr)) then
           call fatal_error(error, "Cannot create entry for "//dep%name)
@@ -770,6 +818,12 @@ contains
           if (allocated(dep%revision)) then
             call set_value(ptr, "rev", dep%revision)
           end if
+        end if
+        if (allocated(dep%parent) .and. size(dep%parent) > 0) then
+          call add_array(ptr, "parent", parent_ptr)
+          do iii=1,size(dep%parent)
+            call set_value(parent_ptr, iii, self%dep(dep%parent(iii))%name)
+          end do
         end if
       end associate
     end do
