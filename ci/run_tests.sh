@@ -120,9 +120,11 @@ popd
 
 pushd "profiles_priorities/main_package"
 rm -rf build
-"$fpm" build | sed -n 's,^.*/\([^/ ]*\.f90 .*\) -J .*$,\1,p' > log_1.txt
-cat log_1.txt
-cat log_1.txt | sed 's,/,-,g' | sort > log.txt
+if [ `uname -s` = "Windows" ]; then
+	"$fpm" build | sed -n 's,^.*\\\([^\\ ]*\.f90 .*\) -J .*$,\1,p' | sort > log.txt
+else
+	"$fpm" build | sed -n 's,^.*/\([^/ ]*\.f90 .*\) -J .*$,\1,p' | sort > log.txt
+fi
 cmp log.txt correct_log.txt
 rm log.txt
 popd
