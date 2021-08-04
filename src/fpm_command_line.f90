@@ -938,14 +938,11 @@ contains
     '   o runs the command "git init" in that directory                     ', &
     '   o populates the directory with the default project directories      ', &
     '   o adds sample Fortran source files                                  ', &
-    '   o adds a ".gitignore" file for ignoring the build/ directory        ', &
-    '     (where fpm-generated output will be placed)                       ', &
     '                                                                       ', &
     ' The default file structure (that will be automatically scanned) is    ', &
     '                                                                       ', &
     '     NAME/                                                             ', &
     '       fpm.toml                                                        ', &
-    '       .gitignore                                                      ', &
     '       src/                                                            ', &
     '           NAME.f90                                                    ', &
     '       app/                                                            ', &
@@ -1006,8 +1003,8 @@ contains
     '              depend extensively on non-default build options.         ', &
     '                                                                       ', &
     ' --bare       A minimal manifest file ("fpm.toml") is created and      ', &
-    '              a ".gitignore" and "README.md" file is created but no    ', &
-    '              directories or sample Fortran is generated.              ', &
+    '              "README.md" file is created but no directories or        ', &
+    '              sample Fortran are generated.                            ', &
     '                                                                       ', &
     ' --help       print this help and exit                                 ', &
     ' --version    print program version information and exit               ', &
