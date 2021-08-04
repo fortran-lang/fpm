@@ -486,15 +486,15 @@ library = true
 ## Additional free data field
 
 Third-party tools can store their configuration inside the *extra* section.
-This section will never be evaluated by fpm itself, the only constraint imposed it that is has to be valid TOML.
+This section will never be evaluated by fpm itself, the only constraint imposed is that it has to be valid TOML.
 
 Since the format of this section is free, only recommendations are provided here for adding data to the *extra* section.
 
-1. Only use subtables, never add configuration data to the toplevel of the *extra* section.
-   Reasoning: different tools can avoid collisions of keynames by placing their data in separate subtables
+1. Only use subtables, never add configuration data to the top level of the *extra* section.
+   Reasoning: different tools can avoid collisions of key names by placing their data in separate subtables.
 2. Use the concrete name of the tool rather than a generic name for the subtable.
-   Reasoning: different formatter or linter might use conflicting keywords in a *format* or *lint* subtable.
-   Also, users can tell from the table name which tool is preferred for usage with the project.
+   Reasoning: different formatter or linter tools might use conflicting keywords in a *format* or *lint* subtable.
+   Also, users can tell from the table name which tool is preferred to use with the project.
 3. Fpm plugins should use a subtable with their plugin name in the *extra.fpm* section to store their data.
    Reasoning: following this convention provides the user of fpm plugins with one section to configure their used plugins.
 4. Use the fpm preferred style for keywords which is lowercase with dashes.
