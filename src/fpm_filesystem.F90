@@ -7,6 +7,7 @@ module fpm_filesystem
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env
     use fpm_strings, only: f_string, replace, string_t, split
+    use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop
     implicit none
     private
@@ -17,6 +18,39 @@ module fpm_filesystem
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
+#ifndef FPM_BOOTSTRAP
+    interface
+        function c_opendir(dir) result(r) bind(c, name="c_opendir")
+            import c_char, c_ptr
+            character(kind=c_char), intent(in) :: dir(*)
+            type(c_ptr) :: r
+        end function c_opendir
+
+        function c_readdir(dir) result(r) bind(c, name="c_readdir")
+            import c_ptr
+            type(c_ptr), intent(in), value :: dir
+            type(c_ptr) :: r
+        end function c_readdir
+
+        function c_closedir(dir) result(r) bind(c, name="closedir")
+            import c_ptr, c_int
+            type(c_ptr), intent(in), value :: dir
+            integer(kind=c_int) :: r
+        end function c_closedir
+
+        function c_get_d_name(dir) result(r) bind(c, name="get_d_name")
+            import c_ptr
+            type(c_ptr), intent(in), value :: dir
+            type(c_ptr) :: r
+        end function c_get_d_name
+
+        function c_is_dir(path) result(r) bind(c, name="c_is_dir")
+            import c_char, c_int
+            character(kind=c_char), intent(in) :: path(*)
+            integer(kind=c_int) :: r
+        end function c_is_dir
+    end interface
+#endif
 
 contains
 
@@ -45,7 +79,7 @@ end subroutine env_variable
 
 !> Extract filename from path with/without suffix
 function basename(path,suffix) result (base)
- 
+
     character(*), intent(In) :: path
     logical, intent(in), optional :: suffix
     character(:), allocatable :: base
@@ -90,7 +124,7 @@ function canon_path(path)
     character(len=:), allocatable :: canon_path
     character(len=:), allocatable :: nixpath
 
-    integer :: ii, istart, iend, stat, nn, last
+    integer :: istart, iend, nn, last
     logical :: is_path, absolute
 
     nixpath = unix_path(path)
@@ -141,7 +175,7 @@ contains
         logical, intent(inout) :: is_path
 
         integer :: ii, nn
-        character :: tok, last
+        character :: tok
 
         nn = len(string)
 
@@ -226,13 +260,23 @@ function join_path(a1,a2,a3,a4,a5) result(path)
     character(len=*), intent(in), optional :: a3, a4, a5
     character(len=:), allocatable          :: path
     character(len=1)                       :: filesep
+    logical, save                          :: has_cache = .false.
+    character(len=1), save                 :: cache = '/'
+    !$omp threadprivate(has_cache, cache)
 
-    select case (get_os_type())
-        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-            filesep = '/'
-        case (OS_WINDOWS)
-            filesep = '\'
-    end select
+    if (has_cache) then
+        filesep = cache
+    else
+        select case (get_os_type())
+            case default
+                filesep = '/'
+            case (OS_WINDOWS)
+                filesep = '\'
+        end select
+
+        cache = filesep
+        has_cache = .true.
+    end if
 
     path = a1 // filesep // a2
 
@@ -311,7 +355,94 @@ subroutine mkdir(dir)
     end if
 end subroutine mkdir
 
+#ifndef FPM_BOOTSTRAP
+!> Get file & directory names in directory `dir` using iso_c_binding.
+!!
+!!  - File/directory names return are relative to cwd, ie. preprended with `dir`
+!!  - Includes files starting with `.` except current directory and parent directory
+!!
+recursive subroutine list_files(dir, files, recurse)
+    character(len=*), intent(in) :: dir
+    type(string_t), allocatable, intent(out) :: files(:)
+    logical, intent(in), optional :: recurse
 
+    integer :: i
+    type(string_t), allocatable :: dir_files(:)
+    type(string_t), allocatable :: sub_dir_files(:)
+
+    type(c_ptr) :: dir_handle
+    type(c_ptr) :: dir_entry_c
+    character(len=:,kind=c_char), allocatable :: fortran_name
+    character(len=:), allocatable :: string_fortran
+    integer, parameter :: N_MAX = 256
+    type(string_t) :: files_tmp(N_MAX)
+    integer(kind=c_int) :: r
+
+    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) .eq. 0) then
+        allocate (files(0))
+        return
+    end if
+
+    dir_handle = c_opendir(dir(1:len_trim(dir))//c_null_char)
+    if (.not. c_associated(dir_handle)) then
+        print *, 'c_opendir() failed'
+        error stop
+    end if
+
+    i = 0
+    allocate(files(0))
+
+    do
+        dir_entry_c = c_readdir(dir_handle)
+        if (.not. c_associated(dir_entry_c)) then
+            exit
+        else
+            string_fortran = f_string(c_get_d_name(dir_entry_c))
+
+            if ((string_fortran .eq. '.' .or. string_fortran .eq. '..')) then
+                cycle
+            end if
+
+            i = i + 1
+
+            if (i .gt. N_MAX) then
+                files = [files, files_tmp]
+                i = 1
+            end if
+
+            files_tmp(i)%s = join_path(dir, string_fortran)
+        end if
+    end do
+
+    r = c_closedir(dir_handle)
+
+    if (r .ne. 0) then
+        print *, 'c_closedir() failed'
+        error stop
+    end if
+
+    if (i .gt. 0) then
+        files = [files, files_tmp(1:i)]
+    end if
+
+    if (present(recurse)) then
+        if (recurse) then
+
+            allocate(sub_dir_files(0))
+
+            do i=1,size(files)
+                if (c_is_dir(files(i)%s//c_null_char) .ne. 0) then
+                    call list_files(files(i)%s, dir_files, recurse=.true.)
+                    sub_dir_files = [sub_dir_files, dir_files]
+                end if
+            end do
+
+            files = [files, sub_dir_files]
+        end if
+    end if
+end subroutine list_files
+
+#else
 !> Get file & directory names in directory `dir`.
 !!
 !!  - File/directory names return are relative to cwd, ie. preprended with `dir`
@@ -375,6 +506,8 @@ recursive subroutine list_files(dir, files, recurse)
     end if
 
 end subroutine list_files
+
+#endif
 
 
 !> test if pathname already exists

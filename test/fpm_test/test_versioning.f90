@@ -272,7 +272,6 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(version_t) :: v1, v2
-        type(version_t) :: varray(4)
 
         call new_version(v1, [1, 1, 0])
         call new_version(v2, [1])

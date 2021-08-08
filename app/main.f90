@@ -89,8 +89,6 @@ contains
         character(len=*), intent(in) :: dir
         logical :: has_manifest
 
-        character(len=:), allocatable :: manifest
-
         has_manifest = exists(join_path(dir, "fpm.toml"))
     end function has_manifest
 

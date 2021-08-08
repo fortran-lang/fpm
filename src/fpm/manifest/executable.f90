@@ -13,8 +13,8 @@
 module fpm_manifest_executable
     use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
     use fpm_error, only : error_t, syntax_error, bad_name_error
-    use fpm_strings, only : string_t 
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_strings, only : string_t
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
     implicit none
     private
 
@@ -84,7 +84,7 @@ contains
             if (allocated(error)) return
         end if
 
-        call get_value(table, "link", self%link, error)
+        call get_list(table, "link", self%link, error)
         if (allocated(error)) return
 
     end subroutine new_executable
