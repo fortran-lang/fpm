@@ -98,9 +98,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
     ! like realpath() or getcwd().
     bname=basename(settings%name)
 
-    ! create NAME/.gitignore file
-    call warnwrite(join_path(settings%name, '.gitignore'), ['build/*'])
-
     littlefile=[character(len=80) :: '# '//bname, 'My cool new project!']
 
     ! create NAME/README.md
@@ -592,6 +589,11 @@ character(len=*),intent(in) :: filename
    integer                     :: lun
    character(len=8)            :: date
 
+    if(exists(filename))then
+       write(stderr,'(*(g0,1x))')'<INFO>  ',filename,&
+       & 'already exists. Not overwriting'
+       return
+    endif
     !> get date to put into metadata in manifest file "fpm.toml"
     call date_and_time(DATE=date)
     table = toml_table()
