@@ -99,7 +99,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
     bname=basename(settings%name)
 
     ! create NAME/.gitignore file
-        call warnwrite(join_path(settings%name, '.gitignore'), ['build/*'])
+    call warnwrite(join_path(settings%name, '.gitignore'), ['build/*'])
 
     littlefile=[character(len=80) :: '# '//bname, 'My cool new project!']
 
