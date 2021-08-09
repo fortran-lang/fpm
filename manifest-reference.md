@@ -52,6 +52,8 @@ Every manifest file consists of the following sections:
 	- [*compiler profiles hierarchy*](#compiler-flags-profiles-hierarchy):
 - [*install*](#installation-configuration):
   Installation configuration
+- [*extra*](#additional-free-data-field):
+  Additional free data field
 
 
 [TOML]: https://toml.io/
@@ -561,3 +563,24 @@ By default only executables are installed, library projects can set the *library
 [install]
 library = true
 ```
+
+
+## Additional free data field
+
+Third-party tools can store their configuration inside the *extra* section.
+This section will never be evaluated by fpm itself, the only constraint imposed is that it has to be valid TOML.
+
+Since the format of this section is free, only recommendations are provided here for adding data to the *extra* section.
+
+1. Only use subtables, never add configuration data to the top level of the *extra* section.
+   Reasoning: different tools can avoid collisions of key names by placing their data in separate subtables.
+2. Use the concrete name of the tool rather than a generic name for the subtable.
+   Reasoning: different formatter or linter tools might use conflicting keywords in a *format* or *lint* subtable.
+   Also, users can tell from the table name which tool is preferred to use with the project.
+3. Fpm plugins should use a subtable with their plugin name in the *extra.fpm* section to store their data.
+   Reasoning: following this convention provides the user of fpm plugins with one section to configure their used plugins.
+4. Use the fpm preferred style for keywords which is lowercase with dashes.
+   Reasoning: while there is no style check in this section, a consistent style in the whole manifest will make it easier for the user to understand the whole package manifest.
+
+Feedback for the recommendations above is very much welcome.
+If you have a tool that uses the *extra* section in the package manifest, feel free to post it in at the [fpm discussion board](https://github.com/fortran-lang/fpm/discussions).
