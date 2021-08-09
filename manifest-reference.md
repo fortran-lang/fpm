@@ -526,9 +526,8 @@ Both profile name and operating system subtables can be omitted in the definitio
 Example:
 - The flags field of the following profile is appended to flags fields of all profiles using `gfortran` on `linux` OS
 ```toml
-[profiles.linux]
+[profiles.gfortran.linux]
 flags = '-g -Wall'
-```
 
 ### Compiler flags profiles - Hierarchy
 There are 18 built-in profiles which are implemented in `fpm_manifest_profiles.f90`. They should cover the most used cases. If user wishes to specify their own profiles
@@ -537,8 +536,8 @@ such profiles have priority over the built-in ones. This priority can be propaga
 Example:
 In `example_packages/profiles_priorities`, there are 7 packages in total. The main package is called `main_package` and uses `d1` and `d2`.
 `d1` uses `d11` and `d12` and similarly for `d2`.
-The compiler flags degined in these packages are following:
-| Package | Flags | Flags with priorities |
+The compiler flags defined in these packages are as follows:
+| Package | Flags specified | Flags used |
 |---|:---:|:---:|
 | `main_package` | `-g` | `-g` |
 | `d1` | `-g -O1` | `-g -O1` |
