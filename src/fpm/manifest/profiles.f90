@@ -584,47 +584,104 @@ module fpm_manifest_profile
         type(profile_config_t), allocatable :: default_profiles(:)
 
         default_profiles = [ &
-              & new_profile('release', 'caf', OS_ALL, flags=' -O3 -Wimplicit-interface&
-                                                & -fPIC -fmax-errors=1 -funroll-loops', is_built_in=.true.), &
-              & new_profile('release', 'gfortran', OS_ALL, flags=' -O3 -Wimplicit-interface -fPIC&
-                                                & -fmax-errors=1 -funroll-loops -fcoarray=single', is_built_in=.true.), &
-              & new_profile('release', 'f95', OS_ALL, flags=' -O3 -Wimplicit-interface -fPIC&
-                                                & -fmax-errors=1 -ffast-math -funroll-loops', is_built_in=.true.), &
-              & new_profile('release', 'nvfortran', OS_ALL, flags = ' -Mbackslash', is_built_in=.true.), &
-              & new_profile('release', 'ifort', OS_ALL, flags = ' -fp-model precise -pc64 -align all&
-                                                & -error-limit 1 -reentrancy threaded&
-                                                & -nogen-interfaces -assume byterecl', is_built_in=.true.), &
-              & new_profile('release', 'ifort', OS_WINDOWS, flags = ' /fp:precise /align:all&
-                                                & /error-limit:1 /reentrancy:threaded&
-                                                & /nogen-interfaces /assume:byterecl', is_built_in=.true.), &
-              & new_profile('release', 'ifx', OS_ALL, flags = ' -fp-model=precise -pc64&
-                                                & -align all -error-limit 1 -reentrancy threaded&
-                                                & -nogen-interfaces -assume byterecl', is_built_in=.true.), &
-              & new_profile('release', 'ifx', OS_WINDOWS, flags = ' /fp:precise /align:all&
-                                                & /error-limit:1 /reentrancy:threaded&
-                                                & /nogen-interfaces /assume:byterecl', is_built_in=.true.), &
-              & new_profile('release', 'nagfor', OS_ALL, flags = ' -O4 -coarray=single -PIC', is_built_in=.true.), &
-              & new_profile('debug', 'caf', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
-                                                & -fPIC -fmax-errors=1  -g -fcheck=bounds&
-                                                & -fcheck=array-temps -fbacktrace', is_built_in=.true.), &
-              & new_profile('debug', 'gfortran', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
-                                                & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                                                & -fcheck=array-temps -fbacktrace -fcoarray=single', is_built_in=.true.), &
-              & new_profile('debug', 'f95', OS_ALL, flags = ' -Wall -Wextra -Wimplicit-interface&
-                                                & -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                                                & -fcheck=array-temps -Wno-maybe-uninitialized&
-                                                & -Wno-uninitialized -fbacktrace', is_built_in=.true.), &
-              & new_profile('debug', 'nvfortran', OS_ALL, flags = ' -Minform=inform -Mbackslash -g&
-                                                & -Mbounds -Mchkptr -Mchkstk -traceback', is_built_in=.true.), &
-              & new_profile('debug', 'ifort', OS_ALL, flags = ' -warn all -check all -error-limit 1&
-                                                & -O0 -g -assume byterecl -traceback', is_built_in=.true.), &
-              & new_profile('debug', 'ifort', OS_WINDOWS, flags = ' /warn:all /check:all /error-limit:1&
-                                                & /Od /Z7 /assume:byterecl /traceback', is_built_in=.true.), &
-              & new_profile('debug', 'ifx', OS_ALL, flags = ' -warn all -check all -error-limit 1&
-                                                & -O0 -g -assume byterecl -traceback', is_built_in=.true.), &
-              & new_profile('debug', 'ifx', OS_WINDOWS, flags = ' /warn:all /check:all /error-limit:1&
-                                                & /Od /Z7 /assume:byterecl', is_built_in=.true.), &
-              & new_profile('debug', 'nagfor', OS_ALL, flags = ' -g -C=all -O0 -gline -coarray=single -PIC', is_built_in=.true.) &
+              & new_profile('release', &
+                & 'caf', &
+                & OS_ALL, &
+                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops', &
+                & is_built_in=.true.), &
+              & new_profile('release', &
+                & 'gfortran', &
+                & OS_ALL, &
+                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single', &
+                & is_built_in=.true.), &
+              & new_profile('release', &
+                & 'f95', &
+                & OS_ALL, &
+                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -ffast-math -funroll-loops', &
+                & is_built_in=.true.), &
+              & new_profile('release', &
+                & 'nvfortran', &
+                & OS_ALL, &
+                & flags = ' -Mbackslash', &
+                & is_built_in=.true.), &
+              & new_profile('release', &
+                & 'ifort', &
+                & OS_ALL, &
+                & flags = ' -fp-model precise -pc64 -align all -error-limit 1 -reentrancy&
+                          & threaded -nogen-interfaces -assume byterecl', &
+                & is_built_in=.true.), &
+              & new_profile('release', &
+                & 'ifort', &
+                & OS_WINDOWS, &
+                & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
+                          & /nogen-interfaces /assume:byterecl', &
+                & is_built_in=.true.), &
+              & new_profile('release', &
+                & 'ifx', &
+                & OS_ALL, &
+                & flags = ' -fp-model=precise -pc64 -align all -error-limit 1 -reentrancy&
+                          & threaded -nogen-interfaces -assume byterecl', &
+                & is_built_in=.true.), &
+              & new_profile('release', &
+                & 'ifx', &
+                & OS_WINDOWS, &
+                & flags = ' /fp:precise /align:all /error-limit:1 /reentrancy:threaded&
+                          & /nogen-interfaces /assume:byterecl', &
+                & is_built_in=.true.), &
+              & new_profile('release', &
+                &'nagfor', &
+                & OS_ALL, &
+                & flags = ' -O4 -coarray=single -PIC', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'caf', &
+                & OS_ALL, &
+                & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
+                          & -fcheck=array-temps -fbacktrace', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'gfortran', &
+                & OS_ALL, &
+                & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
+                          & -fcheck=array-temps -fbacktrace -fcoarray=single', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'f95', &
+                & OS_ALL, &
+                & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
+                          & -fcheck=array-temps -Wno-maybe-uninitialized -Wno-uninitialized -fbacktrace', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'nvfortran', &
+                & OS_ALL, &
+                & flags = ' -Minform=inform -Mbackslash -g -Mbounds -Mchkptr -Mchkstk -traceback', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'ifort', &
+                & OS_ALL, &
+                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'ifort', &
+                & OS_WINDOWS, &
+                & flags = ' /warn:all /check:all /error-limit:1&
+                          & /Od /Z7 /assume:byterecl /traceback', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'ifx', &
+                & OS_ALL, &
+                & flags = ' -warn all -check all -error-limit 1 -O0 -g -assume byterecl -traceback', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'ifx', &
+                & OS_WINDOWS, &
+                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'nagfor', &
+                & OS_ALL, &
+                & flags = ' -g -C=all -O0 -gline -coarray=single -PIC', &
+                & is_built_in=.true.) &
               &]
       end function get_default_profiles
 
