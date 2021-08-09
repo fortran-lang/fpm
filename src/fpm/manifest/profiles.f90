@@ -744,6 +744,7 @@ module fpm_manifest_profile
 
         found_matching = .false.
         if (size(profiles) < 1) return
+        ! Try to find profile with matching OS type
         do i=1,size(profiles)
           curr_profile_name = profiles(i)%profile_name
           curr_compiler = profiles(i)%compiler
@@ -757,6 +758,7 @@ module fpm_manifest_profile
             end if
           end if
         end do
+        ! Try to find profile with OS type 'all'
         if (.not. found_matching) then
           do i=1,size(profiles)
             curr_profile_name = profiles(i)%profile_name

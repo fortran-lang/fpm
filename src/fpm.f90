@@ -9,8 +9,6 @@ use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists,
 use fpm_model
 use fpm_compiler, only: get_module_flags, is_unknown_compiler, get_default_c_compiler, &
                         get_archiver
-
-
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
                         resolve_target_linking, build_target_t, build_target_ptr, &
@@ -204,6 +202,7 @@ subroutine build_model(model, settings, package, error)
         profile = settings%profile
     endif
 
+    ! Choose profile for each package
     if (allocated(profile)) then
         do i=1,size(model%packages)
             model%packages(i)%chosen_profile = look_for_profile(i)
@@ -220,10 +219,10 @@ subroutine build_model(model, settings, package, error)
             "Defaults for this compiler might be incorrect"
     end if
 
+    ! Choose profiles flags or file specific flags
     do j=1,size(model%packages)
         associate(package=>model%packages(j), sources=>model%packages(j)%sources, profile=>model%packages(j)%chosen_profile)
             do i=1,size(sources)
-
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
                     file_scope_flag = get_file_scope_flags(sources(i), profile)
@@ -255,6 +254,10 @@ subroutine build_model(model, settings, package, error)
 
     contains
 
+    ! Look for an appropriate profile
+    ! If package has specified profile, return it
+    ! If it has just built-in profile, try to find specified one in parents, otherwise return it
+    ! If it has no profiles, try to find one in parents
     function look_for_profile(package_id) result (chosen_profile)
         integer, intent(in) :: package_id
 
