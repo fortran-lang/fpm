@@ -194,8 +194,7 @@ contains
   end subroutine new_dependency_tree
 
   !> Create a new dependency node from a configuration
-!  pure subroutine new_dependency_node(self, dependency, version, proj_dir, update, parent)
-  subroutine new_dependency_node(self, dependency, version, proj_dir, update, parent)
+  pure subroutine new_dependency_node(self, dependency, version, proj_dir, update, parent)
     !> Instance of the dependency node
     type(dependency_node_t), intent(out) :: self
     !> Dependency configuration data
