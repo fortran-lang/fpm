@@ -5,7 +5,7 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: run, get_env, get_os_type
-use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
+use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename, filewrite, mkdir
 use fpm_model
 use fpm_compiler, only: get_module_flags, is_unknown_compiler, get_default_c_compiler, &
                         get_archiver
@@ -56,6 +56,11 @@ subroutine build_model(model, settings, package, error)
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
     call model%deps%add(package, error)
     if (allocated(error)) return
+
+    ! build/ directory should now exist
+    if (.not.exists("build/.gitignore")) then
+      call filewrite(join_path("build", ".gitignore"),["*"])
+    end if
 
     if(settings%compiler.eq.'')then
         model%fortran_compiler = DEFAULT_COMPILER
