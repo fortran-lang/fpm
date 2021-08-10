@@ -224,29 +224,21 @@ subroutine build_model(model, settings, package, error)
         associate(package=>model%packages(j), sources=>model%packages(j)%sources, profile=>model%packages(j)%chosen_profile)
             do i=1,size(sources)
                 select case (sources(i)%unit_type)
-                case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
-                    file_scope_flag = get_file_scope_flags(sources(i), profile)
-                    if (sources(i)%unit_type.eq.FPM_UNIT_CSOURCE) then
-                        if (file_scope_flag.eq."") then
-                            sources(i)%flags=model%cmd_compile_flags//" "//profile%c_flags
-                        else
-                            sources(i)%flags=model%cmd_compile_flags//" "//file_scope_flag
-                        end if
-                    else
-                        if (file_scope_flag.eq."") then
-                            sources(i)%flags=model%cmd_compile_flags//" "//profile%flags
-                        else
-                            sources(i)%flags=model%cmd_compile_flags//" "//file_scope_flag
-                        end if
-                    end if
-                case (FPM_UNIT_PROGRAM)
+                case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE,FPM_UNIT_PROGRAM)
                     file_scope_flag = get_file_scope_flags(sources(i), profile)
                     if (file_scope_flag.eq."") then
-                        sources(i)%flags=model%cmd_compile_flags//" "//profile%flags
+                        if (sources(i)%unit_type.eq.FPM_UNIT_CSOURCE) then
+                            sources(i)%flags=model%cmd_compile_flags//" "//profile%c_flags
+                        else
+                            sources(i)%flags=model%cmd_compile_flags//" "//profile%flags
+                        end if
                     else
                         sources(i)%flags=model%cmd_compile_flags//" "//file_scope_flag
                     end if
-                    sources(i)%link_time_flags=profile%link_time_flags
+
+                    if (sources(i)%unit_type == FPM_UNIT_PROGRAM) then
+                        sources(i)%link_time_flags=profile%link_time_flags
+                    end if
                 end select
             end do
         end associate

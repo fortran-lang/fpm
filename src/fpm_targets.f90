@@ -171,8 +171,7 @@ subroutine build_target_list(targets,model, build_dirs)
     type(string_t), allocatable, intent(out) :: build_dirs(:)
 
     integer :: i, j, n_source
-    character(:), allocatable :: xsuffix, exe_dir, flags_for_archive, output_file, module_flags
-    character(len=16) :: build_name
+    character(:), allocatable :: xsuffix, exe_dir, output_file, module_flags
     type(build_target_t), pointer :: dep
     logical :: with_lib
 
@@ -197,15 +196,9 @@ subroutine build_target_list(targets,model, build_dirs)
                       j=1,size(model%packages))])
 
     if (with_lib) then
-            if (allocated(model%packages(1)%profiles)) then
-                flags_for_archive = model%cmd_compile_flags//" "//model%packages(1)%chosen_profile%flags
-            else
-                flags_for_archive = model%cmd_compile_flags
-            end if
-            write(build_name, '(z16.16)') fnv_1a(flags_for_archive)
+            call get_object_name(output_file, unit_type=FPM_TARGET_ARCHIVE)
             call add_target(targets,type = FPM_TARGET_ARCHIVE,&
-                            output_file = join_path('build',basename(model%fortran_compiler)//'_'// &
-                            & build_name, model%package_name, 'lib'//model%package_name//'.a'))
+                            output_file = output_file)
     end if
 
     do j=1,size(model%packages)
@@ -215,7 +208,7 @@ subroutine build_target_list(targets,model, build_dirs)
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
-                    call get_object_name(sources(i), output_file, module_flags)
+                    call get_object_name(output_file, module_flags=module_flags, source=sources(i))
                     call add_target(targets,source = sources(i), &
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
@@ -228,31 +221,16 @@ subroutine build_target_list(targets,model, build_dirs)
 
                 case (FPM_UNIT_PROGRAM)
 
-                    call get_object_name(sources(i), output_file, module_flags)
+                    call get_object_name(output_file, module_flags=module_flags, source=sources(i))
                     call add_target(targets,type = FPM_TARGET_OBJECT,&
                                 output_file = output_file, &
                                 source = sources(i), &
-                                module_flags = module_flags &
-                                )
+                                module_flags = module_flags)
 
-                    if (sources(i)%unit_scope == FPM_SCOPE_APP) then
-
-                        exe_dir = 'app'
-
-                    else if (sources(i)%unit_scope == FPM_SCOPE_EXAMPLE) then
-
-                        exe_dir = 'example'
-
-                    else
-
-                        exe_dir = 'test'
-
-                    end if
-
+                    call get_object_name(output_file, source=sources(i), unit_type=FPM_TARGET_EXECUTABLE)
                     call add_target(targets,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
-                                    output_file = join_path(get_output_directory(sources(i)),exe_dir, &
-                                    sources(i)%exe_name//xsuffix))
+                                    output_file = output_file)
 
                     ! Executable depends on object
                     call add_dependency(targets(size(targets))%ptr, targets(size(targets)-1)%ptr)
@@ -272,32 +250,63 @@ subroutine build_target_list(targets,model, build_dirs)
 
     contains
 
-    subroutine get_object_name(source, object_file, module_flags)
+    subroutine get_object_name(object_file, module_flags, source, unit_type)
         ! Generate object target path from source name and model params
         !
         !
-        type(srcfile_t), intent(in) :: source
         character(:), allocatable, intent(out) :: object_file
-        character(:), allocatable, intent(out) :: module_flags
+        character(:), allocatable, optional, intent(out) :: module_flags
+        type(srcfile_t), optional, intent(in) :: source
+        integer, optional, intent(in) :: unit_type
 
         integer :: i
         character(1), parameter :: filesep = '/'
-        character(:), allocatable :: dir, out_dir
+        character(:), allocatable :: dir, out_dir, flags_for_archive, exe_dir
+        character(len=16) :: build_name
 
-        object_file = canon_path(source%file_name)
+        if (.not. present(unit_type) .and. present(source)) then
+            object_file = canon_path(source%file_name)
 
-        out_dir = get_output_directory(source)
+            out_dir = get_output_directory(source)
 
-        call get_module_flags(model%fortran_compiler, out_dir, module_flags)
+            call get_module_flags(model%fortran_compiler, out_dir, module_flags)
 
-        ! Convert any remaining directory separators to underscores
-        i = index(object_file,filesep)
-        do while(i > 0)
-            object_file(i:i) = '_'
+            ! Convert any remaining directory separators to underscores
             i = index(object_file,filesep)
-        end do
+            do while(i > 0)
+                object_file(i:i) = '_'
+                i = index(object_file,filesep)
+            end do
 
-        object_file = join_path(out_dir,model%package_name, object_file)//'.o'
+            object_file = join_path(out_dir,model%package_name, object_file)//'.o'
+        else
+            if (unit_type == FPM_TARGET_ARCHIVE) then
+
+                if (allocated(model%packages(1)%profiles)) then
+                    flags_for_archive = model%cmd_compile_flags//" "//model%packages(1)%chosen_profile%flags
+                else
+                    flags_for_archive = model%cmd_compile_flags
+                end if
+
+                write(build_name, '(z16.16)') fnv_1a(flags_for_archive)
+
+                object_file = join_path('build',basename(model%fortran_compiler)//'_'// &
+                                & build_name, model%package_name, 'lib'//model%package_name//'.a')
+
+            else if (unit_type == FPM_TARGET_EXECUTABLE .and. present(source)) then
+
+                if (source%unit_scope == FPM_SCOPE_APP) then
+                    exe_dir = 'app'
+                else if (source%unit_scope == FPM_SCOPE_EXAMPLE) then
+                    exe_dir = 'example'
+                else
+                    exe_dir = 'test'
+                end if
+
+                object_file = join_path(get_output_directory(source),exe_dir, source%exe_name//xsuffix)
+             end if
+
+        end if
 
     end subroutine get_object_name
 
