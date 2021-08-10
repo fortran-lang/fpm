@@ -389,7 +389,7 @@ contains
     found = .false.
     if (present(parent)) then
       parent_id = self%find(parent)
-      if (parent_id < 1) call fpm_stop(1,'*add_dependency*:Error: No such package in dependency tree.')
+      if (parent_id < 1) call fatal_error(error,'*add_dependency*:Error: No such package in dependency tree.')
     end if
     id = self%find(dependency)
     if (id == 0) then
@@ -800,7 +800,7 @@ contains
     character(len=:), allocatable :: proj_dir
 
     do ii = 1, self%ndep
-      associate(dep => self%dep(ii), deps => self%dep)
+      associate(dep => self%dep(ii))
         call add_table(table, dep%name, ptr)
         if (.not.associated(ptr)) then
           call fatal_error(error, "Cannot create entry for "//dep%name)
@@ -822,7 +822,7 @@ contains
         end if
         if (allocated(dep%parent) .and. size(dep%parent) > 0) then
           call add_array(ptr, "parent", parent_ptr)
-          do ip=1,size(dep%parent)
+          do ip = 1, size(dep%parent)
             call set_value(parent_ptr, ip, self%dep(dep%parent(ip))%name)
           end do
         end if
