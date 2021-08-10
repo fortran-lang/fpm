@@ -318,6 +318,7 @@ subroutine build_model(model, settings, package, error)
                 do i=1,size(fflags)
                     if (source%file_name.eq.fflags(i)%file_name) then
                         file_scope_flag = fflags(i)%flags//" "
+                        exit
                     end if
                 end do
             end associate

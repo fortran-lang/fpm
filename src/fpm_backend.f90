@@ -71,11 +71,11 @@ subroutine build_package(targets,model,build_dirs)
         end do
     end if
     if (present(build_dirs)) then
-    if (allocated(build_dirs)) then
-        do i=1,size(build_dirs)
-            call mkdir(build_dirs(i)%s)
-        end do
-    end if
+        if (allocated(build_dirs)) then
+            do i=1,size(build_dirs)
+                call mkdir(build_dirs(i)%s)
+            end do
+        end if
     end if
     ! Initialise build status flags
     allocate(stat(size(queue)))
