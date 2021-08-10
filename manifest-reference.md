@@ -528,6 +528,7 @@ Example:
 ```toml
 [profiles.gfortran.linux]
 flags = '-g -Wall'
+```
 
 ### Compiler flags profiles - Hierarchy
 There are 18 built-in profiles which are implemented in `fpm_manifest_profiles.f90`. They should cover the most used cases. If user wishes to specify their own profiles

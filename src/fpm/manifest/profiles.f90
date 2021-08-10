@@ -364,7 +364,7 @@ module fpm_manifest_profile
             l_os_name = lower(os_name)
             call validate_os_name(l_os_name, is_valid)
             if (is_valid) then
-              call fpm_stop(1,'*traverse_oss*:Error: Invalid OS name.')
+              call fatal_error(error,'*traverse_oss*:Error: Invalid OS name.')
             end if
 
             ! Missing OS name
@@ -450,7 +450,7 @@ module fpm_manifest_profile
               if (allocated(error)) return
             end if
           else
-            call fpm_stop(1,'*traverse_compilers*:Error: Compiler name not specified or invalid.')
+            call fatal_error(error,'*traverse_compilers*:Error: Compiler name not specified or invalid.')
           end if
         end do        
       end subroutine traverse_compilers
