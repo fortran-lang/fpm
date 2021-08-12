@@ -218,7 +218,7 @@ module fpm_manifest_profile
 
       !> Look for flags, c-flags, link-time-flags key-val pairs
       !> and files table in a given table and create new profiles
-      subroutine get_flags(profile_name, compiler_name, os_type, key_list, table, profiles, profindex, error)
+      subroutine get_flags(profile_name, compiler_name, os_type, key_list, table, profiles, profindex, error, os_valid)
 
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
@@ -244,7 +244,10 @@ module fpm_manifest_profile
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name, file_name, file_flags
+        !> Was called with valid operating system
+        logical, intent(in) :: os_valid
+
+        character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name, file_name, file_flags, err_message
         type(toml_table), pointer :: files
         type(toml_key), allocatable :: file_list(:)
         type(file_scope_flag), allocatable :: file_scope_flags(:)
@@ -293,9 +296,18 @@ module fpm_manifest_profile
                   cur_file%flags = file_flags
                 end associate
               end do
+            else if (.not. os_valid) then
+                call validate_os_name(key_name, is_valid)
+                err_message = "Unnexpected key " // key_name // " found in profile table "//profile_name//" "//compiler_name//"."
+                if (.not. is_valid) call syntax_error(error, err_message)
+            else
+                err_message = "Unnexpected key " // key_name // " found in profile table "//profile_name//" "//compiler_name//"."
+                call syntax_error(error, err_message)
             end if
           end do
         end if
+
+        if (allocated(error)) return
 
         profiles(profindex) = new_profile(profile_name, compiler_name, os_type, &
                  & flags, c_flags, link_time_flags, file_scope_flags)
@@ -356,7 +368,7 @@ module fpm_manifest_profile
               end if
               call match_os_type(os_name, os_type)
               call os_node%get_keys(key_list)
-              call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, error)
+              call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, error, .true.)
               if (allocated(error)) return
             end if
           else
@@ -366,6 +378,7 @@ module fpm_manifest_profile
             if (is_valid) then
               call fatal_error(error,'*traverse_oss*:Error: Invalid OS name.')
             end if
+            if (allocated(error)) return
 
             ! Missing OS name
             is_key_val = .false.
@@ -389,7 +402,7 @@ module fpm_manifest_profile
               end if
               os_type = OS_ALL
               os_node=>table
-              call get_flags(profile_name, compiler_name, os_type, os_list, os_node, profiles, profindex, error)
+              call get_flags(profile_name, compiler_name, os_type, os_list, os_node, profiles, profindex, error, .false.)
               if (allocated(error)) return
             end if
           end if
