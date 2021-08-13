@@ -216,9 +216,7 @@ module fpm_manifest_profile
 
       end subroutine match_os_type
 
-      !> Look for flags, c-flags, link-time-flags key-val pairs
-      !> and files table in a given table and create new profiles
-      subroutine get_flags(profile_name, compiler_name, os_type, key_list, table, profiles, profindex, error, os_valid)
+      subroutine validate_profile_table(profile_name, compiler_name, key_list, table, error, os_valid)
 
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
@@ -226,20 +224,11 @@ module fpm_manifest_profile
         !> Name of compiler
         character(len=:), allocatable, intent(in) :: compiler_name
 
-        !> OS type
-        integer, intent(in) :: os_type
-
         !> List of keys in the table
         type(toml_key), allocatable, intent(in) :: key_list(:)
 
         !> Table containing OS tables
         type(toml_table), pointer, intent(in) :: table
-
-        !> List of profiles
-        type(profile_config_t), allocatable, intent(inout) :: profiles(:)
-
-        !> Index in the list of profiles
-        integer, intent(inout) :: profindex
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -250,7 +239,6 @@ module fpm_manifest_profile
         character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name, file_name, file_flags, err_message
         type(toml_table), pointer :: files
         type(toml_key), allocatable :: file_list(:)
-        type(file_scope_flag), allocatable :: file_scope_flags(:)
         integer :: ikey, ifile, stat
         logical :: is_valid
 
@@ -282,7 +270,6 @@ module fpm_manifest_profile
                 return
               end if
               call files%get_keys(file_list)
-              allocate(file_scope_flags(size(file_list)))
               do ifile=1,size(file_list)
                 file_name = file_list(ifile)%key
                 call get_value(files, file_name, file_flags, stat=stat)
@@ -290,11 +277,6 @@ module fpm_manifest_profile
                   call syntax_error(error, "file scope flags has to be a key-value pair")
                   return
                 end if
-                associate(cur_file=>file_scope_flags(ifile))
-                  if (.not.(path.eq."")) file_name = join_path(path, file_name)
-                  cur_file%file_name = file_name
-                  cur_file%flags = file_flags
-                end associate
               end do
             else if (.not. os_valid) then
                 call validate_os_name(key_name, is_valid)
@@ -308,6 +290,61 @@ module fpm_manifest_profile
         end if
 
         if (allocated(error)) return
+
+      end subroutine validate_profile_table
+
+      !> Look for flags, c-flags, link-time-flags key-val pairs
+      !> and files table in a given table and create new profiles
+      subroutine get_flags(profile_name, compiler_name, os_type, key_list, table, profiles, profindex, os_valid)
+
+        !> Name of profile
+        character(len=:), allocatable, intent(in) :: profile_name
+
+        !> Name of compiler
+        character(len=:), allocatable, intent(in) :: compiler_name
+
+        !> OS type
+        integer, intent(in) :: os_type
+
+        !> List of keys in the table
+        type(toml_key), allocatable, intent(in) :: key_list(:)
+
+        !> Table containing OS tables
+        type(toml_table), pointer, intent(in) :: table
+
+        !> List of profiles
+        type(profile_config_t), allocatable, intent(inout) :: profiles(:)
+
+        !> Index in the list of profiles
+        integer, intent(inout) :: profindex
+
+        !> Was called with valid operating system
+        logical, intent(in) :: os_valid
+
+        character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name, file_name, file_flags, err_message
+        type(toml_table), pointer :: files
+        type(toml_key), allocatable :: file_list(:)
+        type(file_scope_flag), allocatable :: file_scope_flags(:)
+        integer :: ikey, ifile, stat
+        logical :: is_valid
+
+        call get_value(table, 'flags', flags)
+        call get_value(table, 'c-flags', c_flags)
+        call get_value(table, 'link-time-flags', link_time_flags)
+        call get_value(table, 'files', files)
+        if (associated(files)) then
+          call files%get_keys(file_list)
+          allocate(file_scope_flags(size(file_list)))
+          do ifile=1,size(file_list)
+            file_name = file_list(ifile)%key
+            call get_value(files, file_name, file_flags)
+            associate(cur_file=>file_scope_flags(ifile))
+              if (.not.(path.eq."")) file_name = join_path(path, file_name)
+              cur_file%file_name = file_name
+              cur_file%flags = file_flags
+            end associate
+          end do
+        end if
 
         profiles(profindex) = new_profile(profile_name, compiler_name, os_type, &
                  & flags, c_flags, link_time_flags, file_scope_flags)
@@ -354,22 +391,22 @@ module fpm_manifest_profile
           os_name = os_list(ios)%key
           call validate_os_name(os_name, is_valid)
           if (is_valid) then
+            call get_value(table, os_name, os_node, stat=stat)
+            if (stat /= toml_stat%success) then
+              call syntax_error(error, "os "//os_name//" has to be a table")
+              return
+            end if
+            call os_node%get_keys(key_list)
             if (present(profiles_size)) then
               profiles_size = profiles_size + 1
+              call validate_profile_table(profile_name, compiler_name, key_list, os_node, error, .true.)
             else
               if (.not.(present(profiles).and.present(profindex))) then
                 call fatal_error(error, "Both profiles and profindex have to be present")
                 return
               end if
-              call get_value(table, os_name, os_node, stat=stat)
-              if (stat /= toml_stat%success) then
-                call syntax_error(error, "os "//os_name//" has to be a table")
-                return
-              end if
               call match_os_type(os_name, os_type)
-              call os_node%get_keys(key_list)
-              call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, error, .true.)
-              if (allocated(error)) return
+              call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, .true.)
             end if
           else
             ! Not lowercase OS name
@@ -387,6 +424,7 @@ module fpm_manifest_profile
             if (stat /= toml_stat%success) then
               is_key_val = .true.
             end if
+            os_node=>table
             if (present(profiles_size)) then
               if (is_key_val.and..not.key_val_added) then
                 key_val_added = .true.
@@ -395,15 +433,14 @@ module fpm_manifest_profile
               else if (.not.is_key_val) then
                 profiles_size = profiles_size + 1
               end if
+              call validate_profile_table(profile_name, compiler_name, os_list, os_node, error, .false.)
             else
               if (.not.(present(profiles).and.present(profindex))) then
                 call fatal_error(error, "Both profiles and profindex have to be present")
                 return
               end if
               os_type = OS_ALL
-              os_node=>table
-              call get_flags(profile_name, compiler_name, os_type, os_list, os_node, profiles, profindex, error, .false.)
-              if (allocated(error)) return
+              call get_flags(profile_name, compiler_name, os_type, os_list, os_node, profiles, profindex, .false.)
             end if
           end if
         end do
