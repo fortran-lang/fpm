@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.4% of total for source files.">140 statements</a>
+    title=" 2.5% of total for source files.">144 statements</a>
      </li> 
      
      
@@ -864,65 +864,70 @@
 <a id="ln-589" name="ln-589"></a>   <span class="kt">integer</span>                     <span class="kd">::</span> <span class="n">lun</span>
 <a id="ln-590" name="ln-590"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>            <span class="kd">::</span> <span class="n">date</span>
 <a id="ln-591" name="ln-591"></a>
-<a id="ln-592" name="ln-592"></a>    <span class="c">!&gt; get date to put into metadata in manifest file &quot;fpm.toml&quot;</span>
-<a id="ln-593" name="ln-593"></a>    <span class="k">call </span><span class="nb">date_and_time</span><span class="p">(</span><span class="n">DATE</span><span class="o">=</span><span class="n">date</span><span class="p">)</span>
-<a id="ln-594" name="ln-594"></a>    <span class="n">table</span> <span class="o">=</span> <span class="n">toml_table</span><span class="p">()</span>
-<a id="ln-595" name="ln-595"></a>    <span class="n">ser</span> <span class="o">=</span> <span class="n">toml_serializer</span><span class="p">()</span>
-<a id="ln-596" name="ln-596"></a>    <span class="k">call </span><span class="n">fileopen</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">lun</span><span class="p">)</span> <span class="c">! fileopen stops on error</span>
-<a id="ln-597" name="ln-597"></a>
-<a id="ln-598" name="ln-598"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>       <span class="n">BNAME</span><span class="p">)</span>
-<a id="ln-599" name="ln-599"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span>    <span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
-<a id="ln-600" name="ln-600"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;license&quot;</span><span class="p">,</span>    <span class="s2">&quot;license&quot;</span><span class="p">)</span>
-<a id="ln-601" name="ln-601"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;author&quot;</span><span class="p">,</span>     <span class="s2">&quot;Jane Doe&quot;</span><span class="p">)</span>
-<a id="ln-602" name="ln-602"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;maintainer&quot;</span><span class="p">,</span> <span class="s2">&quot;jane.doe@example.com&quot;</span><span class="p">)</span>
-<a id="ln-603" name="ln-603"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;copyright&quot;</span><span class="p">,</span>  <span class="s1">&#39;Copyright &#39;</span><span class="o">//</span><span class="n">date</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;, Jane Doe&#39;</span><span class="p">)</span>
-<a id="ln-604" name="ln-604"></a>    <span class="c">! continue building of manifest</span>
-<a id="ln-605" name="ln-605"></a>    <span class="c">! ...</span>
-<a id="ln-606" name="ln-606"></a>    <span class="k">call </span><span class="n">new_package</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-607" name="ln-607"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span> <span class="mi">3</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-<a id="ln-608" name="ln-608"></a>    <span class="k">if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-609" name="ln-609"></a><span class="k">       call </span><span class="n">table</span><span class="p">%</span><span class="k">accept</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
-<a id="ln-610" name="ln-610"></a>    <span class="k">endif</span>
-<a id="ln-611" name="ln-611"></a><span class="k">    </span><span class="n">ser</span><span class="p">%</span><span class="n">unit</span><span class="o">=</span><span class="n">lun</span>
-<a id="ln-612" name="ln-612"></a>    <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="k">accept</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
-<a id="ln-613" name="ln-613"></a>    <span class="k">call </span><span class="n">fileclose</span><span class="p">(</span><span class="n">lun</span><span class="p">)</span> <span class="c">! fileopen stops on error</span>
-<a id="ln-614" name="ln-614"></a>
-<a id="ln-615" name="ln-615"></a><span class="k">end subroutine </span><span class="n">create_verified_basic_manifest</span>
-<a id="ln-616" name="ln-616"></a>
-<a id="ln-617" name="ln-617"></a>
-<a id="ln-618" name="ln-618"></a><span class="k">subroutine </span><span class="n">validate_toml_data</span><span class="p">(</span><span class="n">input</span><span class="p">)</span>
-<a id="ln-619" name="ln-619"></a><span class="c">!&gt; verify a string array is a valid fpm.toml file</span>
-<a id="ln-620" name="ln-620"></a><span class="c">!</span>
-<a id="ln-621" name="ln-621"></a><span class="k">use </span><span class="n">tomlf</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">toml_parse</span>
-<a id="ln-622" name="ln-622"></a><span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_serializer</span>
-<a id="ln-623" name="ln-623"></a><span class="k">implicit none</span>
-<a id="ln-624" name="ln-624"></a><span class="kt">character</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">tfc</span><span class="p">,</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">input</span><span class="p">(:)</span>
-<a id="ln-625" name="ln-625"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="k">parameter</span>                      <span class="kd">::</span> <span class="n">nl</span> <span class="o">=</span> <span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
-<a id="ln-626" name="ln-626"></a><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">allocatable</span>                    <span class="kd">::</span> <span class="n">table</span>
-<a id="ln-627" name="ln-627"></a><span class="kt">character</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">tfc</span><span class="p">,</span> <span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span>          <span class="kd">::</span> <span class="n">joined_string</span>
-<a id="ln-628" name="ln-628"></a><span class="k">type</span><span class="p">(</span><span class="n">toml_serializer</span><span class="p">)</span>                            <span class="kd">::</span> <span class="n">ser</span>
-<a id="ln-629" name="ln-629"></a>
-<a id="ln-630" name="ln-630"></a><span class="c">! you have to add a newline character by using the intrinsic</span>
-<a id="ln-631" name="ln-631"></a><span class="c">! function `new_line(&quot;a&quot;)` to get the lines processed correctly.</span>
-<a id="ln-632" name="ln-632"></a><span class="n">joined_string</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">input</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="n">nl</span><span class="p">)</span>
-<a id="ln-633" name="ln-633"></a>
-<a id="ln-634" name="ln-634"></a><span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">table</span><span class="p">))</span> <span class="k">deallocate</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
-<a id="ln-635" name="ln-635"></a><span class="k">call </span><span class="n">toml_parse</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">joined_string</span><span class="p">)</span>
-<a id="ln-636" name="ln-636"></a><span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">table</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-637" name="ln-637"></a><span class="k">   if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-638" name="ln-638"></a>      <span class="c">! If the TOML file is successfully parsed the table will be allocated and</span>
-<a id="ln-639" name="ln-639"></a>      <span class="c">! can be written to the standard output by passing the `toml_serializer`</span>
-<a id="ln-640" name="ln-640"></a>      <span class="c">! as visitor to the table.</span>
-<a id="ln-641" name="ln-641"></a>      <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="k">accept</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
-<a id="ln-642" name="ln-642"></a>   <span class="k">endif</span>
-<a id="ln-643" name="ln-643"></a><span class="k">   call </span><span class="n">table</span><span class="p">%</span><span class="n">destroy</span>
-<a id="ln-644" name="ln-644"></a><span class="k">endif</span>
-<a id="ln-645" name="ln-645"></a>
-<a id="ln-646" name="ln-646"></a><span class="k">end subroutine </span><span class="n">validate_toml_data</span>
-<a id="ln-647" name="ln-647"></a>
-<a id="ln-648" name="ln-648"></a><span class="k">end subroutine </span><span class="n">cmd_new</span>
-<a id="ln-649" name="ln-649"></a>
-<a id="ln-650" name="ln-650"></a><span class="k">end module </span><span class="n">fpm_cmd_new</span>
+<a id="ln-592" name="ln-592"></a>    <span class="k">if</span><span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span><span class="k">then</span>
+<a id="ln-593" name="ln-593"></a><span class="k">       write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0,1x))&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt;  &#39;</span><span class="p">,</span><span class="n">filename</span><span class="p">,&amp;</span>
+<a id="ln-594" name="ln-594"></a>       <span class="p">&amp;</span> <span class="s1">&#39;already exists. Not overwriting&#39;</span>
+<a id="ln-595" name="ln-595"></a>       <span class="k">return</span>
+<a id="ln-596" name="ln-596"></a><span class="k">    endif</span>
+<a id="ln-597" name="ln-597"></a>    <span class="c">!&gt; get date to put into metadata in manifest file &quot;fpm.toml&quot;</span>
+<a id="ln-598" name="ln-598"></a>    <span class="k">call </span><span class="nb">date_and_time</span><span class="p">(</span><span class="n">DATE</span><span class="o">=</span><span class="n">date</span><span class="p">)</span>
+<a id="ln-599" name="ln-599"></a>    <span class="n">table</span> <span class="o">=</span> <span class="n">toml_table</span><span class="p">()</span>
+<a id="ln-600" name="ln-600"></a>    <span class="n">ser</span> <span class="o">=</span> <span class="n">toml_serializer</span><span class="p">()</span>
+<a id="ln-601" name="ln-601"></a>    <span class="k">call </span><span class="n">fileopen</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">lun</span><span class="p">)</span> <span class="c">! fileopen stops on error</span>
+<a id="ln-602" name="ln-602"></a>
+<a id="ln-603" name="ln-603"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>       <span class="n">BNAME</span><span class="p">)</span>
+<a id="ln-604" name="ln-604"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span>    <span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<a id="ln-605" name="ln-605"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;license&quot;</span><span class="p">,</span>    <span class="s2">&quot;license&quot;</span><span class="p">)</span>
+<a id="ln-606" name="ln-606"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;author&quot;</span><span class="p">,</span>     <span class="s2">&quot;Jane Doe&quot;</span><span class="p">)</span>
+<a id="ln-607" name="ln-607"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;maintainer&quot;</span><span class="p">,</span> <span class="s2">&quot;jane.doe@example.com&quot;</span><span class="p">)</span>
+<a id="ln-608" name="ln-608"></a>    <span class="k">call </span><span class="n">set_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="s2">&quot;copyright&quot;</span><span class="p">,</span>  <span class="s1">&#39;Copyright &#39;</span><span class="o">//</span><span class="n">date</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;, Jane Doe&#39;</span><span class="p">)</span>
+<a id="ln-609" name="ln-609"></a>    <span class="c">! continue building of manifest</span>
+<a id="ln-610" name="ln-610"></a>    <span class="c">! ...</span>
+<a id="ln-611" name="ln-611"></a>    <span class="k">call </span><span class="n">new_package</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+<a id="ln-612" name="ln-612"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span> <span class="mi">3</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<a id="ln-613" name="ln-613"></a>    <span class="k">if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-614" name="ln-614"></a><span class="k">       call </span><span class="n">table</span><span class="p">%</span><span class="k">accept</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
+<a id="ln-615" name="ln-615"></a>    <span class="k">endif</span>
+<a id="ln-616" name="ln-616"></a><span class="k">    </span><span class="n">ser</span><span class="p">%</span><span class="n">unit</span><span class="o">=</span><span class="n">lun</span>
+<a id="ln-617" name="ln-617"></a>    <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="k">accept</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
+<a id="ln-618" name="ln-618"></a>    <span class="k">call </span><span class="n">fileclose</span><span class="p">(</span><span class="n">lun</span><span class="p">)</span> <span class="c">! fileopen stops on error</span>
+<a id="ln-619" name="ln-619"></a>
+<a id="ln-620" name="ln-620"></a><span class="k">end subroutine </span><span class="n">create_verified_basic_manifest</span>
+<a id="ln-621" name="ln-621"></a>
+<a id="ln-622" name="ln-622"></a>
+<a id="ln-623" name="ln-623"></a><span class="k">subroutine </span><span class="n">validate_toml_data</span><span class="p">(</span><span class="n">input</span><span class="p">)</span>
+<a id="ln-624" name="ln-624"></a><span class="c">!&gt; verify a string array is a valid fpm.toml file</span>
+<a id="ln-625" name="ln-625"></a><span class="c">!</span>
+<a id="ln-626" name="ln-626"></a><span class="k">use </span><span class="n">tomlf</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">toml_parse</span>
+<a id="ln-627" name="ln-627"></a><span class="k">use </span><span class="n">fpm_toml</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">toml_table</span><span class="p">,</span> <span class="n">toml_serializer</span>
+<a id="ln-628" name="ln-628"></a><span class="k">implicit none</span>
+<a id="ln-629" name="ln-629"></a><span class="kt">character</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">tfc</span><span class="p">,</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">input</span><span class="p">(:)</span>
+<a id="ln-630" name="ln-630"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="k">parameter</span>                      <span class="kd">::</span> <span class="n">nl</span> <span class="o">=</span> <span class="nb">new_line</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<a id="ln-631" name="ln-631"></a><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span> <span class="k">allocatable</span>                    <span class="kd">::</span> <span class="n">table</span>
+<a id="ln-632" name="ln-632"></a><span class="kt">character</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">tfc</span><span class="p">,</span> <span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span>          <span class="kd">::</span> <span class="n">joined_string</span>
+<a id="ln-633" name="ln-633"></a><span class="k">type</span><span class="p">(</span><span class="n">toml_serializer</span><span class="p">)</span>                            <span class="kd">::</span> <span class="n">ser</span>
+<a id="ln-634" name="ln-634"></a>
+<a id="ln-635" name="ln-635"></a><span class="c">! you have to add a newline character by using the intrinsic</span>
+<a id="ln-636" name="ln-636"></a><span class="c">! function `new_line(&quot;a&quot;)` to get the lines processed correctly.</span>
+<a id="ln-637" name="ln-637"></a><span class="n">joined_string</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">input</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="n">nl</span><span class="p">)</span>
+<a id="ln-638" name="ln-638"></a>
+<a id="ln-639" name="ln-639"></a><span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">table</span><span class="p">))</span> <span class="k">deallocate</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+<a id="ln-640" name="ln-640"></a><span class="k">call </span><span class="n">toml_parse</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">joined_string</span><span class="p">)</span>
+<a id="ln-641" name="ln-641"></a><span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">table</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-642" name="ln-642"></a><span class="k">   if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-643" name="ln-643"></a>      <span class="c">! If the TOML file is successfully parsed the table will be allocated and</span>
+<a id="ln-644" name="ln-644"></a>      <span class="c">! can be written to the standard output by passing the `toml_serializer`</span>
+<a id="ln-645" name="ln-645"></a>      <span class="c">! as visitor to the table.</span>
+<a id="ln-646" name="ln-646"></a>      <span class="k">call </span><span class="n">table</span><span class="p">%</span><span class="k">accept</span><span class="p">(</span><span class="n">ser</span><span class="p">)</span>
+<a id="ln-647" name="ln-647"></a>   <span class="k">endif</span>
+<a id="ln-648" name="ln-648"></a><span class="k">   call </span><span class="n">table</span><span class="p">%</span><span class="n">destroy</span>
+<a id="ln-649" name="ln-649"></a><span class="k">endif</span>
+<a id="ln-650" name="ln-650"></a>
+<a id="ln-651" name="ln-651"></a><span class="k">end subroutine </span><span class="n">validate_toml_data</span>
+<a id="ln-652" name="ln-652"></a>
+<a id="ln-653" name="ln-653"></a><span class="k">end subroutine </span><span class="n">cmd_new</span>
+<a id="ln-654" name="ln-654"></a>
+<a id="ln-655" name="ln-655"></a><span class="k">end module </span><span class="n">fpm_cmd_new</span>
 </pre></div>
 
     </section>
@@ -942,7 +947,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-09 16:09  
+             on 2021-08-19 12:19  
             
           </p>
         </div>
