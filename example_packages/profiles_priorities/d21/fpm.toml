@@ -1,0 +1,16 @@
+name = "d21"
+
+[library]
+source-dir="source"
+
+[[executable]]
+name="d21"
+source-dir="app"
+main="d21.F90"
+
+[profiles.debug.gfortran]
+flags="-g -O2 -Dnot_defined=2"
+
+[profiles.debug.gfortran.windows]
+flags="/g /O2 /Dnot_defined=2"
+

@@ -88,7 +88,7 @@ contains
 
 
     !> Obtain package meta data from a configuation file
-    subroutine get_package_data(package, file, error, apply_defaults)
+    subroutine get_package_data(package, file, error, apply_defaults, proj_dir)
 
         !> Parsed package meta data
         type(package_config_t), intent(out) :: package
@@ -102,6 +102,9 @@ contains
         !> Apply package defaults (uses file system operations)
         logical, intent(in), optional :: apply_defaults
 
+        !> Path to project directory of the current package
+        character(len=*), intent(in), optional :: proj_dir
+
         type(toml_table), allocatable :: table
         character(len=:), allocatable :: root
 
@@ -113,7 +116,7 @@ contains
             return
         end if
 
-        call new_package(package, table, dirname(file), error)
+        call new_package(package, table, dirname(file), error, proj_dir)
         if (allocated(error)) return
 
         if (present(apply_defaults)) then

@@ -1,0 +1,4 @@
+name = "with_c"
+
+[profiles.debug.gfortran.linux]
+c-flags="-O1 -g"

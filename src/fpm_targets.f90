@@ -28,8 +28,10 @@ use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
-use fpm_filesystem, only: dirname, join_path, canon_path
-use fpm_strings, only: string_t, operator(.in.), string_cat
+use fpm_filesystem, only: basename, dirname, join_path, canon_path
+use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, string_t
+use fpm_compiler, only: get_module_flags
+use fpm_manifest_profile, only: profile_config_t
 implicit none
 
 private
@@ -110,7 +112,7 @@ end type build_target_t
 contains
 
 !> High-level wrapper to generate build target information
-subroutine targets_from_sources(targets,model,error)
+subroutine targets_from_sources(targets,model,error,build_dirs)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
@@ -118,15 +120,22 @@ subroutine targets_from_sources(targets,model,error)
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
 
+    !> Include directories from sources
+    type(string_t), allocatable, intent(out), optional :: build_dirs(:)
+
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 
-    call build_target_list(targets,model)
+    type(string_t), allocatable :: build_dirs_array(:)
+
+    call build_target_list(targets,model,build_dirs_array)
 
     call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
 
-    call resolve_target_linking(targets,model)
+    call resolve_target_linking(targets,model,build_dirs_array)
+
+    if (present(build_dirs)) build_dirs = build_dirs_array
 
 end subroutine targets_from_sources
 
@@ -150,7 +159,7 @@ end subroutine targets_from_sources
 !> is a library, then the executable target has an additional dependency on the library
 !> archive target.
 !>
-subroutine build_target_list(targets,model)
+subroutine build_target_list(targets,model, build_dirs)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
@@ -158,8 +167,12 @@ subroutine build_target_list(targets,model)
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
 
+    !> Include dirs from sources
+    type(string_t), allocatable, intent(out) :: build_dirs(:)
+
     integer :: i, j, n_source
-    character(:), allocatable :: xsuffix, exe_dir
+    character(:), allocatable :: xsuffix, exe_dir, output_file, module_flags
+    type(build_target_t), pointer :: dep
     logical :: with_lib
 
     ! Check for empty build (e.g. header-only lib)
@@ -168,6 +181,7 @@ subroutine build_target_list(targets,model)
 
     if (n_source < 1) then
         allocate(targets(0))
+        allocate(build_dirs(0))
         return
     end if
 
@@ -181,23 +195,24 @@ subroutine build_target_list(targets,model)
                       i=1,size(model%packages(j)%sources)), &
                       j=1,size(model%packages))])
 
-    if (with_lib) call add_target(targets,type = FPM_TARGET_ARCHIVE,&
-                            output_file = join_path(model%output_directory,&
-                                   model%package_name,'lib'//model%package_name//'.a'))
+    if (with_lib) then
+            call get_object_name(output_file, unit_type=FPM_TARGET_ARCHIVE)
+            call add_target(targets,type = FPM_TARGET_ARCHIVE,&
+                            output_file = output_file)
+    end if
 
     do j=1,size(model%packages)
-
         associate(sources=>model%packages(j)%sources)
-
             do i=1,size(sources)
 
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
+                    call get_object_name(output_file, module_flags=module_flags, source=sources(i))
                     call add_target(targets,source = sources(i), &
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
-                                output_file = get_object_name(sources(i)))
+                                output_file = output_file, module_flags = module_flags)
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
@@ -206,29 +221,16 @@ subroutine build_target_list(targets,model)
 
                 case (FPM_UNIT_PROGRAM)
 
+                    call get_object_name(output_file, module_flags=module_flags, source=sources(i))
                     call add_target(targets,type = FPM_TARGET_OBJECT,&
-                                output_file = get_object_name(sources(i)), &
-                                source = sources(i) &
-                                )
+                                output_file = output_file, &
+                                source = sources(i), &
+                                module_flags = module_flags)
 
-                    if (sources(i)%unit_scope == FPM_SCOPE_APP) then
-
-                        exe_dir = 'app'
-
-                    else if (sources(i)%unit_scope == FPM_SCOPE_EXAMPLE) then
-
-                        exe_dir = 'example'
-
-                    else
-
-                        exe_dir = 'test'
-
-                    end if
-
+                    call get_object_name(output_file, source=sources(i), unit_type=FPM_TARGET_EXECUTABLE)
                     call add_target(targets,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
-                                    output_file = join_path(model%output_directory,exe_dir, &
-                                    sources(i)%exe_name//xsuffix))
+                                    output_file = output_file)
 
                     ! Executable depends on object
                     call add_dependency(targets(size(targets))%ptr, targets(size(targets)-1)%ptr)
@@ -248,38 +250,98 @@ subroutine build_target_list(targets,model)
 
     contains
 
-    function get_object_name(source) result(object_file)
+    subroutine get_object_name(object_file, module_flags, source, unit_type)
         ! Generate object target path from source name and model params
         !
         !
-        type(srcfile_t), intent(in) :: source
-        character(:), allocatable :: object_file
+        character(:), allocatable, intent(out) :: object_file
+        character(:), allocatable, optional, intent(out) :: module_flags
+        type(srcfile_t), optional, intent(in) :: source
+        integer, optional, intent(in) :: unit_type
 
         integer :: i
         character(1), parameter :: filesep = '/'
+        character(:), allocatable :: dir, out_dir, flags_for_archive, exe_dir
+        character(len=16) :: build_name
 
-        object_file = canon_path(source%file_name)
+        if (.not. present(unit_type) .and. present(source)) then
+            object_file = canon_path(source%file_name)
 
-        ! Convert any remaining directory separators to underscores
-        i = index(object_file,filesep)
-        do while(i > 0)
-            object_file(i:i) = '_'
+            out_dir = get_output_directory(source)
+
+            call get_module_flags(model%fortran_compiler, out_dir, module_flags)
+
+            ! Convert any remaining directory separators to underscores
             i = index(object_file,filesep)
-        end do
+            do while(i > 0)
+                object_file(i:i) = '_'
+                i = index(object_file,filesep)
+            end do
 
-        object_file = join_path(model%output_directory,model%package_name,object_file)//'.o'
+            object_file = join_path(out_dir,model%package_name, object_file)//'.o'
+        else
+            if (unit_type == FPM_TARGET_ARCHIVE) then
 
-    end function get_object_name
+                if (allocated(model%packages(1)%profiles)) then
+                    flags_for_archive = model%cmd_compile_flags//" "//model%packages(1)%chosen_profile%flags
+                else
+                    flags_for_archive = model%cmd_compile_flags
+                end if
+
+                write(build_name, '(z16.16)') fnv_1a(flags_for_archive)
+
+                object_file = join_path('build',basename(model%fortran_compiler)//'_'// &
+                                & build_name, model%package_name, 'lib'//model%package_name//'.a')
+
+            else if (unit_type == FPM_TARGET_EXECUTABLE .and. present(source)) then
+
+                if (source%unit_scope == FPM_SCOPE_APP) then
+                    exe_dir = 'app'
+                else if (source%unit_scope == FPM_SCOPE_EXAMPLE) then
+                    exe_dir = 'example'
+                else
+                    exe_dir = 'test'
+                end if
+
+                object_file = join_path(get_output_directory(source),exe_dir, source%exe_name//xsuffix)
+             end if
+
+        end if
+
+    end subroutine get_object_name
+
+    function get_output_directory(source) result(out_dir)
+        ! Generate build directory name by hashing the flags of the source
+        !
+        !
+        type(srcfile_t), intent(in) :: source
+
+        character(len=16) :: build_name
+        character(:), allocatable :: out_dir
+        type(string_t) :: include_dir
+
+        if (allocated(source%flags)) then
+            write(build_name, '(z16.16)') fnv_1a(source%flags)
+        end if
+        out_dir = join_path('build',basename(model%fortran_compiler)//'_'//build_name)
+        include_dir = string_t(out_dir)
+        if (.not. allocated(build_dirs)) then
+            build_dirs = [include_dir]
+        else if (.not. (out_dir.in.build_dirs)) then
+            build_dirs = [build_dirs, include_dir]
+        end if
+    end function get_output_directory
 
 end subroutine build_target_list
 
 
 !> Allocate a new target and append to target list
-subroutine add_target(targets,type,output_file,source,link_libraries)
+subroutine add_target(targets,type,output_file,source, module_flags, link_libraries)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     integer, intent(in) :: type
     character(*), intent(in) :: output_file
     type(srcfile_t), intent(in), optional :: source
+    character(*), intent(in), optional :: module_flags
     type(string_t), intent(in), optional :: link_libraries(:)
 
     integer :: i
@@ -304,7 +366,17 @@ subroutine add_target(targets,type,output_file,source,link_libraries)
     allocate(new_target)
     new_target%target_type = type
     new_target%output_file = output_file
-    if (present(source)) new_target%source = source
+    if (present(source)) then
+        new_target%source = source
+        if (allocated(source%flags)) then
+            if (present(module_flags)) then
+                new_target%compile_flags = " "//source%flags//module_flags
+            else
+                new_target%compile_flags = " "//source%flags
+            end if
+        end if
+        if (allocated(source%link_time_flags)) new_target%link_flags = " "//source%link_time_flags//" "
+    end if
     if (present(link_libraries)) new_target%link_libraries = link_libraries
     allocate(new_target%dependencies(0))
 
@@ -442,9 +514,10 @@ end function find_module_dependency
 !> Construct the linker flags string for each target
 !>  `target%link_flags` includes non-library objects and library flags
 !>
-subroutine resolve_target_linking(targets, model)
+subroutine resolve_target_linking(targets, model, build_dirs)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(fpm_model_t), intent(in) :: model
+    type(string_t), intent(in) :: build_dirs(:)
 
     integer :: i
     character(:), allocatable :: global_link_flags
@@ -468,7 +541,11 @@ subroutine resolve_target_linking(targets, model)
     if (allocated(model%include_dirs)) then
         if (size(model%include_dirs) > 0) then
             global_include_flags = global_include_flags // &
-            & " -I" // string_cat(model%include_dirs," -I")
+            & " -I " // string_cat(model%include_dirs," -I ")
+        end if
+        if (size(build_dirs) > 0) then
+            global_include_flags = global_include_flags // &
+            & " -I " // string_cat(build_dirs," -I ")
         end if
     end if
 
@@ -476,11 +553,7 @@ subroutine resolve_target_linking(targets, model)
 
         associate(target => targets(i)%ptr)
 
-            if (target%target_type /= FPM_TARGET_C_OBJECT) then
-                target%compile_flags = model%fortran_compile_flags//" "//global_include_flags
-            else
-                target%compile_flags = global_include_flags
-            end if
+            target%compile_flags = target%compile_flags // global_include_flags
 
             allocate(target%link_objects(0))
 
@@ -494,7 +567,7 @@ subroutine resolve_target_linking(targets, model)
 
                 call get_link_objects(target%link_objects,target,is_exe=.true.)
 
-                target%link_flags = string_cat(target%link_objects," ")
+                target%link_flags = target%link_flags // string_cat(target%link_objects," ")
 
                 if (allocated(target%link_libraries)) then
                     if (size(target%link_libraries) > 0) then

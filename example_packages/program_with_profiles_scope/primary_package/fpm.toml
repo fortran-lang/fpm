@@ -1,0 +1,17 @@
+name = "hello_world"
+
+[profiles.debug.gfortran.linux]
+flags="-g"
+
+[profiles.debug.ifort.linux]
+flags="-g -traceback"
+
+[profiles.gfortran]
+flags="-g -Wall"
+
+[profiles.gfortran.windows]
+flags="/g"
+
+[dependencies]
+"hello_complex" = {path = "../hello_complex"}
+

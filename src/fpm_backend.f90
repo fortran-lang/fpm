@@ -44,19 +44,15 @@ public :: build_package, sort_target, schedule_targets
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(targets,model)
+subroutine build_package(targets,model,build_dirs)
     type(build_target_ptr), intent(inout) :: targets(:)
     type(fpm_model_t), intent(in) :: model
+    type(string_t), allocatable, intent(in), optional :: build_dirs(:)
 
     integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
     logical :: build_failed, skip_current
-
-    ! Need to make output directory for include (mod) files
-    if (.not.exists(join_path(model%output_directory,model%package_name))) then
-        call mkdir(join_path(model%output_directory,model%package_name))
-    end if
 
     ! Perform depth-first topological sort of targets
     do i=1,size(targets)
@@ -68,6 +64,19 @@ subroutine build_package(targets,model)
     ! Construct build schedule queue
     call schedule_targets(queue, schedule_ptr, targets)
 
+    ! Create all build directories
+    if (allocated(model%include_dirs)) then
+        do i=1,size(model%include_dirs)
+            call mkdir(model%include_dirs(i)%s)
+        end do
+    end if
+    if (present(build_dirs)) then
+        if (allocated(build_dirs)) then
+            do i=1,size(build_dirs)
+                call mkdir(build_dirs(i)%s)
+            end do
+        end if
+    end if
     ! Initialise build status flags
     allocate(stat(size(queue)))
     stat(:) = 0

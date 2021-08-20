@@ -1,0 +1,21 @@
+name = "d1"
+
+[library]
+source-dir="source"
+
+[[executable]]
+name="d1"
+source-dir="app"
+main="d1.F90"
+
+[profiles.debug.gfortran]
+flags="-g -O1 -Dnot_defined=3"
+
+[profiles.debug.gfortran.windows]
+flags="/g /O1 /Dnot_defined=3"
+
+[dependencies]
+"d11" = {path = "../d11"}
+"d12" = {path = "../d12"}
+
+

@@ -4,15 +4,11 @@ use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: run, get_env
+use fpm_environment, only: run, get_env, get_os_type
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename, filewrite, mkdir
-use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
-                    FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
-                    FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
+use fpm_model
 use fpm_compiler, only: get_module_flags, is_unknown_compiler, get_default_c_compiler, &
                         get_archiver
-
-
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
 use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
                         resolve_target_linking, build_target_t, build_target_ptr, &
@@ -24,6 +20,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
 use fpm_manifest_dependency, only: dependency_config_t
+use fpm_manifest_profile, only: profile_config_t, find_profile, DEFAULT_COMPILER
 use, intrinsic :: iso_fortran_env, only: error_unit
 implicit none
 private
@@ -43,9 +40,9 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir
+    character(len=:), allocatable :: manifest, lib_dir, profile, compiler_flags, file_scope_flag
 
-    logical :: duplicates_found = .false.
+    logical :: duplicates_found = .false., profile_found
     type(string_t) :: include_dir
 
     model%package_name = package%name
@@ -64,26 +61,10 @@ subroutine build_model(model, settings, package, error)
     end if
 
     if(settings%compiler.eq.'')then
-        model%fortran_compiler = 'gfortran'
+        model%fortran_compiler = DEFAULT_COMPILER
     else
         model%fortran_compiler = settings%compiler
     endif
-
-    model%archiver = get_archiver()
-    call get_default_c_compiler(model%fortran_compiler, model%c_compiler)
-    model%c_compiler = get_env('FPM_C_COMPILER',model%c_compiler)
-
-    if (is_unknown_compiler(model%fortran_compiler)) then
-        write(*, '(*(a:,1x))') &
-            "<WARN>", "Unknown compiler", model%fortran_compiler, "requested!", &
-            "Defaults for this compiler might be incorrect"
-    end if
-    model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
-
-    call get_module_flags(model%fortran_compiler, &
-        & join_path(model%output_directory,model%package_name), &
-        & model%fortran_compile_flags)
-    model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
 
     allocate(model%packages(model%deps%ndep))
 
@@ -151,10 +132,13 @@ subroutine build_model(model, settings, package, error)
             manifest = join_path(dep%proj_dir, "fpm.toml")
 
             call get_package_data(dependency, manifest, error, &
-                apply_defaults=.true.)
+                apply_defaults=.true., proj_dir=dep%proj_dir)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
+            if (allocated(dependency%profiles)) model%packages(i)%profiles = dependency%profiles
+            if (allocated(dep%parent)) model%packages(i)%parent = dep%parent
+
             if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
             if (allocated(dependency%library)) then
@@ -190,11 +174,16 @@ subroutine build_model(model, settings, package, error)
     end do
     if (allocated(error)) return
 
+    if (.not.(trim(settings%flag).eq.'')) then
+        model%cmd_compile_flags = settings%flag
+    else
+        model%cmd_compile_flags = ''
+    end if
+
     if (settings%verbose) then
-        write(*,*)'<INFO> BUILD_NAME: ',settings%build_name
         write(*,*)'<INFO> COMPILER:  ',settings%compiler
         write(*,*)'<INFO> C COMPILER:  ',model%c_compiler
-        write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
+        write(*,*)'<INFO> COMMAND LINE COMPILER OPTIONS:  ', model%cmd_compile_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
      end if
 
@@ -203,6 +192,131 @@ subroutine build_model(model, settings, package, error)
     if (duplicates_found) then
         call fpm_stop(1,'*build_model*:Error: One or more duplicate module names found.')
     end if
+
+    ! Compiler flags logic
+    if(settings%profile.eq.'')then
+        if (trim(settings%flag).eq.'') then
+            profile = 'debug'
+        end if
+    else
+        profile = settings%profile
+    endif
+
+    ! Choose profile for each package
+    if (allocated(profile)) then
+        do i=1,size(model%packages)
+            model%packages(i)%chosen_profile = look_for_profile(i)
+        end do
+    end if
+
+    model%archiver = get_archiver()
+    call get_default_c_compiler(model%fortran_compiler, model%c_compiler)
+    model%c_compiler = get_env('FPM_C_COMPILER',model%c_compiler)
+
+    if (is_unknown_compiler(model%fortran_compiler)) then
+        write(*, '(*(a:,1x))') &
+            "<WARN>", "Unknown compiler", model%fortran_compiler, "requested!", &
+            "Defaults for this compiler might be incorrect"
+    end if
+
+    ! Choose profiles flags or file specific flags
+    do j=1,size(model%packages)
+        associate(package=>model%packages(j), sources=>model%packages(j)%sources, profile=>model%packages(j)%chosen_profile)
+            do i=1,size(sources)
+                select case (sources(i)%unit_type)
+                case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE,FPM_UNIT_PROGRAM)
+                    file_scope_flag = get_file_scope_flags(sources(i), profile)
+                    if (file_scope_flag.eq."") then
+                        if (sources(i)%unit_type.eq.FPM_UNIT_CSOURCE) then
+                            sources(i)%flags=model%cmd_compile_flags//" "//profile%c_flags
+                        else
+                            sources(i)%flags=model%cmd_compile_flags//" "//profile%flags
+                        end if
+                    else
+                        sources(i)%flags=model%cmd_compile_flags//" "//file_scope_flag
+                    end if
+
+                    if (sources(i)%unit_type == FPM_UNIT_PROGRAM) then
+                        sources(i)%link_time_flags=profile%link_time_flags
+                    end if
+                end select
+            end do
+        end associate
+    end do
+
+    contains
+
+    ! Look for an appropriate profile
+    ! If package has specified profile, return it
+    ! If it has just built-in profile, try to find specified one in parents, otherwise return it
+    ! If it has no profiles, try to find one in parents
+    function look_for_profile(package_id) result (chosen_profile)
+        integer, intent(in) :: package_id
+
+        integer :: idx
+        type(profile_config_t), allocatable :: built_in, chosen_profile
+        type(profile_config_t) :: current
+        logical :: profile_found
+
+        idx = package_id
+        associate(pkgs => model%packages)
+            do while (.true.)
+                profile_found = .false.
+                if (allocated(pkgs(idx)%profiles)) then
+                    call find_profile(pkgs(idx)%profiles, profile, model%fortran_compiler, &
+                        & get_os_type(), profile_found, current)
+                    if (profile_found) then
+                        if (current%is_built_in) then
+                            if (.not. allocated(built_in)) then
+                                built_in = current
+                                chosen_profile = current
+                            end if
+                            if (allocated(pkgs(idx)%parent)) then
+                                idx = pkgs(idx)%parent(1)
+                            else
+                                exit
+                            end if
+                        else
+                            chosen_profile = current
+                            return
+                        end if
+                    end if
+                else
+                    if (allocated(pkgs(idx)%parent)) then
+                        idx = pkgs(idx)%parent(1)
+                    else
+                        call fpm_stop(1,'*look_for_profile*:Error: Orphan package does not have any profiles.')
+                    end if
+                end if
+            end do
+        end associate
+        if (.not. allocated(chosen_profile)) call fpm_stop(1,'*look_for_profile*:Error: No profile found.')
+    end function look_for_profile
+
+    function get_file_scope_flags(source, profile) result(file_scope_flag)
+        ! Try to match source%file_name in profile%file_scope_flags
+        !
+        !
+        type(srcfile_t), intent(in) :: source
+        type(profile_config_t), intent(in) :: profile
+
+        character(:), allocatable :: file_scope_flag, current
+        integer :: i
+
+        file_scope_flag = ""
+
+        if (allocated(profile%file_scope_flags)) then
+            associate(fflags=>profile%file_scope_flags)
+                do i=1,size(fflags)
+                    if (source%file_name.eq.fflags(i)%file_name) then
+                        file_scope_flag = fflags(i)%flags//" "
+                        exit
+                    end if
+                end do
+            end associate
+        end if
+    end function get_file_scope_flags
+
 end subroutine build_model
 
 ! Check for duplicate modules
@@ -255,6 +369,7 @@ type(package_config_t) :: package
 type(fpm_model_t) :: model
 type(build_target_ptr), allocatable :: targets(:)
 type(error_t), allocatable :: error
+type(string_t), allocatable :: build_dirs(:)
 
 integer :: i
 
@@ -268,7 +383,7 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:model error:'//error%message)
 end if
 
-call targets_from_sources(targets,model,error)
+call targets_from_sources(targets,model,error,build_dirs)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:target error:'//error%message)
 end if
@@ -280,7 +395,7 @@ if(settings%list)then
 else if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(targets,model)
+    call build_package(targets,model,build_dirs)
 endif
 
 end subroutine
@@ -299,6 +414,7 @@ subroutine cmd_run(settings,test)
     type(string_t), allocatable :: executables(:)
     type(build_target_t), pointer :: exe_target
     type(srcfile_t), pointer :: exe_source
+    type(string_t), allocatable :: build_dirs(:)
     integer :: run_scope
     integer, allocatable :: stat(:)
     character(len=:),allocatable :: line
@@ -314,7 +430,7 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run*:model error:'//error%message)
     end if
 
-    call targets_from_sources(targets,model,error)
+    call targets_from_sources(targets,model,error,build_dirs)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run*:targets error:'//error%message)
     end if
@@ -411,7 +527,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model)
+    call build_package(targets,model,build_dirs)
 
     if (settings%list) then
          call compact_list()

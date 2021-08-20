@@ -47,6 +47,9 @@ Every manifest file consists of the following sections:
     Project library dependencies
   - [*dev-dependencies*](#development-dependencies):
     Dependencies only needed for tests
+- Compiler profiles sections:
+	- [*compiler profiles toml*](#compiler-flags-profiles-toml):
+	- [*compiler profiles hierarchy*](#compiler-flags-profiles-hierarchy):
 - [*install*](#installation-configuration):
   Installation configuration
 - [*extra*](#additional-free-data-field):
@@ -469,6 +472,85 @@ rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"
 
 Development dependencies allow to declare *dev-dependencies* in the manifest root, which are available to all tests but not exported with the project.
 
+## Compiler flags profiles
+### Compiler flags profiles - Toml
+Compiler flags profiles can be declared in the *profiles* table. They are organised into subtables in the following order:
+
+| Subtable | Profile name | Compiler | Operating system |
+|---|:---:|:---:|:---:|
+| Example | `debug` | `gfortran` | `linux` |
+
+- Profile name can be an arbitrary string.
+- Compiler can be a string from the following list:
+	- "gfortran"
+  - "ifort"
+  - "ifx"
+  - "pgfortran"
+  - "nvfortran"
+  - "flang"
+  - "caf"
+  - "f95"
+  - "lfortran"
+  - "lfc"
+  - "nagfor"
+  - "crayftn"
+  - "xlf90"
+  - "ftn95"
+- Operating system can be a lowercase string from the following list:
+  - "linux"
+  - "macos"
+  - "windows"
+  - "cygwin"
+  - "solaris"
+  - "freebsd"
+  - "openbsd"
+  - "unknown"
+
+There are 4 fields that can be specified for each of the profiles:
+- `'flags'` - Fortran compiler flags
+- `'c-flags'` - C compiler flags
+- `'link-time-flags'` - Compiler flags applied at linking time to executables
+- `'files'` - A subtable containing file name-flags pairs with flags applied to single source files (these overwrite profile flags)
+
+An example of a complete table follows:
+```toml
+[profiles.debug.gfortran.linux]
+flags = '-g -Wall'
+files={"source/greet_m.f90"="-Wall -g -fcheck=all", "source/farewell_m.f90"="-Og"}
+```
+
+Both profile name and operating system subtables can be omitted in the definition. In such case the following behaviour is applied:
+- *Profile name* is omitted - Fields of this subtable are added to fields of all profiles with matching compiler and OS definitions (this is not the case for `files` field)
+- *Operating system* is omitted - Fields of this subtable are used if and only if there is no profile with perfectly matching OS definition
+
+Example:
+- The flags field of the following profile is appended to flags fields of all profiles using `gfortran` on `linux` OS
+```toml
+[profiles.gfortran.linux]
+flags = '-g -Wall'
+```
+
+### Compiler flags profiles - Hierarchy
+There are 18 built-in profiles which are implemented in `fpm_manifest_profiles.f90`. They should cover the most used cases. If user wishes to specify their own profiles
+such profiles have priority over the built-in ones. This priority can be propagated to dependencies if they do not specify the profiles.
+
+Example:
+In `example_packages/profiles_priorities`, there are 7 packages in total. The main package is called `main_package` and uses `d1` and `d2`.
+`d1` uses `d11` and `d12` and similarly for `d2`.
+The compiler flags defined in these packages are as follows:
+| Package | Flags specified | Flags used |
+|---|:---:|:---:|
+| `main_package` | `-g` | `-g` |
+| `d1` | `-g -O1` | `-g -O1` |
+| `d11` | `-g -O2` | `-g -O2` |
+| `d12` | *none* | `-g -O1` |
+| `d2` | *none* | `-g` |
+| `d11` | `-g -O2` | `-g -O2` |
+| `d12` | *none* | `-g` |
+
+As `d12`, `d2` and `d22` do not specify any profiles in their `fpm.toml`, they inherit profile from their parents.
+For `d12` the first ancestor with specified profiles is `d1`, therefore it inherits flags `-g -O1`.
+The parent of `d22` is `d2` which does not have profiles specified, therefore, both of them inherit `-g` from the main package.
 
 ## Installation configuration
 

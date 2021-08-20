@@ -1,0 +1,16 @@
+name = "d2"
+
+[library]
+source-dir="source"
+
+[[executable]]
+name="d2"
+source-dir="app"
+main="d2.F90"
+
+[dependencies]
+"d21" = {path = "../d21"}
+"d22" = {path = "../d22"}
+
+
+
