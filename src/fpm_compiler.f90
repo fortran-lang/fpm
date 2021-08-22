@@ -11,7 +11,7 @@
 ! PGI               pgfortran  pgcc    -module         -I            -mp        X
 ! NVIDIA            nvfortran  nvc     -module         -I            -mp        X
 ! LLVM flang        flang      clang   -module         -I            -mp        X
-! LFortran          lfortran   ---     ?               ?             ?          X
+! LFortran          lfortran   any     -J              -I            --openmp   X
 ! Lahey/Futjitsu    lfc        ?       -M              -I            -openmp    ?
 ! NAG               nagfor     ?       -mdir           -I            -openmp    x
 ! Cray              crayftn    craycc  -J              -I            -homp      ?
