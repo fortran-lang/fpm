@@ -446,6 +446,9 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     case(id_lfortran)
         c_compiler = 'cc'
 
+    case(id_gcc)
+        c_compiler = 'gcc'
+
     case default
         ! Fall-back to using Fortran compiler
         c_compiler = f_compiler
