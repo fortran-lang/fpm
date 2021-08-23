@@ -11,7 +11,7 @@
 ! PGI               pgfortran  pgcc    -module         -I            -mp        X
 ! NVIDIA            nvfortran  nvc     -module         -I            -mp        X
 ! LLVM flang        flang      clang   -module         -I            -mp        X
-! LFortran          lfortran   ---     ?               ?             ?          X
+! LFortran          lfortran   ---     -J              -I            --openmp   X
 ! Lahey/Futjitsu    lfc        ?       -M              -I            -openmp    ?
 ! NAG               nagfor     ?       -mdir           -I            -openmp    x
 ! Cray              crayftn    craycc  -J              -I            -homp      ?
@@ -268,6 +268,8 @@ subroutine get_release_compile_flags(id, flags)
             flag_nag_coarray//&
             flag_nag_pic
 
+    case(id_lfortran)
+        flags = ""
     end select
 end subroutine get_release_compile_flags
 
@@ -356,6 +358,9 @@ subroutine get_debug_compile_flags(id, flags)
             flag_nag_backtrace//&
             flag_nag_coarray//&
             flag_nag_pic
+
+    case(id_lfortran)
+        flags = ""
     end select
 end subroutine get_debug_compile_flags
 
@@ -370,7 +375,8 @@ function get_include_flag(self, path) result(flags)
 
     case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, id_flang, &
         & id_intel_classic_nix, id_intel_classic_mac, &
-        & id_intel_llvm_nix, id_lahey, id_nag, id_ibmxl)
+        & id_intel_llvm_nix, id_lahey, id_nag, id_ibmxl, &
+        & id_lfortran)
         flags = "-I "//path
 
     case(id_intel_classic_windows, id_intel_llvm_windows)
@@ -388,7 +394,7 @@ function get_module_flag(self, path) result(flags)
     case default
         flags = "-module "//path
 
-    case(id_caf, id_gcc, id_f95, id_cray)
+    case(id_caf, id_gcc, id_f95, id_cray, id_lfortran)
         flags = "-J "//path
 
     case(id_nvhpc, id_pgi, id_flang)
@@ -556,7 +562,7 @@ function get_id(compiler) result(id)
         return
     end if
 
-    if (check_compiler(compiler, "lfort")) then
+    if (check_compiler(compiler, "lfortran")) then
         id = id_lfortran
         return
     end if
