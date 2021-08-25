@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.6% of total for procedures.">116 statements</a>
+    title=" 3.6% of total for procedures.">120 statements</a>
      </li> 
      
      
@@ -183,9 +183,13 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../proc/build_model.html#variable-build_name">build_name</a>
+      
       <a class="list-group-item" href="../proc/build_model.html#variable-dependency~4">dependency</a>
       
       <a class="list-group-item" href="../proc/build_model.html#variable-duplicates_found">duplicates_found</a>
+      
+      <a class="list-group-item" href="../proc/build_model.html#variable-flags~6">flags</a>
       
       <a class="list-group-item" href="../proc/build_model.html#variable-i~23">i</a>
       
@@ -340,9 +344,13 @@ public subroutine build_model(model, settings, package, error)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../proc/build_model.html#variable-build_name">build_name</a>
+      
       <a class="list-group-item" href="../proc/build_model.html#variable-dependency~4">dependency</a>
       
       <a class="list-group-item" href="../proc/build_model.html#variable-duplicates_found">duplicates_found</a>
+      
+      <a class="list-group-item" href="../proc/build_model.html#variable-flags~6">flags</a>
       
       <a class="list-group-item" href="../proc/build_model.html#variable-i~23">i</a>
       
@@ -410,6 +418,20 @@ public subroutine build_model(model, settings, package, error)
   
 <tr>
   
+  <td><span class="anchor" id="variable-build_name"></span>character(len=16),</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>build_name</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-dependency~4"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
   
   <td>public</td>
@@ -429,6 +451,20 @@ public subroutine build_model(model, settings, package, error)
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>duplicates_found</strong></td><td> =</td><td>.false.</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flags~6"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>flags</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -535,10 +571,11 @@ public subroutine build_model(model, settings, package, error)
 
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
     <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dependency</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">manifest</span><span class="p">,</span> <span class="n">lib_dir</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">manifest</span><span class="p">,</span> <span class="n">lib_dir</span><span class="p">,</span> <span class="n">flags</span>
 
     <span class="kt">logical</span> <span class="kd">::</span> <span class="n">duplicates_found</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">include_dir</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span> <span class="kd">::</span> <span class="n">build_name</span>
 
     <span class="n">model</span><span class="p">%</span><span class="n">package_name</span> <span class="o">=</span> <span class="n">package</span><span class="p">%</span><span class="n">name</span>
 
@@ -555,27 +592,30 @@ public subroutine build_model(model, settings, package, error)
 <span class="k">      call </span><span class="n">filewrite</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="s2">&quot;.gitignore&quot;</span><span class="p">),[</span><span class="s2">&quot;*&quot;</span><span class="p">])</span>
     <span class="k">end if</span>
 
-<span class="k">    if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">compiler</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
-<span class="k">        </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span> <span class="o">=</span> <span class="s1">&#39;gfortran&#39;</span>
+<span class="k">    call </span><span class="n">new_compiler</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">,</span> <span class="n">settings</span><span class="p">%</span><span class="n">compiler</span><span class="p">)</span>
+    <span class="k">call </span><span class="n">new_archiver</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">archiver</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">flag</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">        </span><span class="n">flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">get_default_flags</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span> <span class="o">==</span> <span class="s2">&quot;release&quot;</span><span class="p">)</span>
     <span class="k">else</span>
-<span class="k">        </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span> <span class="o">=</span> <span class="n">settings</span><span class="p">%</span><span class="n">compiler</span>
-    <span class="k">endif</span>
+<span class="k">        </span><span class="n">flags</span> <span class="o">=</span> <span class="n">settings</span><span class="p">%</span><span class="n">flag</span>
+        <span class="k">select case</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span><span class="p">)</span>
+        <span class="k">case</span><span class="p">(</span><span class="s2">&quot;release&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">)</span>
+            <span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">get_default_flags</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">profile</span> <span class="o">==</span> <span class="s2">&quot;release&quot;</span><span class="p">)</span>
+        <span class="k">end select</span>
+<span class="k">    end if</span>
 
-<span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">archiver</span> <span class="o">=</span> <span class="n">get_archiver</span><span class="p">()</span>
-    <span class="k">call </span><span class="n">get_default_c_compiler</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">c_compiler</span><span class="p">)</span>
-    <span class="n">model</span><span class="p">%</span><span class="n">c_compiler</span> <span class="o">=</span> <span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;FPM_C_COMPILER&#39;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">c_compiler</span><span class="p">)</span>
+<span class="k">    write</span><span class="p">(</span><span class="n">build_name</span><span class="p">,</span> <span class="s1">&#39;(z16.16)&#39;</span><span class="p">)</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">is_unknown_compiler</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span><span class="p">))</span> <span class="k">then</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">is_unknown</span><span class="p">())</span> <span class="k">then</span>
 <span class="k">        write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="s1">&#39;(*(a:,1x))&#39;</span><span class="p">)</span> <span class="p">&amp;</span>
-            <span class="s2">&quot;&lt;WARN&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown compiler&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span><span class="p">,</span> <span class="s2">&quot;requested!&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+            <span class="s2">&quot;&lt;WARN&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown compiler&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span><span class="p">,</span> <span class="s2">&quot;requested!&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="s2">&quot;Defaults for this compiler might be incorrect&quot;</span>
     <span class="k">end if</span>
-<span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;_&#39;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">build_name</span><span class="p">)</span>
+<span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;_&#39;</span><span class="o">//</span><span class="n">build_name</span><span class="p">)</span>
 
-    <span class="k">call </span><span class="n">get_module_flags</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
-        <span class="p">&amp;</span> <span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">),</span> <span class="p">&amp;</span>
-        <span class="p">&amp;</span> <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span><span class="p">)</span>
-    <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span> <span class="o">=</span> <span class="n">settings</span><span class="p">%</span><span class="n">flag</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span>
+    <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span> <span class="o">=</span> <span class="n">flags</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="p">&amp;</span>
+        <span class="p">&amp;</span> <span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">get_module_flag</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">output_directory</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">package_name</span><span class="p">))</span>
 
     <span class="k">allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="p">))</span>
 
@@ -683,9 +723,9 @@ public subroutine build_model(model, settings, package, error)
 <span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
 
 <span class="k">    if</span> <span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt; BUILD_NAME: &#39;</span><span class="p">,</span><span class="n">settings</span><span class="p">%</span><span class="n">build_name</span>
-        <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt; COMPILER:  &#39;</span><span class="p">,</span><span class="n">settings</span><span class="p">%</span><span class="n">compiler</span>
-        <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt; C COMPILER:  &#39;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">c_compiler</span>
+<span class="k">        write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt; BUILD_NAME: &#39;</span><span class="p">,</span><span class="n">build_name</span>
+        <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt; COMPILER:  &#39;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span>
+        <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt; C COMPILER:  &#39;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">cc</span>
         <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt; COMPILER OPTIONS:  &#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span>
         <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt; INCLUDE DIRECTORIES:  [&#39;</span><span class="p">,</span> <span class="n">string_cat</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">include_dirs</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="p">),</span><span class="s1">&#39;]&#39;</span>
      <span class="k">end if</span>
@@ -718,7 +758,7 @@ public subroutine build_model(model, settings, package, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-19 12:19  
+             on 2021-08-25 19:44  
             
           </p>
         </div>

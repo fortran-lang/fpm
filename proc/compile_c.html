@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>get_module_flags &ndash; Fortran-lang/fpm</title>
+    <title>compile_c &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -119,7 +119,7 @@
     
   
   <div class="row">
-    <h1>get_module_flags
+    <h1>compile_c
       <small>Subroutine</small>
     
     </h1>
@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.8% of total for procedures.">25 statements</a>
+    title=" 0.2% of total for procedures.">8 statements</a>
      </li> 
      
      
@@ -155,7 +155,7 @@
      <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
     
   
-     <li class="active">get_module_flags</li>
+     <li class="active">compile_c</li>
   </ol>
 </div>
 </div>
@@ -178,18 +178,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
-  <div id="vars-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/get_module_flags.html#variable-id~5">id</a>
-      
-    </div>
-  </div>
-</div>
-
-
 
 
 
@@ -211,7 +199,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/get_module_flags.html#src">get_module_flags</a>
+    <a class="list-group-item" href="../proc/compile_c.html#src">compile_c</a>
   </div>
 </div>
 
@@ -223,7 +211,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine get_module_flags(compiler, modpath, flags)
+public subroutine compile_c(self, input, output, args, stat)
     
     
    
@@ -232,6 +220,8 @@ public subroutine get_module_flags(compiler, modpath, flags)
   
 
 
+    
+    <p>Compile a C object</p>
     
 
     <h3>Arguments</h3>
@@ -252,12 +242,12 @@ public subroutine get_module_flags(compiler, modpath, flags)
   
 <tr>
   
-  <td><span class="anchor" id="variable-compiler~6"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-self~7"></span>class(<a href='../type/compiler_t.html'>compiler_t</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>compiler</strong></td><td></td>
+  <td><strong>self</strong></td><td><p>Instance of the compiler object</p></td>
   
 </tr>
 
@@ -267,12 +257,12 @@ public subroutine get_module_flags(compiler, modpath, flags)
   
 <tr>
   
-  <td><span class="anchor" id="variable-modpath"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-input"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>modpath</strong></td><td></td>
+  <td><strong>input</strong></td><td><p>Source file input</p></td>
   
 </tr>
 
@@ -282,12 +272,42 @@ public subroutine get_module_flags(compiler, modpath, flags)
   
 <tr>
   
-  <td><span class="anchor" id="variable-flags~3"></span>character(len=:),</td>
-  <td>intent(out),</td>
+  <td><span class="anchor" id="variable-output~2"></span>character(len=*),</td>
+  <td>intent(in)</td>
   <td></td>
   
-  <td>allocatable</td><td>::</td>
-  <td><strong>flags</strong></td><td></td>
+  <td></td><td>::</td>
+  <td><strong>output</strong></td><td><p>Output file of object</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-args~2"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>args</strong></td><td><p>Arguments for compiler</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-stat~4"></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>stat</strong></td><td><p>Status flag</p></td>
   
 </tr>
 
@@ -306,18 +326,6 @@ public subroutine get_module_flags(compiler, modpath, flags)
 <h3>Contents</h3>
  
 
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
-  <div id="vars-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/get_module_flags.html#variable-id~5">id</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -341,7 +349,7 @@ public subroutine get_module_flags(compiler, modpath, flags)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/get_module_flags.html#src">get_module_flags</a>
+    <a class="list-group-item" href="../proc/compile_c.html#src">compile_c</a>
   </div>
 </div>
 
@@ -352,38 +360,6 @@ public subroutine get_module_flags(compiler, modpath, flags)
 
     
 
-    
-    <section>    
-      <h2>Variables</h2>
-    
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-id~5"></span>integer(kind=compiler_enum),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>id</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-    </section>
-    <br>
     
     
     
@@ -402,42 +378,21 @@ public subroutine get_module_flags(compiler, modpath, flags)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">get_module_flags</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="n">modpath</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">modpath</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">flags</span>
-    <span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">compile_c</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
+    <span class="c">!&gt; Instance of the compiler object</span>
+    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+    <span class="c">!&gt; Source file input</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">input</span>
+    <span class="c">!&gt; Output file of object</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
+    <span class="c">!&gt; Arguments for compiler</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span>
+    <span class="c">!&gt; Status flag</span>
+    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
 
-    <span class="n">id</span> <span class="o">=</span> <span class="n">get_compiler_id</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
-
-    <span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
-    <span class="k">case </span><span class="n">default</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span>
-
-    <span class="k">case</span><span class="p">(</span><span class="n">id_caf</span><span class="p">,</span> <span class="n">id_gcc</span><span class="p">,</span> <span class="n">id_f95</span><span class="p">,</span> <span class="n">id_cray</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39; -J &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span>
-
-    <span class="k">case</span><span class="p">(</span><span class="n">id_nvhpc</span><span class="p">,</span> <span class="n">id_pgi</span><span class="p">,</span> <span class="n">id_flang</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span>
-
-    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span> <span class="n">id_intel_classic_mac</span><span class="p">,</span> <span class="n">id_intel_classic_unknown</span><span class="p">,</span> <span class="n">id_intel_llvm_nix</span><span class="p">,</span> <span class="n">id_intel_llvm_unknown</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39; -module &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I&#39;</span><span class="o">//</span><span class="n">modpath</span>
-
-    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span> <span class="n">id_intel_llvm_windows</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39; /module:&#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; /I&#39;</span><span class="o">//</span><span class="n">modpath</span>
-
-    <span class="k">case</span><span class="p">(</span><span class="n">id_lahey</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39; -M &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span>
-
-    <span class="k">case</span><span class="p">(</span><span class="n">id_nag</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39; -mdir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span> <span class="c">!</span>
-
-    <span class="k">case</span><span class="p">(</span><span class="n">id_ibmxl</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39; -qmoddir &#39;</span><span class="o">//</span><span class="n">modpath</span><span class="o">//</span><span class="s1">&#39; -I &#39;</span><span class="o">//</span><span class="n">modpath</span>
-
-    <span class="k">end select</span>
-
-<span class="k">end subroutine </span><span class="n">get_module_flags</span>
+<span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span> <span class="o">//</span> <span class="s2">&quot; -c &quot;</span> <span class="o">//</span> <span class="n">input</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">args</span> <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="n">output</span><span class="p">,</span> <span class="p">&amp;</span>
+        <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="k">end subroutine </span><span class="n">compile_c</span>
 </pre></div>
 
     </section>
@@ -460,7 +415,7 @@ public subroutine get_module_flags(compiler, modpath, flags)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-19 12:19  
+             on 2021-08-25 19:44  
             
           </p>
         </div>

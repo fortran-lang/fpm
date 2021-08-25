@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.9% of total for procedures.">28 statements</a>
+    title=" 0.9% of total for procedures.">30 statements</a>
      </li> 
      
      
@@ -240,7 +240,7 @@ public subroutine get_debug_compile_flags(id, flags)
   
 <tr>
   
-  <td><span class="anchor" id="variable-id~2"></span>integer(kind=compiler_enum),</td>
+  <td><span class="anchor" id="variable-id~4"></span>integer(kind=compiler_enum),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -255,7 +255,7 @@ public subroutine get_debug_compile_flags(id, flags)
   
 <tr>
   
-  <td><span class="anchor" id="variable-flags"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-flags~4"></span>character(len=:),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -339,108 +339,86 @@ public subroutine get_debug_compile_flags(id, flags)
     <span class="k">case </span><span class="n">default</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_caf</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -Wall&amp;</span>
-<span class="s1">            &amp; -Wextra&amp;</span>
-<span class="s1">            &amp; -Wimplicit-interface&amp;</span>
-<span class="s1">            &amp; -fPIC -fmax-errors=1&amp;</span>
-<span class="s1">            &amp; -g&amp;</span>
-<span class="s1">            &amp; -fcheck=bounds&amp;</span>
-<span class="s1">            &amp; -fcheck=array-temps&amp;</span>
-<span class="s1">            &amp; -fbacktrace&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_gnu_warn</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_debug</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_check</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_backtrace</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_gcc</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -Wall&amp;</span>
-<span class="s1">            &amp; -Wextra&amp;</span>
-<span class="s1">            &amp; -Wimplicit-interface&amp;</span>
-<span class="s1">            &amp; -fPIC -fmax-errors=1&amp;</span>
-<span class="s1">            &amp; -g&amp;</span>
-<span class="s1">            &amp; -fcheck=bounds&amp;</span>
-<span class="s1">            &amp; -fcheck=array-temps&amp;</span>
-<span class="s1">            &amp; -fbacktrace&amp;</span>
-<span class="s1">            &amp; -fcoarray=single&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_gnu_warn</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_debug</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_check</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_backtrace</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_coarray</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_f95</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -Wall&amp;</span>
-<span class="s1">            &amp; -Wextra&amp;</span>
-<span class="s1">            &amp; -Wimplicit-interface&amp;</span>
-<span class="s1">            &amp; -fPIC -fmax-errors=1&amp;</span>
-<span class="s1">            &amp; -g&amp;</span>
-<span class="s1">            &amp; -fcheck=bounds&amp;</span>
-<span class="s1">            &amp; -fcheck=array-temps&amp;</span>
-<span class="s1">            &amp; -Wno-maybe-uninitialized -Wno-uninitialized&amp;</span>
-<span class="s1">            &amp; -fbacktrace&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_gnu_warn</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_debug</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_check</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="s1">&#39; -Wno-maybe-uninitialized -Wno-uninitialized&#39;</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_backtrace</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_nvhpc</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -Minform=inform&amp;</span>
-<span class="s1">            &amp; -Mbackslash&amp;</span>
-<span class="s1">            &amp; -g&amp;</span>
-<span class="s1">            &amp; -Mbounds&amp;</span>
-<span class="s1">            &amp; -Mchkptr&amp;</span>
-<span class="s1">            &amp; -Mchkstk&amp;</span>
-<span class="s1">            &amp; -traceback&amp;</span>
-<span class="s1">            &amp;&#39;</span>
-    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span> <span class="n">id_intel_classic_unknown</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -warn all&amp;</span>
-<span class="s1">            &amp; -check all&amp;</span>
-<span class="s1">            &amp; -error-limit 1&amp;</span>
-<span class="s1">            &amp; -O0&amp;</span>
-<span class="s1">            &amp; -g&amp;</span>
-<span class="s1">            &amp; -assume byterecl&amp;</span>
-<span class="s1">            &amp; -traceback&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_pgi_warn</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_pgi_backslash</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_pgi_check</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_pgi_traceback</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_warn</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_check</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_debug</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_backtrace</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_mac</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -warn all&amp;</span>
-<span class="s1">            &amp; -check all&amp;</span>
-<span class="s1">            &amp; -error-limit 1&amp;</span>
-<span class="s1">            &amp; -O0&amp;</span>
-<span class="s1">            &amp; -g&amp;</span>
-<span class="s1">            &amp; -assume byterecl&amp;</span>
-<span class="s1">            &amp; -traceback&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_warn</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_check</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_debug</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_backtrace</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; /warn:all&amp;</span>
-<span class="s1">            &amp; /check:all&amp;</span>
-<span class="s1">            &amp; /error-limit:1&amp;</span>
-<span class="s1">            &amp; /Od&amp;</span>
-<span class="s1">            &amp; /Z7&amp;</span>
-<span class="s1">            &amp; /assume:byterecl&amp;</span>
-<span class="s1">            &amp; /traceback&amp;</span>
-<span class="s1">            &amp;&#39;</span>
-    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">,</span> <span class="n">id_intel_llvm_unknown</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -warn all&amp;</span>
-<span class="s1">            &amp; -check all&amp;</span>
-<span class="s1">            &amp; -error-limit 1&amp;</span>
-<span class="s1">            &amp; -O0&amp;</span>
-<span class="s1">            &amp; -g&amp;</span>
-<span class="s1">            &amp; -assume byterecl&amp;</span>
-<span class="s1">            &amp; -traceback&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_warn_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_check_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_debug_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_backtrace_win</span>
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_warn</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_check</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_debug</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_backtrace</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; /warn:all&amp;</span>
-<span class="s1">            &amp; /check:all&amp;</span>
-<span class="s1">            &amp; /error-limit:1&amp;</span>
-<span class="s1">            &amp; /Od&amp;</span>
-<span class="s1">            &amp; /Z7&amp;</span>
-<span class="s1">            &amp; /assume:byterecl&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_warn_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_check_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_debug_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl_win</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_nag</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -g&amp;</span>
-<span class="s1">            &amp; -C=all&amp;</span>
-<span class="s1">            &amp; -O0&amp;</span>
-<span class="s1">            &amp; -gline&amp;</span>
-<span class="s1">            &amp; -coarray=single&amp;</span>
-<span class="s1">            &amp; -PIC&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_nag_debug</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_nag_check</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_nag_backtrace</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_nag_coarray</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_nag_pic</span>
+
+    <span class="k">case</span><span class="p">(</span><span class="n">id_lfortran</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">end select</span>
 <span class="k">end subroutine </span><span class="n">get_debug_compile_flags</span>
 </pre></div>
@@ -465,7 +443,7 @@ public subroutine get_debug_compile_flags(id, flags)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-19 12:19  
+             on 2021-08-25 19:44  
             
           </p>
         </div>

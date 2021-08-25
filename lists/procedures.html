@@ -170,6 +170,16 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/cmd_update.html'>cmd_update</a></td><td><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></td><td>Subroutine</td><td><p>Entry point for the update subcommand</p></td></tr>
 			 
+			   <tr><td><a href='../proc/compile_c.html'>compile_c</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a C object</p></td></tr>
+			 
+			   <tr><td><a href='../proc/compile_fortran.html'>compile_fortran</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a Fortran object</p></td></tr>
+			 
+			   <tr><td><a href='../interface/debug.html'>debug</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Interface</td><td><p>Create debug printout</p></td></tr>
+			 
+			   <tr><td><a href='../proc/debug_archiver.html'>debug_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>String representation of an archiver object</p></td></tr>
+			 
+			   <tr><td><a href='../proc/debug_compiler.html'>debug_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>String representation of a compiler object</p></td></tr>
+			 
 			   <tr><td><a href='../proc/default_example.html'>default_example</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate test in case we find the default example/ directory</p></td></tr>
 			 
 			   <tr><td><a href='../proc/default_executable.html'>default_executable</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate executable in case we find the default app directory</p></td></tr>
@@ -205,8 +215,6 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/fpm_stop.html'>fpm_stop</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/get_archiver.html'>get_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_command_arguments_quoted.html'>get_command_arguments_quoted</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/get_command_line_settings.html'>get_command_line_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td>Subroutine</td><td><p>! canon_path is not converting &ldquo;.&rdquo;, etc.
@@ -220,16 +228,20 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/get_default_c_compiler.html'>get_default_c_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/get_default_compile_flags.html'>get_default_compile_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
+			   <tr><td><a href='../proc/get_default_flags.html'>get_default_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/get_env.html'>get_env</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>get named environment variable value. It it is blank or
  not set return the optional default value
 !print <em>, NAME, &rdquo; is not defined in the environment. Strange&hellip;&rdquo;
 !print </em>, &ldquo;This processor doesn&rsquo;t support environment variables. Boooh!&rdquo;</p></td></tr>
 			 
+			   <tr><td><a href='../proc/get_id.html'>get_id</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
+			 
+			   <tr><td><a href='../proc/get_include_flag.html'>get_include_flag</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
+			 
 			   <tr><td><a href='../proc/get_list.html'>get_list</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/get_module_flags.html'>get_module_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
+			   <tr><td><a href='../proc/get_module_flag.html'>get_module_flag</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/get_os_type.html'>get_os_type</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>Determine the OS type</p><a href="../proc/get_os_type.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
@@ -270,7 +282,7 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/is_fortran_name.html'>is_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/is_unknown_compiler.html'>is_unknown_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/is_unknown.html'>is_unknown</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/join.html'>join</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>JOIN(3f) appends the elements of a CHARACTER array into a single
    CHARACTER variable, with elements 1 to N joined from left to right.
@@ -281,13 +293,21 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../interface/len_trim.html'>len_trim</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			 
+			   <tr><td><a href='../proc/link.html'>link</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Link an executable</p></td></tr>
+			 
 			   <tr><td><a href='../proc/list_files.html'>list_files</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
 			   <tr><td><a href='../proc/lower.html'>lower</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Changes a string to lowercase over optional specified column range</p></td></tr>
 			 
+			   <tr><td><a href='../proc/make_archive.html'>make_archive</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create an archive</p></td></tr>
+			 
 			   <tr><td><a href='../proc/mkdir.html'>mkdir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Create a directory. Create subdirectories as needed</p></td></tr>
 			 
+			   <tr><td><a href='../proc/new_archiver.html'>new_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new archiver instance</p></td></tr>
+			 
 			   <tr><td><a href='../proc/new_build_config.html'>new_build_config</a></td><td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td><td>Subroutine</td><td><p>Construct a new build configuration from a TOML data structure</p></td></tr>
+			 
+			   <tr><td><a href='../proc/new_compiler.html'>new_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new compiler instance</p></td></tr>
 			 
 			   <tr><td><a href='../proc/new_dependencies.html'>new_dependencies</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct new dependency array from a TOML data structure</p></td></tr>
 			 
@@ -384,6 +404,11 @@ All Procedures &ndash; Fortran-lang/fpm
 			 
 			   <tr><td><a href='../proc/windows_path.html'>windows_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for windows</p></td></tr>
 			 
+			   <tr><td><a href='../proc/write_response_file.html'>write_response_file</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Response files allow to read command line options from files.
+ Whitespace is used to separate the arguments, we will use newlines
+ as separator to create readable response files which can be inspected
+ in case of errors.</p></td></tr>
+			 
 			 </tbody></table>
              
         </div>
@@ -401,7 +426,7 @@ All Procedures &ndash; Fortran-lang/fpm
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-19 12:19  
+             on 2021-08-25 19:44  
             
           </p>
         </div>

@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>get_archiver &ndash; Fortran-lang/fpm</title>
+    <title>write_response_file &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -119,8 +119,8 @@
     
   
   <div class="row">
-    <h1>get_archiver
-      <small>Function</small>
+    <h1>write_response_file
+      <small>Subroutine</small>
     
     </h1>
     
@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.5% of total for procedures.">15 statements</a>
+    title=" 0.3% of total for procedures.">10 statements</a>
      </li> 
      
      
@@ -155,7 +155,7 @@
      <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
     
   
-     <li class="active">get_archiver</li>
+     <li class="active">write_response_file</li>
   </ol>
 </div>
 </div>
@@ -183,9 +183,9 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/get_archiver.html#variable-estat">estat</a>
+      <a class="list-group-item" href="../proc/write_response_file.html#variable-iarg">iarg</a>
       
-      <a class="list-group-item" href="../proc/get_archiver.html#variable-os_type">os_type</a>
+      <a class="list-group-item" href="../proc/write_response_file.html#variable-io~2">io</a>
       
     </div>
   </div>
@@ -210,6 +210,14 @@
 
 
 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/write_response_file.html#src">write_response_file</a>
+  </div>
+</div>
+
+
 
 </div>
 
@@ -217,7 +225,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public function get_archiver() result(archiver)
+public subroutine write_response_file(name, argv)
     
     
    
@@ -227,20 +235,57 @@ public function get_archiver() result(archiver)
 
 
     
+    <p>Response files allow to read command line options from files.
+ Whitespace is used to separate the arguments, we will use newlines
+ as separator to create readable response files which can be inspected
+ in case of errors.</p>
+    
 
     <h3>Arguments</h3>
     
-    <em>None</em>
-    <br>
-    
-    
-    
-    
-    
-    
-    
-   <h3>Return Value <small><span class="anchor" id="variable-archiver~2"></span>character(len=:),
-  allocatable</small></h3>
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-name~8"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>name</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-argv"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>argv</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
     
     
     
@@ -260,9 +305,9 @@ public function get_archiver() result(archiver)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/get_archiver.html#variable-estat">estat</a>
+      <a class="list-group-item" href="../proc/write_response_file.html#variable-iarg">iarg</a>
       
-      <a class="list-group-item" href="../proc/get_archiver.html#variable-os_type">os_type</a>
+      <a class="list-group-item" href="../proc/write_response_file.html#variable-io~2">io</a>
       
     </div>
   </div>
@@ -285,6 +330,14 @@ public function get_archiver() result(archiver)
 
 
 
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/write_response_file.html#src">write_response_file</a>
+  </div>
+</div>
 
 
 
@@ -312,11 +365,11 @@ public function get_archiver() result(archiver)
   
 <tr>
   
-  <td><span class="anchor" id="variable-estat"></span>integer,</td>
+  <td><span class="anchor" id="variable-iarg"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>estat</strong></td><td></td><td></td><td></td>
+  <td><strong>iarg</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -326,11 +379,11 @@ public function get_archiver() result(archiver)
   
 <tr>
   
-  <td><span class="anchor" id="variable-os_type"></span>integer,</td>
+  <td><span class="anchor" id="variable-io~2"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>os_type</strong></td><td></td><td></td><td></td>
+  <td><strong>io</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -355,6 +408,25 @@ public function get_archiver() result(archiver)
     
     
     
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">argv</span><span class="p">(:)</span>
+
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">iarg</span><span class="p">,</span> <span class="n">io</span>
+
+    <span class="k">open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">)</span>
+    <span class="k">do </span><span class="n">iarg</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+        <span class="k">write</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="s1">&#39;(a)&#39;</span><span class="p">)</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">argv</span><span class="p">(</span><span class="n">iarg</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">end do</span>
+<span class="k">    close</span><span class="p">(</span><span class="n">io</span><span class="p">)</span>
+<span class="k">end subroutine </span><span class="n">write_response_file</span>
+</pre></div>
+
+    </section>
+    <br>
+    
     
     </div>
   </div>
@@ -372,7 +444,7 @@ public function get_archiver() result(archiver)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-19 12:19  
+             on 2021-08-25 19:44  
             
           </p>
         </div>

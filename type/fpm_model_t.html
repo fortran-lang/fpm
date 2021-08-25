@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 5.3% of total for derived types.</p>Including implementation: 13 statements,  0.9% of total for derived types.">13 statements</a>
+    title="<p> 4.6% of total for derived types.</p>Including implementation: 12 statements,  0.7% of total for derived types.">12 statements</a>
      </li> 
      
      
@@ -185,15 +185,13 @@
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-archiver">archiver</a>
       
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-c_compiler">c_compiler</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-compiler">compiler</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-deps">deps</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-external_modules">external_modules</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compile_flags">fortran_compile_flags</a>
-      
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compiler">fortran_compiler</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_dirs">include_dirs</a>
       
@@ -264,15 +262,13 @@
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-archiver">archiver</a>
       
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-c_compiler">c_compiler</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-compiler">compiler</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-deps">deps</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-external_modules">external_modules</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compile_flags">fortran_compile_flags</a>
-      
-      <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compiler">fortran_compiler</a>
       
       <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_dirs">include_dirs</a>
       
@@ -338,11 +334,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-archiver"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-archiver"></span>type(<a href='../type/archiver_t.html'>archiver_t</a>),</td>
   
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>archiver</strong></td><td></td><td></td><td><p>Command line to invoke for creating static library</p></td>
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>archiver</strong></td><td></td><td></td><td><p>Archiver object</p></td>
   
 </tr>
 
@@ -352,11 +348,11 @@
   
 <tr>
   
-  <td><span class="anchor" id="variable-c_compiler"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-compiler"></span>type(<a href='../type/compiler_t.html'>compiler_t</a>),</td>
   
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>c_compiler</strong></td><td></td><td></td><td><p>Command line name to invoke c compiler</p></td>
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>compiler</strong></td><td></td><td></td><td><p>Compiler object</p></td>
   
 </tr>
 
@@ -399,20 +395,6 @@
   <td>public,</td>
   <td>allocatable</td><td>::</td>
   <td><strong>fortran_compile_flags</strong></td><td></td><td></td><td><p>Command line flags passed to fortran for compilation</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-fortran_compiler"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>fortran_compiler</strong></td><td></td><td></td><td><p>Command line name to invoke fortran compiler</p></td>
   
 </tr>
 
@@ -510,14 +492,11 @@
     <span class="c">!&gt; Array of packages (including the root package)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">package_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">packages</span><span class="p">(:)</span>
 
-    <span class="c">!&gt; Command line name to invoke fortran compiler</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fortran_compiler</span>
+    <span class="c">!&gt; Compiler object</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
 
-    <span class="c">!&gt; Command line to invoke for creating static library</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">archiver</span>
-
-    <span class="c">!&gt; Command line name to invoke c compiler</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">c_compiler</span>
+    <span class="c">!&gt; Archiver object</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">archiver</span>
 
     <span class="c">!&gt; Command line flags passed to fortran for compilation</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fortran_compile_flags</span>
@@ -559,7 +538,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-19 12:19  
+             on 2021-08-25 19:44  
             
           </p>
         </div>

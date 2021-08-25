@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.9% of total for procedures.">28 statements</a>
+    title=" 0.9% of total for procedures.">30 statements</a>
      </li> 
      
      
@@ -255,7 +255,7 @@ public subroutine get_release_compile_flags(id, flags)
   
 <tr>
   
-  <td><span class="anchor" id="variable-flags~4"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-flags~5"></span>character(len=:),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -335,93 +335,89 @@ public subroutine get_release_compile_flags(id, flags)
     <span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">flags</span>
 
+
     <span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
     <span class="k">case </span><span class="n">default</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">case</span><span class="p">(</span><span class="n">id_caf</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -O3&amp;</span>
-<span class="s1">            &amp; -Wimplicit-interface&amp;</span>
-<span class="s1">            &amp; -fPIC&amp;</span>
-<span class="s1">            &amp; -fmax-errors=1&amp;</span>
-<span class="s1">            &amp; -funroll-loops&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_gnu_opt</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_external</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_limit</span>
+
     <span class="k">case</span><span class="p">(</span><span class="n">id_gcc</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -O3&amp;</span>
-<span class="s1">            &amp; -Wimplicit-interface&amp;</span>
-<span class="s1">            &amp; -fPIC&amp;</span>
-<span class="s1">            &amp; -fmax-errors=1&amp;</span>
-<span class="s1">            &amp; -funroll-loops&amp;</span>
-<span class="s1">            &amp; -fcoarray=single&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_gnu_opt</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_external</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_coarray</span>
+
     <span class="k">case</span><span class="p">(</span><span class="n">id_f95</span><span class="p">)</span>
-        <span class="n">flags</span><span class="o">=</span><span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -O3&amp;</span>
-<span class="s1">            &amp; -Wimplicit-interface&amp;</span>
-<span class="s1">            &amp; -fPIC&amp;</span>
-<span class="s1">            &amp; -fmax-errors=1&amp;</span>
-<span class="s1">            &amp; -ffast-math&amp;</span>
-<span class="s1">            &amp; -funroll-loops&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_gnu_opt</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_external</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_pic</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_gnu_limit</span>
+
     <span class="k">case</span><span class="p">(</span><span class="n">id_nvhpc</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -Mbackslash&amp;</span>
-<span class="s1">            &amp;&#39;</span>
-    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span> <span class="n">id_intel_classic_unknown</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -fp-model precise&amp;</span>
-<span class="s1">            &amp; -pc64&amp;</span>
-<span class="s1">            &amp; -align all&amp;</span>
-<span class="s1">            &amp; -error-limit 1&amp;</span>
-<span class="s1">            &amp; -reentrancy threaded&amp;</span>
-<span class="s1">            &amp; -nogen-interfaces&amp;</span>
-<span class="s1">            &amp; -assume byterecl&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_pgi_backslash</span>
+
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_fp</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_align</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_pthread</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_nogen</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl</span>
+
     <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_mac</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -fp-model precise&amp;</span>
-<span class="s1">            &amp; -pc64&amp;</span>
-<span class="s1">            &amp; -align all&amp;</span>
-<span class="s1">            &amp; -error-limit 1&amp;</span>
-<span class="s1">            &amp; -reentrancy threaded&amp;</span>
-<span class="s1">            &amp; -nogen-interfaces&amp;</span>
-<span class="s1">            &amp; -assume byterecl&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_fp</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_align</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_pthread</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_nogen</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl</span>
+
     <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; /fp:precise&amp;</span>
-<span class="s1">            &amp; /align:all&amp;</span>
-<span class="s1">            &amp; /error-limit:1&amp;</span>
-<span class="s1">            &amp; /reentrancy:threaded&amp;</span>
-<span class="s1">            &amp; /nogen-interfaces&amp;</span>
-<span class="s1">            &amp; /assume:byterecl&amp;</span>
-<span class="s1">            &amp;&#39;</span>
-    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">,</span> <span class="n">id_intel_llvm_unknown</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; -fp-model=precise&amp;</span>
-<span class="s1">            &amp; -pc64&amp;</span>
-<span class="s1">            &amp; -align all&amp;</span>
-<span class="s1">            &amp; -error-limit 1&amp;</span>
-<span class="s1">            &amp; -reentrancy threaded&amp;</span>
-<span class="s1">            &amp; -nogen-interfaces&amp;</span>
-<span class="s1">            &amp; -assume byterecl&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="p">&amp;</span> <span class="n">flag_intel_fp_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_align_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_pthread_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_nogen_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl_win</span>
+
+    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_fp</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_align</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_pthread</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_nogen</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl</span>
+
     <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39;&amp;</span>
-<span class="s1">            &amp; /fp:precise&amp;</span>
-<span class="s1">            &amp; /align:all&amp;</span>
-<span class="s1">            &amp; /error-limit:1&amp;</span>
-<span class="s1">            &amp; /reentrancy:threaded&amp;</span>
-<span class="s1">            &amp; /nogen-interfaces&amp;</span>
-<span class="s1">            &amp; /assume:byterecl&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_intel_fp_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_align_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_limit_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_pthread_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_nogen_win</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_intel_byterecl_win</span>
+
     <span class="k">case</span><span class="p">(</span><span class="n">id_nag</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="s1">&#39; &amp;</span>
-<span class="s1">            &amp; -O4&amp;</span>
-<span class="s1">            &amp; -coarray=single&amp;</span>
-<span class="s1">            &amp; -PIC&amp;</span>
-<span class="s1">            &amp;&#39;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">&amp;</span>
+            <span class="n">flag_nag_opt</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_nag_coarray</span><span class="o">//</span><span class="p">&amp;</span>
+            <span class="n">flag_nag_pic</span>
+
+    <span class="k">case</span><span class="p">(</span><span class="n">id_lfortran</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">end select</span>
 <span class="k">end subroutine </span><span class="n">get_release_compile_flags</span>
 </pre></div>
@@ -446,7 +442,7 @@ public subroutine get_release_compile_flags(id, flags)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-19 12:19  
+             on 2021-08-25 19:44  
             
           </p>
         </div>

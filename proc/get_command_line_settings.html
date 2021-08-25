@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 7.1% of total for procedures.">233 statements</a>
+    title=" 6.6% of total for procedures.">222 statements</a>
      </li> 
      
      
@@ -654,7 +654,6 @@ subroutine printhelp(lines)
             <span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">val_runner</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_runner</span><span class="o">=</span><span class="s1">&#39;echo&#39;</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_run_settings</span><span class="p">(&amp;</span>
             <span class="p">&amp;</span> <span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,&amp;</span>
-            <span class="p">&amp;</span> <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -678,7 +677,6 @@ subroutine printhelp(lines)
 
             <span class="k">allocate</span><span class="p">(</span> <span class="n">fpm_build_settings</span> <span class="kd">::</span> <span class="n">cmd_settings</span> <span class="p">)</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_build_settings</span><span class="p">(</span>  <span class="p">&amp;</span>
-            <span class="p">&amp;</span> <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -816,7 +814,6 @@ subroutine printhelp(lines)
             <span class="k">allocate</span><span class="p">(</span><span class="n">install_settings</span><span class="p">)</span>
             <span class="n">install_settings</span> <span class="o">=</span> <span class="n">fpm_install_settings</span><span class="p">(&amp;</span>
                 <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
-                <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span>
                 <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
                 <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -872,7 +869,6 @@ subroutine printhelp(lines)
             <span class="k">if</span><span class="p">(</span><span class="n">specified</span><span class="p">(</span><span class="s1">&#39;runner&#39;</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">val_runner</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="n">val_runner</span><span class="o">=</span><span class="s1">&#39;echo&#39;</span>
             <span class="n">cmd_settings</span><span class="o">=</span><span class="n">fpm_test_settings</span><span class="p">(&amp;</span>
             <span class="p">&amp;</span> <span class="n">args</span><span class="o">=</span><span class="n">remaining</span><span class="p">,</span> <span class="p">&amp;</span>
-            <span class="p">&amp;</span> <span class="n">build_name</span><span class="o">=</span><span class="n">val_build</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">compiler</span><span class="o">=</span><span class="n">val_compiler</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -942,17 +938,6 @@ subroutine printhelp(lines)
 
 <span class="k">        </span><span class="n">val_flag</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">sget</span><span class="p">(</span><span class="s1">&#39;flag&#39;</span><span class="p">)</span>
         <span class="n">val_profile</span> <span class="o">=</span> <span class="n">sget</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">val_flag</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            call </span><span class="n">get_default_compile_flags</span><span class="p">(</span><span class="n">val_compiler</span><span class="p">,</span> <span class="n">val_profile</span> <span class="o">==</span> <span class="s2">&quot;release&quot;</span><span class="p">,</span> <span class="n">val_flag</span><span class="p">)</span>
-        <span class="k">else</span>
-<span class="k">            select case</span><span class="p">(</span><span class="n">val_profile</span><span class="p">)</span>
-            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;release&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">)</span>
-               <span class="k">call </span><span class="n">get_default_compile_flags</span><span class="p">(</span><span class="n">val_compiler</span><span class="p">,</span> <span class="n">val_profile</span> <span class="o">==</span> <span class="s2">&quot;release&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
-               <span class="n">val_flag</span> <span class="o">=</span> <span class="n">flags</span> <span class="o">//</span> <span class="n">val_flag</span>
-            <span class="k">end select</span>
-<span class="k">        end if</span>
-<span class="k">        allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span> <span class="kd">::</span> <span class="n">val_build</span><span class="p">)</span>
-        <span class="k">write</span><span class="p">(</span><span class="n">val_build</span><span class="p">,</span> <span class="s1">&#39;(z16.16)&#39;</span><span class="p">)</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">val_flag</span><span class="p">)</span>
 
     <span class="k">end subroutine </span><span class="n">check_build_vals</span>
 
@@ -992,7 +977,7 @@ subroutine printhelp(lines)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-19 12:19  
+             on 2021-08-25 19:44  
             
           </p>
         </div>
