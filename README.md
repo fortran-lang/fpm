@@ -36,7 +36,7 @@ non-Fortran related package manager.
 
 __Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
 
-_e.g._ `$ chmod u+x fpm-0.3.0-linux-x86_64`
+_e.g._ `$ chmod u+x fpm-0.4.0-linux-x86_64`
 
 #### Conda
 
