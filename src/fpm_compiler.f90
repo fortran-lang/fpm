@@ -602,7 +602,7 @@ subroutine new_compiler(self, fc)
     !> New instance of the compiler
     type(compiler_t), intent(out) :: self
 
-    character(len=*), parameter :: cc_env = "FPM_C_COMPILER"
+    character(len=*), parameter :: cc_env = "CC"
 
     self%id = get_compiler_id(fc)
 
@@ -618,16 +618,21 @@ subroutine new_archiver(self)
     type(archiver_t), intent(out) :: self
     integer :: estat, os_type
 
+    character(len=:), allocatable :: ar
+    character(len=*), parameter :: arflags = " -rs "
+
+    ar = get_env("AR", "ar")
+
     os_type = get_os_type()
     if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
-        self%ar = "ar -rs "
+        self%ar = ar//arflags
     else
-        call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
+        call execute_command_line(ar//" --version > "//get_temp_filename()//" 2>&1", &
             & exitstat=estat)
         if (estat /= 0) then
             self%ar = "lib /OUT:"
         else
-            self%ar = "ar -rs "
+            self%ar = ar//arflags
         end if
     end if
     self%use_response_file = os_type == OS_WINDOWS

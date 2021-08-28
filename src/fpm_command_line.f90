@@ -121,7 +121,7 @@ contains
         integer                       :: i
         integer                       :: widest
         type(fpm_install_settings), allocatable :: install_settings
-        character(len=:), allocatable :: common_args, working_dir
+        character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir
 
         call set_help()
         ! text for --version switch,
@@ -148,23 +148,28 @@ contains
         CLI_RESPONSE_FILE=.true.
         cmdarg = get_subcommand()
 
-        common_args = '--directory:C " " '
+        common_args = &
+          ' --directory:C " "' // &
+          ' --verbose F'
+
+        run_args = &
+          ' --target " "' // &
+          ' --list F' // &
+          ' --runner " "'
+
+        compiler_args = &
+          ' --profile " "' // &
+          ' --compiler "'//get_fc_env()//'"' // &
+          ' --flag:: "'//get_fflags_env()//'"'
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
         select case(trim(cmdarg))
 
         case('run')
-            call set_args(common_args //'&
-            & --target " " &
-            & --list F &
+            call set_args(common_args // compiler_args // run_args //'&
             & --all F &
-            & --profile " "&
             & --example F&
-            & --runner " " &
-            & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
-            & --flag:: " "&
-            & --verbose F&
             & --',help_run,version_text)
 
             call check_build_vals()
@@ -207,13 +212,9 @@ contains
             & verbose=lget('verbose') )
 
         case('build')
-            call set_args(common_args // '&
-            & --profile " " &
+            call set_args(common_args // compiler_args //'&
             & --list F &
             & --show-model F &
-            & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
-            & --flag:: " "&
-            & --verbose F&
             & --',help_build,version_text)
 
             call check_build_vals()
@@ -236,8 +237,7 @@ contains
             & --example F &
             & --backfill F &
             & --full F &
-            & --bare F &
-            & --verbose:V F',&
+            & --bare F', &
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
@@ -296,9 +296,7 @@ contains
             endif
 
         case('help','manual')
-            call set_args(common_args // '&
-            & --verbose F &
-            & ',help_help,version_text)
+            call set_args(common_args, help_help,version_text)
             if(size(unnamed).lt.2)then
                 if(unnamed(1).eq.'help')then
                    unnamed=['   ', 'fpm']
@@ -344,11 +342,9 @@ contains
             call printhelp(help_text)
 
         case('install')
-            call set_args(common_args // '&
-                & --profile " " --no-rebuild F --verbose F --prefix " " &
+            call set_args(common_args // compiler_args // '&
+                & --no-rebuild F --prefix " " &
                 & --list F &
-                & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
-                & --flag:: " "&
                 & --libdir "lib" --bindir "bin" --includedir "include"', &
                 help_install, version_text)
 
@@ -371,22 +367,14 @@ contains
         case('list')
             call set_args(common_args // '&
             & --list F&
-            & --verbose F&
             &', help_list, version_text)
             call printhelp(help_list_nodash)
             if(lget('list'))then
                call printhelp(help_list_dash)
             endif
         case('test')
-            call set_args(common_args // '&
-            & --target " " &
-            & --list F&
-            & --profile " "&
-            & --runner " " &
-            & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
-            & --flag:: " "&
-            & --verbose F&
-            & --',help_test,version_text)
+            call set_args(common_args // compiler_args // run_args // ' --', &
+              help_test,version_text)
 
             call check_build_vals()
 
@@ -422,7 +410,7 @@ contains
             & verbose=lget('verbose') )
 
         case('update')
-            call set_args(common_args // ' --fetch-only F --verbose F --clean F', &
+            call set_args(common_args // ' --fetch-only F --clean F', &
                 help_update, version_text)
 
             if( size(unnamed) .gt. 1 )then
@@ -443,7 +431,6 @@ contains
             else
                 call set_args('&
                 & --list F&
-                & --verbose F&
                 &', help_fpm, version_text)
                 ! Note: will not get here if --version or --usage or --help
                 ! is present on commandline
@@ -658,16 +645,17 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
-    '                   added to the profile options if --profile is specified,',&
-    '                   else these options override the defaults.',&
+    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
+    '                   value is set by the FFLAGS environment variable.', &
+    '                   These are added to the profile options if --profile', &
+    '                   is specified, else these options override the defaults.',&
     '                   Note object and .mod directory locations are always',&
     '                   built in.',&
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
     '  --compiler COMPILER_NAME  Compiler name. The environment variable    ', &
-    '                            FPM_COMPILER sets the default.             ', &
+    '                            FC sets the default.                       ', &
     '  -- ARGS    Arguments to pass to executables.                         ', &
     '                                                                       ', &
     'VALID FOR ALL SUBCOMMANDS                                              ', &
@@ -783,14 +771,15 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
-    '                   added to the profile options if --profile is specified,',&
-    '                   else these options override the defaults.',&
+    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
+    '                   value is set by the FFLAGS environment variable.', &
+    '                   These are added to the profile options if --profile', &
+    '                   is specified, else these options override the defaults.',&
     '                   Note object and .mod directory locations are always',&
     '                   built in.',&
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
-    '                           variable FPM_COMPILER.                      ', &
+    '                           variable FC.                                ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
     ' --list     list pathname of candidates instead of running them. Note  ', &
@@ -855,14 +844,15 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
-    '                   added to the profile options if --profile is specified,',&
-    '                   else these options override the defaults.',&
+    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
+    '                   value is set by the FFLAGS environment variable.', &
+    '                   These are added to the profile options if --profile', &
+    '                   is specified, else these options override the defaults.',&
     '                   Note object and .mod directory locations are always',&
     '                   built in.',&
     ' --compiler   COMPILER_NAME  Specify a compiler name. The default is   ', &
     '                           "gfortran" unless set by the environment    ', &
-    '                           variable FPM_COMPILER.                      ', &
+    '                           variable FC.                                ', &
     ' --list       list candidates instead of building or running them      ', &
     ' --show-model show the model and exit (do not build)                   ', &
     ' --help       print this help and exit                                 ', &
@@ -1035,14 +1025,15 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
-    '                   added to the profile options if --profile is specified,',&
-    '                   else these options override the defaults.',&
+    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
+    '                   value is set by the FFLAGS environment variable.', &
+    '                   These are added to the profile options if --profile', &
+    '                   is specified, else these options override the defaults.',&
     '                   Note object and .mod directory locations are always',&
     '                   built in.',&
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
-    '                           variable FPM_COMPILER.                      ', &
+    '                           variable FC.                                ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
     ' --list     list candidates instead of building or running them        ', &
@@ -1107,9 +1098,10 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build. These are',&
-    '                   added to the profile options if --profile is specified,',&
-    '                   else these options override the defaults.',&
+    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
+    '                   value is set by the FFLAGS environment variable.', &
+    '                   These are added to the profile options if --profile', &
+    '                   is specified, else these options override the defaults.',&
     '                   Note object and .mod directory locations are always',&
     '                   built in.',&
     ' --no-rebuild      do not rebuild project before installation', &
@@ -1144,5 +1136,26 @@ contains
       var = sget(arg)
       if (len_trim(var) == 0) deallocate(var)
     end subroutine get_char_arg
+
+
+    !> Get Fortran compiler from environment.
+    function get_fc_env() result(fc)
+      character(len=:), allocatable :: fc
+
+      character(len=*), parameter :: fc_env = "FC", fc_env_long = "FPM_COMPILER"
+      character(len=*), parameter :: fc_default = "gfortran"
+
+      fc = get_env(fc_env_long, get_env(fc_env, fc_default))
+    end function get_fc_env
+
+    !> Get Fortran compiler arguments from environment.
+    function get_fflags_env() result(fflags)
+      character(len=:), allocatable :: fflags
+
+      character(len=*), parameter :: fflags_env = "FFLAGS"
+      character(len=*), parameter :: fflags_default = " "
+
+      fflags = get_env(fflags_env, fflags_default)
+    end function get_fflags_env
 
 end module fpm_command_line
