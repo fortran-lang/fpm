@@ -479,7 +479,7 @@ subroutine resolve_target_linking(targets, model)
             if (target%target_type /= FPM_TARGET_C_OBJECT) then
                 target%compile_flags = model%fortran_compile_flags//" "//global_include_flags
             else
-                target%compile_flags = global_include_flags
+                target%compile_flags = model%c_compile_flags//" "//global_include_flags
             end if
 
             allocate(target%link_objects(0))
@@ -494,7 +494,7 @@ subroutine resolve_target_linking(targets, model)
 
                 call get_link_objects(target%link_objects,target,is_exe=.true.)
 
-                target%link_flags = string_cat(target%link_objects," ")
+                target%link_flags = model%link_flags//" "//string_cat(target%link_objects," ")
 
                 if (allocated(target%link_libraries)) then
                     if (size(target%link_libraries) > 0) then

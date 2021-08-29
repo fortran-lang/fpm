@@ -70,6 +70,8 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: profile
     character(len=:),allocatable :: flag
+    character(len=:),allocatable :: cflag
+    character(len=:),allocatable :: ldflag
 end type
 
 type, extends(fpm_build_settings)  :: fpm_run_settings
@@ -111,7 +113,45 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',     'new',   'build',  'run',     &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
-character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_profile
+character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
+    val_profile
+
+character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
+    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
+    '                   value is set by the FFLAGS environment variable.', &
+    '                   These are added to the profile options if --profile', &
+    '                   is specified, else these options override the defaults.',&
+    '                   Note object and .mod directory locations are always',&
+    '                   built in.',&
+    ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
+    '                   The default value is set by the CFLAGS environment variable.',&
+    ' --link-flag LDFLAGS',&
+    '                   select arguments passed to the linker for the build.',&
+    '                   The default value is set by the LDFLAGS environment variable.'&
+    ]
+
+
+character(len=80), parameter :: help_text_environment(*) = [character(len=80) :: &
+    'ENVIRONMENT VARIABLES',&
+    ' FPM_COMPILER      sets the path to the Fortran compiler used for the build,', &
+    '                   will be overwritten by --compiler command line option', &
+    '', &
+    ' FC                sets the path to the Fortran compiler used for the build,', &
+    '                   will be overwritten by FPM_COMPILER environment variable', &
+    '', &
+    ' FFLAGS            sets the arguments for the Fortran compiler', &
+    '                   will be overwritten by --flag command line option', &
+    '', &
+    ' CC                sets the path to the C compiler used for the build,', &
+    '', &
+    ' CFLAGS            sets the arguments for the C compiler', &
+    '                   will be overwritten by --c-flag command line option', &
+    '', &
+    ' AR                sets the path to the archiver used for the build,', &
+    '', &
+    ' LDFLAGS           sets additional link arguments for creating executables', &
+    '                   will be overwritten by --link-flag command line option' &
+    ]
 
 contains
     subroutine get_command_line_settings(cmd_settings)
@@ -122,6 +162,9 @@ contains
         integer                       :: widest
         type(fpm_install_settings), allocatable :: install_settings
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir
+
+        character(len=*), parameter :: fflags_env = "FFLAGS", cflags_env = "CFLAGS", &
+            & ldflags_env = "LDFLAGS", flags_default = " "
 
         call set_help()
         ! text for --version switch,
@@ -160,7 +203,9 @@ contains
         compiler_args = &
           ' --profile " "' // &
           ' --compiler "'//get_fc_env()//'"' // &
-          ' --flag:: "'//get_fflags_env()//'"'
+          ' --flag:: "'//get_env(fflags_env, flags_default)//'"' // &
+          ' --c-flag:: "'//get_env(cflags_env, flags_default)//'"' // &
+          ' --link-flag:: "'//get_env(ldflags_env, flags_default)//'"'
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -205,6 +250,8 @@ contains
             & profile=val_profile,&
             & compiler=val_compiler, &
             & flag=val_flag, &
+            & cflag=val_cflag, &
+            & ldflag=val_ldflag, &
             & example=lget('example'), &
             & list=lget('list'),&
             & name=names,&
@@ -224,6 +271,8 @@ contains
             & profile=val_profile,&
             & compiler=val_compiler, &
             & flag=val_flag, &
+            & cflag=val_cflag, &
+            & ldflag=val_ldflag, &
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & verbose=lget('verbose') )
@@ -356,6 +405,8 @@ contains
                 profile=val_profile,&
                 compiler=val_compiler, &
                 flag=val_flag, &
+                cflag=val_cflag, &
+                ldflag=val_ldflag, &
                 no_rebuild=lget('no-rebuild'), &
                 verbose=lget('verbose'))
             call get_char_arg(install_settings%prefix, 'prefix')
@@ -403,6 +454,8 @@ contains
             & profile=val_profile, &
             & compiler=val_compiler, &
             & flag=val_flag, &
+            & cflag=val_cflag, &
+            & ldflag=val_ldflag, &
             & example=.false., &
             & list=lget('list'), &
             & name=names, &
@@ -467,6 +520,8 @@ contains
         endif
 
         val_flag = " " // sget('flag')
+        val_cflag = " " // sget('c-flag')
+        val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
 
     end subroutine check_build_vals
@@ -645,12 +700,7 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
-    '                   value is set by the FFLAGS environment variable.', &
-    '                   These are added to the profile options if --profile', &
-    '                   is specified, else these options override the defaults.',&
-    '                   Note object and .mod directory locations are always',&
-    '                   built in.',&
+    help_text_flag, &
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
@@ -693,6 +743,8 @@ contains
     '   Note --flag would have to be on one line as response files do not   ', &
     '   (currently) allow for continued lines or multiple specifications of ', &
     '   the same option.                                                    ', &
+    '                                                                       ', &
+    help_text_environment, &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     '   sample commands:                                                    ', &
@@ -771,12 +823,7 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
-    '                   value is set by the FFLAGS environment variable.', &
-    '                   These are added to the profile options if --profile', &
-    '                   is specified, else these options override the defaults.',&
-    '                   Note object and .mod directory locations are always',&
-    '                   built in.',&
+    help_text_flag, &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FC.                                ', &
@@ -787,6 +834,8 @@ contains
     '            listed.                                                    ', &
     ' -- ARGS    optional arguments to pass to the program(s). The same     ', &
     '            arguments are passed to all program names specified.       ', &
+    '                                                                       ', &
+    help_text_environment, &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     ' fpm(1) - run or display project applications:                         ', &
@@ -844,12 +893,7 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
-    '                   value is set by the FFLAGS environment variable.', &
-    '                   These are added to the profile options if --profile', &
-    '                   is specified, else these options override the defaults.',&
-    '                   Note object and .mod directory locations are always',&
-    '                   built in.',&
+    help_text_flag, &
     ' --compiler   COMPILER_NAME  Specify a compiler name. The default is   ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FC.                                ', &
@@ -857,6 +901,8 @@ contains
     ' --show-model show the model and exit (do not build)                   ', &
     ' --help       print this help and exit                                 ', &
     ' --version    print program version information and exit               ', &
+    '                                                                       ', &
+    help_text_environment, &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     ' Sample commands:                                                      ', &
@@ -1025,12 +1071,7 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
-    '                   value is set by the FFLAGS environment variable.', &
-    '                   These are added to the profile options if --profile', &
-    '                   is specified, else these options override the defaults.',&
-    '                   Note object and .mod directory locations are always',&
-    '                   built in.',&
+    help_text_flag, &
     ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FC.                                ', &
@@ -1040,6 +1081,8 @@ contains
     ' -- ARGS    optional arguments to pass to the test program(s).         ', &
     '            The same arguments are passed to all test names            ', &
     '            specified.                                                 ', &
+    '                                                                       ', &
+    help_text_environment, &
     '                                                                       ', &
     'EXAMPLES                                                               ', &
     'run tests                                                              ', &
@@ -1098,12 +1141,7 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
-    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
-    '                   value is set by the FFLAGS environment variable.', &
-    '                   These are added to the profile options if --profile', &
-    '                   is specified, else these options override the defaults.',&
-    '                   Note object and .mod directory locations are always',&
-    '                   built in.',&
+    help_text_flag, &
     ' --no-rebuild      do not rebuild project before installation', &
     ' --prefix DIR      path to installation directory (requires write access),', &
     '                   the default prefix on Unix systems is $HOME/.local', &
@@ -1114,6 +1152,8 @@ contains
     ' --includedir DIR  subdirectory to place headers and module files in', &
     '                   (default: include)', &
     ' --verbose         print more information', &
+    '', &
+    help_text_environment, &
     '', &
     'EXAMPLES', &
     ' 1. Install release version of project:', &
@@ -1147,15 +1187,5 @@ contains
 
       fc = get_env(fc_env_long, get_env(fc_env, fc_default))
     end function get_fc_env
-
-    !> Get Fortran compiler arguments from environment.
-    function get_fflags_env() result(fflags)
-      character(len=:), allocatable :: fflags
-
-      character(len=*), parameter :: fflags_env = "FFLAGS"
-      character(len=*), parameter :: fflags_default = " "
-
-      fflags = get_env(fflags_env, fflags_default)
-    end function get_fflags_env
 
 end module fpm_command_line
