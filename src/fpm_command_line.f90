@@ -68,6 +68,8 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
     logical                      :: show_model=.false.
     character(len=:),allocatable :: compiler
+    character(len=:),allocatable :: c_compiler
+    character(len=:),allocatable :: archiver
     character(len=:),allocatable :: profile
     character(len=:),allocatable :: flag
     character(len=:),allocatable :: cflag
@@ -116,6 +118,15 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
     val_profile
 
+character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
+    ' --compiler NAME   Specify a compiler name. The default is "gfortran"',&
+    '                   unless set by the environment variable FPM_FC or FC.',&
+    ' --c-compiler NAME Specify the C compiler name. By default automatic determined',&
+    '                   unless set by the environment variable FPM_CC or CC.',&
+    ' --archiver NAME   Specify the archiver name. By default automatic determined',&
+    '                   unless set by the environment variable FPM_AR or AR.'&
+    ]
+
 character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --flag  FFLAGS    selects compile arguments for the build, the default',&
     '                   value is set by the FFLAGS environment variable.', &
@@ -133,23 +144,31 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
 
 character(len=80), parameter :: help_text_environment(*) = [character(len=80) :: &
     'ENVIRONMENT VARIABLES',&
-    ' FPM_COMPILER      sets the path to the Fortran compiler used for the build,', &
+    ' FPM_FC, FC        sets the path to the Fortran compiler used for the build,', &
+    '                   FPM_FC will take preference over FC, if both are set,', &
     '                   will be overwritten by --compiler command line option', &
     '', &
-    ' FC                sets the path to the Fortran compiler used for the build,', &
-    '                   will be overwritten by FPM_COMPILER environment variable', &
-    '', &
-    ' FFLAGS            sets the arguments for the Fortran compiler', &
+    ' FPM_FFLAGS, FFLAGS',&
+    '                   sets the arguments for the Fortran compiler', &
+    '                   FPM_FFLAGS will take preference over FFLAGS, if both are set,', &
     '                   will be overwritten by --flag command line option', &
     '', &
-    ' CC                sets the path to the C compiler used for the build,', &
+    ' FPM_CC, CC        sets the path to the C compiler used for the build,', &
+    '                   FPM_CC will take preference over CC, if both are set,', &
+    '                   will be overwritten by --c-compiler command line option', &
     '', &
-    ' CFLAGS            sets the arguments for the C compiler', &
+    ' FPM_CFLAGS, CFLAGS',&
+    '                   sets the arguments for the C compiler', &
+    '                   FPM_CFLAGS will take preference over CFLAGS, if both are set,', &
     '                   will be overwritten by --c-flag command line option', &
     '', &
-    ' AR                sets the path to the archiver used for the build,', &
+    ' FPM_AR, AR        sets the path to the archiver used for the build,', &
+    '                   FPM_AR will take preference over AR, if both are set,', &
+    '                   will be overwritten by --archiver command line option', &
     '', &
-    ' LDFLAGS           sets additional link arguments for creating executables', &
+    ' FPM_LDFLAGS, LDFLAGS',&
+    '                   sets additional link arguments for creating executables', &
+    '                   FPM_LDFLAGS will take preference over LDFLAGS, if both are set,', &
     '                   will be overwritten by --link-flag command line option' &
     ]
 
@@ -161,10 +180,12 @@ contains
         integer                       :: i
         integer                       :: widest
         type(fpm_install_settings), allocatable :: install_settings
-        character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir
+        character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
+            & c_compiler, archiver
 
-        character(len=*), parameter :: fflags_env = "FFLAGS", cflags_env = "CFLAGS", &
-            & ldflags_env = "LDFLAGS", flags_default = " "
+        character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
+            & fflags_env = "FFLAGS", cflags_env = "CFLAGS", ldflags_env = "LDFLAGS", &
+            & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " "
 
         call set_help()
         ! text for --version switch,
@@ -202,10 +223,12 @@ contains
 
         compiler_args = &
           ' --profile " "' // &
-          ' --compiler "'//get_fc_env()//'"' // &
-          ' --flag:: "'//get_env(fflags_env, flags_default)//'"' // &
-          ' --c-flag:: "'//get_env(cflags_env, flags_default)//'"' // &
-          ' --link-flag:: "'//get_env(ldflags_env, flags_default)//'"'
+          ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
+          ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
+          ' --archiver "'//get_fpm_env(ar_env, ar_default)//'"' // &
+          ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
+          ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
+          ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -242,6 +265,8 @@ contains
                if(names(i).eq.'..')names(i)='*'
             enddo
 
+            c_compiler = sget('c-compiler')
+            archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
@@ -249,6 +274,8 @@ contains
             & args=remaining,&
             & profile=val_profile,&
             & compiler=val_compiler, &
+            & c_compiler=c_compiler, &
+            & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & ldflag=val_ldflag, &
@@ -266,10 +293,14 @@ contains
 
             call check_build_vals()
 
+            c_compiler = sget('c-compiler')
+            archiver = sget('archiver')
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
             & profile=val_profile,&
             & compiler=val_compiler, &
+            & c_compiler=c_compiler, &
+            & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & ldflag=val_ldflag, &
@@ -399,11 +430,15 @@ contains
 
             call check_build_vals()
 
+            c_compiler = sget('c-compiler')
+            archiver = sget('archiver')
             allocate(install_settings)
             install_settings = fpm_install_settings(&
                 list=lget('list'), &
                 profile=val_profile,&
                 compiler=val_compiler, &
+                c_compiler=c_compiler, &
+                archiver=archiver, &
                 flag=val_flag, &
                 cflag=val_cflag, &
                 ldflag=val_ldflag, &
@@ -446,6 +481,8 @@ contains
                if(names(i).eq.'..')names(i)='*'
             enddo
 
+            c_compiler = sget('c-compiler')
+            archiver = sget('archiver')
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
@@ -453,6 +490,8 @@ contains
             & args=remaining, &
             & profile=val_profile, &
             & compiler=val_compiler, &
+            & c_compiler=c_compiler, &
+            & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
             & ldflag=val_ldflag, &
@@ -700,12 +739,11 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
+    help_text_compiler, &
     help_text_flag, &
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
-    '  --compiler COMPILER_NAME  Compiler name. The environment variable    ', &
-    '                            FC sets the default.                       ', &
     '  -- ARGS    Arguments to pass to executables.                         ', &
     '                                                                       ', &
     'VALID FOR ALL SUBCOMMANDS                                              ', &
@@ -823,10 +861,8 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
+    help_text_compiler, &
     help_text_flag, &
-    ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
-    '                           "gfortran" unless set by the environment    ', &
-    '                           variable FC.                                ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
     ' --list     list pathname of candidates instead of running them. Note  ', &
@@ -893,10 +929,8 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
+    help_text_compiler, &
     help_text_flag, &
-    ' --compiler   COMPILER_NAME  Specify a compiler name. The default is   ', &
-    '                           "gfortran" unless set by the environment    ', &
-    '                           variable FC.                                ', &
     ' --list       list candidates instead of building or running them      ', &
     ' --show-model show the model and exit (do not build)                   ', &
     ' --help       print this help and exit                                 ', &
@@ -1071,10 +1105,8 @@ contains
     '                   high optimization and "debug" for full debug options.',&
     '                   If --flag is not specified the "debug" flags are the',&
     '                   default. ',&
+    help_text_compiler, &
     help_text_flag, &
-    ' --compiler COMPILER_NAME  Specify a compiler name. The default is     ', &
-    '                           "gfortran" unless set by the environment    ', &
-    '                           variable FC.                                ', &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
     ' --list     list candidates instead of building or running them        ', &
@@ -1178,14 +1210,15 @@ contains
     end subroutine get_char_arg
 
 
-    !> Get Fortran compiler from environment.
-    function get_fc_env() result(fc)
-      character(len=:), allocatable :: fc
+    !> Get an environment variable for fpm
+    function get_fpm_env(env, default) result(val)
+      character(len=*), intent(in) :: env
+      character(len=*), intent(in) :: default
+      character(len=:), allocatable :: val
 
-      character(len=*), parameter :: fc_env = "FC", fc_env_long = "FPM_COMPILER"
-      character(len=*), parameter :: fc_default = "gfortran"
+      character(len=*), parameter :: fpm_prefix = "FPM_"
 
-      fc = get_env(fc_env_long, get_env(fc_env, fc_default))
-    end function get_fc_env
+      val = get_env(fpm_prefix//val, get_env(env, default))
+    end function get_fpm_env
 
 end module fpm_command_line

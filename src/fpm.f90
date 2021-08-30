@@ -60,8 +60,8 @@ subroutine build_model(model, settings, package, error)
       call filewrite(join_path("build", ".gitignore"),["*"])
     end if
 
-    call new_compiler(model%compiler, settings%compiler)
-    call new_archiver(model%archiver)
+    call new_compiler(model%compiler, settings%compiler, settings%c_compiler)
+    call new_archiver(model%archiver, settings%archiver)
 
     if (settings%flag == '') then
         flags = model%compiler%get_default_flags(settings%profile == "release")
