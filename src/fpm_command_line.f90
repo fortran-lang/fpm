@@ -120,55 +120,46 @@ character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, 
 
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
     ' --compiler NAME   Specify a compiler name. The default is "gfortran"',&
-    '                   unless set by the environment variable FPM_FC or FC.',&
+    '                   unless set by the environment variable FPM_FC.',&
     ' --c-compiler NAME Specify the C compiler name. By default automatic determined',&
-    '                   unless set by the environment variable FPM_CC or CC.',&
+    '                   unless set by the environment variable FPM_CC.',&
     ' --archiver NAME   Specify the archiver name. By default automatic determined',&
-    '                   unless set by the environment variable FPM_AR or AR.'&
+    '                   unless set by the environment variable FPM_AR.'&
     ]
 
 character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --flag  FFLAGS    selects compile arguments for the build, the default',&
-    '                   value is set by the FFLAGS environment variable.', &
+    '                   value is set by the FPM_FFLAGS environment variable.', &
     '                   These are added to the profile options if --profile', &
     '                   is specified, else these options override the defaults.',&
     '                   Note object and .mod directory locations are always',&
     '                   built in.',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
-    '                   The default value is set by the CFLAGS environment variable.',&
+    '                   The default value is set by the FPM_CFLAGS environment variable.',&
     ' --link-flag LDFLAGS',&
     '                   select arguments passed to the linker for the build.',&
-    '                   The default value is set by the LDFLAGS environment variable.'&
+    '                   The default value is set by the FPM_LDFLAGS environment variable.'&
     ]
 
 
 character(len=80), parameter :: help_text_environment(*) = [character(len=80) :: &
     'ENVIRONMENT VARIABLES',&
-    ' FPM_FC, FC        sets the path to the Fortran compiler used for the build,', &
-    '                   FPM_FC will take preference over FC, if both are set,', &
+    ' FPM_FC            sets the path to the Fortran compiler used for the build,', &
     '                   will be overwritten by --compiler command line option', &
     '', &
-    ' FPM_FFLAGS, FFLAGS',&
-    '                   sets the arguments for the Fortran compiler', &
-    '                   FPM_FFLAGS will take preference over FFLAGS, if both are set,', &
+    ' FPM_FFLAGS        sets the arguments for the Fortran compiler', &
     '                   will be overwritten by --flag command line option', &
     '', &
-    ' FPM_CC, CC        sets the path to the C compiler used for the build,', &
-    '                   FPM_CC will take preference over CC, if both are set,', &
+    ' FPM_CC            sets the path to the C compiler used for the build,', &
     '                   will be overwritten by --c-compiler command line option', &
     '', &
-    ' FPM_CFLAGS, CFLAGS',&
-    '                   sets the arguments for the C compiler', &
-    '                   FPM_CFLAGS will take preference over CFLAGS, if both are set,', &
+    ' FPM_CFLAGS        sets the arguments for the C compiler', &
     '                   will be overwritten by --c-flag command line option', &
     '', &
-    ' FPM_AR, AR        sets the path to the archiver used for the build,', &
-    '                   FPM_AR will take preference over AR, if both are set,', &
+    ' FPM_AR            sets the path to the archiver used for the build,', &
     '                   will be overwritten by --archiver command line option', &
     '', &
-    ' FPM_LDFLAGS, LDFLAGS',&
-    '                   sets additional link arguments for creating executables', &
-    '                   FPM_LDFLAGS will take preference over LDFLAGS, if both are set,', &
+    ' FPM_LDFLAGS       sets additional link arguments for creating executables', &
     '                   will be overwritten by --link-flag command line option' &
     ]
 
@@ -1210,7 +1201,8 @@ contains
     end subroutine get_char_arg
 
 
-    !> Get an environment variable for fpm
+    !> Get an environment variable for fpm, this routine ensures that every variable
+    !> used by fpm is prefixed with FPM_.
     function get_fpm_env(env, default) result(val)
       character(len=*), intent(in) :: env
       character(len=*), intent(in) :: default
@@ -1218,7 +1210,7 @@ contains
 
       character(len=*), parameter :: fpm_prefix = "FPM_"
 
-      val = get_env(fpm_prefix//val, get_env(env, default))
+      val = get_env(fpm_prefix//val, default)
     end function get_fpm_env
 
 end module fpm_command_line
