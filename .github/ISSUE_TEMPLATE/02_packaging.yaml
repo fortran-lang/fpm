@@ -1,0 +1,32 @@
+name: Packaging Issue
+description: Porting or packaging a project to fpm `
+labels: [packaging]
+body:
+  - type: input
+    id: project
+    attributes:
+      label: Upstream Project
+      placeholder: URL for the upstream project
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: Please describe the issue with porting or packaging a project with fpm
+    validations:
+      required: true
+  - type: input
+    id: fpm-version
+    attributes:
+      label: Version of fpm
+      placeholder: 0.4.0, 04da9a1ce99e8fce1abdb7eb9a2073f3188038ea, ...
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      placeholder: Further relevant context, i.e. links to other issues
+    validations:
+      required: false
