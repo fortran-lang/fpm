@@ -1061,7 +1061,7 @@ character(len=*),intent(in)   :: instr        ! input line to scan for tab chara
 character(len=*),intent(out)  :: outstr       ! tab-expanded version of INSTR produced
 integer,intent(out)           :: ilen         ! column position of last character put into output string
                                               ! that is, ILEN holds the position of the last non-blank character in OUTSTR
-!===================================================================================================================================
+
 integer,parameter             :: tabsize=8    ! assume a tab stop is set every 8th column
 integer                       :: ipos         ! position in OUTSTR to put next character of INSTR
 integer                       :: lenin        ! length of input string trimmed of trailing spaces
@@ -1069,12 +1069,12 @@ integer                       :: lenout       ! number of characters output stri
 integer                       :: istep        ! counter that advances thru input string INSTR one character at a time
 character(len=1)              :: c            ! character in input line being processed
 integer                       :: iade         ! ADE (ASCII Decimal Equivalent) of character being tested
-!===================================================================================================================================
+
    ipos=1                                     ! where to put next character in output string OUTSTR
    lenin=len_trim(instr( 1:len(instr) ))      ! length of INSTR trimmed of trailing spaces
    lenout=len(outstr)                         ! number of characters output string OUTSTR can hold
    outstr=" "                                 ! this SHOULD blank-fill string, a buggy machine required a loop to set all characters
-!===================================================================================================================================
+
       SCAN_LINE: do istep=1,lenin             ! look through input string one character at a time
          c=instr(istep:istep)                 ! get next character
          iade=ichar(c)                        ! get ADE of the character
@@ -1093,10 +1093,10 @@ integer                       :: iade         ! ADE (ASCII Decimal Equivalent) o
             endif
          end select EXPAND_TABS
       enddo SCAN_LINE
-!===================================================================================================================================
+
       ipos=min(ipos,lenout)                   ! tabs or newline or return characters or last character might have gone too far
       ilen=len_trim(outstr(:ipos))            ! trim trailing spaces
-!===================================================================================================================================
+
 end subroutine notabs
 
 end module fpm_strings
