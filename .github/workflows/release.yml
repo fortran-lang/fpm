@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  source-archive:
+    runs-on: ubuntu-latest
+    env:
+      FORMAT: zip
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Get version number
+      run: |
+        VERSION=$(git describe --tags --abbrev=0 --match 'v*' | tr -d '[:alpha:]')
+        [ -z "$VERSION" ] && exit 1
+        echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+    - name: Create archive
+      run: |
+        git archive --prefix ${{ env.PREFIX }} --format ${{ env.FORMAT }} HEAD > ${{ env.OUTPUT }}
+        echo "OUTPUT=${{ env.OUTPUT }}" >> $GITHUB_ENV
+      env:
+        OUTPUT: fpm-${{ env.VERSION }}.${{ env.FORMAT }}
+        PREFIX: fpm-${{ env.VERSION }}/
+
+    - name: Calculate checksum
+      run: |
+        sha256sum ${{ env.OUTPUT }} > ${{ env.OUTPUT }}.sha256
+
+    - name: Upload assets
+      if: ${{ github.event_name == 'release' }}
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ env.OUTPUT }}*
+        file_glob: true
+        tag: ${{ github.ref }}
+        overwrite: true
