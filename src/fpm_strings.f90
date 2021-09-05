@@ -22,15 +22,19 @@
 !! - [[GLOB]]  function compares text strings, one of which can have wildcards ('*' or '?').
 !! - [[IS_FORTRAN_NAME]]  determine whether a string is an acceptable Fortran entity name
 !! - [[TO_FORTRAN_NAME]]  replace allowed special but unusuable characters in names with underscore
-!!### Miscellaneous
+!!### Whitespace
+!! - [[NOTABS]]  Expand tab characters assuming a tab space every eight characters
 !! - [[LEN_TRIM]]  Determine total trimmed length of **STRING_T** array
+!!### Miscellaneous
 !! - [[FNV_1A]]  Hash a **CHARACTER(*)** string of default kind or a **TYPE(STRING_T)** array
 !! - [[REPLACE]]  Returns string with characters in charset replaced with target_char.
 !! - [[RESIZE]]  increase the size of a **TYPE(STRING_T)** array by N elements
 !!
-
 module fpm_strings
 use iso_fortran_env, only: int64
+use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
+                                       & stdout=>output_unit, &
+                                       & stderr=>error_unit
 use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer, c_size_t
 implicit none
 
@@ -39,6 +43,7 @@ public :: f_string, lower, split, str_ends_with, string_t
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
+public :: notabs
 
 type string_t
     character(len=:), allocatable :: s
@@ -986,5 +991,112 @@ function is_fortran_name(line) result (lout)
             lout = .false.
         endif
     end function is_fortran_name
+!>
+!!### NAME
+!!   notabs(3f) - [fpm_strings:NONALPHA] expand tab characters
+!!   (LICENSE:PD)
+!!
+!!### SYNOPSIS
+!!
+!!    subroutine notabs(INSTR,OUTSTR,ILEN)
+!!
+!!     character(len=*),intent=(in)  :: INSTR
+!!     character(len=*),intent=(out) :: OUTSTR
+!!     integer,intent=(out)          :: ILEN
+!!
+!!### DESCRIPTION
+!!   NOTABS() converts tabs in INSTR to spaces in OUTSTR while maintaining
+!!   columns. It assumes a tab is set every 8 characters. Trailing spaces
+!!   are removed.
+!!
+!!   In addition, trailing carriage returns and line feeds are removed
+!!   (they are usually a problem created by going to and from MSWindows).
+!!
+!!   What are some reasons for removing tab characters from an input line?
+!!   Some Fortran compilers have problems with tabs, as tabs are not
+!!   part of the Fortran character set. Some editors and printers will
+!!   have problems with tabs. It is often useful to expand tabs in input
+!!   files to simplify further processing such as tokenizing an input line.
+!!
+!!### OPTIONS
+!!     instr     Input line to remove tabs from
+!!
+!!### RESULTS
+!!     outstr    Output string with tabs expanded. Assumed to be of sufficient
+!!               length
+!!     ilen      Significant length of returned string
+!!
+!!### EXAMPLES
+!!
+!!   Sample program:
+!!
+!!    program demo_notabs
+!!
+!!    !  test filter to remove tabs and trailing white space from input
+!!    !  on files up to 1024 characters wide
+!!    use fpm_strings, only : notabs
+!!    character(len=1024) :: in,out
+!!    integer             :: ios,iout
+!!       do
+!!          read(*,'(A)',iostat=ios)in
+!!          if(ios /= 0) exit
+!!          call notabs(in,out,iout)
+!!          write(*,'(a)')out(:iout)
+!!       enddo
+!!    end program demo_notabs
+!!
+!!### SEE ALSO
+!!   GNU/Unix commands expand(1) and unexpand(1)
+!!
+!!### AUTHOR
+!!   John S. Urban
+!!
+!!### LICENSE
+!!   Public Domain
+elemental impure subroutine notabs(instr,outstr,ilen)
+
+! ident_31="@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars"
+
+character(len=*),intent(in)   :: instr        ! input line to scan for tab characters
+character(len=*),intent(out)  :: outstr       ! tab-expanded version of INSTR produced
+integer,intent(out)           :: ilen         ! column position of last character put into output string
+                                              ! that is, ILEN holds the position of the last non-blank character in OUTSTR
+
+integer,parameter             :: tabsize=8    ! assume a tab stop is set every 8th column
+integer                       :: ipos         ! position in OUTSTR to put next character of INSTR
+integer                       :: lenin        ! length of input string trimmed of trailing spaces
+integer                       :: lenout       ! number of characters output string can hold
+integer                       :: istep        ! counter that advances thru input string INSTR one character at a time
+character(len=1)              :: c            ! character in input line being processed
+integer                       :: iade         ! ADE (ASCII Decimal Equivalent) of character being tested
+
+   ipos=1                                     ! where to put next character in output string OUTSTR
+   lenin=len_trim(instr( 1:len(instr) ))      ! length of INSTR trimmed of trailing spaces
+   lenout=len(outstr)                         ! number of characters output string OUTSTR can hold
+   outstr=" "                                 ! this SHOULD blank-fill string, a buggy machine required a loop to set all characters
+
+      SCAN_LINE: do istep=1,lenin             ! look through input string one character at a time
+         c=instr(istep:istep)                 ! get next character
+         iade=ichar(c)                        ! get ADE of the character
+         EXPAND_TABS : select case (iade)     ! take different actions depending on which character was found
+         case(9)                              ! test if character is a tab and move pointer out to appropriate column
+            ipos = ipos + (tabsize - (mod(ipos-1,tabsize)))
+         case(10,13)                          ! convert carriage-return and new-line to space ,typically to handle DOS-format files
+            ipos=ipos+1
+         case default                         ! c is anything else other than a tab,newline,or return  insert it in output string
+            if(ipos > lenout)then
+               write(stderr,*)"*notabs* output string overflow"
+               exit
+            else
+               outstr(ipos:ipos)=c
+               ipos=ipos+1
+            endif
+         end select EXPAND_TABS
+      enddo SCAN_LINE
+
+      ipos=min(ipos,lenout)                   ! tabs or newline or return characters or last character might have gone too far
+      ilen=len_trim(outstr(:ipos))            ! trim trailing spaces
+
+end subroutine notabs
 
 end module fpm_strings
