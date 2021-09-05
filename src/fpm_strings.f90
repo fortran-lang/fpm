@@ -35,6 +35,7 @@ use iso_fortran_env, only: int64
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
+use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer, c_size_t
 implicit none
 
 private
@@ -77,6 +78,10 @@ end interface
 interface string_t
     module procedure new_string_t
 end interface string_t
+
+interface f_string
+    module procedure f_string, f_string_cptr, f_string_cptr_n
+end interface f_string
 
 contains
 
@@ -132,6 +137,33 @@ function f_string(c_string)
 
 end function f_string
 
+
+!> return Fortran character variable when given a null-terminated c_ptr
+function f_string_cptr(cptr) result(s)
+    type(c_ptr), intent(in), value :: cptr
+    character(len=:,kind=c_char), allocatable :: s
+
+    interface
+        function c_strlen(s) result(r) bind(c, name="strlen")
+            import c_size_t, c_ptr
+            type(c_ptr), intent(in), value :: s
+            integer(kind=c_size_t) :: r
+        end function
+    end interface
+
+    s = f_string_cptr_n(cptr, c_strlen(cptr))
+end function
+
+!> return Fortran character variable when given a null-terminated c_ptr and its length
+function f_string_cptr_n(cptr, n) result(s)
+    type(c_ptr), intent(in), value :: cptr
+    integer(kind=c_size_t), intent(in) :: n
+    character(len=n,kind=c_char) :: s
+    character(len=n,kind=c_char), pointer :: sptr
+
+    call c_f_pointer(cptr, sptr)
+    s = sptr
+end function
 
 !> Hash a character(*) string of default kind
 pure function fnv_1a_char(input, seed) result(hash)

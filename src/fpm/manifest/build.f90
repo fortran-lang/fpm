@@ -12,7 +12,7 @@
 module fpm_manifest_build
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only : string_t
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
     implicit none
     private
 
@@ -87,10 +87,10 @@ contains
         end if
 
 
-        call get_value(table, "link", self%link, error)
+        call get_list(table, "link", self%link, error)
         if (allocated(error)) return
 
-        call get_value(table, "external-modules", self%external_modules, error)
+        call get_list(table, "external-modules", self%external_modules, error)
         if (allocated(error)) return
 
     end subroutine new_build_config

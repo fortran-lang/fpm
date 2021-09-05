@@ -18,7 +18,7 @@ contains
         testsuite = [ &
             & new_unittest("canon-path", test_canon_path) &
             ]
-            
+
     end subroutine collect_filesystem
 
 

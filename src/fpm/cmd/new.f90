@@ -98,9 +98,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
     ! like realpath() or getcwd().
     bname=basename(settings%name)
 
-    ! create NAME/.gitignore file
-    call warnwrite(join_path(settings%name, '.gitignore'), ['build/*'])
-
     littlefile=[character(len=80) :: '# '//bname, 'My cool new project!']
 
     ! create NAME/README.md

@@ -19,8 +19,9 @@
 !>
 module fpm_model
 use iso_fortran_env, only: int64
-use fpm_strings, only: string_t, str
+use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
+use fpm_strings, only: string_t, str
 implicit none
 
 private
@@ -114,14 +115,11 @@ type :: fpm_model_t
     !> Array of packages (including the root package)
     type(package_t), allocatable :: packages(:)
 
-    !> Command line name to invoke fortran compiler
-    character(:), allocatable :: fortran_compiler
+    !> Compiler object
+    type(compiler_t) :: compiler
 
-    !> Command line to invoke for creating static library
-    character(:), allocatable :: archiver
-
-    !> Command line name to invoke c compiler
-    character(:), allocatable :: c_compiler
+    !> Archiver object
+    type(archiver_t) :: archiver
 
     !> Command line flags passed to fortran for compilation
     character(:), allocatable :: fortran_compile_flags
@@ -251,7 +249,6 @@ function info_srcfile_short(source) result(s)
     ! Prints a shortened version of srcfile_t
     type(srcfile_t), intent(in) :: source
     character(:), allocatable :: s
-    integer :: i
     s = "srcfile_t("
     s = s // 'file_name="' // source%file_name // '"'
     s = s // ", ...)"
@@ -272,8 +269,8 @@ function info_model(model) result(s)
         if (i < size(model%packages)) s = s // ", "
     end do
     s = s // "]"
-    !    character(:), allocatable :: fortran_compiler
-    s = s // ', fortran_compiler="' // model%fortran_compiler // '"'
+    s = s // ', compiler=(' // debug(model%compiler) // ')'
+    s = s // ', archiver=(' // debug(model%archiver) // ')'
     !    character(:), allocatable :: fortran_compile_flags
     s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
     !    character(:), allocatable :: output_directory

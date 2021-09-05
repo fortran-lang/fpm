@@ -29,6 +29,7 @@
 !>[[ executable ]]
 !>[[ example ]]
 !>[[ test ]]
+!>[extra]
 !>```
 module fpm_manifest_package
     use fpm_manifest_build, only: build_config_t, new_build_config
@@ -161,7 +162,7 @@ contains
         end if
         call new_install_config(self%install, child, error)
         if (allocated(error)) return
-        
+
         call get_value(table, "version", version, "0")
         call new_version(self%version, version, error)
         if (allocated(error) .and. present(root)) then
@@ -303,7 +304,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "test", "executable", &
-                    & "example", "library", "install")
+                    & "example", "library", "install", "extra")
                 continue
 
             end select

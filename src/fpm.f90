@@ -1,16 +1,15 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat
+use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, fnv_1a
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: run, get_env
-use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename
+use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename, filewrite, mkdir
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: get_module_flags, is_unknown_compiler, get_default_c_compiler, &
-                        get_archiver
+use fpm_compiler, only: new_compiler, new_archiver
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
@@ -19,12 +18,9 @@ use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only : error_t, fatal_error, fpm_stop
-use fpm_manifest_test, only : test_config_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
-use fpm_manifest_dependency, only: dependency_config_t
-use, intrinsic :: iso_fortran_env, only: error_unit
 implicit none
 private
 public :: cmd_build, cmd_run
@@ -43,10 +39,11 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir
+    character(len=:), allocatable :: manifest, lib_dir, flags
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
+    character(len=16) :: build_name
 
     model%package_name = package%name
 
@@ -58,27 +55,35 @@ subroutine build_model(model, settings, package, error)
     call model%deps%add(package, error)
     if (allocated(error)) return
 
-    if(settings%compiler.eq.'')then
-        model%fortran_compiler = 'gfortran'
+    ! build/ directory should now exist
+    if (.not.exists("build/.gitignore")) then
+      call filewrite(join_path("build", ".gitignore"),["*"])
+    end if
+
+    call new_compiler(model%compiler, settings%compiler)
+    call new_archiver(model%archiver)
+
+    if (settings%flag == '') then
+        flags = model%compiler%get_default_flags(settings%profile == "release")
     else
-        model%fortran_compiler = settings%compiler
-    endif
+        flags = settings%flag
+        select case(settings%profile)
+        case("release", "debug")
+            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
+        end select
+    end if
 
-    model%archiver = get_archiver()
-    call get_default_c_compiler(model%fortran_compiler, model%c_compiler)
-    model%c_compiler = get_env('FPM_C_COMPILER',model%c_compiler)
+    write(build_name, '(z16.16)') fnv_1a(flags)
 
-    if (is_unknown_compiler(model%fortran_compiler)) then
+    if (model%compiler%is_unknown()) then
         write(*, '(*(a:,1x))') &
-            "<WARN>", "Unknown compiler", model%fortran_compiler, "requested!", &
+            "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
             "Defaults for this compiler might be incorrect"
     end if
-    model%output_directory = join_path('build',basename(model%fortran_compiler)//'_'//settings%build_name)
+    model%output_directory = join_path('build',basename(model%compiler%fc)//'_'//build_name)
 
-    call get_module_flags(model%fortran_compiler, &
-        & join_path(model%output_directory,model%package_name), &
-        & model%fortran_compile_flags)
-    model%fortran_compile_flags = settings%flag // model%fortran_compile_flags
+    model%fortran_compile_flags = flags // " " // &
+        & model%compiler%get_module_flag(join_path(model%output_directory, model%package_name))
 
     allocate(model%packages(model%deps%ndep))
 
@@ -186,9 +191,9 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     if (settings%verbose) then
-        write(*,*)'<INFO> BUILD_NAME: ',settings%build_name
-        write(*,*)'<INFO> COMPILER:  ',settings%compiler
-        write(*,*)'<INFO> C COMPILER:  ',model%c_compiler
+        write(*,*)'<INFO> BUILD_NAME: ',build_name
+        write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
+        write(*,*)'<INFO> C COMPILER:  ',model%compiler%cc
         write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
      end if
@@ -231,7 +236,7 @@ subroutine check_modules_for_duplicates(model, duplicates_found)
         if (allocated(model%packages(k)%sources(l)%modules_provided)) then
           do m=1,size(model%packages(k)%sources(l)%modules_provided)
             if (model%packages(k)%sources(l)%modules_provided(m)%s.in.modules(:modi-1)) then
-              write(error_unit, *) "Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s, &
+              write(stderr, *) "Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s, &
                 " in ",model%packages(k)%sources(l)%file_name," is a duplicate"
               duplicates_found = .true.
             else
