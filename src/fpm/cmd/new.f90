@@ -589,6 +589,11 @@ character(len=*),intent(in) :: filename
    integer                     :: lun
    character(len=8)            :: date
 
+    if(exists(filename))then
+       write(stderr,'(*(g0,1x))')'<INFO>  ',filename,&
+       & 'already exists. Not overwriting'
+       return
+    endif
     !> get date to put into metadata in manifest file "fpm.toml"
     call date_and_time(DATE=date)
     table = toml_table()

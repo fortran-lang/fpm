@@ -31,7 +31,6 @@ use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, fnv_1a, to_fortran_name, is_fortran_name
 use fpm_filesystem,   only : basename, canon_path, which
 use fpm_environment,  only : run, get_command_arguments_quoted
-use fpm_compiler,     only : get_default_compile_flags
 use fpm_error,        only : fpm_stop
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
@@ -70,7 +69,6 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: show_model=.false.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: profile
-    character(len=:),allocatable :: build_name
     character(len=:),allocatable :: flag
 end type
 
@@ -113,7 +111,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',     'new',   'build',  'run',     &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
-character(len=:), allocatable :: val_runner, val_build, val_compiler, val_flag, val_profile
+character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_profile
 
 contains
     subroutine get_command_line_settings(cmd_settings)
@@ -139,7 +137,7 @@ contains
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
         version_text = [character(len=80) :: &
-         &  'Version:     0.3.0, alpha',                               &
+         &  'Version:     0.4.0, alpha',                               &
          &  'Program:     fpm(1)',                                     &
          &  'Description: A Fortran package manager and build system', &
          &  'Home Page:   https://github.com/fortran-lang/fpm',        &
@@ -199,7 +197,6 @@ contains
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
-            & build_name=val_build,&
             & profile=val_profile,&
             & compiler=val_compiler, &
             & flag=val_flag, &
@@ -223,7 +220,6 @@ contains
 
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
-            & build_name=val_build,&
             & profile=val_profile,&
             & compiler=val_compiler, &
             & flag=val_flag, &
@@ -361,7 +357,6 @@ contains
             allocate(install_settings)
             install_settings = fpm_install_settings(&
                 list=lget('list'), &
-                build_name=val_build, &
                 profile=val_profile,&
                 compiler=val_compiler, &
                 flag=val_flag, &
@@ -417,7 +412,6 @@ contains
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
-            & build_name=val_build, &
             & profile=val_profile, &
             & compiler=val_compiler, &
             & flag=val_flag, &
@@ -487,17 +481,6 @@ contains
 
         val_flag = " " // sget('flag')
         val_profile = sget('profile')
-        if (val_flag == '') then
-            call get_default_compile_flags(val_compiler, val_profile == "release", val_flag)
-        else
-            select case(val_profile)
-            case("release", "debug")
-               call get_default_compile_flags(val_compiler, val_profile == "release", flags)
-               val_flag = flags // val_flag
-            end select
-        end if
-        allocate(character(len=16) :: val_build)
-        write(val_build, '(z16.16)') fnv_1a(val_flag)
 
     end subroutine check_build_vals
 

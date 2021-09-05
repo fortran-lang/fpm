@@ -1,9 +1,11 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(__aarch64__)
 DIR * opendir$INODE64( const char * dirName );
 struct dirent * readdir$INODE64( DIR * dir );
+#define opendir opendir$INODE64
+#define readdir readdir$INODE64
 #endif
 
 int c_is_dir(const char *path)
@@ -18,24 +20,12 @@ const char *get_d_name(struct dirent *d)
     return (const char *) d->d_name;
 }
 
-
-
-DIR *c_opendir(const char *dirname){
-
-#ifdef __APPLE__
-    return opendir$INODE64(dirname);
-#else
+DIR *c_opendir(const char *dirname)
+{
     return opendir(dirname);
-#endif
-
 }
 
-struct dirent *c_readdir(DIR *dirp){
-
-#ifdef __APPLE__
-    return readdir$INODE64(dirp);
-#else
+struct dirent *c_readdir(DIR *dirp)
+{
     return readdir(dirp);
-#endif
-
 }
