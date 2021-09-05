@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>schedule_targets &ndash; Fortran-lang/fpm</title>
+    <title>read_lines_expanded &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -119,8 +119,8 @@
     
   
   <div class="row">
-    <h1>schedule_targets
-      <small>Subroutine</small>
+    <h1>read_lines_expanded
+      <small>Function</small>
     
     </h1>
     
@@ -138,24 +138,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.9% of total for procedures.">30 statements</a>
+    title=" 0.4% of total for procedures.">13 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_backend.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_filesystem.F90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_backend.f90.html'>fpm_backend.f90</a></li>
+     <li><a href='../sourcefile/fpm_filesystem.f90.html'>fpm_filesystem.F90</a></li>
     
-     <li><a href='../module/fpm_backend.html'>fpm_backend</a></li>
+     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
     
   
-     <li class="active">schedule_targets</li>
+     <li class="active">read_lines_expanded</li>
   </ol>
 </div>
 </div>
@@ -183,13 +183,13 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/schedule_targets.html#variable-i~12">i</a>
+      <a class="list-group-item" href="../proc/read_lines_expanded.html#variable-i~18">i</a>
       
-      <a class="list-group-item" href="../proc/schedule_targets.html#variable-j~5">j</a>
+      <a class="list-group-item" href="../proc/read_lines_expanded.html#variable-ilen~3">ilen</a>
       
-      <a class="list-group-item" href="../proc/schedule_targets.html#variable-n_schedule">n_schedule</a>
+      <a class="list-group-item" href="../proc/read_lines_expanded.html#variable-line_buffer_expanded">line_buffer_expanded</a>
       
-      <a class="list-group-item" href="../proc/schedule_targets.html#variable-n_sorted">n_sorted</a>
+      <a class="list-group-item" href="../proc/read_lines_expanded.html#variable-line_buffer_read">line_buffer_read</a>
       
     </div>
   </div>
@@ -217,7 +217,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/schedule_targets.html#src">schedule_targets</a>
+    <a class="list-group-item" href="../proc/read_lines_expanded.html#src">read_lines_expanded</a>
   </div>
 </div>
 
@@ -229,7 +229,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine schedule_targets(queue, schedule_ptr, targets)
+public function read_lines_expanded(fh) result(lines)
     
     
    
@@ -239,9 +239,7 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
 
 
     
-    <p>Construct a build schedule from the sorted targets.</p>
-<p>The schedule is broken into regions, described by <code>schedule_ptr</code>,
-  where targets in each region can be compiled in parallel.</p>
+    <p>read lines into an array of TYPE(STRING_T) variables expanding tabs</p>
     
 
     <h3>Arguments</h3>
@@ -262,48 +260,27 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
   
 <tr>
   
-  <td><span class="anchor" id="variable-queue~2"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
-  <td>intent(out),</td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>queue</strong>(:)</td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-schedule_ptr~2"></span>integer,</td>
-  <td></td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>schedule_ptr</strong>(:)</td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-targets~4"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td><span class="anchor" id="variable-fh~3"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>targets</strong>(:)</td><td></td>
+  <td><strong>fh</strong></td><td></td>
   
 </tr>
 
 </tbody>
 </table>
 
+    
+    
+    
+    
+    
+    
+    
+   <h3>Return Value <small><span class="anchor" id="variable-lines~2"></span>type(<a href='../type/string_t.html'>string_t</a>),
+  allocatable,(:)</small></h3>
     
     
     
@@ -323,13 +300,13 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/schedule_targets.html#variable-i~12">i</a>
+      <a class="list-group-item" href="../proc/read_lines_expanded.html#variable-i~18">i</a>
       
-      <a class="list-group-item" href="../proc/schedule_targets.html#variable-j~5">j</a>
+      <a class="list-group-item" href="../proc/read_lines_expanded.html#variable-ilen~3">ilen</a>
       
-      <a class="list-group-item" href="../proc/schedule_targets.html#variable-n_schedule">n_schedule</a>
+      <a class="list-group-item" href="../proc/read_lines_expanded.html#variable-line_buffer_expanded">line_buffer_expanded</a>
       
-      <a class="list-group-item" href="../proc/schedule_targets.html#variable-n_sorted">n_sorted</a>
+      <a class="list-group-item" href="../proc/read_lines_expanded.html#variable-line_buffer_read">line_buffer_read</a>
       
     </div>
   </div>
@@ -357,7 +334,7 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/schedule_targets.html#src">schedule_targets</a>
+    <a class="list-group-item" href="../proc/read_lines_expanded.html#src">read_lines_expanded</a>
   </div>
 </div>
 
@@ -387,7 +364,7 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
   
 <tr>
   
-  <td><span class="anchor" id="variable-i~12"></span>integer,</td>
+  <td><span class="anchor" id="variable-i~18"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
@@ -401,11 +378,11 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
   
 <tr>
   
-  <td><span class="anchor" id="variable-j~5"></span>integer,</td>
+  <td><span class="anchor" id="variable-ilen~3"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>j</strong></td><td></td><td></td><td></td>
+  <td><strong>ilen</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -415,11 +392,11 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
   
 <tr>
   
-  <td><span class="anchor" id="variable-n_schedule"></span>integer,</td>
+  <td><span class="anchor" id="variable-line_buffer_expanded"></span>character(len=LINE_BUFFER_LEN),</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>n_schedule</strong></td><td></td><td></td><td></td>
+  <td><strong>line_buffer_expanded</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -429,11 +406,11 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
   
 <tr>
   
-  <td><span class="anchor" id="variable-n_sorted"></span>integer,</td>
+  <td><span class="anchor" id="variable-line_buffer_read"></span>character(len=LINE_BUFFER_LEN),</td>
   
   <td>public</td>
   <td></td><td>::</td>
-  <td><strong>n_sorted</strong></td><td></td><td></td><td></td>
+  <td><strong>line_buffer_read</strong></td><td></td><td></td><td></td>
   
 </tr>
 
@@ -460,50 +437,22 @@ public subroutine schedule_targets(queue, schedule_ptr, targets)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">schedule_targets</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="n">schedule_ptr</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">queue</span><span class="p">(:)</span>
-    <span class="kt">integer</span><span class="p">,</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">schedule_ptr</span><span class="p">(:)</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">read_lines_expanded</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">fh</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">lines</span><span class="p">(:)</span>
 
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">n_schedule</span><span class="p">,</span> <span class="n">n_sorted</span>
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ilen</span>
+    <span class="kt">character</span><span class="p">(</span><span class="n">LINE_BUFFER_LEN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">line_buffer_read</span><span class="p">,</span> <span class="n">line_buffer_expanded</span>
 
-    <span class="n">n_schedule</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c">! Number of schedule regions</span>
-    <span class="n">n_sorted</span> <span class="o">=</span> <span class="mi">0</span>     <span class="c">! Total number of targets to build</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">sorted</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            </span><span class="n">n_sorted</span> <span class="o">=</span> <span class="n">n_sorted</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="k">end if</span>
-<span class="k">        </span><span class="n">n_schedule</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">n_schedule</span><span class="p">,</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">schedule</span><span class="p">)</span>
-
+    <span class="k">allocate</span><span class="p">(</span><span class="n">lines</span><span class="p">(</span><span class="n">number_of_rows</span><span class="p">(</span><span class="n">fh</span><span class="p">)))</span>
+    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="k">read</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="s1">&#39;(A)&#39;</span><span class="p">)</span> <span class="n">line_buffer_read</span>
+        <span class="k">call </span><span class="n">notabs</span><span class="p">(</span><span class="n">line_buffer_read</span><span class="p">,</span> <span class="n">line_buffer_expanded</span><span class="p">,</span> <span class="n">ilen</span><span class="p">)</span>
+        <span class="n">lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">line_buffer_expanded</span><span class="p">)</span>
     <span class="k">end do</span>
 
-<span class="k">    allocate</span><span class="p">(</span><span class="n">queue</span><span class="p">(</span><span class="n">n_sorted</span><span class="p">))</span>
-    <span class="k">allocate</span><span class="p">(</span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">n_schedule</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-
-    <span class="c">! Construct the target queue and schedule region pointer</span>
-    <span class="n">n_sorted</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">schedule_ptr</span><span class="p">(</span><span class="n">n_sorted</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n_schedule</span>
-
-        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">sorted</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">schedule</span> <span class="o">==</span> <span class="n">i</span><span class="p">)</span> <span class="k">then</span>
-
-<span class="k">                    </span><span class="n">queue</span><span class="p">(</span><span class="n">n_sorted</span><span class="p">)%</span><span class="n">ptr</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span>
-                    <span class="n">n_sorted</span> <span class="o">=</span> <span class="n">n_sorted</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="k">end if</span>
-<span class="k">            end if</span>
-
-<span class="k">        end do</span>
-
-<span class="k">        </span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">n_sorted</span>
-
-    <span class="k">end do</span>
-
-<span class="k">end subroutine </span><span class="n">schedule_targets</span>
+<span class="k">end function </span><span class="n">read_lines_expanded</span>
 </pre></div>
 
     </section>

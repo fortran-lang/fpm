@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.6% of total for source files.">507 statements</a>
+    title=" 8.7% of total for source files.">521 statements</a>
      </li> 
      
      
@@ -281,820 +281,838 @@
 <a id="ln-6" name="ln-6"></a>                               <span class="n">OS_UNKNOWN</span><span class="p">,</span> <span class="n">OS_LINUX</span><span class="p">,</span> <span class="n">OS_MACOS</span><span class="p">,</span> <span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="p">&amp;</span>
 <a id="ln-7" name="ln-7"></a>                               <span class="n">OS_CYGWIN</span><span class="p">,</span> <span class="n">OS_SOLARIS</span><span class="p">,</span> <span class="n">OS_FREEBSD</span><span class="p">,</span> <span class="n">OS_OPENBSD</span>
 <a id="ln-8" name="ln-8"></a>    <span class="k">use </span><span class="n">fpm_environment</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">separator</span><span class="p">,</span> <span class="n">get_env</span>
-<a id="ln-9" name="ln-9"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">f_string</span><span class="p">,</span> <span class="n">replace</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">split</span>
+<a id="ln-9" name="ln-9"></a>    <span class="k">use </span><span class="n">fpm_strings</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">f_string</span><span class="p">,</span> <span class="n">replace</span><span class="p">,</span> <span class="n">string_t</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">notabs</span>
 <a id="ln-10" name="ln-10"></a>    <span class="k">use </span><span class="nb">iso_c_binding</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="kt">c_char</span><span class="p">,</span> <span class="kt">c_ptr</span><span class="p">,</span> <span class="kt">c_int</span><span class="p">,</span> <span class="nb">c_null_char</span><span class="p">,</span> <span class="nb">c_associated</span><span class="p">,</span> <span class="nb">c_f_pointer</span>
 <a id="ln-11" name="ln-11"></a><span class="nb">    </span><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">fpm_stop</span>
 <a id="ln-12" name="ln-12"></a>    <span class="k">implicit none</span>
 <a id="ln-13" name="ln-13"></a><span class="k">    private</span>
-<a id="ln-14" name="ln-14"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">number_of_rows</span><span class="p">,</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,</span> <span class="n">env_variable</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-14" name="ln-14"></a><span class="k">    public</span> <span class="kd">::</span> <span class="n">basename</span><span class="p">,</span> <span class="n">canon_path</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">is_dir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">number_of_rows</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,</span> <span class="n">env_variable</span><span class="p">,</span> <span class="p">&amp;</span>
 <a id="ln-15" name="ln-15"></a>            <span class="n">mkdir</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">get_temp_filename</span><span class="p">,</span> <span class="n">windows_path</span><span class="p">,</span> <span class="n">unix_path</span><span class="p">,</span> <span class="n">getline</span><span class="p">,</span> <span class="n">delete_file</span>
 <a id="ln-16" name="ln-16"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">fileopen</span><span class="p">,</span> <span class="n">fileclose</span><span class="p">,</span> <span class="n">filewrite</span><span class="p">,</span> <span class="n">warnwrite</span><span class="p">,</span> <span class="n">parent_dir</span>
-<a id="ln-17" name="ln-17"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">which</span>
-<a id="ln-18" name="ln-18"></a>
-<a id="ln-19" name="ln-19"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_BUFFER_LEN</span> <span class="o">=</span> <span class="mi">1000</span>
-<a id="ln-20" name="ln-20"></a>
-<a id="ln-21" name="ln-21"></a><span class="cp">#ifndef FPM_BOOTSTRAP</span>
-<a id="ln-22" name="ln-22"></a>    <span class="k">interface</span>
-<a id="ln-23" name="ln-23"></a><span class="k">        function </span><span class="n">c_opendir</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;c_opendir&quot;</span><span class="p">)</span>
-<a id="ln-24" name="ln-24"></a>            <span class="k">import </span><span class="kt">c_char</span><span class="p">,</span> <span class="kt">c_ptr</span>
-<a id="ln-25" name="ln-25"></a><span class="kt">            character</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_char</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dir</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
-<a id="ln-26" name="ln-26"></a>            <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
-<a id="ln-27" name="ln-27"></a>        <span class="k">end function </span><span class="n">c_opendir</span>
-<a id="ln-28" name="ln-28"></a>
-<a id="ln-29" name="ln-29"></a>        <span class="k">function </span><span class="n">c_readdir</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;c_readdir&quot;</span><span class="p">)</span>
-<a id="ln-30" name="ln-30"></a>            <span class="k">import </span><span class="kt">c_ptr</span>
-<a id="ln-31" name="ln-31"></a><span class="kt">            </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">dir</span>
-<a id="ln-32" name="ln-32"></a>            <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
-<a id="ln-33" name="ln-33"></a>        <span class="k">end function </span><span class="n">c_readdir</span>
-<a id="ln-34" name="ln-34"></a>
-<a id="ln-35" name="ln-35"></a>        <span class="k">function </span><span class="n">c_closedir</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;closedir&quot;</span><span class="p">)</span>
-<a id="ln-36" name="ln-36"></a>            <span class="k">import </span><span class="kt">c_ptr</span><span class="p">,</span> <span class="kt">c_int</span>
-<a id="ln-37" name="ln-37"></a><span class="kt">            </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">dir</span>
-<a id="ln-38" name="ln-38"></a>            <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
-<a id="ln-39" name="ln-39"></a>        <span class="k">end function </span><span class="n">c_closedir</span>
-<a id="ln-40" name="ln-40"></a>
-<a id="ln-41" name="ln-41"></a>        <span class="k">function </span><span class="n">c_get_d_name</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;get_d_name&quot;</span><span class="p">)</span>
-<a id="ln-42" name="ln-42"></a>            <span class="k">import </span><span class="kt">c_ptr</span>
-<a id="ln-43" name="ln-43"></a><span class="kt">            </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">dir</span>
-<a id="ln-44" name="ln-44"></a>            <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
-<a id="ln-45" name="ln-45"></a>        <span class="k">end function </span><span class="n">c_get_d_name</span>
-<a id="ln-46" name="ln-46"></a>
-<a id="ln-47" name="ln-47"></a>        <span class="k">function </span><span class="n">c_is_dir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;c_is_dir&quot;</span><span class="p">)</span>
-<a id="ln-48" name="ln-48"></a>            <span class="k">import </span><span class="kt">c_char</span><span class="p">,</span> <span class="kt">c_int</span>
-<a id="ln-49" name="ln-49"></a><span class="kt">            character</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_char</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
-<a id="ln-50" name="ln-50"></a>            <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
-<a id="ln-51" name="ln-51"></a>        <span class="k">end function </span><span class="n">c_is_dir</span>
-<a id="ln-52" name="ln-52"></a>    <span class="k">end interface</span>
-<a id="ln-53" name="ln-53"></a><span class="cp">#endif</span>
-<a id="ln-54" name="ln-54"></a>
-<a id="ln-55" name="ln-55"></a><span class="k">contains</span>
-<a id="ln-56" name="ln-56"></a>
+<a id="ln-17" name="ln-17"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">read_lines_expanded</span>
+<a id="ln-18" name="ln-18"></a>    <span class="k">public</span> <span class="kd">::</span> <span class="n">which</span>
+<a id="ln-19" name="ln-19"></a>
+<a id="ln-20" name="ln-20"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">LINE_BUFFER_LEN</span> <span class="o">=</span> <span class="mi">1000</span>
+<a id="ln-21" name="ln-21"></a>
+<a id="ln-22" name="ln-22"></a><span class="cp">#ifndef FPM_BOOTSTRAP</span>
+<a id="ln-23" name="ln-23"></a>    <span class="k">interface</span>
+<a id="ln-24" name="ln-24"></a><span class="k">        function </span><span class="n">c_opendir</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;c_opendir&quot;</span><span class="p">)</span>
+<a id="ln-25" name="ln-25"></a>            <span class="k">import </span><span class="kt">c_char</span><span class="p">,</span> <span class="kt">c_ptr</span>
+<a id="ln-26" name="ln-26"></a><span class="kt">            character</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_char</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dir</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<a id="ln-27" name="ln-27"></a>            <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
+<a id="ln-28" name="ln-28"></a>        <span class="k">end function </span><span class="n">c_opendir</span>
+<a id="ln-29" name="ln-29"></a>
+<a id="ln-30" name="ln-30"></a>        <span class="k">function </span><span class="n">c_readdir</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;c_readdir&quot;</span><span class="p">)</span>
+<a id="ln-31" name="ln-31"></a>            <span class="k">import </span><span class="kt">c_ptr</span>
+<a id="ln-32" name="ln-32"></a><span class="kt">            </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">dir</span>
+<a id="ln-33" name="ln-33"></a>            <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
+<a id="ln-34" name="ln-34"></a>        <span class="k">end function </span><span class="n">c_readdir</span>
+<a id="ln-35" name="ln-35"></a>
+<a id="ln-36" name="ln-36"></a>        <span class="k">function </span><span class="n">c_closedir</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;closedir&quot;</span><span class="p">)</span>
+<a id="ln-37" name="ln-37"></a>            <span class="k">import </span><span class="kt">c_ptr</span><span class="p">,</span> <span class="kt">c_int</span>
+<a id="ln-38" name="ln-38"></a><span class="kt">            </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">dir</span>
+<a id="ln-39" name="ln-39"></a>            <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
+<a id="ln-40" name="ln-40"></a>        <span class="k">end function </span><span class="n">c_closedir</span>
+<a id="ln-41" name="ln-41"></a>
+<a id="ln-42" name="ln-42"></a>        <span class="k">function </span><span class="n">c_get_d_name</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;get_d_name&quot;</span><span class="p">)</span>
+<a id="ln-43" name="ln-43"></a>            <span class="k">import </span><span class="kt">c_ptr</span>
+<a id="ln-44" name="ln-44"></a><span class="kt">            </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">dir</span>
+<a id="ln-45" name="ln-45"></a>            <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
+<a id="ln-46" name="ln-46"></a>        <span class="k">end function </span><span class="n">c_get_d_name</span>
+<a id="ln-47" name="ln-47"></a>
+<a id="ln-48" name="ln-48"></a>        <span class="k">function </span><span class="n">c_is_dir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;c_is_dir&quot;</span><span class="p">)</span>
+<a id="ln-49" name="ln-49"></a>            <span class="k">import </span><span class="kt">c_char</span><span class="p">,</span> <span class="kt">c_int</span>
+<a id="ln-50" name="ln-50"></a><span class="kt">            character</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_char</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<a id="ln-51" name="ln-51"></a>            <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int</span><span class="p">)</span> <span class="kd">::</span> <span class="n">r</span>
+<a id="ln-52" name="ln-52"></a>        <span class="k">end function </span><span class="n">c_is_dir</span>
+<a id="ln-53" name="ln-53"></a>    <span class="k">end interface</span>
+<a id="ln-54" name="ln-54"></a><span class="cp">#endif</span>
+<a id="ln-55" name="ln-55"></a>
+<a id="ln-56" name="ln-56"></a><span class="k">contains</span>
 <a id="ln-57" name="ln-57"></a>
-<a id="ln-58" name="ln-58"></a><span class="c">!&gt; return value of environment variable</span>
-<a id="ln-59" name="ln-59"></a><span class="k">subroutine </span><span class="n">env_variable</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="ln-60" name="ln-60"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span>
-<a id="ln-61" name="ln-61"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
-<a id="ln-62" name="ln-62"></a>   <span class="kt">integer</span> <span class="kd">::</span> <span class="n">length</span><span class="p">,</span> <span class="nb">stat</span>
-<a id="ln-63" name="ln-63"></a>
-<a id="ln-64" name="ln-64"></a><span class="nb">   </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-65" name="ln-65"></a>   <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span>
-<a id="ln-66" name="ln-66"></a>
-<a id="ln-67" name="ln-67"></a><span class="k">   allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">length</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span><span class="p">)</span>
-<a id="ln-68" name="ln-68"></a>
-<a id="ln-69" name="ln-69"></a>   <span class="k">if</span> <span class="p">(</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-70" name="ln-70"></a><span class="k">      call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-71" name="ln-71"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-72" name="ln-72"></a><span class="k">         deallocate</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
-<a id="ln-73" name="ln-73"></a>         <span class="k">return</span>
-<a id="ln-74" name="ln-74"></a><span class="k">      end if</span>
-<a id="ln-75" name="ln-75"></a><span class="k">   end if</span>
-<a id="ln-76" name="ln-76"></a>
-<a id="ln-77" name="ln-77"></a><span class="k">end subroutine </span><span class="n">env_variable</span>
-<a id="ln-78" name="ln-78"></a>
+<a id="ln-58" name="ln-58"></a>
+<a id="ln-59" name="ln-59"></a><span class="c">!&gt; return value of environment variable</span>
+<a id="ln-60" name="ln-60"></a><span class="k">subroutine </span><span class="n">env_variable</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="ln-61" name="ln-61"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span>
+<a id="ln-62" name="ln-62"></a>   <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a id="ln-63" name="ln-63"></a>   <span class="kt">integer</span> <span class="kd">::</span> <span class="n">length</span><span class="p">,</span> <span class="nb">stat</span>
+<a id="ln-64" name="ln-64"></a>
+<a id="ln-65" name="ln-65"></a><span class="nb">   </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-66" name="ln-66"></a>   <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span>
+<a id="ln-67" name="ln-67"></a>
+<a id="ln-68" name="ln-68"></a><span class="k">   allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">length</span><span class="p">)</span> <span class="kd">::</span> <span class="n">var</span><span class="p">)</span>
+<a id="ln-69" name="ln-69"></a>
+<a id="ln-70" name="ln-70"></a>   <span class="k">if</span> <span class="p">(</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-71" name="ln-71"></a><span class="k">      call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-72" name="ln-72"></a>      <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-73" name="ln-73"></a><span class="k">         deallocate</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+<a id="ln-74" name="ln-74"></a>         <span class="k">return</span>
+<a id="ln-75" name="ln-75"></a><span class="k">      end if</span>
+<a id="ln-76" name="ln-76"></a><span class="k">   end if</span>
+<a id="ln-77" name="ln-77"></a>
+<a id="ln-78" name="ln-78"></a><span class="k">end subroutine </span><span class="n">env_variable</span>
 <a id="ln-79" name="ln-79"></a>
-<a id="ln-80" name="ln-80"></a><span class="c">!&gt; Extract filename from path with/without suffix</span>
-<a id="ln-81" name="ln-81"></a><span class="k">function </span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">suffix</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">base</span><span class="p">)</span>
-<a id="ln-82" name="ln-82"></a>
-<a id="ln-83" name="ln-83"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">In</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
-<a id="ln-84" name="ln-84"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">suffix</span>
-<a id="ln-85" name="ln-85"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">base</span>
-<a id="ln-86" name="ln-86"></a>
-<a id="ln-87" name="ln-87"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_parts</span><span class="p">(:)</span>
-<a id="ln-88" name="ln-88"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">with_suffix</span>
-<a id="ln-89" name="ln-89"></a>
-<a id="ln-90" name="ln-90"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">suffix</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-91" name="ln-91"></a><span class="k">        </span><span class="n">with_suffix</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a id="ln-92" name="ln-92"></a>    <span class="k">else</span>
-<a id="ln-93" name="ln-93"></a><span class="k">        </span><span class="n">with_suffix</span> <span class="o">=</span> <span class="n">suffix</span>
-<a id="ln-94" name="ln-94"></a>    <span class="k">end if</span>
-<a id="ln-95" name="ln-95"></a>
-<a id="ln-96" name="ln-96"></a><span class="k">    if</span> <span class="p">(</span><span class="n">with_suffix</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-97" name="ln-97"></a><span class="k">        call </span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">file_parts</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39;\/&#39;</span><span class="p">)</span>
-<a id="ln-98" name="ln-98"></a>        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">).</span><span class="n">gt</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-99" name="ln-99"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_parts</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">)))</span>
-<a id="ln-100" name="ln-100"></a>        <span class="k">else</span>
-<a id="ln-101" name="ln-101"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-<a id="ln-102" name="ln-102"></a>        <span class="k">endif</span>
-<a id="ln-103" name="ln-103"></a><span class="k">    else</span>
-<a id="ln-104" name="ln-104"></a><span class="k">        call </span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">file_parts</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39;\/.&#39;</span><span class="p">)</span>
-<a id="ln-105" name="ln-105"></a>        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">).</span><span class="n">ge</span><span class="p">.</span><span class="mi">2</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-106" name="ln-106"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_parts</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-<a id="ln-107" name="ln-107"></a>        <span class="k">else</span>
-<a id="ln-108" name="ln-108"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-<a id="ln-109" name="ln-109"></a>        <span class="k">endif</span>
-<a id="ln-110" name="ln-110"></a><span class="k">    end if</span>
-<a id="ln-111" name="ln-111"></a>
-<a id="ln-112" name="ln-112"></a><span class="k">end function </span><span class="n">basename</span>
-<a id="ln-113" name="ln-113"></a>
+<a id="ln-80" name="ln-80"></a>
+<a id="ln-81" name="ln-81"></a><span class="c">!&gt; Extract filename from path with/without suffix</span>
+<a id="ln-82" name="ln-82"></a><span class="k">function </span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">suffix</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">base</span><span class="p">)</span>
+<a id="ln-83" name="ln-83"></a>
+<a id="ln-84" name="ln-84"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">In</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+<a id="ln-85" name="ln-85"></a>    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">suffix</span>
+<a id="ln-86" name="ln-86"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">base</span>
+<a id="ln-87" name="ln-87"></a>
+<a id="ln-88" name="ln-88"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_parts</span><span class="p">(:)</span>
+<a id="ln-89" name="ln-89"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">with_suffix</span>
+<a id="ln-90" name="ln-90"></a>
+<a id="ln-91" name="ln-91"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">suffix</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-92" name="ln-92"></a><span class="k">        </span><span class="n">with_suffix</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a id="ln-93" name="ln-93"></a>    <span class="k">else</span>
+<a id="ln-94" name="ln-94"></a><span class="k">        </span><span class="n">with_suffix</span> <span class="o">=</span> <span class="n">suffix</span>
+<a id="ln-95" name="ln-95"></a>    <span class="k">end if</span>
+<a id="ln-96" name="ln-96"></a>
+<a id="ln-97" name="ln-97"></a><span class="k">    if</span> <span class="p">(</span><span class="n">with_suffix</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-98" name="ln-98"></a><span class="k">        call </span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">file_parts</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39;\/&#39;</span><span class="p">)</span>
+<a id="ln-99" name="ln-99"></a>        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">).</span><span class="n">gt</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-100" name="ln-100"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_parts</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">)))</span>
+<a id="ln-101" name="ln-101"></a>        <span class="k">else</span>
+<a id="ln-102" name="ln-102"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<a id="ln-103" name="ln-103"></a>        <span class="k">endif</span>
+<a id="ln-104" name="ln-104"></a><span class="k">    else</span>
+<a id="ln-105" name="ln-105"></a><span class="k">        call </span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">file_parts</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39;\/.&#39;</span><span class="p">)</span>
+<a id="ln-106" name="ln-106"></a>        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">).</span><span class="n">ge</span><span class="p">.</span><span class="mi">2</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-107" name="ln-107"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_parts</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">file_parts</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a id="ln-108" name="ln-108"></a>        <span class="k">else</span>
+<a id="ln-109" name="ln-109"></a><span class="k">           </span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<a id="ln-110" name="ln-110"></a>        <span class="k">endif</span>
+<a id="ln-111" name="ln-111"></a><span class="k">    end if</span>
+<a id="ln-112" name="ln-112"></a>
+<a id="ln-113" name="ln-113"></a><span class="k">end function </span><span class="n">basename</span>
 <a id="ln-114" name="ln-114"></a>
-<a id="ln-115" name="ln-115"></a><span class="c">!&gt; Canonicalize path for comparison</span>
-<a id="ln-116" name="ln-116"></a><span class="c">!! * Handles path string redundancies</span>
-<a id="ln-117" name="ln-117"></a><span class="c">!! * Does not test existence of path</span>
-<a id="ln-118" name="ln-118"></a><span class="c">!!</span>
-<a id="ln-119" name="ln-119"></a><span class="c">!! To be replaced by realpath/_fullname in stdlib_os</span>
-<a id="ln-120" name="ln-120"></a><span class="c">!!</span>
-<a id="ln-121" name="ln-121"></a><span class="c">!! FIXME: Lot&#39;s of ugly hacks following here</span>
-<a id="ln-122" name="ln-122"></a><span class="k">function </span><span class="n">canon_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-<a id="ln-123" name="ln-123"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
-<a id="ln-124" name="ln-124"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">canon_path</span>
-<a id="ln-125" name="ln-125"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">nixpath</span>
-<a id="ln-126" name="ln-126"></a>
-<a id="ln-127" name="ln-127"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="n">last</span>
-<a id="ln-128" name="ln-128"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_path</span><span class="p">,</span> <span class="n">absolute</span>
-<a id="ln-129" name="ln-129"></a>
-<a id="ln-130" name="ln-130"></a>    <span class="n">nixpath</span> <span class="o">=</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-<a id="ln-131" name="ln-131"></a>
-<a id="ln-132" name="ln-132"></a>    <span class="n">istart</span> <span class="o">=</span> <span class="mi">0</span>
-<a id="ln-133" name="ln-133"></a>    <span class="n">nn</span> <span class="o">=</span> <span class="mi">0</span>
-<a id="ln-134" name="ln-134"></a>    <span class="n">iend</span> <span class="o">=</span> <span class="mi">0</span>
-<a id="ln-135" name="ln-135"></a>    <span class="n">absolute</span> <span class="o">=</span> <span class="n">nixpath</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span>
-<a id="ln-136" name="ln-136"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">absolute</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-137" name="ln-137"></a><span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
-<a id="ln-138" name="ln-138"></a>    <span class="k">else</span>
-<a id="ln-139" name="ln-139"></a><span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="ln-140" name="ln-140"></a>    <span class="k">end if</span>
-<a id="ln-141" name="ln-141"></a>
-<a id="ln-142" name="ln-142"></a><span class="k">    do while</span><span class="p">(</span><span class="n">iend</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">))</span>
-<a id="ln-143" name="ln-143"></a>        <span class="k">call </span><span class="n">next</span><span class="p">(</span><span class="n">nixpath</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_path</span><span class="p">)</span>
-<a id="ln-144" name="ln-144"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">is_path</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-145" name="ln-145"></a><span class="k">            select case</span><span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">))</span>
-<a id="ln-146" name="ln-146"></a>            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="c">! always drop empty paths</span>
-<a id="ln-147" name="ln-147"></a>            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
-<a id="ln-148" name="ln-148"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">nn</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-149" name="ln-149"></a><span class="k">                    </span><span class="n">last</span> <span class="o">=</span> <span class="nb">scan</span><span class="p">(</span><span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">back</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<a id="ln-150" name="ln-150"></a>                    <span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(:</span><span class="n">last</span><span class="p">)</span>
-<a id="ln-151" name="ln-151"></a>                    <span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">-</span> <span class="mi">1</span>
-<a id="ln-152" name="ln-152"></a>                <span class="k">else</span>
-<a id="ln-153" name="ln-153"></a><span class="k">                    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span> <span class="n">absolute</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-154" name="ln-154"></a><span class="k">                        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span> <span class="o">//</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span> <span class="o">//</span> <span class="s2">&quot;/&quot;</span>
-<a id="ln-155" name="ln-155"></a>                    <span class="k">end if</span>
-<a id="ln-156" name="ln-156"></a><span class="k">                end if</span>
-<a id="ln-157" name="ln-157"></a><span class="k">            case </span><span class="n">default</span>
-<a id="ln-158" name="ln-158"></a>                <span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">+</span> <span class="mi">1</span>
-<a id="ln-159" name="ln-159"></a>                <span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span> <span class="o">//</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span> <span class="o">//</span> <span class="s2">&quot;/&quot;</span>
-<a id="ln-160" name="ln-160"></a>            <span class="k">end select</span>
-<a id="ln-161" name="ln-161"></a><span class="k">        end if</span>
-<a id="ln-162" name="ln-162"></a><span class="k">    end do</span>
-<a id="ln-163" name="ln-163"></a>
-<a id="ln-164" name="ln-164"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
-<a id="ln-165" name="ln-165"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">canon_path</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">):)</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-166" name="ln-166"></a><span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<a id="ln-167" name="ln-167"></a>    <span class="k">end if</span>
-<a id="ln-168" name="ln-168"></a>
-<a id="ln-169" name="ln-169"></a><span class="k">contains</span>
-<a id="ln-170" name="ln-170"></a>
-<a id="ln-171" name="ln-171"></a><span class="k">    subroutine </span><span class="n">next</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_path</span><span class="p">)</span>
-<a id="ln-172" name="ln-172"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
-<a id="ln-173" name="ln-173"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">istart</span>
-<a id="ln-174" name="ln-174"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">iend</span>
-<a id="ln-175" name="ln-175"></a>        <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">is_path</span>
-<a id="ln-176" name="ln-176"></a>
-<a id="ln-177" name="ln-177"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">nn</span>
-<a id="ln-178" name="ln-178"></a>        <span class="kt">character</span> <span class="kd">::</span> <span class="n">tok</span>
-<a id="ln-179" name="ln-179"></a>
-<a id="ln-180" name="ln-180"></a>        <span class="n">nn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
-<a id="ln-181" name="ln-181"></a>
-<a id="ln-182" name="ln-182"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">iend</span> <span class="o">&gt;=</span> <span class="n">nn</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-183" name="ln-183"></a><span class="k">            </span><span class="n">istart</span> <span class="o">=</span> <span class="n">nn</span>
-<a id="ln-184" name="ln-184"></a>            <span class="n">iend</span> <span class="o">=</span> <span class="n">nn</span>
-<a id="ln-185" name="ln-185"></a>            <span class="k">return</span>
-<a id="ln-186" name="ln-186"></a><span class="k">        end if</span>
-<a id="ln-187" name="ln-187"></a>
-<a id="ln-188" name="ln-188"></a><span class="k">        </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">)</span>
-<a id="ln-189" name="ln-189"></a>        <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
-<a id="ln-190" name="ln-190"></a>
-<a id="ln-191" name="ln-191"></a>        <span class="n">is_path</span> <span class="o">=</span> <span class="n">tok</span> <span class="o">/=</span> <span class="s1">&#39;/&#39;</span>
-<a id="ln-192" name="ln-192"></a>
-<a id="ln-193" name="ln-193"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_path</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-194" name="ln-194"></a><span class="k">            </span><span class="n">is_path</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
-<a id="ln-195" name="ln-195"></a>            <span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
-<a id="ln-196" name="ln-196"></a>            <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
-<a id="ln-197" name="ln-197"></a>            <span class="k">return</span>
-<a id="ln-198" name="ln-198"></a><span class="k">        end if</span>
-<a id="ln-199" name="ln-199"></a>
-<a id="ln-200" name="ln-200"></a><span class="k">        </span><span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
-<a id="ln-201" name="ln-201"></a>        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">),</span> <span class="n">nn</span>
-<a id="ln-202" name="ln-202"></a>            <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
-<a id="ln-203" name="ln-203"></a>            <span class="k">select case</span><span class="p">(</span><span class="n">tok</span><span class="p">)</span>
-<a id="ln-204" name="ln-204"></a>            <span class="k">case</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-<a id="ln-205" name="ln-205"></a>                <span class="k">exit</span>
-<a id="ln-206" name="ln-206"></a><span class="k">            case </span><span class="n">default</span>
-<a id="ln-207" name="ln-207"></a>                <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
-<a id="ln-208" name="ln-208"></a>                <span class="k">cycle</span>
-<a id="ln-209" name="ln-209"></a><span class="k">            end select</span>
-<a id="ln-210" name="ln-210"></a><span class="k">        end do</span>
-<a id="ln-211" name="ln-211"></a>
-<a id="ln-212" name="ln-212"></a><span class="k">    end subroutine </span><span class="n">next</span>
-<a id="ln-213" name="ln-213"></a><span class="k">end function </span><span class="n">canon_path</span>
-<a id="ln-214" name="ln-214"></a>
+<a id="ln-115" name="ln-115"></a>
+<a id="ln-116" name="ln-116"></a><span class="c">!&gt; Canonicalize path for comparison</span>
+<a id="ln-117" name="ln-117"></a><span class="c">!! * Handles path string redundancies</span>
+<a id="ln-118" name="ln-118"></a><span class="c">!! * Does not test existence of path</span>
+<a id="ln-119" name="ln-119"></a><span class="c">!!</span>
+<a id="ln-120" name="ln-120"></a><span class="c">!! To be replaced by realpath/_fullname in stdlib_os</span>
+<a id="ln-121" name="ln-121"></a><span class="c">!!</span>
+<a id="ln-122" name="ln-122"></a><span class="c">!! FIXME: Lot&#39;s of ugly hacks following here</span>
+<a id="ln-123" name="ln-123"></a><span class="k">function </span><span class="n">canon_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<a id="ln-124" name="ln-124"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+<a id="ln-125" name="ln-125"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">canon_path</span>
+<a id="ln-126" name="ln-126"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">nixpath</span>
+<a id="ln-127" name="ln-127"></a>
+<a id="ln-128" name="ln-128"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="n">last</span>
+<a id="ln-129" name="ln-129"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_path</span><span class="p">,</span> <span class="n">absolute</span>
+<a id="ln-130" name="ln-130"></a>
+<a id="ln-131" name="ln-131"></a>    <span class="n">nixpath</span> <span class="o">=</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<a id="ln-132" name="ln-132"></a>
+<a id="ln-133" name="ln-133"></a>    <span class="n">istart</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="ln-134" name="ln-134"></a>    <span class="n">nn</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="ln-135" name="ln-135"></a>    <span class="n">iend</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="ln-136" name="ln-136"></a>    <span class="n">absolute</span> <span class="o">=</span> <span class="n">nixpath</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span>
+<a id="ln-137" name="ln-137"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">absolute</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-138" name="ln-138"></a><span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
+<a id="ln-139" name="ln-139"></a>    <span class="k">else</span>
+<a id="ln-140" name="ln-140"></a><span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="ln-141" name="ln-141"></a>    <span class="k">end if</span>
+<a id="ln-142" name="ln-142"></a>
+<a id="ln-143" name="ln-143"></a><span class="k">    do while</span><span class="p">(</span><span class="n">iend</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nixpath</span><span class="p">))</span>
+<a id="ln-144" name="ln-144"></a>        <span class="k">call </span><span class="n">next</span><span class="p">(</span><span class="n">nixpath</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_path</span><span class="p">)</span>
+<a id="ln-145" name="ln-145"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">is_path</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-146" name="ln-146"></a><span class="k">            select case</span><span class="p">(</span><span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">))</span>
+<a id="ln-147" name="ln-147"></a>            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="c">! always drop empty paths</span>
+<a id="ln-148" name="ln-148"></a>            <span class="k">case</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+<a id="ln-149" name="ln-149"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">nn</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-150" name="ln-150"></a><span class="k">                    </span><span class="n">last</span> <span class="o">=</span> <span class="nb">scan</span><span class="p">(</span><span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">back</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
+<a id="ln-151" name="ln-151"></a>                    <span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(:</span><span class="n">last</span><span class="p">)</span>
+<a id="ln-152" name="ln-152"></a>                    <span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">-</span> <span class="mi">1</span>
+<a id="ln-153" name="ln-153"></a>                <span class="k">else</span>
+<a id="ln-154" name="ln-154"></a><span class="k">                    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span> <span class="n">absolute</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-155" name="ln-155"></a><span class="k">                        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span> <span class="o">//</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span> <span class="o">//</span> <span class="s2">&quot;/&quot;</span>
+<a id="ln-156" name="ln-156"></a>                    <span class="k">end if</span>
+<a id="ln-157" name="ln-157"></a><span class="k">                end if</span>
+<a id="ln-158" name="ln-158"></a><span class="k">            case </span><span class="n">default</span>
+<a id="ln-159" name="ln-159"></a>                <span class="n">nn</span> <span class="o">=</span> <span class="n">nn</span> <span class="o">+</span> <span class="mi">1</span>
+<a id="ln-160" name="ln-160"></a>                <span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span> <span class="o">//</span> <span class="n">nixpath</span><span class="p">(</span><span class="n">istart</span><span class="p">:</span><span class="n">iend</span><span class="p">)</span> <span class="o">//</span> <span class="s2">&quot;/&quot;</span>
+<a id="ln-161" name="ln-161"></a>            <span class="k">end select</span>
+<a id="ln-162" name="ln-162"></a><span class="k">        end if</span>
+<a id="ln-163" name="ln-163"></a><span class="k">    end do</span>
+<a id="ln-164" name="ln-164"></a>
+<a id="ln-165" name="ln-165"></a><span class="k">    if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">canon_path</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
+<a id="ln-166" name="ln-166"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">canon_path</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">):)</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-167" name="ln-167"></a><span class="k">        </span><span class="n">canon_path</span> <span class="o">=</span> <span class="n">canon_path</span><span class="p">(:</span><span class="nb">len</span><span class="p">(</span><span class="n">canon_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a id="ln-168" name="ln-168"></a>    <span class="k">end if</span>
+<a id="ln-169" name="ln-169"></a>
+<a id="ln-170" name="ln-170"></a><span class="k">contains</span>
+<a id="ln-171" name="ln-171"></a>
+<a id="ln-172" name="ln-172"></a><span class="k">    subroutine </span><span class="n">next</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">is_path</span><span class="p">)</span>
+<a id="ln-173" name="ln-173"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">string</span>
+<a id="ln-174" name="ln-174"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">istart</span>
+<a id="ln-175" name="ln-175"></a>        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">iend</span>
+<a id="ln-176" name="ln-176"></a>        <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">is_path</span>
+<a id="ln-177" name="ln-177"></a>
+<a id="ln-178" name="ln-178"></a>        <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span><span class="p">,</span> <span class="n">nn</span>
+<a id="ln-179" name="ln-179"></a>        <span class="kt">character</span> <span class="kd">::</span> <span class="n">tok</span>
+<a id="ln-180" name="ln-180"></a>
+<a id="ln-181" name="ln-181"></a>        <span class="n">nn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<a id="ln-182" name="ln-182"></a>
+<a id="ln-183" name="ln-183"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">iend</span> <span class="o">&gt;=</span> <span class="n">nn</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-184" name="ln-184"></a><span class="k">            </span><span class="n">istart</span> <span class="o">=</span> <span class="n">nn</span>
+<a id="ln-185" name="ln-185"></a>            <span class="n">iend</span> <span class="o">=</span> <span class="n">nn</span>
+<a id="ln-186" name="ln-186"></a>            <span class="k">return</span>
+<a id="ln-187" name="ln-187"></a><span class="k">        end if</span>
+<a id="ln-188" name="ln-188"></a>
+<a id="ln-189" name="ln-189"></a><span class="k">        </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">)</span>
+<a id="ln-190" name="ln-190"></a>        <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
+<a id="ln-191" name="ln-191"></a>
+<a id="ln-192" name="ln-192"></a>        <span class="n">is_path</span> <span class="o">=</span> <span class="n">tok</span> <span class="o">/=</span> <span class="s1">&#39;/&#39;</span>
+<a id="ln-193" name="ln-193"></a>
+<a id="ln-194" name="ln-194"></a>        <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_path</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-195" name="ln-195"></a><span class="k">            </span><span class="n">is_path</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a id="ln-196" name="ln-196"></a>            <span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
+<a id="ln-197" name="ln-197"></a>            <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
+<a id="ln-198" name="ln-198"></a>            <span class="k">return</span>
+<a id="ln-199" name="ln-199"></a><span class="k">        end if</span>
+<a id="ln-200" name="ln-200"></a>
+<a id="ln-201" name="ln-201"></a><span class="k">        </span><span class="n">istart</span> <span class="o">=</span> <span class="n">ii</span>
+<a id="ln-202" name="ln-202"></a>        <span class="k">do </span><span class="n">ii</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">iend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nn</span><span class="p">),</span> <span class="n">nn</span>
+<a id="ln-203" name="ln-203"></a>            <span class="n">tok</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">ii</span><span class="p">:</span><span class="n">ii</span><span class="p">)</span>
+<a id="ln-204" name="ln-204"></a>            <span class="k">select case</span><span class="p">(</span><span class="n">tok</span><span class="p">)</span>
+<a id="ln-205" name="ln-205"></a>            <span class="k">case</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<a id="ln-206" name="ln-206"></a>                <span class="k">exit</span>
+<a id="ln-207" name="ln-207"></a><span class="k">            case </span><span class="n">default</span>
+<a id="ln-208" name="ln-208"></a>                <span class="n">iend</span> <span class="o">=</span> <span class="n">ii</span>
+<a id="ln-209" name="ln-209"></a>                <span class="k">cycle</span>
+<a id="ln-210" name="ln-210"></a><span class="k">            end select</span>
+<a id="ln-211" name="ln-211"></a><span class="k">        end do</span>
+<a id="ln-212" name="ln-212"></a>
+<a id="ln-213" name="ln-213"></a><span class="k">    end subroutine </span><span class="n">next</span>
+<a id="ln-214" name="ln-214"></a><span class="k">end function </span><span class="n">canon_path</span>
 <a id="ln-215" name="ln-215"></a>
-<a id="ln-216" name="ln-216"></a><span class="c">!&gt; Extract dirname from path</span>
-<a id="ln-217" name="ln-217"></a><span class="k">function </span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">dir</span><span class="p">)</span>
-<a id="ln-218" name="ln-218"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
-<a id="ln-219" name="ln-219"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir</span>
-<a id="ln-220" name="ln-220"></a>
-<a id="ln-221" name="ln-221"></a>    <span class="n">dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nb">scan</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;/\&#39;,back=.true.))</span>
-<a id="ln-222" name="ln-222"></a><span class="s1">    if (len_trim(dir) == 0) dir = &quot;.&quot;</span>
-<a id="ln-223" name="ln-223"></a>
-<a id="ln-224" name="ln-224"></a><span class="s1">end function dirname</span>
-<a id="ln-225" name="ln-225"></a>
-<a id="ln-226" name="ln-226"></a><span class="s1">!&gt; Extract dirname from path</span>
-<a id="ln-227" name="ln-227"></a><span class="s1">function parent_dir(path) result (dir)</span>
-<a id="ln-228" name="ln-228"></a><span class="s1">    character(*), intent(in) :: path</span>
-<a id="ln-229" name="ln-229"></a><span class="s1">    character(:), allocatable :: dir</span>
-<a id="ln-230" name="ln-230"></a>
-<a id="ln-231" name="ln-231"></a><span class="s1">    dir = path(1:scan(path,&#39;</span><span class="o">/</span><span class="err">\</span><span class="s1">&#39;,back=.true.)-1)</span>
-<a id="ln-232" name="ln-232"></a>
-<a id="ln-233" name="ln-233"></a><span class="s1">end function parent_dir</span>
-<a id="ln-234" name="ln-234"></a>
+<a id="ln-216" name="ln-216"></a>
+<a id="ln-217" name="ln-217"></a><span class="c">!&gt; Extract dirname from path</span>
+<a id="ln-218" name="ln-218"></a><span class="k">function </span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span> <span class="p">(</span><span class="n">dir</span><span class="p">)</span>
+<a id="ln-219" name="ln-219"></a>    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+<a id="ln-220" name="ln-220"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dir</span>
+<a id="ln-221" name="ln-221"></a>
+<a id="ln-222" name="ln-222"></a>    <span class="n">dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nb">scan</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;/\&#39;,back=.true.))</span>
+<a id="ln-223" name="ln-223"></a><span class="s1">    if (len_trim(dir) == 0) dir = &quot;.&quot;</span>
+<a id="ln-224" name="ln-224"></a>
+<a id="ln-225" name="ln-225"></a><span class="s1">end function dirname</span>
+<a id="ln-226" name="ln-226"></a>
+<a id="ln-227" name="ln-227"></a><span class="s1">!&gt; Extract dirname from path</span>
+<a id="ln-228" name="ln-228"></a><span class="s1">function parent_dir(path) result (dir)</span>
+<a id="ln-229" name="ln-229"></a><span class="s1">    character(*), intent(in) :: path</span>
+<a id="ln-230" name="ln-230"></a><span class="s1">    character(:), allocatable :: dir</span>
+<a id="ln-231" name="ln-231"></a>
+<a id="ln-232" name="ln-232"></a><span class="s1">    dir = path(1:scan(path,&#39;</span><span class="o">/</span><span class="err">\</span><span class="s1">&#39;,back=.true.)-1)</span>
+<a id="ln-233" name="ln-233"></a>
+<a id="ln-234" name="ln-234"></a><span class="s1">end function parent_dir</span>
 <a id="ln-235" name="ln-235"></a>
-<a id="ln-236" name="ln-236"></a><span class="s1">!&gt; test if a name matches an existing directory path</span>
-<a id="ln-237" name="ln-237"></a><span class="s1">logical function is_dir(dir)</span>
-<a id="ln-238" name="ln-238"></a><span class="s1">    character(*), intent(in) :: dir</span>
-<a id="ln-239" name="ln-239"></a><span class="s1">    integer :: stat</span>
-<a id="ln-240" name="ln-240"></a>
-<a id="ln-241" name="ln-241"></a><span class="s1">    select case (get_os_type())</span>
-<a id="ln-242" name="ln-242"></a>
-<a id="ln-243" name="ln-243"></a><span class="s1">    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
-<a id="ln-244" name="ln-244"></a><span class="s1">        call execute_command_line(&quot;test -d &quot; // dir , exitstat=stat)</span>
-<a id="ln-245" name="ln-245"></a>
-<a id="ln-246" name="ln-246"></a><span class="s1">    case (OS_WINDOWS)</span>
-<a id="ln-247" name="ln-247"></a><span class="s1">        call execute_command_line(&#39;</span><span class="n">cmd</span> <span class="o">/</span><span class="n">c</span> <span class="s2">&quot;if not exist &#39; // windows_path(dir) // &#39;\ exit /B 1&quot;</span><span class="s1">&#39;, exitstat=stat)</span>
-<a id="ln-248" name="ln-248"></a>
-<a id="ln-249" name="ln-249"></a><span class="s1">    end select</span>
-<a id="ln-250" name="ln-250"></a>
-<a id="ln-251" name="ln-251"></a><span class="s1">    is_dir = (stat == 0)</span>
-<a id="ln-252" name="ln-252"></a>
-<a id="ln-253" name="ln-253"></a><span class="s1">end function is_dir</span>
-<a id="ln-254" name="ln-254"></a>
+<a id="ln-236" name="ln-236"></a>
+<a id="ln-237" name="ln-237"></a><span class="s1">!&gt; test if a name matches an existing directory path</span>
+<a id="ln-238" name="ln-238"></a><span class="s1">logical function is_dir(dir)</span>
+<a id="ln-239" name="ln-239"></a><span class="s1">    character(*), intent(in) :: dir</span>
+<a id="ln-240" name="ln-240"></a><span class="s1">    integer :: stat</span>
+<a id="ln-241" name="ln-241"></a>
+<a id="ln-242" name="ln-242"></a><span class="s1">    select case (get_os_type())</span>
+<a id="ln-243" name="ln-243"></a>
+<a id="ln-244" name="ln-244"></a><span class="s1">    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
+<a id="ln-245" name="ln-245"></a><span class="s1">        call execute_command_line(&quot;test -d &quot; // dir , exitstat=stat)</span>
+<a id="ln-246" name="ln-246"></a>
+<a id="ln-247" name="ln-247"></a><span class="s1">    case (OS_WINDOWS)</span>
+<a id="ln-248" name="ln-248"></a><span class="s1">        call execute_command_line(&#39;</span><span class="n">cmd</span> <span class="o">/</span><span class="n">c</span> <span class="s2">&quot;if not exist &#39; // windows_path(dir) // &#39;\ exit /B 1&quot;</span><span class="s1">&#39;, exitstat=stat)</span>
+<a id="ln-249" name="ln-249"></a>
+<a id="ln-250" name="ln-250"></a><span class="s1">    end select</span>
+<a id="ln-251" name="ln-251"></a>
+<a id="ln-252" name="ln-252"></a><span class="s1">    is_dir = (stat == 0)</span>
+<a id="ln-253" name="ln-253"></a>
+<a id="ln-254" name="ln-254"></a><span class="s1">end function is_dir</span>
 <a id="ln-255" name="ln-255"></a>
-<a id="ln-256" name="ln-256"></a><span class="s1">!&gt; Construct path by joining strings with os file separator</span>
-<a id="ln-257" name="ln-257"></a><span class="s1">function join_path(a1,a2,a3,a4,a5) result(path)</span>
-<a id="ln-258" name="ln-258"></a>
-<a id="ln-259" name="ln-259"></a><span class="s1">    character(len=*), intent(in)           :: a1, a2</span>
-<a id="ln-260" name="ln-260"></a><span class="s1">    character(len=*), intent(in), optional :: a3, a4, a5</span>
-<a id="ln-261" name="ln-261"></a><span class="s1">    character(len=:), allocatable          :: path</span>
-<a id="ln-262" name="ln-262"></a><span class="s1">    character(len=1)                       :: filesep</span>
-<a id="ln-263" name="ln-263"></a><span class="s1">    logical, save                          :: has_cache = .false.</span>
-<a id="ln-264" name="ln-264"></a><span class="s1">    character(len=1), save                 :: cache = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
-<a id="ln-265" name="ln-265"></a><span class="s1">    !$omp threadprivate(has_cache, cache)</span>
-<a id="ln-266" name="ln-266"></a>
-<a id="ln-267" name="ln-267"></a><span class="s1">    if (has_cache) then</span>
-<a id="ln-268" name="ln-268"></a><span class="s1">        filesep = cache</span>
-<a id="ln-269" name="ln-269"></a><span class="s1">    else</span>
-<a id="ln-270" name="ln-270"></a><span class="s1">        select case (get_os_type())</span>
-<a id="ln-271" name="ln-271"></a><span class="s1">            case default</span>
-<a id="ln-272" name="ln-272"></a><span class="s1">                filesep = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
-<a id="ln-273" name="ln-273"></a><span class="s1">            case (OS_WINDOWS)</span>
-<a id="ln-274" name="ln-274"></a><span class="s1">                filesep = &#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<a id="ln-275" name="ln-275"></a><span class="s1">        end select</span>
-<a id="ln-276" name="ln-276"></a>
-<a id="ln-277" name="ln-277"></a><span class="s1">        cache = filesep</span>
-<a id="ln-278" name="ln-278"></a><span class="s1">        has_cache = .true.</span>
-<a id="ln-279" name="ln-279"></a><span class="s1">    end if</span>
-<a id="ln-280" name="ln-280"></a>
-<a id="ln-281" name="ln-281"></a><span class="s1">    path = a1 // filesep // a2</span>
-<a id="ln-282" name="ln-282"></a>
-<a id="ln-283" name="ln-283"></a><span class="s1">    if (present(a3)) then</span>
-<a id="ln-284" name="ln-284"></a><span class="s1">        path = path // filesep // a3</span>
-<a id="ln-285" name="ln-285"></a><span class="s1">    else</span>
-<a id="ln-286" name="ln-286"></a><span class="s1">        return</span>
-<a id="ln-287" name="ln-287"></a><span class="s1">    end if</span>
-<a id="ln-288" name="ln-288"></a>
-<a id="ln-289" name="ln-289"></a><span class="s1">    if (present(a4)) then</span>
-<a id="ln-290" name="ln-290"></a><span class="s1">        path = path // filesep // a4</span>
-<a id="ln-291" name="ln-291"></a><span class="s1">    else</span>
-<a id="ln-292" name="ln-292"></a><span class="s1">        return</span>
-<a id="ln-293" name="ln-293"></a><span class="s1">    end if</span>
-<a id="ln-294" name="ln-294"></a>
-<a id="ln-295" name="ln-295"></a><span class="s1">    if (present(a5)) then</span>
-<a id="ln-296" name="ln-296"></a><span class="s1">        path = path // filesep // a5</span>
-<a id="ln-297" name="ln-297"></a><span class="s1">    else</span>
-<a id="ln-298" name="ln-298"></a><span class="s1">        return</span>
-<a id="ln-299" name="ln-299"></a><span class="s1">    end if</span>
-<a id="ln-300" name="ln-300"></a>
-<a id="ln-301" name="ln-301"></a><span class="s1">end function join_path</span>
-<a id="ln-302" name="ln-302"></a>
+<a id="ln-256" name="ln-256"></a>
+<a id="ln-257" name="ln-257"></a><span class="s1">!&gt; Construct path by joining strings with os file separator</span>
+<a id="ln-258" name="ln-258"></a><span class="s1">function join_path(a1,a2,a3,a4,a5) result(path)</span>
+<a id="ln-259" name="ln-259"></a>
+<a id="ln-260" name="ln-260"></a><span class="s1">    character(len=*), intent(in)           :: a1, a2</span>
+<a id="ln-261" name="ln-261"></a><span class="s1">    character(len=*), intent(in), optional :: a3, a4, a5</span>
+<a id="ln-262" name="ln-262"></a><span class="s1">    character(len=:), allocatable          :: path</span>
+<a id="ln-263" name="ln-263"></a><span class="s1">    character(len=1)                       :: filesep</span>
+<a id="ln-264" name="ln-264"></a><span class="s1">    logical, save                          :: has_cache = .false.</span>
+<a id="ln-265" name="ln-265"></a><span class="s1">    character(len=1), save                 :: cache = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
+<a id="ln-266" name="ln-266"></a><span class="s1">    !$omp threadprivate(has_cache, cache)</span>
+<a id="ln-267" name="ln-267"></a>
+<a id="ln-268" name="ln-268"></a><span class="s1">    if (has_cache) then</span>
+<a id="ln-269" name="ln-269"></a><span class="s1">        filesep = cache</span>
+<a id="ln-270" name="ln-270"></a><span class="s1">    else</span>
+<a id="ln-271" name="ln-271"></a><span class="s1">        select case (get_os_type())</span>
+<a id="ln-272" name="ln-272"></a><span class="s1">            case default</span>
+<a id="ln-273" name="ln-273"></a><span class="s1">                filesep = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
+<a id="ln-274" name="ln-274"></a><span class="s1">            case (OS_WINDOWS)</span>
+<a id="ln-275" name="ln-275"></a><span class="s1">                filesep = &#39;</span><span class="err">\</span><span class="s1">&#39;</span>
+<a id="ln-276" name="ln-276"></a><span class="s1">        end select</span>
+<a id="ln-277" name="ln-277"></a>
+<a id="ln-278" name="ln-278"></a><span class="s1">        cache = filesep</span>
+<a id="ln-279" name="ln-279"></a><span class="s1">        has_cache = .true.</span>
+<a id="ln-280" name="ln-280"></a><span class="s1">    end if</span>
+<a id="ln-281" name="ln-281"></a>
+<a id="ln-282" name="ln-282"></a><span class="s1">    path = a1 // filesep // a2</span>
+<a id="ln-283" name="ln-283"></a>
+<a id="ln-284" name="ln-284"></a><span class="s1">    if (present(a3)) then</span>
+<a id="ln-285" name="ln-285"></a><span class="s1">        path = path // filesep // a3</span>
+<a id="ln-286" name="ln-286"></a><span class="s1">    else</span>
+<a id="ln-287" name="ln-287"></a><span class="s1">        return</span>
+<a id="ln-288" name="ln-288"></a><span class="s1">    end if</span>
+<a id="ln-289" name="ln-289"></a>
+<a id="ln-290" name="ln-290"></a><span class="s1">    if (present(a4)) then</span>
+<a id="ln-291" name="ln-291"></a><span class="s1">        path = path // filesep // a4</span>
+<a id="ln-292" name="ln-292"></a><span class="s1">    else</span>
+<a id="ln-293" name="ln-293"></a><span class="s1">        return</span>
+<a id="ln-294" name="ln-294"></a><span class="s1">    end if</span>
+<a id="ln-295" name="ln-295"></a>
+<a id="ln-296" name="ln-296"></a><span class="s1">    if (present(a5)) then</span>
+<a id="ln-297" name="ln-297"></a><span class="s1">        path = path // filesep // a5</span>
+<a id="ln-298" name="ln-298"></a><span class="s1">    else</span>
+<a id="ln-299" name="ln-299"></a><span class="s1">        return</span>
+<a id="ln-300" name="ln-300"></a><span class="s1">    end if</span>
+<a id="ln-301" name="ln-301"></a>
+<a id="ln-302" name="ln-302"></a><span class="s1">end function join_path</span>
 <a id="ln-303" name="ln-303"></a>
-<a id="ln-304" name="ln-304"></a><span class="s1">!&gt; Determine number or rows in a file given a LUN</span>
-<a id="ln-305" name="ln-305"></a><span class="s1">integer function number_of_rows(s) result(nrows)</span>
-<a id="ln-306" name="ln-306"></a><span class="s1">    integer,intent(in)::s</span>
-<a id="ln-307" name="ln-307"></a><span class="s1">    integer :: ios</span>
-<a id="ln-308" name="ln-308"></a><span class="s1">    character(len=100) :: r</span>
-<a id="ln-309" name="ln-309"></a><span class="s1">    rewind(s)</span>
-<a id="ln-310" name="ln-310"></a><span class="s1">    nrows = 0</span>
-<a id="ln-311" name="ln-311"></a><span class="s1">    do</span>
-<a id="ln-312" name="ln-312"></a><span class="s1">        read(s, &#39;</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">&#39;, iostat=ios) r</span>
-<a id="ln-313" name="ln-313"></a><span class="s1">        if (ios /= 0) exit</span>
-<a id="ln-314" name="ln-314"></a><span class="s1">        nrows = nrows + 1</span>
-<a id="ln-315" name="ln-315"></a><span class="s1">    end do</span>
-<a id="ln-316" name="ln-316"></a><span class="s1">    rewind(s)</span>
-<a id="ln-317" name="ln-317"></a><span class="s1">end function number_of_rows</span>
-<a id="ln-318" name="ln-318"></a>
+<a id="ln-304" name="ln-304"></a>
+<a id="ln-305" name="ln-305"></a><span class="s1">!&gt; Determine number or rows in a file given a LUN</span>
+<a id="ln-306" name="ln-306"></a><span class="s1">integer function number_of_rows(s) result(nrows)</span>
+<a id="ln-307" name="ln-307"></a><span class="s1">    integer,intent(in)::s</span>
+<a id="ln-308" name="ln-308"></a><span class="s1">    integer :: ios</span>
+<a id="ln-309" name="ln-309"></a><span class="s1">    character(len=100) :: r</span>
+<a id="ln-310" name="ln-310"></a><span class="s1">    rewind(s)</span>
+<a id="ln-311" name="ln-311"></a><span class="s1">    nrows = 0</span>
+<a id="ln-312" name="ln-312"></a><span class="s1">    do</span>
+<a id="ln-313" name="ln-313"></a><span class="s1">        read(s, &#39;</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">&#39;, iostat=ios) r</span>
+<a id="ln-314" name="ln-314"></a><span class="s1">        if (ios /= 0) exit</span>
+<a id="ln-315" name="ln-315"></a><span class="s1">        nrows = nrows + 1</span>
+<a id="ln-316" name="ln-316"></a><span class="s1">    end do</span>
+<a id="ln-317" name="ln-317"></a><span class="s1">    rewind(s)</span>
+<a id="ln-318" name="ln-318"></a><span class="s1">end function number_of_rows</span>
 <a id="ln-319" name="ln-319"></a>
-<a id="ln-320" name="ln-320"></a><span class="s1">!&gt; read lines into an array of TYPE(STRING_T) variables</span>
-<a id="ln-321" name="ln-321"></a><span class="s1">function read_lines(fh) result(lines)</span>
+<a id="ln-320" name="ln-320"></a><span class="s1">!&gt; read lines into an array of TYPE(STRING_T) variables expanding tabs</span>
+<a id="ln-321" name="ln-321"></a><span class="s1">function read_lines_expanded(fh) result(lines)</span>
 <a id="ln-322" name="ln-322"></a><span class="s1">    integer, intent(in) :: fh</span>
 <a id="ln-323" name="ln-323"></a><span class="s1">    type(string_t), allocatable :: lines(:)</span>
 <a id="ln-324" name="ln-324"></a>
 <a id="ln-325" name="ln-325"></a><span class="s1">    integer :: i</span>
-<a id="ln-326" name="ln-326"></a><span class="s1">    character(LINE_BUFFER_LEN) :: line_buffer</span>
-<a id="ln-327" name="ln-327"></a>
-<a id="ln-328" name="ln-328"></a><span class="s1">    allocate(lines(number_of_rows(fh)))</span>
-<a id="ln-329" name="ln-329"></a><span class="s1">    do i = 1, size(lines)</span>
-<a id="ln-330" name="ln-330"></a><span class="s1">        read(fh, &#39;</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">&#39;) line_buffer</span>
-<a id="ln-331" name="ln-331"></a><span class="s1">        lines(i)%s = trim(line_buffer)</span>
-<a id="ln-332" name="ln-332"></a><span class="s1">    end do</span>
-<a id="ln-333" name="ln-333"></a>
-<a id="ln-334" name="ln-334"></a><span class="s1">end function read_lines</span>
+<a id="ln-326" name="ln-326"></a><span class="s1">    integer :: ilen</span>
+<a id="ln-327" name="ln-327"></a><span class="s1">    character(LINE_BUFFER_LEN) :: line_buffer_read, line_buffer_expanded</span>
+<a id="ln-328" name="ln-328"></a>
+<a id="ln-329" name="ln-329"></a><span class="s1">    allocate(lines(number_of_rows(fh)))</span>
+<a id="ln-330" name="ln-330"></a><span class="s1">    do i = 1, size(lines)</span>
+<a id="ln-331" name="ln-331"></a><span class="s1">        read(fh, &#39;</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">&#39;) line_buffer_read</span>
+<a id="ln-332" name="ln-332"></a><span class="s1">        call notabs(line_buffer_read, line_buffer_expanded, ilen)</span>
+<a id="ln-333" name="ln-333"></a><span class="s1">        lines(i)%s = trim(line_buffer_expanded)</span>
+<a id="ln-334" name="ln-334"></a><span class="s1">    end do</span>
 <a id="ln-335" name="ln-335"></a>
-<a id="ln-336" name="ln-336"></a><span class="s1">!&gt; Create a directory. Create subdirectories as needed</span>
-<a id="ln-337" name="ln-337"></a><span class="s1">subroutine mkdir(dir)</span>
-<a id="ln-338" name="ln-338"></a><span class="s1">    character(len=*), intent(in) :: dir</span>
-<a id="ln-339" name="ln-339"></a><span class="s1">    integer                      :: stat</span>
-<a id="ln-340" name="ln-340"></a>
-<a id="ln-341" name="ln-341"></a><span class="s1">    if (is_dir(dir)) return</span>
+<a id="ln-336" name="ln-336"></a><span class="s1">end function read_lines_expanded</span>
+<a id="ln-337" name="ln-337"></a>
+<a id="ln-338" name="ln-338"></a><span class="s1">!&gt; read lines into an array of TYPE(STRING_T) variables</span>
+<a id="ln-339" name="ln-339"></a><span class="s1">function read_lines(fh) result(lines)</span>
+<a id="ln-340" name="ln-340"></a><span class="s1">    integer, intent(in) :: fh</span>
+<a id="ln-341" name="ln-341"></a><span class="s1">    type(string_t), allocatable :: lines(:)</span>
 <a id="ln-342" name="ln-342"></a>
-<a id="ln-343" name="ln-343"></a><span class="s1">    select case (get_os_type())</span>
-<a id="ln-344" name="ln-344"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
-<a id="ln-345" name="ln-345"></a><span class="s1">            call execute_command_line(&#39;</span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="s1">&#39; // dir, exitstat=stat)</span>
-<a id="ln-346" name="ln-346"></a><span class="s1">            write (*, &#39;</span><span class="p">(</span><span class="s2">&quot; + &quot;</span><span class="p">,</span><span class="mi">2</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;) &#39;</span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="s1">&#39; // dir</span>
-<a id="ln-347" name="ln-347"></a>
-<a id="ln-348" name="ln-348"></a><span class="s1">        case (OS_WINDOWS)</span>
-<a id="ln-349" name="ln-349"></a><span class="s1">            call execute_command_line(&quot;mkdir &quot; // windows_path(dir), exitstat=stat)</span>
-<a id="ln-350" name="ln-350"></a><span class="s1">            write (*, &#39;</span><span class="p">(</span><span class="s2">&quot; + &quot;</span><span class="p">,</span><span class="mi">2</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;) &#39;</span><span class="n">mkdir</span> <span class="s1">&#39; // windows_path(dir)</span>
-<a id="ln-351" name="ln-351"></a><span class="s1">    end select</span>
-<a id="ln-352" name="ln-352"></a>
-<a id="ln-353" name="ln-353"></a><span class="s1">    if (stat /= 0) then</span>
-<a id="ln-354" name="ln-354"></a><span class="s1">        call fpm_stop(1, &#39;</span><span class="o">*</span><span class="n">mkdir</span><span class="o">*</span><span class="p">:</span><span class="n">directory</span> <span class="n">creation</span> <span class="n">failed</span><span class="s1">&#39;)</span>
-<a id="ln-355" name="ln-355"></a><span class="s1">    end if</span>
-<a id="ln-356" name="ln-356"></a><span class="s1">end subroutine mkdir</span>
-<a id="ln-357" name="ln-357"></a>
-<a id="ln-358" name="ln-358"></a><span class="s1">#ifndef FPM_BOOTSTRAP</span>
-<a id="ln-359" name="ln-359"></a><span class="s1">!&gt; Get file &amp; directory names in directory `dir` using iso_c_binding.</span>
-<a id="ln-360" name="ln-360"></a><span class="s1">!!</span>
-<a id="ln-361" name="ln-361"></a><span class="s1">!!  - File/directory names return are relative to cwd, ie. preprended with `dir`</span>
-<a id="ln-362" name="ln-362"></a><span class="s1">!!  - Includes files starting with `.` except current directory and parent directory</span>
-<a id="ln-363" name="ln-363"></a><span class="s1">!!</span>
-<a id="ln-364" name="ln-364"></a><span class="s1">recursive subroutine list_files(dir, files, recurse)</span>
-<a id="ln-365" name="ln-365"></a><span class="s1">    character(len=*), intent(in) :: dir</span>
-<a id="ln-366" name="ln-366"></a><span class="s1">    type(string_t), allocatable, intent(out) :: files(:)</span>
-<a id="ln-367" name="ln-367"></a><span class="s1">    logical, intent(in), optional :: recurse</span>
-<a id="ln-368" name="ln-368"></a>
-<a id="ln-369" name="ln-369"></a><span class="s1">    integer :: i</span>
-<a id="ln-370" name="ln-370"></a><span class="s1">    type(string_t), allocatable :: dir_files(:)</span>
-<a id="ln-371" name="ln-371"></a><span class="s1">    type(string_t), allocatable :: sub_dir_files(:)</span>
-<a id="ln-372" name="ln-372"></a>
-<a id="ln-373" name="ln-373"></a><span class="s1">    type(c_ptr) :: dir_handle</span>
-<a id="ln-374" name="ln-374"></a><span class="s1">    type(c_ptr) :: dir_entry_c</span>
-<a id="ln-375" name="ln-375"></a><span class="s1">    character(len=:,kind=c_char), allocatable :: fortran_name</span>
-<a id="ln-376" name="ln-376"></a><span class="s1">    character(len=:), allocatable :: string_fortran</span>
-<a id="ln-377" name="ln-377"></a><span class="s1">    integer, parameter :: N_MAX = 256</span>
-<a id="ln-378" name="ln-378"></a><span class="s1">    type(string_t) :: files_tmp(N_MAX)</span>
-<a id="ln-379" name="ln-379"></a><span class="s1">    integer(kind=c_int) :: r</span>
-<a id="ln-380" name="ln-380"></a>
-<a id="ln-381" name="ln-381"></a><span class="s1">    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) .eq. 0) then</span>
-<a id="ln-382" name="ln-382"></a><span class="s1">        allocate (files(0))</span>
-<a id="ln-383" name="ln-383"></a><span class="s1">        return</span>
-<a id="ln-384" name="ln-384"></a><span class="s1">    end if</span>
-<a id="ln-385" name="ln-385"></a>
-<a id="ln-386" name="ln-386"></a><span class="s1">    dir_handle = c_opendir(dir(1:len_trim(dir))//c_null_char)</span>
-<a id="ln-387" name="ln-387"></a><span class="s1">    if (.not. c_associated(dir_handle)) then</span>
-<a id="ln-388" name="ln-388"></a><span class="s1">        print *, &#39;</span><span class="n">c_opendir</span><span class="p">()</span> <span class="n">failed</span><span class="s1">&#39;</span>
-<a id="ln-389" name="ln-389"></a><span class="s1">        error stop</span>
-<a id="ln-390" name="ln-390"></a><span class="s1">    end if</span>
-<a id="ln-391" name="ln-391"></a>
-<a id="ln-392" name="ln-392"></a><span class="s1">    i = 0</span>
-<a id="ln-393" name="ln-393"></a><span class="s1">    allocate(files(0))</span>
-<a id="ln-394" name="ln-394"></a>
-<a id="ln-395" name="ln-395"></a><span class="s1">    do</span>
-<a id="ln-396" name="ln-396"></a><span class="s1">        dir_entry_c = c_readdir(dir_handle)</span>
-<a id="ln-397" name="ln-397"></a><span class="s1">        if (.not. c_associated(dir_entry_c)) then</span>
-<a id="ln-398" name="ln-398"></a><span class="s1">            exit</span>
-<a id="ln-399" name="ln-399"></a><span class="s1">        else</span>
-<a id="ln-400" name="ln-400"></a><span class="s1">            string_fortran = f_string(c_get_d_name(dir_entry_c))</span>
-<a id="ln-401" name="ln-401"></a>
-<a id="ln-402" name="ln-402"></a><span class="s1">            if ((string_fortran .eq. &#39;</span><span class="p">.</span><span class="s1">&#39; .or. string_fortran .eq. &#39;</span><span class="p">..</span><span class="s1">&#39;)) then</span>
-<a id="ln-403" name="ln-403"></a><span class="s1">                cycle</span>
-<a id="ln-404" name="ln-404"></a><span class="s1">            end if</span>
-<a id="ln-405" name="ln-405"></a>
-<a id="ln-406" name="ln-406"></a><span class="s1">            i = i + 1</span>
-<a id="ln-407" name="ln-407"></a>
-<a id="ln-408" name="ln-408"></a><span class="s1">            if (i .gt. N_MAX) then</span>
-<a id="ln-409" name="ln-409"></a><span class="s1">                files = [files, files_tmp]</span>
-<a id="ln-410" name="ln-410"></a><span class="s1">                i = 1</span>
-<a id="ln-411" name="ln-411"></a><span class="s1">            end if</span>
+<a id="ln-343" name="ln-343"></a><span class="s1">    integer :: i</span>
+<a id="ln-344" name="ln-344"></a><span class="s1">    character(LINE_BUFFER_LEN) :: line_buffer</span>
+<a id="ln-345" name="ln-345"></a>
+<a id="ln-346" name="ln-346"></a><span class="s1">    allocate(lines(number_of_rows(fh)))</span>
+<a id="ln-347" name="ln-347"></a><span class="s1">    do i = 1, size(lines)</span>
+<a id="ln-348" name="ln-348"></a><span class="s1">        read(fh, &#39;</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="s1">&#39;) line_buffer</span>
+<a id="ln-349" name="ln-349"></a><span class="s1">        lines(i)%s = trim(line_buffer)</span>
+<a id="ln-350" name="ln-350"></a><span class="s1">    end do</span>
+<a id="ln-351" name="ln-351"></a>
+<a id="ln-352" name="ln-352"></a><span class="s1">end function read_lines</span>
+<a id="ln-353" name="ln-353"></a>
+<a id="ln-354" name="ln-354"></a><span class="s1">!&gt; Create a directory. Create subdirectories as needed</span>
+<a id="ln-355" name="ln-355"></a><span class="s1">subroutine mkdir(dir)</span>
+<a id="ln-356" name="ln-356"></a><span class="s1">    character(len=*), intent(in) :: dir</span>
+<a id="ln-357" name="ln-357"></a><span class="s1">    integer                      :: stat</span>
+<a id="ln-358" name="ln-358"></a>
+<a id="ln-359" name="ln-359"></a><span class="s1">    if (is_dir(dir)) return</span>
+<a id="ln-360" name="ln-360"></a>
+<a id="ln-361" name="ln-361"></a><span class="s1">    select case (get_os_type())</span>
+<a id="ln-362" name="ln-362"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
+<a id="ln-363" name="ln-363"></a><span class="s1">            call execute_command_line(&#39;</span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="s1">&#39; // dir, exitstat=stat)</span>
+<a id="ln-364" name="ln-364"></a><span class="s1">            write (*, &#39;</span><span class="p">(</span><span class="s2">&quot; + &quot;</span><span class="p">,</span><span class="mi">2</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;) &#39;</span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="s1">&#39; // dir</span>
+<a id="ln-365" name="ln-365"></a>
+<a id="ln-366" name="ln-366"></a><span class="s1">        case (OS_WINDOWS)</span>
+<a id="ln-367" name="ln-367"></a><span class="s1">            call execute_command_line(&quot;mkdir &quot; // windows_path(dir), exitstat=stat)</span>
+<a id="ln-368" name="ln-368"></a><span class="s1">            write (*, &#39;</span><span class="p">(</span><span class="s2">&quot; + &quot;</span><span class="p">,</span><span class="mi">2</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;) &#39;</span><span class="n">mkdir</span> <span class="s1">&#39; // windows_path(dir)</span>
+<a id="ln-369" name="ln-369"></a><span class="s1">    end select</span>
+<a id="ln-370" name="ln-370"></a>
+<a id="ln-371" name="ln-371"></a><span class="s1">    if (stat /= 0) then</span>
+<a id="ln-372" name="ln-372"></a><span class="s1">        call fpm_stop(1, &#39;</span><span class="o">*</span><span class="n">mkdir</span><span class="o">*</span><span class="p">:</span><span class="n">directory</span> <span class="n">creation</span> <span class="n">failed</span><span class="s1">&#39;)</span>
+<a id="ln-373" name="ln-373"></a><span class="s1">    end if</span>
+<a id="ln-374" name="ln-374"></a><span class="s1">end subroutine mkdir</span>
+<a id="ln-375" name="ln-375"></a>
+<a id="ln-376" name="ln-376"></a><span class="s1">#ifndef FPM_BOOTSTRAP</span>
+<a id="ln-377" name="ln-377"></a><span class="s1">!&gt; Get file &amp; directory names in directory `dir` using iso_c_binding.</span>
+<a id="ln-378" name="ln-378"></a><span class="s1">!!</span>
+<a id="ln-379" name="ln-379"></a><span class="s1">!!  - File/directory names return are relative to cwd, ie. preprended with `dir`</span>
+<a id="ln-380" name="ln-380"></a><span class="s1">!!  - Includes files starting with `.` except current directory and parent directory</span>
+<a id="ln-381" name="ln-381"></a><span class="s1">!!</span>
+<a id="ln-382" name="ln-382"></a><span class="s1">recursive subroutine list_files(dir, files, recurse)</span>
+<a id="ln-383" name="ln-383"></a><span class="s1">    character(len=*), intent(in) :: dir</span>
+<a id="ln-384" name="ln-384"></a><span class="s1">    type(string_t), allocatable, intent(out) :: files(:)</span>
+<a id="ln-385" name="ln-385"></a><span class="s1">    logical, intent(in), optional :: recurse</span>
+<a id="ln-386" name="ln-386"></a>
+<a id="ln-387" name="ln-387"></a><span class="s1">    integer :: i</span>
+<a id="ln-388" name="ln-388"></a><span class="s1">    type(string_t), allocatable :: dir_files(:)</span>
+<a id="ln-389" name="ln-389"></a><span class="s1">    type(string_t), allocatable :: sub_dir_files(:)</span>
+<a id="ln-390" name="ln-390"></a>
+<a id="ln-391" name="ln-391"></a><span class="s1">    type(c_ptr) :: dir_handle</span>
+<a id="ln-392" name="ln-392"></a><span class="s1">    type(c_ptr) :: dir_entry_c</span>
+<a id="ln-393" name="ln-393"></a><span class="s1">    character(len=:,kind=c_char), allocatable :: fortran_name</span>
+<a id="ln-394" name="ln-394"></a><span class="s1">    character(len=:), allocatable :: string_fortran</span>
+<a id="ln-395" name="ln-395"></a><span class="s1">    integer, parameter :: N_MAX = 256</span>
+<a id="ln-396" name="ln-396"></a><span class="s1">    type(string_t) :: files_tmp(N_MAX)</span>
+<a id="ln-397" name="ln-397"></a><span class="s1">    integer(kind=c_int) :: r</span>
+<a id="ln-398" name="ln-398"></a>
+<a id="ln-399" name="ln-399"></a><span class="s1">    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) .eq. 0) then</span>
+<a id="ln-400" name="ln-400"></a><span class="s1">        allocate (files(0))</span>
+<a id="ln-401" name="ln-401"></a><span class="s1">        return</span>
+<a id="ln-402" name="ln-402"></a><span class="s1">    end if</span>
+<a id="ln-403" name="ln-403"></a>
+<a id="ln-404" name="ln-404"></a><span class="s1">    dir_handle = c_opendir(dir(1:len_trim(dir))//c_null_char)</span>
+<a id="ln-405" name="ln-405"></a><span class="s1">    if (.not. c_associated(dir_handle)) then</span>
+<a id="ln-406" name="ln-406"></a><span class="s1">        print *, &#39;</span><span class="n">c_opendir</span><span class="p">()</span> <span class="n">failed</span><span class="s1">&#39;</span>
+<a id="ln-407" name="ln-407"></a><span class="s1">        error stop</span>
+<a id="ln-408" name="ln-408"></a><span class="s1">    end if</span>
+<a id="ln-409" name="ln-409"></a>
+<a id="ln-410" name="ln-410"></a><span class="s1">    i = 0</span>
+<a id="ln-411" name="ln-411"></a><span class="s1">    allocate(files(0))</span>
 <a id="ln-412" name="ln-412"></a>
-<a id="ln-413" name="ln-413"></a><span class="s1">            files_tmp(i)%s = join_path(dir, string_fortran)</span>
-<a id="ln-414" name="ln-414"></a><span class="s1">        end if</span>
-<a id="ln-415" name="ln-415"></a><span class="s1">    end do</span>
-<a id="ln-416" name="ln-416"></a>
-<a id="ln-417" name="ln-417"></a><span class="s1">    r = c_closedir(dir_handle)</span>
-<a id="ln-418" name="ln-418"></a>
-<a id="ln-419" name="ln-419"></a><span class="s1">    if (r .ne. 0) then</span>
-<a id="ln-420" name="ln-420"></a><span class="s1">        print *, &#39;</span><span class="n">c_closedir</span><span class="p">()</span> <span class="n">failed</span><span class="s1">&#39;</span>
-<a id="ln-421" name="ln-421"></a><span class="s1">        error stop</span>
-<a id="ln-422" name="ln-422"></a><span class="s1">    end if</span>
+<a id="ln-413" name="ln-413"></a><span class="s1">    do</span>
+<a id="ln-414" name="ln-414"></a><span class="s1">        dir_entry_c = c_readdir(dir_handle)</span>
+<a id="ln-415" name="ln-415"></a><span class="s1">        if (.not. c_associated(dir_entry_c)) then</span>
+<a id="ln-416" name="ln-416"></a><span class="s1">            exit</span>
+<a id="ln-417" name="ln-417"></a><span class="s1">        else</span>
+<a id="ln-418" name="ln-418"></a><span class="s1">            string_fortran = f_string(c_get_d_name(dir_entry_c))</span>
+<a id="ln-419" name="ln-419"></a>
+<a id="ln-420" name="ln-420"></a><span class="s1">            if ((string_fortran .eq. &#39;</span><span class="p">.</span><span class="s1">&#39; .or. string_fortran .eq. &#39;</span><span class="p">..</span><span class="s1">&#39;)) then</span>
+<a id="ln-421" name="ln-421"></a><span class="s1">                cycle</span>
+<a id="ln-422" name="ln-422"></a><span class="s1">            end if</span>
 <a id="ln-423" name="ln-423"></a>
-<a id="ln-424" name="ln-424"></a><span class="s1">    if (i .gt. 0) then</span>
-<a id="ln-425" name="ln-425"></a><span class="s1">        files = [files, files_tmp(1:i)]</span>
-<a id="ln-426" name="ln-426"></a><span class="s1">    end if</span>
-<a id="ln-427" name="ln-427"></a>
-<a id="ln-428" name="ln-428"></a><span class="s1">    if (present(recurse)) then</span>
-<a id="ln-429" name="ln-429"></a><span class="s1">        if (recurse) then</span>
+<a id="ln-424" name="ln-424"></a><span class="s1">            i = i + 1</span>
+<a id="ln-425" name="ln-425"></a>
+<a id="ln-426" name="ln-426"></a><span class="s1">            if (i .gt. N_MAX) then</span>
+<a id="ln-427" name="ln-427"></a><span class="s1">                files = [files, files_tmp]</span>
+<a id="ln-428" name="ln-428"></a><span class="s1">                i = 1</span>
+<a id="ln-429" name="ln-429"></a><span class="s1">            end if</span>
 <a id="ln-430" name="ln-430"></a>
-<a id="ln-431" name="ln-431"></a><span class="s1">            allocate(sub_dir_files(0))</span>
-<a id="ln-432" name="ln-432"></a>
-<a id="ln-433" name="ln-433"></a><span class="s1">            do i=1,size(files)</span>
-<a id="ln-434" name="ln-434"></a><span class="s1">                if (c_is_dir(files(i)%s//c_null_char) .ne. 0) then</span>
-<a id="ln-435" name="ln-435"></a><span class="s1">                    call list_files(files(i)%s, dir_files, recurse=.true.)</span>
-<a id="ln-436" name="ln-436"></a><span class="s1">                    sub_dir_files = [sub_dir_files, dir_files]</span>
-<a id="ln-437" name="ln-437"></a><span class="s1">                end if</span>
-<a id="ln-438" name="ln-438"></a><span class="s1">            end do</span>
-<a id="ln-439" name="ln-439"></a>
-<a id="ln-440" name="ln-440"></a><span class="s1">            files = [files, sub_dir_files]</span>
-<a id="ln-441" name="ln-441"></a><span class="s1">        end if</span>
-<a id="ln-442" name="ln-442"></a><span class="s1">    end if</span>
-<a id="ln-443" name="ln-443"></a><span class="s1">end subroutine list_files</span>
-<a id="ln-444" name="ln-444"></a>
-<a id="ln-445" name="ln-445"></a><span class="s1">#else</span>
-<a id="ln-446" name="ln-446"></a><span class="s1">!&gt; Get file &amp; directory names in directory `dir`.</span>
-<a id="ln-447" name="ln-447"></a><span class="s1">!!</span>
-<a id="ln-448" name="ln-448"></a><span class="s1">!!  - File/directory names return are relative to cwd, ie. preprended with `dir`</span>
-<a id="ln-449" name="ln-449"></a><span class="s1">!!  - Includes files starting with `.` except current directory and parent directory</span>
-<a id="ln-450" name="ln-450"></a><span class="s1">!!</span>
-<a id="ln-451" name="ln-451"></a><span class="s1">recursive subroutine list_files(dir, files, recurse)</span>
-<a id="ln-452" name="ln-452"></a><span class="s1">    character(len=*), intent(in) :: dir</span>
-<a id="ln-453" name="ln-453"></a><span class="s1">    type(string_t), allocatable, intent(out) :: files(:)</span>
-<a id="ln-454" name="ln-454"></a><span class="s1">    logical, intent(in), optional :: recurse</span>
-<a id="ln-455" name="ln-455"></a>
-<a id="ln-456" name="ln-456"></a><span class="s1">    integer :: stat, fh, i</span>
-<a id="ln-457" name="ln-457"></a><span class="s1">    character(:), allocatable :: temp_file</span>
-<a id="ln-458" name="ln-458"></a><span class="s1">    type(string_t), allocatable :: dir_files(:)</span>
-<a id="ln-459" name="ln-459"></a><span class="s1">    type(string_t), allocatable :: sub_dir_files(:)</span>
-<a id="ln-460" name="ln-460"></a>
-<a id="ln-461" name="ln-461"></a><span class="s1">    if (.not. is_dir(dir)) then</span>
-<a id="ln-462" name="ln-462"></a><span class="s1">        allocate (files(0))</span>
-<a id="ln-463" name="ln-463"></a><span class="s1">        return</span>
-<a id="ln-464" name="ln-464"></a><span class="s1">    end if</span>
-<a id="ln-465" name="ln-465"></a>
-<a id="ln-466" name="ln-466"></a><span class="s1">    allocate (temp_file, source=get_temp_filename())</span>
-<a id="ln-467" name="ln-467"></a>
-<a id="ln-468" name="ln-468"></a><span class="s1">    select case (get_os_type())</span>
-<a id="ln-469" name="ln-469"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
-<a id="ln-470" name="ln-470"></a><span class="s1">            call execute_command_line(&#39;</span><span class="n">ls</span> <span class="o">-</span><span class="n">A</span> <span class="s1">&#39; // dir // &#39;</span> <span class="o">&gt;</span> <span class="s1">&#39; // temp_file, &amp;</span>
-<a id="ln-471" name="ln-471"></a><span class="s1">                                      exitstat=stat)</span>
-<a id="ln-472" name="ln-472"></a><span class="s1">        case (OS_WINDOWS)</span>
-<a id="ln-473" name="ln-473"></a><span class="s1">            call execute_command_line(&#39;</span><span class="n">dir</span> <span class="o">/</span><span class="n">b</span> <span class="s1">&#39; // windows_path(dir) // &#39;</span> <span class="o">&gt;</span> <span class="s1">&#39; // temp_file, &amp;</span>
-<a id="ln-474" name="ln-474"></a><span class="s1">                                      exitstat=stat)</span>
-<a id="ln-475" name="ln-475"></a><span class="s1">    end select</span>
-<a id="ln-476" name="ln-476"></a>
-<a id="ln-477" name="ln-477"></a><span class="s1">    if (stat /= 0) then</span>
-<a id="ln-478" name="ln-478"></a><span class="s1">        call fpm_stop(2,&#39;</span><span class="o">*</span><span class="n">list_files</span><span class="o">*</span><span class="p">:</span><span class="n">directory</span> <span class="n">listing</span> <span class="n">failed</span><span class="s1">&#39;)</span>
-<a id="ln-479" name="ln-479"></a><span class="s1">    end if</span>
-<a id="ln-480" name="ln-480"></a>
-<a id="ln-481" name="ln-481"></a><span class="s1">    open (newunit=fh, file=temp_file, status=&#39;</span><span class="n">old</span><span class="s1">&#39;)</span>
-<a id="ln-482" name="ln-482"></a><span class="s1">    files = read_lines(fh)</span>
-<a id="ln-483" name="ln-483"></a><span class="s1">    close(fh,status=&quot;delete&quot;)</span>
-<a id="ln-484" name="ln-484"></a>
-<a id="ln-485" name="ln-485"></a><span class="s1">    do i=1,size(files)</span>
-<a id="ln-486" name="ln-486"></a><span class="s1">        files(i)%s = join_path(dir,files(i)%s)</span>
-<a id="ln-487" name="ln-487"></a><span class="s1">    end do</span>
-<a id="ln-488" name="ln-488"></a>
-<a id="ln-489" name="ln-489"></a><span class="s1">    if (present(recurse)) then</span>
-<a id="ln-490" name="ln-490"></a><span class="s1">        if (recurse) then</span>
-<a id="ln-491" name="ln-491"></a>
-<a id="ln-492" name="ln-492"></a><span class="s1">            allocate(sub_dir_files(0))</span>
-<a id="ln-493" name="ln-493"></a>
-<a id="ln-494" name="ln-494"></a><span class="s1">            do i=1,size(files)</span>
-<a id="ln-495" name="ln-495"></a><span class="s1">                if (is_dir(files(i)%s)) then</span>
-<a id="ln-496" name="ln-496"></a>
-<a id="ln-497" name="ln-497"></a><span class="s1">                    call list_files(files(i)%s, dir_files, recurse=.true.)</span>
-<a id="ln-498" name="ln-498"></a><span class="s1">                    sub_dir_files = [sub_dir_files, dir_files]</span>
-<a id="ln-499" name="ln-499"></a>
-<a id="ln-500" name="ln-500"></a><span class="s1">                end if</span>
-<a id="ln-501" name="ln-501"></a><span class="s1">            end do</span>
+<a id="ln-431" name="ln-431"></a><span class="s1">            files_tmp(i)%s = join_path(dir, string_fortran)</span>
+<a id="ln-432" name="ln-432"></a><span class="s1">        end if</span>
+<a id="ln-433" name="ln-433"></a><span class="s1">    end do</span>
+<a id="ln-434" name="ln-434"></a>
+<a id="ln-435" name="ln-435"></a><span class="s1">    r = c_closedir(dir_handle)</span>
+<a id="ln-436" name="ln-436"></a>
+<a id="ln-437" name="ln-437"></a><span class="s1">    if (r .ne. 0) then</span>
+<a id="ln-438" name="ln-438"></a><span class="s1">        print *, &#39;</span><span class="n">c_closedir</span><span class="p">()</span> <span class="n">failed</span><span class="s1">&#39;</span>
+<a id="ln-439" name="ln-439"></a><span class="s1">        error stop</span>
+<a id="ln-440" name="ln-440"></a><span class="s1">    end if</span>
+<a id="ln-441" name="ln-441"></a>
+<a id="ln-442" name="ln-442"></a><span class="s1">    if (i .gt. 0) then</span>
+<a id="ln-443" name="ln-443"></a><span class="s1">        files = [files, files_tmp(1:i)]</span>
+<a id="ln-444" name="ln-444"></a><span class="s1">    end if</span>
+<a id="ln-445" name="ln-445"></a>
+<a id="ln-446" name="ln-446"></a><span class="s1">    if (present(recurse)) then</span>
+<a id="ln-447" name="ln-447"></a><span class="s1">        if (recurse) then</span>
+<a id="ln-448" name="ln-448"></a>
+<a id="ln-449" name="ln-449"></a><span class="s1">            allocate(sub_dir_files(0))</span>
+<a id="ln-450" name="ln-450"></a>
+<a id="ln-451" name="ln-451"></a><span class="s1">            do i=1,size(files)</span>
+<a id="ln-452" name="ln-452"></a><span class="s1">                if (c_is_dir(files(i)%s//c_null_char) .ne. 0) then</span>
+<a id="ln-453" name="ln-453"></a><span class="s1">                    call list_files(files(i)%s, dir_files, recurse=.true.)</span>
+<a id="ln-454" name="ln-454"></a><span class="s1">                    sub_dir_files = [sub_dir_files, dir_files]</span>
+<a id="ln-455" name="ln-455"></a><span class="s1">                end if</span>
+<a id="ln-456" name="ln-456"></a><span class="s1">            end do</span>
+<a id="ln-457" name="ln-457"></a>
+<a id="ln-458" name="ln-458"></a><span class="s1">            files = [files, sub_dir_files]</span>
+<a id="ln-459" name="ln-459"></a><span class="s1">        end if</span>
+<a id="ln-460" name="ln-460"></a><span class="s1">    end if</span>
+<a id="ln-461" name="ln-461"></a><span class="s1">end subroutine list_files</span>
+<a id="ln-462" name="ln-462"></a>
+<a id="ln-463" name="ln-463"></a><span class="s1">#else</span>
+<a id="ln-464" name="ln-464"></a><span class="s1">!&gt; Get file &amp; directory names in directory `dir`.</span>
+<a id="ln-465" name="ln-465"></a><span class="s1">!!</span>
+<a id="ln-466" name="ln-466"></a><span class="s1">!!  - File/directory names return are relative to cwd, ie. preprended with `dir`</span>
+<a id="ln-467" name="ln-467"></a><span class="s1">!!  - Includes files starting with `.` except current directory and parent directory</span>
+<a id="ln-468" name="ln-468"></a><span class="s1">!!</span>
+<a id="ln-469" name="ln-469"></a><span class="s1">recursive subroutine list_files(dir, files, recurse)</span>
+<a id="ln-470" name="ln-470"></a><span class="s1">    character(len=*), intent(in) :: dir</span>
+<a id="ln-471" name="ln-471"></a><span class="s1">    type(string_t), allocatable, intent(out) :: files(:)</span>
+<a id="ln-472" name="ln-472"></a><span class="s1">    logical, intent(in), optional :: recurse</span>
+<a id="ln-473" name="ln-473"></a>
+<a id="ln-474" name="ln-474"></a><span class="s1">    integer :: stat, fh, i</span>
+<a id="ln-475" name="ln-475"></a><span class="s1">    character(:), allocatable :: temp_file</span>
+<a id="ln-476" name="ln-476"></a><span class="s1">    type(string_t), allocatable :: dir_files(:)</span>
+<a id="ln-477" name="ln-477"></a><span class="s1">    type(string_t), allocatable :: sub_dir_files(:)</span>
+<a id="ln-478" name="ln-478"></a>
+<a id="ln-479" name="ln-479"></a><span class="s1">    if (.not. is_dir(dir)) then</span>
+<a id="ln-480" name="ln-480"></a><span class="s1">        allocate (files(0))</span>
+<a id="ln-481" name="ln-481"></a><span class="s1">        return</span>
+<a id="ln-482" name="ln-482"></a><span class="s1">    end if</span>
+<a id="ln-483" name="ln-483"></a>
+<a id="ln-484" name="ln-484"></a><span class="s1">    allocate (temp_file, source=get_temp_filename())</span>
+<a id="ln-485" name="ln-485"></a>
+<a id="ln-486" name="ln-486"></a><span class="s1">    select case (get_os_type())</span>
+<a id="ln-487" name="ln-487"></a><span class="s1">        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)</span>
+<a id="ln-488" name="ln-488"></a><span class="s1">            call execute_command_line(&#39;</span><span class="n">ls</span> <span class="o">-</span><span class="n">A</span> <span class="s1">&#39; // dir // &#39;</span> <span class="o">&gt;</span> <span class="s1">&#39; // temp_file, &amp;</span>
+<a id="ln-489" name="ln-489"></a><span class="s1">                                      exitstat=stat)</span>
+<a id="ln-490" name="ln-490"></a><span class="s1">        case (OS_WINDOWS)</span>
+<a id="ln-491" name="ln-491"></a><span class="s1">            call execute_command_line(&#39;</span><span class="n">dir</span> <span class="o">/</span><span class="n">b</span> <span class="s1">&#39; // windows_path(dir) // &#39;</span> <span class="o">&gt;</span> <span class="s1">&#39; // temp_file, &amp;</span>
+<a id="ln-492" name="ln-492"></a><span class="s1">                                      exitstat=stat)</span>
+<a id="ln-493" name="ln-493"></a><span class="s1">    end select</span>
+<a id="ln-494" name="ln-494"></a>
+<a id="ln-495" name="ln-495"></a><span class="s1">    if (stat /= 0) then</span>
+<a id="ln-496" name="ln-496"></a><span class="s1">        call fpm_stop(2,&#39;</span><span class="o">*</span><span class="n">list_files</span><span class="o">*</span><span class="p">:</span><span class="n">directory</span> <span class="n">listing</span> <span class="n">failed</span><span class="s1">&#39;)</span>
+<a id="ln-497" name="ln-497"></a><span class="s1">    end if</span>
+<a id="ln-498" name="ln-498"></a>
+<a id="ln-499" name="ln-499"></a><span class="s1">    open (newunit=fh, file=temp_file, status=&#39;</span><span class="n">old</span><span class="s1">&#39;)</span>
+<a id="ln-500" name="ln-500"></a><span class="s1">    files = read_lines(fh)</span>
+<a id="ln-501" name="ln-501"></a><span class="s1">    close(fh,status=&quot;delete&quot;)</span>
 <a id="ln-502" name="ln-502"></a>
-<a id="ln-503" name="ln-503"></a><span class="s1">            files = [files, sub_dir_files]</span>
-<a id="ln-504" name="ln-504"></a>
-<a id="ln-505" name="ln-505"></a><span class="s1">        end if</span>
-<a id="ln-506" name="ln-506"></a><span class="s1">    end if</span>
-<a id="ln-507" name="ln-507"></a>
-<a id="ln-508" name="ln-508"></a><span class="s1">end subroutine list_files</span>
+<a id="ln-503" name="ln-503"></a><span class="s1">    do i=1,size(files)</span>
+<a id="ln-504" name="ln-504"></a><span class="s1">        files(i)%s = join_path(dir,files(i)%s)</span>
+<a id="ln-505" name="ln-505"></a><span class="s1">    end do</span>
+<a id="ln-506" name="ln-506"></a>
+<a id="ln-507" name="ln-507"></a><span class="s1">    if (present(recurse)) then</span>
+<a id="ln-508" name="ln-508"></a><span class="s1">        if (recurse) then</span>
 <a id="ln-509" name="ln-509"></a>
-<a id="ln-510" name="ln-510"></a><span class="s1">#endif</span>
+<a id="ln-510" name="ln-510"></a><span class="s1">            allocate(sub_dir_files(0))</span>
 <a id="ln-511" name="ln-511"></a>
-<a id="ln-512" name="ln-512"></a>
-<a id="ln-513" name="ln-513"></a><span class="s1">!&gt; test if pathname already exists</span>
-<a id="ln-514" name="ln-514"></a><span class="s1">logical function exists(filename) result(r)</span>
-<a id="ln-515" name="ln-515"></a><span class="s1">    character(len=*), intent(in) :: filename</span>
-<a id="ln-516" name="ln-516"></a><span class="s1">    inquire(file=filename, exist=r)</span>
-<a id="ln-517" name="ln-517"></a><span class="s1">end function</span>
-<a id="ln-518" name="ln-518"></a>
-<a id="ln-519" name="ln-519"></a>
-<a id="ln-520" name="ln-520"></a><span class="s1">!&gt; Get a unused temporary filename</span>
-<a id="ln-521" name="ln-521"></a><span class="s1">!!  Calls posix &#39;</span><span class="n">tempnam</span><span class="s1">&#39; - not recommended, but</span>
-<a id="ln-522" name="ln-522"></a><span class="s1">!!   we have no security concerns for this application</span>
-<a id="ln-523" name="ln-523"></a><span class="s1">!!   and use here is temporary.</span>
-<a id="ln-524" name="ln-524"></a><span class="s1">!! Works with MinGW</span>
-<a id="ln-525" name="ln-525"></a><span class="s1">function get_temp_filename() result(tempfile)</span>
-<a id="ln-526" name="ln-526"></a><span class="s1">    !</span>
-<a id="ln-527" name="ln-527"></a><span class="s1">    use iso_c_binding, only: c_ptr, C_NULL_PTR, c_f_pointer</span>
-<a id="ln-528" name="ln-528"></a><span class="s1">    character(:), allocatable :: tempfile</span>
+<a id="ln-512" name="ln-512"></a><span class="s1">            do i=1,size(files)</span>
+<a id="ln-513" name="ln-513"></a><span class="s1">                if (is_dir(files(i)%s)) then</span>
+<a id="ln-514" name="ln-514"></a>
+<a id="ln-515" name="ln-515"></a><span class="s1">                    call list_files(files(i)%s, dir_files, recurse=.true.)</span>
+<a id="ln-516" name="ln-516"></a><span class="s1">                    sub_dir_files = [sub_dir_files, dir_files]</span>
+<a id="ln-517" name="ln-517"></a>
+<a id="ln-518" name="ln-518"></a><span class="s1">                end if</span>
+<a id="ln-519" name="ln-519"></a><span class="s1">            end do</span>
+<a id="ln-520" name="ln-520"></a>
+<a id="ln-521" name="ln-521"></a><span class="s1">            files = [files, sub_dir_files]</span>
+<a id="ln-522" name="ln-522"></a>
+<a id="ln-523" name="ln-523"></a><span class="s1">        end if</span>
+<a id="ln-524" name="ln-524"></a><span class="s1">    end if</span>
+<a id="ln-525" name="ln-525"></a>
+<a id="ln-526" name="ln-526"></a><span class="s1">end subroutine list_files</span>
+<a id="ln-527" name="ln-527"></a>
+<a id="ln-528" name="ln-528"></a><span class="s1">#endif</span>
 <a id="ln-529" name="ln-529"></a>
-<a id="ln-530" name="ln-530"></a><span class="s1">    type(c_ptr) :: c_tempfile_ptr</span>
-<a id="ln-531" name="ln-531"></a><span class="s1">    character(len=1), pointer :: c_tempfile(:)</span>
-<a id="ln-532" name="ln-532"></a>
-<a id="ln-533" name="ln-533"></a><span class="s1">    interface</span>
-<a id="ln-534" name="ln-534"></a>
-<a id="ln-535" name="ln-535"></a><span class="s1">        function c_tempnam(dir,pfx) result(tmp) bind(c,name=&quot;tempnam&quot;)</span>
-<a id="ln-536" name="ln-536"></a><span class="s1">            import</span>
-<a id="ln-537" name="ln-537"></a><span class="s1">            type(c_ptr), intent(in), value :: dir</span>
-<a id="ln-538" name="ln-538"></a><span class="s1">            type(c_ptr), intent(in), value :: pfx</span>
-<a id="ln-539" name="ln-539"></a><span class="s1">            type(c_ptr) :: tmp</span>
-<a id="ln-540" name="ln-540"></a><span class="s1">        end function c_tempnam</span>
-<a id="ln-541" name="ln-541"></a>
-<a id="ln-542" name="ln-542"></a><span class="s1">        subroutine c_free(ptr) BIND(C,name=&quot;free&quot;)</span>
-<a id="ln-543" name="ln-543"></a><span class="s1">            import</span>
-<a id="ln-544" name="ln-544"></a><span class="s1">            type(c_ptr), value :: ptr</span>
-<a id="ln-545" name="ln-545"></a><span class="s1">        end subroutine c_free</span>
-<a id="ln-546" name="ln-546"></a>
-<a id="ln-547" name="ln-547"></a><span class="s1">    end interface</span>
-<a id="ln-548" name="ln-548"></a>
-<a id="ln-549" name="ln-549"></a><span class="s1">    c_tempfile_ptr = c_tempnam(C_NULL_PTR, C_NULL_PTR)</span>
-<a id="ln-550" name="ln-550"></a><span class="s1">    call c_f_pointer(c_tempfile_ptr,c_tempfile,[LINE_BUFFER_LEN])</span>
-<a id="ln-551" name="ln-551"></a>
-<a id="ln-552" name="ln-552"></a><span class="s1">    tempfile = f_string(c_tempfile)</span>
-<a id="ln-553" name="ln-553"></a>
-<a id="ln-554" name="ln-554"></a><span class="s1">    call c_free(c_tempfile_ptr)</span>
-<a id="ln-555" name="ln-555"></a>
-<a id="ln-556" name="ln-556"></a><span class="s1">end function get_temp_filename</span>
-<a id="ln-557" name="ln-557"></a>
-<a id="ln-558" name="ln-558"></a>
-<a id="ln-559" name="ln-559"></a><span class="s1">!&gt; Replace file system separators for windows</span>
-<a id="ln-560" name="ln-560"></a><span class="s1">function windows_path(path) result(winpath)</span>
-<a id="ln-561" name="ln-561"></a>
-<a id="ln-562" name="ln-562"></a><span class="s1">    character(*), intent(in) :: path</span>
-<a id="ln-563" name="ln-563"></a><span class="s1">    character(:), allocatable :: winpath</span>
+<a id="ln-530" name="ln-530"></a>
+<a id="ln-531" name="ln-531"></a><span class="s1">!&gt; test if pathname already exists</span>
+<a id="ln-532" name="ln-532"></a><span class="s1">logical function exists(filename) result(r)</span>
+<a id="ln-533" name="ln-533"></a><span class="s1">    character(len=*), intent(in) :: filename</span>
+<a id="ln-534" name="ln-534"></a><span class="s1">    inquire(file=filename, exist=r)</span>
+<a id="ln-535" name="ln-535"></a><span class="s1">end function</span>
+<a id="ln-536" name="ln-536"></a>
+<a id="ln-537" name="ln-537"></a>
+<a id="ln-538" name="ln-538"></a><span class="s1">!&gt; Get a unused temporary filename</span>
+<a id="ln-539" name="ln-539"></a><span class="s1">!!  Calls posix &#39;</span><span class="n">tempnam</span><span class="s1">&#39; - not recommended, but</span>
+<a id="ln-540" name="ln-540"></a><span class="s1">!!   we have no security concerns for this application</span>
+<a id="ln-541" name="ln-541"></a><span class="s1">!!   and use here is temporary.</span>
+<a id="ln-542" name="ln-542"></a><span class="s1">!! Works with MinGW</span>
+<a id="ln-543" name="ln-543"></a><span class="s1">function get_temp_filename() result(tempfile)</span>
+<a id="ln-544" name="ln-544"></a><span class="s1">    !</span>
+<a id="ln-545" name="ln-545"></a><span class="s1">    use iso_c_binding, only: c_ptr, C_NULL_PTR, c_f_pointer</span>
+<a id="ln-546" name="ln-546"></a><span class="s1">    character(:), allocatable :: tempfile</span>
+<a id="ln-547" name="ln-547"></a>
+<a id="ln-548" name="ln-548"></a><span class="s1">    type(c_ptr) :: c_tempfile_ptr</span>
+<a id="ln-549" name="ln-549"></a><span class="s1">    character(len=1), pointer :: c_tempfile(:)</span>
+<a id="ln-550" name="ln-550"></a>
+<a id="ln-551" name="ln-551"></a><span class="s1">    interface</span>
+<a id="ln-552" name="ln-552"></a>
+<a id="ln-553" name="ln-553"></a><span class="s1">        function c_tempnam(dir,pfx) result(tmp) bind(c,name=&quot;tempnam&quot;)</span>
+<a id="ln-554" name="ln-554"></a><span class="s1">            import</span>
+<a id="ln-555" name="ln-555"></a><span class="s1">            type(c_ptr), intent(in), value :: dir</span>
+<a id="ln-556" name="ln-556"></a><span class="s1">            type(c_ptr), intent(in), value :: pfx</span>
+<a id="ln-557" name="ln-557"></a><span class="s1">            type(c_ptr) :: tmp</span>
+<a id="ln-558" name="ln-558"></a><span class="s1">        end function c_tempnam</span>
+<a id="ln-559" name="ln-559"></a>
+<a id="ln-560" name="ln-560"></a><span class="s1">        subroutine c_free(ptr) BIND(C,name=&quot;free&quot;)</span>
+<a id="ln-561" name="ln-561"></a><span class="s1">            import</span>
+<a id="ln-562" name="ln-562"></a><span class="s1">            type(c_ptr), value :: ptr</span>
+<a id="ln-563" name="ln-563"></a><span class="s1">        end subroutine c_free</span>
 <a id="ln-564" name="ln-564"></a>
-<a id="ln-565" name="ln-565"></a><span class="s1">    integer :: idx</span>
+<a id="ln-565" name="ln-565"></a><span class="s1">    end interface</span>
 <a id="ln-566" name="ln-566"></a>
-<a id="ln-567" name="ln-567"></a><span class="s1">    winpath = path</span>
-<a id="ln-568" name="ln-568"></a>
-<a id="ln-569" name="ln-569"></a><span class="s1">    idx = index(winpath,&#39;</span><span class="o">/</span><span class="s1">&#39;)</span>
-<a id="ln-570" name="ln-570"></a><span class="s1">    do while(idx &gt; 0)</span>
-<a id="ln-571" name="ln-571"></a><span class="s1">        winpath(idx:idx) = &#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<a id="ln-572" name="ln-572"></a><span class="s1">        idx = index(winpath,&#39;</span><span class="o">/</span><span class="s1">&#39;)</span>
-<a id="ln-573" name="ln-573"></a><span class="s1">    end do</span>
-<a id="ln-574" name="ln-574"></a>
-<a id="ln-575" name="ln-575"></a><span class="s1">end function windows_path</span>
+<a id="ln-567" name="ln-567"></a><span class="s1">    c_tempfile_ptr = c_tempnam(C_NULL_PTR, C_NULL_PTR)</span>
+<a id="ln-568" name="ln-568"></a><span class="s1">    call c_f_pointer(c_tempfile_ptr,c_tempfile,[LINE_BUFFER_LEN])</span>
+<a id="ln-569" name="ln-569"></a>
+<a id="ln-570" name="ln-570"></a><span class="s1">    tempfile = f_string(c_tempfile)</span>
+<a id="ln-571" name="ln-571"></a>
+<a id="ln-572" name="ln-572"></a><span class="s1">    call c_free(c_tempfile_ptr)</span>
+<a id="ln-573" name="ln-573"></a>
+<a id="ln-574" name="ln-574"></a><span class="s1">end function get_temp_filename</span>
+<a id="ln-575" name="ln-575"></a>
 <a id="ln-576" name="ln-576"></a>
-<a id="ln-577" name="ln-577"></a>
-<a id="ln-578" name="ln-578"></a><span class="s1">!&gt; Replace file system separators for unix</span>
-<a id="ln-579" name="ln-579"></a><span class="s1">function unix_path(path) result(nixpath)</span>
-<a id="ln-580" name="ln-580"></a>
-<a id="ln-581" name="ln-581"></a><span class="s1">    character(*), intent(in) :: path</span>
-<a id="ln-582" name="ln-582"></a><span class="s1">    character(:), allocatable :: nixpath</span>
-<a id="ln-583" name="ln-583"></a>
-<a id="ln-584" name="ln-584"></a><span class="s1">    integer :: idx</span>
-<a id="ln-585" name="ln-585"></a>
-<a id="ln-586" name="ln-586"></a><span class="s1">    nixpath = path</span>
-<a id="ln-587" name="ln-587"></a>
-<a id="ln-588" name="ln-588"></a><span class="s1">    idx = index(nixpath,&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
-<a id="ln-589" name="ln-589"></a><span class="s1">    do while(idx &gt; 0)</span>
-<a id="ln-590" name="ln-590"></a><span class="s1">        nixpath(idx:idx) = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
-<a id="ln-591" name="ln-591"></a><span class="s1">        idx = index(nixpath,&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
-<a id="ln-592" name="ln-592"></a><span class="s1">    end do</span>
-<a id="ln-593" name="ln-593"></a>
-<a id="ln-594" name="ln-594"></a><span class="s1">end function unix_path</span>
+<a id="ln-577" name="ln-577"></a><span class="s1">!&gt; Replace file system separators for windows</span>
+<a id="ln-578" name="ln-578"></a><span class="s1">function windows_path(path) result(winpath)</span>
+<a id="ln-579" name="ln-579"></a>
+<a id="ln-580" name="ln-580"></a><span class="s1">    character(*), intent(in) :: path</span>
+<a id="ln-581" name="ln-581"></a><span class="s1">    character(:), allocatable :: winpath</span>
+<a id="ln-582" name="ln-582"></a>
+<a id="ln-583" name="ln-583"></a><span class="s1">    integer :: idx</span>
+<a id="ln-584" name="ln-584"></a>
+<a id="ln-585" name="ln-585"></a><span class="s1">    winpath = path</span>
+<a id="ln-586" name="ln-586"></a>
+<a id="ln-587" name="ln-587"></a><span class="s1">    idx = index(winpath,&#39;</span><span class="o">/</span><span class="s1">&#39;)</span>
+<a id="ln-588" name="ln-588"></a><span class="s1">    do while(idx &gt; 0)</span>
+<a id="ln-589" name="ln-589"></a><span class="s1">        winpath(idx:idx) = &#39;</span><span class="err">\</span><span class="s1">&#39;</span>
+<a id="ln-590" name="ln-590"></a><span class="s1">        idx = index(winpath,&#39;</span><span class="o">/</span><span class="s1">&#39;)</span>
+<a id="ln-591" name="ln-591"></a><span class="s1">    end do</span>
+<a id="ln-592" name="ln-592"></a>
+<a id="ln-593" name="ln-593"></a><span class="s1">end function windows_path</span>
+<a id="ln-594" name="ln-594"></a>
 <a id="ln-595" name="ln-595"></a>
-<a id="ln-596" name="ln-596"></a>
-<a id="ln-597" name="ln-597"></a><span class="s1">!&gt; read a line of arbitrary length into a CHARACTER variable from the specified LUN</span>
-<a id="ln-598" name="ln-598"></a><span class="s1">subroutine getline(unit, line, iostat, iomsg)</span>
-<a id="ln-599" name="ln-599"></a>
-<a id="ln-600" name="ln-600"></a><span class="s1">    !&gt; Formatted IO unit</span>
-<a id="ln-601" name="ln-601"></a><span class="s1">    integer, intent(in) :: unit</span>
-<a id="ln-602" name="ln-602"></a>
-<a id="ln-603" name="ln-603"></a><span class="s1">    !&gt; Line to read</span>
-<a id="ln-604" name="ln-604"></a><span class="s1">    character(len=:), allocatable, intent(out) :: line</span>
+<a id="ln-596" name="ln-596"></a><span class="s1">!&gt; Replace file system separators for unix</span>
+<a id="ln-597" name="ln-597"></a><span class="s1">function unix_path(path) result(nixpath)</span>
+<a id="ln-598" name="ln-598"></a>
+<a id="ln-599" name="ln-599"></a><span class="s1">    character(*), intent(in) :: path</span>
+<a id="ln-600" name="ln-600"></a><span class="s1">    character(:), allocatable :: nixpath</span>
+<a id="ln-601" name="ln-601"></a>
+<a id="ln-602" name="ln-602"></a><span class="s1">    integer :: idx</span>
+<a id="ln-603" name="ln-603"></a>
+<a id="ln-604" name="ln-604"></a><span class="s1">    nixpath = path</span>
 <a id="ln-605" name="ln-605"></a>
-<a id="ln-606" name="ln-606"></a><span class="s1">    !&gt; Status of operation</span>
-<a id="ln-607" name="ln-607"></a><span class="s1">    integer, intent(out) :: iostat</span>
-<a id="ln-608" name="ln-608"></a>
-<a id="ln-609" name="ln-609"></a><span class="s1">    !&gt; Error message</span>
-<a id="ln-610" name="ln-610"></a><span class="s1">    character(len=:), allocatable, optional :: iomsg</span>
+<a id="ln-606" name="ln-606"></a><span class="s1">    idx = index(nixpath,&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
+<a id="ln-607" name="ln-607"></a><span class="s1">    do while(idx &gt; 0)</span>
+<a id="ln-608" name="ln-608"></a><span class="s1">        nixpath(idx:idx) = &#39;</span><span class="o">/</span><span class="s1">&#39;</span>
+<a id="ln-609" name="ln-609"></a><span class="s1">        idx = index(nixpath,&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
+<a id="ln-610" name="ln-610"></a><span class="s1">    end do</span>
 <a id="ln-611" name="ln-611"></a>
-<a id="ln-612" name="ln-612"></a><span class="s1">    character(len=LINE_BUFFER_LEN) :: buffer</span>
-<a id="ln-613" name="ln-613"></a><span class="s1">    character(len=LINE_BUFFER_LEN) :: msg</span>
-<a id="ln-614" name="ln-614"></a><span class="s1">    integer :: size</span>
-<a id="ln-615" name="ln-615"></a><span class="s1">    integer :: stat</span>
-<a id="ln-616" name="ln-616"></a>
-<a id="ln-617" name="ln-617"></a><span class="s1">    allocate(character(len=0) :: line)</span>
-<a id="ln-618" name="ln-618"></a><span class="s1">    do</span>
-<a id="ln-619" name="ln-619"></a><span class="s1">        read(unit, &#39;</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;, advance=&#39;</span><span class="n">no</span><span class="s1">&#39;, iostat=stat, iomsg=msg, size=size) &amp;</span>
-<a id="ln-620" name="ln-620"></a><span class="s1">            &amp; buffer</span>
-<a id="ln-621" name="ln-621"></a><span class="s1">        if (stat &gt; 0) exit</span>
-<a id="ln-622" name="ln-622"></a><span class="s1">        line = line // buffer(:size)</span>
-<a id="ln-623" name="ln-623"></a><span class="s1">        if (stat &lt; 0) then</span>
-<a id="ln-624" name="ln-624"></a><span class="s1">            if (is_iostat_eor(stat)) then</span>
-<a id="ln-625" name="ln-625"></a><span class="s1">                stat = 0</span>
-<a id="ln-626" name="ln-626"></a><span class="s1">            end if</span>
-<a id="ln-627" name="ln-627"></a><span class="s1">            exit</span>
-<a id="ln-628" name="ln-628"></a><span class="s1">        end if</span>
-<a id="ln-629" name="ln-629"></a><span class="s1">    end do</span>
-<a id="ln-630" name="ln-630"></a>
-<a id="ln-631" name="ln-631"></a><span class="s1">    if (stat /= 0) then</span>
-<a id="ln-632" name="ln-632"></a><span class="s1">        if (present(iomsg)) iomsg = trim(msg)</span>
-<a id="ln-633" name="ln-633"></a><span class="s1">    end if</span>
-<a id="ln-634" name="ln-634"></a><span class="s1">    iostat = stat</span>
-<a id="ln-635" name="ln-635"></a>
-<a id="ln-636" name="ln-636"></a><span class="s1">end subroutine getline</span>
-<a id="ln-637" name="ln-637"></a>
-<a id="ln-638" name="ln-638"></a>
-<a id="ln-639" name="ln-639"></a><span class="s1">!&gt; delete a file by filename</span>
-<a id="ln-640" name="ln-640"></a><span class="s1">subroutine delete_file(file)</span>
-<a id="ln-641" name="ln-641"></a><span class="s1">    character(len=*), intent(in) :: file</span>
-<a id="ln-642" name="ln-642"></a><span class="s1">    logical :: exist</span>
-<a id="ln-643" name="ln-643"></a><span class="s1">    integer :: unit</span>
-<a id="ln-644" name="ln-644"></a><span class="s1">    inquire(file=file, exist=exist)</span>
-<a id="ln-645" name="ln-645"></a><span class="s1">    if (exist) then</span>
-<a id="ln-646" name="ln-646"></a><span class="s1">        open(file=file, newunit=unit)</span>
-<a id="ln-647" name="ln-647"></a><span class="s1">        close(unit, status=&quot;delete&quot;)</span>
-<a id="ln-648" name="ln-648"></a><span class="s1">    end if</span>
-<a id="ln-649" name="ln-649"></a><span class="s1">end subroutine delete_file</span>
-<a id="ln-650" name="ln-650"></a>
-<a id="ln-651" name="ln-651"></a><span class="s1">!&gt; write trimmed character data to a file if it does not exist</span>
-<a id="ln-652" name="ln-652"></a><span class="s1">subroutine warnwrite(fname,data)</span>
-<a id="ln-653" name="ln-653"></a><span class="s1">character(len=*),intent(in) :: fname</span>
-<a id="ln-654" name="ln-654"></a><span class="s1">character(len=*),intent(in) :: data(:)</span>
+<a id="ln-612" name="ln-612"></a><span class="s1">end function unix_path</span>
+<a id="ln-613" name="ln-613"></a>
+<a id="ln-614" name="ln-614"></a>
+<a id="ln-615" name="ln-615"></a><span class="s1">!&gt; read a line of arbitrary length into a CHARACTER variable from the specified LUN</span>
+<a id="ln-616" name="ln-616"></a><span class="s1">subroutine getline(unit, line, iostat, iomsg)</span>
+<a id="ln-617" name="ln-617"></a>
+<a id="ln-618" name="ln-618"></a><span class="s1">    !&gt; Formatted IO unit</span>
+<a id="ln-619" name="ln-619"></a><span class="s1">    integer, intent(in) :: unit</span>
+<a id="ln-620" name="ln-620"></a>
+<a id="ln-621" name="ln-621"></a><span class="s1">    !&gt; Line to read</span>
+<a id="ln-622" name="ln-622"></a><span class="s1">    character(len=:), allocatable, intent(out) :: line</span>
+<a id="ln-623" name="ln-623"></a>
+<a id="ln-624" name="ln-624"></a><span class="s1">    !&gt; Status of operation</span>
+<a id="ln-625" name="ln-625"></a><span class="s1">    integer, intent(out) :: iostat</span>
+<a id="ln-626" name="ln-626"></a>
+<a id="ln-627" name="ln-627"></a><span class="s1">    !&gt; Error message</span>
+<a id="ln-628" name="ln-628"></a><span class="s1">    character(len=:), allocatable, optional :: iomsg</span>
+<a id="ln-629" name="ln-629"></a>
+<a id="ln-630" name="ln-630"></a><span class="s1">    character(len=LINE_BUFFER_LEN) :: buffer</span>
+<a id="ln-631" name="ln-631"></a><span class="s1">    character(len=LINE_BUFFER_LEN) :: msg</span>
+<a id="ln-632" name="ln-632"></a><span class="s1">    integer :: size</span>
+<a id="ln-633" name="ln-633"></a><span class="s1">    integer :: stat</span>
+<a id="ln-634" name="ln-634"></a>
+<a id="ln-635" name="ln-635"></a><span class="s1">    allocate(character(len=0) :: line)</span>
+<a id="ln-636" name="ln-636"></a><span class="s1">    do</span>
+<a id="ln-637" name="ln-637"></a><span class="s1">        read(unit, &#39;</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;, advance=&#39;</span><span class="n">no</span><span class="s1">&#39;, iostat=stat, iomsg=msg, size=size) &amp;</span>
+<a id="ln-638" name="ln-638"></a><span class="s1">            &amp; buffer</span>
+<a id="ln-639" name="ln-639"></a><span class="s1">        if (stat &gt; 0) exit</span>
+<a id="ln-640" name="ln-640"></a><span class="s1">        line = line // buffer(:size)</span>
+<a id="ln-641" name="ln-641"></a><span class="s1">        if (stat &lt; 0) then</span>
+<a id="ln-642" name="ln-642"></a><span class="s1">            if (is_iostat_eor(stat)) then</span>
+<a id="ln-643" name="ln-643"></a><span class="s1">                stat = 0</span>
+<a id="ln-644" name="ln-644"></a><span class="s1">            end if</span>
+<a id="ln-645" name="ln-645"></a><span class="s1">            exit</span>
+<a id="ln-646" name="ln-646"></a><span class="s1">        end if</span>
+<a id="ln-647" name="ln-647"></a><span class="s1">    end do</span>
+<a id="ln-648" name="ln-648"></a>
+<a id="ln-649" name="ln-649"></a><span class="s1">    if (stat /= 0) then</span>
+<a id="ln-650" name="ln-650"></a><span class="s1">        if (present(iomsg)) iomsg = trim(msg)</span>
+<a id="ln-651" name="ln-651"></a><span class="s1">    end if</span>
+<a id="ln-652" name="ln-652"></a><span class="s1">    iostat = stat</span>
+<a id="ln-653" name="ln-653"></a>
+<a id="ln-654" name="ln-654"></a><span class="s1">end subroutine getline</span>
 <a id="ln-655" name="ln-655"></a>
-<a id="ln-656" name="ln-656"></a><span class="s1">    if(.not.exists(fname))then</span>
-<a id="ln-657" name="ln-657"></a><span class="s1">        call filewrite(fname,data)</span>
-<a id="ln-658" name="ln-658"></a><span class="s1">    else</span>
-<a id="ln-659" name="ln-659"></a><span class="s1">        write(stderr,&#39;</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">g0</span><span class="p">,</span><span class="mi">1</span><span class="n">x</span><span class="p">))</span><span class="s1">&#39;)&#39;</span><span class="o">&lt;</span><span class="n">INFO</span><span class="o">&gt;</span>  <span class="s1">&#39;,fname,&amp;</span>
-<a id="ln-660" name="ln-660"></a><span class="s1">        &amp; &#39;</span><span class="n">already</span> <span class="n">exists</span><span class="p">.</span> <span class="nb">Not </span><span class="n">overwriting</span><span class="s1">&#39;</span>
-<a id="ln-661" name="ln-661"></a><span class="s1">    endif</span>
-<a id="ln-662" name="ln-662"></a>
-<a id="ln-663" name="ln-663"></a><span class="s1">end subroutine warnwrite</span>
-<a id="ln-664" name="ln-664"></a>
-<a id="ln-665" name="ln-665"></a><span class="s1">!&gt; procedure to open filename as a sequential &quot;text&quot; file</span>
-<a id="ln-666" name="ln-666"></a><span class="s1">subroutine fileopen(filename,lun,ier)</span>
-<a id="ln-667" name="ln-667"></a>
-<a id="ln-668" name="ln-668"></a><span class="s1">character(len=*),intent(in)   :: filename</span>
-<a id="ln-669" name="ln-669"></a><span class="s1">integer,intent(out)           :: lun</span>
-<a id="ln-670" name="ln-670"></a><span class="s1">integer,intent(out),optional  :: ier</span>
-<a id="ln-671" name="ln-671"></a><span class="s1">integer                       :: ios</span>
-<a id="ln-672" name="ln-672"></a><span class="s1">character(len=256)            :: message</span>
+<a id="ln-656" name="ln-656"></a>
+<a id="ln-657" name="ln-657"></a><span class="s1">!&gt; delete a file by filename</span>
+<a id="ln-658" name="ln-658"></a><span class="s1">subroutine delete_file(file)</span>
+<a id="ln-659" name="ln-659"></a><span class="s1">    character(len=*), intent(in) :: file</span>
+<a id="ln-660" name="ln-660"></a><span class="s1">    logical :: exist</span>
+<a id="ln-661" name="ln-661"></a><span class="s1">    integer :: unit</span>
+<a id="ln-662" name="ln-662"></a><span class="s1">    inquire(file=file, exist=exist)</span>
+<a id="ln-663" name="ln-663"></a><span class="s1">    if (exist) then</span>
+<a id="ln-664" name="ln-664"></a><span class="s1">        open(file=file, newunit=unit)</span>
+<a id="ln-665" name="ln-665"></a><span class="s1">        close(unit, status=&quot;delete&quot;)</span>
+<a id="ln-666" name="ln-666"></a><span class="s1">    end if</span>
+<a id="ln-667" name="ln-667"></a><span class="s1">end subroutine delete_file</span>
+<a id="ln-668" name="ln-668"></a>
+<a id="ln-669" name="ln-669"></a><span class="s1">!&gt; write trimmed character data to a file if it does not exist</span>
+<a id="ln-670" name="ln-670"></a><span class="s1">subroutine warnwrite(fname,data)</span>
+<a id="ln-671" name="ln-671"></a><span class="s1">character(len=*),intent(in) :: fname</span>
+<a id="ln-672" name="ln-672"></a><span class="s1">character(len=*),intent(in) :: data(:)</span>
 <a id="ln-673" name="ln-673"></a>
-<a id="ln-674" name="ln-674"></a><span class="s1">    message=&#39;</span> <span class="s1">&#39;</span>
-<a id="ln-675" name="ln-675"></a><span class="s1">    ios=0</span>
-<a id="ln-676" name="ln-676"></a><span class="s1">    if(filename.ne.&#39;</span> <span class="s1">&#39;)then</span>
-<a id="ln-677" name="ln-677"></a><span class="s1">        open(file=filename, &amp;</span>
-<a id="ln-678" name="ln-678"></a><span class="s1">        &amp; newunit=lun, &amp;</span>
-<a id="ln-679" name="ln-679"></a><span class="s1">        &amp; form=&#39;</span><span class="n">formatted</span><span class="s1">&#39;, &amp;    ! FORM    = FORMATTED | UNFORMATTED</span>
-<a id="ln-680" name="ln-680"></a><span class="s1">        &amp; access=&#39;</span><span class="n">sequential</span><span class="s1">&#39;, &amp; ! ACCESS  = SEQUENTIAL| DIRECT | STREAM</span>
-<a id="ln-681" name="ln-681"></a><span class="s1">        &amp; action=&#39;</span><span class="k">write</span><span class="s1">&#39;, &amp;      ! ACTION  = READ|WRITE| READWRITE</span>
-<a id="ln-682" name="ln-682"></a><span class="s1">        &amp; position=&#39;</span><span class="k">rewind</span><span class="s1">&#39;, &amp;   ! POSITION= ASIS      | REWIND | APPEND</span>
-<a id="ln-683" name="ln-683"></a><span class="s1">        &amp; status=&#39;</span><span class="n">new</span><span class="s1">&#39;, &amp;        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN</span>
-<a id="ln-684" name="ln-684"></a><span class="s1">        &amp; iostat=ios, &amp;</span>
-<a id="ln-685" name="ln-685"></a><span class="s1">        &amp; iomsg=message)</span>
-<a id="ln-686" name="ln-686"></a><span class="s1">    else</span>
-<a id="ln-687" name="ln-687"></a><span class="s1">        lun=stdout</span>
-<a id="ln-688" name="ln-688"></a><span class="s1">        ios=0</span>
-<a id="ln-689" name="ln-689"></a><span class="s1">    endif</span>
-<a id="ln-690" name="ln-690"></a><span class="s1">    if(ios.ne.0)then</span>
-<a id="ln-691" name="ln-691"></a><span class="s1">        lun=-1</span>
-<a id="ln-692" name="ln-692"></a><span class="s1">        if(present(ier))then</span>
-<a id="ln-693" name="ln-693"></a><span class="s1">           ier=ios</span>
-<a id="ln-694" name="ln-694"></a><span class="s1">        else</span>
-<a id="ln-695" name="ln-695"></a><span class="s1">           call fpm_stop(3,&#39;</span><span class="o">*</span><span class="n">fileopen</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;//filename//&#39;</span><span class="p">:</span><span class="s1">&#39;//trim(message))</span>
-<a id="ln-696" name="ln-696"></a><span class="s1">        endif</span>
-<a id="ln-697" name="ln-697"></a><span class="s1">    endif</span>
-<a id="ln-698" name="ln-698"></a>
-<a id="ln-699" name="ln-699"></a><span class="s1">end subroutine fileopen</span>
-<a id="ln-700" name="ln-700"></a>
-<a id="ln-701" name="ln-701"></a><span class="s1">!&gt; simple close of a LUN.  On error show message and stop (by default)</span>
-<a id="ln-702" name="ln-702"></a><span class="s1">subroutine fileclose(lun,ier)</span>
-<a id="ln-703" name="ln-703"></a><span class="s1">integer,intent(in)    :: lun</span>
-<a id="ln-704" name="ln-704"></a><span class="s1">integer,intent(out),optional :: ier</span>
-<a id="ln-705" name="ln-705"></a><span class="s1">character(len=256)    :: message</span>
-<a id="ln-706" name="ln-706"></a><span class="s1">integer               :: ios</span>
-<a id="ln-707" name="ln-707"></a><span class="s1">    if(lun.ne.-1)then</span>
-<a id="ln-708" name="ln-708"></a><span class="s1">        close(unit=lun,iostat=ios,iomsg=message)</span>
-<a id="ln-709" name="ln-709"></a><span class="s1">        if(ios.ne.0)then</span>
-<a id="ln-710" name="ln-710"></a><span class="s1">            if(present(ier))then</span>
-<a id="ln-711" name="ln-711"></a><span class="s1">               ier=ios</span>
-<a id="ln-712" name="ln-712"></a><span class="s1">            else</span>
-<a id="ln-713" name="ln-713"></a><span class="s1">               call fpm_stop(4,&#39;</span><span class="o">*</span><span class="n">fileclose</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;//trim(message))</span>
-<a id="ln-714" name="ln-714"></a><span class="s1">            endif</span>
-<a id="ln-715" name="ln-715"></a><span class="s1">        endif</span>
-<a id="ln-716" name="ln-716"></a><span class="s1">    endif</span>
-<a id="ln-717" name="ln-717"></a><span class="s1">end subroutine fileclose</span>
+<a id="ln-674" name="ln-674"></a><span class="s1">    if(.not.exists(fname))then</span>
+<a id="ln-675" name="ln-675"></a><span class="s1">        call filewrite(fname,data)</span>
+<a id="ln-676" name="ln-676"></a><span class="s1">    else</span>
+<a id="ln-677" name="ln-677"></a><span class="s1">        write(stderr,&#39;</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">g0</span><span class="p">,</span><span class="mi">1</span><span class="n">x</span><span class="p">))</span><span class="s1">&#39;)&#39;</span><span class="o">&lt;</span><span class="n">INFO</span><span class="o">&gt;</span>  <span class="s1">&#39;,fname,&amp;</span>
+<a id="ln-678" name="ln-678"></a><span class="s1">        &amp; &#39;</span><span class="n">already</span> <span class="n">exists</span><span class="p">.</span> <span class="nb">Not </span><span class="n">overwriting</span><span class="s1">&#39;</span>
+<a id="ln-679" name="ln-679"></a><span class="s1">    endif</span>
+<a id="ln-680" name="ln-680"></a>
+<a id="ln-681" name="ln-681"></a><span class="s1">end subroutine warnwrite</span>
+<a id="ln-682" name="ln-682"></a>
+<a id="ln-683" name="ln-683"></a><span class="s1">!&gt; procedure to open filename as a sequential &quot;text&quot; file</span>
+<a id="ln-684" name="ln-684"></a><span class="s1">subroutine fileopen(filename,lun,ier)</span>
+<a id="ln-685" name="ln-685"></a>
+<a id="ln-686" name="ln-686"></a><span class="s1">character(len=*),intent(in)   :: filename</span>
+<a id="ln-687" name="ln-687"></a><span class="s1">integer,intent(out)           :: lun</span>
+<a id="ln-688" name="ln-688"></a><span class="s1">integer,intent(out),optional  :: ier</span>
+<a id="ln-689" name="ln-689"></a><span class="s1">integer                       :: ios</span>
+<a id="ln-690" name="ln-690"></a><span class="s1">character(len=256)            :: message</span>
+<a id="ln-691" name="ln-691"></a>
+<a id="ln-692" name="ln-692"></a><span class="s1">    message=&#39;</span> <span class="s1">&#39;</span>
+<a id="ln-693" name="ln-693"></a><span class="s1">    ios=0</span>
+<a id="ln-694" name="ln-694"></a><span class="s1">    if(filename.ne.&#39;</span> <span class="s1">&#39;)then</span>
+<a id="ln-695" name="ln-695"></a><span class="s1">        open(file=filename, &amp;</span>
+<a id="ln-696" name="ln-696"></a><span class="s1">        &amp; newunit=lun, &amp;</span>
+<a id="ln-697" name="ln-697"></a><span class="s1">        &amp; form=&#39;</span><span class="n">formatted</span><span class="s1">&#39;, &amp;    ! FORM    = FORMATTED | UNFORMATTED</span>
+<a id="ln-698" name="ln-698"></a><span class="s1">        &amp; access=&#39;</span><span class="n">sequential</span><span class="s1">&#39;, &amp; ! ACCESS  = SEQUENTIAL| DIRECT | STREAM</span>
+<a id="ln-699" name="ln-699"></a><span class="s1">        &amp; action=&#39;</span><span class="k">write</span><span class="s1">&#39;, &amp;      ! ACTION  = READ|WRITE| READWRITE</span>
+<a id="ln-700" name="ln-700"></a><span class="s1">        &amp; position=&#39;</span><span class="k">rewind</span><span class="s1">&#39;, &amp;   ! POSITION= ASIS      | REWIND | APPEND</span>
+<a id="ln-701" name="ln-701"></a><span class="s1">        &amp; status=&#39;</span><span class="n">new</span><span class="s1">&#39;, &amp;        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN</span>
+<a id="ln-702" name="ln-702"></a><span class="s1">        &amp; iostat=ios, &amp;</span>
+<a id="ln-703" name="ln-703"></a><span class="s1">        &amp; iomsg=message)</span>
+<a id="ln-704" name="ln-704"></a><span class="s1">    else</span>
+<a id="ln-705" name="ln-705"></a><span class="s1">        lun=stdout</span>
+<a id="ln-706" name="ln-706"></a><span class="s1">        ios=0</span>
+<a id="ln-707" name="ln-707"></a><span class="s1">    endif</span>
+<a id="ln-708" name="ln-708"></a><span class="s1">    if(ios.ne.0)then</span>
+<a id="ln-709" name="ln-709"></a><span class="s1">        lun=-1</span>
+<a id="ln-710" name="ln-710"></a><span class="s1">        if(present(ier))then</span>
+<a id="ln-711" name="ln-711"></a><span class="s1">           ier=ios</span>
+<a id="ln-712" name="ln-712"></a><span class="s1">        else</span>
+<a id="ln-713" name="ln-713"></a><span class="s1">           call fpm_stop(3,&#39;</span><span class="o">*</span><span class="n">fileopen</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;//filename//&#39;</span><span class="p">:</span><span class="s1">&#39;//trim(message))</span>
+<a id="ln-714" name="ln-714"></a><span class="s1">        endif</span>
+<a id="ln-715" name="ln-715"></a><span class="s1">    endif</span>
+<a id="ln-716" name="ln-716"></a>
+<a id="ln-717" name="ln-717"></a><span class="s1">end subroutine fileopen</span>
 <a id="ln-718" name="ln-718"></a>
-<a id="ln-719" name="ln-719"></a><span class="s1">!&gt; procedure to write filedata to file filename</span>
-<a id="ln-720" name="ln-720"></a><span class="s1">subroutine filewrite(filename,filedata)</span>
-<a id="ln-721" name="ln-721"></a>
-<a id="ln-722" name="ln-722"></a><span class="s1">character(len=*),intent(in)           :: filename</span>
-<a id="ln-723" name="ln-723"></a><span class="s1">character(len=*),intent(in)           :: filedata(:)</span>
-<a id="ln-724" name="ln-724"></a><span class="s1">integer                               :: lun, i, ios</span>
-<a id="ln-725" name="ln-725"></a><span class="s1">character(len=256)                    :: message</span>
-<a id="ln-726" name="ln-726"></a><span class="s1">    call fileopen(filename,lun)</span>
-<a id="ln-727" name="ln-727"></a><span class="s1">    if(lun.ne.-1)then ! program currently stops on error on open, but might</span>
-<a id="ln-728" name="ln-728"></a><span class="s1">                      ! want it to continue so -1 (unallowed LUN) indicates error</span>
-<a id="ln-729" name="ln-729"></a><span class="s1">       ! write file</span>
-<a id="ln-730" name="ln-730"></a><span class="s1">       do i=1,size(filedata)</span>
-<a id="ln-731" name="ln-731"></a><span class="s1">           write(lun,&#39;</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;,iostat=ios,iomsg=message)trim(filedata(i))</span>
-<a id="ln-732" name="ln-732"></a><span class="s1">           if(ios.ne.0)then</span>
-<a id="ln-733" name="ln-733"></a><span class="s1">               call fpm_stop(5,&#39;</span><span class="o">*</span><span class="n">filewrite</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;//filename//&#39;</span><span class="p">:</span><span class="s1">&#39;//trim(message))</span>
-<a id="ln-734" name="ln-734"></a><span class="s1">           endif</span>
-<a id="ln-735" name="ln-735"></a><span class="s1">       enddo</span>
-<a id="ln-736" name="ln-736"></a><span class="s1">    endif</span>
-<a id="ln-737" name="ln-737"></a><span class="s1">    ! close file</span>
-<a id="ln-738" name="ln-738"></a><span class="s1">    call fileclose(lun)</span>
+<a id="ln-719" name="ln-719"></a><span class="s1">!&gt; simple close of a LUN.  On error show message and stop (by default)</span>
+<a id="ln-720" name="ln-720"></a><span class="s1">subroutine fileclose(lun,ier)</span>
+<a id="ln-721" name="ln-721"></a><span class="s1">integer,intent(in)    :: lun</span>
+<a id="ln-722" name="ln-722"></a><span class="s1">integer,intent(out),optional :: ier</span>
+<a id="ln-723" name="ln-723"></a><span class="s1">character(len=256)    :: message</span>
+<a id="ln-724" name="ln-724"></a><span class="s1">integer               :: ios</span>
+<a id="ln-725" name="ln-725"></a><span class="s1">    if(lun.ne.-1)then</span>
+<a id="ln-726" name="ln-726"></a><span class="s1">        close(unit=lun,iostat=ios,iomsg=message)</span>
+<a id="ln-727" name="ln-727"></a><span class="s1">        if(ios.ne.0)then</span>
+<a id="ln-728" name="ln-728"></a><span class="s1">            if(present(ier))then</span>
+<a id="ln-729" name="ln-729"></a><span class="s1">               ier=ios</span>
+<a id="ln-730" name="ln-730"></a><span class="s1">            else</span>
+<a id="ln-731" name="ln-731"></a><span class="s1">               call fpm_stop(4,&#39;</span><span class="o">*</span><span class="n">fileclose</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;//trim(message))</span>
+<a id="ln-732" name="ln-732"></a><span class="s1">            endif</span>
+<a id="ln-733" name="ln-733"></a><span class="s1">        endif</span>
+<a id="ln-734" name="ln-734"></a><span class="s1">    endif</span>
+<a id="ln-735" name="ln-735"></a><span class="s1">end subroutine fileclose</span>
+<a id="ln-736" name="ln-736"></a>
+<a id="ln-737" name="ln-737"></a><span class="s1">!&gt; procedure to write filedata to file filename</span>
+<a id="ln-738" name="ln-738"></a><span class="s1">subroutine filewrite(filename,filedata)</span>
 <a id="ln-739" name="ln-739"></a>
-<a id="ln-740" name="ln-740"></a><span class="s1">end subroutine filewrite</span>
-<a id="ln-741" name="ln-741"></a>
-<a id="ln-742" name="ln-742"></a><span class="s1">function which(command) result(pathname)</span>
-<a id="ln-743" name="ln-743"></a><span class="s1">!&gt;</span>
-<a id="ln-744" name="ln-744"></a><span class="s1">!!##NAME</span>
-<a id="ln-745" name="ln-745"></a><span class="s1">!!     which(3f) - [M_io:ENVIRONMENT] given a command name find the pathname by searching</span>
-<a id="ln-746" name="ln-746"></a><span class="s1">!!                 the directories in the environment variable $PATH</span>
-<a id="ln-747" name="ln-747"></a><span class="s1">!!     (LICENSE:PD)</span>
-<a id="ln-748" name="ln-748"></a><span class="s1">!!</span>
-<a id="ln-749" name="ln-749"></a><span class="s1">!!##SYNTAX</span>
-<a id="ln-750" name="ln-750"></a><span class="s1">!!   function which(command) result(pathname)</span>
-<a id="ln-751" name="ln-751"></a><span class="s1">!!</span>
-<a id="ln-752" name="ln-752"></a><span class="s1">!!    character(len=*),intent(in)  :: command</span>
-<a id="ln-753" name="ln-753"></a><span class="s1">!!    character(len=:),allocatable :: pathname</span>
-<a id="ln-754" name="ln-754"></a><span class="s1">!!</span>
-<a id="ln-755" name="ln-755"></a><span class="s1">!!##DESCRIPTION</span>
-<a id="ln-756" name="ln-756"></a><span class="s1">!!    Given a command name find the first file with that name in the directories</span>
-<a id="ln-757" name="ln-757"></a><span class="s1">!!    specified by the environment variable $PATH.</span>
-<a id="ln-758" name="ln-758"></a><span class="s1">!!</span>
-<a id="ln-759" name="ln-759"></a><span class="s1">!!##OPTIONS</span>
-<a id="ln-760" name="ln-760"></a><span class="s1">!!    COMMAND   the command to search for</span>
-<a id="ln-761" name="ln-761"></a><span class="s1">!!</span>
-<a id="ln-762" name="ln-762"></a><span class="s1">!!##RETURNS</span>
-<a id="ln-763" name="ln-763"></a><span class="s1">!!    PATHNAME  the first pathname found in the current user path. Returns blank</span>
-<a id="ln-764" name="ln-764"></a><span class="s1">!!              if the command is not found.</span>
-<a id="ln-765" name="ln-765"></a><span class="s1">!!</span>
-<a id="ln-766" name="ln-766"></a><span class="s1">!!##EXAMPLE</span>
-<a id="ln-767" name="ln-767"></a><span class="s1">!!</span>
-<a id="ln-768" name="ln-768"></a><span class="s1">!!   Sample program:</span>
+<a id="ln-740" name="ln-740"></a><span class="s1">character(len=*),intent(in)           :: filename</span>
+<a id="ln-741" name="ln-741"></a><span class="s1">character(len=*),intent(in)           :: filedata(:)</span>
+<a id="ln-742" name="ln-742"></a><span class="s1">integer                               :: lun, i, ios</span>
+<a id="ln-743" name="ln-743"></a><span class="s1">character(len=256)                    :: message</span>
+<a id="ln-744" name="ln-744"></a><span class="s1">    call fileopen(filename,lun)</span>
+<a id="ln-745" name="ln-745"></a><span class="s1">    if(lun.ne.-1)then ! program currently stops on error on open, but might</span>
+<a id="ln-746" name="ln-746"></a><span class="s1">                      ! want it to continue so -1 (unallowed LUN) indicates error</span>
+<a id="ln-747" name="ln-747"></a><span class="s1">       ! write file</span>
+<a id="ln-748" name="ln-748"></a><span class="s1">       do i=1,size(filedata)</span>
+<a id="ln-749" name="ln-749"></a><span class="s1">           write(lun,&#39;</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="s1">&#39;,iostat=ios,iomsg=message)trim(filedata(i))</span>
+<a id="ln-750" name="ln-750"></a><span class="s1">           if(ios.ne.0)then</span>
+<a id="ln-751" name="ln-751"></a><span class="s1">               call fpm_stop(5,&#39;</span><span class="o">*</span><span class="n">filewrite</span><span class="o">*</span><span class="p">:</span><span class="s1">&#39;//filename//&#39;</span><span class="p">:</span><span class="s1">&#39;//trim(message))</span>
+<a id="ln-752" name="ln-752"></a><span class="s1">           endif</span>
+<a id="ln-753" name="ln-753"></a><span class="s1">       enddo</span>
+<a id="ln-754" name="ln-754"></a><span class="s1">    endif</span>
+<a id="ln-755" name="ln-755"></a><span class="s1">    ! close file</span>
+<a id="ln-756" name="ln-756"></a><span class="s1">    call fileclose(lun)</span>
+<a id="ln-757" name="ln-757"></a>
+<a id="ln-758" name="ln-758"></a><span class="s1">end subroutine filewrite</span>
+<a id="ln-759" name="ln-759"></a>
+<a id="ln-760" name="ln-760"></a><span class="s1">function which(command) result(pathname)</span>
+<a id="ln-761" name="ln-761"></a><span class="s1">!&gt;</span>
+<a id="ln-762" name="ln-762"></a><span class="s1">!!##NAME</span>
+<a id="ln-763" name="ln-763"></a><span class="s1">!!     which(3f) - [M_io:ENVIRONMENT] given a command name find the pathname by searching</span>
+<a id="ln-764" name="ln-764"></a><span class="s1">!!                 the directories in the environment variable $PATH</span>
+<a id="ln-765" name="ln-765"></a><span class="s1">!!     (LICENSE:PD)</span>
+<a id="ln-766" name="ln-766"></a><span class="s1">!!</span>
+<a id="ln-767" name="ln-767"></a><span class="s1">!!##SYNTAX</span>
+<a id="ln-768" name="ln-768"></a><span class="s1">!!   function which(command) result(pathname)</span>
 <a id="ln-769" name="ln-769"></a><span class="s1">!!</span>
-<a id="ln-770" name="ln-770"></a><span class="s1">!!   Checking the error message and counting lines:</span>
-<a id="ln-771" name="ln-771"></a><span class="s1">!!</span>
-<a id="ln-772" name="ln-772"></a><span class="s1">!!     program demo_which</span>
-<a id="ln-773" name="ln-773"></a><span class="s1">!!     use M_io, only : which</span>
-<a id="ln-774" name="ln-774"></a><span class="s1">!!     implicit none</span>
-<a id="ln-775" name="ln-775"></a><span class="s1">!!        write(*,*)&#39;</span><span class="n">ls</span> <span class="k">is</span> <span class="s1">&#39;,which(&#39;</span><span class="n">ls</span><span class="s1">&#39;)</span>
-<a id="ln-776" name="ln-776"></a><span class="s1">!!        write(*,*)&#39;</span><span class="n">dir</span> <span class="k">is</span> <span class="s1">&#39;,which(&#39;</span><span class="n">dir</span><span class="s1">&#39;)</span>
-<a id="ln-777" name="ln-777"></a><span class="s1">!!        write(*,*)&#39;</span><span class="n">install</span> <span class="k">is</span> <span class="s1">&#39;,which(&#39;</span><span class="n">install</span><span class="s1">&#39;)</span>
-<a id="ln-778" name="ln-778"></a><span class="s1">!!     end program demo_which</span>
+<a id="ln-770" name="ln-770"></a><span class="s1">!!    character(len=*),intent(in)  :: command</span>
+<a id="ln-771" name="ln-771"></a><span class="s1">!!    character(len=:),allocatable :: pathname</span>
+<a id="ln-772" name="ln-772"></a><span class="s1">!!</span>
+<a id="ln-773" name="ln-773"></a><span class="s1">!!##DESCRIPTION</span>
+<a id="ln-774" name="ln-774"></a><span class="s1">!!    Given a command name find the first file with that name in the directories</span>
+<a id="ln-775" name="ln-775"></a><span class="s1">!!    specified by the environment variable $PATH.</span>
+<a id="ln-776" name="ln-776"></a><span class="s1">!!</span>
+<a id="ln-777" name="ln-777"></a><span class="s1">!!##OPTIONS</span>
+<a id="ln-778" name="ln-778"></a><span class="s1">!!    COMMAND   the command to search for</span>
 <a id="ln-779" name="ln-779"></a><span class="s1">!!</span>
-<a id="ln-780" name="ln-780"></a><span class="s1">!!##AUTHOR</span>
-<a id="ln-781" name="ln-781"></a><span class="s1">!!    John S. Urban</span>
-<a id="ln-782" name="ln-782"></a><span class="s1">!!##LICENSE</span>
-<a id="ln-783" name="ln-783"></a><span class="s1">!!    Public Domain</span>
-<a id="ln-784" name="ln-784"></a>
-<a id="ln-785" name="ln-785"></a><span class="s1">character(len=*),intent(in)     :: command</span>
-<a id="ln-786" name="ln-786"></a><span class="s1">character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)</span>
-<a id="ln-787" name="ln-787"></a><span class="s1">integer                         :: i, j</span>
-<a id="ln-788" name="ln-788"></a><span class="s1">   pathname=&#39;&#39;</span>
-<a id="ln-789" name="ln-789"></a><span class="s1">   call split(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),paths,delimiters=merge(&#39;</span><span class="p">;</span><span class="s1">&#39;,&#39;</span><span class="p">:</span><span class="s1">&#39;,separator().eq.&#39;</span><span class="err">\</span><span class="s1">&#39;))</span>
-<a id="ln-790" name="ln-790"></a><span class="s1">   SEARCH: do i=1,size(paths)</span>
-<a id="ln-791" name="ln-791"></a><span class="s1">      checkon=trim(join_path(trim(paths(i)),command))</span>
-<a id="ln-792" name="ln-792"></a><span class="s1">      select case(separator())</span>
-<a id="ln-793" name="ln-793"></a><span class="s1">      case(&#39;</span><span class="o">/</span><span class="s1">&#39;)</span>
-<a id="ln-794" name="ln-794"></a><span class="s1">         if(exists(checkon))then</span>
-<a id="ln-795" name="ln-795"></a><span class="s1">            pathname=checkon</span>
-<a id="ln-796" name="ln-796"></a><span class="s1">            exit SEARCH</span>
-<a id="ln-797" name="ln-797"></a><span class="s1">         endif</span>
-<a id="ln-798" name="ln-798"></a><span class="s1">      case(&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
-<a id="ln-799" name="ln-799"></a><span class="s1">         if(exists(checkon))then</span>
-<a id="ln-800" name="ln-800"></a><span class="s1">            pathname=checkon</span>
-<a id="ln-801" name="ln-801"></a><span class="s1">            exit SEARCH</span>
-<a id="ln-802" name="ln-802"></a><span class="s1">         endif</span>
-<a id="ln-803" name="ln-803"></a><span class="s1">         if(exists(checkon//&#39;</span><span class="p">.</span><span class="n">bat</span><span class="s1">&#39;))then</span>
-<a id="ln-804" name="ln-804"></a><span class="s1">            pathname=checkon//&#39;</span><span class="p">.</span><span class="n">bat</span><span class="s1">&#39;</span>
-<a id="ln-805" name="ln-805"></a><span class="s1">            exit SEARCH</span>
-<a id="ln-806" name="ln-806"></a><span class="s1">         endif</span>
-<a id="ln-807" name="ln-807"></a><span class="s1">         if(exists(checkon//&#39;</span><span class="p">.</span><span class="n">exe</span><span class="s1">&#39;))then</span>
-<a id="ln-808" name="ln-808"></a><span class="s1">            pathname=checkon//&#39;</span><span class="p">.</span><span class="n">exe</span><span class="s1">&#39;</span>
-<a id="ln-809" name="ln-809"></a><span class="s1">            exit SEARCH</span>
-<a id="ln-810" name="ln-810"></a><span class="s1">         endif</span>
-<a id="ln-811" name="ln-811"></a><span class="s1">         call split(get_env(&#39;</span><span class="n">PATHEXT</span><span class="s1">&#39;),exts,delimiters=&#39;</span><span class="p">;</span><span class="s1">&#39;)</span>
-<a id="ln-812" name="ln-812"></a><span class="s1">         do j=1,size(exts)</span>
-<a id="ln-813" name="ln-813"></a><span class="s1">            if(exists(checkon//&#39;</span><span class="p">.</span><span class="s1">&#39;//trim(exts(j))))then</span>
-<a id="ln-814" name="ln-814"></a><span class="s1">               pathname=checkon//&#39;</span><span class="p">.</span><span class="err">&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">exts</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
-<a id="ln-815" name="ln-815"></a>               <span class="k">exit </span><span class="n">SEARCH</span>
-<a id="ln-816" name="ln-816"></a>            <span class="k">endif</span>
-<a id="ln-817" name="ln-817"></a><span class="k">         enddo</span>
-<a id="ln-818" name="ln-818"></a><span class="k">      end select</span>
-<a id="ln-819" name="ln-819"></a><span class="k">   enddo </span><span class="n">SEARCH</span>
-<a id="ln-820" name="ln-820"></a><span class="k">end function </span><span class="n">which</span>
-<a id="ln-821" name="ln-821"></a>
-<a id="ln-822" name="ln-822"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
+<a id="ln-780" name="ln-780"></a><span class="s1">!!##RETURNS</span>
+<a id="ln-781" name="ln-781"></a><span class="s1">!!    PATHNAME  the first pathname found in the current user path. Returns blank</span>
+<a id="ln-782" name="ln-782"></a><span class="s1">!!              if the command is not found.</span>
+<a id="ln-783" name="ln-783"></a><span class="s1">!!</span>
+<a id="ln-784" name="ln-784"></a><span class="s1">!!##EXAMPLE</span>
+<a id="ln-785" name="ln-785"></a><span class="s1">!!</span>
+<a id="ln-786" name="ln-786"></a><span class="s1">!!   Sample program:</span>
+<a id="ln-787" name="ln-787"></a><span class="s1">!!</span>
+<a id="ln-788" name="ln-788"></a><span class="s1">!!   Checking the error message and counting lines:</span>
+<a id="ln-789" name="ln-789"></a><span class="s1">!!</span>
+<a id="ln-790" name="ln-790"></a><span class="s1">!!     program demo_which</span>
+<a id="ln-791" name="ln-791"></a><span class="s1">!!     use M_io, only : which</span>
+<a id="ln-792" name="ln-792"></a><span class="s1">!!     implicit none</span>
+<a id="ln-793" name="ln-793"></a><span class="s1">!!        write(*,*)&#39;</span><span class="n">ls</span> <span class="k">is</span> <span class="s1">&#39;,which(&#39;</span><span class="n">ls</span><span class="s1">&#39;)</span>
+<a id="ln-794" name="ln-794"></a><span class="s1">!!        write(*,*)&#39;</span><span class="n">dir</span> <span class="k">is</span> <span class="s1">&#39;,which(&#39;</span><span class="n">dir</span><span class="s1">&#39;)</span>
+<a id="ln-795" name="ln-795"></a><span class="s1">!!        write(*,*)&#39;</span><span class="n">install</span> <span class="k">is</span> <span class="s1">&#39;,which(&#39;</span><span class="n">install</span><span class="s1">&#39;)</span>
+<a id="ln-796" name="ln-796"></a><span class="s1">!!     end program demo_which</span>
+<a id="ln-797" name="ln-797"></a><span class="s1">!!</span>
+<a id="ln-798" name="ln-798"></a><span class="s1">!!##AUTHOR</span>
+<a id="ln-799" name="ln-799"></a><span class="s1">!!    John S. Urban</span>
+<a id="ln-800" name="ln-800"></a><span class="s1">!!##LICENSE</span>
+<a id="ln-801" name="ln-801"></a><span class="s1">!!    Public Domain</span>
+<a id="ln-802" name="ln-802"></a>
+<a id="ln-803" name="ln-803"></a><span class="s1">character(len=*),intent(in)     :: command</span>
+<a id="ln-804" name="ln-804"></a><span class="s1">character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)</span>
+<a id="ln-805" name="ln-805"></a><span class="s1">integer                         :: i, j</span>
+<a id="ln-806" name="ln-806"></a><span class="s1">   pathname=&#39;&#39;</span>
+<a id="ln-807" name="ln-807"></a><span class="s1">   call split(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),paths,delimiters=merge(&#39;</span><span class="p">;</span><span class="s1">&#39;,&#39;</span><span class="p">:</span><span class="s1">&#39;,separator().eq.&#39;</span><span class="err">\</span><span class="s1">&#39;))</span>
+<a id="ln-808" name="ln-808"></a><span class="s1">   SEARCH: do i=1,size(paths)</span>
+<a id="ln-809" name="ln-809"></a><span class="s1">      checkon=trim(join_path(trim(paths(i)),command))</span>
+<a id="ln-810" name="ln-810"></a><span class="s1">      select case(separator())</span>
+<a id="ln-811" name="ln-811"></a><span class="s1">      case(&#39;</span><span class="o">/</span><span class="s1">&#39;)</span>
+<a id="ln-812" name="ln-812"></a><span class="s1">         if(exists(checkon))then</span>
+<a id="ln-813" name="ln-813"></a><span class="s1">            pathname=checkon</span>
+<a id="ln-814" name="ln-814"></a><span class="s1">            exit SEARCH</span>
+<a id="ln-815" name="ln-815"></a><span class="s1">         endif</span>
+<a id="ln-816" name="ln-816"></a><span class="s1">      case(&#39;</span><span class="err">\</span><span class="s1">&#39;)</span>
+<a id="ln-817" name="ln-817"></a><span class="s1">         if(exists(checkon))then</span>
+<a id="ln-818" name="ln-818"></a><span class="s1">            pathname=checkon</span>
+<a id="ln-819" name="ln-819"></a><span class="s1">            exit SEARCH</span>
+<a id="ln-820" name="ln-820"></a><span class="s1">         endif</span>
+<a id="ln-821" name="ln-821"></a><span class="s1">         if(exists(checkon//&#39;</span><span class="p">.</span><span class="n">bat</span><span class="s1">&#39;))then</span>
+<a id="ln-822" name="ln-822"></a><span class="s1">            pathname=checkon//&#39;</span><span class="p">.</span><span class="n">bat</span><span class="s1">&#39;</span>
+<a id="ln-823" name="ln-823"></a><span class="s1">            exit SEARCH</span>
+<a id="ln-824" name="ln-824"></a><span class="s1">         endif</span>
+<a id="ln-825" name="ln-825"></a><span class="s1">         if(exists(checkon//&#39;</span><span class="p">.</span><span class="n">exe</span><span class="s1">&#39;))then</span>
+<a id="ln-826" name="ln-826"></a><span class="s1">            pathname=checkon//&#39;</span><span class="p">.</span><span class="n">exe</span><span class="s1">&#39;</span>
+<a id="ln-827" name="ln-827"></a><span class="s1">            exit SEARCH</span>
+<a id="ln-828" name="ln-828"></a><span class="s1">         endif</span>
+<a id="ln-829" name="ln-829"></a><span class="s1">         call split(get_env(&#39;</span><span class="n">PATHEXT</span><span class="s1">&#39;),exts,delimiters=&#39;</span><span class="p">;</span><span class="s1">&#39;)</span>
+<a id="ln-830" name="ln-830"></a><span class="s1">         do j=1,size(exts)</span>
+<a id="ln-831" name="ln-831"></a><span class="s1">            if(exists(checkon//&#39;</span><span class="p">.</span><span class="s1">&#39;//trim(exts(j))))then</span>
+<a id="ln-832" name="ln-832"></a><span class="s1">               pathname=checkon//&#39;</span><span class="p">.</span><span class="err">&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">exts</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+<a id="ln-833" name="ln-833"></a>               <span class="k">exit </span><span class="n">SEARCH</span>
+<a id="ln-834" name="ln-834"></a>            <span class="k">endif</span>
+<a id="ln-835" name="ln-835"></a><span class="k">         enddo</span>
+<a id="ln-836" name="ln-836"></a><span class="k">      end select</span>
+<a id="ln-837" name="ln-837"></a><span class="k">   enddo </span><span class="n">SEARCH</span>
+<a id="ln-838" name="ln-838"></a><span class="k">end function </span><span class="n">which</span>
+<a id="ln-839" name="ln-839"></a>
+<a id="ln-840" name="ln-840"></a><span class="k">end module </span><span class="n">fpm_filesystem</span>
 </pre></div>
 
     </section>
@@ -1114,7 +1132,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-08-27 08:41  
+             on 2021-09-05 16:51  
             
           </p>
         </div>
