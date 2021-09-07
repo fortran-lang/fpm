@@ -1,14 +1,20 @@
 name: Release
 
 on:
+  push:
+  pull_request:
   release:
     types: [published]
 
 jobs:
   source-archive:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        format: [zip]
     env:
-      FORMAT: zip
+      FORMAT: ${{ matrix.format }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -17,28 +23,111 @@ jobs:
 
     - name: Get version number
       run: |
-        VERSION=$(git describe --tags --abbrev=0 --match 'v*' | tr -d '[:alpha:]')
+        VERSION=$(git describe --tags ${{ env.ABBREV }} --match 'v*' | tr -d 'v')
         [ -z "$VERSION" ] && exit 1
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
+      env:
+        ABBREV: ${{ github.event_name == 'release' && '--abbrev=0' || '--abbrev=7' }}
 
     - name: Create archive
       run: |
-        git archive --prefix ${{ env.PREFIX }} --format ${{ env.FORMAT }} HEAD > ${{ env.OUTPUT }}
         echo "OUTPUT=${{ env.OUTPUT }}" >> $GITHUB_ENV
+        git archive --prefix ${{ env.PREFIX }} --format ${{ env.FORMAT }} HEAD > ${{ env.OUTPUT }}
       env:
         OUTPUT: fpm-${{ env.VERSION }}.${{ env.FORMAT }}
         PREFIX: fpm-${{ env.VERSION }}/
 
-    - name: Calculate checksum
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.OUTPUT }}
+        path: ${{ env.OUTPUT }}
+
+  source-single-file:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Get version number
       run: |
-        sha256sum ${{ env.OUTPUT }} > ${{ env.OUTPUT }}.sha256
+        VERSION=$(git describe --tags ${{ env.ABBREV }} --match 'v*' | tr -d 'v')
+        [ -z "$VERSION" ] && exit 1
+        echo "VERSION=${VERSION}" >> $GITHUB_ENV
+      env:
+        ABBREV: ${{ github.event_name == 'release' && '--abbrev=0' || '--abbrev=7' }}
+
+    # Note: this step is meant to remove the test targets from the package manifest,
+    #       a change in the package manifest might require to regenerate the patch file.
+    - name: Remove tests
+      run: |
+        patch -p1 < ./ci/single-file.patch
+
+    - name: Install fpm
+      uses: fortran-lang/setup-fpm@v3
+      with:
+        fpm-version: 'v0.4.0'
+
+    - name: Create single file version
+      run: |
+        echo "OUTPUT=${{ env.OUTPUT }}" >> $GITHUB_ENV
+        echo "#define FPM_BOOTSTRAP" > fpm-${{ env.VERSION }}.F90
+        fpm build --compiler ./ci/single-file-gfortran.sh
+      env:
+        OUTPUT: fpm-${{ env.VERSION }}.F90
+        OMP_NUM_THREADS: 1
+
+    - name: Build single source version
+      run: |
+        echo "EXE=${{ env.BUILD_DIR }}/fpm" >> $GITHUB_ENV
+        mkdir ${{ env.BUILD_DIR }}
+        gfortran ${{ env.OUTPUT }} -J ${{ env.BUILD_DIR }} -o ${{ env.BUILD_DIR }}/fpm
+      env:
+        BUILD_DIR: build/bootstrap
+
+    - name: Undo patch
+      run: |
+        patch -p1 -R < ./ci/single-file.patch
+
+    - name: Build fpm with bootstrap version
+      run: |
+        ${{ env.EXE }} build
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.OUTPUT }}
+        path: ${{ env.OUTPUT }}
+
+  upload-artifacts:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    needs:
+      - source-archive
+      - source-single-file
+
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        path: ${{ github.workspace }} # This will download all files
+
+    - name: Create SHA256 checksums
+      run: |
+        for output in fpm-*/fpm-*; do
+          pushd $(dirname "$output")
+          sha256sum $(basename "$output") | tee $(basename "$output").sha256
+          popd
+        done
 
     - name: Upload assets
       if: ${{ github.event_name == 'release' }}
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ env.OUTPUT }}*
+        file: fpm-*/fpm-*
         file_glob: true
         tag: ${{ github.ref }}
         overwrite: true

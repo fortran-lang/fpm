@@ -1,0 +1,29 @@
+diff --git a/fpm.toml b/fpm.toml
+index 12ec05aa..20425dfd 100644
+--- a/fpm.toml
++++ b/fpm.toml
+@@ -14,22 +14,5 @@ rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"
+ git = "https://github.com/urbanjost/M_CLI2.git"
+ rev = "ea6bbffc1c2fb0885e994d37ccf0029c99b19f24"
+ 
+-[[test]]
+-name = "cli-test"
+-source-dir = "test/cli_test"
+-main = "cli_test.f90"
+-
+-[[test]]
+-name = "new-test"
+-source-dir = "test/new_test"
+-main = "new_test.f90"
+-
+-[[test]]
+-name = "fpm-test"
+-source-dir = "test/fpm_test"
+-main = "main.f90"
+-
+-[[test]]
+-name = "help-test"
+-source-dir = "test/help_test"
+-main = "help_test.f90"
++[build]
++auto-tests = false
