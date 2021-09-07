@@ -1,5 +1,5 @@
 name: Packaging Issue
-description: Porting or packaging a project to fpm `
+description: Porting or packaging a project to fpm
 labels: [packaging]
 body:
   - type: input
