@@ -723,7 +723,7 @@ contains
     ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
     ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
     ' + The fpm(1) TOML file format is described at                                  ', &
-    '   https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md        ', &
+    '   https://github.com/fortran-lang/fpm/blob/main/manifest-reference.md          ', &
     '']
     help_list=[character(len=80) :: &
     'NAME                                                                   ', &
