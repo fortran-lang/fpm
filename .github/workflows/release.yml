@@ -23,11 +23,8 @@ jobs:
 
     - name: Get version number
       run: |
-        VERSION=$(git describe --tags ${{ env.ABBREV }} --match 'v*' | tr -d 'v')
-        [ -z "$VERSION" ] && exit 1
+        VERSION=$(git describe --tags --match 'v*' --always | tr -d 'v')
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
-      env:
-        ABBREV: ${{ github.event_name == 'release' && '--abbrev=0' || '--abbrev=7' }}
 
     - name: Create archive
       run: |
@@ -53,11 +50,8 @@ jobs:
 
     - name: Get version number
       run: |
-        VERSION=$(git describe --tags ${{ env.ABBREV }} --match 'v*' | tr -d 'v')
-        [ -z "$VERSION" ] && exit 1
+        VERSION=$(git describe --tags --match 'v*' --always | tr -d 'v')
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
-      env:
-        ABBREV: ${{ github.event_name == 'release' && '--abbrev=0' || '--abbrev=7' }}
 
     # Note: this step is meant to remove the test targets from the package manifest,
     #       a change in the package manifest might require to regenerate the patch file.
@@ -79,6 +73,8 @@ jobs:
         OUTPUT: fpm-${{ env.VERSION }}.F90
         OMP_NUM_THREADS: 1
 
+    # Building the bootstrap version from the single source version is the most expensive
+    # step in this workflow, since we have to compile several thousand lines of source.
     - name: Build single source version
       run: |
         echo "EXE=${{ env.BUILD_DIR }}/fpm" >> $GITHUB_ENV
