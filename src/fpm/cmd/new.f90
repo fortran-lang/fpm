@@ -131,9 +131,9 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'  # The fpm home page at                                                        ',&
         &'  #     https://github.com/fortran-lang/fpm                                     ',&
         &'  # A complete list of keys and their attributes at                             ',&
-        &'  #     https://github.com/fortran-lang/fpm/blob/master/manifest-reference.md   ',&
+        &'  #     https://github.com/fortran-lang/fpm/blob/main/manifest-reference.md     ',&
         &'  # examples of fpm project packaging at                                        ',&
-        &'  #     https://github.com/fortran-lang/fpm/blob/master/PACKAGING.md            ',&
+        &'  #     https://github.com/fortran-lang/fpm/blob/main/PACKAGING.md              ',&
         &'  # The Fortran TOML file interface and it''s references at                     ',&
         &'  #     https://github.com/toml-f/toml-f                                        ',&
         &'  #                                                                             ',&
