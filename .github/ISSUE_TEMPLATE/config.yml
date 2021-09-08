@@ -1,0 +1,10 @@
+contact_links:
+  - name: Fpm discussion board
+    url: https://github.com/fortran-lang/fpm/discussions
+    about: Discussion about fpm related topics
+  - name: Fortran-lang discourse
+    url: https://fortran-lang.discourse.group/
+    about: Discussion about all things Fortran
+  - name: Fortran-lang mailing list
+    url: https://groups.io/g/fortran-lang
+    about: Mailinglist for the Fortran language
