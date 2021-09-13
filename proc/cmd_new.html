@@ -178,22 +178,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
-  <div id="vars-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#variable-bname">bname</a>
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#variable-littlefile">littlefile</a>
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#variable-tfc">tfc</a>
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#variable-tomlfile">tomlfile</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -203,22 +187,6 @@
 
 
 
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
-  <div class="list-group">
-    <div id="subs-0" class="panel-collapse collapse">
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#proc-create_verified_basic_manifest">create_verified_basic_manifest</a>
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#proc-validate_toml_data">validate_toml_data</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -302,22 +270,6 @@ public subroutine cmd_new(settings)
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
-  <div id="vars-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#variable-bname">bname</a>
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#variable-littlefile">littlefile</a>
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#variable-tfc">tfc</a>
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#variable-tomlfile">tomlfile</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -327,22 +279,6 @@ public subroutine cmd_new(settings)
 
 
 
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
-  <div class="list-group">
-    <div id="subs-1" class="panel-collapse collapse">
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#proc-create_verified_basic_manifest">create_verified_basic_manifest</a>
-      
-      <a class="list-group-item" href="../proc/cmd_new.html#proc-validate_toml_data">validate_toml_data</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -367,80 +303,6 @@ public subroutine cmd_new(settings)
     
 
     
-    <section>    
-      <h2>Variables</h2>
-    
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-bname"></span>character(kind=len=:,tfc),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>bname</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-littlefile"></span>character(kind=len=:,tfc),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>littlefile</strong>(:)</td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-tfc"></span>integer,</td>
-  
-  <td>public,</td>
-  <td>parameter</td><td>::</td>
-  <td><strong>tfc</strong></td><td> =</td><td>selected_char_kind('DEFAULT')</td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-tomlfile"></span>character(kind=len=:,tfc),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>tomlfile</strong>(:)</td><td></td><td></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-    </section>
-    <br>
-    
     
     
     
@@ -453,130 +315,6 @@ public subroutine cmd_new(settings)
     
 
 
-    
-    <section>
-    <h2>Subroutines</h2>
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-create_verified_basic_manifest"></span><h3>
-subroutine create_verified_basic_manifest(filename)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>create a basic but verified default manifest file
- get date to put into metadata in manifest file &ldquo;fpm.toml&rdquo;</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>filename</strong></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-validate_toml_data"></span><h3>
-subroutine validate_toml_data(input)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>verify a string array is a valid fpm.toml file</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>character(kind=tfc,len=:),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>allocatable</td><td>::</td>
-  <td><strong>input</strong>(:)</td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
-    
-    </section>    
     
     
     
@@ -1189,7 +927,7 @@ subroutine validate_toml_data(input)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-09-08 19:47  
+             on 2021-09-13 09:40  
             
           </p>
         </div>

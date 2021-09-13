@@ -264,27 +264,27 @@
       <li class="list-group-item">
   <ul class="list-inline">
     
+    <li><a href='../module/fpm_manifest_example.html'>fpm_manifest_example</a></li>
+    
+    <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
+    
+    <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
+    
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+    
     <li><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></li>
     
     <li><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></li>
     
-    <li><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
-    
-    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-    
-    <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
-    
-    <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-    
     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-    
-    <li><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></li>
-    
-    <li><a href='../module/fpm_manifest_example.html'>fpm_manifest_example</a></li>
     
     <li><a href='../module/fpm_manifest_install.html'>fpm_manifest_install</a></li>
     
-    <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
+    <li><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></li>
+    
+    <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
+    
+    <li><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
     
   </ul>
       </li>
@@ -377,161 +377,6 @@
     
     <p>Package meta data</p>
     
-     
-     <h4>Components</h4>
-    
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-build"></span>type(<a href='../type/build_config_t.html'>build_config_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>build</strong></td><td></td><td></td><td><p>Build configuration data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-dependency"></span>type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>dependency</strong>(:)</td><td></td><td></td><td><p>Dependency meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-dev_dependency"></span>type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>dev_dependency</strong>(:)</td><td></td><td></td><td><p>Development dependency meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-example"></span>type(<a href='../type/example_config_t.html'>example_config_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>example</strong>(:)</td><td></td><td></td><td><p>Example meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-executable"></span>type(<a href='../type/executable_config_t.html'>executable_config_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>executable</strong>(:)</td><td></td><td></td><td><p>Executable meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-install~2"></span>type(<a href='../type/install_config_t.html'>install_config_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>install</strong></td><td></td><td></td><td><p>Installation configuration data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-library"></span>type(<a href='../type/library_config_t.html'>library_config_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>library</strong></td><td></td><td></td><td><p>Library meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-name~2"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>name</strong></td><td></td><td></td><td><p>Name of the package</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-test"></span>type(<a href='../type/test_config_t.html'>test_config_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>test</strong>(:)</td><td></td><td></td><td><p>Test meta data</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-version~2"></span>type(<a href='../type/version_t.html'>version_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>version</strong></td><td></td><td></td><td><p>Package version</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
      
      
           
@@ -685,7 +530,7 @@ public subroutine <a href='../proc/new_package.html'>new_package</a>(self, table
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-09-08 19:47  
+             on 2021-09-13 09:40  
             
           </p>
         </div>

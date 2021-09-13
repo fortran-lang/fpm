@@ -178,36 +178,6 @@
 
 
 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
-  <div id="vars-0" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-child">child</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-children~2">children</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-ii~2">ii</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-invalid_chars">invalid_chars</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-io~3">io</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-nn~2">nn</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-node">node</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-stat~22">stat</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-version~4">version</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-version_file">version_file</a>
-      
-    </div>
-  </div>
-</div>
-
-
 
 
 
@@ -287,7 +257,7 @@ public subroutine new_package(self, table, root, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-table~4"></span>type(toml_table),</td>
+  <td><span class="anchor" id="variable-table~3"></span>type(toml_table),</td>
   <td>intent(inout)</td>
   <td></td>
   
@@ -302,7 +272,7 @@ public subroutine new_package(self, table, root, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-root~2"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-root"></span>character(len=*),</td>
   <td>intent(in),</td>
   <td>optional</td>
   
@@ -317,7 +287,7 @@ public subroutine new_package(self, table, root, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~22"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~20"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -341,36 +311,6 @@ public subroutine new_package(self, table, root, error)
 <h3>Contents</h3>
  
 
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
-  <div id="vars-1" class="panel-collapse collapse">
-    <div class="list-group">
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-child">child</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-children~2">children</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-ii~2">ii</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-invalid_chars">invalid_chars</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-io~3">io</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-nn~2">nn</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-node">node</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-stat~22">stat</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-version~4">version</a>
-      
-      <a class="list-group-item" href="../proc/new_package.html#variable-version_file">version_file</a>
-      
-    </div>
-  </div>
-</div>
 
 
 
@@ -405,164 +345,6 @@ public subroutine new_package(self, table, root, error)
 
     
 
-    
-    <section>    
-      <h2>Variables</h2>
-    
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-child"></span>type(toml_table),</td>
-  
-  <td>public,</td>
-  <td>pointer</td><td>::</td>
-  <td><strong>child</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-children~2"></span>type(toml_array),</td>
-  
-  <td>public,</td>
-  <td>pointer</td><td>::</td>
-  <td><strong>children</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-ii~2"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>ii</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-invalid_chars"></span>character(len=*),</td>
-  
-  <td>public,</td>
-  <td>parameter</td><td>::</td>
-  <td><strong>invalid_chars</strong></td><td> =</td><td>achar(8)//achar(9)//achar(10)//achar(12)//achar(13)</td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-io~3"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>io</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-nn~2"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>nn</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-node"></span>type(toml_table),</td>
-  
-  <td>public,</td>
-  <td>pointer</td><td>::</td>
-  <td><strong>node</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-stat~22"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>stat</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-version~4"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>version</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-version_file"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>version_file</strong></td><td></td><td></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-    </section>
-    <br>
     
     
     
@@ -770,7 +552,7 @@ public subroutine new_package(self, table, root, error)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-09-08 19:47  
+             on 2021-09-13 09:40  
             
           </p>
         </div>

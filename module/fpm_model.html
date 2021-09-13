@@ -286,13 +286,13 @@
       <li class="list-group-item">
   <ul class="list-inline">
     
-    <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
-    
     <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     
     <li><a href='../module/fpm_dependency.html'>fpm_dependency</a></li>
     
     <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    
+    <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
     
   </ul>
       </li>
@@ -625,161 +625,6 @@
   the root package and its dependencies.</p>
     
      
-     <h4>Components</h4>
-    
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-archiver"></span>type(<a href='../type/archiver_t.html'>archiver_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>archiver</strong></td><td></td><td></td><td><p>Archiver object</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-compiler"></span>type(<a href='../type/compiler_t.html'>compiler_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>compiler</strong></td><td></td><td></td><td><p>Compiler object</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-deps"></span>type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>deps</strong></td><td></td><td></td><td><p>Project dependencies</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-external_modules"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>external_modules</strong>(:)</td><td></td><td></td><td><p>External modules used</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-fortran_compile_flags"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>fortran_compile_flags</strong></td><td></td><td></td><td><p>Command line flags passed to fortran for compilation</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-include_dirs"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>include_dirs</strong>(:)</td><td></td><td></td><td><p>Include directories</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-link_libraries~2"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-output_directory"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>output_directory</strong></td><td></td><td></td><td><p>Base directory for build</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-package_name"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>package_name</strong></td><td></td><td></td><td><p>Name of root package</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-packages"></span>type(package_t),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>packages</strong>(:)</td><td></td><td></td><td><p>Array of packages (including the root package)</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-     
      
           
      
@@ -797,147 +642,6 @@
     
     <p>Type for describing a source file</p>
     
-     
-     <h4>Components</h4>
-    
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th>
-
-<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-digest"></span>integer(kind=int64),</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>digest</strong></td><td></td><td></td><td><p>Current hash</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-exe_name"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>exe_name</strong></td><td></td><td></td><td><p>Name of executable for FPM_UNIT_PROGRAM</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-file_name"></span>character(len=:),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>file_name</strong></td><td></td><td></td><td><p>File path relative to cwd</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-include_dependencies"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>include_dependencies</strong>(:)</td><td></td><td></td><td><p>Files INCLUDEd by this source file</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-link_libraries"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-modules_provided"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>modules_provided</strong>(:)</td><td></td><td></td><td><p>Modules provided by this source file (lowerstring)</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-modules_used"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
-  
-  <td>public,</td>
-  <td>allocatable</td><td>::</td>
-  <td><strong>modules_used</strong>(:)</td><td></td><td></td><td><p>Modules USEd by this source file (lowerstring)</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-unit_scope"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>unit_scope</strong></td><td> =</td><td>FPM_SCOPE_UNKNOWN</td><td><p>Target module-use scope</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-unit_type"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>unit_type</strong></td><td> =</td><td>FPM_UNIT_UNKNOWN</td><td><p>Type of source unit</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
      
      
           
@@ -1028,7 +732,7 @@ public subroutine <a href='../proc/show_model.html'>show_model</a>(model)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-09-08 19:47  
+             on 2021-09-13 09:40  
             
           </p>
         </div>
