@@ -129,8 +129,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/add_dependency.html'>add_dependency</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Add pointer to dependeny in target%dependencies</p></td></tr>
 			 
 			   <tr><td><a href='../proc/add_executable_sources.html'>add_executable_sources</a></td><td><a href='../module/fpm_sources.html'>fpm_sources</a></td><td>Subroutine</td><td><p>Add to <code>sources</code> using the executable and test entries in the manifest and
- applies any executable-specific overrides such as <code>executable%name</code>.
- Adds all sources (including modules) from each <code>executable%source_dir</code></p></td></tr>
+applies any executable-specific overrides such as <code>executable%name</code>.
+Adds all sources (including modules) from each <code>executable%source_dir</code></p></td></tr>
 			 
 			   <tr><td><a href='../proc/add_sources_from_dir.html'>add_sources_from_dir</a></td><td><a href='../module/fpm_sources.html'>fpm_sources</a></td><td>Subroutine</td><td><p>Add to <code>sources</code> by looking for source files in <code>directory</code></p></td></tr>
 			 
@@ -145,8 +145,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/build_package.html'>build_package</a></td><td><a href='../module/fpm_backend.html'>fpm_backend</a></td><td>Subroutine</td><td><p>Top-level routine to build package described by <code>model</code></p></td></tr>
 			 
 			   <tr><td><a href='../proc/canon_path.html'>canon_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Canonicalize path for comparison
- * Handles path string redundancies
- * Does not test existence of path</p><a href="../proc/canon_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
+* Handles path string redundancies
+* Does not test existence of path</p><a href="../proc/canon_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
 			   <tr><td><a href='../proc/change_directory.html'>change_directory</a></td><td><a href='../module/fpm_os.html'>fpm_os</a></td><td>Subroutine</td><td></td></tr>
 			 
@@ -163,8 +163,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/cmd_install.html'>cmd_install</a></td><td><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></td><td>Subroutine</td><td><p>Entry point for the fpm-install subcommand</p></td></tr>
 			 
 			   <tr><td><a href='../proc/cmd_new.html'>cmd_new</a></td><td><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></td><td>Subroutine</td><td><p>TOP DIRECTORY NAME PROCESSING
- see if requested new directory already exists and process appropriately
- temporarily change to new directory as a test. NB: System dependent</p></td></tr>
+see if requested new directory already exists and process appropriately
+temporarily change to new directory as a test. NB: System dependent</p></td></tr>
 			 
 			   <tr><td><a href='../proc/cmd_run.html'>cmd_run</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
 			 
@@ -197,7 +197,7 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/exists.html'>exists</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if pathname already exists</p></td></tr>
 			 
 			   <tr><td><a href='../proc/f_string.html'>f_string</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>return Fortran character variable when given a C-like array of
- single characters terminated with a C_NULL_CHAR character</p></td></tr>
+single characters terminated with a C_NULL_CHAR character</p></td></tr>
 			 
 			   <tr><td><a href='../proc/fatal_error.html'>fatal_error</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td><p>Generic fatal runtime error</p></td></tr>
 			 
@@ -250,10 +250,10 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/get_release_compile_flags.html'>get_release_compile_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/get_temp_filename.html'>get_temp_filename</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Get a unused temporary filename
-  Calls posix &lsquo;tempnam&rsquo; - not recommended, but
-   we have no security concerns for this application
-   and use here is temporary.
- Works with MinGW</p></td></tr>
+ Calls posix &lsquo;tempnam&rsquo; - not recommended, but
+  we have no security concerns for this application
+  and use here is temporary.
+Works with MinGW</p></td></tr>
 			 
 			   <tr><td><a href='../proc/get_working_dir.html'>get_working_dir</a></td><td><a href='../program/main.html'>main</a></td><td>Subroutine</td><td><p>Save access to working directory in settings, in case setting have not been allocated</p></td></tr>
 			 
@@ -341,8 +341,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../interface/operator%28.in.%29.html'>operator(.in.)</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/os_is_unix.html'>os_is_unix</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>Compare the output of <a href="../proc/get_os_type.html">get_os_type</a> or the optional
- passed INTEGER value to the value for OS_WINDOWS
- and return .TRUE. if they match and .FALSE. otherwise</p></td></tr>
+passed INTEGER value to the value for OS_WINDOWS
+and return .TRUE. if they match and .FALSE. otherwise</p></td></tr>
 			 
 			   <tr><td><a href='../proc/parent_dir.html'>parent_dir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Extract dirname from path</p></td></tr>
 			 
@@ -366,7 +366,7 @@ All Procedures &ndash; Fortran-lang/fpm
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
 			   <tr><td><a href='../proc/resolve_target_linking.html'>resolve_target_linking</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Construct the linker flags string for each target
-  <code>target%link_flags</code> includes non-library objects and library flags</p></td></tr>
+ <code>target%link_flags</code> includes non-library objects and library flags</p></td></tr>
 			 
 			   <tr><td><a href='../proc/run.html'>run</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Subroutine</td><td><p>echo command string and pass it to the system for execution</p></td></tr>
 			 
@@ -377,7 +377,7 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/show_model.html'>show_model</a></td><td><a href='../module/fpm_model.html'>fpm_model</a></td><td>Subroutine</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/sort_target.html'>sort_target</a></td><td><a href='../module/fpm_backend.html'>fpm_backend</a></td><td>Subroutine</td><td><p>Topologically sort a target for scheduling by
-  recursing over its dependencies.</p><a href="../proc/sort_target.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
+ recursing over its dependencies.</p><a href="../proc/sort_target.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
 			   <tr><td><a href='../proc/split.html'>split</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Subroutine</td><td><p>parse string on delimiter characters and store tokens into an allocatable array
  given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store each par(n) into a separate variable in array.</p><a href="../proc/split.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
@@ -389,7 +389,7 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/string_array_contains.html'>string_array_contains</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Check if array of TYPE(STRING_T) matches a particular CHARACTER string</p></td></tr>
 			 
 			   <tr><td><a href='../proc/string_cat.html'>string_cat</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Concatenate an array of type(string_t) into
-  a single CHARACTER variable</p></td></tr>
+ a single CHARACTER variable</p></td></tr>
 			 
 			   <tr><td><a href='../interface/string_t.html'>string_t</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			 
@@ -398,8 +398,8 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/targets_from_sources.html'>targets_from_sources</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>High-level wrapper to generate build target information</p></td></tr>
 			 
 			   <tr><td><a href='../proc/to_fortran_name.html'>to_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Returns string with special characters replaced with an underscore.
- For now, only a hyphen is treated as a special character, but this can be
- expanded to other characters if needed.</p></td></tr>
+For now, only a hyphen is treated as a special character, but this can be
+expanded to other characters if needed.</p></td></tr>
 			 
 			   <tr><td><a href='../proc/unix_path.html'>unix_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for 1</p></td></tr>
 			 
@@ -410,9 +410,9 @@ All Procedures &ndash; Fortran-lang/fpm
 			   <tr><td><a href='../proc/windows_path.html'>windows_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for windows</p></td></tr>
 			 
 			   <tr><td><a href='../proc/write_response_file.html'>write_response_file</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Response files allow to read command line options from files.
- Whitespace is used to separate the arguments, we will use newlines
- as separator to create readable response files which can be inspected
- in case of errors.</p></td></tr>
+Whitespace is used to separate the arguments, we will use newlines
+as separator to create readable response files which can be inspected
+in case of errors.</p></td></tr>
 			 
 			 </tbody></table>
              
@@ -431,7 +431,7 @@ All Procedures &ndash; Fortran-lang/fpm
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-09-13 09:40  
+             on 2021-09-13 14:46  
             
           </p>
         </div>

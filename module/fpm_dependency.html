@@ -240,8 +240,8 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <p># Dependency management</p>
-<p>## Fetching dependencies and creating a dependency tree</p>
+    <h1 id="dependency-management">Dependency management</h1>
+<h2 id="fetching-dependencies-and-creating-a-dependency-tree">Fetching dependencies and creating a dependency tree</h2>
 <p>Dependencies on the top-level can be specified from:</p>
 <ul>
 <li><code>package%dependencies</code></li>
@@ -250,40 +250,40 @@
 <li><code>package%test(:)%dependencies</code></li>
 </ul>
 <p>Each dependency is fetched in some way and provides a path to its package
- manifest.
- The <code>package%dependencies</code> of the dependencies are resolved recursively.</p>
+manifest.
+The <code>package%dependencies</code> of the dependencies are resolved recursively.</p>
 <p>To initialize the dependency tree all dependencies are recursively fetched
- and stored in a flat data structure to avoid retrieving a package twice.
- The data structure used to store this information should describe the current
- status of the dependency tree. Important information are:</p>
+and stored in a flat data structure to avoid retrieving a package twice.
+The data structure used to store this information should describe the current
+status of the dependency tree. Important information are:</p>
 <ul>
 <li>name of the package</li>
 <li>version of the package</li>
 <li>path to the package root</li>
 </ul>
 <p>Additionally, for version controlled dependencies the following should be
- stored along with the package:</p>
+stored along with the package:</p>
 <ul>
 <li>the upstream url</li>
 <li>the current checked out revision</li>
 </ul>
 <p>Fetching a remote (version controlled) dependency turns it for our purpose
- into a local path dependency which is handled by the same means.</p>
-<p>## Updating dependencies</p>
+into a local path dependency which is handled by the same means.</p>
+<h2 id="updating-dependencies">Updating dependencies</h2>
 <p>For a given dependency tree all top-level dependencies can be updated.
- We have two cases to consider, a remote dependency and a local dependency,
- again, remote dependencies turn into local dependencies by fetching.
- Therefore we will update remote dependencies by simply refetching them.</p>
+We have two cases to consider, a remote dependency and a local dependency,
+again, remote dependencies turn into local dependencies by fetching.
+Therefore we will update remote dependencies by simply refetching them.</p>
 <p>For remote dependencies we have to refetch if the revision in the manifest
- changes or the upstream HEAD has changed (for branches <em>and</em> tags).</p>
+changes or the upstream HEAD has changed (for branches <em>and</em> tags).</p>
 <p></p><div class="alert alert-info" role="alert"><h4>Note</h4><p>For our purpose a tag is just a fancy branch name. Tags can be delete and
-       modified afterwards, therefore they do not differ too much from branches
-       from our perspective.</p></div>
+      modified afterwards, therefore they do not differ too much from branches
+      from our perspective.</p></div>
 <p>For the latter case we only know if we actually fetch from the upstream URL.</p>
 <p>In case of local (and fetched remote) dependencies we have to read the package
- manifest and compare its dependencies against our dependency tree, any change
- requires updating the respective dependencies as well.</p>
-<p>## Handling dependency compatibilties</p>
+manifest and compare its dependencies against our dependency tree, any change
+requires updating the respective dependencies as well.</p>
+<h2 id="handling-dependency-compatibilties">Handling dependency compatibilties</h2>
 <p>Currenly ignored. First come, first serve.</p>
       <br>
     
@@ -297,23 +297,23 @@
       <li class="list-group-item">
   <ul class="list-inline">
     
-    <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
-    
     <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
     
+    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+    
+    <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
+    
     <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
+    
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
     
     <li><a href='../module/fpm_git.html'>fpm_git</a></li>
     
     <li><a href='../module/fpm_error.html'>fpm_error</a></li>
     
-    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
-    
-    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-    
     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
     
-    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     
   </ul>
       </li>
@@ -821,7 +821,7 @@ public subroutine <a href='../proc/new_dependency_tree.html'>new_dependency_tree
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-09-13 09:40  
+             on 2021-09-13 14:46  
             
           </p>
         </div>
