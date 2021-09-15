@@ -27,18 +27,15 @@ jobs:
         - os: ubuntu-latest
           os-arch: linux-x86_64
           release-flags: --flag '--static -g -fbacktrace -O3'
-          sha256sum: sha256sum
 
         - os: macos-latest
           os-arch: macos-x86_64
           release-flags: --flag '-g -fbacktrace -O3'
-          sha256sum: shasum -a 256
 
         - os: windows-latest
           os-arch: windows-x86_64
           release-flags: --flag '--static -g -fbacktrace -O3'
           exe: .exe
-          sha256sum: sha256sum
 
     env:
       FC: gfortran
@@ -72,7 +69,7 @@ jobs:
       shell: bash
       run: |
         mv $(which fpm) fpm-bootstrap${{ matrix.exe }}
-        echo "BOOTSTRAP=$PWD/fpm-bootstrap" | cat >> $GITHUB_ENV
+        echo "BOOTSTRAP=$PWD/fpm-bootstrap" >> $GITHUB_ENV
 
     - name: Build Fortran fpm (bootstrap)
       shell: bash
@@ -102,21 +99,21 @@ jobs:
       run: |
         ${{ env.BOOTSTRAP }} run --runner cp -- fpm-debug${{ matrix.exe }}
         rm -v ${{ env.BOOTSTRAP }}
-        echo "FPM=$PWD/fpm-debug" | cat >> $GITHUB_ENV
+        echo "FPM=$PWD/fpm-debug" >> $GITHUB_ENV
 
     - name: Get version (normal)
       if: github.event_name != 'release'
       shell: bash
       run: |
         VERSION=$(git rev-parse --short HEAD)
-        echo "VERSION=$VERSION" | cat >> $GITHUB_ENV
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Get version (release)
       if: github.event_name == 'release'
       shell: bash
       run: |
         VERSION=$(echo ${{ github.ref }} | cut -dv -f2)
-        echo "VERSION=$VERSION" | cat >> $GITHUB_ENV
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
         FPM_VERSION=$(${{ env.FPM }} --version | grep -o '${{ env.REGEX }}')
         [ "$VERSION" = "$FPM_VERSION" ]
       env:
@@ -154,27 +151,47 @@ jobs:
       run: |
         ${{ env.FPM }} run ${{ matrix.release-flags }} --runner cp -- ${{ env.EXE }}
         rm -v ${{ env.FPM }}
-        echo "FPM_RELEASE=$PWD/${{ env.EXE }}" | cat >> $GITHUB_ENV
+        echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
         EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
 
     - name: Run release version
       shell: bash
       run: |
-        ci/run_tests.sh "${{ env.FPM_RELEASE }}"
+        ci/run_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
-    - name: Stage release files for upload
-      if: github.event_name == 'release'
-      shell: bash
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.FPM_RELEASE }}
+        path: ${{ env.FPM_RELEASE }}
+
+  upload-artifacts:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        path: ${{ github.workspace }} # This will download all files
+
+    - name: Create SHA256 checksums
       run: |
-        ${{ matrix.sha256sum }} ${{ env.FPM_RELEASE }} > ${{ env.FPM_RELEASE }}.sha256
+        for output in fpm-*/fpm-*; do
+          pushd $(dirname "$output")
+          sha256sum $(basename "$output") | tee $(basename "$output").sha256
+          popd
+        done
 
     - name: Upload assets
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm-*
+        file: fpm-*/fpm-*
         file_glob: true
         tag: ${{ github.ref }}
         overwrite: true
