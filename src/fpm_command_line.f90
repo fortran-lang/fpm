@@ -67,6 +67,7 @@ end type
 type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
     logical                      :: show_model=.false.
+    logical                      :: test=.false.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: profile
     character(len=:),allocatable :: flag
@@ -213,7 +214,8 @@ contains
             & --show-model F &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --flag:: " "&
-            & --verbose F&
+            & --test F &
+            & --verbose F &
             & --',help_build,version_text)
 
             call check_build_vals()
@@ -225,6 +227,7 @@ contains
             & flag=val_flag, &
             & list=lget('list'),&
             & show_model=lget('show-model'),&
+            & test=lget('test'),&
             & verbose=lget('verbose') )
 
         case('new')
@@ -521,6 +524,7 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
+   '       [--test]                                                                 ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
@@ -638,6 +642,7 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
+    '          [--test]                                                              ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
@@ -828,7 +833,8 @@ contains
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] [-list]', &
+    ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
+    '           [--list] [--test]                                           ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -864,6 +870,7 @@ contains
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
     ' --list       list candidates instead of building or running them      ', &
+    ' --test       build tests explicitly (otherwise only done if needed)   ', &
     ' --show-model show the model and exit (do not build)                   ', &
     ' --help       print this help and exit                                 ', &
     ' --version    print program version information and exit               ', &

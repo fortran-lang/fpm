@@ -110,7 +110,7 @@ end type build_target_t
 contains
 
 !> High-level wrapper to generate build target information
-subroutine targets_from_sources(targets,model,error)
+subroutine targets_from_sources(targets,model,error,include_tests)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
@@ -121,7 +121,10 @@ subroutine targets_from_sources(targets,model,error)
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 
-    call build_target_list(targets,model)
+    !> Whether tests targets should be added
+    logical, intent(in) :: include_tests
+
+    call build_target_list(targets,model,include_tests=include_tests)
 
     call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
@@ -150,13 +153,16 @@ end subroutine targets_from_sources
 !> is a library, then the executable target has an additional dependency on the library
 !> archive target.
 !>
-subroutine build_target_list(targets,model)
+subroutine build_target_list(targets,model,include_tests)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
 
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
+
+    !> Whether tests targets should be added
+    logical, intent(in) :: include_tests
 
     integer :: i, j, n_source
     character(:), allocatable :: xsuffix, exe_dir
@@ -190,6 +196,10 @@ subroutine build_target_list(targets,model)
         associate(sources=>model%packages(j)%sources)
 
             do i=1,size(sources)
+
+                if (.not. include_tests) then
+                    if (sources(i)%unit_scope == FPM_SCOPE_TEST) cycle
+                end if
 
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
