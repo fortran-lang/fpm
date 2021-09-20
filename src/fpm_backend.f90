@@ -32,6 +32,7 @@ use fpm_error, only : fpm_stop
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
 use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir
 use fpm_model, only: fpm_model_t
+use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
 implicit none
@@ -50,11 +51,25 @@ subroutine build_package(targets,model)
     type(build_target_ptr), allocatable :: queue(:)
     integer, allocatable :: schedule_ptr(:), stat(:)
     logical :: build_failed, skip_current
+    type(string_t), allocatable :: build_dirs(:)
+    type(string_t) :: temp
 
     ! Need to make output directory for include (mod) files
-    if (.not.exists(join_path(model%output_directory,model%package_name))) then
-        call mkdir(join_path(model%output_directory,model%package_name))
-    end if
+    !if (.not.exists(join_path(model%output_directory,model%package_name))) then
+        !call mkdir(join_path(model%output_directory,model%package_name))
+    !end if
+    allocate(build_dirs(0))
+    do i = 1, size(targets)
+       associate(target => targets(i)%ptr)
+          if (target%output_dir .in. build_dirs) cycle
+          temp%s = target%output_dir
+          build_dirs = [build_dirs, temp]
+       end associate
+    end do
+
+    do i = 1, size(build_dirs)
+       call mkdir(build_dirs(i)%s)
+    end do
 
     ! Perform depth-first topological sort of targets
     do i=1,size(targets)

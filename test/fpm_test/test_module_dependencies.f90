@@ -66,7 +66,7 @@ contains
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
@@ -136,7 +136,7 @@ contains
         type(build_target_ptr), allocatable :: targets(:)
         character(:), allocatable :: scope_str
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
@@ -195,7 +195,7 @@ contains
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(1))
@@ -249,7 +249,7 @@ contains
         type(build_target_ptr), allocatable :: targets(:)
         character(:), allocatable :: scope_str
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(3))
@@ -309,7 +309,7 @@ contains
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
@@ -337,7 +337,7 @@ contains
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
@@ -364,7 +364,7 @@ contains
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
@@ -392,7 +392,7 @@ contains
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
@@ -512,7 +512,7 @@ contains
         type(fpm_model_t) :: model
         type(build_target_ptr), allocatable :: targets(:)
 
-        model%output_directory = ''
+        !model%output_directory = ''
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))

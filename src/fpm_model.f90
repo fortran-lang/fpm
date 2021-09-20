@@ -131,7 +131,7 @@ type :: fpm_model_t
     character(:), allocatable :: link_flags
 
     !> Base directory for build
-    character(:), allocatable :: output_directory
+    character(:), allocatable :: build_prefix
 
     !> Include directories
     type(string_t), allocatable :: include_dirs(:)
@@ -284,8 +284,7 @@ function info_model(model) result(s)
     s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
     s = s // ', c_compile_flags="' // model%c_compile_flags // '"'
     s = s // ', link_flags="' // model%link_flags // '"'
-    !    character(:), allocatable :: output_directory
-    s = s // ', output_directory="' // model%output_directory // '"'
+    s = s // ', build_prefix="' // model%build_prefix // '"'
     !    type(string_t), allocatable :: link_libraries(:)
     s = s // ", link_libraries=["
     do i = 1, size(model%link_libraries)
