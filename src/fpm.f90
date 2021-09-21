@@ -85,6 +85,8 @@ subroutine build_model(model, settings, package, error)
     model%fortran_compile_flags = flags // " " // &
         & model%compiler%get_module_flag(join_path(model%output_directory, model%package_name))
 
+    model%include_tests = settings%build_tests
+
     allocate(model%packages(model%deps%ndep))
 
     ! Add sources from executable directories
@@ -268,7 +270,7 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:model error:'//error%message)
 end if
 
-call targets_from_sources(targets, model, error, include_tests=settings%test)
+call targets_from_sources(targets, model, error)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:target error:'//error%message)
 end if
@@ -314,7 +316,7 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run*:model error:'//error%message)
     end if
 
-    call targets_from_sources(targets, model, error, include_tests=test)
+    call targets_from_sources(targets, model, error)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run*:targets error:'//error%message)
     end if

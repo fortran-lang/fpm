@@ -67,7 +67,7 @@ end type
 type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
     logical                      :: show_model=.false.
-    logical                      :: test=.false.
+    logical                      :: build_tests=.false.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: profile
     character(len=:),allocatable :: flag
@@ -203,6 +203,7 @@ contains
             & flag=val_flag, &
             & example=lget('example'), &
             & list=lget('list'),&
+            & build_tests=.false.,&
             & name=names,&
             & runner=val_runner,&
             & verbose=lget('verbose') )
@@ -227,7 +228,7 @@ contains
             & flag=val_flag, &
             & list=lget('list'),&
             & show_model=lget('show-model'),&
-            & test=lget('test'),&
+            & build_tests=lget('test'),&
             & verbose=lget('verbose') )
 
         case('new')
@@ -420,6 +421,7 @@ contains
             & flag=val_flag, &
             & example=.false., &
             & list=lget('list'), &
+            & build_tests=.true., &
             & name=names, &
             & runner=val_runner, &
             & verbose=lget('verbose') )
