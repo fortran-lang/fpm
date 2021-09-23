@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.5% of total for procedures.">17 statements</a>
+    title=" 0.8% of total for procedures.">29 statements</a>
      </li> 
      
      
@@ -183,7 +183,11 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../proc/new_archiver.html#variable-arflags">arflags</a>
+      
       <a class="list-group-item" href="../proc/new_archiver.html#variable-estat">estat</a>
+      
+      <a class="list-group-item" href="../proc/new_archiver.html#variable-libflags">libflags</a>
       
       <a class="list-group-item" href="../proc/new_archiver.html#variable-os_type">os_type</a>
       
@@ -225,7 +229,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine new_archiver(self)
+public subroutine new_archiver(self, ar)
     
     
    
@@ -265,6 +269,21 @@ public subroutine new_archiver(self)
   
 </tr>
 
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ar~2"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ar</strong></td><td><p>User provided archiver command</p></td>
+  
+</tr>
+
 </tbody>
 </table>
 
@@ -287,7 +306,11 @@ public subroutine new_archiver(self)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
+      <a class="list-group-item" href="../proc/new_archiver.html#variable-arflags">arflags</a>
+      
       <a class="list-group-item" href="../proc/new_archiver.html#variable-estat">estat</a>
+      
+      <a class="list-group-item" href="../proc/new_archiver.html#variable-libflags">libflags</a>
       
       <a class="list-group-item" href="../proc/new_archiver.html#variable-os_type">os_type</a>
       
@@ -347,11 +370,39 @@ public subroutine new_archiver(self)
   
 <tr>
   
+  <td><span class="anchor" id="variable-arflags"></span>character(len=*),</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>arflags</strong></td><td> =</td><td>" -rs "</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-estat"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>estat</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-libflags"></span>character(len=*),</td>
+  
+  <td>public,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>libflags</strong></td><td> =</td><td>" /OUT:"</td><td></td>
   
 </tr>
 
@@ -392,22 +443,42 @@ public subroutine new_archiver(self)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">new_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">new_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ar</span><span class="p">)</span>
     <span class="c">!&gt; New instance of the archiver</span>
     <span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+    <span class="c">!&gt; User provided archiver command</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">ar</span>
+
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">estat</span><span class="p">,</span> <span class="n">os_type</span>
 
-    <span class="n">os_type</span> <span class="o">=</span> <span class="n">get_os_type</span><span class="p">()</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;ar -rs &quot;</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">arflags</span> <span class="o">=</span> <span class="s2">&quot; -rs &quot;</span><span class="p">,</span> <span class="n">libflags</span> <span class="o">=</span> <span class="s2">&quot; /OUT:&quot;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+      <span class="c">! Check first for ar-like commands</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span> <span class="s2">&quot;ar&quot;</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
+      <span class="k">end if</span>
+
+      <span class="c">! Check for lib-like commands</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">libflags</span>
+      <span class="k">end if</span>
+
+      <span class="c">! Fallback and assume ar-like behaviour</span>
+      <span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
     <span class="k">else</span>
+<span class="k">      </span><span class="n">os_type</span> <span class="o">=</span> <span class="n">get_os_type</span><span class="p">()</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;ar&quot;</span><span class="o">//</span><span class="n">arflags</span>
+      <span class="k">else</span>
 <span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;ar --version &gt; &quot;</span><span class="o">//</span><span class="n">get_temp_filename</span><span class="p">()</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
-            <span class="p">&amp;</span> <span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span>
+          <span class="p">&amp;</span> <span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">estat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;lib /OUT:&quot;</span>
+<span class="k">          </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;lib&quot;</span><span class="o">//</span><span class="n">libflags</span>
         <span class="k">else</span>
-<span class="k">            </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;ar -rs &quot;</span>
+<span class="k">          </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;ar&quot;</span><span class="o">//</span><span class="n">arflags</span>
         <span class="k">end if</span>
+<span class="k">      end if</span>
 <span class="k">    end if</span>
 <span class="k">    </span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span> <span class="o">=</span> <span class="n">os_type</span> <span class="o">==</span> <span class="n">OS_WINDOWS</span>
     <span class="n">self</span><span class="p">%</span><span class="n">echo</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
@@ -434,7 +505,7 @@ public subroutine new_archiver(self)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-09-23 09:45  
+             on 2021-09-23 19:43  
             
           </p>
         </div>

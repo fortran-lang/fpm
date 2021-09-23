@@ -596,39 +596,62 @@ end function is_unknown
 
 
 !> Create new compiler instance
-subroutine new_compiler(self, fc)
-    !> Fortran compiler name or path
-    character(len=*), intent(in) :: fc
+subroutine new_compiler(self, fc, cc)
     !> New instance of the compiler
     type(compiler_t), intent(out) :: self
-
-    character(len=*), parameter :: cc_env = "FPM_C_COMPILER"
+    !> Fortran compiler name or path
+    character(len=*), intent(in) :: fc
+    !> C compiler name or path
+    character(len=*), intent(in) :: cc
 
     self%id = get_compiler_id(fc)
 
     self%fc = fc
-    call get_default_c_compiler(self%fc, self%cc)
-    self%cc = get_env(cc_env, self%cc)
+    if (len_trim(cc) > 0) then
+      self%cc = cc
+    else
+      call get_default_c_compiler(self%fc, self%cc)
+    end if
 end subroutine new_compiler
 
 
 !> Create new archiver instance
-subroutine new_archiver(self)
+subroutine new_archiver(self, ar)
     !> New instance of the archiver
     type(archiver_t), intent(out) :: self
+    !> User provided archiver command
+    character(len=*), intent(in) :: ar
+
     integer :: estat, os_type
 
-    os_type = get_os_type()
-    if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
-        self%ar = "ar -rs "
+    character(len=*), parameter :: arflags = " -rs ", libflags = " /OUT:"
+
+    if (len_trim(ar) > 0) then
+      ! Check first for ar-like commands
+      if (check_compiler(ar, "ar")) then
+        self%ar = ar//arflags
+      end if
+
+      ! Check for lib-like commands
+      if (check_compiler(ar, "lib")) then
+        self%ar = ar//libflags
+      end if
+
+      ! Fallback and assume ar-like behaviour
+      self%ar = ar//arflags
     else
+      os_type = get_os_type()
+      if (os_type /= OS_WINDOWS .and. os_type /= OS_UNKNOWN) then
+        self%ar = "ar"//arflags
+      else
         call execute_command_line("ar --version > "//get_temp_filename()//" 2>&1", &
-            & exitstat=estat)
+          & exitstat=estat)
         if (estat /= 0) then
-            self%ar = "lib /OUT:"
+          self%ar = "lib"//libflags
         else
-            self%ar = "ar -rs "
+          self%ar = "ar"//arflags
         end if
+      end if
     end if
     self%use_response_file = os_type == OS_WINDOWS
     self%echo = .true.

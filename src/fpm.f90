@@ -39,7 +39,7 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, flags
+    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, ldflags
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
@@ -60,8 +60,8 @@ subroutine build_model(model, settings, package, error)
       call filewrite(join_path("build", ".gitignore"),["*"])
     end if
 
-    call new_compiler(model%compiler, settings%compiler)
-    call new_archiver(model%archiver)
+    call new_compiler(model%compiler, settings%compiler, settings%c_compiler)
+    call new_archiver(model%archiver, settings%archiver)
 
     if (settings%flag == '') then
         flags = model%compiler%get_default_flags(settings%profile == "release")
@@ -73,7 +73,10 @@ subroutine build_model(model, settings, package, error)
         end select
     end if
 
-    write(build_name, '(z16.16)') fnv_1a(flags)
+    cflags = trim(settings%cflag)
+    ldflags = trim(settings%ldflag)
+
+    write(build_name, '(z16.16)') fnv_1a(flags//cflags//ldflags)
 
     if (model%compiler%is_unknown()) then
         write(*, '(*(a:,1x))') &
@@ -197,6 +200,8 @@ subroutine build_model(model, settings, package, error)
         write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
         write(*,*)'<INFO> C COMPILER:  ',model%compiler%cc
         write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
+        write(*,*)'<INFO> C COMPILER OPTIONS:  ', model%c_compile_flags
+        write(*,*)'<INFO> LINKER OPTIONS:  ', model%link_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
      end if
 
