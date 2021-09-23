@@ -1,0 +1,28 @@
+name: Feature request
+description: An idea for a new feature
+labels: [enhancement]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: |
+        Please describe the feature, please provide examples
+        Use codefences (```) to add literal codeblocks for examples
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Possible Solution
+      placeholder: |
+        Please describe possible solutions or currently available workarounds if available.
+    validations:
+      required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      placeholder: Further relevant context, i.e. links to other issues
+    validations:
+      required: false

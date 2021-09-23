@@ -6,14 +6,15 @@ module fpm_filesystem
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env
-    use fpm_strings, only: f_string, replace, string_t, split
+    use fpm_strings, only: f_string, replace, string_t, split, notabs
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop
     implicit none
     private
-    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, read_lines, list_files, env_variable, &
+    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
+    public :: read_lines, read_lines_expanded
     public :: which
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
@@ -316,6 +317,23 @@ integer function number_of_rows(s) result(nrows)
     rewind(s)
 end function number_of_rows
 
+!> read lines into an array of TYPE(STRING_T) variables expanding tabs
+function read_lines_expanded(fh) result(lines)
+    integer, intent(in) :: fh
+    type(string_t), allocatable :: lines(:)
+
+    integer :: i
+    integer :: ilen
+    character(LINE_BUFFER_LEN) :: line_buffer_read, line_buffer_expanded
+
+    allocate(lines(number_of_rows(fh)))
+    do i = 1, size(lines)
+        read(fh, '(A)') line_buffer_read
+        call notabs(line_buffer_read, line_buffer_expanded, ilen)
+        lines(i)%s = trim(line_buffer_expanded)
+    end do
+
+end function read_lines_expanded
 
 !> read lines into an array of TYPE(STRING_T) variables
 function read_lines(fh) result(lines)

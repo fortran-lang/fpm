@@ -2,7 +2,7 @@
 project: Fortran-lang/fpm
 summary: Fortran Package Manager
 project_github: https://github.com/fortran-lang/fpm
-project_download: https://github.com/fortran-lang/fpm/archive/master.zip
+project_download: https://github.com/fortran-lang/fpm/archive/main.zip
 author: fortran-lang/fpm contributors
 author_pic: https://fortran-lang.org/assets/img/fortran_logo_512x512.png
 author_email: fortran-lang@groups.io

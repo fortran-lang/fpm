@@ -191,6 +191,10 @@ subroutine build_target_list(targets,model)
 
             do i=1,size(sources)
 
+                if (.not. model%include_tests) then
+                    if (sources(i)%unit_scope == FPM_SCOPE_TEST) cycle
+                end if
+
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 

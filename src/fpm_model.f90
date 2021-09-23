@@ -145,6 +145,9 @@ type :: fpm_model_t
     !> Project dependencies
     type(dependency_tree_t) :: deps
 
+    !> Whether tests should be added to the build list
+    logical :: include_tests = .true.
+
 end type fpm_model_t
 
 contains
