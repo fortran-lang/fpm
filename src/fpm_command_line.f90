@@ -67,6 +67,7 @@ end type
 type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
     logical                      :: show_model=.false.
+    logical                      :: build_tests=.false.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: profile
     character(len=:),allocatable :: flag
@@ -202,6 +203,7 @@ contains
             & flag=val_flag, &
             & example=lget('example'), &
             & list=lget('list'),&
+            & build_tests=.false.,&
             & name=names,&
             & runner=val_runner,&
             & verbose=lget('verbose') )
@@ -213,7 +215,8 @@ contains
             & --show-model F &
             & --compiler "'//get_env('FPM_COMPILER','gfortran')//'" &
             & --flag:: " "&
-            & --verbose F&
+            & --tests F &
+            & --verbose F &
             & --',help_build,version_text)
 
             call check_build_vals()
@@ -225,6 +228,7 @@ contains
             & flag=val_flag, &
             & list=lget('list'),&
             & show_model=lget('show-model'),&
+            & build_tests=lget('tests'),&
             & verbose=lget('verbose') )
 
         case('new')
@@ -417,6 +421,7 @@ contains
             & flag=val_flag, &
             & example=.false., &
             & list=lget('list'), &
+            & build_tests=.true., &
             & name=names, &
             & runner=val_runner, &
             & verbose=lget('verbose') )
@@ -521,6 +526,7 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
+   '       [--tests]                                                                ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
@@ -638,6 +644,7 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
+    '          [--tests]                                                             ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
@@ -828,7 +835,8 @@ contains
     ' build(1) - the fpm(1) subcommand to build a project                   ', &
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
-    ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] [-list]', &
+    ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
+    '           [--list] [--tests]                                          ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -864,6 +872,7 @@ contains
     '                           "gfortran" unless set by the environment    ', &
     '                           variable FPM_COMPILER.                      ', &
     ' --list       list candidates instead of building or running them      ', &
+    ' --tests      build all tests (otherwise only if needed)               ', &
     ' --show-model show the model and exit (do not build)                   ', &
     ' --help       print this help and exit                                 ', &
     ' --version    print program version information and exit               ', &

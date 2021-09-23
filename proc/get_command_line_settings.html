@@ -407,6 +407,7 @@ public subroutine get_command_line_settings(cmd_settings)
             <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">example</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;example&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),&amp;</span>
+            <span class="p">&amp;</span> <span class="n">build_tests</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,&amp;</span>
             <span class="p">&amp;</span> <span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">runner</span><span class="o">=</span><span class="n">val_runner</span><span class="p">,&amp;</span>
             <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
@@ -418,7 +419,8 @@ public subroutine get_command_line_settings(cmd_settings)
 <span class="s1">            &amp; --show-model F &amp;</span>
 <span class="s1">            &amp; --compiler &quot;&#39;</span><span class="o">//</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;FPM_COMPILER&#39;</span><span class="p">,</span><span class="s1">&#39;gfortran&#39;</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;&quot; &amp;</span>
 <span class="s1">            &amp; --flag:: &quot; &quot;&amp;</span>
-<span class="s1">            &amp; --verbose F&amp;</span>
+<span class="s1">            &amp; --tests F &amp;</span>
+<span class="s1">            &amp; --verbose F &amp;</span>
 <span class="s1">            &amp; --&#39;</span><span class="p">,</span><span class="n">help_build</span><span class="p">,</span><span class="n">version_text</span><span class="p">)</span>
 
             <span class="k">call </span><span class="n">check_build_vals</span><span class="p">()</span>
@@ -430,6 +432,7 @@ public subroutine get_command_line_settings(cmd_settings)
             <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),&amp;</span>
             <span class="p">&amp;</span> <span class="n">show_model</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;show-model&#39;</span><span class="p">),&amp;</span>
+            <span class="p">&amp;</span> <span class="n">build_tests</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;tests&#39;</span><span class="p">),&amp;</span>
             <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
 
         <span class="k">case</span><span class="p">(</span><span class="s1">&#39;new&#39;</span><span class="p">)</span>
@@ -622,6 +625,7 @@ public subroutine get_command_line_settings(cmd_settings)
             <span class="p">&amp;</span> <span class="n">flag</span><span class="o">=</span><span class="n">val_flag</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">example</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),</span> <span class="p">&amp;</span>
+            <span class="p">&amp;</span> <span class="n">build_tests</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">name</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">runner</span><span class="o">=</span><span class="n">val_runner</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)</span> <span class="p">)</span>
@@ -725,7 +729,7 @@ public subroutine get_command_line_settings(cmd_settings)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-09-15 11:48  
+             on 2021-09-23 09:45  
             
           </p>
         </div>
