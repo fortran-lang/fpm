@@ -36,6 +36,8 @@ character(len=:),allocatable  :: shortdirs(:)
 character(len=:),allocatable  :: expected(:)
 logical,allocatable           :: tally(:)
 logical                       :: IS_OS_WINDOWS
+character(len=*),parameter    :: dirs_to_be_removed = 'fpm_scratch_* name-with-hyphens'
+character(len=:),allocatable  :: rm_command
    write(*,'(g0:,1x)')'TEST new SUBCOMMAND (draft):'
 
    cmdpath = get_command_path()
@@ -146,10 +148,11 @@ logical                       :: IS_OS_WINDOWS
    ! clean up scratch files; might want an option to leave them for inspection
    select case (get_os_type())
    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-      call execute_command_line('rm -rf fpm_scratch_*',exitstat=estat,cmdstat=cstat,cmdmsg=message)
+      rm_command = 'rm -rf ' // dirs_to_be_removed
    case (OS_WINDOWS)
-      call execute_command_line('rmdir fpm_scratch_* /s /q',exitstat=estat,cmdstat=cstat,cmdmsg=message)
+      rm_command = 'rmdir ' // dirs_to_be_removed // ' /s /q'
    end select
+   call execute_command_line(rm_command, exitstat=estat,cmdstat=cstat,cmdmsg=message)
 
    write(*,'("new TEST TALLY=",*(g0))')tally
    if(all(tally))then
