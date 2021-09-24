@@ -119,13 +119,14 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
     val_profile
 
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
     ' --compiler NAME   Specify a compiler name. The default is "gfortran"',&
     '                   unless set by the environment variable FPM_FC.',&
-    ' --c-compiler NAME Specify the C compiler name. By default automatic determined',&
-    '                   unless set by the environment variable FPM_CC.',&
-    ' --archiver NAME   Specify the archiver name. By default automatic determined',&
-    '                   unless set by the environment variable FPM_AR.'&
+    ' --c-compiler NAME Specify the C compiler name. Automatically determined by ',&
+    '                   default unless set by the environment variable FPM_CC.',&
+    ' --archiver NAME   Specify the archiver name. Automatically determined by ',&
+    '                   default unless set by the environment variable FPM_AR.'&
     ]
 
 character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
@@ -136,10 +137,11 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     '                   Note object and .mod directory locations are always',&
     '                   built in.',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
-    '                   The default value is set by the FPM_CFLAGS environment variable.',&
+    '                   The default value is set by the FPM_CFLAGS environment',&
+    '                   variable.',&
     ' --link-flag LDFLAGS',&
-    '                   select arguments passed to the linker for the build.',&
-    '                   The default value is set by the FPM_LDFLAGS environment variable.'&
+    '                   select arguments passed to the linker for the build. The',&
+    '                   default value is set by the FPM_LDFLAGS environment variable.'&
     ]
 
 
