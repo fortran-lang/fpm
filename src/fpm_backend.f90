@@ -55,9 +55,6 @@ subroutine build_package(targets,model)
     type(string_t) :: temp
 
     ! Need to make output directory for include (mod) files
-    !if (.not.exists(join_path(model%output_directory,model%package_name))) then
-        !call mkdir(join_path(model%output_directory,model%package_name))
-    !end if
     allocate(build_dirs(0))
     do i = 1, size(targets)
        associate(target => targets(i)%ptr)

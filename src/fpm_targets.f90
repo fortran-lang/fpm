@@ -69,10 +69,10 @@ type build_target_t
     !> File path of build target object relative to cwd
     character(:), allocatable :: output_file
 
-    !> File path of build target object relative to cwd
+    !> File path of build target object relative to output_dir
     character(:), allocatable :: output_name
 
-    !> File path of build target object relative to cwd
+    !> File path of output directory
     character(:), allocatable :: output_dir
 
     !> Primary source for this build target
