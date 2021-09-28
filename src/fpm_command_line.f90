@@ -1221,7 +1221,7 @@ contains
 
       character(len=*), parameter :: fpm_prefix = "FPM_"
 
-      val = get_env(fpm_prefix//val, default)
+      val = get_env(fpm_prefix//env, default)
     end function get_fpm_env
 
 end module fpm_command_line
