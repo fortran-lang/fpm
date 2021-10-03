@@ -147,7 +147,7 @@ To build manually using the single source distribution, run the following code (
 
 ```
 mkdir _tmp
-curl -LJ https://github.com/fortran-lang/fpm/releases/download/v0.3.0/fpm-0.3.0.F90 > _tmp/fpm.F90
+curl -LJ https://github.com/fortran-lang/fpm/releases/download/v0.4.0/fpm-0.4.0.F90 > _tmp/fpm.F90
 gfortran -J _tmp _tmp/fpm.F90 -o _tmp/fpm
 _tmp/fpm install --flag "-g -fbacktrace -O3"
 rm -r _tmp
