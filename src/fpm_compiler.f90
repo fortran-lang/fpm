@@ -94,6 +94,8 @@ contains
     procedure :: link
     !> Check whether compiler is recognized
     procedure :: is_unknown
+    !> Check whether compiler is ifort or ifx on Windows
+    procedure :: is_intel_windows
 end type compiler_t
 
 
@@ -594,6 +596,11 @@ pure function is_unknown(self)
     is_unknown = self%id == id_unknown
 end function is_unknown
 
+pure function is_intel_windows(self)
+    class(compiler_t), intent(in) :: self
+    logical :: is_intel_windows
+    is_intel_windows = self%id == id_intel_classic_windows .or. self%id == id_intel_llvm_windows
+end function is_intel_windows
 
 !> Create new compiler instance
 subroutine new_compiler(self, fc, cc)
