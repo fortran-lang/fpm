@@ -464,7 +464,11 @@ subroutine resolve_target_linking(targets, model)
 
     if (allocated(model%link_libraries)) then
         if (size(model%link_libraries) > 0) then
-            global_link_flags = global_link_flags // " -l" // string_cat(model%link_libraries," -l")
+            if (model%compiler%is_intel_windows()) then
+                global_link_flags = global_link_flags // " " // string_cat(model%link_libraries, ".lib ")//".lib"
+            else
+                global_link_flags = global_link_flags // " -l" // string_cat(model%link_libraries," -l")
+            end if
         end if
     end if
 
@@ -502,7 +506,11 @@ subroutine resolve_target_linking(targets, model)
 
                 if (allocated(target%link_libraries)) then
                     if (size(target%link_libraries) > 0) then
-                        target%link_flags = target%link_flags // " -l" // string_cat(target%link_libraries," -l")
+                        if (model%compiler%is_intel_windows()) then
+                            target%link_flags = target%link_flags // " " // string_cat(target%link_libraries,".lib ")//".lib"
+                        else
+                            target%link_flags = target%link_flags // " -l" // string_cat(target%link_libraries," -l")
+                        end if
                     end if
                 end if
 
