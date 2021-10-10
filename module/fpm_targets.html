@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.4% of total for modules and submodules.">260 statements</a>
+    title=" 6.0% of total for modules and submodules.">362 statements</a>
      </li> 
      
      
@@ -230,6 +230,12 @@
       
       <a class="list-group-item" href="../module/fpm_targets.html#proc-add_target">add_target</a>
       
+      <a class="list-group-item" href="../module/fpm_targets.html#proc-filter_executable_targets">filter_executable_targets</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#proc-filter_library_targets">filter_library_targets</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#proc-filter_modules">filter_modules</a>
+      
       <a class="list-group-item" href="../module/fpm_targets.html#proc-resolve_module_dependencies">resolve_module_dependencies</a>
       
       <a class="list-group-item" href="../module/fpm_targets.html#proc-resolve_target_linking">resolve_target_linking</a>
@@ -285,17 +291,17 @@
       <li class="list-group-item">
   <ul class="list-inline">
     
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+    
+    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+    
     <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     
     <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
     
     <li><a href='../module/fpm_model.html'>fpm_model</a></li>
-    
-    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-    
-    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-    
-    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
     
   </ul>
       </li>
@@ -371,6 +377,12 @@
       <a class="list-group-item" href="../module/fpm_targets.html#proc-add_dependency">add_dependency</a>
       
       <a class="list-group-item" href="../module/fpm_targets.html#proc-add_target">add_target</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#proc-filter_executable_targets">filter_executable_targets</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#proc-filter_library_targets">filter_library_targets</a>
+      
+      <a class="list-group-item" href="../module/fpm_targets.html#proc-filter_modules">filter_modules</a>
       
       <a class="list-group-item" href="../module/fpm_targets.html#proc-resolve_module_dependencies">resolve_module_dependencies</a>
       
@@ -619,7 +631,7 @@ public subroutine <a href='../proc/add_dependency.html'>add_dependency</a>(targe
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-add_target"></span><h3>
-public subroutine <a href='../proc/add_target.html'>add_target</a>(targets, type, output_file, source, link_libraries)
+public subroutine <a href='../proc/add_target.html'>add_target</a>(targets, type, output_name, source, link_libraries)
     
     
    
@@ -690,7 +702,7 @@ public subroutine <a href='../proc/add_target.html'>add_target</a>(targets, type
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>output_file</strong></td><td></td>
+  <td><strong>output_name</strong></td><td></td>
   
 </tr>
 
@@ -721,6 +733,219 @@ public subroutine <a href='../proc/add_target.html'>add_target</a>(targets, type
   
   <td></td><td>::</td>
   <td><strong>link_libraries</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-filter_executable_targets"></span><h3>
+public subroutine <a href='../proc/filter_executable_targets.html'>filter_executable_targets</a>(targets, scope, list)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>targets</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>scope</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>list</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-filter_library_targets"></span><h3>
+public subroutine <a href='../proc/filter_library_targets.html'>filter_library_targets</a>(targets, list)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>targets</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>list</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-filter_modules"></span><h3>
+public subroutine <a href='../proc/filter_modules.html'>filter_modules</a>(targets, list)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>targets</strong>(:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>list</strong>(:)</td><td></td>
   
 </tr>
 
@@ -1010,7 +1235,7 @@ public subroutine <a href='../proc/targets_from_sources.html'>targets_from_sourc
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-10-03 13:29  
+             on 2021-10-10 16:04  
             
           </p>
         </div>

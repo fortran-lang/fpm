@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.2% of total for source files.">373 statements</a>
+    title=" 6.1% of total for source files.">372 statements</a>
      </li> 
      
      
@@ -692,361 +692,360 @@
 <a id="ln-417" name="ln-417"></a>        <span class="n">flags</span> <span class="o">=</span> <span class="s2">&quot;-qmoddir &quot;</span><span class="o">//</span><span class="n">path</span>
 <a id="ln-418" name="ln-418"></a>
 <a id="ln-419" name="ln-419"></a>    <span class="k">end select</span>
-<a id="ln-420" name="ln-420"></a><span class="k">    </span><span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">get_include_flag</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-<a id="ln-421" name="ln-421"></a>
-<a id="ln-422" name="ln-422"></a><span class="k">end function </span><span class="n">get_module_flag</span>
+<a id="ln-420" name="ln-420"></a>
+<a id="ln-421" name="ln-421"></a><span class="k">end function </span><span class="n">get_module_flag</span>
+<a id="ln-422" name="ln-422"></a>
 <a id="ln-423" name="ln-423"></a>
-<a id="ln-424" name="ln-424"></a>
-<a id="ln-425" name="ln-425"></a><span class="k">subroutine </span><span class="n">get_default_c_compiler</span><span class="p">(</span><span class="n">f_compiler</span><span class="p">,</span> <span class="n">c_compiler</span><span class="p">)</span>
-<a id="ln-426" name="ln-426"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">f_compiler</span>
-<a id="ln-427" name="ln-427"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">c_compiler</span>
-<a id="ln-428" name="ln-428"></a>    <span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
-<a id="ln-429" name="ln-429"></a>
-<a id="ln-430" name="ln-430"></a>    <span class="n">id</span> <span class="o">=</span> <span class="n">get_compiler_id</span><span class="p">(</span><span class="n">f_compiler</span><span class="p">)</span>
-<a id="ln-431" name="ln-431"></a>
-<a id="ln-432" name="ln-432"></a>    <span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
-<a id="ln-433" name="ln-433"></a>
-<a id="ln-434" name="ln-434"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span> <span class="n">id_intel_classic_mac</span><span class="p">,</span> <span class="n">id_intel_classic_windows</span><span class="p">)</span>
-<a id="ln-435" name="ln-435"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;icc&#39;</span>
-<a id="ln-436" name="ln-436"></a>
-<a id="ln-437" name="ln-437"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
-<a id="ln-438" name="ln-438"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;icx&#39;</span>
-<a id="ln-439" name="ln-439"></a>
-<a id="ln-440" name="ln-440"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_flang</span><span class="p">)</span>
-<a id="ln-441" name="ln-441"></a>        <span class="n">c_compiler</span><span class="o">=</span><span class="s1">&#39;clang&#39;</span>
-<a id="ln-442" name="ln-442"></a>
-<a id="ln-443" name="ln-443"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_ibmxl</span><span class="p">)</span>
-<a id="ln-444" name="ln-444"></a>        <span class="n">c_compiler</span><span class="o">=</span><span class="s1">&#39;xlc&#39;</span>
-<a id="ln-445" name="ln-445"></a>
-<a id="ln-446" name="ln-446"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_lfortran</span><span class="p">)</span>
-<a id="ln-447" name="ln-447"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;cc&#39;</span>
-<a id="ln-448" name="ln-448"></a>
-<a id="ln-449" name="ln-449"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_gcc</span><span class="p">)</span>
-<a id="ln-450" name="ln-450"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;gcc&#39;</span>
-<a id="ln-451" name="ln-451"></a>
-<a id="ln-452" name="ln-452"></a>    <span class="k">case </span><span class="n">default</span>
-<a id="ln-453" name="ln-453"></a>        <span class="c">! Fall-back to using Fortran compiler</span>
-<a id="ln-454" name="ln-454"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="n">f_compiler</span>
-<a id="ln-455" name="ln-455"></a>    <span class="k">end select</span>
-<a id="ln-456" name="ln-456"></a>
-<a id="ln-457" name="ln-457"></a><span class="k">end subroutine </span><span class="n">get_default_c_compiler</span>
+<a id="ln-424" name="ln-424"></a><span class="k">subroutine </span><span class="n">get_default_c_compiler</span><span class="p">(</span><span class="n">f_compiler</span><span class="p">,</span> <span class="n">c_compiler</span><span class="p">)</span>
+<a id="ln-425" name="ln-425"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">f_compiler</span>
+<a id="ln-426" name="ln-426"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">c_compiler</span>
+<a id="ln-427" name="ln-427"></a>    <span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
+<a id="ln-428" name="ln-428"></a>
+<a id="ln-429" name="ln-429"></a>    <span class="n">id</span> <span class="o">=</span> <span class="n">get_compiler_id</span><span class="p">(</span><span class="n">f_compiler</span><span class="p">)</span>
+<a id="ln-430" name="ln-430"></a>
+<a id="ln-431" name="ln-431"></a>    <span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+<a id="ln-432" name="ln-432"></a>
+<a id="ln-433" name="ln-433"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_classic_nix</span><span class="p">,</span> <span class="n">id_intel_classic_mac</span><span class="p">,</span> <span class="n">id_intel_classic_windows</span><span class="p">)</span>
+<a id="ln-434" name="ln-434"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;icc&#39;</span>
+<a id="ln-435" name="ln-435"></a>
+<a id="ln-436" name="ln-436"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_intel_llvm_nix</span><span class="p">,</span><span class="n">id_intel_llvm_windows</span><span class="p">)</span>
+<a id="ln-437" name="ln-437"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;icx&#39;</span>
+<a id="ln-438" name="ln-438"></a>
+<a id="ln-439" name="ln-439"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_flang</span><span class="p">)</span>
+<a id="ln-440" name="ln-440"></a>        <span class="n">c_compiler</span><span class="o">=</span><span class="s1">&#39;clang&#39;</span>
+<a id="ln-441" name="ln-441"></a>
+<a id="ln-442" name="ln-442"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_ibmxl</span><span class="p">)</span>
+<a id="ln-443" name="ln-443"></a>        <span class="n">c_compiler</span><span class="o">=</span><span class="s1">&#39;xlc&#39;</span>
+<a id="ln-444" name="ln-444"></a>
+<a id="ln-445" name="ln-445"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_lfortran</span><span class="p">)</span>
+<a id="ln-446" name="ln-446"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;cc&#39;</span>
+<a id="ln-447" name="ln-447"></a>
+<a id="ln-448" name="ln-448"></a>    <span class="k">case</span><span class="p">(</span><span class="n">id_gcc</span><span class="p">)</span>
+<a id="ln-449" name="ln-449"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="s1">&#39;gcc&#39;</span>
+<a id="ln-450" name="ln-450"></a>
+<a id="ln-451" name="ln-451"></a>    <span class="k">case </span><span class="n">default</span>
+<a id="ln-452" name="ln-452"></a>        <span class="c">! Fall-back to using Fortran compiler</span>
+<a id="ln-453" name="ln-453"></a>        <span class="n">c_compiler</span> <span class="o">=</span> <span class="n">f_compiler</span>
+<a id="ln-454" name="ln-454"></a>    <span class="k">end select</span>
+<a id="ln-455" name="ln-455"></a>
+<a id="ln-456" name="ln-456"></a><span class="k">end subroutine </span><span class="n">get_default_c_compiler</span>
+<a id="ln-457" name="ln-457"></a>
 <a id="ln-458" name="ln-458"></a>
-<a id="ln-459" name="ln-459"></a>
-<a id="ln-460" name="ln-460"></a><span class="k">function </span><span class="n">get_compiler_id</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
-<a id="ln-461" name="ln-461"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
-<a id="ln-462" name="ln-462"></a>    <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
-<a id="ln-463" name="ln-463"></a>
-<a id="ln-464" name="ln-464"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">command</span><span class="p">,</span> <span class="n">output</span>
-<a id="ln-465" name="ln-465"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">io</span>
-<a id="ln-466" name="ln-466"></a>
-<a id="ln-467" name="ln-467"></a>    <span class="c">! Check whether we are dealing with an MPI compiler wrapper first</span>
-<a id="ln-468" name="ln-468"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;mpifort&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
-<a id="ln-469" name="ln-469"></a>        <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;mpif90&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
-<a id="ln-470" name="ln-470"></a>        <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;mpif77&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-471" name="ln-471"></a><span class="k">        </span><span class="n">output</span> <span class="o">=</span> <span class="n">get_temp_filename</span><span class="p">()</span>
-<a id="ln-472" name="ln-472"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">compiler</span><span class="o">//</span><span class="s2">&quot; -showme:command &gt; &quot;</span><span class="o">//</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-473" name="ln-473"></a>            <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-474" name="ln-474"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-475" name="ln-475"></a><span class="k">            open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-476" name="ln-476"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">call </span><span class="n">getline</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
-<a id="ln-477" name="ln-477"></a>            <span class="k">close</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-478" name="ln-478"></a>
-<a id="ln-479" name="ln-479"></a>            <span class="c">! If we get a command from the wrapper, we will try to identify it</span>
-<a id="ln-480" name="ln-480"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">command</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-481" name="ln-481"></a><span class="k">                </span><span class="n">id</span> <span class="o">=</span> <span class="n">get_id</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
-<a id="ln-482" name="ln-482"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">id</span> <span class="o">/=</span> <span class="n">id_unknown</span><span class="p">)</span> <span class="k">return</span>
-<a id="ln-483" name="ln-483"></a><span class="k">            end if</span>
-<a id="ln-484" name="ln-484"></a><span class="k">        end if</span>
-<a id="ln-485" name="ln-485"></a><span class="k">    end if</span>
-<a id="ln-486" name="ln-486"></a>
-<a id="ln-487" name="ln-487"></a><span class="k">    </span><span class="n">id</span> <span class="o">=</span> <span class="n">get_id</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
-<a id="ln-488" name="ln-488"></a>
-<a id="ln-489" name="ln-489"></a><span class="k">end function </span><span class="n">get_compiler_id</span>
-<a id="ln-490" name="ln-490"></a>
-<a id="ln-491" name="ln-491"></a><span class="k">function </span><span class="n">get_id</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
-<a id="ln-492" name="ln-492"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
-<a id="ln-493" name="ln-493"></a>    <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
-<a id="ln-494" name="ln-494"></a>
-<a id="ln-495" name="ln-495"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
-<a id="ln-496" name="ln-496"></a>
-<a id="ln-497" name="ln-497"></a><span class="nb">    </span><span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;gfortran&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-498" name="ln-498"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_gcc</span>
-<a id="ln-499" name="ln-499"></a>        <span class="k">return</span>
-<a id="ln-500" name="ln-500"></a><span class="k">    end if</span>
-<a id="ln-501" name="ln-501"></a>
-<a id="ln-502" name="ln-502"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;f95&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-503" name="ln-503"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_f95</span>
-<a id="ln-504" name="ln-504"></a>        <span class="k">return</span>
-<a id="ln-505" name="ln-505"></a><span class="k">    end if</span>
-<a id="ln-506" name="ln-506"></a>
-<a id="ln-507" name="ln-507"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;caf&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-508" name="ln-508"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_caf</span>
-<a id="ln-509" name="ln-509"></a>        <span class="k">return</span>
-<a id="ln-510" name="ln-510"></a><span class="k">    end if</span>
-<a id="ln-511" name="ln-511"></a>
-<a id="ln-512" name="ln-512"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;ifort&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-513" name="ln-513"></a><span class="k">        select case</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
-<a id="ln-514" name="ln-514"></a>        <span class="k">case </span><span class="n">default</span>
-<a id="ln-515" name="ln-515"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_classic_nix</span>
-<a id="ln-516" name="ln-516"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">OS_MACOS</span><span class="p">)</span>
-<a id="ln-517" name="ln-517"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_classic_mac</span>
-<a id="ln-518" name="ln-518"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="n">OS_CYGWIN</span><span class="p">)</span>
-<a id="ln-519" name="ln-519"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_classic_windows</span>
-<a id="ln-520" name="ln-520"></a>        <span class="k">end select</span>
-<a id="ln-521" name="ln-521"></a><span class="k">        return</span>
-<a id="ln-522" name="ln-522"></a><span class="k">    end if</span>
-<a id="ln-523" name="ln-523"></a>
-<a id="ln-524" name="ln-524"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;ifx&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-525" name="ln-525"></a><span class="k">        select case</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
-<a id="ln-526" name="ln-526"></a>        <span class="k">case </span><span class="n">default</span>
-<a id="ln-527" name="ln-527"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_llvm_nix</span>
-<a id="ln-528" name="ln-528"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="n">OS_CYGWIN</span><span class="p">)</span>
-<a id="ln-529" name="ln-529"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_llvm_windows</span>
-<a id="ln-530" name="ln-530"></a>        <span class="k">end select</span>
-<a id="ln-531" name="ln-531"></a><span class="k">        return</span>
-<a id="ln-532" name="ln-532"></a><span class="k">    end if</span>
-<a id="ln-533" name="ln-533"></a>
-<a id="ln-534" name="ln-534"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;nvfortran&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-535" name="ln-535"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_nvhpc</span>
-<a id="ln-536" name="ln-536"></a>        <span class="k">return</span>
-<a id="ln-537" name="ln-537"></a><span class="k">    end if</span>
-<a id="ln-538" name="ln-538"></a>
-<a id="ln-539" name="ln-539"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;pgfortran&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
-<a id="ln-540" name="ln-540"></a>        <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;pgf90&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
-<a id="ln-541" name="ln-541"></a>        <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;pgf95&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-542" name="ln-542"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_pgi</span>
-<a id="ln-543" name="ln-543"></a>        <span class="k">return</span>
-<a id="ln-544" name="ln-544"></a><span class="k">    end if</span>
-<a id="ln-545" name="ln-545"></a>
-<a id="ln-546" name="ln-546"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;nagfor&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-547" name="ln-547"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_nag</span>
-<a id="ln-548" name="ln-548"></a>        <span class="k">return</span>
-<a id="ln-549" name="ln-549"></a><span class="k">    end if</span>
-<a id="ln-550" name="ln-550"></a>
-<a id="ln-551" name="ln-551"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;flang&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-552" name="ln-552"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_flang</span>
-<a id="ln-553" name="ln-553"></a>        <span class="k">return</span>
-<a id="ln-554" name="ln-554"></a><span class="k">    end if</span>
-<a id="ln-555" name="ln-555"></a>
-<a id="ln-556" name="ln-556"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;xlf90&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-557" name="ln-557"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_ibmxl</span>
-<a id="ln-558" name="ln-558"></a>        <span class="k">return</span>
-<a id="ln-559" name="ln-559"></a><span class="k">    end if</span>
-<a id="ln-560" name="ln-560"></a>
-<a id="ln-561" name="ln-561"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;crayftn&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-562" name="ln-562"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_cray</span>
-<a id="ln-563" name="ln-563"></a>        <span class="k">return</span>
-<a id="ln-564" name="ln-564"></a><span class="k">    end if</span>
-<a id="ln-565" name="ln-565"></a>
-<a id="ln-566" name="ln-566"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;lfc&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-567" name="ln-567"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_lahey</span>
-<a id="ln-568" name="ln-568"></a>        <span class="k">return</span>
-<a id="ln-569" name="ln-569"></a><span class="k">    end if</span>
-<a id="ln-570" name="ln-570"></a>
-<a id="ln-571" name="ln-571"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;lfortran&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-572" name="ln-572"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_lfortran</span>
-<a id="ln-573" name="ln-573"></a>        <span class="k">return</span>
-<a id="ln-574" name="ln-574"></a><span class="k">    end if</span>
-<a id="ln-575" name="ln-575"></a>
-<a id="ln-576" name="ln-576"></a><span class="k">    </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_unknown</span>
-<a id="ln-577" name="ln-577"></a>
-<a id="ln-578" name="ln-578"></a><span class="k">end function </span><span class="n">get_id</span>
-<a id="ln-579" name="ln-579"></a>
-<a id="ln-580" name="ln-580"></a><span class="k">function </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
-<a id="ln-581" name="ln-581"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
-<a id="ln-582" name="ln-582"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">expected</span>
-<a id="ln-583" name="ln-583"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">match</span>
-<a id="ln-584" name="ln-584"></a>    <span class="n">match</span> <span class="o">=</span> <span class="n">compiler</span> <span class="o">==</span> <span class="n">expected</span>
-<a id="ln-585" name="ln-585"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span> <span class="n">match</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-586" name="ln-586"></a><span class="k">        </span><span class="n">match</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">compiler</span><span class="p">),</span> <span class="n">expected</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-<a id="ln-587" name="ln-587"></a>    <span class="k">end if</span>
-<a id="ln-588" name="ln-588"></a><span class="k">end function </span><span class="n">check_compiler</span>
+<a id="ln-459" name="ln-459"></a><span class="k">function </span><span class="n">get_compiler_id</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+<a id="ln-460" name="ln-460"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
+<a id="ln-461" name="ln-461"></a>    <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
+<a id="ln-462" name="ln-462"></a>
+<a id="ln-463" name="ln-463"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">command</span><span class="p">,</span> <span class="n">output</span>
+<a id="ln-464" name="ln-464"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">io</span>
+<a id="ln-465" name="ln-465"></a>
+<a id="ln-466" name="ln-466"></a>    <span class="c">! Check whether we are dealing with an MPI compiler wrapper first</span>
+<a id="ln-467" name="ln-467"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;mpifort&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
+<a id="ln-468" name="ln-468"></a>        <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;mpif90&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
+<a id="ln-469" name="ln-469"></a>        <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;mpif77&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-470" name="ln-470"></a><span class="k">        </span><span class="n">output</span> <span class="o">=</span> <span class="n">get_temp_filename</span><span class="p">()</span>
+<a id="ln-471" name="ln-471"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">compiler</span><span class="o">//</span><span class="s2">&quot; -showme:command &gt; &quot;</span><span class="o">//</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-472" name="ln-472"></a>            <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-473" name="ln-473"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-474" name="ln-474"></a><span class="k">            open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-475" name="ln-475"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">call </span><span class="n">getline</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
+<a id="ln-476" name="ln-476"></a>            <span class="k">close</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-477" name="ln-477"></a>
+<a id="ln-478" name="ln-478"></a>            <span class="c">! If we get a command from the wrapper, we will try to identify it</span>
+<a id="ln-479" name="ln-479"></a>            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">command</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-480" name="ln-480"></a><span class="k">                </span><span class="n">id</span> <span class="o">=</span> <span class="n">get_id</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+<a id="ln-481" name="ln-481"></a>                <span class="k">if</span> <span class="p">(</span><span class="n">id</span> <span class="o">/=</span> <span class="n">id_unknown</span><span class="p">)</span> <span class="k">return</span>
+<a id="ln-482" name="ln-482"></a><span class="k">            end if</span>
+<a id="ln-483" name="ln-483"></a><span class="k">        end if</span>
+<a id="ln-484" name="ln-484"></a><span class="k">    end if</span>
+<a id="ln-485" name="ln-485"></a>
+<a id="ln-486" name="ln-486"></a><span class="k">    </span><span class="n">id</span> <span class="o">=</span> <span class="n">get_id</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
+<a id="ln-487" name="ln-487"></a>
+<a id="ln-488" name="ln-488"></a><span class="k">end function </span><span class="n">get_compiler_id</span>
+<a id="ln-489" name="ln-489"></a>
+<a id="ln-490" name="ln-490"></a><span class="k">function </span><span class="n">get_id</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+<a id="ln-491" name="ln-491"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
+<a id="ln-492" name="ln-492"></a>    <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
+<a id="ln-493" name="ln-493"></a>
+<a id="ln-494" name="ln-494"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
+<a id="ln-495" name="ln-495"></a>
+<a id="ln-496" name="ln-496"></a><span class="nb">    </span><span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;gfortran&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-497" name="ln-497"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_gcc</span>
+<a id="ln-498" name="ln-498"></a>        <span class="k">return</span>
+<a id="ln-499" name="ln-499"></a><span class="k">    end if</span>
+<a id="ln-500" name="ln-500"></a>
+<a id="ln-501" name="ln-501"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;f95&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-502" name="ln-502"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_f95</span>
+<a id="ln-503" name="ln-503"></a>        <span class="k">return</span>
+<a id="ln-504" name="ln-504"></a><span class="k">    end if</span>
+<a id="ln-505" name="ln-505"></a>
+<a id="ln-506" name="ln-506"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;caf&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-507" name="ln-507"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_caf</span>
+<a id="ln-508" name="ln-508"></a>        <span class="k">return</span>
+<a id="ln-509" name="ln-509"></a><span class="k">    end if</span>
+<a id="ln-510" name="ln-510"></a>
+<a id="ln-511" name="ln-511"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;ifort&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-512" name="ln-512"></a><span class="k">        select case</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
+<a id="ln-513" name="ln-513"></a>        <span class="k">case </span><span class="n">default</span>
+<a id="ln-514" name="ln-514"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_classic_nix</span>
+<a id="ln-515" name="ln-515"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">OS_MACOS</span><span class="p">)</span>
+<a id="ln-516" name="ln-516"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_classic_mac</span>
+<a id="ln-517" name="ln-517"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="n">OS_CYGWIN</span><span class="p">)</span>
+<a id="ln-518" name="ln-518"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_classic_windows</span>
+<a id="ln-519" name="ln-519"></a>        <span class="k">end select</span>
+<a id="ln-520" name="ln-520"></a><span class="k">        return</span>
+<a id="ln-521" name="ln-521"></a><span class="k">    end if</span>
+<a id="ln-522" name="ln-522"></a>
+<a id="ln-523" name="ln-523"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;ifx&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-524" name="ln-524"></a><span class="k">        select case</span> <span class="p">(</span><span class="n">get_os_type</span><span class="p">())</span>
+<a id="ln-525" name="ln-525"></a>        <span class="k">case </span><span class="n">default</span>
+<a id="ln-526" name="ln-526"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_llvm_nix</span>
+<a id="ln-527" name="ln-527"></a>        <span class="k">case</span> <span class="p">(</span><span class="n">OS_WINDOWS</span><span class="p">,</span> <span class="n">OS_CYGWIN</span><span class="p">)</span>
+<a id="ln-528" name="ln-528"></a>            <span class="n">id</span> <span class="o">=</span> <span class="n">id_intel_llvm_windows</span>
+<a id="ln-529" name="ln-529"></a>        <span class="k">end select</span>
+<a id="ln-530" name="ln-530"></a><span class="k">        return</span>
+<a id="ln-531" name="ln-531"></a><span class="k">    end if</span>
+<a id="ln-532" name="ln-532"></a>
+<a id="ln-533" name="ln-533"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;nvfortran&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-534" name="ln-534"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_nvhpc</span>
+<a id="ln-535" name="ln-535"></a>        <span class="k">return</span>
+<a id="ln-536" name="ln-536"></a><span class="k">    end if</span>
+<a id="ln-537" name="ln-537"></a>
+<a id="ln-538" name="ln-538"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;pgfortran&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
+<a id="ln-539" name="ln-539"></a>        <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;pgf90&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
+<a id="ln-540" name="ln-540"></a>        <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;pgf95&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-541" name="ln-541"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_pgi</span>
+<a id="ln-542" name="ln-542"></a>        <span class="k">return</span>
+<a id="ln-543" name="ln-543"></a><span class="k">    end if</span>
+<a id="ln-544" name="ln-544"></a>
+<a id="ln-545" name="ln-545"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;nagfor&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-546" name="ln-546"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_nag</span>
+<a id="ln-547" name="ln-547"></a>        <span class="k">return</span>
+<a id="ln-548" name="ln-548"></a><span class="k">    end if</span>
+<a id="ln-549" name="ln-549"></a>
+<a id="ln-550" name="ln-550"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;flang&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-551" name="ln-551"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_flang</span>
+<a id="ln-552" name="ln-552"></a>        <span class="k">return</span>
+<a id="ln-553" name="ln-553"></a><span class="k">    end if</span>
+<a id="ln-554" name="ln-554"></a>
+<a id="ln-555" name="ln-555"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;xlf90&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-556" name="ln-556"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_ibmxl</span>
+<a id="ln-557" name="ln-557"></a>        <span class="k">return</span>
+<a id="ln-558" name="ln-558"></a><span class="k">    end if</span>
+<a id="ln-559" name="ln-559"></a>
+<a id="ln-560" name="ln-560"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;crayftn&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-561" name="ln-561"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_cray</span>
+<a id="ln-562" name="ln-562"></a>        <span class="k">return</span>
+<a id="ln-563" name="ln-563"></a><span class="k">    end if</span>
+<a id="ln-564" name="ln-564"></a>
+<a id="ln-565" name="ln-565"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;lfc&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-566" name="ln-566"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_lahey</span>
+<a id="ln-567" name="ln-567"></a>        <span class="k">return</span>
+<a id="ln-568" name="ln-568"></a><span class="k">    end if</span>
+<a id="ln-569" name="ln-569"></a>
+<a id="ln-570" name="ln-570"></a><span class="k">    if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;lfortran&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-571" name="ln-571"></a><span class="k">        </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_lfortran</span>
+<a id="ln-572" name="ln-572"></a>        <span class="k">return</span>
+<a id="ln-573" name="ln-573"></a><span class="k">    end if</span>
+<a id="ln-574" name="ln-574"></a>
+<a id="ln-575" name="ln-575"></a><span class="k">    </span><span class="n">id</span> <span class="o">=</span> <span class="n">id_unknown</span>
+<a id="ln-576" name="ln-576"></a>
+<a id="ln-577" name="ln-577"></a><span class="k">end function </span><span class="n">get_id</span>
+<a id="ln-578" name="ln-578"></a>
+<a id="ln-579" name="ln-579"></a><span class="k">function </span><span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+<a id="ln-580" name="ln-580"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
+<a id="ln-581" name="ln-581"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">expected</span>
+<a id="ln-582" name="ln-582"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">match</span>
+<a id="ln-583" name="ln-583"></a>    <span class="n">match</span> <span class="o">=</span> <span class="n">compiler</span> <span class="o">==</span> <span class="n">expected</span>
+<a id="ln-584" name="ln-584"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span> <span class="n">match</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-585" name="ln-585"></a><span class="k">        </span><span class="n">match</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">compiler</span><span class="p">),</span> <span class="n">expected</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<a id="ln-586" name="ln-586"></a>    <span class="k">end if</span>
+<a id="ln-587" name="ln-587"></a><span class="k">end function </span><span class="n">check_compiler</span>
+<a id="ln-588" name="ln-588"></a>
 <a id="ln-589" name="ln-589"></a>
-<a id="ln-590" name="ln-590"></a>
-<a id="ln-591" name="ln-591"></a><span class="k">pure function </span><span class="n">is_unknown</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
-<a id="ln-592" name="ln-592"></a>    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-593" name="ln-593"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_unknown</span>
-<a id="ln-594" name="ln-594"></a>    <span class="n">is_unknown</span> <span class="o">=</span> <span class="n">self</span><span class="p">%</span><span class="n">id</span> <span class="o">==</span> <span class="n">id_unknown</span>
-<a id="ln-595" name="ln-595"></a><span class="k">end function </span><span class="n">is_unknown</span>
+<a id="ln-590" name="ln-590"></a><span class="k">pure function </span><span class="n">is_unknown</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+<a id="ln-591" name="ln-591"></a>    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-592" name="ln-592"></a>    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">is_unknown</span>
+<a id="ln-593" name="ln-593"></a>    <span class="n">is_unknown</span> <span class="o">=</span> <span class="n">self</span><span class="p">%</span><span class="n">id</span> <span class="o">==</span> <span class="n">id_unknown</span>
+<a id="ln-594" name="ln-594"></a><span class="k">end function </span><span class="n">is_unknown</span>
+<a id="ln-595" name="ln-595"></a>
 <a id="ln-596" name="ln-596"></a>
-<a id="ln-597" name="ln-597"></a>
-<a id="ln-598" name="ln-598"></a><span class="c">!&gt; Create new compiler instance</span>
-<a id="ln-599" name="ln-599"></a><span class="k">subroutine </span><span class="n">new_compiler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">cc</span><span class="p">)</span>
-<a id="ln-600" name="ln-600"></a>    <span class="c">!&gt; New instance of the compiler</span>
-<a id="ln-601" name="ln-601"></a>    <span class="k">type</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-602" name="ln-602"></a>    <span class="c">!&gt; Fortran compiler name or path</span>
-<a id="ln-603" name="ln-603"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">fc</span>
-<a id="ln-604" name="ln-604"></a>    <span class="c">!&gt; C compiler name or path</span>
-<a id="ln-605" name="ln-605"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">cc</span>
-<a id="ln-606" name="ln-606"></a>
-<a id="ln-607" name="ln-607"></a>    <span class="n">self</span><span class="p">%</span><span class="n">id</span> <span class="o">=</span> <span class="n">get_compiler_id</span><span class="p">(</span><span class="n">fc</span><span class="p">)</span>
-<a id="ln-608" name="ln-608"></a>
-<a id="ln-609" name="ln-609"></a>    <span class="n">self</span><span class="p">%</span><span class="n">fc</span> <span class="o">=</span> <span class="n">fc</span>
-<a id="ln-610" name="ln-610"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-611" name="ln-611"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">cc</span> <span class="o">=</span> <span class="n">cc</span>
-<a id="ln-612" name="ln-612"></a>    <span class="k">else</span>
-<a id="ln-613" name="ln-613"></a><span class="k">      call </span><span class="n">get_default_c_compiler</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="p">)</span>
-<a id="ln-614" name="ln-614"></a>    <span class="k">end if</span>
-<a id="ln-615" name="ln-615"></a><span class="k">end subroutine </span><span class="n">new_compiler</span>
+<a id="ln-597" name="ln-597"></a><span class="c">!&gt; Create new compiler instance</span>
+<a id="ln-598" name="ln-598"></a><span class="k">subroutine </span><span class="n">new_compiler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">cc</span><span class="p">)</span>
+<a id="ln-599" name="ln-599"></a>    <span class="c">!&gt; New instance of the compiler</span>
+<a id="ln-600" name="ln-600"></a>    <span class="k">type</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-601" name="ln-601"></a>    <span class="c">!&gt; Fortran compiler name or path</span>
+<a id="ln-602" name="ln-602"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">fc</span>
+<a id="ln-603" name="ln-603"></a>    <span class="c">!&gt; C compiler name or path</span>
+<a id="ln-604" name="ln-604"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">cc</span>
+<a id="ln-605" name="ln-605"></a>
+<a id="ln-606" name="ln-606"></a>    <span class="n">self</span><span class="p">%</span><span class="n">id</span> <span class="o">=</span> <span class="n">get_compiler_id</span><span class="p">(</span><span class="n">fc</span><span class="p">)</span>
+<a id="ln-607" name="ln-607"></a>
+<a id="ln-608" name="ln-608"></a>    <span class="n">self</span><span class="p">%</span><span class="n">fc</span> <span class="o">=</span> <span class="n">fc</span>
+<a id="ln-609" name="ln-609"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-610" name="ln-610"></a><span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">cc</span> <span class="o">=</span> <span class="n">cc</span>
+<a id="ln-611" name="ln-611"></a>    <span class="k">else</span>
+<a id="ln-612" name="ln-612"></a><span class="k">      call </span><span class="n">get_default_c_compiler</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="p">,</span> <span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="p">)</span>
+<a id="ln-613" name="ln-613"></a>    <span class="k">end if</span>
+<a id="ln-614" name="ln-614"></a><span class="k">end subroutine </span><span class="n">new_compiler</span>
+<a id="ln-615" name="ln-615"></a>
 <a id="ln-616" name="ln-616"></a>
-<a id="ln-617" name="ln-617"></a>
-<a id="ln-618" name="ln-618"></a><span class="c">!&gt; Create new archiver instance</span>
-<a id="ln-619" name="ln-619"></a><span class="k">subroutine </span><span class="n">new_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ar</span><span class="p">)</span>
-<a id="ln-620" name="ln-620"></a>    <span class="c">!&gt; New instance of the archiver</span>
-<a id="ln-621" name="ln-621"></a>    <span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-622" name="ln-622"></a>    <span class="c">!&gt; User provided archiver command</span>
-<a id="ln-623" name="ln-623"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">ar</span>
-<a id="ln-624" name="ln-624"></a>
-<a id="ln-625" name="ln-625"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">estat</span><span class="p">,</span> <span class="n">os_type</span>
-<a id="ln-626" name="ln-626"></a>
-<a id="ln-627" name="ln-627"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">arflags</span> <span class="o">=</span> <span class="s2">&quot; -rs &quot;</span><span class="p">,</span> <span class="n">libflags</span> <span class="o">=</span> <span class="s2">&quot; /OUT:&quot;</span>
-<a id="ln-628" name="ln-628"></a>
-<a id="ln-629" name="ln-629"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-630" name="ln-630"></a>      <span class="c">! Check first for ar-like commands</span>
-<a id="ln-631" name="ln-631"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span> <span class="s2">&quot;ar&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-632" name="ln-632"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
-<a id="ln-633" name="ln-633"></a>      <span class="k">end if</span>
-<a id="ln-634" name="ln-634"></a>
-<a id="ln-635" name="ln-635"></a>      <span class="c">! Check for lib-like commands</span>
-<a id="ln-636" name="ln-636"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-637" name="ln-637"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">libflags</span>
-<a id="ln-638" name="ln-638"></a>      <span class="k">end if</span>
-<a id="ln-639" name="ln-639"></a>
-<a id="ln-640" name="ln-640"></a>      <span class="c">! Fallback and assume ar-like behaviour</span>
-<a id="ln-641" name="ln-641"></a>      <span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
-<a id="ln-642" name="ln-642"></a>    <span class="k">else</span>
-<a id="ln-643" name="ln-643"></a><span class="k">      </span><span class="n">os_type</span> <span class="o">=</span> <span class="n">get_os_type</span><span class="p">()</span>
-<a id="ln-644" name="ln-644"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-645" name="ln-645"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;ar&quot;</span><span class="o">//</span><span class="n">arflags</span>
-<a id="ln-646" name="ln-646"></a>      <span class="k">else</span>
-<a id="ln-647" name="ln-647"></a><span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;ar --version &gt; &quot;</span><span class="o">//</span><span class="n">get_temp_filename</span><span class="p">()</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-648" name="ln-648"></a>          <span class="p">&amp;</span> <span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span>
-<a id="ln-649" name="ln-649"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">estat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-650" name="ln-650"></a><span class="k">          </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;lib&quot;</span><span class="o">//</span><span class="n">libflags</span>
-<a id="ln-651" name="ln-651"></a>        <span class="k">else</span>
-<a id="ln-652" name="ln-652"></a><span class="k">          </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;ar&quot;</span><span class="o">//</span><span class="n">arflags</span>
-<a id="ln-653" name="ln-653"></a>        <span class="k">end if</span>
-<a id="ln-654" name="ln-654"></a><span class="k">      end if</span>
-<a id="ln-655" name="ln-655"></a><span class="k">    end if</span>
-<a id="ln-656" name="ln-656"></a><span class="k">    </span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span> <span class="o">=</span> <span class="n">os_type</span> <span class="o">==</span> <span class="n">OS_WINDOWS</span>
-<a id="ln-657" name="ln-657"></a>    <span class="n">self</span><span class="p">%</span><span class="n">echo</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
-<a id="ln-658" name="ln-658"></a><span class="k">end subroutine </span><span class="n">new_archiver</span>
+<a id="ln-617" name="ln-617"></a><span class="c">!&gt; Create new archiver instance</span>
+<a id="ln-618" name="ln-618"></a><span class="k">subroutine </span><span class="n">new_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ar</span><span class="p">)</span>
+<a id="ln-619" name="ln-619"></a>    <span class="c">!&gt; New instance of the archiver</span>
+<a id="ln-620" name="ln-620"></a>    <span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-621" name="ln-621"></a>    <span class="c">!&gt; User provided archiver command</span>
+<a id="ln-622" name="ln-622"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">ar</span>
+<a id="ln-623" name="ln-623"></a>
+<a id="ln-624" name="ln-624"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">estat</span><span class="p">,</span> <span class="n">os_type</span>
+<a id="ln-625" name="ln-625"></a>
+<a id="ln-626" name="ln-626"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">arflags</span> <span class="o">=</span> <span class="s2">&quot; -rs &quot;</span><span class="p">,</span> <span class="n">libflags</span> <span class="o">=</span> <span class="s2">&quot; /OUT:&quot;</span>
+<a id="ln-627" name="ln-627"></a>
+<a id="ln-628" name="ln-628"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-629" name="ln-629"></a>      <span class="c">! Check first for ar-like commands</span>
+<a id="ln-630" name="ln-630"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span> <span class="s2">&quot;ar&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-631" name="ln-631"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
+<a id="ln-632" name="ln-632"></a>      <span class="k">end if</span>
+<a id="ln-633" name="ln-633"></a>
+<a id="ln-634" name="ln-634"></a>      <span class="c">! Check for lib-like commands</span>
+<a id="ln-635" name="ln-635"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">ar</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">))</span> <span class="k">then</span>
+<a id="ln-636" name="ln-636"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">libflags</span>
+<a id="ln-637" name="ln-637"></a>      <span class="k">end if</span>
+<a id="ln-638" name="ln-638"></a>
+<a id="ln-639" name="ln-639"></a>      <span class="c">! Fallback and assume ar-like behaviour</span>
+<a id="ln-640" name="ln-640"></a>      <span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="n">ar</span><span class="o">//</span><span class="n">arflags</span>
+<a id="ln-641" name="ln-641"></a>    <span class="k">else</span>
+<a id="ln-642" name="ln-642"></a><span class="k">      </span><span class="n">os_type</span> <span class="o">=</span> <span class="n">get_os_type</span><span class="p">()</span>
+<a id="ln-643" name="ln-643"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_WINDOWS</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">os_type</span> <span class="o">/=</span> <span class="n">OS_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-644" name="ln-644"></a><span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;ar&quot;</span><span class="o">//</span><span class="n">arflags</span>
+<a id="ln-645" name="ln-645"></a>      <span class="k">else</span>
+<a id="ln-646" name="ln-646"></a><span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;ar --version &gt; &quot;</span><span class="o">//</span><span class="n">get_temp_filename</span><span class="p">()</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-647" name="ln-647"></a>          <span class="p">&amp;</span> <span class="n">exitstat</span><span class="o">=</span><span class="n">estat</span><span class="p">)</span>
+<a id="ln-648" name="ln-648"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">estat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-649" name="ln-649"></a><span class="k">          </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;lib&quot;</span><span class="o">//</span><span class="n">libflags</span>
+<a id="ln-650" name="ln-650"></a>        <span class="k">else</span>
+<a id="ln-651" name="ln-651"></a><span class="k">          </span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">=</span> <span class="s2">&quot;ar&quot;</span><span class="o">//</span><span class="n">arflags</span>
+<a id="ln-652" name="ln-652"></a>        <span class="k">end if</span>
+<a id="ln-653" name="ln-653"></a><span class="k">      end if</span>
+<a id="ln-654" name="ln-654"></a><span class="k">    end if</span>
+<a id="ln-655" name="ln-655"></a><span class="k">    </span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span> <span class="o">=</span> <span class="n">os_type</span> <span class="o">==</span> <span class="n">OS_WINDOWS</span>
+<a id="ln-656" name="ln-656"></a>    <span class="n">self</span><span class="p">%</span><span class="n">echo</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a id="ln-657" name="ln-657"></a><span class="k">end subroutine </span><span class="n">new_archiver</span>
+<a id="ln-658" name="ln-658"></a>
 <a id="ln-659" name="ln-659"></a>
-<a id="ln-660" name="ln-660"></a>
-<a id="ln-661" name="ln-661"></a><span class="c">!&gt; Compile a Fortran object</span>
-<a id="ln-662" name="ln-662"></a><span class="k">subroutine </span><span class="n">compile_fortran</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
-<a id="ln-663" name="ln-663"></a>    <span class="c">!&gt; Instance of the compiler object</span>
-<a id="ln-664" name="ln-664"></a>    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-665" name="ln-665"></a>    <span class="c">!&gt; Source file input</span>
-<a id="ln-666" name="ln-666"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">input</span>
-<a id="ln-667" name="ln-667"></a>    <span class="c">!&gt; Output file of object</span>
-<a id="ln-668" name="ln-668"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
-<a id="ln-669" name="ln-669"></a>    <span class="c">!&gt; Arguments for compiler</span>
-<a id="ln-670" name="ln-670"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span>
-<a id="ln-671" name="ln-671"></a>    <span class="c">!&gt; Status flag</span>
-<a id="ln-672" name="ln-672"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
-<a id="ln-673" name="ln-673"></a>
-<a id="ln-674" name="ln-674"></a><span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span> <span class="o">//</span> <span class="s2">&quot; -c &quot;</span> <span class="o">//</span> <span class="n">input</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">args</span> <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="n">output</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-675" name="ln-675"></a>        <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-676" name="ln-676"></a><span class="k">end subroutine </span><span class="n">compile_fortran</span>
+<a id="ln-660" name="ln-660"></a><span class="c">!&gt; Compile a Fortran object</span>
+<a id="ln-661" name="ln-661"></a><span class="k">subroutine </span><span class="n">compile_fortran</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
+<a id="ln-662" name="ln-662"></a>    <span class="c">!&gt; Instance of the compiler object</span>
+<a id="ln-663" name="ln-663"></a>    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-664" name="ln-664"></a>    <span class="c">!&gt; Source file input</span>
+<a id="ln-665" name="ln-665"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">input</span>
+<a id="ln-666" name="ln-666"></a>    <span class="c">!&gt; Output file of object</span>
+<a id="ln-667" name="ln-667"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
+<a id="ln-668" name="ln-668"></a>    <span class="c">!&gt; Arguments for compiler</span>
+<a id="ln-669" name="ln-669"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span>
+<a id="ln-670" name="ln-670"></a>    <span class="c">!&gt; Status flag</span>
+<a id="ln-671" name="ln-671"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
+<a id="ln-672" name="ln-672"></a>
+<a id="ln-673" name="ln-673"></a><span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span> <span class="o">//</span> <span class="s2">&quot; -c &quot;</span> <span class="o">//</span> <span class="n">input</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">args</span> <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="n">output</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-674" name="ln-674"></a>        <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-675" name="ln-675"></a><span class="k">end subroutine </span><span class="n">compile_fortran</span>
+<a id="ln-676" name="ln-676"></a>
 <a id="ln-677" name="ln-677"></a>
-<a id="ln-678" name="ln-678"></a>
-<a id="ln-679" name="ln-679"></a><span class="c">!&gt; Compile a C object</span>
-<a id="ln-680" name="ln-680"></a><span class="k">subroutine </span><span class="n">compile_c</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
-<a id="ln-681" name="ln-681"></a>    <span class="c">!&gt; Instance of the compiler object</span>
-<a id="ln-682" name="ln-682"></a>    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-683" name="ln-683"></a>    <span class="c">!&gt; Source file input</span>
-<a id="ln-684" name="ln-684"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">input</span>
-<a id="ln-685" name="ln-685"></a>    <span class="c">!&gt; Output file of object</span>
-<a id="ln-686" name="ln-686"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
-<a id="ln-687" name="ln-687"></a>    <span class="c">!&gt; Arguments for compiler</span>
-<a id="ln-688" name="ln-688"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span>
-<a id="ln-689" name="ln-689"></a>    <span class="c">!&gt; Status flag</span>
-<a id="ln-690" name="ln-690"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
-<a id="ln-691" name="ln-691"></a>
-<a id="ln-692" name="ln-692"></a><span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span> <span class="o">//</span> <span class="s2">&quot; -c &quot;</span> <span class="o">//</span> <span class="n">input</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">args</span> <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="n">output</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-693" name="ln-693"></a>        <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-694" name="ln-694"></a><span class="k">end subroutine </span><span class="n">compile_c</span>
+<a id="ln-678" name="ln-678"></a><span class="c">!&gt; Compile a C object</span>
+<a id="ln-679" name="ln-679"></a><span class="k">subroutine </span><span class="n">compile_c</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">input</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
+<a id="ln-680" name="ln-680"></a>    <span class="c">!&gt; Instance of the compiler object</span>
+<a id="ln-681" name="ln-681"></a>    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-682" name="ln-682"></a>    <span class="c">!&gt; Source file input</span>
+<a id="ln-683" name="ln-683"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">input</span>
+<a id="ln-684" name="ln-684"></a>    <span class="c">!&gt; Output file of object</span>
+<a id="ln-685" name="ln-685"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
+<a id="ln-686" name="ln-686"></a>    <span class="c">!&gt; Arguments for compiler</span>
+<a id="ln-687" name="ln-687"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span>
+<a id="ln-688" name="ln-688"></a>    <span class="c">!&gt; Status flag</span>
+<a id="ln-689" name="ln-689"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
+<a id="ln-690" name="ln-690"></a>
+<a id="ln-691" name="ln-691"></a><span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span> <span class="o">//</span> <span class="s2">&quot; -c &quot;</span> <span class="o">//</span> <span class="n">input</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">args</span> <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="n">output</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-692" name="ln-692"></a>        <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-693" name="ln-693"></a><span class="k">end subroutine </span><span class="n">compile_c</span>
+<a id="ln-694" name="ln-694"></a>
 <a id="ln-695" name="ln-695"></a>
-<a id="ln-696" name="ln-696"></a>
-<a id="ln-697" name="ln-697"></a><span class="c">!&gt; Link an executable</span>
-<a id="ln-698" name="ln-698"></a><span class="k">subroutine </span><span class="nb">link</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
-<a id="ln-699" name="ln-699"></a>    <span class="c">!&gt; Instance of the compiler object</span>
-<a id="ln-700" name="ln-700"></a>    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-701" name="ln-701"></a>    <span class="c">!&gt; Output file of object</span>
-<a id="ln-702" name="ln-702"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
-<a id="ln-703" name="ln-703"></a>    <span class="c">!&gt; Arguments for compiler</span>
-<a id="ln-704" name="ln-704"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span>
-<a id="ln-705" name="ln-705"></a>    <span class="c">!&gt; Status flag</span>
-<a id="ln-706" name="ln-706"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
-<a id="ln-707" name="ln-707"></a>
-<a id="ln-708" name="ln-708"></a><span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">args</span> <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="n">output</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-709" name="ln-709"></a><span class="k">end subroutine </span><span class="nb">link</span>
+<a id="ln-696" name="ln-696"></a><span class="c">!&gt; Link an executable</span>
+<a id="ln-697" name="ln-697"></a><span class="k">subroutine </span><span class="nb">link</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
+<a id="ln-698" name="ln-698"></a>    <span class="c">!&gt; Instance of the compiler object</span>
+<a id="ln-699" name="ln-699"></a>    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-700" name="ln-700"></a>    <span class="c">!&gt; Output file of object</span>
+<a id="ln-701" name="ln-701"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
+<a id="ln-702" name="ln-702"></a>    <span class="c">!&gt; Arguments for compiler</span>
+<a id="ln-703" name="ln-703"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span>
+<a id="ln-704" name="ln-704"></a>    <span class="c">!&gt; Status flag</span>
+<a id="ln-705" name="ln-705"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
+<a id="ln-706" name="ln-706"></a>
+<a id="ln-707" name="ln-707"></a><span class="nb">    </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">args</span> <span class="o">//</span> <span class="s2">&quot; -o &quot;</span> <span class="o">//</span> <span class="n">output</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-708" name="ln-708"></a><span class="k">end subroutine </span><span class="nb">link</span>
+<a id="ln-709" name="ln-709"></a>
 <a id="ln-710" name="ln-710"></a>
-<a id="ln-711" name="ln-711"></a>
-<a id="ln-712" name="ln-712"></a><span class="c">!&gt; Create an archive</span>
-<a id="ln-713" name="ln-713"></a><span class="k">subroutine </span><span class="n">make_archive</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
-<a id="ln-714" name="ln-714"></a>    <span class="c">!&gt; Instance of the archiver object</span>
-<a id="ln-715" name="ln-715"></a>    <span class="k">class</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-716" name="ln-716"></a>    <span class="c">!&gt; Name of the archive to generate</span>
-<a id="ln-717" name="ln-717"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
-<a id="ln-718" name="ln-718"></a>    <span class="c">!&gt; Object files to include into the archive</span>
-<a id="ln-719" name="ln-719"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span><span class="p">(:)</span>
-<a id="ln-720" name="ln-720"></a>    <span class="c">!&gt; Status flag</span>
-<a id="ln-721" name="ln-721"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
-<a id="ln-722" name="ln-722"></a>
-<a id="ln-723" name="ln-723"></a><span class="nb">    </span><span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-724" name="ln-724"></a><span class="k">        call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span> <span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-<a id="ln-725" name="ln-725"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">//</span> <span class="n">output</span> <span class="o">//</span> <span class="s2">&quot; @&quot;</span> <span class="o">//</span> <span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-726" name="ln-726"></a>        <span class="k">call </span><span class="n">delete_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span>
-<a id="ln-727" name="ln-727"></a>    <span class="k">else</span>
-<a id="ln-728" name="ln-728"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">//</span> <span class="n">output</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">),</span> <span class="p">&amp;</span>
-<a id="ln-729" name="ln-729"></a>            <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-<a id="ln-730" name="ln-730"></a>    <span class="k">end if</span>
-<a id="ln-731" name="ln-731"></a><span class="k">end subroutine </span><span class="n">make_archive</span>
+<a id="ln-711" name="ln-711"></a><span class="c">!&gt; Create an archive</span>
+<a id="ln-712" name="ln-712"></a><span class="k">subroutine </span><span class="n">make_archive</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
+<a id="ln-713" name="ln-713"></a>    <span class="c">!&gt; Instance of the archiver object</span>
+<a id="ln-714" name="ln-714"></a>    <span class="k">class</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-715" name="ln-715"></a>    <span class="c">!&gt; Name of the archive to generate</span>
+<a id="ln-716" name="ln-716"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output</span>
+<a id="ln-717" name="ln-717"></a>    <span class="c">!&gt; Object files to include into the archive</span>
+<a id="ln-718" name="ln-718"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">args</span><span class="p">(:)</span>
+<a id="ln-719" name="ln-719"></a>    <span class="c">!&gt; Status flag</span>
+<a id="ln-720" name="ln-720"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">stat</span>
+<a id="ln-721" name="ln-721"></a>
+<a id="ln-722" name="ln-722"></a><span class="nb">    </span><span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span> <span class="k">then</span>
+<a id="ln-723" name="ln-723"></a><span class="k">        call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span> <span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+<a id="ln-724" name="ln-724"></a>        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">//</span> <span class="n">output</span> <span class="o">//</span> <span class="s2">&quot; @&quot;</span> <span class="o">//</span> <span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-725" name="ln-725"></a>        <span class="k">call </span><span class="n">delete_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span>
+<a id="ln-726" name="ln-726"></a>    <span class="k">else</span>
+<a id="ln-727" name="ln-727"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span> <span class="o">//</span> <span class="n">output</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">),</span> <span class="p">&amp;</span>
+<a id="ln-728" name="ln-728"></a>            <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<a id="ln-729" name="ln-729"></a>    <span class="k">end if</span>
+<a id="ln-730" name="ln-730"></a><span class="k">end subroutine </span><span class="n">make_archive</span>
+<a id="ln-731" name="ln-731"></a>
 <a id="ln-732" name="ln-732"></a>
-<a id="ln-733" name="ln-733"></a>
-<a id="ln-734" name="ln-734"></a><span class="c">!&gt; Response files allow to read command line options from files.</span>
-<a id="ln-735" name="ln-735"></a><span class="c">!&gt; Whitespace is used to separate the arguments, we will use newlines</span>
-<a id="ln-736" name="ln-736"></a><span class="c">!&gt; as separator to create readable response files which can be inspected</span>
-<a id="ln-737" name="ln-737"></a><span class="c">!&gt; in case of errors.</span>
-<a id="ln-738" name="ln-738"></a><span class="k">subroutine </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
-<a id="ln-739" name="ln-739"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
-<a id="ln-740" name="ln-740"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">argv</span><span class="p">(:)</span>
-<a id="ln-741" name="ln-741"></a>
-<a id="ln-742" name="ln-742"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">iarg</span><span class="p">,</span> <span class="n">io</span>
-<a id="ln-743" name="ln-743"></a>
-<a id="ln-744" name="ln-744"></a>    <span class="k">open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">)</span>
-<a id="ln-745" name="ln-745"></a>    <span class="k">do </span><span class="n">iarg</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
-<a id="ln-746" name="ln-746"></a>        <span class="k">write</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="s1">&#39;(a)&#39;</span><span class="p">)</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">argv</span><span class="p">(</span><span class="n">iarg</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a id="ln-747" name="ln-747"></a>    <span class="k">end do</span>
-<a id="ln-748" name="ln-748"></a><span class="k">    close</span><span class="p">(</span><span class="n">io</span><span class="p">)</span>
-<a id="ln-749" name="ln-749"></a><span class="k">end subroutine </span><span class="n">write_response_file</span>
+<a id="ln-733" name="ln-733"></a><span class="c">!&gt; Response files allow to read command line options from files.</span>
+<a id="ln-734" name="ln-734"></a><span class="c">!&gt; Whitespace is used to separate the arguments, we will use newlines</span>
+<a id="ln-735" name="ln-735"></a><span class="c">!&gt; as separator to create readable response files which can be inspected</span>
+<a id="ln-736" name="ln-736"></a><span class="c">!&gt; in case of errors.</span>
+<a id="ln-737" name="ln-737"></a><span class="k">subroutine </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+<a id="ln-738" name="ln-738"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">name</span>
+<a id="ln-739" name="ln-739"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">argv</span><span class="p">(:)</span>
+<a id="ln-740" name="ln-740"></a>
+<a id="ln-741" name="ln-741"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">iarg</span><span class="p">,</span> <span class="n">io</span>
+<a id="ln-742" name="ln-742"></a>
+<a id="ln-743" name="ln-743"></a>    <span class="k">open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">)</span>
+<a id="ln-744" name="ln-744"></a>    <span class="k">do </span><span class="n">iarg</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+<a id="ln-745" name="ln-745"></a>        <span class="k">write</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="s1">&#39;(a)&#39;</span><span class="p">)</span> <span class="n">unix_path</span><span class="p">(</span><span class="n">argv</span><span class="p">(</span><span class="n">iarg</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a id="ln-746" name="ln-746"></a>    <span class="k">end do</span>
+<a id="ln-747" name="ln-747"></a><span class="k">    close</span><span class="p">(</span><span class="n">io</span><span class="p">)</span>
+<a id="ln-748" name="ln-748"></a><span class="k">end subroutine </span><span class="n">write_response_file</span>
+<a id="ln-749" name="ln-749"></a>
 <a id="ln-750" name="ln-750"></a>
-<a id="ln-751" name="ln-751"></a>
-<a id="ln-752" name="ln-752"></a><span class="c">!&gt; String representation of a compiler object</span>
-<a id="ln-753" name="ln-753"></a><span class="k">pure function </span><span class="n">debug_compiler</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span>
-<a id="ln-754" name="ln-754"></a>    <span class="c">!&gt; Instance of the compiler object</span>
-<a id="ln-755" name="ln-755"></a>    <span class="k">type</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-756" name="ln-756"></a>    <span class="c">!&gt; Representation as string</span>
-<a id="ln-757" name="ln-757"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">repr</span>
-<a id="ln-758" name="ln-758"></a>
-<a id="ln-759" name="ln-759"></a>    <span class="n">repr</span> <span class="o">=</span> <span class="s1">&#39;fc=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="o">//</span><span class="s1">&#39;&quot;, cc=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span>
-<a id="ln-760" name="ln-760"></a><span class="k">end function </span><span class="n">debug_compiler</span>
+<a id="ln-751" name="ln-751"></a><span class="c">!&gt; String representation of a compiler object</span>
+<a id="ln-752" name="ln-752"></a><span class="k">pure function </span><span class="n">debug_compiler</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span>
+<a id="ln-753" name="ln-753"></a>    <span class="c">!&gt; Instance of the compiler object</span>
+<a id="ln-754" name="ln-754"></a>    <span class="k">type</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-755" name="ln-755"></a>    <span class="c">!&gt; Representation as string</span>
+<a id="ln-756" name="ln-756"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">repr</span>
+<a id="ln-757" name="ln-757"></a>
+<a id="ln-758" name="ln-758"></a>    <span class="n">repr</span> <span class="o">=</span> <span class="s1">&#39;fc=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="o">//</span><span class="s1">&#39;&quot;, cc=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span>
+<a id="ln-759" name="ln-759"></a><span class="k">end function </span><span class="n">debug_compiler</span>
+<a id="ln-760" name="ln-760"></a>
 <a id="ln-761" name="ln-761"></a>
-<a id="ln-762" name="ln-762"></a>
-<a id="ln-763" name="ln-763"></a><span class="c">!&gt; String representation of an archiver object</span>
-<a id="ln-764" name="ln-764"></a><span class="k">pure function </span><span class="n">debug_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span>
-<a id="ln-765" name="ln-765"></a>    <span class="c">!&gt; Instance of the archiver object</span>
-<a id="ln-766" name="ln-766"></a>    <span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-<a id="ln-767" name="ln-767"></a>    <span class="c">!&gt; Representation as string</span>
-<a id="ln-768" name="ln-768"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">repr</span>
-<a id="ln-769" name="ln-769"></a>
-<a id="ln-770" name="ln-770"></a>    <span class="n">repr</span> <span class="o">=</span> <span class="s1">&#39;ar=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span>
-<a id="ln-771" name="ln-771"></a><span class="k">end function </span><span class="n">debug_archiver</span>
+<a id="ln-762" name="ln-762"></a><span class="c">!&gt; String representation of an archiver object</span>
+<a id="ln-763" name="ln-763"></a><span class="k">pure function </span><span class="n">debug_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span>
+<a id="ln-764" name="ln-764"></a>    <span class="c">!&gt; Instance of the archiver object</span>
+<a id="ln-765" name="ln-765"></a>    <span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<a id="ln-766" name="ln-766"></a>    <span class="c">!&gt; Representation as string</span>
+<a id="ln-767" name="ln-767"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">repr</span>
+<a id="ln-768" name="ln-768"></a>
+<a id="ln-769" name="ln-769"></a>    <span class="n">repr</span> <span class="o">=</span> <span class="s1">&#39;ar=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span>
+<a id="ln-770" name="ln-770"></a><span class="k">end function </span><span class="n">debug_archiver</span>
+<a id="ln-771" name="ln-771"></a>
 <a id="ln-772" name="ln-772"></a>
-<a id="ln-773" name="ln-773"></a>
-<a id="ln-774" name="ln-774"></a><span class="k">end module </span><span class="n">fpm_compiler</span>
+<a id="ln-773" name="ln-773"></a><span class="k">end module </span><span class="n">fpm_compiler</span>
 </pre></div>
 
     </section>
@@ -1066,7 +1065,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-10-03 13:29  
+             on 2021-10-10 16:04  
             
           </p>
         </div>

@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.9% of total for procedures.">66 statements</a>
+    title=" 2.2% of total for procedures.">77 statements</a>
      </li> 
      
      
@@ -243,7 +243,7 @@ public subroutine resolve_target_linking(targets, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-targets~5"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td><span class="anchor" id="variable-targets~6"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
   <td>intent(inout),</td>
   <td></td>
   
@@ -258,7 +258,7 @@ public subroutine resolve_target_linking(targets, model)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model~5"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-model~2"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -339,18 +339,13 @@ public subroutine resolve_target_linking(targets, model)
     <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
 
     <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">global_link_flags</span>
+    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">global_link_flags</span><span class="p">,</span> <span class="n">local_link_flags</span>
     <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">global_include_flags</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span>
 
-<span class="k">    if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">        </span><span class="n">global_link_flags</span> <span class="o">=</span> <span class="n">targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span>
-    <span class="k">else</span>
-<span class="k">        allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="kd">::</span> <span class="n">global_link_flags</span><span class="p">)</span>
-    <span class="k">end if</span>
-
-<span class="k">    if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">    </span><span class="n">global_link_flags</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">        if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            </span><span class="n">global_link_flags</span> <span class="o">=</span> <span class="n">global_link_flags</span> <span class="o">//</span> <span class="s2">&quot; -l&quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">,</span><span class="s2">&quot; -l&quot;</span><span class="p">)</span>
         <span class="k">end if</span>
@@ -367,18 +362,31 @@ public subroutine resolve_target_linking(targets, model)
 <span class="k">    do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
         <span class="k">associate</span><span class="p">(</span><span class="k">target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
-
             <span class="k">if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">/=</span> <span class="n">FPM_TARGET_C_OBJECT</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">global_include_flags</span>
+<span class="k">                target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span>
             <span class="k">else</span>
-<span class="k">                target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">c_compile_flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">global_include_flags</span>
+<span class="k">                target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">c_compile_flags</span>
             <span class="k">end if</span>
+<span class="k">            if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">global_include_flags</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                target</span><span class="p">%</span><span class="n">compile_flags</span> <span class="o">=</span> <span class="k">target</span><span class="p">%</span><span class="n">compile_flags</span><span class="o">//</span><span class="n">global_include_flags</span>
+            <span class="k">end if</span>
+<span class="k">            target</span><span class="p">%</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">get_output_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span><span class="p">,</span> <span class="k">target</span><span class="p">%</span><span class="n">compile_flags</span><span class="p">)</span>
+            <span class="k">target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_dir</span><span class="p">,</span> <span class="k">target</span><span class="p">%</span><span class="n">output_name</span><span class="p">)</span>
+        <span class="k">end associate</span>
 
-<span class="k">            allocate</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="k">    end do</span>
+
+<span class="k">    call </span><span class="n">add_include_build_dirs</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+
+    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+
+        <span class="k">associate</span><span class="p">(</span><span class="k">target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
+            <span class="k">allocate</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">==</span> <span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                </span><span class="n">global_link_flags</span> <span class="o">=</span> <span class="k">target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">//</span> <span class="n">global_link_flags</span>
 
-<span class="k">                call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
+                <span class="k">call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
 
                 <span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="kd">::</span> <span class="k">target</span><span class="p">%</span><span class="n">link_flags</span><span class="p">)</span>
 
@@ -386,16 +394,23 @@ public subroutine resolve_target_linking(targets, model)
 
 <span class="k">                call </span><span class="n">get_link_objects</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="k">target</span><span class="p">,</span><span class="n">is_exe</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
 
+                <span class="n">local_link_flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">link_flags</span>
                 <span class="k">target</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">link_flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">string_cat</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_objects</span><span class="p">,</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">                    if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                        target</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">=</span> <span class="k">target</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">//</span> <span class="s2">&quot; -l&quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">,</span><span class="s2">&quot; -l&quot;</span><span class="p">)</span>
+<span class="k">                        target</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">=</span> <span class="k">target</span><span class="p">%</span><span class="n">link_flags</span> <span class="p">&amp;</span>
+                           <span class="p">&amp;</span> <span class="o">//</span> <span class="s2">&quot; -l&quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">,</span><span class="s2">&quot; -l&quot;</span><span class="p">)</span>
+                        <span class="n">local_link_flags</span> <span class="o">=</span> <span class="n">local_link_flags</span> <span class="p">&amp;</span>
+                           <span class="p">&amp;</span> <span class="o">//</span> <span class="s2">&quot; -l&quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">,</span><span class="s2">&quot; -l&quot;</span><span class="p">)</span>
                     <span class="k">end if</span>
 <span class="k">                end if</span>
 
 <span class="k">                target</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">=</span> <span class="k">target</span><span class="p">%</span><span class="n">link_flags</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">global_link_flags</span>
 
+                <span class="k">target</span><span class="p">%</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">get_output_dir</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span><span class="p">,</span> <span class="p">&amp;</span>
+                   <span class="p">&amp;</span> <span class="k">target</span><span class="p">%</span><span class="n">compile_flags</span><span class="o">//</span><span class="n">local_link_flags</span><span class="p">)</span>
+                <span class="k">target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_dir</span><span class="p">,</span> <span class="k">target</span><span class="p">%</span><span class="n">output_name</span><span class="p">)</span>
             <span class="k">end if</span>
 
 <span class="k">        end associate</span>
@@ -471,7 +486,7 @@ public subroutine resolve_target_linking(targets, model)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-10-03 13:29  
+             on 2021-10-10 16:04  
             
           </p>
         </div>

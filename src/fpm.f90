@@ -43,7 +43,6 @@ subroutine build_model(model, settings, package, error)
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
-    character(len=16) :: build_name
 
     model%package_name = package%name
 
@@ -72,21 +71,19 @@ subroutine build_model(model, settings, package, error)
             flags = flags // model%compiler%get_default_flags(settings%profile == "release")
         end select
     end if
-
     cflags = trim(settings%cflag)
     ldflags = trim(settings%ldflag)
-
-    write(build_name, '(z16.16)') fnv_1a(flags//cflags//ldflags)
 
     if (model%compiler%is_unknown()) then
         write(*, '(*(a:,1x))') &
             "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
             "Defaults for this compiler might be incorrect"
     end if
-    model%output_directory = join_path('build',basename(model%compiler%fc)//'_'//build_name)
+    model%build_prefix = join_path("build", basename(model%compiler%fc))
 
-    model%fortran_compile_flags = flags // " " // &
-        & model%compiler%get_module_flag(join_path(model%output_directory, model%package_name))
+    model%fortran_compile_flags = flags
+    model%c_compile_flags = cflags
+    model%link_flags = ldflags
 
     model%include_tests = settings%build_tests
 
@@ -196,7 +193,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     if (settings%verbose) then
-        write(*,*)'<INFO> BUILD_NAME: ',build_name
+        write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix
         write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
         write(*,*)'<INFO> C COMPILER:  ',model%compiler%cc
         write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags

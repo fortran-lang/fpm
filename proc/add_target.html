@@ -211,7 +211,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine add_target(targets, type, output_file, source, link_libraries)
+public subroutine add_target(targets, type, output_name, source, link_libraries)
     
     
    
@@ -242,7 +242,7 @@ public subroutine add_target(targets, type, output_file, source, link_libraries)
   
 <tr>
   
-  <td><span class="anchor" id="variable-targets~3"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+  <td><span class="anchor" id="variable-targets"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
   <td>intent(inout),</td>
   <td></td>
   
@@ -272,12 +272,12 @@ public subroutine add_target(targets, type, output_file, source, link_libraries)
   
 <tr>
   
-  <td><span class="anchor" id="variable-output_file~2"></span>character,</td>
+  <td><span class="anchor" id="variable-output_name~2"></span>character,</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>output_file</strong></td><td></td>
+  <td><strong>output_name</strong></td><td></td>
   
 </tr>
 
@@ -378,10 +378,10 @@ public subroutine add_target(targets, type, output_file, source, link_libraries)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">add_target</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span><span class="p">,</span><span class="n">output_file</span><span class="p">,</span><span class="n">source</span><span class="p">,</span><span class="n">link_libraries</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">add_target</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="k">type</span><span class="p">,</span><span class="n">output_name</span><span class="p">,</span><span class="n">source</span><span class="p">,</span><span class="n">link_libraries</span><span class="p">)</span>
     <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">targets</span><span class="p">(:)</span>
     <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">type</span>
-<span class="k">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output_file</span>
+<span class="k">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">output_name</span>
     <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">source</span>
     <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">link_libraries</span><span class="p">(:)</span>
 
@@ -393,10 +393,10 @@ public subroutine add_target(targets, type, output_file, source, link_libraries)
     <span class="c">! Check for duplicate outputs</span>
     <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span> <span class="o">==</span> <span class="n">output_file</span><span class="p">)</span> <span class="k">then</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_name</span> <span class="o">==</span> <span class="n">output_name</span><span class="p">)</span> <span class="k">then</span>
 
 <span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Error while building target list: duplicate output object &quot;&#39;</span><span class="p">,&amp;</span>
-                        <span class="n">output_file</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span>
+                        <span class="n">output_name</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">source</span><span class="p">))</span> <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39; Source file: &quot;&#39;</span><span class="p">,</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span>
             <span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
 
@@ -406,7 +406,7 @@ public subroutine add_target(targets, type, output_file, source, link_libraries)
 
 <span class="k">    allocate</span><span class="p">(</span><span class="n">new_target</span><span class="p">)</span>
     <span class="n">new_target</span><span class="p">%</span><span class="n">target_type</span> <span class="o">=</span> <span class="k">type</span>
-<span class="k">    </span><span class="n">new_target</span><span class="p">%</span><span class="n">output_file</span> <span class="o">=</span> <span class="n">output_file</span>
+<span class="k">    </span><span class="n">new_target</span><span class="p">%</span><span class="n">output_name</span> <span class="o">=</span> <span class="n">output_name</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">source</span><span class="p">))</span> <span class="n">new_target</span><span class="p">%</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">link_libraries</span><span class="p">))</span> <span class="n">new_target</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">link_libraries</span>
     <span class="k">allocate</span><span class="p">(</span><span class="n">new_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
@@ -436,7 +436,7 @@ public subroutine add_target(targets, type, output_file, source, link_libraries)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-10-03 13:29  
+             on 2021-10-10 16:04  
             
           </p>
         </div>

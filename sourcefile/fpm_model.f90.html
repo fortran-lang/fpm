@@ -406,7 +406,7 @@
 <a id="ln-131" name="ln-131"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_flags</span>
 <a id="ln-132" name="ln-132"></a>
 <a id="ln-133" name="ln-133"></a>    <span class="c">!&gt; Base directory for build</span>
-<a id="ln-134" name="ln-134"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">output_directory</span>
+<a id="ln-134" name="ln-134"></a>    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">build_prefix</span>
 <a id="ln-135" name="ln-135"></a>
 <a id="ln-136" name="ln-136"></a>    <span class="c">!&gt; Include directories</span>
 <a id="ln-137" name="ln-137"></a>    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">include_dirs</span><span class="p">(:)</span>
@@ -559,37 +559,36 @@
 <a id="ln-284" name="ln-284"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;, fortran_compile_flags=&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
 <a id="ln-285" name="ln-285"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;, c_compile_flags=&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">c_compile_flags</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
 <a id="ln-286" name="ln-286"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;, link_flags=&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">link_flags</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
-<a id="ln-287" name="ln-287"></a>    <span class="c">!    character(:), allocatable :: output_directory</span>
-<a id="ln-288" name="ln-288"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;, output_directory=&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">output_directory</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
-<a id="ln-289" name="ln-289"></a>    <span class="c">!    type(string_t), allocatable :: link_libraries(:)</span>
-<a id="ln-290" name="ln-290"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, link_libraries=[&quot;</span>
-<a id="ln-291" name="ln-291"></a>    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">)</span>
-<a id="ln-292" name="ln-292"></a>        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
-<a id="ln-293" name="ln-293"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">))</span> <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, &quot;</span>
-<a id="ln-294" name="ln-294"></a>    <span class="k">end do</span>
-<a id="ln-295" name="ln-295"></a><span class="k">    </span><span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;]&quot;</span>
-<a id="ln-296" name="ln-296"></a>    <span class="c">!    type(string_t), allocatable :: external_modules(:)</span>
-<a id="ln-297" name="ln-297"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, external_modules=[&quot;</span>
-<a id="ln-298" name="ln-298"></a>    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">external_modules</span><span class="p">)</span>
-<a id="ln-299" name="ln-299"></a>        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">external_modules</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
-<a id="ln-300" name="ln-300"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">external_modules</span><span class="p">))</span> <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, &quot;</span>
-<a id="ln-301" name="ln-301"></a>    <span class="k">end do</span>
-<a id="ln-302" name="ln-302"></a><span class="k">    </span><span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;]&quot;</span>
-<a id="ln-303" name="ln-303"></a>    <span class="c">!    type(dependency_tree_t) :: deps</span>
-<a id="ln-304" name="ln-304"></a>    <span class="c">! TODO: print `dependency_tree_t` properly, which should become part of the</span>
-<a id="ln-305" name="ln-305"></a>    <span class="c">!       model, not imported from another file</span>
-<a id="ln-306" name="ln-306"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, deps=dependency_tree_t(...)&quot;</span>
-<a id="ln-307" name="ln-307"></a>    <span class="c">!end type fpm_model_t</span>
-<a id="ln-308" name="ln-308"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;)&quot;</span>
-<a id="ln-309" name="ln-309"></a><span class="k">end function </span><span class="n">info_model</span>
-<a id="ln-310" name="ln-310"></a>
-<a id="ln-311" name="ln-311"></a><span class="k">subroutine </span><span class="n">show_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<a id="ln-312" name="ln-312"></a>    <span class="c">! Prints a human readable representation of the Model</span>
-<a id="ln-313" name="ln-313"></a>    <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
-<a id="ln-314" name="ln-314"></a>    <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="n">info_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<a id="ln-315" name="ln-315"></a><span class="k">end subroutine </span><span class="n">show_model</span>
-<a id="ln-316" name="ln-316"></a>
-<a id="ln-317" name="ln-317"></a><span class="k">end module </span><span class="n">fpm_model</span>
+<a id="ln-287" name="ln-287"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;, build_prefix=&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
+<a id="ln-288" name="ln-288"></a>    <span class="c">!    type(string_t), allocatable :: link_libraries(:)</span>
+<a id="ln-289" name="ln-289"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, link_libraries=[&quot;</span>
+<a id="ln-290" name="ln-290"></a>    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">)</span>
+<a id="ln-291" name="ln-291"></a>        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
+<a id="ln-292" name="ln-292"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">link_libraries</span><span class="p">))</span> <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, &quot;</span>
+<a id="ln-293" name="ln-293"></a>    <span class="k">end do</span>
+<a id="ln-294" name="ln-294"></a><span class="k">    </span><span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;]&quot;</span>
+<a id="ln-295" name="ln-295"></a>    <span class="c">!    type(string_t), allocatable :: external_modules(:)</span>
+<a id="ln-296" name="ln-296"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, external_modules=[&quot;</span>
+<a id="ln-297" name="ln-297"></a>    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">external_modules</span><span class="p">)</span>
+<a id="ln-298" name="ln-298"></a>        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">//</span> <span class="n">model</span><span class="p">%</span><span class="n">external_modules</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span> <span class="o">//</span> <span class="s1">&#39;&quot;&#39;</span>
+<a id="ln-299" name="ln-299"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">external_modules</span><span class="p">))</span> <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, &quot;</span>
+<a id="ln-300" name="ln-300"></a>    <span class="k">end do</span>
+<a id="ln-301" name="ln-301"></a><span class="k">    </span><span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;]&quot;</span>
+<a id="ln-302" name="ln-302"></a>    <span class="c">!    type(dependency_tree_t) :: deps</span>
+<a id="ln-303" name="ln-303"></a>    <span class="c">! TODO: print `dependency_tree_t` properly, which should become part of the</span>
+<a id="ln-304" name="ln-304"></a>    <span class="c">!       model, not imported from another file</span>
+<a id="ln-305" name="ln-305"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;, deps=dependency_tree_t(...)&quot;</span>
+<a id="ln-306" name="ln-306"></a>    <span class="c">!end type fpm_model_t</span>
+<a id="ln-307" name="ln-307"></a>    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">//</span> <span class="s2">&quot;)&quot;</span>
+<a id="ln-308" name="ln-308"></a><span class="k">end function </span><span class="n">info_model</span>
+<a id="ln-309" name="ln-309"></a>
+<a id="ln-310" name="ln-310"></a><span class="k">subroutine </span><span class="n">show_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<a id="ln-311" name="ln-311"></a>    <span class="c">! Prints a human readable representation of the Model</span>
+<a id="ln-312" name="ln-312"></a>    <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
+<a id="ln-313" name="ln-313"></a>    <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="n">info_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<a id="ln-314" name="ln-314"></a><span class="k">end subroutine </span><span class="n">show_model</span>
+<a id="ln-315" name="ln-315"></a>
+<a id="ln-316" name="ln-316"></a><span class="k">end module </span><span class="n">fpm_model</span>
 </pre></div>
 
     </section>
@@ -609,7 +608,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-10-03 13:29  
+             on 2021-10-10 16:04  
             
           </p>
         </div>
