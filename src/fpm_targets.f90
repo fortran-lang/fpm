@@ -40,7 +40,7 @@ public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public resolve_target_linking, add_target, add_dependency
-public filter_library_targets, filter_executable_targets
+public filter_library_targets, filter_executable_targets, filter_modules
 
 
 
@@ -676,6 +676,29 @@ elemental function is_executable_target(target_ptr, scope) result(is_exe)
         is_exe = target_ptr%dependencies(1)%ptr%source%unit_scope == scope
     end if
 end function is_executable_target
+
+
+subroutine filter_modules(targets, list)
+    type(build_target_ptr), intent(in) :: targets(:)
+    type(string_t), allocatable, intent(out) :: list(:)
+
+    integer :: i, j, n
+
+    n = 0
+    call resize(list)
+    do i = 1, size(targets)
+        associate(target => targets(i)%ptr)
+            if (.not.allocated(target%source)) cycle
+            if (n + size(target%source%modules_provided) >= size(list)) call resize(list)
+            do j = 1, size(target%source%modules_provided)
+                n = n + 1
+                list(n)%s = join_path(target%output_dir, "fpm", &
+                    target%source%modules_provided(j)%s)
+            end do
+        end associate
+    end do
+    call resize(list, n)
+end subroutine filter_modules
 
 
 end module fpm_targets
