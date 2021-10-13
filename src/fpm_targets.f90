@@ -30,6 +30,7 @@ use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat
+use fpm_compiler, only: id_intel_classic_windows, id_intel_llvm_windows
 implicit none
 
 private
@@ -442,6 +443,22 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
 
 end function find_module_dependency
 
+!>
+!> Enumerate libraries, based on compiler and platform
+!>
+function enumerate_libraries(prefix, model, libs) result(r)
+    character(len=*), intent(in) :: prefix
+    type(fpm_model_t), intent(in) :: model
+    type(string_t), intent(in) :: libs(:)
+    character(len=:), allocatable :: r
+
+    if (model%compiler%id == id_intel_classic_windows .or. &
+        model%compiler%id == id_intel_llvm_windows) then
+        r = prefix // " " // string_cat(libs,".lib ")//".lib"
+    else
+        r = prefix // " -l" // string_cat(libs," -l")
+    end if
+end function enumerate_libraries
 
 !> Construct the linker flags string for each target
 !>  `target%link_flags` includes non-library objects and library flags
@@ -464,11 +481,7 @@ subroutine resolve_target_linking(targets, model)
 
     if (allocated(model%link_libraries)) then
         if (size(model%link_libraries) > 0) then
-            if (model%compiler%is_intel_windows()) then
-                global_link_flags = global_link_flags // " " // string_cat(model%link_libraries, ".lib ")//".lib"
-            else
-                global_link_flags = global_link_flags // " -l" // string_cat(model%link_libraries," -l")
-            end if
+            global_link_flags = enumerate_libraries(global_link_flags, model, model%link_libraries)
         end if
     end if
 
@@ -506,11 +519,7 @@ subroutine resolve_target_linking(targets, model)
 
                 if (allocated(target%link_libraries)) then
                     if (size(target%link_libraries) > 0) then
-                        if (model%compiler%is_intel_windows()) then
-                            target%link_flags = target%link_flags // " " // string_cat(target%link_libraries,".lib ")//".lib"
-                        else
-                            target%link_flags = target%link_flags // " -l" // string_cat(target%link_libraries," -l")
-                        end if
+                        target%link_flags = enumerate_libraries(target%link_flags, model, target%link_libraries)
                     end if
                 end if
 
