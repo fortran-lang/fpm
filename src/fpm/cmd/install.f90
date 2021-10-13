@@ -9,7 +9,8 @@ module fpm_cmd_install
   use fpm_manifest, only : package_config_t, get_package_data
   use fpm_model, only : fpm_model_t, FPM_SCOPE_APP
   use fpm_targets, only: targets_from_sources, build_target_t, &
-                         build_target_ptr, FPM_TARGET_EXECUTABLE
+                         build_target_ptr, FPM_TARGET_EXECUTABLE, &
+                         filter_library_targets, filter_executable_targets, filter_modules
   use fpm_strings, only : string_t, resize
   implicit none
   private
@@ -28,6 +29,7 @@ contains
     type(build_target_ptr), allocatable :: targets(:)
     type(installer_t) :: installer
     character(len=:), allocatable :: lib, dir
+    type(string_t), allocatable :: list(:)
     logical :: installable
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
@@ -61,13 +63,15 @@ contains
       verbosity=merge(2, 1, settings%verbose))
 
     if (allocated(package%library) .and. package%install%library) then
-      dir = join_path(model%output_directory, model%package_name)
-      lib = "lib"//model%package_name//".a"
-      call installer%install_library(join_path(dir, lib), error)
-      call handle_error(error)
+      call filter_library_targets(targets, list)
 
-      call install_module_files(installer, dir, error)
-      call handle_error(error)
+      if (size(list) > 0) then
+        call installer%install_library(list(1)%s, error)
+        call handle_error(error)
+
+        call install_module_files(installer, targets, error)
+        call handle_error(error)
+      end if
     end if
 
     if (allocated(package%executable)) then
@@ -85,24 +89,17 @@ contains
 
     integer :: ii, ntargets
     character(len=:), allocatable :: lib
-    type(string_t), allocatable :: install_target(:)
+    type(string_t), allocatable :: install_target(:), temp(:)
 
-    call resize(install_target)
+    allocate(install_target(0))
 
-    ntargets = 0
-    if (allocated(package%library) .and. package%install%library) then
-      ntargets = ntargets + 1
-      lib = join_path(model%output_directory, model%package_name, &
-        "lib"//model%package_name//".a")
-      install_target(ntargets)%s = lib
-    end if
-    do ii = 1, size(targets)
-      if (is_executable_target(targets(ii)%ptr)) then
-        if (ntargets >= size(install_target)) call resize(install_target)
-        ntargets = ntargets + 1
-        install_target(ntargets)%s = targets(ii)%ptr%output_file
-      end if
-    end do
+    call filter_library_targets(targets, temp)
+    install_target = [install_target, temp]
+
+    call filter_executable_targets(targets, FPM_SCOPE_APP, temp)
+    install_target = [install_target, temp]
+
+    ntargets = size(install_target)
 
     write(unit, '("#", *(1x, g0))') &
       "total number of installable targets:", ntargets
@@ -112,20 +109,18 @@ contains
 
   end subroutine install_info
 
-  subroutine install_module_files(installer, dir, error)
+  subroutine install_module_files(installer, targets, error)
     type(installer_t), intent(inout) :: installer
-    character(len=*), intent(in) :: dir
+    type(build_target_ptr), intent(in) :: targets(:)
     type(error_t), allocatable, intent(out) :: error
     type(string_t), allocatable :: modules(:)
     integer :: ii
 
-    call list_files(dir, modules, recurse=.false.)
+    call filter_modules(targets, modules)
 
     do ii = 1, size(modules)
-      if (is_module_file(modules(ii)%s)) then
-        call installer%install_header(modules(ii)%s, error)
-        if (allocated(error)) exit
-      end if
+      call installer%install_header(modules(ii)%s//".mod", error)
+      if (allocated(error)) exit
     end do
     if (allocated(error)) return
 
@@ -156,14 +151,6 @@ contains
       is_exe = target_ptr%dependencies(1)%ptr%source%unit_scope == FPM_SCOPE_APP
     end if
   end function is_executable_target
-
-  elemental function is_module_file(name) result(is_mod)
-    character(len=*), intent(in) :: name
-    logical :: is_mod
-    integer :: ll
-    ll = len(name)
-    is_mod = name(max(1, ll-3):ll) == ".mod"
-  end function is_module_file
 
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error

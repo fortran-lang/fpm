@@ -417,7 +417,6 @@ function get_module_flag(self, path) result(flags)
         flags = "-qmoddir "//path
 
     end select
-    flags = flags//" "//self%get_include_flag(path)
 
 end function get_module_flag
 
