@@ -10,7 +10,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>run &ndash; Fortran-lang/fpm</title>
+    <title>enumerate_libraries &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -119,8 +119,8 @@
     
   
   <div class="row">
-    <h1>run
-      <small>Subroutine</small>
+    <h1>enumerate_libraries
+      <small>Function</small>
     
     </h1>
     
@@ -138,24 +138,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.6% of total for procedures.">21 statements</a>
+    title=" 0.3% of total for procedures.">11 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/fpm_environment.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_compiler.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/fpm_environment.f90.html'>fpm_environment.f90</a></li>
+     <li><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.f90</a></li>
     
-     <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+     <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
     
   
-     <li class="active">run</li>
+     <li class="active">enumerate_libraries</li>
   </ol>
 </div>
 </div>
@@ -199,7 +199,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/run.html#src">run</a>
+    <a class="list-group-item" href="../proc/enumerate_libraries.html#src">enumerate_libraries</a>
   </div>
 </div>
 
@@ -211,7 +211,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine run(cmd, echo, exitstat)
+public function enumerate_libraries(self, prefix, libs) result(r)
     
     
    
@@ -221,7 +221,7 @@ public subroutine run(cmd, echo, exitstat)
 
 
     
-    <p>echo command string and pass it to the system for execution</p>
+    <p>Enumerate libraries, based on compiler and platform</p>
     
 
     <h3>Arguments</h3>
@@ -242,12 +242,12 @@ public subroutine run(cmd, echo, exitstat)
   
 <tr>
   
-  <td><span class="anchor" id="variable-cmd"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-self~3"></span>class(<a href='../type/compiler_t.html'>compiler_t</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>cmd</strong></td><td></td>
+  <td><strong>self</strong></td><td></td>
   
 </tr>
 
@@ -257,12 +257,12 @@ public subroutine run(cmd, echo, exitstat)
   
 <tr>
   
-  <td><span class="anchor" id="variable-echo~3"></span>logical,</td>
-  <td>intent(in),</td>
-  <td>optional</td>
+  <td><span class="anchor" id="variable-prefix~2"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
   
   <td></td><td>::</td>
-  <td><strong>echo</strong></td><td></td>
+  <td><strong>prefix</strong></td><td></td>
   
 </tr>
 
@@ -272,18 +272,27 @@ public subroutine run(cmd, echo, exitstat)
   
 <tr>
   
-  <td><span class="anchor" id="variable-exitstat"></span>integer,</td>
-  <td>intent(out),</td>
-  <td>optional</td>
+  <td><span class="anchor" id="variable-libs"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
   
   <td></td><td>::</td>
-  <td><strong>exitstat</strong></td><td></td>
+  <td><strong>libs</strong>(:)</td><td></td>
   
 </tr>
 
 </tbody>
 </table>
 
+    
+    
+    
+    
+    
+    
+    
+   <h3>Return Value <small><span class="anchor" id="variable-r~3"></span>character(len=:),
+  allocatable</small></h3>
     
     
     
@@ -319,7 +328,7 @@ public subroutine run(cmd, echo, exitstat)
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/run.html#src">run</a>
+    <a class="list-group-item" href="../proc/enumerate_libraries.html#src">enumerate_libraries</a>
   </div>
 </div>
 
@@ -348,31 +357,19 @@ public subroutine run(cmd, echo, exitstat)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">echo</span><span class="p">,</span><span class="n">exitstat</span><span class="p">)</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">cmd</span>
-        <span class="kt">logical</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span>  <span class="kd">::</span> <span class="n">echo</span>
-        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="k">optional</span>  <span class="kd">::</span> <span class="n">exitstat</span>
-        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">echo_local</span>
-        <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">enumerate_libraries</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">libs</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">class</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">prefix</span>
+    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">libs</span><span class="p">(:)</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">r</span>
 
-<span class="nb">        </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">echo</span><span class="p">))</span><span class="k">then</span>
-<span class="k">           </span><span class="n">echo_local</span><span class="o">=</span><span class="n">echo</span>
-        <span class="k">else</span>
-<span class="k">           </span><span class="n">echo_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-        <span class="k">endif</span>
-<span class="k">        if</span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span> <span class="k">print</span> <span class="o">*</span><span class="p">,</span> <span class="s1">&#39;+ &#39;</span><span class="p">,</span> <span class="n">cmd</span>
-
-        <span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">exitstat</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">            </span><span class="n">exitstat</span> <span class="o">=</span> <span class="nb">stat</span>
-<span class="nb">        </span><span class="k">else</span>
-<span class="k">            if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*run*:Command failed&#39;</span><span class="p">)</span>
-            <span class="k">end if</span>
-<span class="k">        end if</span>
-
-<span class="k">    end subroutine </span><span class="n">run</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">id</span> <span class="o">==</span> <span class="n">id_intel_classic_windows</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+        <span class="n">self</span><span class="p">%</span><span class="n">id</span> <span class="o">==</span> <span class="n">id_intel_llvm_windows</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">        </span><span class="n">r</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">//</span> <span class="s2">&quot; &quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="n">libs</span><span class="p">,</span><span class="s2">&quot;.lib &quot;</span><span class="p">)</span><span class="o">//</span><span class="s2">&quot;.lib&quot;</span>
+    <span class="k">else</span>
+<span class="k">        </span><span class="n">r</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">//</span> <span class="s2">&quot; -l&quot;</span> <span class="o">//</span> <span class="n">string_cat</span><span class="p">(</span><span class="n">libs</span><span class="p">,</span><span class="s2">&quot; -l&quot;</span><span class="p">)</span>
+    <span class="k">end if</span>
+<span class="k">end function </span><span class="n">enumerate_libraries</span>
 </pre></div>
 
     </section>

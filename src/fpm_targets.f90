@@ -466,7 +466,7 @@ subroutine resolve_target_linking(targets, model)
     global_link_flags = ""
     if (allocated(model%link_libraries)) then
         if (size(model%link_libraries) > 0) then
-            global_link_flags = global_link_flags // " -l" // string_cat(model%link_libraries," -l")
+            global_link_flags = model%compiler%enumerate_libraries(global_link_flags, model%link_libraries)
         end if
     end if
 
@@ -518,10 +518,8 @@ subroutine resolve_target_linking(targets, model)
 
                 if (allocated(target%link_libraries)) then
                     if (size(target%link_libraries) > 0) then
-                        target%link_flags = target%link_flags &
-                           & // " -l" // string_cat(target%link_libraries," -l")
-                        local_link_flags = local_link_flags &
-                           & // " -l" // string_cat(target%link_libraries," -l")
+                        target%link_flags = model%compiler%enumerate_libraries(target%link_flags, target%link_libraries)
+                        local_link_flags = model%compiler%enumerate_libraries(local_link_flags, target%link_libraries)
                     end if
                 end if
 
