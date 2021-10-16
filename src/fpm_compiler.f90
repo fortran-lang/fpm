@@ -94,6 +94,8 @@ contains
     procedure :: link
     !> Check whether compiler is recognized
     procedure :: is_unknown
+    !> Enumerate libraries, based on compiler and platform
+    procedure :: enumerate_libraries
 end type compiler_t
 
 
@@ -592,6 +594,23 @@ pure function is_unknown(self)
     logical :: is_unknown
     is_unknown = self%id == id_unknown
 end function is_unknown
+
+!>
+!> Enumerate libraries, based on compiler and platform
+!>
+function enumerate_libraries(self, prefix, libs) result(r)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: prefix
+    type(string_t), intent(in) :: libs(:)
+    character(len=:), allocatable :: r
+
+    if (self%id == id_intel_classic_windows .or. &
+        self%id == id_intel_llvm_windows) then
+        r = prefix // " " // string_cat(libs,".lib ")//".lib"
+    else
+        r = prefix // " -l" // string_cat(libs," -l")
+    end if
+end function enumerate_libraries
 
 
 !> Create new compiler instance
