@@ -30,7 +30,6 @@ use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize
-use fpm_compiler, only: enumerate_libraries
 implicit none
 
 private
