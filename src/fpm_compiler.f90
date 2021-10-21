@@ -168,6 +168,9 @@ character(*), parameter :: &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
     flag_nag_backtrace = " -gline"
+    
+character(*), parameter :: &
+    flag_lfortran_opt = " --fast"
 
 contains
 
@@ -271,7 +274,9 @@ subroutine get_release_compile_flags(id, flags)
             flag_nag_pic
 
     case(id_lfortran)
-        flags = ""
+        flags = &
+            flag_lfortran_opt
+
     end select
 end subroutine get_release_compile_flags
 
