@@ -159,5 +159,15 @@ To automatically bootstrap using this appoach run the install script
 ./install.sh
 ```
 
-You can set your Fortran compiler and the compiler flags with the ``FC`` and ``FFLAGS``
-environment variables.
+The table below lists the environment variables that control `fpm`'s choice of compilers, 
+compiler flags, archiver locations, and link flags, each of which can be overridden by 
+passing `fpm` flags also shown in the table.
+
+| Environment Variable | Defines               | Overridden by  |
+| :------------------- | :-------------------- | :------------- |
+| `FPM_FC`             | Fortran compiler path | `--compiler`   |
+| `FPM_CC`             | C compiler path       | `--c-compiler` |
+| `FPM_FFLAGS`         | Fortran compiler flags| `--flag`       |
+| `FPM_CFLAGS`         | C compiler flags      | `--c-flag`     |
+| `FPM_AR`             | Archiver path         | `--archiver`   |
+| `FPM_LDFLAGS`        | Link flags            | `--link-flag`  |
