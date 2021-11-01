@@ -32,11 +32,14 @@ non-Fortran related package manager.
 ### Setting up fpm
 
 #### Binary download
-`x86-64` binaries are available [to download](https://github.com/fortran-lang/fpm/releases) for Windows, MacOS and Linux.
+
+Binaries for the latest stable release are available [to download](https://github.com/fortran-lang/fpm/releases/latest) for Windows, MacOS, and Linux.
 
 __Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
 
 _e.g._ `$ chmod u+x fpm-0.4.0-linux-x86_64`
+
+The binaries at the [current tag](https://github.com/fortran-lang/fpm/releases/tag/current) are updated automatically to always provide the current git version from the default branch.
 
 
 #### [Conda]
@@ -147,7 +150,7 @@ To build manually using the single source distribution, run the following code (
 
 ```
 mkdir _tmp
-curl -LJ https://github.com/fortran-lang/fpm/releases/download/v0.3.0/fpm-0.3.0.F90 > _tmp/fpm.F90
+curl -LJ https://github.com/fortran-lang/fpm/releases/download/current/fpm.F90 > _tmp/fpm.F90
 gfortran -J _tmp _tmp/fpm.F90 -o _tmp/fpm
 _tmp/fpm install --flag "-g -fbacktrace -O3"
 rm -r _tmp

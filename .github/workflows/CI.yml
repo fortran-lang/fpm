@@ -197,7 +197,7 @@ jobs:
           popd
         done
       env:
-        replace: 's/-([0-9]+\.[0-9]+\.[0-9]+-[0-9]+-g)?[0-9a-f]+/-current/'
+        replace: 's/-([0-9]+\.[0-9]+\.[0-9]+-[0-9]+-g)?[0-9a-f]+//'
 
     - name: Create SHA256 checksums
       run: |
