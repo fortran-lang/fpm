@@ -328,6 +328,7 @@ contains
     function new_test_package() result(targets)
 
         type(build_target_ptr), allocatable :: targets(:)
+        integer :: i
 
         call add_target(targets,FPM_TARGET_ARCHIVE,get_temp_filename())
 
@@ -346,6 +347,10 @@ contains
         !  targets 2 & 3 depend on target 4
         call add_dependency(targets(2)%ptr,targets(4)%ptr)
         call add_dependency(targets(3)%ptr,targets(4)%ptr)
+
+        do i = 1, size(targets)
+          targets(i)%ptr%output_file = targets(i)%ptr%output_name
+        end do
 
     end function new_test_package
 

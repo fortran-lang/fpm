@@ -39,11 +39,10 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, flags
+    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, ldflags
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
-    character(len=16) :: build_name
 
     model%package_name = package%name
 
@@ -60,8 +59,8 @@ subroutine build_model(model, settings, package, error)
       call filewrite(join_path("build", ".gitignore"),["*"])
     end if
 
-    call new_compiler(model%compiler, settings%compiler)
-    call new_archiver(model%archiver)
+    call new_compiler(model%compiler, settings%compiler, settings%c_compiler)
+    call new_archiver(model%archiver, settings%archiver)
 
     if (settings%flag == '') then
         flags = model%compiler%get_default_flags(settings%profile == "release")
@@ -72,18 +71,21 @@ subroutine build_model(model, settings, package, error)
             flags = flags // model%compiler%get_default_flags(settings%profile == "release")
         end select
     end if
-
-    write(build_name, '(z16.16)') fnv_1a(flags)
+    cflags = trim(settings%cflag)
+    ldflags = trim(settings%ldflag)
 
     if (model%compiler%is_unknown()) then
         write(*, '(*(a:,1x))') &
             "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
             "Defaults for this compiler might be incorrect"
     end if
-    model%output_directory = join_path('build',basename(model%compiler%fc)//'_'//build_name)
+    model%build_prefix = join_path("build", basename(model%compiler%fc))
 
-    model%fortran_compile_flags = flags // " " // &
-        & model%compiler%get_module_flag(join_path(model%output_directory, model%package_name))
+    model%fortran_compile_flags = flags
+    model%c_compile_flags = cflags
+    model%link_flags = ldflags
+
+    model%include_tests = settings%build_tests
 
     allocate(model%packages(model%deps%ndep))
 
@@ -191,10 +193,12 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     if (settings%verbose) then
-        write(*,*)'<INFO> BUILD_NAME: ',build_name
+        write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix
         write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
         write(*,*)'<INFO> C COMPILER:  ',model%compiler%cc
         write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
+        write(*,*)'<INFO> C COMPILER OPTIONS:  ', model%c_compile_flags
+        write(*,*)'<INFO> LINKER OPTIONS:  ', model%link_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
      end if
 
@@ -268,7 +272,7 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:model error:'//error%message)
 end if
 
-call targets_from_sources(targets,model,error)
+call targets_from_sources(targets, model, error)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:target error:'//error%message)
 end if
@@ -314,7 +318,7 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run*:model error:'//error%message)
     end if
 
-    call targets_from_sources(targets,model,error)
+    call targets_from_sources(targets, model, error)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run*:targets error:'//error%message)
     end if
@@ -470,7 +474,7 @@ subroutine cmd_run(settings,test)
                 if (exe_source%unit_scope == run_scope) then
 
                     write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
-                                        & [character(len=col_width) :: basename(exe_target%output_file)]
+                        & [character(len=col_width) :: basename(exe_target%output_file, suffix=.false.)]
                     j = j + 1
 
                 end if
@@ -487,7 +491,7 @@ subroutine cmd_run(settings,test)
         write(stderr,*) 'Matched names:'
         do i=1,size(executables)
             write(stderr,'(A)',advance=(merge("yes","no ",modulo(j,nCol)==0))) &
-             & [character(len=col_width) :: basename(executables(i)%s)]
+                & [character(len=col_width) :: basename(executables(i)%s, suffix=.false.)]
             j = j + 1
         enddo
         write(stderr,*)
