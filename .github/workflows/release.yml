@@ -105,6 +105,13 @@ jobs:
       - source-single-file
 
     steps:
+    - id: deploy-on-push
+      if: ${{ github.event_name == 'push' }}
+      run:
+        echo "::set-output name=result::${{ env.DEPLOY_BRANCH }}"
+      env:
+        DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH && contains(github.ref, secrets.DEPLOY_BRANCH) && 1 || 0 }}
+
     - uses: actions/checkout@v2
       if: ${{ github.event_name == 'push' }}
 
@@ -133,13 +140,13 @@ jobs:
         done
 
     - name: Move/Create continuous tag
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name == 'push' && steps.deploy-on-push.outputs.result != 0 }}
       run: |
         git tag --force 'current' ${{ github.sha }}
         git push --tags --force
 
     - name: Upload assets
-      if: ${{ github.event_name == 'release' || github.event_name == 'push' }}
+      if: ${{ github.event_name == 'release' || steps.deploy-on-push.outputs.result != 0 }}
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
