@@ -123,7 +123,7 @@ jobs:
     - name: Normalize file names for continuous delivery
       if: ${{ github.event_name == 'push' }}
       run: |
-        for output in fpm-*/fpm-*; do
+        for output in fpm-*/fpm*; do
           pushd $(dirname "$output")
           mv -v $(basename $output) $(basename $output | sed -E '${{ env.replace }}')
           popd
@@ -133,7 +133,7 @@ jobs:
 
     - name: Create SHA256 checksums
       run: |
-        for output in fpm-*/fpm-*; do
+        for output in fpm-*/fpm*; do
           pushd $(dirname "$output")
           sha256sum $(basename "$output") | tee $(basename "$output").sha256
           popd
