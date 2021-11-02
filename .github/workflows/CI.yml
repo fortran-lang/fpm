@@ -218,7 +218,7 @@ jobs:
       if: ${{ github.event_name == 'release' || steps.deploy-on-push.outputs.result != 0 }}
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: fpm-*/fpm-*
+        file: fpm-*/fpm*
         file_glob: true
         tag: ${{ github.event_name == 'release' && github.ref || 'current'}}
         overwrite: true
