@@ -154,7 +154,7 @@ character(*), parameter :: &
     flag_intel_warn_win = " /warn:all", &
     flag_intel_check_win = " /check:all", &
     flag_intel_debug_win = " /Od /Z7", &
-    flag_intel_fp_win = " /fp-model:precise", &
+    flag_intel_fp_win = " /fp:precise", &
     flag_intel_align_win = " /align:all", &
     flag_intel_limit_win = " /error-limit:1", &
     flag_intel_pthread_win = " /reentrancy:threaded", &
@@ -168,7 +168,7 @@ character(*), parameter :: &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
     flag_nag_backtrace = " -gline"
-    
+
 character(*), parameter :: &
     flag_lfortran_opt = " --fast"
 
