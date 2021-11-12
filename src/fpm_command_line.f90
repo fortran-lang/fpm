@@ -864,7 +864,7 @@ contains
     help_text_flag, &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
-    ' --list     list pathname of candidates instead of running them. Note  ', &
+    ' --list     list basenames of candidates instead of running them. Note ', &
     '            out-of-date candidates will still be rebuilt before being  ', &
     '            listed.                                                    ', &
     ' -- ARGS    optional arguments to pass to the program(s). The same     ', &
@@ -876,7 +876,9 @@ contains
     ' fpm(1) - run or display project applications:                         ', &
     '                                                                       ', &
     '  fpm run        # run a target when only one exists or list targets   ', &
-    '  fpm run --list # list all targets, running nothing.                  ', &
+    '  fpm run --list # list basename of all targets, running nothing.      ', &
+    '  fpm run "demo*" --list # list target basenames starting with "demo*".', &
+    '  fpm run "psi*" --runner # list target pathnames starting with "psi*".', &
     '  fpm run --all  # run all targets, no matter how many there are.      ', &
     '                                                                       ', &
     '  # run default program built or to be built with the compiler command ', &
@@ -885,7 +887,7 @@ contains
     '  fpm run --compiler f90                                               ', &
     '                                                                       ', &
     '  # run example programs instead of the application programs.          ', &
-    '  fpm run --example ''*''                                                ', &
+    '  fpm run --example "*"                                                ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
     '  fpm run myprog -- -x 10 -y 20 --title "my title line"                ', &
@@ -1110,7 +1112,8 @@ contains
     help_text_flag, &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
-    ' --list     list candidates instead of building or running them        ', &
+    ' --list     list candidate basenames instead of running them. Note they', &
+    ' --list     will still be built if not currently up to date.           ', &
     ' -- ARGS    optional arguments to pass to the test program(s).         ', &
     '            The same arguments are passed to all test names            ', &
     '            specified.                                                 ', &

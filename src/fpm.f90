@@ -287,7 +287,7 @@ else
     call build_package(targets,model)
 endif
 
-end subroutine
+end subroutine cmd_build
 
 subroutine cmd_run(settings,test)
     class(fpm_run_settings), intent(in) :: settings
