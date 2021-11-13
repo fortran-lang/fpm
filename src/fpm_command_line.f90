@@ -224,22 +224,32 @@ contains
         ! get the values
         call set_args('--env " "',ierr=idum)   ! parse without errors to get value of --env
         val_env=sget('env')
+        write(*,*)'GOT HERE A:',val_env, lget('verbose')
         if(specified('env'))then
+        write(*,*)'GOT HERE A.1:',len(val_env)
            if(val_env.eq.''.and.len(val_env).ne.0)then  ! if no value use compiler name
               call set_args(' --compiler "'//get_fpm_env(fc_env, fc_default)//'"',ierr=idum)
               val_env=sget('compiler')
+              write(*,*)'GOT HERE A.2:',val_env
            elseif(len(val_env).eq.0)then ! null string
+              write(*,*)'GOT HERE A.3:'
            elseif(val_env.eq.' ')then
+              write(*,*)'GOT HERE A.4:'
               val_env='FPM'
            endif
+           write(*,*)'GOT HERE A.5:',val_env
         else
            val_env='FPM'
+           write(*,*)'GOT HERE A.6:',val_env
         endif
+        write(*,*)'GOT HERE A.7:',val_env
         if(val_env.ne.'')val_env=trim(adjustl(val_env))//'_'
         val_env=trim(adjustl(val_env))
+        write(*,*)'GOT HERE A.8:',val_env,lget('verbose')
         if(lget('verbose'))then
            write(*,*)'<INFO> ENVIRONMENT PREFIX:  ',val_env
         endif
+        write(*,*)'GOT HERE B:<INFO> ENVIRONMENT PREFIX:  ',val_env,lget('verbose')
 
         compiler_args = &
           ' --env "dummy"'// &
@@ -1290,6 +1300,7 @@ contains
       character(len=:), allocatable :: val
 
       val = get_env(val_env//env, default)
+      write(*,*)'GOT HERE C:',val_env//env,val
 
     end function get_fpm_env
 
