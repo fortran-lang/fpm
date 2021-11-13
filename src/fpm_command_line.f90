@@ -121,26 +121,25 @@ character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, 
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
-    ' --compiler NAME   Specify a compiler name. The default is "gfortran"',&
-    '                   unless set by the environment variable FPM_FC.',&
-    ' --c-compiler NAME Specify the C compiler name. Automatically determined by ',&
-    '                   default unless set by the environment variable FPM_CC.',&
-    ' --archiver NAME   Specify the archiver name. Automatically determined by ',&
-    '                   default unless set by the environment variable FPM_AR.'&
+    ' --compiler NAME    Specify a compiler name. The default is "gfortran"          ',&
+    '                    unless set by the environment variable FPM_FC.              ',&
+    ' --c-compiler NAME  Specify the C compiler name. Automatically determined by    ',&
+    '                    default unless set by the environment variable FPM_CC.      ',&
+    ' --archiver NAME    Specify the archiver name. Automatically determined by      ',&
+    '                    default unless set by the environment variable FPM_AR.      '&
     ]
 
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
-    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
-    '                   value is set by the FPM_FFLAGS environment variable.', &
-    '                   These are added to the profile options if --profile', &
-    '                   is specified, else these options override the defaults.',&
-    '                   Note object and .mod directory locations are always',&
-    '                   built in.',&
+    ' --flag  FFLAGS    selects compile arguments for the build, the default value is',&
+    '                   set by the FPM_FFLAGS environment variable. These are added  ',&
+    '                   to the profile options if --profile is specified, else these ',&
+    '                   these options override the defaults. Note object and .mod    ',&
+    '                   directory locations are always built in.                     ',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
-    '                   The default value is set by the FPM_CFLAGS environment',&
-    '                   variable.',&
-    ' --link-flag LDFLAGS',&
-    '                   select arguments passed to the linker for the build. The',&
+    '                   The default value is set by the FPM_CFLAGS environment       ',&
+    '                   variable.                                                    ',&
+    ' --link-flag LDFLAGS  select arguments passed to the linker for the build. The  ',&
     '                   default value is set by the FPM_LDFLAGS environment variable.'&
     ]
 
@@ -705,15 +704,15 @@ contains
     'SUBCOMMANDS                                                            ', &
     '  Valid fpm(1) subcommands are:                                        ', &
     '                                                                       ', &
-    '  + build Compile the packages into the "build/" directory.            ', &
-    '  + new   Create a new Fortran package directory with sample files.    ', &
-    '  + update  Update the project dependencies.                           ', &
-    '  + run   Run the local package binaries. defaults to all binaries for ', &
-    '          that release.                                                ', &
-    '  + test  Run the tests.                                               ', &
-    '  + help  Alternate to the --help switch for displaying help text.     ', &
-    '  + list  Display brief descriptions of all subcommands.               ', &
-    '  + install Install project                                            ', &
+    '  + build    Compile the packages into the "build/" directory.         ', &
+    '  + new      Create a new Fortran package directory with sample files. ', &
+    '  + update   Update the project dependencies.                          ', &
+    '  + run      Run the local package binaries. defaults to all binaries  ', &
+    '             for that release.                                         ', &
+    '  + test     Run the tests.                                            ', &
+    '  + help     Alternate to the --help switch for displaying help text.  ', &
+    '  + list     Display brief descriptions of all subcommands.            ', &
+    '  + install  Install project                                           ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                                ', &
@@ -758,7 +757,7 @@ contains
     '   directory.                                                          ', &
     '                                                                       ', &
     '   If "file" does not exist or cannot be read, then an error occurs and', &
-    '   the program stops.  Each line of the file is prefixed with "options"', &
+    '   the program stops. Each line of the file is prefixed with "options" ', &
     '   and interpreted as a separate argument. The file itself may not     ', &
     '   contain @file arguments. That is, it is not processed recursively.  ', &
     '                                                                       ', &
@@ -865,7 +864,7 @@ contains
     help_text_flag, &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
-    ' --list     list pathname of candidates instead of running them. Note  ', &
+    ' --list     list basenames of candidates instead of running them. Note ', &
     '            out-of-date candidates will still be rebuilt before being  ', &
     '            listed.                                                    ', &
     ' -- ARGS    optional arguments to pass to the program(s). The same     ', &
@@ -877,7 +876,9 @@ contains
     ' fpm(1) - run or display project applications:                         ', &
     '                                                                       ', &
     '  fpm run        # run a target when only one exists or list targets   ', &
-    '  fpm run --list # list all targets, running nothing.                  ', &
+    '  fpm run --list # list basename of all targets, running nothing.      ', &
+    '  fpm run "demo*" --list # list target basenames starting with "demo*".', &
+    '  fpm run "psi*" --runner # list target pathnames starting with "psi*".', &
     '  fpm run --all  # run all targets, no matter how many there are.      ', &
     '                                                                       ', &
     '  # run default program built or to be built with the compiler command ', &
@@ -886,7 +887,7 @@ contains
     '  fpm run --compiler f90                                               ', &
     '                                                                       ', &
     '  # run example programs instead of the application programs.          ', &
-    '  fpm run --example ''*''                                                ', &
+    '  fpm run --example "*"                                                ', &
     '                                                                       ', &
     '  # run a specific program and pass arguments to the command           ', &
     '  fpm run myprog -- -x 10 -y 20 --title "my title line"                ', &
@@ -932,11 +933,11 @@ contains
     '                   default. ',&
     help_text_compiler, &
     help_text_flag, &
-    ' --list       list candidates instead of building or running them      ', &
-    ' --tests      build all tests (otherwise only if needed)               ', &
-    ' --show-model show the model and exit (do not build)                   ', &
-    ' --help       print this help and exit                                 ', &
-    ' --version    print program version information and exit               ', &
+    ' --list        list candidates instead of building or running them     ', &
+    ' --tests       build all tests (otherwise only if needed)              ', &
+    ' --show-model  show the model and exit (do not build)                  ', &
+    ' --help        print this help and exit                                ', &
+    ' --version     print program version information and exit              ', &
     '                                                                       ', &
     help_text_environment, &
     '                                                                       ', &
@@ -1111,7 +1112,8 @@ contains
     help_text_flag, &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
     '               see "fpm help runner" for further details.              ', &
-    ' --list     list candidates instead of building or running them        ', &
+    ' --list     list candidate basenames instead of running them. Note they', &
+    ' --list     will still be built if not currently up to date.           ', &
     ' -- ARGS    optional arguments to pass to the test program(s).         ', &
     '            The same arguments are passed to all test names            ', &
     '            specified.                                                 ', &
