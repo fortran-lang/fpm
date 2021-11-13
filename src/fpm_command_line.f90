@@ -81,6 +81,7 @@ type, extends(fpm_build_settings)  :: fpm_run_settings
     character(len=ibug),allocatable :: name(:)
     character(len=:),allocatable :: args
     character(len=:),allocatable :: runner
+    character(len=:),allocatable :: env
     logical :: example
 end type
 
@@ -111,13 +112,14 @@ character(len=:), allocatable :: version_text(:)
 character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), help_update(:), &
-                 & help_list(:), help_list_dash(:), help_list_nodash(:)
+                 & help_list(:), help_list_dash(:), help_list_nodash(:), &
+                 & help_env(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
-&  ' ',     'fpm',     'new',   'build',  'run',     &
-&  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
+&  '          ',      'fpm',      'new',     'build',  'run',   'test',    &
+&  'runner',  'env',  'install',  'update',  'help',   'list',  'version'  ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
-    val_profile
+    val_profile, val_env
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
@@ -165,6 +167,8 @@ character(len=80), parameter :: help_text_environment(*) = [character(len=80) ::
     ' FPM_LDFLAGS       sets additional link arguments for creating executables', &
     '                   will be overwritten by --link-flag command line option' &
     ]
+
+integer :: idum
 
 contains
     subroutine get_command_line_settings(cmd_settings)
@@ -215,7 +219,31 @@ contains
           ' --list F' // &
           ' --runner " "'
 
+        ! without moving all calls to get_fpm_env(3f) into the places where compiler_args(3f)
+        ! is used, need to process the --env option and optionally the --compiler option before
+        ! the actual subcommands are processed, so need to make fax calls to set_args(3f) to
+        ! get the values
+        call set_args('--env " "',ierr=idum)   ! parse without errors to get value of --env
+        val_env=sget('env')
+        if(specified('env'))then
+           if(val_env.eq.''.and.len(val_env).ne.0)then  ! if no value use compiler name
+              call set_args(' --compiler "'//get_fpm_env(fc_env, fc_default)//'"',ierr=idum)
+              val_env=sget('compiler')
+           elseif(len(val_env).eq.0)then ! null string
+           elseif(val_env.eq.' ')then
+              val_env='FPM'
+           endif
+        else
+           val_env='FPM'
+        endif
+        if(val_env.ne.'')val_env=trim(adjustl(val_env))//'_'
+        val_env=trim(adjustl(val_env))
+        if(lget('verbose'))then
+           write(*,*)'<INFO> ENVIRONMENT PREFIX:  ',val_env
+        endif
+
         compiler_args = &
+          ' --env "dummy"'// &
           ' --profile " "' // &
           ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
           ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
@@ -263,6 +291,7 @@ contains
             archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
+
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
@@ -400,8 +429,10 @@ contains
                    help_text=[character(len=widest) :: help_text, help_run]
                 case('test   ' )
                    help_text=[character(len=widest) :: help_text, help_test]
-                case('runner' )
+                case('runner ' )
                    help_text=[character(len=widest) :: help_text, help_runner]
+                case('env    ' )
+                   help_text=[character(len=widest) :: help_text, help_env]
                 case('list   ' )
                    help_text=[character(len=widest) :: help_text, help_list]
                 case('update ' )
@@ -758,7 +789,7 @@ contains
     '   directory.                                                          ', &
     '                                                                       ', &
     '   If "file" does not exist or cannot be read, then an error occurs and', &
-    '   the program stops.  Each line of the file is prefixed with "options"', &
+    '   the program stops. Each line of the file is prefixed with "options" ', &
     '   and interpreted as a separate argument. The file itself may not     ', &
     '   contain @file arguments. That is, it is not processed recursively.  ', &
     '                                                                       ', &
@@ -953,7 +984,7 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     '   fpm help [fpm] [new] [build] [run] [test] [help] [version] [manual] ', &
-    '   [runner]                                                            ', &
+    '   [runner] [env]                                                      ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
     '   The "fpm help" command is an alternative to the --help parameter    ', &
@@ -965,6 +996,9 @@ contains
     '                                                                       ', &
     '              The special name "manual" displays all the fpm(1)        ', &
     '              built-in documentation.                                  ', &
+    '                                                                       ', &
+    '              Special topics include "runner" for the --runner         ', &
+    '              options, "env" for the --env option, ...                 ', &
     '                                                                       ', &
     '              The default is to display help for the fpm(1) command    ', &
     '              itself.                                                  ', &
@@ -1202,6 +1236,39 @@ contains
     '', &
     '    fpm install --prefix $PWD --bindir exe', &
     '' ]
+    help_env=[character(len=80) :: &
+    'NAME                                                                            ', &
+    '   --env(1) - a shared option for specifying the prefix of compiler-related     ', &
+    '              environment variables used to set compiler defaults.              ', &
+    'SYNOPSIS                                                                        ', &
+    '   fpm run|test|build|install --env PREFIX ...                                  ', &
+    'DESCRIPTION                                                                     ', &
+    '   The --env option allows specifying a prefix for the environment variables    ', &
+    '   that can be used to change the defaults for the compiler-related options:    ', &
+    '                                                                                ', &
+    '        --compiler   $PREFIX_FC                                                 ', &
+    '        --c-compiler $PREFIX_CC                                                 ', &
+    '        --archiver   $PREFIX_AR                                                 ', &
+    '        --flag       $PREFIX_FFLAGS                                             ', &
+    '        --c-flag     $PREFIX_CFLAGS                                             ', &
+    '        --link-flag  $PREFIX_LDFLAGS                                            ', &
+    'OPTION                                                                          ', &
+    ' --env "PREFIX"  The prefix to use for all the compiler-related environment     ', &
+    '                 variables. The default is "FPM". If not null, the value        ', &
+    '                 is appended with an underscore ("_"). If specified with no     ', &
+    '                 value the default is the name of the current compiler.         ', &
+    'ENVIRONMENT                                                                     ', &
+    ' The variable names affected (shown with the default "FPM_" prefix) are:        ', &
+    '                                                                                ', &
+     help_text_environment, &
+    'EXAMPLE                                                                         ', &
+    ' This can be used to change the defaults for a specific compiler, or to use     ', &
+    ' variable names without the FPM_ prefix.                                        ', &
+    '                                                                                ', &
+    '     $ fpm build -env TIMING # use the prefix "TIMING_".                        ', &
+    '     $ fpm build -env ""     # use a null (no spaces!) to use no prefix         ', &
+    '     $ fpm build -env        # use compiler name                                ', &
+    '' ]
     end subroutine set_help
 
     subroutine get_char_arg(var, arg)
@@ -1213,15 +1280,14 @@ contains
 
 
     !> Get an environment variable for fpm, this routine ensures that every variable
-    !> used by fpm is prefixed with FPM_.
+    !> used by fpm is prefixed with VAL_ENV (which is "FPM_" by default).
     function get_fpm_env(env, default) result(val)
       character(len=*), intent(in) :: env
       character(len=*), intent(in) :: default
       character(len=:), allocatable :: val
 
-      character(len=*), parameter :: fpm_prefix = "FPM_"
+      val = get_env(val_env//env, default)
 
-      val = get_env(fpm_prefix//env, default)
     end function get_fpm_env
 
 end module fpm_command_line
