@@ -123,27 +123,26 @@ character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, 
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
-    ' --compiler NAME   Specify a compiler name. The default is "gfortran"',&
-    '                   unless set by the environment variable FPM_FC.',&
-    ' --c-compiler NAME Specify the C compiler name. Automatically determined by ',&
-    '                   default unless set by the environment variable FPM_CC.',&
-    ' --archiver NAME   Specify the archiver name. Automatically determined by ',&
-    '                   default unless set by the environment variable FPM_AR.'&
+    ' --compiler NAME    Specify a compiler name. The default is "gfortran"          ',&
+    '                    unless set by the environment variable FPM_FC.              ',&
+    ' --c-compiler NAME  Specify the C compiler name. Automatically determined by    ',&
+    '                    default unless set by the environment variable FPM_CC.      ',&
+    ' --archiver NAME    Specify the archiver name. Automatically determined by      ',&
+    '                    default unless set by the environment variable FPM_AR.      '&
     ]
 
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
-    ' --flag  FFLAGS    selects compile arguments for the build, the default',&
-    '                   value is set by the FPM_FFLAGS environment variable.', &
-    '                   These are added to the profile options if --profile', &
-    '                   is specified, else these options override the defaults.',&
-    '                   Note object and .mod directory locations are always',&
-    '                   built in.',&
+    ' --flag  FFLAGS    selects compile arguments for the build, the default value is',&
+    '                   set by the FPM_FFLAGS environment variable. These are added  ',&
+    '                   to the profile options if --profile is specified, else these ',&
+    '                   these options override the defaults. Note object and .mod    ',&
+    '                   directory locations are always built in.                     ',&
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
-    '                   The default value is set by the FPM_CFLAGS environment',&
-    '                   variable.',&
-    ' --link-flag LDFLAGS',&
-    '                   select arguments passed to the linker for the build. The',&
-    '                   default value is set by the FPM_LDFLAGS environment variable.'&
+    '                   The default value is set by the FPM_CFLAGS environment       ',&
+    '                   variable.                                                    ',&
+    ' --link-flag LDFLAGS  select arguments passed to the linker for the build. The  ',&
+    '                      default value is set by the FPM_LDFLAGS environment variable.'&
     ]
 
 
@@ -711,42 +710,43 @@ contains
    '  "fpm run --profile release --runner ''install -vbp -m 0711 -t ~/.local/bin''" ', &
    '  fpm-install                                                           ', &
     '' ]
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
     help_fpm=[character(len=80) :: &
-    'NAME                                                                   ', &
-    '   fpm(1) - A Fortran package manager and build system                 ', &
-    '                                                                       ', &
-    'SYNOPSIS                                                               ', &
-    '   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                 ', &
-    '                                                                       ', &
-    '   fpm --help|--version|--list                                         ', &
-    '                                                                       ', &
-    'DESCRIPTION                                                            ', &
-    '   fpm(1) is a package manager that helps you create Fortran projects  ', &
-    '   from source -- it automatically determines dependencies!            ', &
-    '                                                                       ', &
-    '   Most significantly fpm(1) lets you draw upon other fpm(1) packages  ', &
-    '   in distributed git(1) repositories as if the packages were a basic  ', &
-    '   part of your default programming environment, as well as letting    ', &
-    '   you share your projects with others in a similar manner.            ', &
-    '                                                                       ', &
-    '   All output goes into the directory "build/" which can generally be  ', &
-    '   removed and rebuilt if required. Note that if external packages are ', &
-    '   being used you need network connectivity to rebuild from scratch.   ', &
-    '                                                                       ', &
-    'SUBCOMMANDS                                                            ', &
-    '  Valid fpm(1) subcommands are:                                        ', &
-    '                                                                       ', &
-    '  + build Compile the packages into the "build/" directory.            ', &
-    '  + new   Create a new Fortran package directory with sample files.    ', &
-    '  + update  Update the project dependencies.                           ', &
-    '  + run   Run the local package binaries. defaults to all binaries for ', &
-    '          that release.                                                ', &
-    '  + test  Run the tests.                                               ', &
-    '  + help  Alternate to the --help switch for displaying help text.     ', &
-    '  + list  Display brief descriptions of all subcommands.               ', &
-    '  + install Install project                                            ', &
-    '                                                                       ', &
-    '  Their syntax is                                                      ', &
+    'NAME                                                                            ', &
+    '   fpm(1) - A Fortran package manager and build system                          ', &
+    '                                                                                ', &
+    'SYNOPSIS                                                                        ', &
+    '   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                          ', &
+    '                                                                                ', &
+    '   fpm --help|--version|--list                                                  ', &
+    '                                                                                ', &
+    'DESCRIPTION                                                                     ', &
+    '   fpm(1) is a package manager that helps you create Fortran projects           ', &
+    '   from source -- it automatically determines dependencies!                     ', &
+    '                                                                                ', &
+    '   Most significantly fpm(1) lets you draw upon other fpm(1) packages           ', &
+    '   in distributed git(1) repositories as if the packages were a basic           ', &
+    '   part of your default programming environment, as well as letting             ', &
+    '   you share your projects with others in a similar manner.                     ', &
+    '                                                                                ', &
+    '   All output goes into the directory "build/" which can generally be           ', &
+    '   removed and rebuilt if required. Note that if external packages are          ', &
+    '   being used you need network connectivity to rebuild from scratch.            ', &
+    '                                                                                ', &
+    'SUBCOMMANDS                                                                     ', &
+    '  Valid fpm(1) subcommands are:                                                 ', &
+    '                                                                                ', &
+    '  + build    Compile the packages into the "build/" directory.                  ', &
+    '  + new      Create a new Fortran package directory with sample files.          ', &
+    '  + update   Update the project dependencies.                                   ', &
+    '  + run      Run the local package binaries. defaults to all binaries           ', &
+    '             for that release.                                                  ', &
+    '  + test     Run the tests.                                                     ', &
+    '  + help     Alternate to the --help switch for displaying help text.           ', &
+    '  + list     Display brief descriptions of all subcommands.                     ', &
+    '  + install  Install project                                                    ', &
+    '                                                                                ', &
+    '  Their syntax is                                                               ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
     '          [--tests]                                                             ', &
@@ -764,12 +764,12 @@ contains
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
-    '             Change working directory to PATH before running any command', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    '             Change working directory to PATH before running any command        ', &
+    ' --profile PROF    selects the compilation profile for the build.               ', &
+    '                   Currently available profiles are "release" for               ', &
+    '                   high optimization and "debug" for full debug options.        ', &
+    '                   If --flag is not specified the "debug" flags are the         ', &
+    '                   default.                                                     ', &
     help_text_compiler, &
     help_text_flag, &
     '  --list     List candidates instead of building or running them. On   ', &
@@ -813,17 +813,18 @@ contains
     '   (currently) allow for continued lines or multiple specifications of ', &
     '   the same option.                                                    ', &
     '                                                                       ', &
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
     help_text_environment, &
-    '                                                                       ', &
-    'EXAMPLES                                                               ', &
-    '   sample commands:                                                    ', &
-    '                                                                       ', &
-    '    fpm new mypackage --app --test                                     ', &
-    '    fpm build                                                          ', &
-    '    fpm test                                                           ', &
-    '    fpm run                                                            ', &
-    '    fpm run --example                                                  ', &
-    '    fpm new --help                                                     ', &
+    '                                                                                ', &
+    'EXAMPLES                                                                        ', &
+    '   sample commands:                                                             ', &
+    '                                                                                ', &
+    '    fpm new mypackage --app --test                                              ', &
+    '    fpm build                                                                   ', &
+    '    fpm test                                                                    ', &
+    '    fpm run                                                                     ', &
+    '    fpm run --example                                                           ', &
+    '    fpm new --help                                                              ', &
     '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
     '    fpm install --prefix ~/.local                                               ', &
     '                                                                                ', &
@@ -963,11 +964,11 @@ contains
     '                   default. ',&
     help_text_compiler, &
     help_text_flag, &
-    ' --list       list candidates instead of building or running them      ', &
-    ' --tests      build all tests (otherwise only if needed)               ', &
-    ' --show-model show the model and exit (do not build)                   ', &
-    ' --help       print this help and exit                                 ', &
-    ' --version    print program version information and exit               ', &
+    ' --list        list candidates instead of building or running them     ', &
+    ' --tests       build all tests (otherwise only if needed)              ', &
+    ' --show-model  show the model and exit (do not build)                  ', &
+    ' --help        print this help and exit                                ', &
+    ' --version     print program version information and exit              ', &
     '                                                                       ', &
     help_text_environment, &
     '                                                                       ', &
@@ -1012,6 +1013,7 @@ contains
     '     fpm help manual    # All fpm(1) built-in documentation            ', &
     '                                                                       ', &
     '' ]
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
     help_new=[character(len=80) ::                                             &
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
@@ -1114,6 +1116,7 @@ contains
     '   create any missing files in current directory                       ', &
     '   fpm new `pwd` --full --backfill                                     ', &
     '' ]
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
     help_test=[character(len=80) :: &
     'NAME                                                                   ', &
     ' test(1) - the fpm(1) subcommand to run project tests                  ', &
