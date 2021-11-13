@@ -94,21 +94,18 @@ function basename(path,suffix) result (base)
         with_suffix = suffix
     end if
 
-    if (with_suffix) then
-        call split(path,file_parts,delimiters='\/')
-        if(size(file_parts).gt.0)then
-           base = trim(file_parts(size(file_parts)))
-        else
-           base = ''
-        endif
+    call split(path,file_parts,delimiters='\/')
+    if(size(file_parts).gt.0)then
+       base = trim(file_parts(size(file_parts)))
     else
-        call split(path,file_parts,delimiters='\/.')
+       base = ''
+    endif
+    if(.not.with_suffix)then
+        call split(base,file_parts,delimiters='.')
         if(size(file_parts).ge.2)then
            base = trim(file_parts(size(file_parts)-1))
-        else
-           base = ''
         endif
-    end if
+    endif
 
 end function basename
 
