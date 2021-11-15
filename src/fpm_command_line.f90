@@ -121,7 +121,6 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
     val_profile, val_env
 
-
 integer :: idum
 
 contains
@@ -183,6 +182,7 @@ contains
            if(val_env.eq.'')then  ! if no value use compiler name
               call set_args(' --compiler "'//get_fpm_env(fc_env, fc_default)//'"',ierr=idum)
               val_env=sget('compiler')
+              val_env='FPM_'//trim(adjustl(val_env))
            elseif(val_env.eq.' ')then
               val_env='FPM'
            endif
@@ -603,12 +603,10 @@ contains
 ' install [--profile PROF] [COMPILER_OPTIONS] [--no-rebuild] [--prefix PATH]     ', &
 '         [--directory PATH]                                                     ', &
 'where COMPILER_OPTIONS are                                                      ', &
-'                                                                                ', &
 '    --compiler FC --c-compiler CC --archiver AR                                 ', &
 '    --flag FFLAGS --c-flag CFLAGS --link-flag LDFLAGS                           ', &
 '    --env PREFIX                                                                ', &
 'In addition, these options are valid on any subcommand:                         ', &
-'                                                                                ', &
 '    --verbose                                                                   ', &
 '    --help                                                                      ', &
 ' ']
@@ -1207,55 +1205,62 @@ contains
 ' The default prefix is "FPM_". The environment variable name prefix may be      ', &
 ' changed using the following "--env" option:                                    ', &
 '                                                                                ', &
-' --env PREFIX     allows specifying a prefix for the environment variables that ', &
-'                  can be used to change the defaults for the compiler-related   ', &
-'                  options.                                                      ', &
+' --env MODIFIER  allows modifying the "FPM_" prefix for the environment         ', &
+'                 variables that is used to change the defaults for the          ', &
+'                 compiler-related options.                                      ', &
 '                                                                                ', &
-'                  As noted, the default prefix is "FPM". If no value is given   ', &
-'                  the basename of the current compiler is used.                 ', &
+'                 The value is appended to "FPM_", an underscore ("_")           ', &
+'                 is added, and the resulting prefix is added to the names       ', &
+'                 FC, CC, AR, FFLAGS, CFLAGS, and LDFLAGS. That is, the          ', &
+'                 environment variables that will be searched for will be        ', &
+'                 of the form FPM_MODIFIER_KEYWORD.                              ', &
 '                                                                                ', &
-'                  If the value is not blank, an underscore ("_") is appended    ', &
-'                  and then the prefix is added to the names FC, CC, AR, FFLAGS, ', &
-'                  CFLAGS, and LDFLAGS.                                          ', &
+'                 If no value is given the basename of the current compiler      ', &
+'                 is assumed.                                                    ', &
+'                                                                                ', &
+'                 A special case is when MODIFIER is explicitly a blank string.  ', &
+'                 In that case, the environment names searched for have no       ', &
+'                 suffix, and are simply FC, CC, AR, FFLAGS, CFLAGS, and LDFLAGS.', &
 '                                                                                ', &
 ' The variable names affected (with the prefix shown as "*") are:                ', &
 '                                                                                ', &
-' *_FC            sets the path to the Fortran compiler used for the build,      ', &
-'                   will be overwritten by --compiler command line option        ', &
+' *FC             sets the path to the Fortran compiler used for the build,      ', &
+'                 will be overwritten by --compiler command line option          ', &
 '                                                                                ', &
-' *_FFLAGS        sets the arguments for the Fortran compiler                    ', &
-'                   will be overwritten by --flag command line option            ', &
+' *FFLAGS         sets the arguments for the Fortran compiler                    ', &
+'                 will be overwritten by --flag command line option              ', &
 '                                                                                ', &
-' *_CC            sets the path to the C compiler used for the build,            ', &
-'                   will be overwritten by --c-compiler command line option      ', &
+' *CC             sets the path to the C compiler used for the build,            ', &
+'                 will be overwritten by --c-compiler command line option        ', &
 '                                                                                ', &
-' *_CFLAGS        sets the arguments for the C compiler                          ', &
-'                   will be overwritten by --c-flag command line option          ', &
+' *CFLAGS         sets the arguments for the C compiler                          ', &
+'                 will be overwritten by --c-flag command line option            ', &
 '                                                                                ', &
-' *_AR            sets the path to the archiver used for the build,              ', &
-'                   will be overwritten by --archiver command line option        ', &
+' *AR             sets the path to the archiver used for the build,              ', &
+'                 will be overwritten by --archiver command line option          ', &
 '                                                                                ', &
-' *_LDFLAGS       sets additional link arguments for creating executables        ', &
-'                   will be overwritten by --link-flag command line option       ', &
+' *LDFLAGS        sets additional link arguments for creating executables        ', &
+'                 will be overwritten by --link-flag command line option         ', &
 '                                                                                ', &
 'EXAMPLE                                                                         ', &
 ' This can be used to change the defaults for a specific compiler, or to use     ', &
 ' variable names without the FPM_ prefix.                                        ', &
 '                                                                                ', &
 '     fpm -compiler ifort         # specify compiler using command-line          ', &
-'     export FPM_COMPILER=nagfor  # change default compiler using environment    ', &
+'     export FPM_COMPILER=_nagfor # change default compiler using environment    ', &
 '                                 # variable in bash(1) shell.                   ', &
-'     fpm build -env TIMING # use the prefix "TIMING_" instead of "FPM_".        ', &
+'     fpm build -env TIMING # use the prefix "FPM_TIMING_" instead of "FPM_".    ', &
 '     fpm build -env ""  # use a null (no spaces!) to use no prefix              ', &
-'     fpm build -env     # use compiler name as prefix for environment variables ', &
+'     fpm build -env     # use FPM_"compiler_name" as prefix for environment     ', &
+'                        # environment variables                                 ', &
 '' ]
 !12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
    help_response=[character(len=80) :: &
 'NAME                                                                            ', &
-'  response(1) - Using response files on the command line                       ', &
+'  response(1) - Using response files on the command line                        ', &
 '                                                                                ', &
 'SYNOPSIS                                                                        ', &
-'  fpm SUBCOMMAND  @name1 @name2 ... [COMMAND_OPTIONS]                          ', &
+'  fpm SUBCOMMAND  @name1 @name2 ... [COMMAND_OPTIONS]                           ', &
 '                                                                                ', &
 'DESCRIPTION                                                                     ', &
 '  A response file can be used to abbreviate long command line options.          ', &
@@ -1276,15 +1281,15 @@ contains
 '  The basic functionality described here will remain the same, but              ', &
 '  other features described at the above reference may change.                   ', &
 '                                                                                ', &
-'An example response file:                                                       ', &
+'  An example response file:                                                     ', &
 '                                                                                ', &
 '     # my build options                                                         ', &
 '     options build                                                              ', &
 '     options --compiler gfortran                                                ', &
 '     options --flag "-pg -pthread -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"    ', &
 '                                                                                ', &
-'   Note response files do not (currently) allow for continued lines or multiple ', &
-'   specifications of the same option.                                           ', &
+'  Note response files do not (currently) allow for continued lines or multiple  ', &
+'  specifications of the same option.                                            ', &
 '' ]
     end subroutine set_help
 
