@@ -113,10 +113,10 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), help_update(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:), &
-                 & help_env(:)
+                 & help_env(:), help_response(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 & ' ', 'fpm', 'new', 'build', 'run', 'test', 'install', 'update', 'help', 'list', &
-& 'runner', 'compiler', 'version', 'toc' ]
+& 'runner', 'compiler', 'response', 'version', 'toc' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
     val_profile, val_env
@@ -153,7 +153,7 @@ contains
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
         version_text = [character(len=80) :: &
-         &  'Version:      0.4.0, alpha',                               &
+         &  'Version:      0.4.1, alpha',                               &
          &  'Program:      fpm(1)',                                     &
          &  'Description:  A Fortran package manager and build system', &
          &  'Home Page:    https://github.com/fortran-lang/fpm',        &
@@ -392,6 +392,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_runner]
                 case('compiler')
                    help_text=[character(len=widest) :: help_text, help_env]
+                case('response')
+                   help_text=[character(len=widest) :: help_text, help_response]
                 case('version' )
                    help_text=[character(len=widest) :: help_text, version_text]
                 case('toc' )
@@ -591,8 +593,9 @@ contains
    help_list_dash = [character(len=80) :: &
 ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
 '          [--full|--bare] [--backfill] [--directory PATH]                       ', &
-' build [--profile PROF] [COMPILER_OPTIONS] [--directory PATH]                   ', &
-' run  [[--target] NAME(s) [--example] [--profile PROF] [--all] [--runner "CMD"] ', &
+' build [--profile PROF] [COMPILER_OPTIONS] [--list] [--tests]                   ', &
+'           [--directory PATH] [--show-model]                                    ', &
+' run [[--target] NAME(s) [--example] [--profile PROF] [--all] [--runner "CMD"]  ', &
 '      [COMPILER_OPTIONS] [--list] [--directory PATH] [-- ARGS]                  ', &
 ' test [[--target] NAME(s)] [--profile PROF] [--runner "CMD"] [--runner "CMD"]   ', &
 '      [COMPILER_OPTIONS] [--directory PATH] [--list] [-- ARGS]                  ', &
@@ -602,7 +605,7 @@ contains
 ' help [NAME(s)]                                                                 ', &
 ' list [--list]                                                                  ', &
 'In addition, these options are valid on any subcommand:                         ', &
-' -V, --verbose                                                                  ', &
+' --verbose                                                                      ', &
 ' --help                                                                         ', &
 '                                                                                ', &
 'COMPILER_OPTIONS                                                                ', &
@@ -645,34 +648,6 @@ contains
 'COMPILER OPTIONS                                                                ', &
 ' To customize compiler options, see "fpm help compiler".                        ', &
 '                                                                                ', &
-'RESPONSE FILE                                                                   ', &
-'  @file      You may replace the default options for the fpm(1) command from a  ', &
-'             file if your leading options begin with @file. Initial options     ', &
-'             will then be read from the "response file" "file.rsp" in the       ', &
-'             current directory.                                                 ', &
-'                                                                                ', &
-'             If "file" does not exist or cannot be read, then an                ', &
-'             error occurs and the program stops. Each line of the               ', &
-'             file is prefixed with "options" and interpreted as a               ', &
-'             separate argument. The file itself may not contain @file           ', &
-'             arguments. That is, it is not processed recursively.               ', &
-'                                                                                ', &
-'             For more information on response files see                         ', &
-'                                                                                ', &
-'                https://urbanjost.github.io/M_CLI2/set_args.3m_cli2.html        ', &
-'                                                                                ', &
-'             The basic functionality described here will remain the same, but   ', &
-'             other features described at the above reference may change.        ', &
-'                                                                                ', &
-'An example response file:                                                       ', &
-'                                                                                ', &
-'     # my build options                                                         ', &
-'     options build                                                              ', &
-'     options --compiler gfortran                                                ', &
-'     options --flag "-pg -pthread -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"    ', &
-'                                                                                ', &
-'   Note response files do not (currently) allow for continued lines or multiple ', &
-'   specifications of the same option.                                           ', &
 '                                                                                ', &
 'EXAMPLES                                                                        ', &
 '   sample commands:                                                             ', &
@@ -699,7 +674,7 @@ contains
 ' new(1) - the fpm(1) subcommand to initialize a new project                     ', &
 'SYNOPSIS                                                                        ', &
 '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|                    ', &
-'      [--directory PATH] [--full|--bare][--backfill]                            ', &
+'      [--directory PATH] [--full|--bare][--backfill] [--verbose]                ', &
 '                                                                                ', &
 '  fpm new --help|--version                                                      ', &
 '                                                                                ', &
@@ -755,13 +730,7 @@ contains
 ' --example    create directory example/ and a placeholder program               ', &
 '              for use with the subcommand "run --example".                      ', &
 '              It is only created by default if "--full is" specified.           ', &
-' --directory, -C PATH  Change working directory to PATH before running          ', &
-'                       command                                                  ', &
-'                                                                                ', &
-' So the default is equivalent to                                                ', &
-'                                                                                ', &
-'    fpm NAME --lib --app --test                                                 ', &
-'                                                                                ', &
+' --verbose    print more information                                            ', &
 ' --backfill   By default the directory must not exist. If this                  ', &
 '              option is present the directory may pre-exist and                 ', &
 '              only subdirectories and files that do not                         ', &
@@ -780,10 +749,15 @@ contains
 ' --bare       A minimal manifest file ("fpm.toml") is created and               ', &
 '              "README.md" file is created but no directories or                 ', &
 '              sample Fortran are generated.                                     ', &
+' -C, --directory PATH  Change working directory to PATH before running          ', &
+'                       command                                                  ', &
 '                                                                                ', &
 ' --help       print this help and exit                                          ', &
 ' --version    print program version information and exit                        ', &
 '                                                                                ', &
+' So the default is equivalent to                                                ', &
+'                                                                                ', &
+'    fpm NAME --lib --app --test                                                 ', &
 'EXAMPLES                                                                        ', &
 ' Sample use                                                                     ', &
 '                                                                                ', &
@@ -807,9 +781,9 @@ contains
 '                                                                                ', &
 'SYNOPSIS                                                                        ', &
 ' fpm build [--profile PROF] [COMPILER_OPTIONS] [--list] [--tests]               ', &
-'           [--directory PATH]                                                   ', &
+'           [--directory PATH] [--show-model] [--verbose]                        ', &
 '                                                                                ', &
-' fpm build --help|--version                                                     ', &
+' fpm build --help                                                               ', &
 '                                                                                ', &
 'DESCRIPTION                                                                     ', &
 ' The "fpm build" command                                                        ', &
@@ -837,11 +811,11 @@ contains
 '                 default.                                                       ', &
 ' --list          list candidates instead of building or running them            ', &
 ' --tests         build all tests (otherwise only if needed)                     ', &
-' --show-model    show the model and exit (do not build)                         ', &
-' --help          print this help and exit                                       ', &
-' --version       print program version information and exit                     ', &
 ' --directory, -C PATH  Change working directory to PATH before running          ', &
 '                       command                                                  ', &
+' --show-model    show the model and exit (do not build)                         ', &
+' --verbose       print more information                                         ', &
+' --help          print this help and exit                                       ', &
 '                                                                                ', &
 'COMPILER OPTIONS                                                                ', &
 ' To customize compiler options, see "fpm help compiler".                        ', &
@@ -860,7 +834,7 @@ contains
 'SYNOPSIS                                                                        ', &
 ' fpm run [[--target] NAME(s) [--profile PROF] [COMPILER_OPTIONS]                ', &
 '         [--runner "CMD"] [--example] [--list] [--all] [-- ARGS]                ', &
-'         [--directory PATH]                                                     ', &
+'         [--directory PATH] [--verbose]                                         ', &
 '                                                                                ', &
 ' fpm run --help|--version                                                       ', &
 '                                                                                ', &
@@ -897,6 +871,7 @@ contains
 '            listed.                                                             ', &
 ' --directory, -C PATH  Change working directory to PATH before running          ', &
 '                       command.                                                 ', &
+' --verbose         print more information                                       ', &
 ' -- ARGS    optional arguments to pass to the program(s). The same              ', &
 '            arguments are passed to all program names specified.                ', &
 'COMPILER OPTIONS                                                                ', &
@@ -935,7 +910,7 @@ contains
 '                                                                                ', &
 'SYNOPSIS                                                                        ', &
 ' fpm test [[--target] NAME(s)] [--profile PROF] [COMPILER_OPTIONS]              ', &
-'          [--runner "CMD"] [--directory PATH ] [--list][-- ARGS]                ', &
+'          [--runner "CMD"] [--directory PATH ] [--list][-- ARGS] [--verbose]    ', &
 '                                                                                ', &
 ' fpm test --help|--version                                                      ', &
 '                                                                                ', &
@@ -956,15 +931,16 @@ contains
 '                   high optimization and "debug" for full debug options.        ', &
 '                   If --flag is not specified the "debug" flags are the         ', &
 '                   default.                                                     ', &
-' --runner CMD  A command to prefix the program execution paths with.            ', &
-'               see "fpm help runner" for further details.                       ', &
-' --list        list candidate basenames instead of running them. Note           ', &
-'               they will still be built if not currently up to date.            ', &
+' --runner CMD      A command to prefix the program execution paths with.        ', &
+'                   see "fpm help runner" for further details.                   ', &
+' --list            list candidate basenames instead of running them. Note       ', &
+'                   they will still be built if not currently up to date.        ', &
 ' --directory, -C PATH  Change working directory to PATH before running          ', &
 '                       command                                                  ', &
-' -- ARGS       optional arguments to pass to the test program(s).               ', &
-'               The same arguments are passed to all test names                  ', &
-'               specified.                                                       ', &
+' -- ARGS           optional arguments to pass to the test program(s).           ', &
+'                   The same arguments are passed to all test names              ', &
+'                   specified.                                                   ', &
+' --verbose         print more information                                       ', &
 '                                                                                ', &
 'COMPILER OPTIONS                                                                ', &
 ' To customize compiler options, see "fpm help compiler".                        ', &
@@ -1038,6 +1014,7 @@ contains
 '                                                                                ', &
 'SYNOPSIS                                                                        ', &
 ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)] [--directory PATH]   ', &
+' [--verbose]                                                                    ', &
 '                                                                                ', &
 'DESCRIPTION                                                                     ', &
 ' Manage and update project dependencies. If no dependency names are             ', &
@@ -1076,6 +1053,8 @@ contains
 '                + "manual" displays all the fpm(1) built-in documentation       ', & 
 '                + "compiler" for the compiler customization options             ', &
 '                + "runner" for the --runner options                             ', &
+'                + "response" for information on using response files as         ', &
+'                  abbreviations for complex command line options.               ', &
 '                                                                                ', &
 '              The default is to display help for the fpm(1) command             ', &
 '              itself.                                                           ', &
@@ -1269,6 +1248,44 @@ contains
 '     fpm build -env TIMING # use the prefix "TIMING_" instead of "FPM_".        ', &
 '     fpm build -env ""  # use a null (no spaces!) to use no prefix              ', &
 '     fpm build -env     # use compiler name as prefix for environment variables ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_response=[character(len=80) :: &
+'NAME                                                                            ', &
+'   response(1) -Using response files on the command line                        ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+'                                                                                ', &
+'   fpm SUBCOMMAND  @name1 @name2 ... [COMMAND_OPTIONS]                          ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+'  A response file can be used to abbreviate long command line options.          ', &
+'  You may replace the default options for the fpm(1) command from a             ', &
+'  file if your leading options begin with @file. Initial options will           ', &
+'  then be read from the "response file" "file.rsp" in the current               ', &
+'  project directory.                                                            ', &
+'                                                                                ', &
+'  If "file" does not exist or cannot be read, then an error occurs and          ', &
+'  the program stops. Each line of the file is prefixed with "options"           ', &
+'  and interpreted as a separate argument. The file itself may not               ', &
+'  contain @file arguments. That is, it is not processed recursively.            ', &
+'                                                                                ', &
+'  For more information on response files see                                    ', &
+'                                                                                ', &
+'     https://urbanjost.github.io/M_CLI2/set_args.3m_cli2.html                   ', & 
+'                                                                                ', &
+'  The basic functionality described here will remain the same, but              ', &
+'  other features described at the above reference may change.                   ', &
+'                                                                                ', &
+'An example response file:                                                       ', &
+'                                                                                ', &
+'     # my build options                                                         ', &
+'     options build                                                              ', &
+'     options --compiler gfortran                                                ', &
+'     options --flag "-pg -pthread -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"    ', &
+'                                                                                ', &
+'   Note response files do not (currently) allow for continued lines or multiple ', &
+'   specifications of the same option.                                           ', &
 '' ]
     end subroutine set_help
 
