@@ -360,10 +360,10 @@ contains
                 if(unnamed(1).eq.'help')then
                    unnamed=['   ', 'fpm']
                 else
-                   unnamed=manual                                                      
+                   unnamed=pack(manual,manual.ne.'toc')
                 endif
             elseif(unnamed(2).eq.'manual')then
-                unnamed=manual
+                unnamed=pack(manual,manual.ne.'toc')
             endif
             widest=256
             allocate(character(len=widest) :: help_text(0))
@@ -570,10 +570,9 @@ contains
 
     subroutine set_help()
    help_list_nodash=[character(len=80) :: &
-   'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ]|[--list|--help|--version]', &
-   '       where SUBCOMMAND is commonly new|build|run|test                  ', &
+   'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ]                          ', &
    '                                                                        ', &
-   ' valid subcommands are:                                                 ', &
+   'valid subcommands are:                                                  ', &
    '                                                                        ', &
    '  new       Create a new Fortran package directory with sample files    ', &
    '  build     Compile the package placing results in the "build" directory', &
@@ -679,17 +678,17 @@ contains
     '   fpm --help|--version|--list                                                  ', &
     '                                                                                ', &
     'DESCRIPTION                                                                     ', &
-    '   fpm(1) is a package manager that helps you create Fortran projects           ', &
-    '   from source -- it automatically determines dependencies!                     ', &
+    ' fpm(1) is a package manager that helps you create Fortran projects             ', &
+    ' from source -- it automatically determines dependencies!                       ', &
     '                                                                                ', &
-    '   Most significantly fpm(1) lets you draw upon other fpm(1) packages           ', &
-    '   in distributed git(1) repositories as if the packages were a basic           ', &
-    '   part of your default programming environment, as well as letting             ', &
-    '   you share your projects with others in a similar manner.                     ', &
+    ' Additionally fpm(1) lets you draw upon other fpm(1) packages in                ', &
+    ' distributed git(1) repositories or subdirectories as if the packages           ', &
+    ' were a basic part of your default programming environment, as well             ', &
+    ' as letting you share your projects with others in a similar manner.            ', &
     '                                                                                ', &
-    '   All output goes into the directory "build/" which can generally be           ', &
-    '   removed and rebuilt if required. Note that if external packages are          ', &
-    '   being used you need network connectivity to rebuild from scratch.            ', &
+    ' All output goes into the directory "build/" which can generally be             ', &
+    ' removed and rebuilt if required. Note that if external packages are            ', &
+    ' being used you need network connectivity to rebuild from scratch.              ', &
     '                                                                                ', &
     'SUBCOMMANDS                                                                     ', &
     help_list_nodash, &
@@ -722,9 +721,9 @@ contains
     '                                                                                ', &
     'RESPONSE FILE                                                                   ', &
     '  @file      You may replace the default options for the fpm(1) command from a  ', &
-    '             file if your first options begin with @file. Initial options will  ', &
-    '             then be read from the "response file" "file.rsp" in the current    ', &
-    '             directory.                                                         ', &
+    '             file if your leading options begin with @file. Initial options     ', &
+    '             will then be read from the "response file" "file.rsp" in the       ', &
+    '             current directory.                                                 ', &
     '                                                                                ', &
     '             If "file" does not exist or cannot be read, then an                ', &
     '             error occurs and the program stops. Each line of the               ', &
@@ -739,26 +738,23 @@ contains
     '             The basic functionality described here will remain the same, but   ', &
     '             other features described at the above reference may change.        ', &
     '                                                                                ', &
-    '   An example file:                                                             ', &
+    'An example response file:                                                       ', &
     '                                                                                ', &
     '     # my build options                                                         ', &
     '     options build                                                              ', &
     '     options --compiler gfortran                                                ', &
-    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused \         ', &
-    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring \         ', &
-    '      -frecord-marker=4 -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"              ', &
+    '     options --flag "-pg -pthread -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"    ', &
     '                                                                                ', &
-    '   Note --flag would have to be on one line as response files do not            ', &
-    '   (currently) allow for continued lines or multiple specifications of          ', &
-    '   the same option.                                                             ', &
+    '   Note response files do not (currently) allow for continued lines or multiple ', &
+    '   specifications of the same option.                                           ', &
     '                                                                                ', &
     'EXAMPLES                                                                        ', &
     '   sample commands:                                                             ', &
     '                                                                                ', &
     '    fpm new mypackage --app --test                                              ', &
-    '    fpm build                                                                   ', &
-    '    fpm test                                                                    ', &
+    '    fpm build --compiler gfortran                                               ', &
     '    fpm run                                                                     ', &
+    '    fpm test                                                                    ', &
     '    fpm run --example                                                           ', &
     '    fpm new --help                                                              ', &
     '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
@@ -920,7 +916,7 @@ contains
     '                                                                                ', &
     'SYNOPSIS                                                                        ', &
     '   fpm help [fpm] [new] [build] [run] [test] [help] [version] [manual]          ', &
-    '   [runner] [compiler]                                                          ', &
+    '   [runner] [compiler] [toc]                                                    ', &
     '                                                                                ', &
     'DESCRIPTION                                                                     ', &
     '   The "fpm help" command is an alternative to the --help parameter             ', &
@@ -934,7 +930,8 @@ contains
     '              built-in documentation.                                           ', &
     '                                                                                ', &
     '              Special topics include "runner" for the --runner                  ', &
-    '              options, "compiler" for the compiler customization options, ...   ', &
+    '              options, "compiler" for the compiler customization options,       ', &
+    '              and "toc" to generate a list of all topics.                       ', &
     '                                                                                ', &
     '              The default is to display help for the fpm(1) command             ', &
     '              itself.                                                           ', &
@@ -953,108 +950,109 @@ contains
     '                                                                                ', &
     '' ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
-    help_new=[character(len=80) ::                                             &
-    'NAME                                                                   ', &
-    ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
-    'SYNOPSIS                                                               ', &
-   '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|            ', &
-   '      [--full|--bare][--backfill]                                       ', &
-    ' fpm new --help|--version                                              ', &
-    '                                                                       ', &
-    'DESCRIPTION                                                            ', &
-    ' "fpm new" creates and populates a new programming project directory.  ', &
-    ' It                                                                    ', &
-    '   o creates a directory with the specified name                       ', &
-    '   o runs the command "git init" in that directory                     ', &
-    '   o populates the directory with the default project directories      ', &
-    '   o adds sample Fortran source files                                  ', &
-    '                                                                       ', &
-    ' The default file structure (that will be automatically scanned) is    ', &
-    '                                                                       ', &
-    '     NAME/                                                             ', &
-    '       fpm.toml                                                        ', &
-    '       src/            # source for modules, libraries, and procedures ', &
-    '           NAME.f90                                                    ', &
-    '       app/            # source for main programs                      ', &
-    '           main.f90                                                    ', &
-    '       test/           # source for test programs                      ', &
-    '           check.f90                                                   ', &
-    '       example/        # source for example programs                   ', &
-    '           demo.f90                                                    ', &
-    '       include/        # source for include files                      ', &
-    '                                                                       ', &
-    ' Using this file structure is highly encouraged, particularly for      ', &
-    ' small packages primarily intended to be used as dependencies.         ', &
-    '                                                                       ', &
-    ' If you find this restrictive and need to customize the package        ', &
-    ' structure you will find using the --full switch creates a             ', &
-    ' heavily annotated manifest file with references to documentation      ', &
-    ' to aid in constructing complex package structures.                    ', &
-    '                                                                       ', &
-    ' Remember to update the information in the sample "fpm.toml"           ', &
-    ' file with your name and e-mail address.                               ', &
-    '                                                                       ', &
-    'OPTIONS                                                                ', &
-    ' NAME   the name of the project directory to create. The name          ', &
-    '        must be made of up to 63 ASCII letters, digits, underscores,   ', &
-    '        or hyphens, and start with a letter.                           ', &
-    '                                                                       ', &
-    ' The default is to create the src/, app/, and test/ directories.       ', &
-    ' If any of the following options are specified then only the           ', &
-    ' selected subdirectories are generated:                                ', &
-    '                                                                       ', &
-    ' --lib,--src  create directory src/ and a placeholder module           ', &
-    '              named "NAME.f90" for use with subcommand "build".        ', &
-    ' --app        create directory app/ and a placeholder main             ', &
-    '              program for use with subcommand "run".                   ', &
-    ' --test       create directory test/ and a placeholder program         ', &
-    '              for use with the subcommand "test". Note that sans       ', &
-    '              "--lib" it really does not have anything to test.        ', &
-    ' --example    create directory example/ and a placeholder program      ', &
-    '              for use with the subcommand "run --example".             ', &
-    '              It is only created by default if "--full is" specified.  ', &
-    '                                                                       ', &
-    ' So the default is equivalent to                                        ',&
-    '                                                                       ', &
-    '    fpm NAME --lib --app --test                                        ', &
-    '                                                                       ', &
-    ' --backfill   By default the directory must not exist. If this         ', &
-    '              option is present the directory may pre-exist and        ', &
-    '              only subdirectories and files that do not                ', &
-    '              already exist will be created. For example, if you       ', &
-    '              previously entered "fpm new myname --lib" entering       ', &
-    '              "fpm new myname -full --backfill" will create any missing', &
-    '              app/, example/, and test/ directories and programs.      ', &
-    '                                                                       ', &
-    ' --full       By default a minimal manifest file ("fpm.toml") is       ', &
-    '              created that depends on auto-discovery. With this        ', &
-    '              option a much more extensive manifest sample is written  ', &
-    '              and the example/ directory is created and populated.     ', &
-    '              It is designed to facilitate creating projects that      ', &
-    '              depend extensively on non-default build options.         ', &
-    '                                                                       ', &
-    ' --bare       A minimal manifest file ("fpm.toml") is created and      ', &
-    '              "README.md" file is created but no directories or        ', &
-    '              sample Fortran are generated.                            ', &
-    '                                                                       ', &
-    ' --help       print this help and exit                                 ', &
-    ' --version    print program version information and exit               ', &
-    '                                                                       ', &
-    'EXAMPLES                                                               ', &
-    ' Sample use                                                            ', &
-    '                                                                       ', &
-    '   fpm new myproject  # create new project directory and seed it       ', &
-    '   cd myproject       # Enter the new directory                        ', &
-    '   # and run commands such as                                          ', &
-    '   fpm build                                                           ', &
-    '   fpm run            # run lone example application program           ', &
-    '   fpm test           # run example test program(s)                    ', &
-    '   fpm run --example  # run lone example program                       ', &
-    '                                                                       ', &
-    '   fpm new A --full # create example/ and an annotated fpm.toml as well', &
-    '   fpm new A --bare # create no directories                            ', &
-    '   create any missing files in current directory                       ', &
-    '   fpm new `pwd` --full --backfill                                     ', &
+    help_new=[character(len=80) :: &
+    'NAME                                                                            ', &
+    ' new(1) - the fpm(1) subcommand to initialize a new project                     ', &
+    'SYNOPSIS                                                                        ', &
+    '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|                    ', &
+    '      [--full|--bare][--backfill]                                               ', &
+    '                                                                                ', &
+    '  fpm new --help|--version                                                      ', &
+    '                                                                                ', &
+    'DESCRIPTION                                                                     ', &
+    ' "fpm new" creates and populates a new programming project directory.           ', &
+    ' It                                                                             ', &
+    '   o creates a directory with the specified name                                ', &
+    '   o runs the command "git init" in that directory                              ', &
+    '   o populates the directory with the default project directories               ', &
+    '   o adds sample Fortran source files                                           ', &
+    '                                                                                ', &
+    ' The default file structure (that will be automatically scanned) is             ', &
+    '                                                                                ', &
+    '     NAME/                                                                      ', &
+    '       fpm.toml                                                                 ', &
+    '       src/            # source for modules, libraries, and procedures          ', &
+    '           NAME.f90                                                             ', &
+    '       app/            # source for main programs                               ', &
+    '           main.f90                                                             ', &
+    '       test/           # source for test programs                               ', &
+    '           check.f90                                                            ', &
+    '       example/        # source for example programs                            ', &
+    '           demo.f90                                                             ', &
+    '       include/        # source for include files                               ', &
+    '                                                                                ', &
+    ' Using this file structure is highly encouraged, particularly for               ', &
+    ' small packages primarily intended to be used as dependencies.                  ', &
+    '                                                                                ', &
+    ' If you find this restrictive and need to customize the package                 ', &
+    ' structure you will find using the --full switch creates a                      ', &
+    ' heavily annotated manifest file with references to documentation               ', &
+    ' to aid in constructing complex package structures.                             ', &
+    '                                                                                ', &
+    ' Remember to update the information in the sample "fpm.toml"                    ', &
+    ' file with your name and e-mail address.                                        ', &
+    '                                                                                ', &
+    'OPTIONS                                                                         ', &
+    ' NAME   the name of the project directory to create. The name                   ', &
+    '        must be made of up to 63 ASCII letters, digits, underscores,            ', &
+    '        or hyphens, and start with a letter.                                    ', &
+    '                                                                                ', &
+    ' The default is to create the src/, app/, and test/ directories.                ', &
+    ' If any of the following options are specified then only the                    ', &
+    ' selected subdirectories are generated:                                         ', &
+    '                                                                                ', &
+    ' --lib,--src  create directory src/ and a placeholder module                    ', &
+    '              named "NAME.f90" for use with subcommand "build".                 ', &
+    ' --app        create directory app/ and a placeholder main                      ', &
+    '              program for use with subcommand "run".                            ', &
+    ' --test       create directory test/ and a placeholder program                  ', &
+    '              for use with the subcommand "test". Note that sans                ', &
+    '              "--lib" it really does not have anything to test.                 ', &
+    ' --example    create directory example/ and a placeholder program               ', &
+    '              for use with the subcommand "run --example".                      ', &
+    '              It is only created by default if "--full is" specified.           ', &
+    '                                                                                ', &
+    ' So the default is equivalent to                                                ', &
+    '                                                                                ', &
+    '    fpm NAME --lib --app --test                                                 ', &
+    '                                                                                ', &
+    ' --backfill   By default the directory must not exist. If this                  ', &
+    '              option is present the directory may pre-exist and                 ', &
+    '              only subdirectories and files that do not                         ', &
+    '              already exist will be created. For example, if you                ', &
+    '              previously entered "fpm new myname --lib" entering                ', &
+    '              "fpm new myname -full --backfill" will create any missing         ', &
+    '              app/, example/, and test/ directories and programs.               ', &
+    '                                                                                ', &
+    ' --full       By default a minimal manifest file ("fpm.toml") is                ', &
+    '              created that depends on auto-discovery. With this                 ', &
+    '              option a much more extensive manifest sample is written           ', &
+    '              and the example/ directory is created and populated.              ', &
+    '              It is designed to facilitate creating projects that               ', &
+    '              depend extensively on non-default build options.                  ', &
+    '                                                                                ', &
+    ' --bare       A minimal manifest file ("fpm.toml") is created and               ', &
+    '              "README.md" file is created but no directories or                 ', &
+    '              sample Fortran are generated.                                     ', &
+    '                                                                                ', &
+    ' --help       print this help and exit                                          ', &
+    ' --version    print program version information and exit                        ', &
+    '                                                                                ', &
+    'EXAMPLES                                                                        ', &
+    ' Sample use                                                                     ', &
+    '                                                                                ', &
+    '   fpm new myproject  # create new project directory and seed it                ', &
+    '   cd myproject       # Enter the new directory                                 ', &
+    '   # and run commands such as                                                   ', &
+    '   fpm build                                                                    ', &
+    '   fpm run            # run lone example application program                    ', &
+    '   fpm test           # run example test program(s)                             ', &
+    '   fpm run --example  # run lone example program                                ', &
+    '                                                                                ', &
+    '   fpm new A --full # create example/ and an annotated fpm.toml as well         ', &
+    '   fpm new A --bare # create no directories                                     ', &
+    '   create any missing files in current directory                                ', &
+    '   fpm new `pwd` --full --backfill                                              ', &
     '' ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
     help_test=[character(len=80) :: &
