@@ -929,7 +929,7 @@ contains
     '                                                                                ', &
     '              Special topics include                                            ', &
     '                + "toc" to generate a list of all topics                        ', &
-    '                + "manual" displays all the fpm(1) built-in documentation       ;, & 
+    '                + "manual" displays all the fpm(1) built-in documentation       ', & 
     '                + "compiler" for the compiler customization options             ', &
     '                + "runner" for the --runner options                             ', &
     '                                                                                ', &
