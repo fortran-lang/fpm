@@ -1033,14 +1033,19 @@ contains
 '   help(1) - the fpm(1) subcommand to display help                              ', &
 '                                                                                ', &
 'SYNOPSIS                                                                        ', &
-'   fpm help [fpm] [new] [build] [run] [test] [help] [version] [manual]          ', &
-'   [runner] [compiler] [toc]                                                    ', &
+' subcommands                                                                    ', &
+'                                                                                ', &
+'   fpm help [fpm] [new] [build] [run] [test] [update] [install] [help] [list]   ', &
+'                                                                                ', &
+' special topics                                                                 ', &
+'                                                                                ', &
+'   [compiler] [runner] [response] [manual] [toc] [version]                      ', &
 '                                                                                ', &
 'DESCRIPTION                                                                     ', &
-'   The "fpm help" command is an alternative to the --help parameter             ', &
-'   on the fpm(1) command and its subcommands. In addition it allows             ', &
-'   for displaying general information such as how to set compiler options.      ', &
+'  The "fpm help" command displays descriptions on fpm(1) subcommands and        ', &
+'  features (such as how to set compiler options).                               ', &
 '                                                                                ', &
+'  The default is to display help for the fpm(1) command itself.                 ', &
 'OPTIONS                                                                         ', &
 '   NAME(s)    A list of topic names to display. All the subcommands             ', &
 '              have their own page (new, build, run, test, ...).                 ', &
@@ -1053,8 +1058,6 @@ contains
 '                + "response" for information on using response files as         ', &
 '                  abbreviations for complex command line options.               ', &
 '                                                                                ', &
-'              The default is to display help for the fpm(1) command             ', &
-'              itself.                                                           ', &
 'EXAMPLES                                                                        ', &
 '   Sample usage:                                                                ', &
 '                                                                                ', &
@@ -1063,9 +1066,9 @@ contains
 '     fpm help version   # show program version                                  ', &
 '     fpm help new       # display help for "new" subcommand                     ', &
 '     # special-purpose topics                                                   ', &
-'     fpm help manual    # All fpm(1) built-in documentation                     ', &
 '     fpm help compiler  # customizing compiler options                          ', &
 '     fpm help toc       # table of contents of help topics                      ', &
+'     fpm help manual    # All fpm(1) built-in documentation                     ', &
 '' ]
 !12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
    help_list=[character(len=80) :: &
@@ -1249,11 +1252,10 @@ contains
 !12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
    help_response=[character(len=80) :: &
 'NAME                                                                            ', &
-'   response(1) -Using response files on the command line                        ', &
+'  response(1) - Using response files on the command line                       ', &
 '                                                                                ', &
 'SYNOPSIS                                                                        ', &
-'                                                                                ', &
-'   fpm SUBCOMMAND  @name1 @name2 ... [COMMAND_OPTIONS]                          ', &
+'  fpm SUBCOMMAND  @name1 @name2 ... [COMMAND_OPTIONS]                          ', &
 '                                                                                ', &
 'DESCRIPTION                                                                     ', &
 '  A response file can be used to abbreviate long command line options.          ', &
