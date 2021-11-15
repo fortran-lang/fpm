@@ -920,22 +920,21 @@ contains
     '                                                                                ', &
     'DESCRIPTION                                                                     ', &
     '   The "fpm help" command is an alternative to the --help parameter             ', &
-    '   on the fpm(1) command and its subcommands.                                   ', &
+    '   on the fpm(1) command and its subcommands. In addition it allows             ', &
+    '   for displaying general information such as how to set compiler options.      ', &
     '                                                                                ', &
     'OPTIONS                                                                         ', &
     '   NAME(s)    A list of topic names to display. All the subcommands             ', &
     '              have their own page (new, build, run, test, ...).                 ', &
     '                                                                                ', &
-    '              The special name "manual" displays all the fpm(1)                 ', &
-    '              built-in documentation.                                           ', &
-    '                                                                                ', &
-    '              Special topics include "runner" for the --runner                  ', &
-    '              options, "compiler" for the compiler customization options,       ', &
-    '              and "toc" to generate a list of all topics.                       ', &
+    '              Special topics include                                            ', &
+    '                + "toc" to generate a list of all topics                        ', &
+    '                + "manual" displays all the fpm(1) built-in documentation       ;, & 
+    '                + "compiler" for the compiler customization options             ', &
+    '                + "runner" for the --runner options                             ', &
     '                                                                                ', &
     '              The default is to display help for the fpm(1) command             ', &
     '              itself.                                                           ', &
-    '                                                                                ', &
     'EXAMPLES                                                                        ', &
     '   Sample usage:                                                                ', &
     '                                                                                ', &
@@ -947,7 +946,6 @@ contains
     '     fpm help manual    # All fpm(1) built-in documentation                     ', &
     '     fpm help compiler  # customizing compiler options                          ', &
     '     fpm help toc       # table of contents of help topics                      ', &
-    '                                                                                ', &
     '' ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
     help_new=[character(len=80) :: &
