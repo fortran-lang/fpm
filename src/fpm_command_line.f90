@@ -602,16 +602,15 @@ contains
 ' update [NAME(s)] [--fetch-only] [--clean] [--directory PATH]                   ', &
 ' install [--profile PROF] [COMPILER_OPTIONS] [--no-rebuild] [--prefix PATH]     ', &
 '         [--directory PATH]                                                     ', &
-' help [NAME(s)]                                                                 ', &
-' list [--list]                                                                  ', &
-'In addition, these options are valid on any subcommand:                         ', &
-' --verbose                                                                      ', &
-' --help                                                                         ', &
+'where COMPILER_OPTIONS are                                                      ', &
 '                                                                                ', &
-'COMPILER_OPTIONS                                                                ', &
 '    --compiler FC --c-compiler CC --archiver AR                                 ', &
 '    --flag FFLAGS --c-flag CFLAGS --link-flag LDFLAGS                           ', &
 '    --env PREFIX                                                                ', &
+'In addition, these options are valid on any subcommand:                         ', &
+'                                                                                ', &
+'    --verbose                                                                   ', &
+'    --help                                                                      ', &
 ' ']
 !12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
     help_usage=[character(len=80) :: &
@@ -645,9 +644,7 @@ contains
 '                                                                                ', &
    help_list_dash, &
 '                                                                                ', &
-'COMPILER OPTIONS                                                                ', &
 ' To customize compiler options, see "fpm help compiler".                        ', &
-'                                                                                ', &
 '                                                                                ', &
 'EXAMPLES                                                                        ', &
 '   sample commands:                                                             ', &
