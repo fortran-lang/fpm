@@ -569,695 +569,707 @@ contains
     end subroutine get_command_line_settings
 
     subroutine set_help()
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
    help_list_nodash=[character(len=80) :: &
-   'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ]                          ', &
-   '                                                                        ', &
-   'valid subcommands are:                                                  ', &
-   '                                                                        ', &
-   '  new       Create a new Fortran package directory with sample files    ', &
-   '  build     Compile the package placing results in the "build" directory', &
-   '  run       Run the local package application programs                  ', &
-   '  test      Run the test programs                                       ', &
-   '  update    Update and manage project dependencies                      ', &
-   '  install   Install project                                             ', &
-   '  help      Display help                                                ', &
-   '  list      Display this list of subcommand descriptions                ', &
-   '                                                                        ', &
-   ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
-   ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
-   ' ']
-!  '12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+'USAGE: fpm [ SUBCOMMAND [SUBCOMMAND_OPTIONS] ]                                  ', &
+'                                                                                ', &
+'valid subcommands are:                                                          ', &
+'                                                                                ', &
+'  new       Create a new Fortran package directory with sample files            ', &
+'  build     Compile the package placing results in the "build" directory        ', &
+'  run       Run the local package application programs                          ', &
+'  test      Run the test programs                                               ', &
+'  update    Update and manage project dependencies                              ', &
+'  install   Install project                                                     ', &
+'  help      Display help                                                        ', &
+'  list      Display this list of subcommand descriptions                        ', &
+'                                                                                ', &
+' Enter "fpm --list" for a brief list of subcommand options. Enter               ', &
+' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.             ', &
+' ']
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
    help_list_dash = [character(len=80) :: &
-   ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
-   '          [--full|--bare][--backfill]                                           ', &
-   ' build [--profile PROF] [COMPILER_OPTIONS] [--list] [--tests]                   ', &
-   ' run  [[--target] NAME(s) [--example] [--profile PROF] [--all] [--runner "CMD"] ', &
-   '      [COMPILER_OPTIONS] [--list] [-- ARGS]                                     ', &
-   ' test [[--target] NAME(s)] [--profile PROF] [--runner "CMD"] [--runner "CMD"]   ', &
-   '      [COMPILER_OPTIONS] [--list] [-- ARGS]                                     ', &
-   ' update [NAME(s)] [--fetch-only] [--clean]                                      ', &
-   ' install [--profile PROF] [COMPILER_OPTIONS] [--no-rebuild] [--prefix PATH]     ', &
-   ' help [NAME(s)]                                                                 ', &
-   ' list [--list]                                                                  ', &
-   ' ']
+' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
+'          [--full|--bare] [--backfill] [--directory PATH]                       ', &
+' build [--profile PROF] [COMPILER_OPTIONS] [--directory PATH]                   ', &
+' run  [[--target] NAME(s) [--example] [--profile PROF] [--all] [--runner "CMD"] ', &
+'      [COMPILER_OPTIONS] [--list] [--directory PATH] [-- ARGS]                  ', &
+' test [[--target] NAME(s)] [--profile PROF] [--runner "CMD"] [--runner "CMD"]   ', &
+'      [COMPILER_OPTIONS] [--directory PATH] [--list] [-- ARGS]                  ', &
+' update [NAME(s)] [--fetch-only] [--clean] [--directory PATH]                   ', &
+' install [--profile PROF] [COMPILER_OPTIONS] [--no-rebuild] [--prefix PATH]     ', &
+'         [--directory PATH]                                                     ', &
+' help [NAME(s)]                                                                 ', &
+' list [--list]                                                                  ', &
+'In addition, these options are valid on any subcommand:                         ', &
+' -V, --verbose                                                                  ', &
+' --help                                                                         ', &
+'                                                                                ', &
+'COMPILER_OPTIONS                                                                ', &
+'    --compiler FC --c-compiler CC --archiver AR                                 ', &
+'    --flag FFLAGS --c-flag CFLAGS --link-flag LDFLAGS                           ', &
+'    --env PREFIX                                                                ', &
+' ']
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
     help_usage=[character(len=80) :: &
-    '' ]
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_fpm=[character(len=80) :: &
+'NAME                                                                            ', &
+'   fpm(1) - A Fortran package manager and build system                          ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+'   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                          ', &
+'                                                                                ', &
+'   fpm --help|--version|--list                                                  ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' fpm(1) is a package manager that helps you create Fortran projects             ', &
+' from source -- it automatically determines dependencies!                       ', &
+'                                                                                ', &
+' Additionally fpm(1) lets you draw upon other fpm(1) packages in                ', &
+' distributed git(1) repositories or subdirectories as if the packages           ', &
+' were a basic part of your default programming environment, as well             ', &
+' as letting you share your projects with others in a similar manner.            ', &
+'                                                                                ', &
+' All output goes into the directory "build/" which can generally be             ', &
+' removed and rebuilt if required. Note that if external packages are            ', &
+' being used you need network connectivity to rebuild from scratch.              ', &
+'                                                                                ', &
+'SUBCOMMANDS                                                                     ', &
+   help_list_nodash, &
+'Their syntax is                                                                 ', &
+'                                                                                ', &
+   help_list_dash, &
+'                                                                                ', &
+'COMPILER OPTIONS                                                                ', &
+' To customize compiler options, see "fpm help compiler".                        ', &
+'                                                                                ', &
+'RESPONSE FILE                                                                   ', &
+'  @file      You may replace the default options for the fpm(1) command from a  ', &
+'             file if your leading options begin with @file. Initial options     ', &
+'             will then be read from the "response file" "file.rsp" in the       ', &
+'             current directory.                                                 ', &
+'                                                                                ', &
+'             If "file" does not exist or cannot be read, then an                ', &
+'             error occurs and the program stops. Each line of the               ', &
+'             file is prefixed with "options" and interpreted as a               ', &
+'             separate argument. The file itself may not contain @file           ', &
+'             arguments. That is, it is not processed recursively.               ', &
+'                                                                                ', &
+'             For more information on response files see                         ', &
+'                                                                                ', &
+'                https://urbanjost.github.io/M_CLI2/set_args.3m_cli2.html        ', &
+'                                                                                ', &
+'             The basic functionality described here will remain the same, but   ', &
+'             other features described at the above reference may change.        ', &
+'                                                                                ', &
+'An example response file:                                                       ', &
+'                                                                                ', &
+'     # my build options                                                         ', &
+'     options build                                                              ', &
+'     options --compiler gfortran                                                ', &
+'     options --flag "-pg -pthread -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"    ', &
+'                                                                                ', &
+'   Note response files do not (currently) allow for continued lines or multiple ', &
+'   specifications of the same option.                                           ', &
+'                                                                                ', &
+'EXAMPLES                                                                        ', &
+'   sample commands:                                                             ', &
+'                                                                                ', &
+'    fpm new mypackage --app --test                                              ', &
+'    fpm build --compiler gfortran                                               ', &
+'    fpm run                                                                     ', &
+'    fpm test                                                                    ', &
+'    fpm run --example                                                           ', &
+'    fpm new --help                                                              ', &
+'    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
+'    fpm install --prefix ~/.local                                               ', &
+'                                                                                ', &
+'SEE ALSO                                                                        ', &
+'                                                                                ', &
+' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
+' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
+' + The fpm(1) TOML file format is described at                                  ', &
+'   https://github.com/fortran-lang/fpm/blob/main/manifest-reference.md          ', &
+'']
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_new=[character(len=80) :: &
+'NAME                                                                            ', &
+' new(1) - the fpm(1) subcommand to initialize a new project                     ', &
+'SYNOPSIS                                                                        ', &
+'  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|                    ', &
+'      [--directory PATH] [--full|--bare][--backfill]                            ', &
+'                                                                                ', &
+'  fpm new --help|--version                                                      ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' "fpm new" creates and populates a new programming project directory.           ', &
+' It                                                                             ', &
+'   o creates a directory with the specified name                                ', &
+'   o runs the command "git init" in that directory                              ', &
+'   o populates the directory with the default project directories               ', &
+'   o adds sample Fortran source files                                           ', &
+'                                                                                ', &
+' The default file structure (that will be automatically scanned) is             ', &
+'                                                                                ', &
+'     NAME/                                                                      ', &
+'       fpm.toml                                                                 ', &
+'       src/            # source for modules, libraries, and procedures          ', &
+'           NAME.f90                                                             ', &
+'       app/            # source for main programs                               ', &
+'           main.f90                                                             ', &
+'       test/           # source for test programs                               ', &
+'           check.f90                                                            ', &
+'       example/        # source for example programs                            ', &
+'           demo.f90                                                             ', &
+'       include/        # source for include files                               ', &
+'                                                                                ', &
+' Using this file structure is highly encouraged, particularly for               ', &
+' small packages primarily intended to be used as dependencies.                  ', &
+'                                                                                ', &
+' If you find this restrictive and need to customize the package                 ', &
+' structure you will find using the --full switch creates a                      ', &
+' heavily annotated manifest file with references to documentation               ', &
+' to aid in constructing complex package structures.                             ', &
+'                                                                                ', &
+' Remember to update the information in the sample "fpm.toml"                    ', &
+' file with your name and e-mail address.                                        ', &
+'                                                                                ', &
+'OPTIONS                                                                         ', &
+' NAME   the name of the project directory to create. The name                   ', &
+'        must be made of up to 63 ASCII letters, digits, underscores,            ', &
+'        or hyphens, and start with a letter.                                    ', &
+'                                                                                ', &
+' The default is to create the src/, app/, and test/ directories.                ', &
+' If any of the following options are specified then only the                    ', &
+' selected subdirectories are generated:                                         ', &
+'                                                                                ', &
+' --lib,--src  create directory src/ and a placeholder module                    ', &
+'              named "NAME.f90" for use with subcommand "build".                 ', &
+' --app        create directory app/ and a placeholder main                      ', &
+'              program for use with subcommand "run".                            ', &
+' --test       create directory test/ and a placeholder program                  ', &
+'              for use with the subcommand "test". Note that sans                ', &
+'              "--lib" it really does not have anything to test.                 ', &
+' --example    create directory example/ and a placeholder program               ', &
+'              for use with the subcommand "run --example".                      ', &
+'              It is only created by default if "--full is" specified.           ', &
+' --directory, -C PATH  Change working directory to PATH before running          ', &
+'                       command                                                  ', &
+'                                                                                ', &
+' So the default is equivalent to                                                ', &
+'                                                                                ', &
+'    fpm NAME --lib --app --test                                                 ', &
+'                                                                                ', &
+' --backfill   By default the directory must not exist. If this                  ', &
+'              option is present the directory may pre-exist and                 ', &
+'              only subdirectories and files that do not                         ', &
+'              already exist will be created. For example, if you                ', &
+'              previously entered "fpm new myname --lib" entering                ', &
+'              "fpm new myname -full --backfill" will create any missing         ', &
+'              app/, example/, and test/ directories and programs.               ', &
+'                                                                                ', &
+' --full       By default a minimal manifest file ("fpm.toml") is                ', &
+'              created that depends on auto-discovery. With this                 ', &
+'              option a much more extensive manifest sample is written           ', &
+'              and the example/ directory is created and populated.              ', &
+'              It is designed to facilitate creating projects that               ', &
+'              depend extensively on non-default build options.                  ', &
+'                                                                                ', &
+' --bare       A minimal manifest file ("fpm.toml") is created and               ', &
+'              "README.md" file is created but no directories or                 ', &
+'              sample Fortran are generated.                                     ', &
+'                                                                                ', &
+' --help       print this help and exit                                          ', &
+' --version    print program version information and exit                        ', &
+'                                                                                ', &
+'EXAMPLES                                                                        ', &
+' Sample use                                                                     ', &
+'                                                                                ', &
+'   fpm new myproject  # create new project directory and seed it                ', &
+'   cd myproject       # Enter the new directory                                 ', &
+'   # and run commands such as                                                   ', &
+'   fpm build                                                                    ', &
+'   fpm run            # run lone example application program                    ', &
+'   fpm test           # run example test program(s)                             ', &
+'   fpm run --example  # run lone example program                                ', &
+'                                                                                ', &
+'   fpm new A --full # create example/ and an annotated fpm.toml as well         ', &
+'   fpm new A --bare # create no directories                                     ', &
+'   create any missing files in current directory                                ', &
+'   fpm new `pwd` --full --backfill                                              ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_build=[character(len=80) :: &
+'NAME                                                                            ', &
+' build(1) - the fpm(1) subcommand to build a project                            ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+' fpm build [--profile PROF] [COMPILER_OPTIONS] [--list] [--tests]               ', &
+'           [--directory PATH]                                                   ', &
+'                                                                                ', &
+' fpm build --help|--version                                                     ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' The "fpm build" command                                                        ', &
+'    o Fetches any dependencies                                                  ', &
+'    o Scans your sources                                                        ', &
+'    o Builds them in the proper order                                           ', &
+'                                                                                ', &
+' The Fortran source files are assumed by default to be in                       ', &
+'    o src/     for modules and procedure source                                 ', &
+'    o app/     main program(s) for applications                                 ', &
+'    o test/    main program(s) and support files for project tests              ', &
+'    o example/ main program(s) for example programs                             ', &
+'    o include/ optional directory for INCLUDE files                             ', &
+' Changed or new files found are rebuilt. The results are placed in              ', &
+' the build/ directory.                                                          ', &
+'                                                                                ', &
+' Non-default pathnames and remote dependencies are used if                      ', &
+' specified in the "fpm.toml" file.                                              ', &
+'                                                                                ', &
+'OPTIONS                                                                         ', &
+' --profile PROF  selects the compilation profile for the build.                 ', &
+'                 Currently available profiles are "release" for                 ', &
+'                 high optimization and "debug" for full debug options.          ', &
+'                 If --flag is not specified the "debug" flags are the           ', &
+'                 default.                                                       ', &
+' --list          list candidates instead of building or running them            ', &
+' --tests         build all tests (otherwise only if needed)                     ', &
+' --show-model    show the model and exit (do not build)                         ', &
+' --help          print this help and exit                                       ', &
+' --version       print program version information and exit                     ', &
+' --directory, -C PATH  Change working directory to PATH before running          ', &
+'                       command                                                  ', &
+'                                                                                ', &
+'COMPILER OPTIONS                                                                ', &
+' To customize compiler options, see "fpm help compiler".                        ', &
+'                                                                                ', &
+'EXAMPLES                                                                        ', &
+' Sample commands:                                                               ', &
+'                                                                                ', &
+'  fpm build                   # build with debug options                        ', &
+'  fpm build --profile release # build with high optimization                    ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_run=[character(len=80) :: &
+'NAME                                                                            ', &
+' run(1) - the fpm(1) subcommand to run project applications                     ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+' fpm run [[--target] NAME(s) [--profile PROF] [COMPILER_OPTIONS]                ', &
+'         [--runner "CMD"] [--example] [--list] [--all] [-- ARGS]                ', &
+'         [--directory PATH]                                                     ', &
+'                                                                                ', &
+' fpm run --help|--version                                                       ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' Run the applications in your fpm(1) package. By default applications           ', &
+' in /app or specified as "executable" in your "fpm.toml" manifest are           ', &
+' used. Alternatively demonstration programs in example/ or specified in         ', &
+' the "example" section in "fpm.toml" can be executed. The applications          ', &
+' are automatically rebuilt before being run if they are out of date.            ', &
+'                                                                                ', &
+'OPTIONS                                                                         ', &
+' --target NAME(s)  list of application names to execute. No name is             ', &
+'                   required if only one target exists. If no name is            ', &
+'                   supplied and more than one candidate exists or a             ', &
+'                   name has no match a list is produced and fpm(1)              ', &
+'                   exits.                                                       ', &
+'                                                                                ', &
+'                   Basic "globbing" is supported where "?" represents           ', &
+'                   any single character and "*" represents any string.          ', &
+'                   Note The glob string normally needs quoted to                ', &
+'                   the special characters from shell expansion.                 ', &
+' --all             Run all examples or applications. An alias for the           ', &
+'                   option --target "*".                                         ', &
+' --example         Run example programs instead of applications.                ', &
+' --profile PROF    selects the compilation profile for the build.               ', &
+'                   Currently available profiles are "release" for high          ', &
+'                   optimization and "debug" for full debug options.             ', &
+'                   If --flag is not specified the "debug" flags are the         ', &
+'                   default.                                                     ', &
+' --runner CMD  A command to prefix the program execution paths with.            ', &
+'               see "fpm help runner" for further details.                       ', &
+' --list     list basenames of candidates instead of running them. Note          ', &
+'            out-of-date candidates will still be rebuilt before being           ', &
+'            listed.                                                             ', &
+' --directory, -C PATH  Change working directory to PATH before running          ', &
+'                       command.                                                 ', &
+' -- ARGS    optional arguments to pass to the program(s). The same              ', &
+'            arguments are passed to all program names specified.                ', &
+'COMPILER OPTIONS                                                                ', &
+' To customize compiler options, see "fpm help compiler".                        ', &
+'                                                                                ', &
+'EXAMPLES                                                                        ', &
+' fpm(1) - run or display project applications:                                  ', &
+'                                                                                ', &
+'  fpm run        # run a target when only one exists or list targets            ', &
+'  fpm run --list # list basename of all targets, running nothing.               ', &
+'  fpm run "demo*" --list # list target basenames starting with "demo*".         ', &
+'  fpm run "psi*" --runner # list target pathnames starting with "psi*".         ', &
+'  fpm run --all  # run all targets, no matter how many there are.               ', &
+'                                                                                ', &
+'  # run default program built or to be built with the compiler command          ', &
+'  # "f90". If more than one app exists a list displays and target names         ', &
+'  # are required.                                                               ', &
+'  fpm run --compiler f90                                                        ', &
+'                                                                                ', &
+'  # run example programs instead of the application programs.                   ', &
+'  fpm run --example "*"                                                         ', &
+'                                                                                ', &
+'  # run a specific program and pass arguments to the command                    ', &
+'  fpm run myprog -- -x 10 -y 20 --title "my title line"                         ', &
+'                                                                                ', &
+'  # run production version of two applications                                  ', &
+'  fpm run --target prg1,prg2 --profile release                                  ', &
+'                                                                                ', &
+'  # install executables in directory (assuming install(1) exists)               ', &
+'  fpm run --runner ''install -b -m 0711 -p -t /usr/local/bin''                  ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_test=[character(len=80) :: &
+'NAME                                                                            ', &
+' test(1) - the fpm(1) subcommand to run project tests                           ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+' fpm test [[--target] NAME(s)] [--profile PROF] [COMPILER_OPTIONS]              ', &
+'          [--runner "CMD"] [--directory PATH ] [--list][-- ARGS]                ', &
+'                                                                                ', &
+' fpm test --help|--version                                                      ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' Run applications you have built to test your project.                          ', &
+'                                                                                ', &
+'OPTIONS                                                                         ', &
+' --target NAME(s)  optional list of specific test names to execute.             ', &
+'                   The default is to run all the tests in test/                 ', &
+'                   or the tests listed in the "fpm.toml" file.                  ', &
+'                                                                                ', &
+'                   Basic "globbing" is supported where "?" represents           ', &
+'                   any single character and "*" represents any string.          ', &
+'                   Note The glob string normally needs quoted to                ', &
+'                   protect the special characters from shell expansion.         ', &
+' --profile PROF    selects the compilation profile for the build.               ', &
+'                   Currently available profiles are "release" for               ', &
+'                   high optimization and "debug" for full debug options.        ', &
+'                   If --flag is not specified the "debug" flags are the         ', &
+'                   default.                                                     ', &
+' --runner CMD  A command to prefix the program execution paths with.            ', &
+'               see "fpm help runner" for further details.                       ', &
+' --list        list candidate basenames instead of running them. Note           ', &
+'               they will still be built if not currently up to date.            ', &
+' --directory, -C PATH  Change working directory to PATH before running          ', &
+'                       command                                                  ', &
+' -- ARGS       optional arguments to pass to the test program(s).               ', &
+'               The same arguments are passed to all test names                  ', &
+'               specified.                                                       ', &
+'                                                                                ', &
+'COMPILER OPTIONS                                                                ', &
+' To customize compiler options, see "fpm help compiler".                        ', &
+'                                                                                ', &
+'EXAMPLES                                                                        ', &
+'run tests                                                                       ', &
+'                                                                                ', &
+' # run default tests in /test or as specified in "fpm.toml"                     ', &
+' fpm test                                                                       ', &
+'                                                                                ', &
+' # run using compiler command "f90"                                             ', &
+' fpm test --compiler f90                                                        ', &
+'                                                                                ', &
+' # run a specific test and pass arguments to the command                        ', &
+' fpm test mytest -- -x 10 -y 20 --title "my title line"                         ', &
+'                                                                                ', &
+' fpm test tst1 tst2 --profile PROF  # run production version of two tests       ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_install=[character(len=80) :: &
+'NAME                                                                            ', &
+' install(1) - install fpm projects                                              ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+' fpm install [--profile PROF] [COMPILER_OPTIONS] [--list] [--no-rebuild]        ', &
+'             [--prefix DIR] [--bindir DIR] [--libdir DIR] [--includedir DIR]    ', &
+'             [--verbose]                                                        ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' Subcommand to install fpm projects. Running install will export the            ', &
+' current project to the selected prefix, this will by default install all       ', &
+' executables (tests and examples are excluded) which are part of the projects.  ', &
+' Libraries and module files are only installed for projects requiring the       ', &
+' installation of those components in the package manifest.                      ', &
+'                                                                                ', &
+'OPTIONS                                                                         ', &
+' --list            list all installable targets for this project,               ', &
+'                   but do not install any of them                               ', &
+' --profile PROF    selects the compilation profile for the build.               ', &
+'                   Currently available profiles are "release" for               ', &
+'                   high optimization and "debug" for full debug options.        ', &
+'                   If --flag is not specified the "debug" flags are the         ', &
+'                   default.                                                     ', &
+' --no-rebuild      do not rebuild project before installation                   ', &
+' --prefix DIR      path to installation directory (requires write access),      ', &
+'                   the default prefix on Unix systems is $HOME/.local           ', &
+'                   and %APPDATA%\local on Windows                               ', &
+' --bindir DIR      subdirectory to place executables in (default: bin)          ', &
+' --libdir DIR      subdirectory to place libraries and archives in              ', &
+'                   (default: lib)                                               ', &
+' --includedir DIR  subdirectory to place headers and module files in            ', &
+'                   (default: include)                                           ', &
+' --directory, -C PATH  Change working directory to PATH before running          ', &
+'                       command                                                  ', &
+' --verbose         print more information                                       ', &
+'                                                                                ', &
+'COMPILER OPTIONS                                                                ', &
+' To customize compiler options, see "fpm help compiler".                        ', &
+'                                                                                ', &
+'EXAMPLES                                                                        ', &
+'    fpm install --profile release  # Install release version of project:        ', &
+'    # Install the project without rebuilding the executables:                   ', &
+'    fpm install --no-rebuild                                                    ', &
+'    # Install executables to a custom prefix into the exe directory:            ', &
+'    fpm install --prefix $PWD --bindir exe                                      ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_update=[character(len=80) :: &
+'NAME                                                                            ', &
+' update(1) - manage project dependencies                                        ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)] [--directory PATH]   ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' Manage and update project dependencies. If no dependency names are             ', &
+' provided all the dependencies are updated automatically.                       ', &
+'                                                                                ', &
+'OPTIONS                                                                         ', &
+' --fetch-only  Only fetch dependencies, do not update existing projects         ', &
+' --clean       Do not use previous dependency cache                             ', &
+' --directory, -C PATH  Change working directory to PATH before running          ', &
+'                       command                                                  ', &
+' --verbose     Show additional printout                                         ', &
+'                                                                                ', &
+'SEE ALSO                                                                        ', &
+' The fpm(1) home page at https://github.com/fortran-lang/fpm                    ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_help=[character(len=80) :: &
+'NAME                                                                            ', &
+'   help(1) - the fpm(1) subcommand to display help                              ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+'   fpm help [fpm] [new] [build] [run] [test] [help] [version] [manual]          ', &
+'   [runner] [compiler] [toc]                                                    ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+'   The "fpm help" command is an alternative to the --help parameter             ', &
+'   on the fpm(1) command and its subcommands. In addition it allows             ', &
+'   for displaying general information such as how to set compiler options.      ', &
+'                                                                                ', &
+'OPTIONS                                                                         ', &
+'   NAME(s)    A list of topic names to display. All the subcommands             ', &
+'              have their own page (new, build, run, test, ...).                 ', &
+'                                                                                ', &
+'              Special topics include                                            ', &
+'                + "toc" to generate a list of all topics                        ', &
+'                + "manual" displays all the fpm(1) built-in documentation       ', & 
+'                + "compiler" for the compiler customization options             ', &
+'                + "runner" for the --runner options                             ', &
+'                                                                                ', &
+'              The default is to display help for the fpm(1) command             ', &
+'              itself.                                                           ', &
+'EXAMPLES                                                                        ', &
+'   Sample usage:                                                                ', &
+'                                                                                ', &
+'     fpm help           # general fpm(1) command help                           ', &
+'     # subcommand descriptions                                                  ', &
+'     fpm help version   # show program version                                  ', &
+'     fpm help new       # display help for "new" subcommand                     ', &
+'     # special-purpose topics                                                   ', &
+'     fpm help manual    # All fpm(1) built-in documentation                     ', &
+'     fpm help compiler  # customizing compiler options                          ', &
+'     fpm help toc       # table of contents of help topics                      ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_list=[character(len=80) :: &
+'NAME                                                                            ', &
+' list(1) - list summary of fpm(1) subcommands                                   ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+' fpm list [-list]                                                               ', &
+'                                                                                ', &
+' fpm list --help|--version                                                      ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' Display a short description for each fpm(1) subcommand.                        ', &
+'                                                                                ', &
+'OPTIONS                                                                         ', &
+' --list     display a list of command options as well. This is the              ', &
+'            same output as generated by "fpm --list".                           ', &
+'                                                                                ', &
+'EXAMPLES                                                                        ', &
+' display a short list of fpm(1) subcommands                                     ', &
+'                                                                                ', &
+'  fpm list                                                                      ', &
+'  fpm --list                                                                    ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
     help_runner=[character(len=80) :: &
-   'NAME                                                                            ', &
-   '   --runner(1) - a shared option for specifying an application to launch        ', &
-   '                 executables.                                                   ', &
-   '                                                                                ', &
-   'SYNOPSIS                                                                        ', &
-   '   fpm run|test --runner CMD ... -- SUFFIX_OPTIONS                              ', &
-   '                                                                                ', &
-   'DESCRIPTION                                                                     ', &
-   '   The --runner option allows specifying a program to launch                    ', &
-   '   executables selected via the fpm(1) subcommands "run" and "test". This       ', &
-   '   gives easy recourse to utilities such as debuggers and other tools           ', &
-   '   that wrap other executables.                                                 ', &
-   '                                                                                ', &
-   '   These external commands are not part of fpm(1) itself as they vary           ', &
-   '   from platform to platform or require independent installation.               ', &
-   '                                                                                ', &
-   'OPTION                                                                          ', &
-   ' --runner ''CMD''  quoted command used to launch the fpm(1) executables.          ', &
-   '               Available for both the "run" and "test" subcommands.             ', &
-   '               If the keyword is specified without a value the default command  ', &
-   '               is "echo".                                                       ', &
-   ' -- SUFFIX_OPTIONS  additional options to suffix the command CMD and executable ', &
-   '                    file names with.                                            ', &
-   'EXAMPLES                                                                        ', &
-   '   Use cases for ''fpm run|test --runner "CMD"'' include employing                ', &
-   '   the following common GNU/Linux and Unix commands:                            ', &
-   '                                                                                ', &
-   ' INTERROGATE                                                                    ', &
-   '    + nm - list symbols from object files                                       ', &
-   '    + size - list section sizes and total size.                                 ', &
-   '    + ldd - print shared object dependencies                                    ', &
-   '    + ls - list directory contents                                              ', &
-   '    + stat - display file or file system status                                 ', &
-   '    + file - determine file type                                                ', &
-   ' PERFORMANCE AND DEBUGGING                                                      ', &
-   '    + gdb - The GNU Debugger                                                    ', &
-   '    + valgrind - a suite of tools for debugging and profiling                   ', &
-   '    + time - time a simple command or give resource usage                       ', &
-   '    + timeout - run a command with a time limit                                 ', &
-   ' COPY                                                                           ', &
-   '    + install - copy files and set attributes                                   ', &
-   '    + tar - an archiving utility                                                ', &
-   ' ALTER                                                                          ', &
-   '    + rm - remove files or directories                                          ', &
-   '    + chmod - change permissions of a file                                      ', &
-   '    + strip - remove unnecessary information from strippable files              ', &
-   '                                                                                ', &
-   ' For example                                                                    ', &
-   '                                                                                ', &
-   '   fpm test --runner gdb                                                        ', &
-   '   fpm run --runner "tar cvfz $HOME/bundle.tgz"                                 ', &
-   '   fpm run --runner ldd                                                         ', &
-   '   fpm run --runner strip                                                       ', &
-   '   fpm run --runner ''cp -t /usr/local/bin''                                      ', &
-   '                                                                                ', &
-   '   # options after executable name can be specified after the -- option         ', &
-   '   fpm --runner cp run -- /usr/local/bin/                                       ', &
-   '   # generates commands of the form "cp $FILENAME /usr/local/bin/"              ', &
-   '                                                                                ', &
-   '   # bash(1) alias example:                                                     ', &
-   '   alias fpm-install=\                                                          ', &
-   '   "fpm run --profile release --runner ''install -vbp -m 0711 -t ~/.local/bin''" ', &
-   '   fpm-install                                                           ', &
-   '' ]
-!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
-    help_fpm=[character(len=80) :: &
-    'NAME                                                                            ', &
-    '   fpm(1) - A Fortran package manager and build system                          ', &
-    '                                                                                ', &
-    'SYNOPSIS                                                                        ', &
-    '   fpm SUBCOMMAND [SUBCOMMAND_OPTIONS]                                          ', &
-    '                                                                                ', &
-    '   fpm --help|--version|--list                                                  ', &
-    '                                                                                ', &
-    'DESCRIPTION                                                                     ', &
-    ' fpm(1) is a package manager that helps you create Fortran projects             ', &
-    ' from source -- it automatically determines dependencies!                       ', &
-    '                                                                                ', &
-    ' Additionally fpm(1) lets you draw upon other fpm(1) packages in                ', &
-    ' distributed git(1) repositories or subdirectories as if the packages           ', &
-    ' were a basic part of your default programming environment, as well             ', &
-    ' as letting you share your projects with others in a similar manner.            ', &
-    '                                                                                ', &
-    ' All output goes into the directory "build/" which can generally be             ', &
-    ' removed and rebuilt if required. Note that if external packages are            ', &
-    ' being used you need network connectivity to rebuild from scratch.              ', &
-    '                                                                                ', &
-    'SUBCOMMANDS                                                                     ', &
-    help_list_nodash, &
-    'Their syntax is                                                                 ', &
-    '                                                                                ', &
-    help_list_dash, &
-    'GLOBAL SUBCOMMAND OPTIONS                                                       ', &
-    ' In addition, these options are valid on any subcommand:                        ', &
-    '                                                                                ', &
-    ' -C, --directory PATH  Change working directory to PATH before running any      ', &
-    '                       command.                                                 ', &
-    ' -V, --verbose         Display additional information when available when       ', &
-    '                       executing the subcommand.                                ', &
-    ' --help                Show help text and exit                                  ', &
-    '                                                                                ', &
-    'SHARED SUBCOMMAND OPTION DESCRIPTIONS                                           ', &
-    ' --profile PROF   selects the compilation profile for the build.                ', &
-    '                  Currently available profiles are "release" for                ', &
-    '                  high optimization and "debug" for full debug options.         ', &
-    '                  If --flag is not specified the "debug" flags are the          ', &
-    '                  default.                                                      ', &
-    ' --list           List candidates instead of building or running them. On       ', &
-    '                  the fpm(1) command this shows a brief list of subcommands.    ', &
-    ' --runner CMD     Provides a command to prefix program execution paths.         ', &
-    ' -- ARGS          Arguments to pass to executables.                             ', &
-    ' --version        Show version information and exit.                            ', &
-    '                                                                                ', &
-    'COMPILER OPTIONS                                                                ', &
-    ' To customize compiler options, see "fpm help compiler".                        ', &
-    '                                                                                ', &
-    'RESPONSE FILE                                                                   ', &
-    '  @file      You may replace the default options for the fpm(1) command from a  ', &
-    '             file if your leading options begin with @file. Initial options     ', &
-    '             will then be read from the "response file" "file.rsp" in the       ', &
-    '             current directory.                                                 ', &
-    '                                                                                ', &
-    '             If "file" does not exist or cannot be read, then an                ', &
-    '             error occurs and the program stops. Each line of the               ', &
-    '             file is prefixed with "options" and interpreted as a               ', &
-    '             separate argument. The file itself may not contain @file           ', &
-    '             arguments. That is, it is not processed recursively.               ', &
-    '                                                                                ', &
-    '             For more information on response files see                         ', &
-    '                                                                                ', &
-    '                https://urbanjost.github.io/M_CLI2/set_args.3m_cli2.html        ', &
-    '                                                                                ', &
-    '             The basic functionality described here will remain the same, but   ', &
-    '             other features described at the above reference may change.        ', &
-    '                                                                                ', &
-    'An example response file:                                                       ', &
-    '                                                                                ', &
-    '     # my build options                                                         ', &
-    '     options build                                                              ', &
-    '     options --compiler gfortran                                                ', &
-    '     options --flag "-pg -pthread -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"    ', &
-    '                                                                                ', &
-    '   Note response files do not (currently) allow for continued lines or multiple ', &
-    '   specifications of the same option.                                           ', &
-    '                                                                                ', &
-    'EXAMPLES                                                                        ', &
-    '   sample commands:                                                             ', &
-    '                                                                                ', &
-    '    fpm new mypackage --app --test                                              ', &
-    '    fpm build --compiler gfortran                                               ', &
-    '    fpm run                                                                     ', &
-    '    fpm test                                                                    ', &
-    '    fpm run --example                                                           ', &
-    '    fpm new --help                                                              ', &
-    '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
-    '    fpm install --prefix ~/.local                                               ', &
-    '                                                                                ', &
-    'SEE ALSO                                                                        ', &
-    '                                                                                ', &
-    ' + The fpm(1) home page is at https://github.com/fortran-lang/fpm               ', &
-    ' + Registered fpm(1) packages are at https://fortran-lang.org/packages          ', &
-    ' + The fpm(1) TOML file format is described at                                  ', &
-    '   https://github.com/fortran-lang/fpm/blob/main/manifest-reference.md          ', &
-    '']
-    help_list=[character(len=80) :: &
-    'NAME                                                                   ', &
-    ' list(1) - list summary of fpm(1) subcommands                          ', &
-    '                                                                       ', &
-    'SYNOPSIS                                                               ', &
-    ' fpm list [-list]                                                      ', &
-    '                                                                       ', &
-    ' fpm list --help|--version                                             ', &
-    '                                                                       ', &
-    'DESCRIPTION                                                            ', &
-    ' Display a short description for each fpm(1) subcommand.               ', &
-    '                                                                       ', &
-    'OPTIONS                                                                ', &
-    ' --list     display a list of command options as well. This is the     ', &
-    '            same output as generated by "fpm --list".                  ', &
-    '                                                                       ', &
-    'EXAMPLES                                                               ', &
-    ' display a short list of fpm(1) subcommands                            ', &
-    '                                                                       ', &
-    '  fpm list                                                             ', &
-    '  fpm --list                                                           ', &
-    '' ]
-    help_run=[character(len=80) :: &
-    'NAME                                                                   ', &
-    ' run(1) - the fpm(1) subcommand to run project applications            ', &
-    '                                                                       ', &
-    'SYNOPSIS                                                               ', &
-    ' fpm run [[--target] NAME(s) [--profile PROF] [COMPILER_OPTIONS]       ', &
-    '         [--runner "CMD"] [--example] [--list] [--all] [-- ARGS]       ', &
-    '                                                                       ', &
-    ' fpm run --help|--version                                              ', &
-    '                                                                       ', &
-    'DESCRIPTION                                                            ', &
-    ' Run the applications in your fpm(1) package. By default applications  ', &
-    ' in /app or specified as "executable" in your "fpm.toml" manifest are  ', &
-    ' used. Alternatively demonstration programs in example/ or specified in', &
-    ' the "example" section in "fpm.toml" can be executed. The applications ', &
-    ' are automatically rebuilt before being run if they are out of date.   ', &
-    '                                                                       ', &
-    'OPTIONS                                                                ', &
-    ' --target NAME(s)  list of application names to execute. No name is    ', &
-    '                   required if only one target exists. If no name is   ', &
-    '                   supplied and more than one candidate exists or a    ', &
-    '                   name has no match a list is produced and fpm(1)     ', &
-    '                   exits.                                              ', &
-    '                                                                       ', &
-    '                   Basic "globbing" is supported where "?" represents  ', &
-    '                   any single character and "*" represents any string. ', &
-    '                   Note The glob string normally needs quoted to       ', &
-    '                   the special characters from shell expansion.        ', &
-    ' --all             Run all examples or applications. An alias for the  ', &
-    '                   option --target "*".                                ', &
-    ' --example         Run example programs instead of applications.       ', &
-    ' --profile PROF    selects the compilation profile for the build.      ', &
-    '                   Currently available profiles are "release" for high ', &
-    '                   optimization and "debug" for full debug options.    ', &
-    '                   If --flag is not specified the "debug" flags are the', &
-    '                   default.                                            ',&
-    ' --runner CMD  A command to prefix the program execution paths with.   ', &
-    '               see "fpm help runner" for further details.              ', &
-    ' --list     list basenames of candidates instead of running them. Note ', &
-    '            out-of-date candidates will still be rebuilt before being  ', &
-    '            listed.                                                    ', &
-    ' -- ARGS    optional arguments to pass to the program(s). The same     ', &
-    '            arguments are passed to all program names specified.       ', &
-    'COMPILER OPTIONS                                                       ', &
-    ' To customize compiler options, see "fpm help compiler".               ', &
-    '                                                                       ', &
-    'EXAMPLES                                                               ', &
-    ' fpm(1) - run or display project applications:                         ', &
-    '                                                                       ', &
-    '  fpm run        # run a target when only one exists or list targets   ', &
-    '  fpm run --list # list basename of all targets, running nothing.      ', &
-    '  fpm run "demo*" --list # list target basenames starting with "demo*".', &
-    '  fpm run "psi*" --runner # list target pathnames starting with "psi*".', &
-    '  fpm run --all  # run all targets, no matter how many there are.      ', &
-    '                                                                       ', &
-    '  # run default program built or to be built with the compiler command ', &
-    '  # "f90". If more than one app exists a list displays and target names', &
-    '  # are required.                                                      ', &
-    '  fpm run --compiler f90                                               ', &
-    '                                                                       ', &
-    '  # run example programs instead of the application programs.          ', &
-    '  fpm run --example "*"                                                ', &
-    '                                                                       ', &
-    '  # run a specific program and pass arguments to the command           ', &
-    '  fpm run myprog -- -x 10 -y 20 --title "my title line"                ', &
-    '                                                                       ', &
-    '  # run production version of two applications                         ', &
-    '  fpm run --target prg1,prg2 --profile release                         ', &
-    '                                                                       ', &
-    '  # install executables in directory (assuming install(1) exists)      ', &
-    '  fpm run --runner ''install -b -m 0711 -p -t /usr/local/bin''         ', &
-    '' ]
-    help_build=[character(len=80) :: &
-    'NAME                                                                   ', &
-    ' build(1) - the fpm(1) subcommand to build a project                   ', &
-    '                                                                       ', &
-    'SYNOPSIS                                                               ', &
-    ' fpm build [--profile PROF] [COMPILER_OPTIONS] [--list] [--tests]      ', &
-    '                                                                       ', &
-    ' fpm build --help|--version                                            ', &
-    '                                                                       ', &
-    'DESCRIPTION                                                            ', &
-    ' The "fpm build" command                                               ', &
-    '    o Fetches any dependencies                                         ', &
-    '    o Scans your sources                                               ', &
-    '    o Builds them in the proper order                                  ', &
-    '                                                                       ', &
-    ' The Fortran source files are assumed by default to be in              ', &
-    '    o src/     for modules and procedure source                        ', &
-    '    o app/     main program(s) for applications                        ', &
-    '    o test/    main program(s) and support files for project tests     ', &
-    '    o example/ main program(s) for example programs                    ', &
-    ' Changed or new files found are rebuilt. The results are placed in     ', &
-    ' the build/ directory.                                                 ', &
-    '                                                                       ', &
-    ' Non-default pathnames and remote dependencies are used if             ', &
-    ' specified in the "fpm.toml" file.                                     ', &
-    '                                                                       ', &
-    'OPTIONS                                                                ', &
-    ' --profile PROF  selects the compilation profile for the build.        ', &
-    '                 Currently available profiles are "release" for        ', &
-    '                 high optimization and "debug" for full debug options. ', &
-    '                 If --flag is not specified the "debug" flags are the  ', &
-    '                 default.                                              ', &
-    ' --list          list candidates instead of building or running them   ', &
-    ' --tests         build all tests (otherwise only if needed)            ', &
-    ' --show-model    show the model and exit (do not build)                ', &
-    ' --help          print this help and exit                              ', &
-    ' --version       print program version information and exit            ', &
-    '                                                                       ', &
-    'COMPILER OPTIONS                                                       ', &
-    ' To customize compiler options, see "fpm help compiler".               ', &
-    '                                                                       ', &
-    'EXAMPLES                                                               ', &
-    ' Sample commands:                                                      ', &
-    '                                                                       ', &
-    '  fpm build                   # build with debug options               ', &
-    '  fpm build --profile release # build with high optimization           ', &
-    '' ]
-
-!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
-    help_help=[character(len=80) :: &
-    'NAME                                                                            ', &
-    '   help(1) - the fpm(1) subcommand to display help                              ', &
-    '                                                                                ', &
-    'SYNOPSIS                                                                        ', &
-    '   fpm help [fpm] [new] [build] [run] [test] [help] [version] [manual]          ', &
-    '   [runner] [compiler] [toc]                                                    ', &
-    '                                                                                ', &
-    'DESCRIPTION                                                                     ', &
-    '   The "fpm help" command is an alternative to the --help parameter             ', &
-    '   on the fpm(1) command and its subcommands. In addition it allows             ', &
-    '   for displaying general information such as how to set compiler options.      ', &
-    '                                                                                ', &
-    'OPTIONS                                                                         ', &
-    '   NAME(s)    A list of topic names to display. All the subcommands             ', &
-    '              have their own page (new, build, run, test, ...).                 ', &
-    '                                                                                ', &
-    '              Special topics include                                            ', &
-    '                + "toc" to generate a list of all topics                        ', &
-    '                + "manual" displays all the fpm(1) built-in documentation       ', & 
-    '                + "compiler" for the compiler customization options             ', &
-    '                + "runner" for the --runner options                             ', &
-    '                                                                                ', &
-    '              The default is to display help for the fpm(1) command             ', &
-    '              itself.                                                           ', &
-    'EXAMPLES                                                                        ', &
-    '   Sample usage:                                                                ', &
-    '                                                                                ', &
-    '     fpm help           # general fpm(1) command help                           ', &
-    '     # subcommand descriptions                                                  ', &
-    '     fpm help version   # show program version                                  ', &
-    '     fpm help new       # display help for "new" subcommand                     ', &
-    '     # special-purpose topics                                                   ', &
-    '     fpm help manual    # All fpm(1) built-in documentation                     ', &
-    '     fpm help compiler  # customizing compiler options                          ', &
-    '     fpm help toc       # table of contents of help topics                      ', &
-    '' ]
-!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
-    help_new=[character(len=80) :: &
-    'NAME                                                                            ', &
-    ' new(1) - the fpm(1) subcommand to initialize a new project                     ', &
-    'SYNOPSIS                                                                        ', &
-    '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|                    ', &
-    '      [--full|--bare][--backfill]                                               ', &
-    '                                                                                ', &
-    '  fpm new --help|--version                                                      ', &
-    '                                                                                ', &
-    'DESCRIPTION                                                                     ', &
-    ' "fpm new" creates and populates a new programming project directory.           ', &
-    ' It                                                                             ', &
-    '   o creates a directory with the specified name                                ', &
-    '   o runs the command "git init" in that directory                              ', &
-    '   o populates the directory with the default project directories               ', &
-    '   o adds sample Fortran source files                                           ', &
-    '                                                                                ', &
-    ' The default file structure (that will be automatically scanned) is             ', &
-    '                                                                                ', &
-    '     NAME/                                                                      ', &
-    '       fpm.toml                                                                 ', &
-    '       src/            # source for modules, libraries, and procedures          ', &
-    '           NAME.f90                                                             ', &
-    '       app/            # source for main programs                               ', &
-    '           main.f90                                                             ', &
-    '       test/           # source for test programs                               ', &
-    '           check.f90                                                            ', &
-    '       example/        # source for example programs                            ', &
-    '           demo.f90                                                             ', &
-    '       include/        # source for include files                               ', &
-    '                                                                                ', &
-    ' Using this file structure is highly encouraged, particularly for               ', &
-    ' small packages primarily intended to be used as dependencies.                  ', &
-    '                                                                                ', &
-    ' If you find this restrictive and need to customize the package                 ', &
-    ' structure you will find using the --full switch creates a                      ', &
-    ' heavily annotated manifest file with references to documentation               ', &
-    ' to aid in constructing complex package structures.                             ', &
-    '                                                                                ', &
-    ' Remember to update the information in the sample "fpm.toml"                    ', &
-    ' file with your name and e-mail address.                                        ', &
-    '                                                                                ', &
-    'OPTIONS                                                                         ', &
-    ' NAME   the name of the project directory to create. The name                   ', &
-    '        must be made of up to 63 ASCII letters, digits, underscores,            ', &
-    '        or hyphens, and start with a letter.                                    ', &
-    '                                                                                ', &
-    ' The default is to create the src/, app/, and test/ directories.                ', &
-    ' If any of the following options are specified then only the                    ', &
-    ' selected subdirectories are generated:                                         ', &
-    '                                                                                ', &
-    ' --lib,--src  create directory src/ and a placeholder module                    ', &
-    '              named "NAME.f90" for use with subcommand "build".                 ', &
-    ' --app        create directory app/ and a placeholder main                      ', &
-    '              program for use with subcommand "run".                            ', &
-    ' --test       create directory test/ and a placeholder program                  ', &
-    '              for use with the subcommand "test". Note that sans                ', &
-    '              "--lib" it really does not have anything to test.                 ', &
-    ' --example    create directory example/ and a placeholder program               ', &
-    '              for use with the subcommand "run --example".                      ', &
-    '              It is only created by default if "--full is" specified.           ', &
-    '                                                                                ', &
-    ' So the default is equivalent to                                                ', &
-    '                                                                                ', &
-    '    fpm NAME --lib --app --test                                                 ', &
-    '                                                                                ', &
-    ' --backfill   By default the directory must not exist. If this                  ', &
-    '              option is present the directory may pre-exist and                 ', &
-    '              only subdirectories and files that do not                         ', &
-    '              already exist will be created. For example, if you                ', &
-    '              previously entered "fpm new myname --lib" entering                ', &
-    '              "fpm new myname -full --backfill" will create any missing         ', &
-    '              app/, example/, and test/ directories and programs.               ', &
-    '                                                                                ', &
-    ' --full       By default a minimal manifest file ("fpm.toml") is                ', &
-    '              created that depends on auto-discovery. With this                 ', &
-    '              option a much more extensive manifest sample is written           ', &
-    '              and the example/ directory is created and populated.              ', &
-    '              It is designed to facilitate creating projects that               ', &
-    '              depend extensively on non-default build options.                  ', &
-    '                                                                                ', &
-    ' --bare       A minimal manifest file ("fpm.toml") is created and               ', &
-    '              "README.md" file is created but no directories or                 ', &
-    '              sample Fortran are generated.                                     ', &
-    '                                                                                ', &
-    ' --help       print this help and exit                                          ', &
-    ' --version    print program version information and exit                        ', &
-    '                                                                                ', &
-    'EXAMPLES                                                                        ', &
-    ' Sample use                                                                     ', &
-    '                                                                                ', &
-    '   fpm new myproject  # create new project directory and seed it                ', &
-    '   cd myproject       # Enter the new directory                                 ', &
-    '   # and run commands such as                                                   ', &
-    '   fpm build                                                                    ', &
-    '   fpm run            # run lone example application program                    ', &
-    '   fpm test           # run example test program(s)                             ', &
-    '   fpm run --example  # run lone example program                                ', &
-    '                                                                                ', &
-    '   fpm new A --full # create example/ and an annotated fpm.toml as well         ', &
-    '   fpm new A --bare # create no directories                                     ', &
-    '   create any missing files in current directory                                ', &
-    '   fpm new `pwd` --full --backfill                                              ', &
-    '' ]
-!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
-    help_test=[character(len=80) :: &
-    'NAME                                                                   ', &
-    ' test(1) - the fpm(1) subcommand to run project tests                  ', &
-    '                                                                       ', &
-    'SYNOPSIS                                                               ', &
-    ' fpm test [[--target] NAME(s)] [--profile PROF] [COMPILER_OPTIONS]     ', &
-    '          [--runner "CMD"] [--list][-- ARGS]                           ', &
-    '                                                                       ', &
-    ' fpm test --help|--version                                             ', &
-    '                                                                       ', &
-    'DESCRIPTION                                                            ', &
-    ' Run applications you have built to test your project.                 ', &
-    '                                                                       ', &
-    'OPTIONS                                                                ', &
-    ' --target NAME(s)  optional list of specific test names to execute.    ', &
-    '                   The default is to run all the tests in test/        ', &
-    '                   or the tests listed in the "fpm.toml" file.         ', &
-    '                                                                       ', &
-    '                   Basic "globbing" is supported where "?" represents  ', &
-    '                   any single character and "*" represents any string. ', &
-    '                   Note The glob string normally needs quoted to       ', &
-    '                   protect the special characters from shell expansion.', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
-    ' --runner CMD  A command to prefix the program execution paths with.   ', &
-    '               see "fpm help runner" for further details.              ', &
-    ' --list        list candidate basenames instead of running them. Note  ', &
-    '               they will still be built if not currently up to date.   ', &
-    ' -- ARGS       optional arguments to pass to the test program(s).      ', &
-    '               The same arguments are passed to all test names         ', &
-    '               specified.                                              ', &
-    '                                                                       ', &
-    'COMPILER OPTIONS                                                                ', &
-    ' To customize compiler options, see "fpm help compiler".                        ', &
-    '                                                                       ', &
-    'EXAMPLES                                                               ', &
-    'run tests                                                              ', &
-    '                                                                       ', &
-    ' # run default tests in /test or as specified in "fpm.toml"            ', &
-    ' fpm test                                                              ', &
-    '                                                                       ', &
-    ' # run using compiler command "f90"                                    ', &
-    ' fpm test --compiler f90                                               ', &
-    '                                                                       ', &
-    ' # run a specific test and pass arguments to the command               ', &
-    ' fpm test mytest -- -x 10 -y 20 --title "my title line"                ', &
-    '                                                                       ', &
-    ' fpm test tst1 tst2 --profile PROF  # run production version of two tests', &
-    '' ]
-    help_update=[character(len=80) :: &
-    'NAME', &
-    ' update(1) - manage project dependencies', &
-    '', &
-    'SYNOPSIS', &
-    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
-    '', &
-    'DESCRIPTION', &
-    ' Manage and update project dependencies. If no dependency names are', &
-    ' provided all the dependencies are updated automatically.', &
-    '', &
-    'OPTIONS', &
-    ' --fetch-only  Only fetch dependencies, do not update existing projects', &
-    ' --clean       Do not use previous dependency cache', &
-    ' --verbose     Show additional printout', &
-    '', &
-    'SEE ALSO', &
-    ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
-    '' ]
-    help_install=[character(len=80) :: &
-    'NAME', &
-    ' install(1) - install fpm projects', &
-    '', &
-    'SYNOPSIS', &
-    ' fpm install [--profile PROF] [COMPILER_OPTIONS] [--list] [--no-rebuild]', &
-    '             [--prefix DIR] [--bindir DIR] [--libdir DIR] [--includedir DIR]', &
-    '             [--verbose]', &
-    '', &
-    'DESCRIPTION', &
-    ' Subcommand to install fpm projects. Running install will export the', &
-    ' current project to the selected prefix, this will by default install all', &
-    ' executables (tests and examples are excluded) which are part of the projects.', &
-    ' Libraries and module files are only installed for projects requiring the', &
-    ' installation of those components in the package manifest.', &
-    '                                                                                ', &
-    'OPTIONS                                                                         ', &
-    ' --list            list all installable targets for this project,               ', &
-    '                   but do not install any of them                               ', &
-    ' --profile PROF    selects the compilation profile for the build.               ', &
-    '                   Currently available profiles are "release" for               ', &
-    '                   high optimization and "debug" for full debug options.        ', &
-    '                   If --flag is not specified the "debug" flags are the         ', &
-    '                   default.                                                     ', &
-    ' --no-rebuild      do not rebuild project before installation                   ', &
-    ' --prefix DIR      path to installation directory (requires write access),      ', &
-    '                   the default prefix on Unix systems is $HOME/.local           ', &
-    '                   and %APPDATA%\local on Windows                               ', &
-    ' --bindir DIR      subdirectory to place executables in (default: bin)          ', &
-    ' --libdir DIR      subdirectory to place libraries and archives in              ', &
-    '                   (default: lib)                                               ', &
-    ' --includedir DIR  subdirectory to place headers and module files in            ', &
-    '                   (default: include)                                           ', &
-    ' --verbose         print more information                                       ', &
-    '                                                                                ', &
-    'COMPILER OPTIONS                                                                ', &
-    ' To customize compiler options, see "fpm help compiler".                        ', &
-    '                                                                                ', &
-    'EXAMPLES                                                                        ', &
-    '    fpm install --profile release  # Install release version of project:        ', &
-    '    # Install the project without rebuilding the executables:                   ', &
-    '    fpm install --no-rebuild                                                    ', &
-    '    # Install executables to a custom prefix into the exe directory:            ', &
-    '    fpm install --prefix $PWD --bindir exe                                      ', &
-    '' ]
-    help_env=[character(len=80) :: &
-    'NAME                                                                            ', &
-    '   compiler(1) - a description of methods for customizing compiler-related      ', &
-    '                 options.                                                       ', &
-    'SYNOPSIS                                                                        ', &
-    ' Use command options to directly specify compiler-related options               ', &
-    '                                                                                ', &
-    '   fpm run|test|build|install --compiler FC --c-compiler CC --archiver AR       ', &
-    '      --flag FFLAGS --c-flag CFLAGS --link-flag LDFLAGS                         ', &
-    '                                                                                ', &
-    ' Select a set of environment variables based on a specified prefix              ', &
-    '                                                                                ', &
-    '   fpm run|test|build|install --env PREFIX ...                                  ', &
-    '                                                                                ', &
-    'DESCRIPTION                                                                     ', &
-    ' By default, the compiler options are automatically selected and depend only on ', &
-    ' the mode selected via the --profile option on build(1), run(1), test(1) and    ', &
-    ' install(1).                                                                    ', &
-    '                                                                                ', &
-    ' But the compiler as well as the compilation-related options to use             ', &
-    ' may be explicitly specified either by command-line options or by sets of       ', &
-    ' environment variables.                                                         ', &
-    '                                                                                ', &
-    'COMPILER OPTIONS                                                                ', &
-    ' Compiler-related options may be specified on the command line. Values override ', &
-    ' any defaults specified with environment variables.                             ', &
-    '                                                                                ', &
-    ' --compiler FC      Specify a Fortran compiler name. The default is "gfortran". ', &
-    ' --c-compiler CC    Specify the C compiler name. Automatically determined by    ', &
-    '                    default based on the value of the current Fortran compiler. ', &
-    ' --archiver AR      Specify the archiver name. Automatically determined by      ', &
-    '                    default based on the compiler name.                         ', &
-    ' --flag  FFLAGS     selects compile arguments for the build. These are set to   ', &
-    '                    profile-specific  options if --profile is specified. Note   ', &
-    '                    object and .mod directory locations for files created in the', &
-    '                    build/ director are always built in.                        ', &
-    ' --c-flag CFLAGS    select compile arguments specific for C source in the build.', &
-    ' --link-flag LDFLAGS   select arguments passed to the linker for the build.     ', &
-    '                                                                                ', &
-    'ENVIRONMENT VARIABLES                                                           ', &
-    ' Each of the above compiler options can have its defaults overridden by a       ', &
-    ' corresponding environment variable. The suffix of the associated variable name ', &
-    ' is indicated above as the parameter value.                                     ', &
-    '                                                                                ', &
-    ' The default prefix is "FPM_". The environment variable name prefix may be      ', &
-    ' changed using the following "--env" option:                                    ', &
-    '                                                                                ', &
-    ' --env PREFIX     allows specifying a prefix for the environment variables that ', &
-    '                  can be used to change the defaults for the compiler-related   ', &
-    '                  options.                                                      ', &
-    '                                                                                ', &
-    '                  As noted, the default prefix is "FPM". If no value is given   ', &
-    '                  the basename of the current compiler is used.                 ', &
-    '                                                                                ', &
-    '                  If the value is not blank, an underscore ("_") is appended    ', &
-    '                  and then the prefix is added to the names FC, CC, AR, FFLAGS, ', &
-    '                  CFLAGS, and LDFLAGS.                                          ', &
-    '                                                                                ', &
-    ' The variable names affected (with the prefix shown as "*") are:                ', &
-    '                                                                                ', &
-    ' *_FC            sets the path to the Fortran compiler used for the build,      ', &
-    '                   will be overwritten by --compiler command line option        ', &
-    '                                                                                ', &
-    ' *_FFLAGS        sets the arguments for the Fortran compiler                    ', &
-    '                   will be overwritten by --flag command line option            ', &
-    '                                                                                ', &
-    ' *_CC            sets the path to the C compiler used for the build,            ', &
-    '                   will be overwritten by --c-compiler command line option      ', &
-    '                                                                                ', &
-    ' *_CFLAGS        sets the arguments for the C compiler                          ', &
-    '                   will be overwritten by --c-flag command line option          ', &
-    '                                                                                ', &
-    ' *_AR            sets the path to the archiver used for the build,              ', &
-    '                   will be overwritten by --archiver command line option        ', &
-    '                                                                                ', &
-    ' *_LDFLAGS       sets additional link arguments for creating executables        ', &
-    '                   will be overwritten by --link-flag command line option       ', &
-    '                                                                                ', &
-    'EXAMPLE                                                                         ', &
-    ' This can be used to change the defaults for a specific compiler, or to use     ', &
-    ' variable names without the FPM_ prefix.                                        ', &
-    '                                                                                ', &
-    '     fpm -compiler ifort         # specify compiler using command-line          ', &
-    '     export FPM_COMPILER=nagfor  # change default compiler using environment    ', &
-    '                                 # variable in bash(1) shell.                   ', &
-    '     fpm build -env TIMING # use the prefix "TIMING_" instead of "FPM_".        ', &
-    '     fpm build -env ""  # use a null (no spaces!) to use no prefix              ', &
-    '     fpm build -env     # use compiler name as prefix for environment variables ', &
-    '' ]
+'NAME                                                                            ', &
+'   --runner(1) - a shared option for specifying an application to launch        ', &
+'                 executables.                                                   ', &
+'                                                                                ', &
+'SYNOPSIS                                                                        ', &
+'   fpm run|test --runner CMD ... -- SUFFIX_OPTIONS                              ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+'   The --runner option allows specifying a program to launch                    ', &
+'   executables selected via the fpm(1) subcommands "run" and "test". This       ', &
+'   gives easy recourse to utilities such as debuggers and other tools           ', &
+'   that wrap other executables.                                                 ', &
+'                                                                                ', &
+'   These external commands are not part of fpm(1) itself as they vary           ', &
+'   from platform to platform or require independent installation.               ', &
+'                                                                                ', &
+'OPTION                                                                          ', &
+' --runner ''CMD''  quoted command used to launch the fpm(1) executables.          ', &
+'               Available for both the "run" and "test" subcommands.             ', &
+'               If the keyword is specified without a value the default command  ', &
+'               is "echo".                                                       ', &
+' -- SUFFIX_OPTIONS  additional options to suffix the command CMD and executable ', &
+'                    file names with.                                            ', &
+'EXAMPLES                                                                        ', &
+'   Use cases for ''fpm run|test --runner "CMD"'' include employing                ', &
+'   the following common GNU/Linux and Unix commands:                            ', &
+'                                                                                ', &
+' INTERROGATE                                                                    ', &
+'    + nm - list symbols from object files                                       ', &
+'    + size - list section sizes and total size.                                 ', &
+'    + ldd - print shared object dependencies                                    ', &
+'    + ls - list directory contents                                              ', &
+'    + stat - display file or file system status                                 ', &
+'    + file - determine file type                                                ', &
+' PERFORMANCE AND DEBUGGING                                                      ', &
+'    + gdb - The GNU Debugger                                                    ', &
+'    + valgrind - a suite of tools for debugging and profiling                   ', &
+'    + time - time a simple command or give resource usage                       ', &
+'    + timeout - run a command with a time limit                                 ', &
+' COPY                                                                           ', &
+'    + install - copy files and set attributes                                   ', &
+'    + tar - an archiving utility                                                ', &
+' ALTER                                                                          ', &
+'    + rm - remove files or directories                                          ', &
+'    + chmod - change permissions of a file                                      ', &
+'    + strip - remove unnecessary information from strippable files              ', &
+'                                                                                ', &
+'For example                                                                     ', &
+'                                                                                ', &
+'    fpm test --runner gdb                                                       ', &
+'    fpm run --runner "tar cvfz $HOME/bundle.tgz"                                ', &
+'    fpm run --runner ldd                                                        ', &
+'    fpm run --runner strip                                                      ', &
+'    fpm run --runner ''cp -t /usr/local/bin''                                   ', &
+'                                                                                ', &
+'    # options after executable name can be specified after the -- option        ', &
+'    fpm --runner cp run -- /usr/local/bin/                                      ', &
+'    # generates commands of the form "cp $FILENAME /usr/local/bin/"             ', &
+'                                                                                ', &
+'    # bash(1) alias example:                                                    ', &
+'    alias fpm-install=\                                                         ', &
+'    "fpm run --profile release --runner ''install -vbp -m 0711 -t ~/.local/bin''"', &
+'    fpm-install                                                                 ', &
+'' ]
+!12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
+   help_env=[character(len=80) :: &
+'NAME                                                                            ', &
+'   compiler(1) - a description of methods for customizing compiler-related      ', &
+'                 options.                                                       ', &
+'SYNOPSIS                                                                        ', &
+' Use command options to directly specify compiler-related options               ', &
+'                                                                                ', &
+'   fpm run|test|build|install --compiler FC --c-compiler CC --archiver AR       ', &
+'      --flag FFLAGS --c-flag CFLAGS --link-flag LDFLAGS                         ', &
+'                                                                                ', &
+' Select a set of environment variables based on a specified prefix              ', &
+'                                                                                ', &
+'   fpm run|test|build|install --env PREFIX ...                                  ', &
+'                                                                                ', &
+'DESCRIPTION                                                                     ', &
+' By default, the compiler options are automatically selected and depend only on ', &
+' the mode selected via the --profile option on build(1), run(1), test(1) and    ', &
+' install(1).                                                                    ', &
+'                                                                                ', &
+' But the compiler as well as the compilation-related options to use             ', &
+' may be explicitly specified either by command-line options or by sets of       ', &
+' environment variables.                                                         ', &
+'                                                                                ', &
+'COMPILER OPTIONS                                                                ', &
+' Compiler-related options may be specified on the command line. Values override ', &
+' any defaults specified with environment variables.                             ', &
+'                                                                                ', &
+' --compiler FC      Specify a Fortran compiler name. The default is "gfortran". ', &
+' --c-compiler CC    Specify the C compiler name. Automatically determined by    ', &
+'                    default based on the value of the current Fortran compiler. ', &
+' --archiver AR      Specify the archiver name. Automatically determined by      ', &
+'                    default based on the compiler name.                         ', &
+' --flag  FFLAGS     selects compile arguments for the build. These are set to   ', &
+'                    profile-specific  options if --profile is specified. Note   ', &
+'                    object and .mod directory locations for files created in the', &
+'                    build/ director are always built in.                        ', &
+' --c-flag CFLAGS    select compile arguments specific for C source in the build.', &
+' --link-flag LDFLAGS   select arguments passed to the linker for the build.     ', &
+'                                                                                ', &
+'ENVIRONMENT VARIABLES                                                           ', &
+' Each of the above compiler options can have its defaults overridden by a       ', &
+' corresponding environment variable. The suffix of the associated variable name ', &
+' is indicated above as the parameter value.                                     ', &
+'                                                                                ', &
+' The default prefix is "FPM_". The environment variable name prefix may be      ', &
+' changed using the following "--env" option:                                    ', &
+'                                                                                ', &
+' --env PREFIX     allows specifying a prefix for the environment variables that ', &
+'                  can be used to change the defaults for the compiler-related   ', &
+'                  options.                                                      ', &
+'                                                                                ', &
+'                  As noted, the default prefix is "FPM". If no value is given   ', &
+'                  the basename of the current compiler is used.                 ', &
+'                                                                                ', &
+'                  If the value is not blank, an underscore ("_") is appended    ', &
+'                  and then the prefix is added to the names FC, CC, AR, FFLAGS, ', &
+'                  CFLAGS, and LDFLAGS.                                          ', &
+'                                                                                ', &
+' The variable names affected (with the prefix shown as "*") are:                ', &
+'                                                                                ', &
+' *_FC            sets the path to the Fortran compiler used for the build,      ', &
+'                   will be overwritten by --compiler command line option        ', &
+'                                                                                ', &
+' *_FFLAGS        sets the arguments for the Fortran compiler                    ', &
+'                   will be overwritten by --flag command line option            ', &
+'                                                                                ', &
+' *_CC            sets the path to the C compiler used for the build,            ', &
+'                   will be overwritten by --c-compiler command line option      ', &
+'                                                                                ', &
+' *_CFLAGS        sets the arguments for the C compiler                          ', &
+'                   will be overwritten by --c-flag command line option          ', &
+'                                                                                ', &
+' *_AR            sets the path to the archiver used for the build,              ', &
+'                   will be overwritten by --archiver command line option        ', &
+'                                                                                ', &
+' *_LDFLAGS       sets additional link arguments for creating executables        ', &
+'                   will be overwritten by --link-flag command line option       ', &
+'                                                                                ', &
+'EXAMPLE                                                                         ', &
+' This can be used to change the defaults for a specific compiler, or to use     ', &
+' variable names without the FPM_ prefix.                                        ', &
+'                                                                                ', &
+'     fpm -compiler ifort         # specify compiler using command-line          ', &
+'     export FPM_COMPILER=nagfor  # change default compiler using environment    ', &
+'                                 # variable in bash(1) shell.                   ', &
+'     fpm build -env TIMING # use the prefix "TIMING_" instead of "FPM_".        ', &
+'     fpm build -env ""  # use a null (no spaces!) to use no prefix              ', &
+'     fpm build -env     # use compiler name as prefix for environment variables ', &
+'' ]
     end subroutine set_help
 
     subroutine get_char_arg(var, arg)
