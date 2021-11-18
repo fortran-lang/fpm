@@ -193,10 +193,10 @@ contains
               val_env='FPM_'//trim(adjustl(val_env))//"_"
            endif
            new_fc_default=trim(adjustl(new_fc_default))
+           verbose=lget('verbose')
            if(verbose)then
               write(*,'(1x,*(g0))') '<INFO> ENVIRONMENT PREFIX:  ',val_env
            endif
-           verbose=lget('verbose')
            compiler_args = &
              ' --env "dummy"'// &
              ' --profile " "' // &
