@@ -133,10 +133,10 @@ contains
         type(fpm_install_settings), allocatable :: install_settings
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, archiver
-
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", ldflags_env = "LDFLAGS", &
             & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " "
+        character(len=:), allocatable :: new_fc_default
 
         call set_help()
         ! text for --version switch,
@@ -175,35 +175,46 @@ contains
         ! without moving all calls to get_fpm_env(3f) into the places where compiler_args(3f)
         ! is used, need to process the --env option and optionally the --compiler option before
         ! the actual subcommands are processed, so need to make fax calls to set_args(3f) to
-        ! get the values
-        call set_args('--env "FPM"',ierr=idum)   ! parse without errors to get value of --env
+        ! get the values. A little convoluted but gives the desired behavior.
+
+        ! first get compiler from normal command line or FPM_FC.
+        val_env='FPM_'
+        new_fc_default=get_fpm_env(fc_env, fc_default)
+        ! now see if --env option is present using special call to SET_ARGS(3f)
+        call set_args('--env "FPM_"',ierr=idum)   ! parse without errors to get value of --env
         val_env=sget('env')
         if(specified('env'))then
-           if(val_env.eq.'')then  ! if no value use compiler name
+           if(val_env.eq.''.and.len(val_env).eq.1) then
+              val_env="FPM_"
               call set_args(' --compiler "'//get_fpm_env(fc_env, fc_default)//'"',ierr=idum)
-              val_env=sget('compiler')
-              val_env='FPM_'//trim(adjustl(val_env))
-           elseif(val_env.eq.' ')then
-              val_env='FPM'
+              new_fc_default=sget('compiler')
+              val_env='FPM_'//trim(adjustl(basename(sget('compiler'))))//'_'
+           elseif(val_env.ne.'')then
+              val_env=trim(adjustl(val_env))//"_"
            endif
-        else
-           val_env='FPM'
+           new_fc_default=trim(adjustl(new_fc_default))
+           compiler_args = &
+             ' --env "dummy"'// &
+             ' --profile " "' // &
+             ' --compiler "'//get_fpm_env(fc_env, new_fc_default)//'"' // &
+             ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
+             ' --archiver "'//get_fpm_env(ar_env, ar_default)//'"' // &
+             ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
+             ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
+             ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
+        else  ! if --env is not present skip other compiler-related variables
+           compiler_args = &
+             ' --profile  " "' // &
+             ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
+             ' --c-compiler " "' // &
+             ' --archiver " "' // &
+             ' --flag:: " "' // &
+             ' --c-flag:: " "' // &
+             ' --link-flag:: " "'
         endif
-        if(val_env.ne.'')val_env=trim(adjustl(val_env))//'_'
-        val_env=trim(adjustl(val_env))
         if(lget('verbose'))then
            write(*,*)'<INFO> ENVIRONMENT PREFIX:  ',val_env
         endif
-
-        compiler_args = &
-          ' --env "dummy"'// &
-          ' --profile " "' // &
-          ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
-          ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
-          ' --archiver "'//get_fpm_env(ar_env, ar_default)//'"' // &
-          ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
-          ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
-          ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
 
         ! now set subcommand-specific help text and process commandline
         ! arguments. Then call subcommand routine
@@ -587,7 +598,7 @@ contains
 '  list      Display this list of subcommand descriptions                        ', &
 '                                                                                ', &
 ' Enter "fpm --list" for a brief list of subcommand options. Enter               ', &
-' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.             ', &
+' "fpm help" or "fpm help SUBCOMMAND" for detailed descriptions.                 ', &
 ' ']
 !12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
    help_list_dash = [character(len=80) :: &
@@ -595,7 +606,7 @@ contains
 '          [--full|--bare] [--backfill] [--directory PATH]                       ', &
 ' build [--profile PROF] [COMPILER_OPTIONS] [--list] [--tests]                   ', &
 '           [--directory PATH] [--show-model]                                    ', &
-' run [[--target] NAME(s) [--example] [--profile PROF] [--all] [--runner "CMD"]  ', &
+' run [[--target] NAME(s)|--all] [--example] [--profile PROF] [--runner "CMD"]   ', &
 '      [COMPILER_OPTIONS] [--list] [--directory PATH] [-- ARGS]                  ', &
 ' test [[--target] NAME(s)] [--profile PROF] [--runner "CMD"] [--runner "CMD"]   ', &
 '      [COMPILER_OPTIONS] [--directory PATH] [--list] [-- ARGS]                  ', &
@@ -1050,7 +1061,7 @@ contains
 '                                                                                ', &
 '              Special topics include                                            ', &
 '                + "toc" to generate a list of all topics                        ', &
-'                + "manual" displays all the fpm(1) built-in documentation       ', & 
+'                + "manual" displays all the fpm(1) built-in documentation       ', &
 '                + "compiler" for the compiler customization options             ', &
 '                + "runner" for the --runner options                             ', &
 '                + "response" for information on using response files as         ', &
@@ -1166,92 +1177,102 @@ contains
 ' Use command options to directly specify compiler-related options               ', &
 '                                                                                ', &
 '   fpm run|test|build|install --compiler FC --c-compiler CC --archiver AR       ', &
-'      --flag FFLAGS --c-flag CFLAGS --link-flag LDFLAGS                         ', &
+'      --flag FFLAGS --c-flag CFLAGS --link-flag LDFLAGS ...                     ', &
 '                                                                                ', &
-' Select a set of environment variables based on a specified prefix              ', &
+' Select a set of environment variables based on a specified "FPM" prefix        ', &
 '                                                                                ', &
-'   fpm run|test|build|install --env PREFIX ...                                  ', &
+'   fpm run|test|build|install --env [MODIFIER] ...                              ', &
 '                                                                                ', &
 'DESCRIPTION                                                                     ', &
 ' By default, the compiler options are automatically selected and depend only on ', &
-' the mode selected via the --profile option on build(1), run(1), test(1) and    ', &
-' install(1).                                                                    ', &
+' the modes selected via the --profile option on build(1), run(1), test(1),      ', &
+' build and install(1).                                                          ', &
 '                                                                                ', &
 ' But the compiler as well as the compilation-related options to use             ', &
-' may be explicitly specified either by command-line options or by sets of       ', &
+' may be explicitly specified either by command-line options and/or by sets of   ', &
 ' environment variables.                                                         ', &
 '                                                                                ', &
-'COMPILER OPTIONS                                                                ', &
-' Compiler-related options may be specified on the command line. Values override ', &
-' any defaults specified with environment variables.                             ', &
+'COMPILER COMMAND LINE OPTIONS                                                   ', &
+' Compiler-related command line options override any defaults specified with     ', &
+' with environment variables.                                                    ', &
 '                                                                                ', &
 ' --compiler FC      Specify a Fortran compiler name. The default is "gfortran". ', &
-' --c-compiler CC    Specify the C compiler name. Automatically determined by    ', &
-'                    default based on the value of the current Fortran compiler. ', &
-' --archiver AR      Specify the archiver name. Automatically determined by      ', &
-'                    default based on the compiler name.                         ', &
-' --flag  FFLAGS     selects compile arguments for the build. These are set to   ', &
-'                    profile-specific  options if --profile is specified. Note   ', &
-'                    object and .mod directory locations for files created in the', &
-'                    build/ director are always built in.                        ', &
-' --c-flag CFLAGS    select compile arguments specific for C source in the build.', &
-' --link-flag LDFLAGS   select arguments passed to the linker for the build.     ', &
+'                                                                                ', &
+' Each supported compiler comes with a group of supported options automatically  ', &
+' determined by the compiler name and the --profile switch but these defaults    ', &
+' may additionaly be explicitly overridden:                                      ', &
+'                                                                                ', &
+' --flag  FFLAGS(1)  Selects compile arguments. These override the defaults      ', &
+'                    set by profiles unless --profile is specified in which case ', &
+'                    the options are joined.                                     ', &
+'                    Note objects and .mod directory locations for files created ', &
+'                    in the build/ director are always built in.                 ', &
+' --c-compiler CC    C compiler name.                                            ', &
+' --c-flag CFLAGS(1)      Select compile arguments specific for C source         ', &
+' --link-flag LDFLAGS(1)  Select arguments passed to the linker.                 ', &
+' --archiver AR      Archiver name.                                              ', &
+'                                                                                ', &
+' (1) indicates this option may be repeated multiple times.                      ', &
 '                                                                                ', &
 'ENVIRONMENT VARIABLES                                                           ', &
+'                                                                                ', &
 ' Each of the above compiler options can have its defaults overridden by a       ', &
-' corresponding environment variable. The suffix of the associated variable name ', &
-' is indicated above as the parameter value.                                     ', &
+' corresponding environment variable.                                            ', &
 '                                                                                ', &
-' The default prefix is "FPM_". The environment variable name prefix may be      ', &
-' changed using the following "--env" option:                                    ', &
+' Environment variables are easy to use inadvertently, and in this case the      ', &
+' desired values are very specific to a particular compiler -- so the method used', &
+' allows for compiler-specific sets of variables to be used and for the sets     ', &
+' to be ignored unless specifically invoked.                                     ', &
 '                                                                                ', &
-' --env MODIFIER  allows modifying the "FPM_" prefix for the environment         ', &
-'                 variables that is used to change the defaults for the          ', &
-'                 compiler-related options.                                      ', &
+' The only environment variable detected by default is FPM_FC, which may         ', &
+' be used to override the default compiler name. A full pathname may be used.    ', &
+' The basename of the FPM_FC variable will become the default modifier           ', &
+' as described below.                                                            ', &
 '                                                                                ', &
+' All other compiler-related environment variables are ignored unless the        ', &
+' "--env" parameter is present on the command line.                              ', &
+'                                                                                ', &
+' --env MODIFIER  Indicates additional environment variables should be used and  ', &
+'                  allows modifying the prefix of the variables searched for.    ', &
 '                 The value is appended to "FPM_", an underscore ("_")           ', &
 '                 is added, and the resulting prefix is added to the names       ', &
-'                 FC, CC, AR, FFLAGS, CFLAGS, and LDFLAGS. That is, the          ', &
-'                 environment variables that will be searched for will be        ', &
-'                 of the form FPM_MODIFIER_KEYWORD.                              ', &
+'                 FC, CC, AR, FFLAGS, CFLAGS, and LDFLAGS.                       ', &
 '                                                                                ', &
 '                 If no value is given the basename of the current compiler      ', &
 '                 is assumed.                                                    ', &
 '                                                                                ', &
 '                 A special case is when MODIFIER is explicitly a blank string.  ', &
 '                 In that case, the environment names searched for have no       ', &
-'                 suffix, and are simply FC, CC, AR, FFLAGS, CFLAGS, and LDFLAGS.', &
+'                 prefix, and are simply FC, CC, AR, FFLAGS, CFLAGS, and LDFLAGS.', &
 '                                                                                ', &
-' The variable names affected (with the prefix shown as "*") are:                ', &
+' The variable names affected (with modifier shown as "*") are:                  ', &
 '                                                                                ', &
-' *FC             sets the path to the Fortran compiler used for the build,      ', &
-'                 will be overwritten by --compiler command line option          ', &
-'                                                                                ', &
-' *FFLAGS         sets the arguments for the Fortran compiler                    ', &
-'                 will be overwritten by --flag command line option              ', &
-'                                                                                ', &
-' *CC             sets the path to the C compiler used for the build,            ', &
-'                 will be overwritten by --c-compiler command line option        ', &
-'                                                                                ', &
-' *CFLAGS         sets the arguments for the C compiler                          ', &
-'                 will be overwritten by --c-flag command line option            ', &
-'                                                                                ', &
-' *AR             sets the path to the archiver used for the build,              ', &
-'                 will be overwritten by --archiver command line option          ', &
-'                                                                                ', &
-' *LDFLAGS        sets additional link arguments for creating executables        ', &
-'                 will be overwritten by --link-flag command line option         ', &
-'                                                                                ', &
+'    variable name  CLI option   Description                                     ', &
+'    -------------  -----------  ----------------------------------------------- ', &
+'    FPM_*_FC       --compiler   sets the path to the Fortran compiler           ', &
+'    FPM_*_FFLAGS   --flag       sets the arguments for the Fortran compiler     ', &
+'    FPM_*_CC       --c-compiler sets the path to the C compiler                 ', &
+'    FPM_*_CFLAGS   --c-flag     sets the arguments for the C compiler           ', &
+'    FPM_*_AR       --archiver   sets the path to the archiver                   ', &
+'    FPM_*_LDFLAGS  --link-flag  sets additional link arguments for creating     ', &
+'                                executables                                     ', &
 'EXAMPLE                                                                         ', &
 ' This can be used to change the defaults for a specific compiler, or to use     ', &
 ' variable names without the FPM_ prefix.                                        ', &
 '                                                                                ', &
-'     fpm -compiler ifort         # specify compiler using command-line          ', &
-'     export FPM_COMPILER=_nagfor # change default compiler using environment    ', &
-'                                 # variable in bash(1) shell.                   ', &
-'     fpm build -env TIMING # use the prefix "FPM_TIMING_" instead of "FPM_".    ', &
-'     fpm build -env ""  # use a null (no spaces!) to use no prefix              ', &
-'     fpm build -env     # use FPM_"compiler_name" as prefix for environment     ', &
+'     fpm -compiler ifort   # specify compiler using command-line                ', &
+'     export FPM_FC=_nagfor # change default compiler using environment          ', &
+'                           # variable in bash(1) shell.                         ', &
+'     export FPM_TIME_FC=ifort                                                   ', &
+'     export FPM_TIME_FFLAGS="-p"                                                ', &
+'     export FPM_TIME_CC=icc                                                     ', &
+'     export FPM_TIME_CFLAGS=""                                                  ', &
+'     export FPM_TIME_AR=ar                                                      ', &
+'     export FPM_TIME_LDFLAGS=""                                                 ', &
+'     fpm build -env TIMING # use the prefix "FPM_TIMING_".                      ', &
+'     fpm build -env ""  # use a null (no spaces!) to use no prefix and thus     ', &
+'                        # to simply use FC, CC, AR, FFLAGS, CFLAGS, and LDFLAGS.', &
+'     fpm build -env     # use FPM_"compiler_name"_ as the prefix for            ', &
 '                        # environment variables                                 ', &
 '' ]
 !12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
@@ -1276,7 +1297,7 @@ contains
 '                                                                                ', &
 '  For more information on response files see                                    ', &
 '                                                                                ', &
-'     https://urbanjost.github.io/M_CLI2/set_args.3m_cli2.html                   ', & 
+'     https://urbanjost.github.io/M_CLI2/set_args.3m_cli2.html                   ', &
 '                                                                                ', &
 '  The basic functionality described here will remain the same, but              ', &
 '  other features described at the above reference may change.                   ', &
@@ -1307,7 +1328,7 @@ contains
       character(len=*), intent(in) :: default
       character(len=:), allocatable :: val
 
-      val = get_env(val_env//env, default)
+         val = get_env(val_env//env, default)
 
     end function get_fpm_env
 
