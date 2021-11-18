@@ -119,10 +119,9 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 & 'runner', 'compiler', 'response', 'version', 'toc' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
-    val_profile, val_env
+& val_profile, val_env
 
-integer :: idum
-
+logical :: verbose
 contains
     subroutine get_command_line_settings(cmd_settings)
         class(fpm_cmd_settings), allocatable, intent(out) :: cmd_settings
@@ -137,6 +136,7 @@ contains
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", ldflags_env = "LDFLAGS", &
             & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " "
         character(len=:), allocatable :: new_fc_default
+        integer :: idum
 
         call set_help()
         ! text for --version switch,
@@ -190,9 +190,13 @@ contains
               new_fc_default=sget('compiler')
               val_env='FPM_'//trim(adjustl(basename(sget('compiler'))))//'_'
            elseif(val_env.ne.'')then
-              val_env=trim(adjustl(val_env))//"_"
+              val_env='FPM_'//trim(adjustl(val_env))//"_"
            endif
            new_fc_default=trim(adjustl(new_fc_default))
+           if(verbose)then
+              write(*,'(1x,*(g0))') '<INFO> ENVIRONMENT PREFIX:  ',val_env
+           endif
+           verbose=lget('verbose')
            compiler_args = &
              ' --env "dummy"'// &
              ' --profile " "' // &
@@ -203,6 +207,7 @@ contains
              ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
              ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
         else  ! if --env is not present skip other compiler-related variables
+           verbose=lget('verbose')
            compiler_args = &
              ' --profile  " "' // &
              ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
@@ -211,9 +216,6 @@ contains
              ' --flag:: " "' // &
              ' --c-flag:: " "' // &
              ' --link-flag:: " "'
-        endif
-        if(lget('verbose'))then
-           write(*,*)'<INFO> ENVIRONMENT PREFIX:  ',val_env
         endif
 
         ! now set subcommand-specific help text and process commandline
@@ -1192,27 +1194,21 @@ contains
 ' may be explicitly specified either by command-line options and/or by sets of   ', &
 ' environment variables.                                                         ', &
 '                                                                                ', &
+' Command line options override any default specified with environment variables.', &
+'                                                                                ', &
 'COMPILER COMMAND LINE OPTIONS                                                   ', &
-' Compiler-related command line options override any defaults specified with     ', &
-' with environment variables.                                                    ', &
-'                                                                                ', &
 ' --compiler FC      Specify a Fortran compiler name. The default is "gfortran". ', &
-'                                                                                ', &
-' Each supported compiler comes with a group of supported options automatically  ', &
-' determined by the compiler name and the --profile switch but these defaults    ', &
-' may additionaly be explicitly overridden:                                      ', &
-'                                                                                ', &
-' --flag  FFLAGS(1)  Selects compile arguments. These override the defaults      ', &
+' --flag  FFLAGS(*)  Selects compile arguments. These override the defaults      ', &
 '                    set by profiles unless --profile is specified in which case ', &
 '                    the options are joined.                                     ', &
 '                    Note objects and .mod directory locations for files created ', &
 '                    in the build/ director are always built in.                 ', &
-' --c-compiler CC    C compiler name.                                            ', &
-' --c-flag CFLAGS(1)      Select compile arguments specific for C source         ', &
-' --link-flag LDFLAGS(1)  Select arguments passed to the linker.                 ', &
-' --archiver AR      Archiver name.                                              ', &
+' --c-compiler CC         C compiler name.                                       ', &
+' --c-flag CFLAGS(*)      Select compile arguments specific for C source         ', &
+' --link-flag LDFLAGS(*)  Select arguments passed to the linker.                 ', &
+' --archiver AR           Archiver name.                                         ', &
 '                                                                                ', &
-' (1) indicates this option may be repeated multiple times.                      ', &
+' (*) indicates this option may be repeated multiple times.                      ', &
 '                                                                                ', &
 'ENVIRONMENT VARIABLES                                                           ', &
 '                                                                                ', &
@@ -1329,6 +1325,9 @@ contains
       character(len=:), allocatable :: val
 
          val = get_env(val_env//env, default)
+         if(verbose)then
+            write(*,'(1x,*(g0))')'<INFO> ENV:'//val_env//env//'==>'//val
+         endif
 
     end function get_fpm_env
 
