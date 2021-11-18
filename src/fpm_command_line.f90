@@ -616,9 +616,11 @@ contains
 ' install [--profile PROF] [COMPILER_OPTIONS] [--no-rebuild] [--prefix PATH]     ', &
 '         [--directory PATH]                                                     ', &
 'where COMPILER_OPTIONS are                                                      ', &
+'                                                                                ', &
 '    --compiler FC --c-compiler CC --archiver AR                                 ', &
 '    --flag FFLAGS --c-flag CFLAGS --link-flag LDFLAGS                           ', &
 '    --env PREFIX                                                                ', &
+'                                                                                ', &
 'In addition, these options are valid on any subcommand:                         ', &
 '    --verbose                                                                   ', &
 '    --help                                                                      ', &
@@ -664,7 +666,7 @@ contains
 '    fpm build --compiler gfortran                                               ', &
 '    fpm run                                                                     ', &
 '    fpm test                                                                    ', &
-'    fpm run --example                                                           ', &
+'    fpm run --example # if you had an example/ directory                        ', &
 '    fpm new --help                                                              ', &
 '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
 '    fpm install --prefix ~/.local                                               ', &
@@ -737,7 +739,7 @@ contains
 '              "--lib" it really does not have anything to test.                 ', &
 ' --example    create directory example/ and a placeholder program               ', &
 '              for use with the subcommand "run --example".                      ', &
-'              It is only created by default if "--full is" specified.           ', &
+'              It is only created by default if "--full" is specified.           ', &
 ' --verbose    print more information                                            ', &
 ' --backfill   By default the directory must not exist. If this                  ', &
 '              option is present the directory may pre-exist and                 ', &
@@ -756,10 +758,9 @@ contains
 '                                                                                ', &
 ' --bare       A minimal manifest file ("fpm.toml") is created and               ', &
 '              "README.md" file is created but no directories or                 ', &
-'              sample Fortran are generated.                                     ', &
+'              Fortran samples are generated.                                    ', &
 ' -C, --directory PATH  Change working directory to PATH before running          ', &
-'                       command                                                  ', &
-'                                                                                ', &
+'                       command.                                                 ', &
 ' --help       print this help and exit                                          ', &
 ' --version    print program version information and exit                        ', &
 '                                                                                ', &
@@ -773,13 +774,16 @@ contains
 '   cd myproject       # Enter the new directory                                 ', &
 '   # and run commands such as                                                   ', &
 '   fpm build                                                                    ', &
-'   fpm run            # run lone example application program                    ', &
-'   fpm test           # run example test program(s)                             ', &
+'   fpm run            # run lone application program                            ', &
+'   fpm test           # run test program(s)                                     ', &
+'                                                                                ', &
+'   fpm new A --full   # create project with example/ and annotated fpm.toml     ', &
+'   cd A               # enter project directory                                 ', &
 '   fpm run --example  # run lone example program                                ', &
 '                                                                                ', &
-'   fpm new A --full # create example/ and an annotated fpm.toml as well         ', &
-'   fpm new A --bare # create no directories                                     ', &
-'   create any missing files in current directory                                ', &
+'   fpm new B --bare   # create no directories                                   ', &
+'   cd B               # enter project directory                                 ', &
+'   # create any missing files in current directory                              ', &
 '   fpm new `pwd` --full --backfill                                              ', &
 '' ]
 !12345678901234567890123456789012345678901234567890123456789012345678901234567890', &
@@ -805,6 +809,7 @@ contains
 '    o test/    main program(s) and support files for project tests              ', &
 '    o example/ main program(s) for example programs                             ', &
 '    o include/ optional directory for INCLUDE files                             ', &
+'                                                                                ', &
 ' Changed or new files found are rebuilt. The results are placed in              ', &
 ' the build/ directory.                                                          ', &
 '                                                                                ', &
@@ -1265,7 +1270,7 @@ contains
 '     export FPM_TIME_CFLAGS=""                                                  ', &
 '     export FPM_TIME_AR=ar                                                      ', &
 '     export FPM_TIME_LDFLAGS=""                                                 ', &
-'     fpm build -env TIMING # use the prefix "FPM_TIMING_".                      ', &
+'     fpm build -env TIME # use the prefix "FPM_TIME_".                          ', &
 '     fpm build -env ""  # use a null (no spaces!) to use no prefix and thus     ', &
 '                        # to simply use FC, CC, AR, FFLAGS, CFLAGS, and LDFLAGS.', &
 '     fpm build -env     # use FPM_"compiler_name"_ as the prefix for            ', &
@@ -1277,7 +1282,7 @@ contains
 '  response(1) - Using response files on the command line                        ', &
 '                                                                                ', &
 'SYNOPSIS                                                                        ', &
-'  fpm SUBCOMMAND  @name1 @name2 ... [COMMAND_OPTIONS]                           ', &
+'  fpm SUBCOMMAND @name1 @name2 ... [COMMAND_OPTIONS]                            ', &
 '                                                                                ', &
 'DESCRIPTION                                                                     ', &
 '  A response file can be used to abbreviate long command line options.          ', &
