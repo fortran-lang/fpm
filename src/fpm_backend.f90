@@ -268,9 +268,11 @@ subroutine build_target(model,target,stat)
 
     integer :: fh
 
+    !$omp critical
     if (.not.exists(dirname(target%output_file))) then
         call mkdir(dirname(target%output_file))
     end if
+    !$omp end critical
 
     select case(target%target_type)
 
