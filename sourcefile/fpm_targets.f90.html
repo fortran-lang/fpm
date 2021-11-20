@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.9% of total for source files.">362 statements</a>
+    title=" 5.9% of total for source files.">363 statements</a>
      </li> 
      
      
@@ -962,19 +962,20 @@
 <a id="ln-687" name="ln-687"></a>    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
 <a id="ln-688" name="ln-688"></a>        <span class="k">associate</span><span class="p">(</span><span class="k">target</span> <span class="o">=&gt;</span> <span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span>
 <a id="ln-689" name="ln-689"></a>            <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">))</span> <span class="k">cycle</span>
-<a id="ln-690" name="ln-690"></a><span class="k">            if</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">))</span> <span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
-<a id="ln-691" name="ln-691"></a>            <span class="k">do </span><span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span>
-<a id="ln-692" name="ln-692"></a>                <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
-<a id="ln-693" name="ln-693"></a>                <span class="n">list</span><span class="p">(</span><span class="n">n</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;fpm&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-694" name="ln-694"></a>                    <span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-<a id="ln-695" name="ln-695"></a>            <span class="k">end do</span>
-<a id="ln-696" name="ln-696"></a><span class="k">        end associate</span>
-<a id="ln-697" name="ln-697"></a><span class="k">    end do</span>
-<a id="ln-698" name="ln-698"></a><span class="k">    call </span><span class="n">resize</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-<a id="ln-699" name="ln-699"></a><span class="k">end subroutine </span><span class="n">filter_modules</span>
-<a id="ln-700" name="ln-700"></a>
+<a id="ln-690" name="ln-690"></a><span class="k">            if</span> <span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_SUBMODULE</span><span class="p">)</span> <span class="k">cycle</span>
+<a id="ln-691" name="ln-691"></a><span class="k">            if</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">))</span> <span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+<a id="ln-692" name="ln-692"></a>            <span class="k">do </span><span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">)</span>
+<a id="ln-693" name="ln-693"></a>                <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+<a id="ln-694" name="ln-694"></a>                <span class="n">list</span><span class="p">(</span><span class="n">n</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_dir</span><span class="p">,</span> <span class="p">&amp;</span>
+<a id="ln-695" name="ln-695"></a>                    <span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
+<a id="ln-696" name="ln-696"></a>            <span class="k">end do</span>
+<a id="ln-697" name="ln-697"></a><span class="k">        end associate</span>
+<a id="ln-698" name="ln-698"></a><span class="k">    end do</span>
+<a id="ln-699" name="ln-699"></a><span class="k">    call </span><span class="n">resize</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<a id="ln-700" name="ln-700"></a><span class="k">end subroutine </span><span class="n">filter_modules</span>
 <a id="ln-701" name="ln-701"></a>
-<a id="ln-702" name="ln-702"></a><span class="k">end module </span><span class="n">fpm_targets</span>
+<a id="ln-702" name="ln-702"></a>
+<a id="ln-703" name="ln-703"></a><span class="k">end module </span><span class="n">fpm_targets</span>
 </pre></div>
 
     </section>
@@ -994,7 +995,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-11-13 10:56  
+             on 2021-11-20 18:01  
             
           </p>
         </div>
