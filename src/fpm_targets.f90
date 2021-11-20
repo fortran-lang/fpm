@@ -687,6 +687,7 @@ subroutine filter_modules(targets, list)
     do i = 1, size(targets)
         associate(target => targets(i)%ptr)
             if (.not.allocated(target%source)) cycle
+            if (target%source%unit_type == FPM_UNIT_SUBMODULE) cycle
             if (n + size(target%source%modules_provided) >= size(list)) call resize(list)
             do j = 1, size(target%source%modules_provided)
                 n = n + 1
