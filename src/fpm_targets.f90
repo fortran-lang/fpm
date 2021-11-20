@@ -690,7 +690,7 @@ subroutine filter_modules(targets, list)
             if (n + size(target%source%modules_provided) >= size(list)) call resize(list)
             do j = 1, size(target%source%modules_provided)
                 n = n + 1
-                list(n)%s = join_path(target%output_dir, "fpm", &
+                list(n)%s = join_path(target%output_dir, &
                     target%source%modules_provided(j)%s)
             end do
         end associate
