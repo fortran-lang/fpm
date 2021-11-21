@@ -166,11 +166,88 @@ jobs:
         name: ${{ env.FPM_RELEASE }}
         path: ${{ env.FPM_RELEASE }}
 
+
+  make-installer:
+    if: ${{ github.event_name == 'release' && contains(github.ref, 'v') || github.event_name == 'push' }}
+    runs-on: windows-latest
+    needs:
+      - build
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        path: ${{ github.workspace }} # This will download all files
+
+    - name: Get version (normal)
+      if: github.event_name != 'release'
+      shell: bash
+      run: |
+        VERSION=$(git rev-parse --short HEAD)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Get version (release)
+      if: github.event_name == 'release'
+      shell: bash
+      run: |
+        VERSION=$(echo ${{ github.ref }} | cut -dv -f2)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+      env:
+        REGEX: '[0-9]\{1,4\}\.[0-9]\{1,4\}\.[0-9]\{1,4\}'
+
+    - name: Setup MinGW (MSYS2)
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: false
+        install: >-
+          wget
+          unzip
+
+    - name: Fetch Windows executable
+      shell: msys2 {0}
+      run: |
+        cp fpm-*/fpm*.exe ./ci/fpm.exe
+
+    - name: Fetch Git for Windows
+      shell: msys2 {0}
+      run: |
+        cd ./ci
+        wget ${{ env.git_download }} -O MinGit.zip
+        unzip MinGit.zip -d MinGit
+      env:
+        git_download: "https://github.com/git-for-windows/git/releases/download/v2.33.1.windows.1/MinGit-2.33.1-64-bit.zip"
+
+    - name: Fetch EnVar Plugin for NSIS
+      shell: msys2 {0}
+      run: |
+        cd ./ci
+        wget ${{ env.envar_download }} -O EnVar-Plugin.zip
+        mkdir EnVar_plugin
+        unzip EnVar-Plugin.zip -d EnVar_plugin
+      env:
+        envar_download: "https://github.com/GsNSIS/EnVar/releases/download/v0.3.1/EnVar-Plugin.zip"
+
+    - name: Generate installer
+      run: |
+        cd ./ci
+        makensis fpm-installer.nsi
+        move fpm-installer.exe fpm-installer-${{ env.VERSION }}.exe
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: fpm-installer
+        path: ci/fpm-installer-${{ env.VERSION }}.exe
+
   upload-artifacts:
     if: ${{ github.event_name == 'release' && contains(github.ref, 'v') || github.event_name == 'push' }}
     runs-on: ubuntu-latest
     needs:
       - build
+      - make-installer
 
     steps:
     - id: deploy-on-push
