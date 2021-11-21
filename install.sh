@@ -42,7 +42,7 @@ done
 
 set -u # error on use of undefined variable
 
-SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v0.4.0/fpm-0.4.0.F90"
+SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v0.5.0/fpm-0.5.0.F90"
 BOOTSTRAP_DIR="build/bootstrap"
 if [ -z ${FC+x} ]; then
     FC="gfortran"
