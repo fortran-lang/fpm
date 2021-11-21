@@ -152,11 +152,19 @@ contains
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
         version_text = [character(len=80) :: &
+<<<<<<< HEAD
          &  'Version:      0.4.1, alpha',                               &
          &  'Program:      fpm(1)',                                     &
          &  'Description:  A Fortran package manager and build system', &
          &  'Home Page:    https://github.com/fortran-lang/fpm',        &
          &  'License:      MIT',                                        &
+=======
+         &  'Version:     0.5.0, alpha',                               &
+         &  'Program:     fpm(1)',                                     &
+         &  'Description: A Fortran package manager and build system', &
+         &  'Home Page:   https://github.com/fortran-lang/fpm',        &
+         &  'License:     MIT',                                        &
+>>>>>>> main
          &  os_type]
         ! find the subcommand name by looking for first word on command
         ! not starting with dash
