@@ -185,7 +185,6 @@ contains
             call execute_command_line(cmd, exitstat=stat)
         else
             if (os_is_unix()) then
-                write(*,*) "is_unix"
                 call execute_command_line(cmd//">/dev/null 2>&1", exitstat=stat)
             else
                 call execute_command_line(cmd//">NUL 2>&1", exitstat=stat)
