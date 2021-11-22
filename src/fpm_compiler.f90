@@ -79,6 +79,8 @@ type :: compiler_t
     character(len=:), allocatable :: cc
     !> Print all commands
     logical :: echo = .true.
+    !> Verbose output of command
+    logical :: verbose = .true.
 contains
     !> Get default compiler flags
     procedure :: get_default_flags
@@ -107,6 +109,8 @@ type :: archiver_t
     logical :: use_response_file = .false.
     !> Print all command
     logical :: echo = .true.
+    !> Verbose output of command
+    logical :: verbose = .true.
 contains
     !> Create static archive
     procedure :: make_archive
@@ -695,7 +699,7 @@ subroutine compile_fortran(self, input, output, args, stat)
     integer, intent(out) :: stat
 
     call run(self%fc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, exitstat=stat)
+        & echo=self%echo, verbose=self%verbose, exitstat=stat)
 end subroutine compile_fortran
 
 
@@ -713,7 +717,7 @@ subroutine compile_c(self, input, output, args, stat)
     integer, intent(out) :: stat
 
     call run(self%cc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, exitstat=stat)
+        & echo=self%echo, verbose=self%verbose, exitstat=stat)
 end subroutine compile_c
 
 
@@ -728,7 +732,8 @@ subroutine link(self, output, args, stat)
     !> Status flag
     integer, intent(out) :: stat
 
-    call run(self%fc // " " // args // " -o " // output, echo=self%echo, exitstat=stat)
+    call run(self%fc // " " // args // " -o " // output, echo=self%echo, &
+        & verbose=self%verbose, exitstat=stat)
 end subroutine link
 
 
@@ -745,11 +750,12 @@ subroutine make_archive(self, output, args, stat)
 
     if (self%use_response_file) then
         call write_response_file(output//".resp" , args)
-        call run(self%ar // output // " @" // output//".resp", echo=self%echo, exitstat=stat)
+        call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
+            &  verbose=self%verbose, exitstat=stat)
         call delete_file(output//".resp")
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
-            & echo=self%echo, exitstat=stat)
+            & echo=self%echo, verbose=self%verbose, exitstat=stat)
     end if
 end subroutine make_archive
 

@@ -62,6 +62,11 @@ subroutine build_model(model, settings, package, error)
     call new_compiler(model%compiler, settings%compiler, settings%c_compiler)
     call new_archiver(model%archiver, settings%archiver)
 
+    model%compiler%verbose = settings%verbose
+    model%compiler%echo = settings%verbose
+    model%archiver%verbose = settings%verbose
+    model%archiver%echo = settings%verbose
+
     if (settings%flag == '') then
         flags = model%compiler%get_default_flags(settings%profile == "release")
     else
