@@ -349,20 +349,36 @@ function read_lines(fh) result(lines)
 end function read_lines
 
 !> Create a directory. Create subdirectories as needed
-subroutine mkdir(dir)
+subroutine mkdir(dir, echo)
     character(len=*), intent(in) :: dir
-    integer                      :: stat
+    logical, intent(in), optional :: echo
+
+    integer :: stat
+    logical :: echo_local
+    
+    if(present(echo))then
+        echo_local=echo
+     else
+        echo_local=.true.
+     end if
 
     if (is_dir(dir)) return
 
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
             call execute_command_line('mkdir -p ' // dir, exitstat=stat)
-            write (*, '(" + ",2a)') 'mkdir -p ' // dir
+
+            if (echo_local) then
+                write (*, '(" + ",2a)') 'mkdir -p ' // dir
+            end if
 
         case (OS_WINDOWS)
             call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
-            write (*, '(" + ",2a)') 'mkdir ' // windows_path(dir)
+            
+            if (echo_local) then
+                write (*, '(" + ",2a)') 'mkdir ' // windows_path(dir)
+            end if
+
     end select
 
     if (stat /= 0) then
