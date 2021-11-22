@@ -40,12 +40,20 @@ implicit none
 private
 public :: build_package, sort_target, schedule_targets
 
+interface
+    function c_isatty() bind(C, name = 'c_isatty')
+        use, intrinsic :: iso_c_binding, only: c_int
+        integer(c_int)        :: c_isatty
+    end function
+end interface
+
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(targets,model)
+subroutine build_package(targets,model,verbose)
     type(build_target_ptr), intent(inout) :: targets(:)
     type(fpm_model_t), intent(in) :: model
+    logical, intent(in) :: verbose
 
     integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
@@ -53,6 +61,8 @@ subroutine build_package(targets,model)
     logical :: build_failed, skip_current
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
+
+    logical :: plain_output
 
     ! Need to make output directory for include (mod) files
     allocate(build_dirs(0))
@@ -65,7 +75,7 @@ subroutine build_package(targets,model)
     end do
 
     do i = 1, size(build_dirs)
-       call mkdir(build_dirs(i)%s)
+       call mkdir(build_dirs(i)%s,verbose)
     end do
 
     ! Perform depth-first topological sort of targets
@@ -83,6 +93,8 @@ subroutine build_package(targets,model)
     stat(:) = 0
     build_failed = .false.
 
+    ! Set output mode
+    plain_output = (.not.(c_isatty()==1)) .or. verbose
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
 
@@ -95,7 +107,7 @@ subroutine build_package(targets,model)
             skip_current = build_failed
 
             if (.not.skip_current) then
-                call build_target(model,queue(j)%ptr,stat(j))
+                call build_target(model,queue(j)%ptr,verbose,stat(j))
             end if
 
             ! Set global flag if this target failed to build
@@ -261,16 +273,17 @@ end subroutine schedule_targets
 !>
 !> If successful, also caches the source file digest to disk.
 !>
-subroutine build_target(model,target,stat)
+subroutine build_target(model,target,verbose,stat)
     type(fpm_model_t), intent(in) :: model
     type(build_target_t), intent(in), target :: target
+    logical, intent(in) :: verbose
     integer, intent(out) :: stat
 
     integer :: fh
 
     !$omp critical
     if (.not.exists(dirname(target%output_file))) then
-        call mkdir(dirname(target%output_file))
+        call mkdir(dirname(target%output_file),verbose)
     end if
     !$omp end critical
 

@@ -284,7 +284,7 @@ if(settings%list)then
 else if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(targets,model)
+    call build_package(targets,model,verbose=settings%verbose)
 endif
 
 end subroutine cmd_build
@@ -415,7 +415,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model)
+    call build_package(targets,model,verbose=settings%verbose)
 
     if (settings%list) then
          call compact_list()
