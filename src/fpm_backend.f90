@@ -41,12 +41,14 @@ implicit none
 private
 public :: build_package, sort_target, schedule_targets
 
+#ifndef FPM_BOOTSTRAP
 interface
     function c_isatty() bind(C, name = 'c_isatty')
         use, intrinsic :: iso_c_binding, only: c_int
         integer(c_int)        :: c_isatty
     end function
 end interface
+#endif
 
 contains
 
@@ -98,7 +100,11 @@ subroutine build_package(targets,model,verbose)
     n_complete = 0
 
     ! Set output mode
+#ifndef FPM_BOOTSTRAP
     plain_output = (.not.(c_isatty()==1)) .or. verbose
+#else
+    plain_output = verbose
+#endif
     call console%init(plain_output)
     call output_init(plain_output)
 
