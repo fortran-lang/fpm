@@ -35,6 +35,7 @@ use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
                        FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
+use fpm_backend_output
 implicit none
 
 private
@@ -62,6 +63,8 @@ subroutine build_package(targets,model,verbose)
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
 
+    type(console_t) :: console
+    integer :: line, n_complete
     logical :: plain_output
 
     ! Need to make output directory for include (mod) files
@@ -92,15 +95,23 @@ subroutine build_package(targets,model,verbose)
     allocate(stat(size(queue)))
     stat(:) = 0
     build_failed = .false.
+    n_complete = 0
 
     ! Set output mode
     plain_output = (.not.(c_isatty()==1)) .or. verbose
+    call console%init(plain_output)
+    call output_init(plain_output)
+
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
 
         ! Build targets in schedule region i
-        !$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)
+        !$omp parallel do default(shared) private(skip_current,line) schedule(dynamic,1)
         do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
+
+            ! Update console output
+            call output_status_compiling(console, line, queue(j)%ptr)
+            call output_progress(n_complete, size(queue),plain_output)
 
             ! Check if build already failed
             !$omp atomic read
@@ -116,10 +127,15 @@ subroutine build_package(targets,model,verbose)
                 build_failed = .true.
             end if
 
+            ! Update console output
+            call output_status_complete(console, line, queue(j)%ptr,stat(j), n_complete)
+            call output_progress(n_complete, size(queue),plain_output)
+
         end do
 
         ! Check if this schedule region failed: exit with message if failed
         if (build_failed) then
+            write(*,*) ''
             do j=1,size(stat)
                 if (stat(j) /= 0) then
                     write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
@@ -129,6 +145,8 @@ subroutine build_package(targets,model,verbose)
         end if
 
     end do
+
+    call output_progress_complete()
 
 end subroutine build_package
 
