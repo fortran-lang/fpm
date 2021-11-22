@@ -154,7 +154,7 @@ contains
         else
             build_os = get_os_type()
         end if
-        unix = os /= OS_WINDOWS
+        unix = build_os /= OS_WINDOWS
     end function os_is_unix
 
     !> echo command string and pass it to the system for execution
