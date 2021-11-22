@@ -158,22 +158,40 @@ contains
     end function os_is_unix
 
     !> echo command string and pass it to the system for execution
-    subroutine run(cmd,echo,exitstat)
+    subroutine run(cmd,echo,exitstat,verbose)
         character(len=*), intent(in) :: cmd
         logical,intent(in),optional  :: echo
         integer, intent(out),optional  :: exitstat
-        logical :: echo_local
+        logical, intent(in), optional :: verbose
+        logical :: echo_local, verbose_local
         integer :: stat
+
 
         if(present(echo))then
            echo_local=echo
         else
            echo_local=.true.
-        endif
+        end if
+
+        if(present(verbose))then
+            verbose_local=verbose
+        else
+            verbose_local=.true.
+        end if
+
         if(echo_local) print *, '+ ', cmd
 
-        call execute_command_line(cmd, exitstat=stat)
-
+        if(verbose_local)then
+            call execute_command_line(cmd, exitstat=stat)
+        else
+            if (os_is_unix()) then
+                write(*,*) "is_unix"
+                call execute_command_line(cmd//">/dev/null 2>&1", exitstat=stat)
+            else
+                call execute_command_line(cmd//">NUL 2>&1", exitstat=stat)
+            end if
+        endif
+        
         if (present(exitstat)) then
             exitstat = stat
         else
