@@ -63,7 +63,7 @@ jobs:
     - name: Install fpm
       uses: fortran-lang/setup-fpm@v3
       with:
-        fpm-version: 'v0.2.0'
+        fpm-version: 'v0.3.0'
 
     - name: Remove fpm from path
       shell: bash
