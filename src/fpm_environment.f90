@@ -158,13 +158,17 @@ contains
     end function os_is_unix
 
     !> echo command string and pass it to the system for execution
-    subroutine run(cmd,echo,exitstat,verbose)
+    subroutine run(cmd,echo,exitstat,verbose,redirect)
         character(len=*), intent(in) :: cmd
         logical,intent(in),optional  :: echo
         integer, intent(out),optional  :: exitstat
         logical, intent(in), optional :: verbose
+        character(*), intent(in), optional :: redirect
+
         logical :: echo_local, verbose_local
-        integer :: stat
+        character(:), allocatable :: redirect_str
+        character(1000) :: line
+        integer :: stat, fh, ios
 
 
         if(present(echo))then
@@ -178,18 +182,45 @@ contains
         else
             verbose_local=.true.
         end if
+        
+        if (present(redirect)) then
+            redirect_str =  ">"//redirect//" 2>&1"
+        else
+            if(verbose_local)then
+                ! No redirection but verbose output
+                redirect_str = ""
+            else
+                ! No redirection and non-verbose output
+                if (os_is_unix()) then
+                    redirect_str = ">/dev/null 2>&1"
+                else
+                    redirect_str = ">NUL 2>&1"
+                end if
+            end if
+        end if
+        
+
+        if(present(redirect))then
+            verbose_local=verbose
+        else
+            verbose_local=.true.
+        end if
 
         if(echo_local) print *, '+ ', cmd
 
-        if(verbose_local)then
-            call execute_command_line(cmd, exitstat=stat)
-        else
-            if (os_is_unix()) then
-                call execute_command_line(cmd//">/dev/null 2>&1", exitstat=stat)
-            else
-                call execute_command_line(cmd//">NUL 2>&1", exitstat=stat)
-            end if
-        endif
+        call execute_command_line(cmd//redirect_str, exitstat=stat)
+
+        if (verbose_local.and.present(redirect)) then
+
+            open(newunit=fh,file=redirect,status='old')
+            do
+                read(fh, '(A)', iostat=ios) line
+                if (ios /= 0) exit
+                write(*,'(A)') trim(line)
+            end do
+            close(fh)
+
+        end if
         
         if (present(exitstat)) then
             exitstat = stat
