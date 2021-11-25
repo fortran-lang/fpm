@@ -15,7 +15,7 @@ module fpm_filesystem
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
     public :: read_lines, read_lines_expanded
-    public :: which
+    public :: which, LINE_BUFFER_LEN
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 

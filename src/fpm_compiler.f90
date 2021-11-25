@@ -686,7 +686,7 @@ end subroutine new_archiver
 
 
 !> Compile a Fortran object
-subroutine compile_fortran(self, input, output, args, stat)
+subroutine compile_fortran(self, input, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -695,16 +695,18 @@ subroutine compile_fortran(self, input, output, args, stat)
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     call run(self%fc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, verbose=self%verbose, exitstat=stat)
+        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_fortran
 
 
 !> Compile a C object
-subroutine compile_c(self, input, output, args, stat)
+subroutine compile_c(self, input, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -713,49 +715,55 @@ subroutine compile_c(self, input, output, args, stat)
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     call run(self%cc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, verbose=self%verbose, exitstat=stat)
+        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_c
 
 
 !> Link an executable
-subroutine link(self, output, args, stat)
+subroutine link(self, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Output file of object
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     call run(self%fc // " " // args // " -o " // output, echo=self%echo, &
-        & verbose=self%verbose, exitstat=stat)
+        & verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine link
 
 
 !> Create an archive
-subroutine make_archive(self, output, args, stat)
+subroutine make_archive(self, output, args, log_file, stat)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
     !> Name of the archive to generate
     character(len=*), intent(in) :: output
     !> Object files to include into the archive
     type(string_t), intent(in) :: args(:)
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     if (self%use_response_file) then
         call write_response_file(output//".resp" , args)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
-            &  verbose=self%verbose, exitstat=stat)
+            &  verbose=self%verbose, redirect=log_file, exitstat=stat)
         call delete_file(output//".resp")
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
-            & echo=self%echo, verbose=self%verbose, exitstat=stat)
+            & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     end if
 end subroutine make_archive
 

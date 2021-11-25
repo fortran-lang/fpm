@@ -30,7 +30,7 @@ module fpm_backend
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_error, only : fpm_stop
 use fpm_environment, only: run, get_os_type, OS_WINDOWS
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, LINE_BUFFER_LEN
 use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
@@ -142,6 +142,11 @@ subroutine build_package(targets,model,verbose)
         ! Check if this schedule region failed: exit with message if failed
         if (build_failed) then
             write(*,*) ''
+            do j=1,size(stat)
+                if (stat(j) /= 0) Then
+                    call print_build_log(queue(j)%ptr)
+                end if
+            end do
             do j=1,size(stat)
                 if (stat(j) /= 0) then
                     write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
@@ -315,18 +320,19 @@ subroutine build_target(model,target,verbose,stat)
 
     case (FPM_TARGET_OBJECT)
         call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
-            & target%compile_flags, stat)
+            & target%compile_flags, target%output_log_file, stat)
 
     case (FPM_TARGET_C_OBJECT)
         call model%compiler%compile_c(target%source%file_name, target%output_file, &
-            & target%compile_flags, stat)
+            & target%compile_flags, target%output_log_file, stat)
 
     case (FPM_TARGET_EXECUTABLE)
         call model%compiler%link(target%output_file, &
-            & target%compile_flags//" "//target%link_flags, stat)
+            & target%compile_flags//" "//target%link_flags, target%output_log_file, stat)
 
     case (FPM_TARGET_ARCHIVE)
-        call model%archiver%make_archive(target%output_file, target%link_objects, stat)
+        call model%archiver%make_archive(target%output_file, target%link_objects, &
+            & target%output_log_file, stat)
 
     end select
 
@@ -338,5 +344,31 @@ subroutine build_target(model,target,verbose,stat)
 
 end subroutine build_target
 
+
+!> Read and print the build log for target
+!>
+subroutine print_build_log(target)
+    type(build_target_t), intent(in), target :: target
+
+    integer :: fh, ios
+    character(LINE_BUFFER_LEN) :: line
+
+    if (exists(target%output_log_file)) then
+
+        open(newunit=fh,file=target%output_log_file,status='old')
+        do
+            read(fh, '(A)', iostat=ios) line
+            if (ios /= 0) exit
+            write(*,'(A)') trim(line)
+        end do
+        close(fh)
+
+    else
+
+        write(stderr,'(*(g0:,1x))') '<ERROR> Unable to find build log "',basename(target%output_log_file),'"'
+
+    end if
+
+end subroutine print_build_log
 
 end module fpm_backend

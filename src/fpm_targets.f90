@@ -75,6 +75,9 @@ type build_target_t
     !> File path of output directory
     character(:), allocatable :: output_dir
 
+    !> File path of build log file relative to cwd
+    character(:), allocatable :: output_log_file
+
     !> Primary source for this build target
     type(srcfile_t), allocatable :: source
 
@@ -491,6 +494,7 @@ subroutine resolve_target_linking(targets, model)
             end if
             target%output_dir = get_output_dir(model%build_prefix, target%compile_flags)
             target%output_file = join_path(target%output_dir, target%output_name)
+            target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
         end associate
 
     end do
@@ -528,7 +532,8 @@ subroutine resolve_target_linking(targets, model)
                 target%output_dir = get_output_dir(model%build_prefix, &
                    & target%compile_flags//local_link_flags)
                 target%output_file = join_path(target%output_dir, target%output_name)
-            end if
+                target%output_log_file = join_path(target%output_dir, target%output_name)//'.log'
+        end if
 
         end associate
 
