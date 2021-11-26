@@ -41,20 +41,36 @@ subroutine console_init(console,plain_mode)
 
 end subroutine console_init
 
-function console_write_line(console,str) result(line)
+subroutine console_write_line(console,str,line,advance)
     class(console_t), intent(inout), target :: console
     character(*), intent(in) :: str
-    integer :: line
+    integer, intent(out), optional :: line
+    logical, intent(in), optional :: advance
+
+    character(3) :: adv
+
+    adv = "yes"
+    if (present(advance)) then
+        if (.not.advance) then
+            adv = "no"
+        end if
+    end if
 
     !$omp critical
-    line = console%n_line
 
-    write(stdout,*) console%LINE_RESET//str
+    if (present(line)) then
+        line = console%n_line
+    end if
+    
+    write(stdout,'(A)',advance=trim(adv)) console%LINE_RESET//str
 
-    console%n_line = console%n_line + 1
+    if (adv=="yes") then
+        console%n_line = console%n_line + 1
+    end if
+
     !$omp end critical
 
-end function console_write_line
+end subroutine console_write_line
 
 subroutine console_update_line(console,line_no,str)
     class(console_t), intent(in) :: console

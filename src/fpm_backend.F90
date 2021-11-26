@@ -65,8 +65,7 @@ subroutine build_package(targets,model,verbose)
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
 
-    type(console_t) :: console
-    integer :: line, n_complete
+    type(build_progress_t) :: progress
     logical :: plain_output
 
     ! Need to make output directory for include (mod) files
@@ -97,34 +96,31 @@ subroutine build_package(targets,model,verbose)
     allocate(stat(size(queue)))
     stat(:) = 0
     build_failed = .false.
-    n_complete = 0
 
     ! Set output mode
 #ifndef FPM_BOOTSTRAP
     plain_output = (.not.(c_isatty()==1)) .or. verbose
 #else
-    plain_output = verbose
+    plain_output = .true.
 #endif
-    call console%init(plain_output)
-    call output_init(plain_output)
+
+    call progress%init(queue,plain_output)
 
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
 
         ! Build targets in schedule region i
-        !$omp parallel do default(shared) private(skip_current,line) schedule(dynamic,1)
+        !$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)
         do j=schedule_ptr(i),(schedule_ptr(i+1)-1)
-
-            ! Update console output
-            call output_status_compiling(console, line, queue(j)%ptr)
-            call output_progress(n_complete, size(queue),plain_output)
 
             ! Check if build already failed
             !$omp atomic read
             skip_current = build_failed
 
             if (.not.skip_current) then
+                call progress%compiling_status(j)
                 call build_target(model,queue(j)%ptr,verbose,stat(j))
+                call progress%completed_status(j,stat(j))
             end if
 
             ! Set global flag if this target failed to build
@@ -132,10 +128,6 @@ subroutine build_package(targets,model,verbose)
                 !$omp atomic write
                 build_failed = .true.
             end if
-
-            ! Update console output
-            call output_status_complete(console, line, queue(j)%ptr,stat(j), n_complete)
-            call output_progress(n_complete, size(queue),plain_output)
 
         end do
 
@@ -157,7 +149,7 @@ subroutine build_package(targets,model,verbose)
 
     end do
 
-    call output_progress_complete()
+    call progress%success()
 
 end subroutine build_package
 
