@@ -198,13 +198,6 @@ contains
                 end if
             end if
         end if
-        
-
-        if(present(redirect))then
-            verbose_local=verbose
-        else
-            verbose_local=.true.
-        end if
 
         if(echo_local) print *, '+ ', cmd
 

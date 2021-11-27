@@ -1,3 +1,13 @@
+!># Build Backend Console
+!> This module provides a lightweight implementation for printing to the console
+!> and updating previously-printed console lines. It used by `[[fpm_backend_output]]`
+!> for pretty-printing build status and progress.
+!>
+!> @note The implementation for updating previous lines relies on no other output
+!> going to `stdout`/`stderr` except through the `console_t` object provided.
+!>
+!> @note All write statements to `stdout` are enclosed within OpenMP `critical` regions
+!>
 module fpm_backend_console
 use iso_fortran_env, only: stdout=>output_unit
 implicit none
@@ -7,22 +17,34 @@ public :: console_t
 
 character(len=*), parameter :: ESC = char(27)
 
+!> Console object
 type console_t
+    !> Number of lines printed
     integer :: n_line = 1
+    !> 'Plain' output (no escape codes)
     logical :: plain_mode = .false.
+    !> Escape code for erasing current line
     character(:), allocatable :: LINE_RESET
+    !> Escape code for moving up one line
     character(:), allocatable :: LINE_UP
+    !> Escape code for moving down one line
     character(:), allocatable :: LINE_DOWN
 contains
+    !> Initialise the console object
     procedure :: init => console_init
+    !> Write a single line to the console
     procedure :: write_line => console_write_line
+    !> Update a previously-written console line
     procedure :: update_line => console_update_line
 end type console_t
 
 contains
 
+!> Initialise the console object
 subroutine console_init(console,plain_mode)
+    !> Console object to initialise
     class(console_t), intent(out), target :: console
+    !> 'Plain' output (no escape codes)
     logical, intent(in), optional :: plain_mode
 
     if (present(plain_mode)) then
@@ -41,10 +63,15 @@ subroutine console_init(console,plain_mode)
 
 end subroutine console_init
 
+!> Write a single line to the standard output
 subroutine console_write_line(console,str,line,advance)
+    !> Console object
     class(console_t), intent(inout), target :: console
+    !> String to write
     character(*), intent(in) :: str
+    !> Integer needed to later update console line
     integer, intent(out), optional :: line
+    !> Advancing output (print newline?)
     logical, intent(in), optional :: advance
 
     character(3) :: adv
@@ -72,9 +99,13 @@ subroutine console_write_line(console,str,line,advance)
 
 end subroutine console_write_line
 
+!> Overwrite a previously-written line in standard output
 subroutine console_update_line(console,line_no,str)
+    !> Console object
     class(console_t), intent(in) :: console
+    !> Integer output from `[[console_write_line]]`
     integer, intent(in) :: line_no
+    !> New string to overwrite line
     character(*), intent(in) :: str
 
     integer :: n

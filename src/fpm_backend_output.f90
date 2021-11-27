@@ -1,3 +1,14 @@
+!># Build Backend Progress Output
+!> This module provides a derived type `build_progress_t` for printing build status
+!> and progress messages to the console while the backend is building the package.
+!>
+!> The `build_progress_t` type supports two modes: `normal` and `plain`
+!> where the former does 'pretty' output and the latter does not.
+!> The `normal` mode is intended for typical interactive usage whereas
+!> 'plain' mode is used with the `--verbose` flag or when `stdout` is not attached
+!> to a terminal (e.g. when piping or redirecting `stdout`). In these cases,
+!> the pretty output must be suppressed to avoid control codes being output.
+
 module fpm_backend_output
 use iso_fortran_env, only: stdout=>output_unit
 use fpm_filesystem, only: basename
@@ -6,33 +17,43 @@ use fpm_backend_console, only: console_t
 use M_attr, only: attr, attr_mode
 implicit none
 
+private
+public build_progress_t
+
+!> Build progress object
 type build_progress_t
-
+    !> Console object for updating console lines
     type(console_t) :: console
-
+    !> Number of completed targets
     integer :: n_complete
-    
+    !> Total number of targets scheduled
     integer :: n_target
-
+    !> 'Plain' output (no colors or updating)
     logical :: plain_mode = .true.
-
+    !> Store needed when updating previous console lines
     integer, allocatable :: output_lines(:)
-
+    !> Queue of scheduled build targets
     type(build_target_ptr), pointer :: target_queue(:)
-
 contains
+    !> Initialise build progress object
     procedure :: init => output_init
+    !> Output 'compiling' status for build target
     procedure :: compiling_status => output_status_compiling
+    !> Output 'complete' status for build target
     procedure :: completed_status => output_status_complete
+    !> Output finished status for whole package
     procedure :: success => output_progress_success
-
 end type build_progress_t
 
 contains
     
+    !> Initialise build progress object
     subroutine output_init(progress,target_queue,plain_mode)
+        !> Progress object to initialise
         class(build_progress_t), intent(out) :: progress
+        !> The queue of scheduled targets
         type(build_target_ptr), intent(in), target :: target_queue(:)
+        !> Enable 'plain' output for progress object
         logical, intent(in), optional :: plain_mode
         
         if (plain_mode) then
@@ -51,8 +72,11 @@ contains
 
     end subroutine output_init
 
+    !> Output 'compiling' status for build target and overall percentage progress
     subroutine output_status_compiling(progress, queue_index)
+        !> Progress object
         class(build_progress_t), intent(inout) :: progress
+        !> Index of build target in the target queue
         integer, intent(in) :: queue_index
 
         character(:), allocatable :: target_name
@@ -69,13 +93,13 @@ contains
 
             write(overall_progress,'(A,I4,A)') '[',100*progress%n_complete/progress%n_target,'%]'
 
-            if (progress%plain_mode) then
+            if (progress%plain_mode) then ! Plain output
 
                 !$omp critical
                 write(*,'(A8,A30)') trim(overall_progress),target_name
                 !$omp end critical
 
-            else
+            else ! Pretty output
 
                 write(output_string,'(A,T40,A,A)') target_name,attr('<yellow>compiling...</yellow>')
                 call progress%console%write_line(trim(output_string),progress%output_lines(queue_index))
@@ -88,10 +112,13 @@ contains
 
     end subroutine output_status_compiling
 
-
+    !> Output 'complete' status for build target and update overall percentage progress
     subroutine output_status_complete(progress, queue_index, build_stat)
+        !> Progress object
         class(build_progress_t), intent(inout) :: progress
+        !> Index of build target in the target queue
         integer, intent(in) :: queue_index
+        !> Build status flag
         integer, intent(in) :: build_stat
 
         character(:), allocatable :: target_name
@@ -118,13 +145,13 @@ contains
 
             write(overall_progress,'(A,I4,A)') '[',100*progress%n_complete/progress%n_target,'%] '
 
-            if (progress%plain_mode) then
+            if (progress%plain_mode) then  ! Plain output
 
                 !$omp critical
                 write(*,'(A8,A30,A7)') trim(overall_progress),target_name, 'done.'
                 !$omp end critical
 
-            else
+            else ! Pretty output
 
                 call progress%console%update_line(progress%output_lines(queue_index),trim(output_string))
 
@@ -136,14 +163,15 @@ contains
 
     end subroutine output_status_complete
 
+    !> Output finished status for whole package
     subroutine output_progress_success(progress)
         class(build_progress_t), intent(inout) :: progress
 
-        if (progress%plain_mode) then
+        if (progress%plain_mode) then ! Plain output
 
             write(*,'(A)') attr('<green>[100%] Project compiled successfully.</green>')
 
-        else
+        else ! Pretty output
 
             write(*,'(A)') progress%console%LINE_RESET//attr('<green>[100%] Project compiled successfully.</green>')
 
