@@ -92,6 +92,12 @@ subroutine build_package(targets,model,verbose)
     ! Construct build schedule queue
     call schedule_targets(queue, schedule_ptr, targets)
 
+    ! Check if queue is empty
+    if (.not.verbose .and. size(queue) < 1) then
+        write(*,*) 'Project is up to date'
+        return
+    end if
+
     ! Initialise build status flags
     allocate(stat(size(queue)))
     stat(:) = 0
