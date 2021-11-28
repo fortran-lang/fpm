@@ -623,16 +623,22 @@ end function enumerate_libraries
 
 
 !> Create new compiler instance
-subroutine new_compiler(self, fc, cc)
+subroutine new_compiler(self, fc, cc, echo, verbose)
     !> New instance of the compiler
     type(compiler_t), intent(out) :: self
     !> Fortran compiler name or path
     character(len=*), intent(in) :: fc
     !> C compiler name or path
     character(len=*), intent(in) :: cc
+    !> Echo compiler command
+    logical, intent(in) :: echo
+    !> Verbose mode: dump compiler output
+    logical, intent(in) :: verbose
 
     self%id = get_compiler_id(fc)
-
+    
+    self%echo = echo
+    self%verbose = verbose
     self%fc = fc
     if (len_trim(cc) > 0) then
       self%cc = cc
@@ -643,11 +649,15 @@ end subroutine new_compiler
 
 
 !> Create new archiver instance
-subroutine new_archiver(self, ar)
+subroutine new_archiver(self, ar, echo, verbose)
     !> New instance of the archiver
     type(archiver_t), intent(out) :: self
     !> User provided archiver command
     character(len=*), intent(in) :: ar
+    !> Echo compiler command
+    logical, intent(in) :: echo
+    !> Verbose mode: dump compiler output
+    logical, intent(in) :: verbose
 
     integer :: estat, os_type
 
@@ -681,7 +691,8 @@ subroutine new_archiver(self, ar)
       end if
     end if
     self%use_response_file = os_type == OS_WINDOWS
-    self%echo = .true.
+    self%echo = echo
+    self%verbose = verbose
 end subroutine new_archiver
 
 
