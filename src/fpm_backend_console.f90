@@ -14,21 +14,30 @@ implicit none
 
 private
 public :: console_t
+public :: LINE_RESET
+public :: COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_RESET
 
 character(len=*), parameter :: ESC = char(27)
+!> Escape code for erasing current line
+character(len=*), parameter :: LINE_RESET = ESC//"[2K"//ESC//"[1G"
+!> Escape code for moving up one line
+character(len=*), parameter :: LINE_UP = ESC//"[1A"
+!> Escape code for moving down one line
+character(len=*), parameter :: LINE_DOWN = ESC//"[1B"
+!> Escape code for red foreground color
+character(len=*), parameter :: COLOR_RED = ESC//"[31m"
+!> Escape code for green foreground color
+character(len=*), parameter :: COLOR_GREEN = ESC//"[32m"
+!> Escape code for yellow foreground color
+character(len=*), parameter :: COLOR_YELLOW = ESC//"[93m"
+!> Escape code to reset foreground color
+character(len=*), parameter :: COLOR_RESET = ESC//"[0m"
 
 !> Console object
 type console_t
     !> Number of lines printed
     integer :: n_line = 1
-    !> 'Plain' output (no escape codes)
-    logical :: plain_mode = .false.
-    !> Escape code for erasing current line
-    character(:), allocatable :: LINE_RESET
-    !> Escape code for moving up one line
-    character(:), allocatable :: LINE_UP
-    !> Escape code for moving down one line
-    character(:), allocatable :: LINE_DOWN
+
 contains
     !> Write a single line to the console
     procedure :: write_line => console_write_line
@@ -36,35 +45,7 @@ contains
     procedure :: update_line => console_update_line
 end type console_t
 
-!> Constructor for console_t
-interface console_t
-    procedure :: new_console
-end interface console_t
-
 contains
-
-!> Initialise a new console object
-function new_console(plain_mode) result(console)
-    !> 'Plain' output (no escape codes)
-    logical, intent(in), optional :: plain_mode
-    !> Console object to initialise
-    type(console_t) :: console
-
-    if (present(plain_mode)) then
-        console%plain_mode = plain_mode
-    end if
-
-    if (console%plain_mode) then
-        console%LINE_RESET = ""
-        console%LINE_UP = ""
-        console%LINE_DOWN = ""
-    else
-        console%LINE_RESET = ESC//"[2K"//ESC//"[1G"
-        console%LINE_UP = ESC//"[1A"
-        console%LINE_DOWN = ESC//"[1B"
-    end if
-
-end function new_console
 
 !> Write a single line to the standard output
 subroutine console_write_line(console,str,line,advance)
@@ -92,7 +73,7 @@ subroutine console_write_line(console,str,line,advance)
         line = console%n_line
     end if
     
-    write(stdout,'(A)',advance=trim(adv)) console%LINE_RESET//str
+    write(stdout,'(A)',advance=trim(adv)) LINE_RESET//str
 
     if (adv=="yes") then
         console%n_line = console%n_line + 1
@@ -118,12 +99,12 @@ subroutine console_update_line(console,line_no,str)
     n = console%n_line - line_no !+ 1 !+ 1
 
     ! Step back to line
-    write(stdout,'(A)',advance="no") repeat(console%LINE_UP,n)//console%LINE_RESET
+    write(stdout,'(A)',advance="no") repeat(LINE_UP,n)//LINE_RESET
 
     write(stdout,*) str
 
     ! Step forward to end
-    write(stdout,'(A)',advance="no") repeat(console%LINE_DOWN,n)//console%LINE_RESET
+    write(stdout,'(A)',advance="no") repeat(LINE_DOWN,n)//LINE_RESET
 
     !$omp end critical
 

@@ -14,11 +14,6 @@ rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"
 git = "https://github.com/urbanjost/M_CLI2.git"
 rev = "ea6bbffc1c2fb0885e994d37ccf0029c99b19f24"
 
-[dependencies.M_attr]
-git = "https://github.com/urbanjost/M_attr.git"
-rev = "608b9d3b40be9ff2590c23d2089781fd4da76344"
-
-
 [[test]]
 name = "cli-test"
 source-dir = "test/cli_test"

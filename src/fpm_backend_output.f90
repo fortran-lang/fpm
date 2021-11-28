@@ -13,8 +13,7 @@ module fpm_backend_output
 use iso_fortran_env, only: stdout=>output_unit
 use fpm_filesystem, only: basename
 use fpm_targets, only: build_target_ptr
-use fpm_backend_console, only: console_t
-use M_attr, only: attr, attr_mode
+use fpm_backend_console, only: console_t, LINE_RESET, COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_RESET
 implicit none
 
 private
@@ -58,14 +57,6 @@ contains
         logical, intent(in), optional :: plain_mode
         !> Progress object to initialise
         type(build_progress_t) :: progress
-        
-        if (plain_mode) then
-            call attr_mode('plain')
-        else
-            call attr_mode('color')
-        end if
-
-        progress%console = console_t(plain_mode)
 
         progress%n_target = size(target_queue,1)
         progress%target_queue => target_queue
@@ -105,7 +96,8 @@ contains
 
             else ! Pretty output
 
-                write(output_string,'(A,T40,A,A)') target_name,attr('<yellow>compiling...</yellow>')
+                write(output_string,'(A,T40,A,A)') target_name, COLOR_YELLOW//'compiling...'//COLOR_RESET
+
                 call progress%console%write_line(trim(output_string),progress%output_lines(queue_index))
 
                 call progress%console%write_line(trim(overall_progress)//'Compiling...',advance=.false.)
@@ -142,9 +134,9 @@ contains
             end if
 
             if (build_stat == 0) then
-                write(output_string,'(A,T40,A,A)') target_name,attr('<green>done.</green>')
+                write(output_string,'(A,T40,A,A)') target_name,COLOR_GREEN//'done.'//COLOR_RESET
             else
-                write(output_string,'(A,T40,A,A)') target_name,attr('<red>failed.</red>')
+                write(output_string,'(A,T40,A,A)') target_name,COLOR_RED//'failed.'//COLOR_RESET
             end if
 
             write(overall_progress,'(A,I4,A)') '[',100*progress%n_complete/progress%n_target,'%] '
@@ -173,11 +165,11 @@ contains
 
         if (progress%plain_mode) then ! Plain output
 
-            write(*,'(A)') attr('<green>[100%] Project compiled successfully.</green>')
+            write(*,'(A)') '[100%] Project compiled successfully.'
 
         else ! Pretty output
 
-            write(*,'(A)') progress%console%LINE_RESET//attr('<green>[100%] Project compiled successfully.</green>')
+            write(*,'(A)') LINE_RESET//COLOR_GREEN//'[100%] Project compiled successfully.'//COLOR_RESET
 
         end if
 
