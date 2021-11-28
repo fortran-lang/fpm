@@ -110,7 +110,7 @@ subroutine build_package(targets,model,verbose)
     plain_output = .true.
 #endif
 
-    call progress%init(queue,plain_output)
+    progress = build_progress_t(queue,plain_output)
 
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1

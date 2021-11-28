@@ -35,8 +35,6 @@ type build_progress_t
     !> Queue of scheduled build targets
     type(build_target_ptr), pointer :: target_queue(:)
 contains
-    !> Initialise build progress object
-    procedure :: init => output_init
     !> Output 'compiling' status for build target
     procedure :: compiling_status => output_status_compiling
     !> Output 'complete' status for build target
@@ -45,16 +43,21 @@ contains
     procedure :: success => output_progress_success
 end type build_progress_t
 
+!> Constructor for build_progress_t
+interface build_progress_t
+    procedure :: new_build_progress
+end interface build_progress_t
+
 contains
     
-    !> Initialise build progress object
-    subroutine output_init(progress,target_queue,plain_mode)
-        !> Progress object to initialise
-        class(build_progress_t), intent(out) :: progress
+    !> Initialise a new build progress object
+    function new_build_progress(target_queue,plain_mode) result(progress)
         !> The queue of scheduled targets
         type(build_target_ptr), intent(in), target :: target_queue(:)
         !> Enable 'plain' output for progress object
         logical, intent(in), optional :: plain_mode
+        !> Progress object to initialise
+        type(build_progress_t) :: progress
         
         if (plain_mode) then
             call attr_mode('plain')
@@ -62,15 +65,16 @@ contains
             call attr_mode('color')
         end if
 
-        call progress%console%init(plain_mode)
+        progress%console = console_t(plain_mode)
 
         progress%n_target = size(target_queue,1)
         progress%target_queue => target_queue
         progress%plain_mode = plain_mode
+        progress%n_complete = 0
 
         allocate(progress%output_lines(progress%n_target))
 
-    end subroutine output_init
+    end function new_build_progress
 
     !> Output 'compiling' status for build target and overall percentage progress
     subroutine output_status_compiling(progress, queue_index)

@@ -30,22 +30,25 @@ type console_t
     !> Escape code for moving down one line
     character(:), allocatable :: LINE_DOWN
 contains
-    !> Initialise the console object
-    procedure :: init => console_init
     !> Write a single line to the console
     procedure :: write_line => console_write_line
     !> Update a previously-written console line
     procedure :: update_line => console_update_line
 end type console_t
 
+!> Constructor for console_t
+interface console_t
+    procedure :: new_console
+end interface console_t
+
 contains
 
-!> Initialise the console object
-subroutine console_init(console,plain_mode)
-    !> Console object to initialise
-    class(console_t), intent(out), target :: console
+!> Initialise a new console object
+function new_console(plain_mode) result(console)
     !> 'Plain' output (no escape codes)
     logical, intent(in), optional :: plain_mode
+    !> Console object to initialise
+    type(console_t) :: console
 
     if (present(plain_mode)) then
         console%plain_mode = plain_mode
@@ -61,12 +64,12 @@ subroutine console_init(console,plain_mode)
         console%LINE_DOWN = ESC//"[1B"
     end if
 
-end subroutine console_init
+end function new_console
 
 !> Write a single line to the standard output
 subroutine console_write_line(console,str,line,advance)
     !> Console object
-    class(console_t), intent(inout), target :: console
+    class(console_t), intent(inout) :: console
     !> String to write
     character(*), intent(in) :: str
     !> Integer needed to later update console line
