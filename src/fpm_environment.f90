@@ -11,7 +11,6 @@ module fpm_environment
     private
     public :: get_os_type
     public :: os_is_unix
-    public :: run
     public :: get_env
     public :: get_command_arguments_quoted
     public :: separator
@@ -156,74 +155,6 @@ contains
         end if
         unix = build_os /= OS_WINDOWS
     end function os_is_unix
-
-    !> echo command string and pass it to the system for execution
-    subroutine run(cmd,echo,exitstat,verbose,redirect)
-        character(len=*), intent(in) :: cmd
-        logical,intent(in),optional  :: echo
-        integer, intent(out),optional  :: exitstat
-        logical, intent(in), optional :: verbose
-        character(*), intent(in), optional :: redirect
-
-        logical :: echo_local, verbose_local
-        character(:), allocatable :: redirect_str
-        character(1000) :: line
-        integer :: stat, fh, ios
-
-
-        if(present(echo))then
-           echo_local=echo
-        else
-           echo_local=.true.
-        end if
-
-        if(present(verbose))then
-            verbose_local=verbose
-        else
-            verbose_local=.true.
-        end if
-        
-        if (present(redirect)) then
-            redirect_str =  ">"//redirect//" 2>&1"
-        else
-            if(verbose_local)then
-                ! No redirection but verbose output
-                redirect_str = ""
-            else
-                ! No redirection and non-verbose output
-                if (os_is_unix()) then
-                    redirect_str = ">/dev/null 2>&1"
-                else
-                    redirect_str = ">NUL 2>&1"
-                end if
-            end if
-        end if
-
-        if(echo_local) print *, '+ ', cmd
-
-        call execute_command_line(cmd//redirect_str, exitstat=stat)
-
-        if (verbose_local.and.present(redirect)) then
-
-            open(newunit=fh,file=redirect,status='old')
-            do
-                read(fh, '(A)', iostat=ios) line
-                if (ios /= 0) exit
-                write(*,'(A)') trim(line)
-            end do
-            close(fh)
-
-        end if
-        
-        if (present(exitstat)) then
-            exitstat = stat
-        else
-            if (stat /= 0) then
-                call fpm_stop(1,'*run*:Command failed')
-            end if
-        end if
-
-    end subroutine run
 
     !> get named environment variable value. It it is blank or
     !! not set return the optional default value

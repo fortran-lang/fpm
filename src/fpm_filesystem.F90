@@ -5,7 +5,7 @@ module fpm_filesystem
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
-    use fpm_environment, only: separator, get_env
+    use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, notabs
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop
@@ -15,7 +15,7 @@ module fpm_filesystem
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
     public :: read_lines, read_lines_expanded
-    public :: which, LINE_BUFFER_LEN
+    public :: which, run, LINE_BUFFER_LEN
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -849,5 +849,74 @@ integer                         :: i, j
       end select
    enddo SEARCH
 end function which
+
+!> echo command string and pass it to the system for execution
+subroutine run(cmd,echo,exitstat,verbose,redirect)
+    character(len=*), intent(in) :: cmd
+    logical,intent(in),optional  :: echo
+    integer, intent(out),optional  :: exitstat
+    logical, intent(in), optional :: verbose
+    character(*), intent(in), optional :: redirect
+
+    logical :: echo_local, verbose_local
+    character(:), allocatable :: redirect_str
+    character(:), allocatable :: line
+    integer :: stat, fh, ios
+
+
+    if(present(echo))then
+       echo_local=echo
+    else
+       echo_local=.true.
+    end if
+
+    if(present(verbose))then
+        verbose_local=verbose
+    else
+        verbose_local=.true.
+    end if
+    
+    if (present(redirect)) then
+        redirect_str =  ">"//redirect//" 2>&1"
+    else
+        if(verbose_local)then
+            ! No redirection but verbose output
+            redirect_str = ""
+        else
+            ! No redirection and non-verbose output
+            if (os_is_unix()) then
+                redirect_str = ">/dev/null 2>&1"
+            else
+                redirect_str = ">NUL 2>&1"
+            end if
+        end if
+    end if
+
+    if(echo_local) print *, '+ ', cmd
+
+    call execute_command_line(cmd//redirect_str, exitstat=stat)
+
+    if (verbose_local.and.present(redirect)) then
+
+        open(newunit=fh,file=redirect,status='old')
+        do
+            call getline(fh, line, ios)
+            if (ios /= 0) exit
+            write(*,'(A)') trim(line)
+        end do
+        close(fh)
+
+    end if
+    
+    if (present(exitstat)) then
+        exitstat = stat
+    else
+        if (stat /= 0) then
+            call fpm_stop(1,'*run*:Command failed')
+        end if
+    end if
+
+end subroutine run
+
 
 end module fpm_filesystem

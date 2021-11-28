@@ -27,7 +27,6 @@
 ! Unisys            ?          ?       ?               ?             ?          discontinued
 module fpm_compiler
 use fpm_environment, only: &
-        run, &
         get_env, &
         get_os_type, &
         OS_LINUX, &
@@ -39,7 +38,7 @@ use fpm_environment, only: &
         OS_OPENBSD, &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
-    & getline
+    & getline, run
 use fpm_strings, only: string_cat, string_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver

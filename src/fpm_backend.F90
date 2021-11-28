@@ -29,8 +29,7 @@ module fpm_backend
 
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_error, only : fpm_stop
-use fpm_environment, only: run, get_os_type, OS_WINDOWS
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, LINE_BUFFER_LEN
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
 use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
@@ -349,13 +348,13 @@ subroutine print_build_log(target)
     type(build_target_t), intent(in), target :: target
 
     integer :: fh, ios
-    character(LINE_BUFFER_LEN) :: line
+    character(:), allocatable :: line
 
     if (exists(target%output_log_file)) then
 
         open(newunit=fh,file=target%output_log_file,status='old')
         do
-            read(fh, '(A)', iostat=ios) line
+            call getline(fh, line, ios)
             if (ios /= 0) exit
             write(*,'(A)') trim(line)
         end do

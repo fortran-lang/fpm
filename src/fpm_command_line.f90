@@ -29,8 +29,8 @@ use fpm_environment,  only : get_os_type, get_env, &
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, fnv_1a, to_fortran_name, is_fortran_name
-use fpm_filesystem,   only : basename, canon_path, which
-use fpm_environment,  only : run, get_command_arguments_quoted
+use fpm_filesystem,   only : basename, canon_path, which, run
+use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
