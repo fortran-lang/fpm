@@ -44,7 +44,7 @@ public :: build_package, sort_target, schedule_targets
 interface
     function c_isatty() bind(C, name = 'c_isatty')
         use, intrinsic :: iso_c_binding, only: c_int
-        integer(c_int)        :: c_isatty
+        integer(c_int) :: c_isatty
     end function
 end interface
 #endif
@@ -93,7 +93,7 @@ subroutine build_package(targets,model,verbose)
 
     ! Check if queue is empty
     if (.not.verbose .and. size(queue) < 1) then
-        write(*,*) 'Project is up to date'
+        write(*, '(a)') 'Project is up to date'
         return
     end if
 
@@ -138,7 +138,7 @@ subroutine build_package(targets,model,verbose)
 
         ! Check if this schedule region failed: exit with message if failed
         if (build_failed) then
-            write(*,*) ''
+            write(*,*)
             do j=1,size(stat)
                 if (stat(j) /= 0) Then
                     call print_build_log(queue(j)%ptr)
