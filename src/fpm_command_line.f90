@@ -1094,7 +1094,7 @@ contains
     '   fpm new A --full # create example/ and an annotated fpm.toml as well', &
     '   fpm new A --bare # create no directories                            ', &
     '   create any missing files in current directory                       ', &
-    '   fpm new `pwd` --full --backfill                                     ', &
+    '   fpm new --full --backfill                                           ', &
     '' ]
     help_test=[character(len=80) :: &
     'NAME                                                                   ', &
