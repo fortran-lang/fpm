@@ -8,9 +8,11 @@ module fpm_filesystem
     use fpm_environment, only: separator, get_env
     use fpm_strings, only: f_string, replace, string_t, split, notabs
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
-    use fpm_error, only : fpm_stop
+    use fpm_os,    only : get_current_directory
+    use fpm_error, only : fpm_stop, error_t
     implicit none
     private
+
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
@@ -125,6 +127,8 @@ function canon_path(path)
     integer :: istart, iend, nn, last
     logical :: is_path, absolute
 
+    type(error_t), allocatable :: error
+
     nixpath = unix_path(path)
 
     istart = 0
@@ -141,7 +145,12 @@ function canon_path(path)
         call next(nixpath, istart, iend, is_path)
         if (is_path) then
             select case(nixpath(istart:iend))
-            case(".", "") ! always drop empty paths
+            case( "") ! always drop empty paths
+            case(".") 
+                if(canon_path=="")then
+                   call get_current_directory(canon_path, error)
+                   canon_path=canon_path//'/'
+                endif
             case("..")
                 if (nn > 0) then
                     last = scan(canon_path(:len(canon_path)-1), "/", back=.true.)
@@ -833,5 +842,6 @@ integer                         :: i, j
       end select
    enddo SEARCH
 end function which
+
 
 end module fpm_filesystem

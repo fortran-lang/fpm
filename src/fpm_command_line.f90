@@ -317,9 +317,13 @@ contains
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
-                write(stderr,'(*(7x,g0,/))') &
-                & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
-                call fpm_stop(1,'directory name required')
+                if(lget('backfill'))then ! if no directory name but --backfill assume current directory
+                    name='.'
+                else
+                    write(stderr,'(*(7x,g0,/))') &
+                    & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
+                    call fpm_stop(1,'directory name required')
+                endif
             case(2)
                 name=trim(unnamed(2))
             case default

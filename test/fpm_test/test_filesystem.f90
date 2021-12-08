@@ -1,6 +1,8 @@
 module test_filesystem
+
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path
+    use fpm_os,    only : get_current_directory
     implicit none
     private
 
@@ -26,17 +28,21 @@ contains
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        character(len=:),allocatable :: cwd
+
+        call get_current_directory(cwd, error)
+        if (allocated(error)) return
 
         call check_string(error, &
             & canon_path("git/project/src/origin"), "git/project/src/origin")
         if (allocated(error)) return
 
         call check_string(error,  &
-            & canon_path("./project/src/origin"), "project/src/origin")
+            & canon_path("./project/src/origin"), cwd//"/project/src/origin")
         if (allocated(error)) return
 
         call check_string(error, &
-            & canon_path("./project/src///origin/"), "project/src/origin")
+            & canon_path("./project/src///origin/"), cwd//"/project/src/origin")
         if (allocated(error)) return
 
         call check_string(error, &
@@ -72,7 +78,7 @@ contains
         if (allocated(error)) return
 
         call check_string(error, &
-            & canon_path("././././././/////a/b/.///././////.///c/../../../"), ".")
+            & canon_path("././././././/////a/b/.///././////.///c/../../../"), cwd)
         if (allocated(error)) return
 
         call check_string(error, &
