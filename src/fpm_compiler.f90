@@ -40,7 +40,7 @@ use fpm_environment, only: &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline
-use fpm_strings, only: string_cat, string_t
+use fpm_strings, only: split, string_cat, string_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver
 public :: debug
@@ -467,7 +467,7 @@ function get_compiler_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id
 
-    character(len=:), allocatable :: command, output
+    character(len=:), allocatable :: full_command, full_command_parts(:), command, output
     integer :: stat, io
 
     ! Check whether we are dealing with an MPI compiler wrapper first
@@ -475,14 +475,20 @@ function get_compiler_id(compiler) result(id)
         & .or. check_compiler(compiler, "mpif90") &
         & .or. check_compiler(compiler, "mpif77")) then
         output = get_temp_filename()
-        call run(compiler//" -showme:command > "//output//" 2>&1", &
+        call run(compiler//" -show > "//output//" 2>&1", &
             & echo=.false., exitstat=stat)
         if (stat == 0) then
             open(file=output, newunit=io, iostat=stat)
-            if (stat == 0) call getline(io, command, stat)
+            if (stat == 0) call getline(io, full_command, stat)
             close(io, iostat=stat)
 
             ! If we get a command from the wrapper, we will try to identify it
+            call split(full_command, full_command_parts, delimiters=' ')
+            if(size(full_command_parts) >= 0)then
+               command = trim(full_command_parts(1))
+            else
+               command = ''
+            endif
             if (allocated(command)) then
                 id = get_id(command)
                 if (id /= id_unknown) return
