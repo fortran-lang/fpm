@@ -484,10 +484,8 @@ function get_compiler_id(compiler) result(id)
 
             ! If we get a command from the wrapper, we will try to identify it
             call split(full_command, full_command_parts, delimiters=' ')
-            if(size(full_command_parts) >= 0)then
+            if(size(full_command_parts) > 0)then
                command = trim(full_command_parts(1))
-            else
-               command = ''
             endif
             if (allocated(command)) then
                 id = get_id(command)
