@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.6% of total for procedures.">20 statements</a>
+    title=" 0.7% of total for procedures.">24 statements</a>
      </li> 
      
      
@@ -183,7 +183,11 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/get_compiler_id.html#variable-command">command</a>
+      <a class="list-group-item" href="../proc/get_compiler_id.html#variable-command~2">command</a>
+      
+      <a class="list-group-item" href="../proc/get_compiler_id.html#variable-full_command">full_command</a>
+      
+      <a class="list-group-item" href="../proc/get_compiler_id.html#variable-full_command_parts">full_command_parts</a>
       
       <a class="list-group-item" href="../proc/get_compiler_id.html#variable-io">io</a>
       
@@ -298,7 +302,11 @@ public function get_compiler_id(compiler) result(id)
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../proc/get_compiler_id.html#variable-command">command</a>
+      <a class="list-group-item" href="../proc/get_compiler_id.html#variable-command~2">command</a>
+      
+      <a class="list-group-item" href="../proc/get_compiler_id.html#variable-full_command">full_command</a>
+      
+      <a class="list-group-item" href="../proc/get_compiler_id.html#variable-full_command_parts">full_command_parts</a>
       
       <a class="list-group-item" href="../proc/get_compiler_id.html#variable-io">io</a>
       
@@ -362,11 +370,39 @@ public function get_compiler_id(compiler) result(id)
   
 <tr>
   
-  <td><span class="anchor" id="variable-command"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-command~2"></span>character(len=:),</td>
   
   <td>public,</td>
   <td>allocatable</td><td>::</td>
   <td><strong>command</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-full_command"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>full_command</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-full_command_parts"></span>character(len=:),</td>
+  
+  <td>public,</td>
+  <td>allocatable</td><td>::</td>
+  <td><strong>full_command_parts</strong>(:)</td><td></td><td></td><td></td>
   
 </tr>
 
@@ -439,7 +475,7 @@ public function get_compiler_id(compiler) result(id)
     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">compiler</span>
     <span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">compiler_enum</span><span class="p">)</span> <span class="kd">::</span> <span class="n">id</span>
 
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">command</span><span class="p">,</span> <span class="n">output</span>
+    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">full_command</span><span class="p">,</span> <span class="n">full_command_parts</span><span class="p">(:),</span> <span class="n">command</span><span class="p">,</span> <span class="n">output</span>
     <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">io</span>
 
     <span class="c">! Check whether we are dealing with an MPI compiler wrapper first</span>
@@ -447,15 +483,19 @@ public function get_compiler_id(compiler) result(id)
         <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;mpif90&quot;</span><span class="p">)</span> <span class="p">&amp;</span>
         <span class="p">&amp;</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">check_compiler</span><span class="p">(</span><span class="n">compiler</span><span class="p">,</span> <span class="s2">&quot;mpif77&quot;</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">        </span><span class="n">output</span> <span class="o">=</span> <span class="n">get_temp_filename</span><span class="p">()</span>
-        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">compiler</span><span class="o">//</span><span class="s2">&quot; -showme:command &gt; &quot;</span><span class="o">//</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+        <span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">compiler</span><span class="o">//</span><span class="s2">&quot; -show &gt; &quot;</span><span class="o">//</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
             <span class="p">&amp;</span> <span class="n">echo</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
 <span class="k">            open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">call </span><span class="n">getline</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">call </span><span class="n">getline</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">full_command</span><span class="p">,</span> <span class="nb">stat</span><span class="p">)</span>
             <span class="k">close</span><span class="p">(</span><span class="n">io</span><span class="p">,</span> <span class="n">iostat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
 
             <span class="c">! If we get a command from the wrapper, we will try to identify it</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">command</span><span class="p">))</span> <span class="k">then</span>
+            <span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">full_command</span><span class="p">,</span> <span class="n">full_command_parts</span><span class="p">,</span> <span class="n">delimiters</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">full_command_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<span class="k">               </span><span class="n">command</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">full_command_parts</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">endif</span>
+<span class="k">            if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">command</span><span class="p">))</span> <span class="k">then</span>
 <span class="k">                </span><span class="n">id</span> <span class="o">=</span> <span class="n">get_id</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">id</span> <span class="o">/=</span> <span class="n">id_unknown</span><span class="p">)</span> <span class="k">return</span>
 <span class="k">            end if</span>
@@ -487,7 +527,7 @@ public function get_compiler_id(compiler) result(id)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-11-21 15:34  
+             on 2021-12-13 07:02  
             
           </p>
         </div>
