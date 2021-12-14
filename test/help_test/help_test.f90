@@ -22,18 +22,21 @@ integer                        :: chars
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ! build manual as pieces using various help commands
 ! debug version
-' --version                           ',& ! verify fpm version being used
-' --help        > fpm_scratch_help.txt',&
-' help new     >> fpm_scratch_help.txt',&
-' help update  >> fpm_scratch_help.txt',&
-' build --help >> fpm_scratch_help.txt',&
-' help run     >> fpm_scratch_help.txt',&
-' help test    >> fpm_scratch_help.txt',&
-' help runner  >> fpm_scratch_help.txt',&
-' help install >> fpm_scratch_help.txt',&
-' help list    >> fpm_scratch_help.txt',&
-' help help    >> fpm_scratch_help.txt',&
-' --version    >> fpm_scratch_help.txt',&
+' --version                            ',& ! verify fpm version being used
+
+' --help         > fpm_scratch_help.txt',&
+' help new      >> fpm_scratch_help.txt',&
+' build --help  >> fpm_scratch_help.txt',&
+' help run      >> fpm_scratch_help.txt',&
+' help test     >> fpm_scratch_help.txt',&
+' help install  >> fpm_scratch_help.txt',&
+' help update   >> fpm_scratch_help.txt',&
+' help help     >> fpm_scratch_help.txt',&
+' help list     >> fpm_scratch_help.txt',&
+' help runner   >> fpm_scratch_help.txt',&
+' help compiler >> fpm_scratch_help.txt',&
+' help response >> fpm_scratch_help.txt',&
+' --version     >> fpm_scratch_help.txt',&
 ! generate manual
 ' help manual   > fpm_scratch_manual.txt']
 
@@ -41,7 +44,7 @@ character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 !'fpm run -- --list       >> fpm_scratch_help.txt',&
 !'fpm run -- list --list  >> fpm_scratch_help.txt',&
 character(len=*),parameter :: names(*)=[character(len=10) ::&
-   'fpm','new','update','build','run','test','runner','install','list','help']
+   'fpm','new','update','build','run','test','runner','compiler','response','install','list','help']
 character(len=:), allocatable :: prog
 integer :: length
 
@@ -116,9 +119,11 @@ integer :: length
    call swallow('fpm_scratch_manual.txt',book2)
    ! get rid of lines from run() which is not on stderr at the moment
    book1=pack(book1,index(book1,' + build/').eq.0)
-   book2=pack(book1,index(book2,' + build/').eq.0)
+   book2=pack(book2,index(book2,' + build/').eq.0)
    write(*,*)'<INFO>book1 ',size(book1), len(book1)
    write(*,*)'<INFO>book2 ',size(book2), len(book2)
+   !!write(10,'(a)')book1
+   !!write(20,'(a)')book2
    if(size(book1).ne.size(book2))then
          write(*,*)'<ERROR>manual and "debug" appended pages are not the same size'
          tally=[tally,.false.]
