@@ -173,6 +173,11 @@ contains
         integer                       :: i
         integer                       :: widest
         type(fpm_install_settings), allocatable :: install_settings
+        type(fpm_run_settings), allocatable :: run_settings
+        type(fpm_build_settings), allocatable :: build_settings
+        type(fpm_new_settings), allocatable :: new_settings
+        type(fpm_test_settings), allocatable :: test_settings
+        type(fpm_update_settings), allocatable :: update_settings
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, archiver
 
@@ -260,10 +265,10 @@ contains
 
             c_compiler = sget('c-compiler')
             archiver = sget('archiver')
-            allocate(fpm_run_settings :: cmd_settings)
+            allocate(run_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
-            cmd_settings=fpm_run_settings(&
+            run_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
             & compiler=val_compiler, &
@@ -278,6 +283,7 @@ contains
             & name=names,&
             & runner=val_runner,&
             & verbose=lget('verbose') )
+            call move_alloc(run_settings,cmd_settings)
 
         case('build')
             call set_args(common_args // compiler_args //'&
@@ -290,8 +296,8 @@ contains
 
             c_compiler = sget('c-compiler')
             archiver = sget('archiver')
-            allocate( fpm_build_settings :: cmd_settings )
-            cmd_settings=fpm_build_settings(  &
+            allocate(build_settings)
+            build_settings=fpm_build_settings(  &
             & profile=val_profile,&
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
@@ -303,6 +309,7 @@ contains
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
             & verbose=lget('verbose') )
+            call move_alloc(build_settings,cmd_settings)
 
         case('new')
             call set_args(common_args // '&
@@ -336,7 +343,7 @@ contains
                 call fpm_stop(4,' ')
             endif
 
-            allocate(fpm_new_settings :: cmd_settings)
+            allocate(new_settings)
             if (any( specified([character(len=10) :: 'src','lib','app','test','example','bare'])) &
             & .and.lget('full') )then
                 write(stderr,'(*(a))')&
@@ -350,7 +357,7 @@ contains
                 &'        are mutually exclusive.'
                 call fpm_stop(3,' ')
             elseif (any( specified([character(len=10) :: 'src','lib','app','test','example']) ) )then
-                cmd_settings=fpm_new_settings(&
+                new_settings=fpm_new_settings(&
                  & backfill=lget('backfill'),               &
                  & name=name,                               &
                  & with_executable=lget('app'),             &
@@ -358,8 +365,9 @@ contains
                  & with_test=lget('test'),                  &
                  & with_example=lget('example'),            &
                  & verbose=lget('verbose') )
+                call move_alloc(new_settings,cmd_settings)
             else  ! default if no specific directories are requested
-                cmd_settings=fpm_new_settings(&
+                new_settings=fpm_new_settings(&
                  & backfill=lget('backfill') ,           &
                  & name=name,                            &
                  & with_executable=.true.,               &
@@ -369,6 +377,7 @@ contains
                  & with_full=lget('full'),               &
                  & with_bare=lget('bare'),               &
                  & verbose=lget('verbose') )
+                call move_alloc(new_settings,cmd_settings)
             endif
 
         case('help','manual')
@@ -479,10 +488,10 @@ contains
 
             c_compiler = sget('c-compiler')
             archiver = sget('archiver')
-            allocate(fpm_test_settings :: cmd_settings)
+            allocate(test_settings)
             val_runner=sget('runner')
             if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
-            cmd_settings=fpm_test_settings(&
+            test_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
             & compiler=val_compiler, &
@@ -497,6 +506,7 @@ contains
             & name=names, &
             & runner=val_runner, &
             & verbose=lget('verbose') )
+            call move_alloc(test_settings,cmd_settings)
 
         case('update')
             call set_args(common_args // ' --fetch-only F --clean F', &
@@ -508,10 +518,11 @@ contains
                 names=[character(len=len(names)) :: ]
             endif
 
-            allocate(fpm_update_settings :: cmd_settings)
-            cmd_settings=fpm_update_settings(name=names, &
+            allocate(update_settings)
+            update_settings=fpm_update_settings(name=names, &
                 fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
                 clean=lget('clean'))
+            call move_alloc(update_settings,cmd_settings)
 
         case default
 
