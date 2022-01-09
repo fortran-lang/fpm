@@ -1,0 +1,5 @@
+name = "c-main"
+
+[[executable]]
+name = "c-main"
+main = "main.c"
