@@ -163,6 +163,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
                 if (allocated(executables(i)%link)) then
                     sources(j)%link_libraries = executables(i)%link
                 end if
+                sources(j)%unit_type = FPM_UNIT_PROGRAM
                 cycle exe_loop
 
             end if
@@ -170,12 +171,15 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
         end do
 
         ! Add if not already discovered (auto_discovery off)
-        exe_source = parse_source(join_path(executables(i)%source_dir,executables(i)%main),error)
-        exe_source%exe_name = executables(i)%name
-        if (allocated(executables(i)%link)) then
-            exe_source%link_libraries = executables(i)%link
-        end if
-        exe_source%unit_scope = scope
+        associate(exe => executables(i))
+            exe_source = parse_source(join_path(exe%source_dir,exe%main),error)
+            exe_source%exe_name = exe%name
+            if (allocated(exe%link)) then
+                exe_source%link_libraries = exe%link
+            end if
+            exe_source%unit_type = FPM_UNIT_PROGRAM
+            exe_source%unit_scope = scope
+        end associate
 
         if (allocated(error)) return
 
