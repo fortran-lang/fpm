@@ -98,5 +98,9 @@ pushd c_header_only
 "$fpm" build
 popd
 
+pushd c_main
+"$fpm" run
+popd
+
 # Cleanup
 rm -rf ./*/build
