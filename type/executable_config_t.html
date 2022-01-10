@@ -199,7 +199,7 @@
   <div id="boundprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-info~8">info</a>
+      <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-info~2">info</a>
       
     </div>
   </div>
@@ -257,7 +257,7 @@
   <div id="boundprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-info~8">info</a>
+      <a class="list-group-item" href="../type/executable_config_t.html#boundprocedure-info~2">info</a>
       
     </div>
   </div>
@@ -290,7 +290,7 @@
     
      
 <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~8"></span><h3>procedure, public :: <strong>info</strong>  
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~2"></span><h3>procedure, public :: <strong>info</strong>  
     
   </h3></div>
   
@@ -399,29 +399,29 @@ private subroutine info(self, unit, verbosity)
     
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="highlight"><pre><span></span>    <span class="k">type</span> <span class="kd">::</span> <span class="n">executable_config_t</span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">executable_config_t</span><span class="w"></span>
 
-        <span class="c">!&gt; Name of the resulting executable</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">name</span>
+<span class="w">        </span><span class="c">!&gt; Name of the resulting executable</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w"></span>
 
-        <span class="c">!&gt; Source directory for collecting the executable</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">source_dir</span>
+<span class="w">        </span><span class="c">!&gt; Source directory for collecting the executable</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">source_dir</span><span class="w"></span>
 
-        <span class="c">!&gt; Name of the source file declaring the main program</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">main</span>
+<span class="w">        </span><span class="c">!&gt; Name of the source file declaring the main program</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">main</span><span class="w"></span>
 
-        <span class="c">!&gt; Dependency meta data for this executable</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependency</span><span class="p">(:)</span>
+<span class="w">        </span><span class="c">!&gt; Dependency meta data for this executable</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span><span class="p">(:)</span><span class="w"></span>
 
-        <span class="c">!&gt; Libraries to link against</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="nb">link</span><span class="p">(:)</span>
+<span class="w">        </span><span class="c">!&gt; Libraries to link against</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">link</span><span class="p">(:)</span><span class="w"></span>
 
-    <span class="k">contains</span>
+<span class="w">    </span><span class="k">contains</span><span class="w"></span>
 
-        <span class="c">!&gt; Print information on this instance</span>
-        <span class="k">procedure</span> <span class="kd">::</span> <span class="n">info</span>
+<span class="w">        </span><span class="c">!&gt; Print information on this instance</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">info</span><span class="w"></span>
 
-    <span class="k">end type </span><span class="n">executable_config_t</span>
+<span class="w">    </span><span class="k">end type </span><span class="n">executable_config_t</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -436,14 +436,14 @@ private subroutine info(self, unit, verbosity)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

@@ -240,7 +240,7 @@ public subroutine check_modules_for_duplicates(model, duplicates_found)
   
 <tr>
   
-  <td><span class="anchor" id="variable-model~2"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-model~3"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -331,48 +331,48 @@ public subroutine check_modules_for_duplicates(model, duplicates_found)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">check_modules_for_duplicates</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">duplicates_found</span><span class="p">)</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">model</span>
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">maxsize</span>
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">modi</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">modules</span><span class="p">(:)</span>
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">duplicates_found</span>
-    <span class="c">! Initialise the size of array</span>
-    <span class="n">maxsize</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="c">! Get number of modules provided by each source file of every package</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">)</span>
-      <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">sources</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">          </span><span class="n">maxsize</span> <span class="o">=</span> <span class="n">maxsize</span> <span class="o">+</span> <span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">)</span>
-        <span class="k">end if</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">check_modules_for_duplicates</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">duplicates_found</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">model</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">maxsize</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">modi</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">modules</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">duplicates_found</span><span class="w"></span>
+<span class="w">    </span><span class="c">! Initialise the size of array</span>
+<span class="w">    </span><span class="n">maxsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">    </span><span class="c">! Get number of modules provided by each source file of every package</span>
+<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">sources</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">          </span><span class="n">maxsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">maxsize</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
 <span class="k">      end do</span>
-<span class="k">    end do</span>
-    <span class="c">! Allocate array to contain distinct names of modules</span>
-    <span class="k">allocate</span><span class="p">(</span><span class="n">modules</span><span class="p">(</span><span class="n">maxsize</span><span class="p">))</span>
+<span class="k">    end do</span><span class="w"></span>
+<span class="w">    </span><span class="c">! Allocate array to contain distinct names of modules</span>
+<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">modules</span><span class="p">(</span><span class="n">maxsize</span><span class="p">))</span><span class="w"></span>
 
-    <span class="c">! Initialise index to point at start of the newly allocated array</span>
-    <span class="n">modi</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="c">! Initialise index to point at start of the newly allocated array</span>
+<span class="w">    </span><span class="n">modi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-    <span class="c">! Loop through modules provided by each source file of every package</span>
-    <span class="c">! Add it to the array if it is not already there</span>
-    <span class="c">! Otherwise print out warning about duplicates</span>
-    <span class="k">do </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">)</span>
-      <span class="k">do </span><span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">          do </span><span class="n">m</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)%</span><span class="n">s</span><span class="p">.</span><span class="n">in</span><span class="p">.</span><span class="n">modules</span><span class="p">(:</span><span class="n">modi</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="o">*</span><span class="p">)</span> <span class="s2">&quot;Warning: Module &quot;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="p">&amp;</span>
-                <span class="s2">&quot; in &quot;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="s2">&quot; is a duplicate&quot;</span>
-              <span class="n">duplicates_found</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
-            <span class="k">else</span>
-<span class="k">              </span><span class="n">modules</span><span class="p">(</span><span class="n">modi</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-              <span class="n">modi</span> <span class="o">=</span> <span class="n">modi</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="k">end if</span>
+<span class="w">    </span><span class="c">! Loop through modules provided by each source file of every package</span>
+<span class="w">    </span><span class="c">! Add it to the array if it is not already there</span>
+<span class="w">    </span><span class="c">! Otherwise print out warning about duplicates</span>
+<span class="w">    </span><span class="k">do </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="k">do </span><span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">          do </span><span class="n">m</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)%</span><span class="n">s</span><span class="p">.</span><span class="n">in</span><span class="p">.</span><span class="n">modules</span><span class="p">(:</span><span class="n">modi</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;Warning: Module &quot;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                </span><span class="s2">&quot; in &quot;</span><span class="p">,</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="s2">&quot; is a duplicate&quot;</span><span class="w"></span>
+<span class="w">              </span><span class="n">duplicates_found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="w">            </span><span class="k">else</span>
+<span class="k">              </span><span class="n">modules</span><span class="p">(</span><span class="n">modi</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">k</span><span class="p">)%</span><span class="n">sources</span><span class="p">(</span><span class="n">l</span><span class="p">)%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"></span>
+<span class="w">              </span><span class="n">modi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">modi</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">            </span><span class="k">end if</span>
 <span class="k">          end do</span>
 <span class="k">        end if</span>
 <span class="k">      end do</span>
 <span class="k">    end do</span>
-<span class="k">end subroutine </span><span class="n">check_modules_for_duplicates</span>
+<span class="k">end subroutine </span><span class="n">check_modules_for_duplicates</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -388,14 +388,14 @@ public subroutine check_modules_for_duplicates(model, duplicates_found)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

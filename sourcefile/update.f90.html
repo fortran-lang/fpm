@@ -273,74 +273,74 @@
 
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl"><pre><span></span><a id="ln-1" name="ln-1"></a><span class="k">module </span><span class="n">fpm_cmd_update</span>
-<a id="ln-2" name="ln-2"></a>  <span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">fpm_update_settings</span>
-<a id="ln-3" name="ln-3"></a>  <span class="k">use </span><span class="n">fpm_dependency</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">dependency_tree_t</span><span class="p">,</span> <span class="n">new_dependency_tree</span>
-<a id="ln-4" name="ln-4"></a>  <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_t</span><span class="p">,</span> <span class="n">fpm_stop</span>
-<a id="ln-5" name="ln-5"></a>  <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">exists</span><span class="p">,</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">join_path</span><span class="p">,</span> <span class="n">delete_file</span><span class="p">,</span> <span class="n">filewrite</span>
-<a id="ln-6" name="ln-6"></a>  <span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">package_config_t</span><span class="p">,</span> <span class="n">get_package_data</span>
-<a id="ln-7" name="ln-7"></a>  <span class="k">implicit none</span>
-<a id="ln-8" name="ln-8"></a><span class="k">  private</span>
-<a id="ln-9" name="ln-9"></a><span class="k">  public</span> <span class="kd">::</span> <span class="n">cmd_update</span>
-<a id="ln-10" name="ln-10"></a>
-<a id="ln-11" name="ln-11"></a><span class="k">contains</span>
-<a id="ln-12" name="ln-12"></a>
-<a id="ln-13" name="ln-13"></a>  <span class="c">!&gt; Entry point for the update subcommand</span>
-<a id="ln-14" name="ln-14"></a>  <span class="k">subroutine </span><span class="n">cmd_update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-<a id="ln-15" name="ln-15"></a>    <span class="c">!&gt; Representation of the command line arguments</span>
-<a id="ln-16" name="ln-16"></a>    <span class="k">type</span><span class="p">(</span><span class="n">fpm_update_settings</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">settings</span>
-<a id="ln-17" name="ln-17"></a>    <span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">package</span>
-<a id="ln-18" name="ln-18"></a>    <span class="k">type</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">deps</span>
-<a id="ln-19" name="ln-19"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">error</span>
-<a id="ln-20" name="ln-20"></a>
-<a id="ln-21" name="ln-21"></a>    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">ii</span>
-<a id="ln-22" name="ln-22"></a>    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">cache</span>
-<a id="ln-23" name="ln-23"></a>
-<a id="ln-24" name="ln-24"></a>    <span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<a id="ln-25" name="ln-25"></a>    <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-26" name="ln-26"></a>
-<a id="ln-27" name="ln-27"></a>    <span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-28" name="ln-28"></a><span class="k">      call </span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">)</span>
-<a id="ln-29" name="ln-29"></a>      <span class="k">call </span><span class="n">filewrite</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="s2">&quot;.gitignore&quot;</span><span class="p">),[</span><span class="s2">&quot;*&quot;</span><span class="p">])</span>
-<a id="ln-30" name="ln-30"></a>    <span class="k">end if</span>
-<a id="ln-31" name="ln-31"></a>
-<a id="ln-32" name="ln-32"></a><span class="k">    </span><span class="n">cache</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="s2">&quot;cache.toml&quot;</span><span class="p">)</span>
-<a id="ln-33" name="ln-33"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-34" name="ln-34"></a><span class="k">      call </span><span class="n">delete_file</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
-<a id="ln-35" name="ln-35"></a>    <span class="k">end if</span>
-<a id="ln-36" name="ln-36"></a>
-<a id="ln-37" name="ln-37"></a><span class="k">    call </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-38" name="ln-38"></a>      <span class="n">verbosity</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">))</span>
-<a id="ln-39" name="ln-39"></a>
-<a id="ln-40" name="ln-40"></a>    <span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a id="ln-41" name="ln-41"></a>    <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-42" name="ln-42"></a>
-<a id="ln-43" name="ln-43"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">fetch_only</span><span class="p">)</span> <span class="k">return</span>
-<a id="ln-44" name="ln-44"></a>
-<a id="ln-45" name="ln-45"></a><span class="k">    if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-46" name="ln-46"></a><span class="k">      do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">deps</span><span class="p">%</span><span class="n">ndep</span>
-<a id="ln-47" name="ln-47"></a>        <span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="n">deps</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">name</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a id="ln-48" name="ln-48"></a>        <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-49" name="ln-49"></a>      <span class="k">end do</span>
-<a id="ln-50" name="ln-50"></a><span class="k">    else</span>
-<a id="ln-51" name="ln-51"></a><span class="k">      do </span><span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span>
-<a id="ln-52" name="ln-52"></a>        <span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">ii</span><span class="p">)),</span> <span class="n">error</span><span class="p">)</span>
-<a id="ln-53" name="ln-53"></a>        <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-54" name="ln-54"></a>      <span class="k">end do</span>
-<a id="ln-55" name="ln-55"></a><span class="k">    end if</span>
-<a id="ln-56" name="ln-56"></a>
-<a id="ln-57" name="ln-57"></a><span class="k">  end subroutine </span><span class="n">cmd_update</span>
-<a id="ln-58" name="ln-58"></a>
-<a id="ln-59" name="ln-59"></a>  <span class="c">!&gt; Error handling for this command</span>
-<a id="ln-60" name="ln-60"></a>  <span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-61" name="ln-61"></a>    <span class="c">!&gt; Potential error</span>
-<a id="ln-62" name="ln-62"></a>    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">error</span>
-<a id="ln-63" name="ln-63"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-64" name="ln-64"></a><span class="k">      call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span>
-<a id="ln-65" name="ln-65"></a>    <span class="k">end if</span>
-<a id="ln-66" name="ln-66"></a><span class="k">  end subroutine </span><span class="n">handle_error</span>
-<a id="ln-67" name="ln-67"></a>
-<a id="ln-68" name="ln-68"></a><span class="k">end module </span><span class="n">fpm_cmd_update</span>
+    <div class="hl"><pre><span></span><a id="ln-1" name="ln-1" href="#ln-1"></a><span class="k">module </span><span class="n">fpm_cmd_update</span><span class="w"></span>
+<a id="ln-2" name="ln-2" href="#ln-2"></a><span class="w">  </span><span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">fpm_update_settings</span><span class="w"></span>
+<a id="ln-3" name="ln-3" href="#ln-3"></a><span class="w">  </span><span class="k">use </span><span class="n">fpm_dependency</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">dependency_tree_t</span><span class="p">,</span><span class="w"> </span><span class="n">new_dependency_tree</span><span class="w"></span>
+<a id="ln-4" name="ln-4" href="#ln-4"></a><span class="w">  </span><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">error_t</span><span class="p">,</span><span class="w"> </span><span class="n">fpm_stop</span><span class="w"></span>
+<a id="ln-5" name="ln-5" href="#ln-5"></a><span class="w">  </span><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">exists</span><span class="p">,</span><span class="w"> </span><span class="n">mkdir</span><span class="p">,</span><span class="w"> </span><span class="n">join_path</span><span class="p">,</span><span class="w"> </span><span class="n">delete_file</span><span class="p">,</span><span class="w"> </span><span class="n">filewrite</span><span class="w"></span>
+<a id="ln-6" name="ln-6" href="#ln-6"></a><span class="w">  </span><span class="k">use </span><span class="n">fpm_manifest</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">package_config_t</span><span class="p">,</span><span class="w"> </span><span class="n">get_package_data</span><span class="w"></span>
+<a id="ln-7" name="ln-7" href="#ln-7"></a><span class="w">  </span><span class="k">implicit none</span>
+<a id="ln-8" name="ln-8" href="#ln-8"></a><span class="k">  private</span>
+<a id="ln-9" name="ln-9" href="#ln-9"></a><span class="k">  public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_update</span><span class="w"></span>
+<a id="ln-10" name="ln-10" href="#ln-10"></a>
+<a id="ln-11" name="ln-11" href="#ln-11"></a><span class="k">contains</span><span class="w"></span>
+<a id="ln-12" name="ln-12" href="#ln-12"></a>
+<a id="ln-13" name="ln-13" href="#ln-13"></a><span class="w">  </span><span class="c">!&gt; Entry point for the update subcommand</span>
+<a id="ln-14" name="ln-14" href="#ln-14"></a><span class="w">  </span><span class="k">subroutine </span><span class="n">cmd_update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-15" name="ln-15" href="#ln-15"></a><span class="w">    </span><span class="c">!&gt; Representation of the command line arguments</span>
+<a id="ln-16" name="ln-16" href="#ln-16"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_update_settings</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">settings</span><span class="w"></span>
+<a id="ln-17" name="ln-17" href="#ln-17"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">package</span><span class="w"></span>
+<a id="ln-18" name="ln-18" href="#ln-18"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">deps</span><span class="w"></span>
+<a id="ln-19" name="ln-19" href="#ln-19"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+<a id="ln-20" name="ln-20" href="#ln-20"></a>
+<a id="ln-21" name="ln-21" href="#ln-21"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ii</span><span class="w"></span>
+<a id="ln-22" name="ln-22" href="#ln-22"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cache</span><span class="w"></span>
+<a id="ln-23" name="ln-23" href="#ln-23"></a>
+<a id="ln-24" name="ln-24" href="#ln-24"></a><span class="w">    </span><span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w"></span>
+<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="w">    </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-26" name="ln-26" href="#ln-26"></a>
+<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="k">      call </span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">)</span><span class="w"></span>
+<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="w">      </span><span class="k">call </span><span class="n">filewrite</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;.gitignore&quot;</span><span class="p">),[</span><span class="s2">&quot;*&quot;</span><span class="p">])</span><span class="w"></span>
+<a id="ln-30" name="ln-30" href="#ln-30"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-31" name="ln-31" href="#ln-31"></a>
+<a id="ln-32" name="ln-32" href="#ln-32"></a><span class="k">    </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cache.toml&quot;</span><span class="p">)</span><span class="w"></span>
+<a id="ln-33" name="ln-33" href="#ln-33"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">clean</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-34" name="ln-34" href="#ln-34"></a><span class="k">      call </span><span class="n">delete_file</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="w"></span>
+<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-36" name="ln-36" href="#ln-36"></a>
+<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="k">    call </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">deps</span><span class="p">,</span><span class="w"> </span><span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="w">      </span><span class="n">verbosity</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">))</span><span class="w"></span>
+<a id="ln-39" name="ln-39" href="#ln-39"></a>
+<a id="ln-40" name="ln-40" href="#ln-40"></a><span class="w">    </span><span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-41" name="ln-41" href="#ln-41"></a><span class="w">    </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-42" name="ln-42" href="#ln-42"></a>
+<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">fetch_only</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-44" name="ln-44" href="#ln-44"></a>
+<a id="ln-45" name="ln-45" href="#ln-45"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="k">      do </span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="w"></span>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="w">        </span><span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="n">deps</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="w">      </span><span class="k">end do</span>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="k">    else</span>
+<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="k">      do </span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
+<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">        </span><span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">ii</span><span class="p">)),</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-54" name="ln-54" href="#ln-54"></a><span class="w">      </span><span class="k">end do</span>
+<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="k">    end if</span>
+<a id="ln-56" name="ln-56" href="#ln-56"></a>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="k">  end subroutine </span><span class="n">cmd_update</span><span class="w"></span>
+<a id="ln-58" name="ln-58" href="#ln-58"></a>
+<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">  </span><span class="c">!&gt; Error handling for this command</span>
+<a id="ln-60" name="ln-60" href="#ln-60"></a><span class="w">  </span><span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="w">    </span><span class="c">!&gt; Potential error</span>
+<a id="ln-62" name="ln-62" href="#ln-62"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-64" name="ln-64" href="#ln-64"></a><span class="k">      call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<a id="ln-65" name="ln-65" href="#ln-65"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-66" name="ln-66" href="#ln-66"></a><span class="k">  end subroutine </span><span class="n">handle_error</span><span class="w"></span>
+<a id="ln-67" name="ln-67" href="#ln-67"></a>
+<a id="ln-68" name="ln-68" href="#ln-68"></a><span class="k">end module </span><span class="n">fpm_cmd_update</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -353,14 +353,14 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

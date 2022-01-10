@@ -304,7 +304,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~6"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~8"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -380,73 +380,73 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">executables</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">auto_discover</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
-    <span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span> <span class="k">target</span> <span class="kd">::</span> <span class="n">sources</span><span class="p">(:)</span>
-    <span class="c">!&gt; List of `[[executable_config_t]]` entries from manifest</span>
-    <span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">executables</span><span class="p">(:)</span>
-    <span class="c">!&gt; Scope to apply to the discovered sources: either `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`, see [[fpm_model]]</span>
-    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">scope</span>
-    <span class="c">!&gt; If `.false.` only executables and tests specified in the manifest are added to `sources`</span>
-    <span class="kt">logical</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">auto_discover</span>
-    <span class="c">!&gt; Error handling</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">add_executable_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">executables</span><span class="p">,</span><span class="n">scope</span><span class="p">,</span><span class="n">auto_discover</span><span class="p">,</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; List of `[[srcfile_t]]` objects to append to. Allocated if not allocated</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">sources</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; List of `[[executable_config_t]]` entries from manifest</span>
+<span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">executable_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">executables</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Scope to apply to the discovered sources: either `FPM_SCOPE_APP` or `FPM_SCOPE_TEST`, see [[fpm_model]]</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">scope</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; If `.false.` only executables and tests specified in the manifest are added to `sources`</span>
+<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">auto_discover</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Error handling</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
 
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="w"></span>
 
-    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">exe_dirs</span><span class="p">(:)</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exe_source</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exe_dirs</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exe_source</span><span class="w"></span>
 
-    <span class="k">call </span><span class="n">get_executable_source_dirs</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">,</span><span class="n">executables</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">get_executable_source_dirs</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">,</span><span class="n">executables</span><span class="p">)</span><span class="w"></span>
 
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">)</span>
-        <span class="k">call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">exe_dirs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="n">scope</span><span class="p">,</span> <span class="p">&amp;</span>
-                     <span class="n">with_executables</span><span class="o">=</span><span class="n">auto_discover</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">exe_dirs</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">add_sources_from_dir</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span><span class="n">exe_dirs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">scope</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                     </span><span class="n">with_executables</span><span class="o">=</span><span class="n">auto_discover</span><span class="p">,</span><span class="w"> </span><span class="n">recurse</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            return</span>
 <span class="k">        end if</span>
 <span class="k">    end do</span>
 
-<span class="k">    </span><span class="n">exe_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span>
+<span class="k">    </span><span class="n">exe_loop</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span><span class="w"></span>
 
-        <span class="c">! Check if executable already discovered automatically</span>
-        <span class="c">!  and apply any overrides</span>
-        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+<span class="w">        </span><span class="c">! Check if executable already discovered automatically</span>
+<span class="w">        </span><span class="c">!  and apply any overrides</span>
+<span class="w">        </span><span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span><span class="w"></span>
 
-            <span class="k">if</span> <span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span> <span class="o">==</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span> <span class="p">.</span><span class="nb">and</span><span class="p">.&amp;</span>
-                 <span class="n">canon_path</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">))</span> <span class="o">==</span> <span class="p">&amp;</span>
-                 <span class="n">canon_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">)</span> <span class="p">)</span> <span class="k">then</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.&amp;</span><span class="w"></span>
+<span class="w">                 </span><span class="n">canon_path</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">file_name</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                 </span><span class="n">canon_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                </span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">exe_name</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">                    </span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span>
+<span class="k">                </span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">exe_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">sources</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">link_libraries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span>
 <span class="nb">                </span><span class="k">end if</span>
-<span class="k">                cycle </span><span class="n">exe_loop</span>
+<span class="k">                cycle </span><span class="n">exe_loop</span><span class="w"></span>
 
-            <span class="k">end if</span>
+<span class="w">            </span><span class="k">end if</span>
 
-<span class="k">        end do</span>
+<span class="k">        end do</span><span class="w"></span>
 
-        <span class="c">! Add if not already discovered (auto_discovery off)</span>
-        <span class="n">exe_source</span> <span class="o">=</span> <span class="n">parse_source</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">,</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span><span class="p">),</span><span class="n">error</span><span class="p">)</span>
-        <span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">            </span><span class="n">exe_source</span><span class="p">%</span><span class="n">link_libraries</span> <span class="o">=</span> <span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span>
+<span class="w">        </span><span class="c">! Add if not already discovered (auto_discovery off)</span>
+<span class="w">        </span><span class="n">exe_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_source</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">source_dir</span><span class="p">,</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">main</span><span class="p">),</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">exe_source</span><span class="p">%</span><span class="n">link_libraries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="nb">link</span>
 <span class="nb">        </span><span class="k">end if</span>
-<span class="k">        </span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span> <span class="o">=</span> <span class="n">scope</span>
+<span class="k">        </span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scope</span><span class="w"></span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">return</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">        if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">            </span><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">exe_source</span><span class="p">]</span>
-        <span class="k">else</span>
-<span class="k">            </span><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">sources</span><span class="p">,</span> <span class="n">exe_source</span><span class="p">]</span>
-        <span class="k">end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">sources</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">sources</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">exe_source</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">sources</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">sources</span><span class="p">,</span><span class="w"> </span><span class="n">exe_source</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
 
-<span class="k">    end do </span><span class="n">exe_loop</span>
+<span class="k">    end do </span><span class="n">exe_loop</span><span class="w"></span>
 
-<span class="k">end subroutine </span><span class="n">add_executable_sources</span>
+<span class="k">end subroutine </span><span class="n">add_executable_sources</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -462,14 +462,14 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

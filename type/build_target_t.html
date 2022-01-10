@@ -265,54 +265,54 @@
     
     <section>
     <h3><span class="anchor" id="src"></span>Source Code</h3>
-    <div class="highlight"><pre><span></span><span class="k">type </span><span class="n">build_target_t</span>
+    <div class="highlight"><pre><span></span><span class="k">type </span><span class="n">build_target_t</span><span class="w"></span>
 
-    <span class="c">!&gt; File path of build target object relative to cwd</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">output_file</span>
+<span class="w">    </span><span class="c">!&gt; File path of build target object relative to cwd</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_file</span><span class="w"></span>
 
-    <span class="c">!&gt; File path of build target object relative to output_dir</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">output_name</span>
+<span class="w">    </span><span class="c">!&gt; File path of build target object relative to output_dir</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_name</span><span class="w"></span>
 
-    <span class="c">!&gt; File path of output directory</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">output_dir</span>
+<span class="w">    </span><span class="c">!&gt; File path of output directory</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_dir</span><span class="w"></span>
 
-    <span class="c">!&gt; Primary source for this build target</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">source</span>
+<span class="w">    </span><span class="c">!&gt; Primary source for this build target</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">source</span><span class="w"></span>
 
-    <span class="c">!&gt; Resolved build dependencies</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dependencies</span><span class="p">(:)</span>
+<span class="w">    </span><span class="c">!&gt; Resolved build dependencies</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependencies</span><span class="p">(:)</span><span class="w"></span>
 
-    <span class="c">!&gt; Target type</span>
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">target_type</span> <span class="o">=</span> <span class="n">FPM_TARGET_UNKNOWN</span>
+<span class="w">    </span><span class="c">!&gt; Target type</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_TARGET_UNKNOWN</span><span class="w"></span>
 
-    <span class="c">!&gt; Native libraries to link against</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_libraries</span><span class="p">(:)</span>
+<span class="w">    </span><span class="c">!&gt; Native libraries to link against</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_libraries</span><span class="p">(:)</span><span class="w"></span>
 
-    <span class="c">!&gt; Objects needed to link this target</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_objects</span><span class="p">(:)</span>
+<span class="w">    </span><span class="c">!&gt; Objects needed to link this target</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_objects</span><span class="p">(:)</span><span class="w"></span>
 
-    <span class="c">!&gt; Link flags for this build target</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">link_flags</span>
+<span class="w">    </span><span class="c">!&gt; Link flags for this build target</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">link_flags</span><span class="w"></span>
 
-    <span class="c">!&gt; Compile flags for this build target</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">compile_flags</span>
+<span class="w">    </span><span class="c">!&gt; Compile flags for this build target</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_flags</span><span class="w"></span>
 
-    <span class="c">!&gt; Flag set when first visited to check for circular dependencies</span>
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">touched</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span><span class="c">!&gt; Flag set when first visited to check for circular dependencies</span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">touched</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
 
-    <span class="c">!&gt; Flag set if build target is sorted for building</span>
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">sorted</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span><span class="c">!&gt; Flag set if build target is sorted for building</span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
 
-    <span class="c">!&gt; Flag set if build target will be skipped (not built)</span>
-    <span class="kt">logical</span> <span class="kd">::</span> <span class="n">skip</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<span class="w">    </span><span class="c">!&gt; Flag set if build target will be skipped (not built)</span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">skip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
 
-    <span class="c">!&gt; Targets in the same schedule group are guaranteed to be independent</span>
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="n">schedule</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="w">    </span><span class="c">!&gt; Targets in the same schedule group are guaranteed to be independent</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">schedule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
 
-    <span class="c">!&gt; Previous source file hash</span>
-    <span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">digest_cached</span>
+<span class="w">    </span><span class="c">!&gt; Previous source file hash</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">digest_cached</span><span class="w"></span>
 
-<span class="k">end type </span><span class="n">build_target_t</span>
+<span class="k">end type </span><span class="n">build_target_t</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -327,14 +327,14 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

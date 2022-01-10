@@ -233,16 +233,16 @@ public function separator() result(sep)
 </code></pre></div>
 
 <h2 id="description">DESCRIPTION</h2>
-<div class="codehilite"><pre><span></span><code><span class="n">First</span> <span class="n">using</span> <span class="n">the</span> <span class="n">name</span> <span class="n">the</span> <span class="n">program</span> <span class="n">was</span> <span class="n">invoked</span> <span class="n">with</span><span class="p">,</span> <span class="n">then</span> <span class="n">the</span> <span class="n">name</span>
-<span class="n">returned</span> <span class="n">by</span> <span class="n">an</span> <span class="n">INQUIRE</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span> <span class="n">of</span> <span class="n">that</span> <span class="n">name</span><span class="p">,</span> <span class="n">then</span> <span class="s2">&quot;.\NAME&quot;</span> <span class="ow">and</span> <span class="s2">&quot;./NAME&quot;</span>
-<span class="n">try</span> <span class="n">to</span> <span class="n">determine</span> <span class="n">the</span> <span class="n">separator</span> <span class="n">character</span> <span class="n">used</span> <span class="n">to</span> <span class="n">separate</span> <span class="n">directory</span>
-<span class="n">names</span> <span class="n">from</span> <span class="n">file</span> <span class="n">basenames</span><span class="o">.</span>
+<div class="codehilite"><pre><span></span><code><span class="n">First</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">program</span><span class="w"> </span><span class="n">was</span><span class="w"> </span><span class="n">invoked</span><span class="w"> </span><span class="n">with</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">name</span><span class="w"></span>
+<span class="n">returned</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">an</span><span class="w"> </span><span class="n">INQUIRE</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="s2">&quot;.\NAME&quot;</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="s2">&quot;./NAME&quot;</span><span class="w"></span>
+<span class="n">try</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">determine</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">separator</span><span class="w"> </span><span class="n">character</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">separate</span><span class="w"> </span><span class="n">directory</span><span class="w"></span>
+<span class="n">names</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">basenames</span><span class="o">.</span><span class="w"></span>
 
-<span class="n">If</span> <span class="n">a</span> <span class="n">slash</span> <span class="ow">or</span> <span class="n">backslash</span> <span class="k">is</span> <span class="ow">not</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">name</span><span class="p">,</span> <span class="n">the</span> <span class="n">environment</span>
-<span class="n">variable</span> <span class="n">PATH</span> <span class="k">is</span> <span class="n">examined</span> <span class="n">first</span> <span class="k">for</span> <span class="n">a</span> <span class="n">backslash</span><span class="p">,</span> <span class="n">then</span> <span class="n">a</span> <span class="n">slash</span><span class="o">.</span>
+<span class="n">If</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">slash</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">backslash</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">found</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">environment</span><span class="w"></span>
+<span class="n">variable</span><span class="w"> </span><span class="n">PATH</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">examined</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">backslash</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">slash</span><span class="o">.</span><span class="w"></span>
 
-<span class="n">Can</span> <span class="n">be</span> <span class="n">very</span> <span class="n">system</span> <span class="n">dependent</span><span class="o">.</span> <span class="n">If</span> <span class="n">the</span> <span class="n">queries</span> <span class="n">fail</span> <span class="n">the</span> <span class="n">default</span> <span class="n">returned</span>
-<span class="k">is</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span>
+<span class="n">Can</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">very</span><span class="w"> </span><span class="n">system</span><span class="w"> </span><span class="n">dependent</span><span class="o">.</span><span class="w"> </span><span class="n">If</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">queries</span><span class="w"> </span><span class="n">fail</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="n">returned</span><span class="w"></span>
+<span class="k">is</span><span class="w"> </span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="example">EXAMPLE</h2>
@@ -269,7 +269,7 @@ ifort_bug*!sep_cache=sep</p>
     
     
     
-   <h3>Return Value <small><span class="anchor" id="variable-sep"></span>character(len=1)
+   <h3>Return Value <small><span class="anchor" id="variable-sep~2"></span>character(len=1)
   </small></h3>
     <p>ifort_bug*!character(len=1),save        :: sep_cache=&rsquo; &lsquo;</p>
     
@@ -335,7 +335,7 @@ ifort_bug*!sep_cache=sep</p>
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">separator</span><span class="p">()</span> <span class="k">result</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">separator</span><span class="p">()</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span><span class="w"></span>
 <span class="c">!&gt;</span>
 <span class="c">!!##NAME</span>
 <span class="c">!!    separator(3f) - [M_io:ENVIRONMENT] try to determine pathname directory separator character</span>
@@ -371,35 +371,35 @@ ifort_bug*!sep_cache=sep</p>
 
 <span class="c">! use the pathname returned as arg0 to determine pathname separator</span>
 <span class="k">implicit none</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">arg0</span>
-<span class="kt">integer</span>                      <span class="kd">::</span> <span class="n">arg0_length</span>
-<span class="kt">integer</span>                      <span class="kd">::</span> <span class="n">istat</span>
-<span class="kt">logical</span>                      <span class="kd">::</span> <span class="n">existing</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>             <span class="kd">::</span> <span class="n">sep</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">arg0</span><span class="w"></span>
+<span class="kt">integer</span><span class="w">                      </span><span class="kd">::</span><span class="w"> </span><span class="n">arg0_length</span><span class="w"></span>
+<span class="kt">integer</span><span class="w">                      </span><span class="kd">::</span><span class="w"> </span><span class="n">istat</span><span class="w"></span>
+<span class="kt">logical</span><span class="w">                      </span><span class="kd">::</span><span class="w"> </span><span class="n">existing</span><span class="w"></span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="w">             </span><span class="kd">::</span><span class="w"> </span><span class="n">sep</span><span class="w"></span>
 <span class="c">!*ifort_bug*!character(len=1),save        :: sep_cache=&#39; &#39;</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">name</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fname</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w"></span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fname</span><span class="w"></span>
 
-   <span class="c">!*ifort_bug*!   if(sep_cache.ne.&#39; &#39;)then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS</span>
-   <span class="c">!*ifort_bug*!      sep=sep_cache</span>
-   <span class="c">!*ifort_bug*!      return</span>
-   <span class="c">!*ifort_bug*!   endif</span>
+<span class="w">   </span><span class="c">!*ifort_bug*!   if(sep_cache.ne.&#39; &#39;)then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS</span>
+<span class="w">   </span><span class="c">!*ifort_bug*!      sep=sep_cache</span>
+<span class="w">   </span><span class="c">!*ifort_bug*!      return</span>
+<span class="w">   </span><span class="c">!*ifort_bug*!   endif</span>
 
-   <span class="n">arg0_length</span><span class="o">=</span><span class="mi">0</span>
-   <span class="n">name</span><span class="o">=</span><span class="s1">&#39; &#39;</span>
-   <span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">length</span><span class="o">=</span><span class="n">arg0_length</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="n">istat</span><span class="p">)</span>
-   <span class="k">if</span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">arg0</span><span class="p">))</span><span class="k">deallocate</span><span class="p">(</span><span class="n">arg0</span><span class="p">)</span>
-   <span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">arg0_length</span><span class="p">)</span> <span class="kd">::</span> <span class="n">arg0</span><span class="p">)</span>
-   <span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">arg0</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="n">istat</span><span class="p">)</span>
-   <span class="c">! check argument name</span>
-   <span class="k">if</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">arg0</span><span class="p">,</span><span class="s1">&#39;\&#39;).ne.0)then</span>
+<span class="w">   </span><span class="n">arg0_length</span><span class="o">=</span><span class="mi">0</span><span class="w"></span>
+<span class="w">   </span><span class="n">name</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="w"></span>
+<span class="w">   </span><span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">length</span><span class="o">=</span><span class="n">arg0_length</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="n">istat</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">arg0</span><span class="p">))</span><span class="k">deallocate</span><span class="p">(</span><span class="n">arg0</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">arg0_length</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">arg0</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">arg0</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="n">istat</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="c">! check argument name</span>
+<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">arg0</span><span class="p">,</span><span class="s1">&#39;\&#39;).ne.0)then</span>
 <span class="s1">      sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
 <span class="s1">   elseif(index(arg0,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
 <span class="s1">      sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <span class="s1">   else</span>
 <span class="s1">      ! try name returned by INQUIRE(3f)</span>
 <span class="s1">      existing=.false.</span>
-<span class="s1">      name=&#39;</span> <span class="s1">&#39;</span>
+<span class="s1">      name=&#39;</span><span class="w"> </span><span class="s1">&#39;</span>
 <span class="s1">      inquire(file=arg0,iostat=istat,exist=existing,name=name)</span>
 <span class="s1">      if(index(name,&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)then</span>
 <span class="s1">         sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
@@ -418,13 +418,13 @@ ifort_bug*!sep_cache=sep</p>
 <span class="s1">               sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <span class="s1">            else ! check environment variable PATH</span>
 <span class="s1">               sep=merge(&#39;</span><span class="err">\</span><span class="s1">&#39;,&#39;</span><span class="o">/</span><span class="s1">&#39;,index(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)</span>
-<span class="s1">               !*!write(*,*)&#39;</span><span class="o">&lt;</span><span class="n">WARNING</span><span class="o">&gt;</span><span class="n">unknown</span> <span class="nb">system </span><span class="n">directory</span> <span class="n">path</span> <span class="n">separator</span><span class="err">&#39;</span>
-            <span class="k">endif</span>
+<span class="s1">               !*!write(*,*)&#39;</span><span class="o">&lt;</span><span class="n">WARNING</span><span class="o">&gt;</span><span class="n">unknown</span><span class="w"> </span><span class="nb">system </span><span class="n">directory</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">separator</span><span class="err">&#39;</span><span class="w"></span>
+<span class="w">            </span><span class="k">endif</span>
 <span class="k">         endif</span>
 <span class="k">      endif</span>
-<span class="k">   endif</span>
-   <span class="c">!*ifort_bug*!sep_cache=sep</span>
-<span class="k">end function </span><span class="n">separator</span>
+<span class="k">   endif</span><span class="w"></span>
+<span class="w">   </span><span class="c">!*ifort_bug*!sep_cache=sep</span>
+<span class="k">end function </span><span class="n">separator</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -440,14 +440,14 @@ ifort_bug*!sep_cache=sep</p>
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

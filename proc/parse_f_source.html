@@ -236,13 +236,13 @@ public function parse_f_source(f_filename, error) result(f_source)
 <p><strong>Statements must not continued onto another line
   except for an <code>only:</code> list in the <code>use</code> statement.</strong></p>
 <p>This is supported:</p>
-<div class="codehilite"><pre><span></span><code> <span class="k">use </span><span class="n">my_module</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="p">&amp;</span>
-      <span class="n">my_var</span><span class="p">,</span> <span class="n">my_function</span><span class="p">,</span> <span class="n">my_subroutine</span>
+<div class="codehilite"><pre><span></span><code><span class="w"> </span><span class="k">use </span><span class="n">my_module</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">      </span><span class="n">my_var</span><span class="p">,</span><span class="w"> </span><span class="n">my_function</span><span class="p">,</span><span class="w"> </span><span class="n">my_subroutine</span><span class="w"></span>
 </code></pre></div>
 
 <p>This is <strong>NOT supported:</strong></p>
-<div class="codehilite"><pre><span></span><code> <span class="k">use</span> <span class="p">&amp;</span>
-    <span class="n">my_module</span>
+<div class="codehilite"><pre><span></span><code><span class="w"> </span><span class="k">use</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">    </span><span class="n">my_module</span><span class="w"></span>
 </code></pre></div>
     
 
@@ -279,7 +279,7 @@ public function parse_f_source(f_filename, error) result(f_source)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~9"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~7"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -364,261 +364,261 @@ public function parse_f_source(f_filename, error) result(f_source)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">parse_f_source</span><span class="p">(</span><span class="n">f_filename</span><span class="p">,</span><span class="n">error</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">f_source</span><span class="p">)</span>
-    <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">f_filename</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">f_source</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">parse_f_source</span><span class="p">(</span><span class="n">f_filename</span><span class="p">,</span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">f_source</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">f_filename</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">f_source</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
 
-    <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
-<span class="nb">    </span><span class="kt">integer</span> <span class="kd">::</span> <span class="n">fh</span><span class="p">,</span> <span class="n">n_use</span><span class="p">,</span> <span class="n">n_include</span><span class="p">,</span> <span class="n">n_mod</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">ic</span><span class="p">,</span> <span class="k">pass</span>
-<span class="k">    type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">file_lines</span><span class="p">(:),</span> <span class="n">file_lines_lower</span><span class="p">(:)</span>
-    <span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">temp_string</span><span class="p">,</span> <span class="n">mod_name</span><span class="p">,</span> <span class="n">string_parts</span><span class="p">(:)</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
+<span class="nb">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">n_use</span><span class="p">,</span><span class="w"> </span><span class="n">n_include</span><span class="p">,</span><span class="w"> </span><span class="n">n_mod</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">ic</span><span class="p">,</span><span class="w"> </span><span class="k">pass</span>
+<span class="k">    type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_lines</span><span class="p">(:),</span><span class="w"> </span><span class="n">file_lines_lower</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">temp_string</span><span class="p">,</span><span class="w"> </span><span class="n">mod_name</span><span class="p">,</span><span class="w"> </span><span class="n">string_parts</span><span class="p">(:)</span><span class="w"></span>
 
-    <span class="n">f_source</span><span class="p">%</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">f_filename</span>
+<span class="w">    </span><span class="n">f_source</span><span class="p">%</span><span class="n">file_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f_filename</span><span class="w"></span>
 
-    <span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">f_filename</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span>
-    <span class="n">file_lines</span> <span class="o">=</span> <span class="n">read_lines_expanded</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
-    <span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">f_filename</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">file_lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read_lines_expanded</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span><span class="w"></span>
 
-    <span class="c">! for efficiency in parsing make a lowercase left-adjusted copy of the file</span>
-    <span class="c">! Need a copy because INCLUDE (and #include) file arguments are case-sensitive</span>
-    <span class="n">file_lines_lower</span><span class="o">=</span><span class="n">file_lines</span>
-    <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">)</span>
-       <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">=</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">))</span>
-    <span class="k">enddo</span>
+<span class="w">    </span><span class="c">! for efficiency in parsing make a lowercase left-adjusted copy of the file</span>
+<span class="w">    </span><span class="c">! Need a copy because INCLUDE (and #include) file arguments are case-sensitive</span>
+<span class="w">    </span><span class="n">file_lines_lower</span><span class="o">=</span><span class="n">file_lines</span><span class="w"></span>
+<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">=</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="k">enddo</span><span class="w"></span>
 
-    <span class="c">! Ignore empty files, returned as FPM_UNIT_UNKNOWN</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span>
+<span class="w">    </span><span class="c">! Ignore empty files, returned as FPM_UNIT_UNKNOWN</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 
-<span class="k">    </span><span class="n">f_source</span><span class="p">%</span><span class="n">digest</span> <span class="o">=</span> <span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span>
+<span class="k">    </span><span class="n">f_source</span><span class="p">%</span><span class="n">digest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span><span class="w"></span>
 
-    <span class="k">do pass</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
-        <span class="n">n_use</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">n_include</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">n_mod</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">file_loop</span><span class="p">:</span> <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">)</span>
+<span class="w">    </span><span class="k">do pass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="w"></span>
+<span class="w">        </span><span class="n">n_use</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="n">n_include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="n">n_mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="n">file_loop</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">)</span><span class="w"></span>
 
-            <span class="c">! Skip lines that are continued: not statements</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">ic</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-                <span class="k">end if</span>
-<span class="k">                </span><span class="n">temp_string</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">ic</span><span class="p">))</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span> <span class="k">then</span>
+<span class="w">            </span><span class="c">! Skip lines that are continued: not statements</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">ic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;!&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ic</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">ic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">                </span><span class="n">temp_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">ic</span><span class="p">))</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">temp_string</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    cycle</span>
 <span class="k">                end if</span>
-<span class="k">            end if</span>
+<span class="k">            end if</span><span class="w"></span>
 
-            <span class="c">! Process &#39;USE&#39; statements</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;use &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-                <span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;use::&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="w">            </span><span class="c">! Process &#39;USE&#39; statements</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;use &#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;use::&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                    </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                                <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                                <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">))</span>
-                        <span class="k">return</span>
+<span class="k">                    </span><span class="n">temp_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                </span><span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;::&#39;</span><span class="p">))</span><span class="w"></span>
+<span class="w">                        </span><span class="k">return</span>
 <span class="k">                    end if</span>
 
-<span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                                 <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                                 <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-                        <span class="k">return</span>
+<span class="k">                    </span><span class="n">mod_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                 </span><span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+<span class="w">                        </span><span class="k">return</span>
 <span class="k">                    end if</span>
 
 <span class="k">                else</span>
 
-<span class="k">                    </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                                <span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                                <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-                        <span class="k">return</span>
+<span class="k">                    </span><span class="n">mod_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; ,&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                </span><span class="s1">&#39;unable to find used module name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+<span class="w">                        </span><span class="k">return</span>
 <span class="k">                    end if</span>
 
 <span class="k">                end if</span>
 
-<span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    cycle</span>
 <span class="k">                end if</span>
 
-<span class="k">                if</span> <span class="p">(</span><span class="nb">any</span><span class="p">([(</span><span class="nb">index</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">INTRINSIC_MODULE_NAMES</span><span class="p">(</span><span class="n">j</span><span class="p">)))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span> <span class="p">&amp;</span>
-                            <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">INTRINSIC_MODULE_NAMES</span><span class="p">))]))</span> <span class="k">then</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="nb">any</span><span class="p">([(</span><span class="nb">index</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">INTRINSIC_MODULE_NAMES</span><span class="p">(</span><span class="n">j</span><span class="p">)))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                            </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">INTRINSIC_MODULE_NAMES</span><span class="p">))]))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    cycle</span>
 <span class="k">                end if</span>
 
-<span class="k">                </span><span class="n">n_use</span> <span class="o">=</span> <span class="n">n_use</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="k">                </span><span class="n">n_use</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_use</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">pass</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">mod_name</span>
+<span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mod_name</span><span class="w"></span>
 
-                <span class="k">end if</span>
+<span class="w">                </span><span class="k">end if</span>
 
-<span class="k">            end if</span>
+<span class="k">            end if</span><span class="w"></span>
 
-            <span class="c">! Process &#39;INCLUDE&#39; statements</span>
-            <span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;include&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span> <span class="n">ic</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">then</span>
-<span class="k">                </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="s1">&#39;include&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
-                    <span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">then</span>
+<span class="w">            </span><span class="c">! Process &#39;INCLUDE&#39; statements</span>
+<span class="w">            </span><span class="n">ic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;include&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">ic</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">ic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="s1">&#39;include&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                    </span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="n">ic</span><span class="o">+</span><span class="mi">7</span><span class="p">:)),</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                    </span><span class="n">n_include</span> <span class="o">=</span> <span class="n">n_include</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="k">                    </span><span class="n">n_include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_include</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-                    <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                        </span><span class="n">f_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="p">&amp;</span>
-                         <span class="p">&amp;</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s2">&quot;&#39;&quot;</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                            call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                                  <span class="s1">&#39;unable to find include file name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                                  <span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-                            <span class="k">return</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">pass</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">f_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                         </span><span class="p">&amp;</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s2">&quot;&#39;&quot;</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                            call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                  </span><span class="s1">&#39;unable to find include file name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                  </span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+<span class="w">                            </span><span class="k">return</span>
 <span class="k">                        end if</span>
 <span class="k">                    end if</span>
 <span class="k">                end if</span>
-<span class="k">            end if</span>
+<span class="k">            end if</span><span class="w"></span>
 
-            <span class="c">! Extract name of module if is module</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;module &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="w">            </span><span class="c">! Extract name of module if is module</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;module &#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
 
-                <span class="c">! Remove any trailing comments</span>
-                <span class="n">ic</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;!&#39;</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">ic</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    </span><span class="n">ic</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-                <span class="k">end if</span>
-<span class="k">                </span><span class="n">temp_string</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">ic</span><span class="p">))</span>
+<span class="w">                </span><span class="c">! Remove any trailing comments</span>
+<span class="w">                </span><span class="n">ic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;!&#39;</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ic</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">ic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">                </span><span class="n">temp_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">ic</span><span class="p">))</span><span class="w"></span>
 
-                <span class="c">! R1405 module-stmt := &quot;MODULE&quot; module-name</span>
-                <span class="c">! module-stmt has two space-delimited parts only</span>
-                <span class="c">! (no line continuations)</span>
-                <span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">string_parts</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">string_parts</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<span class="w">                </span><span class="c">! R1405 module-stmt := &quot;MODULE&quot; module-name</span>
+<span class="w">                </span><span class="c">! module-stmt has two space-delimited parts only</span>
+<span class="w">                </span><span class="c">! (no line continuations)</span>
+<span class="w">                </span><span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="n">string_parts</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">string_parts</span><span class="p">)</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                    cycle</span>
 <span class="k">                end if</span>
 
-<span class="k">                </span><span class="n">mod_name</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">string_parts</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nb">scan</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span><span class="s1">&#39;=(&amp;&#39;</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">)</span> <span class="k">then</span>
-                    <span class="c">! Ignore these cases:</span>
-                    <span class="c">! module &lt;something&gt;&amp;</span>
-                    <span class="c">! module =*</span>
-                    <span class="c">! module (i)</span>
-                    <span class="k">cycle</span>
+<span class="k">                </span><span class="n">mod_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">string_parts</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">scan</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span><span class="s1">&#39;=(&amp;&#39;</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">                    </span><span class="c">! Ignore these cases:</span>
+<span class="w">                    </span><span class="c">! module &lt;something&gt;&amp;</span>
+<span class="w">                    </span><span class="c">! module =*</span>
+<span class="w">                    </span><span class="c">! module (i)</span>
+<span class="w">                    </span><span class="k">cycle</span>
 <span class="k">                end if</span>
 
-<span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="s1">&#39;empty or invalid name for module&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">mod_name</span><span class="p">))</span>
-                    <span class="k">return</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="s1">&#39;empty or invalid name for module&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">mod_name</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="k">return</span>
 <span class="k">                end if</span>
 
-<span class="k">                </span><span class="n">n_mod</span> <span class="o">=</span> <span class="n">n_mod</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="k">                </span><span class="n">n_mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_mod</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">)</span> <span class="o">=</span> <span class="n">string_t</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
-                <span class="k">end if</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">pass</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">end if</span>
 
-<span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_MODULE</span>
+<span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_UNIT_MODULE</span><span class="w"></span>
 
-            <span class="k">end if</span>
+<span class="w">            </span><span class="k">end if</span><span class="w"></span>
 
-            <span class="c">! Extract name of submodule if is submodule</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;submodule&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="w">            </span><span class="c">! Extract name of submodule if is submodule</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;submodule&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                </span><span class="n">mod_name</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="s1">&#39;unable to get submodule name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-                    <span class="k">return</span>
+<span class="k">                </span><span class="n">mod_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="s1">&#39;unable to get submodule name&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">return</span>
 <span class="k">                end if</span>
-<span class="k">                if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="s1">&#39;empty or invalid name for submodule&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">mod_name</span><span class="p">))</span>
-                    <span class="k">return</span>
-<span class="k">                end if</span>
-
-<span class="k">                </span><span class="n">n_mod</span> <span class="o">=</span> <span class="n">n_mod</span> <span class="o">+</span> <span class="mi">1</span>
-
-                <span class="n">temp_string</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="s1">&#39;unable to get submodule ancestry&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span>
-                    <span class="k">return</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">mod_name</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="s1">&#39;empty or invalid name for submodule&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">mod_name</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="k">return</span>
 <span class="k">                end if</span>
 
-<span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_SUBMODULE</span>
+<span class="k">                </span><span class="n">n_mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_mod</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-                <span class="n">n_use</span> <span class="o">=</span> <span class="n">n_use</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="w">                </span><span class="n">temp_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="s1">&#39;unable to get submodule ancestry&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">return</span>
+<span class="k">                end if</span>
 
-                <span class="k">if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_UNIT_SUBMODULE</span><span class="w"></span>
 
-<span class="k">                    if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="w">                </span><span class="n">n_use</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_use</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="k">                        </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">temp_string</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">pass</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-                    <span class="k">end if</span>
+<span class="k">                    if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                    if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="s1">&#39;empty or invalid name for submodule parent&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="p">&amp;</span>
-                          <span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span> <span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">temp_string</span><span class="p">))</span>
-                        <span class="k">return</span>
+<span class="k">                        </span><span class="n">temp_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp_string</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:)</span><span class="w"></span>
+
+<span class="w">                    </span><span class="k">end if</span>
+
+<span class="k">                    if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">temp_string</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">f_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="s1">&#39;empty or invalid name for submodule parent&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                          </span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">temp_string</span><span class="p">))</span><span class="w"></span>
+<span class="w">                        </span><span class="k">return</span>
 <span class="k">                    end if</span>
 
-<span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">temp_string</span>
+<span class="k">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp_string</span><span class="w"></span>
 
-                    <span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">)%</span><span class="n">s</span> <span class="o">=</span> <span class="n">mod_name</span>
+<span class="w">                    </span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mod_name</span><span class="w"></span>
 
-                <span class="k">end if</span>
+<span class="w">                </span><span class="k">end if</span>
 
-<span class="k">            end if</span>
+<span class="k">            end if</span><span class="w"></span>
 
-            <span class="c">! Detect if contains a program</span>
-            <span class="c">!  (no modules allowed after program def)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;program &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="w">            </span><span class="c">! Detect if contains a program</span>
+<span class="w">            </span><span class="c">!  (no modules allowed after program def)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;program &#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                </span><span class="n">temp_string</span> <span class="o">=</span> <span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                </span><span class="n">temp_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines_lower</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">                    if</span> <span class="p">(</span><span class="nb">scan</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;=(&#39;</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">)</span> <span class="k">then</span>
-                        <span class="c">! Ignore:</span>
-                        <span class="c">! program =*</span>
-                        <span class="c">! program (i) =*</span>
-                        <span class="k">cycle</span>
+<span class="k">                    if</span><span class="w"> </span><span class="p">(</span><span class="nb">scan</span><span class="p">(</span><span class="n">temp_string</span><span class="p">,</span><span class="s1">&#39;=(&#39;</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">                        </span><span class="c">! Ignore:</span>
+<span class="w">                        </span><span class="c">! program =*</span>
+<span class="w">                        </span><span class="c">! program (i) =*</span>
+<span class="w">                        </span><span class="k">cycle</span>
 <span class="k">                    end if</span>
 
 <span class="k">                end if</span>
 
-<span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_PROGRAM</span>
+<span class="k">                </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_UNIT_PROGRAM</span><span class="w"></span>
 
-            <span class="k">end if</span>
+<span class="w">            </span><span class="k">end if</span>
 
-<span class="k">        end do </span><span class="n">file_loop</span>
+<span class="k">        end do </span><span class="n">file_loop</span><span class="w"></span>
 
-        <span class="c">! Default to subprogram unit type</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">==</span> <span class="n">FPM_UNIT_UNKNOWN</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span> <span class="o">=</span> <span class="n">FPM_UNIT_SUBPROGRAM</span>
-        <span class="k">end if</span>
+<span class="w">        </span><span class="c">! Default to subprogram unit type</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FPM_UNIT_UNKNOWN</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">f_source</span><span class="p">%</span><span class="n">unit_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_UNIT_SUBPROGRAM</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
 
-<span class="k">        if</span> <span class="p">(</span><span class="k">pass</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">))</span>
-            <span class="k">allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">))</span>
-            <span class="k">allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">))</span>
-        <span class="k">end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="k">pass</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="n">n_use</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">f_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="n">n_mod</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
 
 <span class="k">    end do</span>
 
-<span class="k">end function </span><span class="n">parse_f_source</span>
+<span class="k">end function </span><span class="n">parse_f_source</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -634,14 +634,14 @@ public function parse_f_source(f_filename, error) result(f_source)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

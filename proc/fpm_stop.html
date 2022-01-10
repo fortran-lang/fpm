@@ -331,24 +331,24 @@ public subroutine fpm_stop(value, message)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">fpm_stop</span><span class="p">(</span><span class="k">value</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
-    <span class="c">! TODO: if verbose mode, call ERROR STOP instead of STOP</span>
-    <span class="c">! TODO: if M_escape is used, add color</span>
-    <span class="c">! to work with older compilers might need a case statement for values</span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">fpm_stop</span><span class="p">(</span><span class="k">value</span><span class="p">,</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c">! TODO: if verbose mode, call ERROR STOP instead of STOP</span>
+<span class="w">    </span><span class="c">! TODO: if M_escape is used, add color</span>
+<span class="w">    </span><span class="c">! to work with older compilers might need a case statement for values</span>
 
-        <span class="c">!&gt; value to use on STOP</span>
-        <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">value</span>
-        <span class="c">!&gt; Error message</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">message</span>
-        <span class="k">if</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="w">        </span><span class="c">!&gt; value to use on STOP</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">value</span><span class="w"></span>
+<span class="w">        </span><span class="c">!&gt; Error message</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">message</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
 <span class="k">           if</span><span class="p">(</span><span class="k">value</span><span class="p">.</span><span class="n">gt</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
-<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;ERROR&gt;&quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-           <span class="k">else</span>
-<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;INFO&gt; &quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-           <span class="k">endif</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;ERROR&gt;&quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="w">           </span><span class="k">else</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;INFO&gt; &quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="w">           </span><span class="k">endif</span>
 <span class="k">        endif</span>
 <span class="k">        stop value</span>
-<span class="k">    end subroutine </span><span class="n">fpm_stop</span>
+<span class="k">    end subroutine </span><span class="n">fpm_stop</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -364,14 +364,14 @@ public subroutine fpm_stop(value, message)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

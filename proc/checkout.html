@@ -254,7 +254,7 @@ public subroutine checkout(self, local_path, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-self~21"></span>class(<a href='../type/git_target_t.html'>git_target_t</a>),</td>
+  <td><span class="anchor" id="variable-self~25"></span>class(<a href='../type/git_target_t.html'>git_target_t</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -284,7 +284,7 @@ public subroutine checkout(self, local_path, error)
   
 <tr>
   
-  <td><span class="anchor" id="variable-error~17"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~16"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -420,49 +420,49 @@ public subroutine checkout(self, local_path, error)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">subroutine </span><span class="n">checkout</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">local_path</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">checkout</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">local_path</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 
-        <span class="c">!&gt; Instance of the git target</span>
-        <span class="k">class</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<span class="w">        </span><span class="c">!&gt; Instance of the git target</span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
 
-        <span class="c">!&gt; Local path to checkout in</span>
-        <span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">local_path</span>
+<span class="w">        </span><span class="c">!&gt; Local path to checkout in</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">local_path</span><span class="w"></span>
 
-        <span class="c">!&gt; Error</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
+<span class="w">        </span><span class="c">!&gt; Error</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
 
-        <span class="kt">integer</span> <span class="kd">::</span> <span class="nb">stat</span>
-<span class="nb">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">object</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
+<span class="nb">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">object</span><span class="w"></span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">            </span><span class="n">object</span> <span class="o">=</span> <span class="n">self</span><span class="p">%</span><span class="n">object</span>
-        <span class="k">else</span>
-<span class="k">            </span><span class="n">object</span> <span class="o">=</span> <span class="s1">&#39;HEAD&#39;</span>
-        <span class="k">end if</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="w"></span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;HEAD&#39;</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
 
-<span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git init &quot;</span><span class="o">//</span><span class="n">local_path</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git init &quot;</span><span class="o">//</span><span class="n">local_path</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while initiating git repository for remote dependency&#39;</span><span class="p">)</span>
-            <span class="k">return</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while initiating git repository for remote dependency&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
-<span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git -C &quot;</span><span class="o">//</span><span class="n">local_path</span><span class="o">//</span><span class="s2">&quot; fetch --depth=1 &quot;</span><span class="o">//</span> <span class="p">&amp;</span>
-                                  <span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">object</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git -C &quot;</span><span class="o">//</span><span class="n">local_path</span><span class="o">//</span><span class="s2">&quot; fetch --depth=1 &quot;</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                  </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while fetching git repository for remote dependency&#39;</span><span class="p">)</span>
-            <span class="k">return</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while fetching git repository for remote dependency&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
-<span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git -C &quot;</span><span class="o">//</span><span class="n">local_path</span><span class="o">//</span><span class="s2">&quot; checkout -qf FETCH_HEAD&quot;</span><span class="p">,</span> <span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span>
+<span class="k">        call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="s2">&quot;git -C &quot;</span><span class="o">//</span><span class="n">local_path</span><span class="o">//</span><span class="s2">&quot; checkout -qf FETCH_HEAD&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="nb">stat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while checking out git repository for remote dependency&#39;</span><span class="p">)</span>
-            <span class="k">return</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s1">&#39;Error while checking out git repository for remote dependency&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
 <span class="k">        end if</span>
 
-<span class="k">    end subroutine </span><span class="n">checkout</span>
+<span class="k">    end subroutine </span><span class="n">checkout</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -478,14 +478,14 @@ public subroutine checkout(self, local_path, error)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

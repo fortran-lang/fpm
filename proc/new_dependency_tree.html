@@ -242,7 +242,7 @@ public subroutine new_dependency_tree(self, verbosity, cache)
   
 <tr>
   
-  <td><span class="anchor" id="variable-self~15"></span>type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),</td>
+  <td><span class="anchor" id="variable-self~16"></span>type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -257,7 +257,7 @@ public subroutine new_dependency_tree(self, verbosity, cache)
   
 <tr>
   
-  <td><span class="anchor" id="variable-verbosity~3"></span>integer,</td>
+  <td><span class="anchor" id="variable-verbosity~4"></span>integer,</td>
   <td>intent(in),</td>
   <td>optional</td>
   
@@ -348,26 +348,26 @@ public subroutine new_dependency_tree(self, verbosity, cache)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>  <span class="k">subroutine </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-    <span class="c">!&gt; Instance of the dependency tree</span>
-    <span class="k">type</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
-    <span class="c">!&gt; Verbosity of printout</span>
-    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">verbosity</span>
-    <span class="c">!&gt; Name of the cache file</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">optional</span> <span class="kd">::</span> <span class="n">cache</span>
+    <div class="highlight"><pre><span></span><span class="w">  </span><span class="k">subroutine </span><span class="n">new_dependency_tree</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">verbosity</span><span class="p">,</span><span class="w"> </span><span class="n">cache</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Instance of the dependency tree</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_tree_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Verbosity of printout</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbosity</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Name of the cache file</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cache</span><span class="w"></span>
 
-    <span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">)</span>
-    <span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span> <span class="s2">&quot;dependencies&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">dep</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">self</span><span class="p">%</span><span class="n">dep_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dependencies&quot;</span><span class="p">)</span><span class="w"></span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbosity</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
-    <span class="k">end if</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbosity</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">verbosity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">verbosity</span><span class="w"></span>
+<span class="w">    </span><span class="k">end if</span>
 
-<span class="k">    if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">cache</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">cache</span> <span class="o">=</span> <span class="n">cache</span>
-    <span class="k">end if</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">cache</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cache</span><span class="w"></span>
+<span class="w">    </span><span class="k">end if</span>
 
-<span class="k">  end subroutine </span><span class="n">new_dependency_tree</span>
+<span class="k">  end subroutine </span><span class="n">new_dependency_tree</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -383,14 +383,14 @@ public subroutine new_dependency_tree(self, verbosity, cache)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

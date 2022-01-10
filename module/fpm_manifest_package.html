@@ -236,21 +236,21 @@
  If entries are mutally exclusive or interdependent inside the current table
  the <code>check</code> function is required to enforce this schema on the data structure.</p>
 <p>The package file root allows the following keywords</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;string&quot;</span>
-<span class="n">version</span> <span class="o">=</span> <span class="s">&quot;string&quot;</span>
-<span class="n">license</span> <span class="o">=</span> <span class="s">&quot;string&quot;</span>
-<span class="n">author</span> <span class="o">=</span> <span class="s">&quot;string&quot;</span>
-<span class="n">maintainer</span> <span class="o">=</span> <span class="s">&quot;string&quot;</span>
-<span class="n">copyright</span> <span class="o">=</span> <span class="s">&quot;string&quot;</span>
-<span class="k">[library]</span>
-<span class="k">[dependencies]</span>
-<span class="k">[dev-dependencies]</span>
-<span class="k">[build]</span>
-<span class="k">[install]</span>
-<span class="k">[[ executable ]]</span>
-<span class="k">[[ example ]]</span>
-<span class="k">[[ test ]]</span>
-<span class="k">[extra]</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w"></span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w"></span>
+<span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w"></span>
+<span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w"></span>
+<span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w"></span>
+<span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;string&quot;</span><span class="w"></span>
+<span class="k">[library]</span><span class="w"></span>
+<span class="k">[dependencies]</span><span class="w"></span>
+<span class="k">[dev-dependencies]</span><span class="w"></span>
+<span class="k">[build]</span><span class="w"></span>
+<span class="k">[install]</span><span class="w"></span>
+<span class="k">[[ executable ]]</span><span class="w"></span>
+<span class="k">[[ example ]]</span><span class="w"></span>
+<span class="k">[[ test ]]</span><span class="w"></span>
+<span class="k">[extra]</span><span class="w"></span>
 </code></pre></div>
       <br>
     
@@ -264,27 +264,27 @@
       <li class="list-group-item">
   <ul class="list-inline">
     
-    <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-    
-    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-    
-    <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
-    
-    <li><a href='../module/fpm_manifest_install.html'>fpm_manifest_install</a></li>
-    
-    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-    
-    <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
-    
-    <li><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></li>
-    
-    <li><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></li>
+    <li><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></li>
     
     <li><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
     
-    <li><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></li>
-    
     <li><a href='../module/fpm_manifest_example.html'>fpm_manifest_example</a></li>
+    
+    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+    
+    <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
+    
+    <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
+    
+    <li><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></li>
+    
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+    
+    <li><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></li>
+    
+    <li><a href='../module/fpm_manifest_install.html'>fpm_manifest_install</a></li>
+    
+    <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
     
   </ul>
       </li>
@@ -385,7 +385,7 @@
       <table class="table table-striped varlist">
       <tbody>
       
-       <tr><td>procedure, public :: <strong><a href='../type/package_config_t.html#boundprocedure-info~9'>info</a></strong>  </td>
+       <tr><td>procedure, public :: <strong><a href='../type/package_config_t.html#boundprocedure-info~4'>info</a></strong>  </td>
        <td><p>Print information on this instance</p></td></tr>
       
        </tbody>
@@ -523,14 +523,14 @@ public subroutine <a href='../proc/new_package.html'>new_package</a>(self, table
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

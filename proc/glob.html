@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.4% of total for procedures.">83 statements</a>
+    title=" 2.3% of total for procedures.">83 statements</a>
      </li> 
      
      
@@ -568,97 +568,97 @@ public function glob(tame, wild)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">glob</span><span class="p">(</span><span class="n">tame</span><span class="p">,</span><span class="n">wild</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">glob</span><span class="p">(</span><span class="n">tame</span><span class="p">,</span><span class="n">wild</span><span class="p">)</span><span class="w"></span>
 
 <span class="c">! @(#)fpm_strings::glob(3f): function compares text strings, one of which can have wildcards (&#39;*&#39; or &#39;?&#39;).</span>
 
-<span class="kt">logical</span>                    <span class="kd">::</span> <span class="n">glob</span>       <span class="c">!! result of test</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">tame</span>       <span class="c">!! A string without wildcards to compare to the globbing expression</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">wild</span>       <span class="c">!! A (potentially) corresponding string with wildcards</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tame</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tametext</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">wild</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span> <span class="n">wildtext</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="k">parameter</span> <span class="kd">::</span> <span class="nb">NULL</span><span class="o">=</span><span class="nb">char</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="kt">integer</span>                    <span class="kd">::</span> <span class="n">wlen</span>
-<span class="kt">integer</span>                    <span class="kd">::</span> <span class="n">ti</span><span class="p">,</span> <span class="n">wi</span>
-<span class="kt">integer</span>                    <span class="kd">::</span> <span class="n">i</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">tbookmark</span><span class="p">,</span> <span class="n">wbookmark</span>
+<span class="kt">logical</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">glob</span><span class="w">       </span><span class="c">!! result of test</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">tame</span><span class="w">       </span><span class="c">!! A string without wildcards to compare to the globbing expression</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">wild</span><span class="w">       </span><span class="c">!! A (potentially) corresponding string with wildcards</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tame</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tametext</span><span class="w"></span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">wild</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">wildtext</span><span class="w"></span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">NULL</span><span class="o">=</span><span class="nb">char</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="kt">integer</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">wlen</span><span class="w"></span>
+<span class="kt">integer</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">ti</span><span class="p">,</span><span class="w"> </span><span class="n">wi</span><span class="w"></span>
+<span class="kt">integer</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tbookmark</span><span class="p">,</span><span class="w"> </span><span class="n">wbookmark</span><span class="w"></span>
 <span class="c">! These two values are set when we observe a wildcard character. They</span>
 <span class="c">! represent the locations, in the two strings, from which we start once we&#39;ve observed it.</span>
-   <span class="n">tametext</span><span class="o">=</span><span class="n">tame</span><span class="o">//</span><span class="nb">NULL</span>
+<span class="w">   </span><span class="n">tametext</span><span class="o">=</span><span class="n">tame</span><span class="o">//</span><span class="nb">NULL</span>
 <span class="nb">   </span><span class="n">wildtext</span><span class="o">=</span><span class="n">wild</span><span class="o">//</span><span class="nb">NULL</span>
-<span class="nb">   </span><span class="n">tbookmark</span> <span class="o">=</span> <span class="nb">NULL</span>
-<span class="nb">   </span><span class="n">wbookmark</span> <span class="o">=</span> <span class="nb">NULL</span>
-<span class="nb">   </span><span class="n">wlen</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">wild</span><span class="p">)</span>
-   <span class="n">wi</span><span class="o">=</span><span class="mi">1</span>
-   <span class="n">ti</span><span class="o">=</span><span class="mi">1</span>
-   <span class="k">do</span>                                            <span class="c">! Walk the text strings one character at a time.</span>
-      <span class="k">if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span><span class="k">then</span>             <span class="c">! How do you match a unique text string?</span>
-         <span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="n">wi</span><span class="p">,</span><span class="n">wlen</span>                            <span class="c">! Easy: unique up on it!</span>
-            <span class="k">if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;*&#39;</span><span class="p">)</span><span class="k">then</span>
-<span class="k">               </span><span class="n">wi</span><span class="o">=</span><span class="n">wi</span><span class="o">+</span><span class="mi">1</span>
-            <span class="k">else</span>
+<span class="nb">   </span><span class="n">tbookmark</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span>
+<span class="nb">   </span><span class="n">wbookmark</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span>
+<span class="nb">   </span><span class="n">wlen</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">wild</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="n">wi</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
+<span class="w">   </span><span class="n">ti</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
+<span class="w">   </span><span class="k">do</span><span class="w">                                            </span><span class="c">! Walk the text strings one character at a time.</span>
+<span class="w">      </span><span class="k">if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;*&#39;</span><span class="p">)</span><span class="k">then</span><span class="w">             </span><span class="c">! How do you match a unique text string?</span>
+<span class="w">         </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="n">wi</span><span class="p">,</span><span class="n">wlen</span><span class="w">                            </span><span class="c">! Easy: unique up on it!</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;*&#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="k">               </span><span class="n">wi</span><span class="o">=</span><span class="n">wi</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
+<span class="w">            </span><span class="k">else</span>
 <span class="k">               exit</span>
 <span class="k">            endif</span>
 <span class="k">         enddo</span>
-<span class="k">         if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span> <span class="k">then</span>        <span class="c">! &quot;x&quot; matches &quot;*&quot;</span>
-            <span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-            <span class="k">return</span>
+<span class="k">         if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w">        </span><span class="c">! &quot;x&quot; matches &quot;*&quot;</span>
+<span class="w">            </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
 <span class="k">         endif</span>
-<span class="k">         if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39;?&#39;</span><span class="p">)</span> <span class="k">then</span>
-            <span class="c">! Fast-forward to next possible match.</span>
-            <span class="k">do while</span> <span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">))</span>
-               <span class="n">ti</span><span class="o">=</span><span class="n">ti</span><span class="o">+</span><span class="mi">1</span>
-               <span class="k">if</span> <span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="k">then</span>
-<span class="k">                  </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-                  <span class="k">return</span>                         <span class="c">! &quot;x&quot; doesn&#39;t match &quot;*y*&quot;</span>
-               <span class="k">endif</span>
+<span class="k">         if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="w"> </span><span class="s1">&#39;?&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">            </span><span class="c">! Fast-forward to next possible match.</span>
+<span class="w">            </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="w"> </span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">))</span><span class="w"></span>
+<span class="w">               </span><span class="n">ti</span><span class="o">=</span><span class="n">ti</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
+<span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="k">then</span>
+<span class="k">                  </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">                  </span><span class="k">return</span><span class="w">                         </span><span class="c">! &quot;x&quot; doesn&#39;t match &quot;*y*&quot;</span>
+<span class="w">               </span><span class="k">endif</span>
 <span class="k">            enddo</span>
 <span class="k">         endif</span>
-<span class="k">         </span><span class="n">wbookmark</span> <span class="o">=</span> <span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:)</span>
-         <span class="n">tbookmark</span> <span class="o">=</span> <span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:)</span>
-      <span class="n">elseif</span><span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="s1">&#39;?&#39;</span><span class="p">)</span> <span class="k">then</span>
-         <span class="c">! Got a non-match. If we&#39;ve set our bookmarks, back up to one or both of them and retry.</span>
-         <span class="k">if</span><span class="p">(</span><span class="n">wbookmark</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">            if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:).</span><span class="n">ne</span><span class="p">.</span> <span class="n">wbookmark</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">               </span><span class="n">wildtext</span> <span class="o">=</span> <span class="n">wbookmark</span><span class="p">;</span>
-               <span class="n">wlen</span><span class="o">=</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">wbookmark</span><span class="p">)</span>
-               <span class="n">wi</span><span class="o">=</span><span class="mi">1</span>
-               <span class="c">! Don&#39;t go this far back again.</span>
-               <span class="k">if</span> <span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">))</span> <span class="k">then</span>
-<span class="k">                  </span><span class="n">tbookmark</span><span class="o">=</span><span class="n">tbookmark</span><span class="p">(</span><span class="mi">2</span><span class="p">:)</span>
-                  <span class="n">tametext</span> <span class="o">=</span> <span class="n">tbookmark</span>
-                  <span class="n">ti</span><span class="o">=</span><span class="mi">1</span>
-                  <span class="k">cycle</span>                          <span class="c">! &quot;xy&quot; matches &quot;*y&quot;</span>
-               <span class="k">else</span>
-<span class="k">                  </span><span class="n">wi</span><span class="o">=</span><span class="n">wi</span><span class="o">+</span><span class="mi">1</span>
-               <span class="k">endif</span>
+<span class="k">         </span><span class="n">wbookmark</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:)</span><span class="w"></span>
+<span class="w">         </span><span class="n">tbookmark</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:)</span><span class="w"></span>
+<span class="w">      </span><span class="n">elseif</span><span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="w"> </span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="w"> </span><span class="s1">&#39;?&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">         </span><span class="c">! Got a non-match. If we&#39;ve set our bookmarks, back up to one or both of them and retry.</span>
+<span class="w">         </span><span class="k">if</span><span class="p">(</span><span class="n">wbookmark</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:).</span><span class="n">ne</span><span class="p">.</span><span class="w"> </span><span class="n">wbookmark</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">               </span><span class="n">wildtext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wbookmark</span><span class="p">;</span><span class="w"></span>
+<span class="w">               </span><span class="n">wlen</span><span class="o">=</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">wbookmark</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="n">wi</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
+<span class="w">               </span><span class="c">! Don&#39;t go this far back again.</span>
+<span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="w"> </span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                  </span><span class="n">tbookmark</span><span class="o">=</span><span class="n">tbookmark</span><span class="p">(</span><span class="mi">2</span><span class="p">:)</span><span class="w"></span>
+<span class="w">                  </span><span class="n">tametext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tbookmark</span><span class="w"></span>
+<span class="w">                  </span><span class="n">ti</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
+<span class="w">                  </span><span class="k">cycle</span><span class="w">                          </span><span class="c">! &quot;xy&quot; matches &quot;*y&quot;</span>
+<span class="w">               </span><span class="k">else</span>
+<span class="k">                  </span><span class="n">wi</span><span class="o">=</span><span class="n">wi</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
+<span class="w">               </span><span class="k">endif</span>
 <span class="k">            endif</span>
-<span class="k">            if</span> <span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">).</span><span class="n">ne</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span> <span class="k">then</span>
-<span class="k">               </span><span class="n">ti</span><span class="o">=</span><span class="n">ti</span><span class="o">+</span><span class="mi">1</span>
-               <span class="k">cycle</span>                             <span class="c">! &quot;mississippi&quot; matches &quot;*sip*&quot;</span>
-            <span class="k">endif</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">).</span><span class="n">ne</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">               </span><span class="n">ti</span><span class="o">=</span><span class="n">ti</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
+<span class="w">               </span><span class="k">cycle</span><span class="w">                             </span><span class="c">! &quot;mississippi&quot; matches &quot;*sip*&quot;</span>
+<span class="w">            </span><span class="k">endif</span>
 <span class="k">         endif</span>
-<span class="k">         </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-         <span class="k">return</span>                                  <span class="c">! &quot;xy&quot; doesn&#39;t match &quot;x&quot;</span>
-      <span class="k">endif</span>
-<span class="k">      </span><span class="n">ti</span><span class="o">=</span><span class="n">ti</span><span class="o">+</span><span class="mi">1</span>
-      <span class="n">wi</span><span class="o">=</span><span class="n">wi</span><span class="o">+</span><span class="mi">1</span>
-      <span class="k">if</span> <span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span> <span class="k">then</span>          <span class="c">! How do you match a tame text string?</span>
-         <span class="k">if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">ne</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="k">then</span>
-<span class="k">            do while</span> <span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>    <span class="c">! The tame way: unique up on it!</span>
-               <span class="n">wi</span><span class="o">=</span><span class="n">wi</span><span class="o">+</span><span class="mi">1</span>                           <span class="c">! &quot;x&quot; matches &quot;x*&quot;</span>
-               <span class="k">if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="k">exit</span>
+<span class="k">         </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">         </span><span class="k">return</span><span class="w">                                  </span><span class="c">! &quot;xy&quot; doesn&#39;t match &quot;x&quot;</span>
+<span class="w">      </span><span class="k">endif</span>
+<span class="k">      </span><span class="n">ti</span><span class="o">=</span><span class="n">ti</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
+<span class="w">      </span><span class="n">wi</span><span class="o">=</span><span class="n">wi</span><span class="o">+</span><span class="mi">1</span><span class="w"></span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tametext</span><span class="p">(</span><span class="n">ti</span><span class="p">:</span><span class="n">ti</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w">          </span><span class="c">! How do you match a tame text string?</span>
+<span class="w">         </span><span class="k">if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">ne</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="k">then</span>
+<span class="k">            do while</span><span class="w"> </span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;*&#39;</span><span class="p">)</span><span class="w">    </span><span class="c">! The tame way: unique up on it!</span>
+<span class="w">               </span><span class="n">wi</span><span class="o">=</span><span class="n">wi</span><span class="o">+</span><span class="mi">1</span><span class="w">                           </span><span class="c">! &quot;x&quot; matches &quot;x*&quot;</span>
+<span class="w">               </span><span class="k">if</span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="k">exit</span>
 <span class="k">            enddo</span>
 <span class="k">         endif</span>
-<span class="k">         if</span> <span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="k">then</span>
-<span class="k">            </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span>
-            <span class="k">return</span>                               <span class="c">! &quot;x&quot; matches &quot;x&quot;</span>
-         <span class="k">endif</span>
-<span class="k">         </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.</span>
-         <span class="k">return</span>                                  <span class="c">! &quot;x&quot; doesn&#39;t match &quot;xy&quot;</span>
-      <span class="k">endif</span>
+<span class="k">         if</span><span class="w"> </span><span class="p">(</span><span class="n">wildtext</span><span class="p">(</span><span class="n">wi</span><span class="p">:</span><span class="n">wi</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="nb">NULL</span><span class="p">)</span><span class="k">then</span>
+<span class="k">            </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w">                               </span><span class="c">! &quot;x&quot; matches &quot;x&quot;</span>
+<span class="w">         </span><span class="k">endif</span>
+<span class="k">         </span><span class="n">glob</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">         </span><span class="k">return</span><span class="w">                                  </span><span class="c">! &quot;x&quot; doesn&#39;t match &quot;xy&quot;</span>
+<span class="w">      </span><span class="k">endif</span>
 <span class="k">   enddo</span>
-<span class="k">end function </span><span class="n">glob</span>
+<span class="k">end function </span><span class="n">glob</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -674,14 +674,14 @@ public function glob(tame, wild)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

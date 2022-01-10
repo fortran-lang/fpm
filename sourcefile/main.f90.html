@@ -273,118 +273,118 @@
 
     <section>
       <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="hl"><pre><span></span><a id="ln-1" name="ln-1"></a><span class="k">program </span><span class="n">main</span>
-<a id="ln-2" name="ln-2"></a><span class="k">use</span><span class="p">,</span> <span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">error_unit</span><span class="p">,</span> <span class="n">output_unit</span>
-<a id="ln-3" name="ln-3"></a><span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="p">&amp;</span>
-<a id="ln-4" name="ln-4"></a>        <span class="n">fpm_cmd_settings</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-5" name="ln-5"></a>        <span class="n">fpm_new_settings</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-6" name="ln-6"></a>        <span class="n">fpm_build_settings</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-7" name="ln-7"></a>        <span class="n">fpm_run_settings</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-8" name="ln-8"></a>        <span class="n">fpm_test_settings</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-9" name="ln-9"></a>        <span class="n">fpm_install_settings</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-10" name="ln-10"></a>        <span class="n">fpm_update_settings</span><span class="p">,</span> <span class="p">&amp;</span>
-<a id="ln-11" name="ln-11"></a>        <span class="n">get_command_line_settings</span>
-<a id="ln-12" name="ln-12"></a><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">error_t</span>
-<a id="ln-13" name="ln-13"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">exists</span><span class="p">,</span> <span class="n">parent_dir</span><span class="p">,</span> <span class="n">join_path</span>
-<a id="ln-14" name="ln-14"></a><span class="k">use </span><span class="n">fpm</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">cmd_build</span><span class="p">,</span> <span class="n">cmd_run</span>
-<a id="ln-15" name="ln-15"></a><span class="k">use </span><span class="n">fpm_cmd_install</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">cmd_install</span>
-<a id="ln-16" name="ln-16"></a><span class="k">use </span><span class="n">fpm_cmd_new</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="n">cmd_new</span>
-<a id="ln-17" name="ln-17"></a><span class="k">use </span><span class="n">fpm_cmd_update</span><span class="p">,</span> <span class="k">only</span> <span class="p">:</span> <span class="n">cmd_update</span>
-<a id="ln-18" name="ln-18"></a><span class="k">use </span><span class="n">fpm_os</span><span class="p">,</span>  <span class="k">only</span><span class="p">:</span> <span class="n">change_directory</span><span class="p">,</span> <span class="n">get_current_directory</span>
-<a id="ln-19" name="ln-19"></a>
-<a id="ln-20" name="ln-20"></a><span class="k">implicit none</span>
-<a id="ln-21" name="ln-21"></a>
-<a id="ln-22" name="ln-22"></a><span class="k">class</span><span class="p">(</span><span class="n">fpm_cmd_settings</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">cmd_settings</span>
-<a id="ln-23" name="ln-23"></a><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">error</span>
-<a id="ln-24" name="ln-24"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">pwd_start</span><span class="p">,</span> <span class="n">pwd_working</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">,</span> <span class="n">project_root</span>
-<a id="ln-25" name="ln-25"></a>
-<a id="ln-26" name="ln-26"></a><span class="k">call </span><span class="n">get_command_line_settings</span><span class="p">(</span><span class="n">cmd_settings</span><span class="p">)</span>
-<a id="ln-27" name="ln-27"></a>
-<a id="ln-28" name="ln-28"></a><span class="k">call </span><span class="n">get_current_directory</span><span class="p">(</span><span class="n">pwd_start</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a id="ln-29" name="ln-29"></a><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-30" name="ln-30"></a>
-<a id="ln-31" name="ln-31"></a><span class="k">call </span><span class="n">get_working_dir</span><span class="p">(</span><span class="n">cmd_settings</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">)</span>
-<a id="ln-32" name="ln-32"></a><span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">working_dir</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-33" name="ln-33"></a>    <span class="c">! Change working directory if requested</span>
-<a id="ln-34" name="ln-34"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-35" name="ln-35"></a><span class="k">        call </span><span class="n">change_directory</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a id="ln-36" name="ln-36"></a>        <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-37" name="ln-37"></a>
-<a id="ln-38" name="ln-38"></a>        <span class="k">call </span><span class="n">get_current_directory</span><span class="p">(</span><span class="n">pwd_working</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a id="ln-39" name="ln-39"></a>        <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-40" name="ln-40"></a>        <span class="k">write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span> <span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span> <span class="s2">&quot;fpm: Entering directory &#39;&quot;</span><span class="o">//</span><span class="n">pwd_working</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span>
-<a id="ln-41" name="ln-41"></a>    <span class="k">else</span>
-<a id="ln-42" name="ln-42"></a><span class="k">        </span><span class="n">pwd_working</span> <span class="o">=</span> <span class="n">pwd_start</span>
-<a id="ln-43" name="ln-43"></a>    <span class="k">end if</span>
-<a id="ln-44" name="ln-44"></a><span class="k">else</span>
-<a id="ln-45" name="ln-45"></a><span class="k">    </span><span class="n">pwd_working</span> <span class="o">=</span> <span class="n">pwd_start</span>
-<a id="ln-46" name="ln-46"></a><span class="k">end if</span>
-<a id="ln-47" name="ln-47"></a>
-<a id="ln-48" name="ln-48"></a><span class="k">if</span> <span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">has_manifest</span><span class="p">(</span><span class="n">pwd_working</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-49" name="ln-49"></a><span class="k">    </span><span class="n">project_root</span> <span class="o">=</span> <span class="n">pwd_working</span>
-<a id="ln-50" name="ln-50"></a>    <span class="k">do while</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">has_manifest</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span>
-<a id="ln-51" name="ln-51"></a>        <span class="n">working_dir</span> <span class="o">=</span> <span class="n">parent_dir</span><span class="p">(</span><span class="n">project_root</span><span class="p">)</span>
-<a id="ln-52" name="ln-52"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">exit</span>
-<a id="ln-53" name="ln-53"></a><span class="k">        </span><span class="n">project_root</span> <span class="o">=</span> <span class="n">working_dir</span>
-<a id="ln-54" name="ln-54"></a>    <span class="k">end do</span>
-<a id="ln-55" name="ln-55"></a>
-<a id="ln-56" name="ln-56"></a><span class="k">    if</span> <span class="p">(</span><span class="n">has_manifest</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-57" name="ln-57"></a><span class="k">        call </span><span class="n">change_directory</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-<a id="ln-58" name="ln-58"></a>        <span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-59" name="ln-59"></a>        <span class="k">write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span> <span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span> <span class="s2">&quot;fpm: Entering directory &#39;&quot;</span><span class="o">//</span><span class="n">project_root</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span>
-<a id="ln-60" name="ln-60"></a>    <span class="k">end if</span>
-<a id="ln-61" name="ln-61"></a><span class="k">end if</span>
-<a id="ln-62" name="ln-62"></a>
-<a id="ln-63" name="ln-63"></a><span class="k">select type</span><span class="p">(</span><span class="n">settings</span><span class="o">=&gt;</span><span class="n">cmd_settings</span><span class="p">)</span>
-<a id="ln-64" name="ln-64"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_new_settings</span><span class="p">)</span>
-<a id="ln-65" name="ln-65"></a>    <span class="k">call </span><span class="n">cmd_new</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-<a id="ln-66" name="ln-66"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_build_settings</span><span class="p">)</span>
-<a id="ln-67" name="ln-67"></a>    <span class="k">call </span><span class="n">cmd_build</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-<a id="ln-68" name="ln-68"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_run_settings</span><span class="p">)</span>
-<a id="ln-69" name="ln-69"></a>    <span class="k">call </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span>
-<a id="ln-70" name="ln-70"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_test_settings</span><span class="p">)</span>
-<a id="ln-71" name="ln-71"></a>    <span class="k">call </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span>
-<a id="ln-72" name="ln-72"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_install_settings</span><span class="p">)</span>
-<a id="ln-73" name="ln-73"></a>    <span class="k">call </span><span class="n">cmd_install</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-<a id="ln-74" name="ln-74"></a><span class="k">type is</span> <span class="p">(</span><span class="n">fpm_update_settings</span><span class="p">)</span>
-<a id="ln-75" name="ln-75"></a>    <span class="k">call </span><span class="n">cmd_update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-<a id="ln-76" name="ln-76"></a><span class="k">end select</span>
-<a id="ln-77" name="ln-77"></a>
-<a id="ln-78" name="ln-78"></a><span class="k">if</span> <span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-79" name="ln-79"></a><span class="k">    write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span> <span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span> <span class="s2">&quot;fpm: Leaving directory &#39;&quot;</span><span class="o">//</span><span class="n">project_root</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span>
-<a id="ln-80" name="ln-80"></a><span class="k">end if</span>
-<a id="ln-81" name="ln-81"></a>
-<a id="ln-82" name="ln-82"></a><span class="k">if</span> <span class="p">(</span><span class="n">pwd_start</span> <span class="o">/=</span> <span class="n">pwd_working</span><span class="p">)</span> <span class="k">then</span>
-<a id="ln-83" name="ln-83"></a><span class="k">    write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span> <span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span> <span class="s2">&quot;fpm: Leaving directory &#39;&quot;</span><span class="o">//</span><span class="n">pwd_working</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span>
-<a id="ln-84" name="ln-84"></a><span class="k">end if</span>
-<a id="ln-85" name="ln-85"></a>
-<a id="ln-86" name="ln-86"></a><span class="k">contains</span>
-<a id="ln-87" name="ln-87"></a>
-<a id="ln-88" name="ln-88"></a><span class="k">    function </span><span class="n">has_manifest</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span>
-<a id="ln-89" name="ln-89"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dir</span>
-<a id="ln-90" name="ln-90"></a>        <span class="kt">logical</span> <span class="kd">::</span> <span class="n">has_manifest</span>
-<a id="ln-91" name="ln-91"></a>
-<a id="ln-92" name="ln-92"></a>        <span class="n">has_manifest</span> <span class="o">=</span> <span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="s2">&quot;fpm.toml&quot;</span><span class="p">))</span>
-<a id="ln-93" name="ln-93"></a>    <span class="k">end function </span><span class="n">has_manifest</span>
-<a id="ln-94" name="ln-94"></a>
-<a id="ln-95" name="ln-95"></a>    <span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-<a id="ln-96" name="ln-96"></a>        <span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span> <span class="k">optional</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">error</span>
-<a id="ln-97" name="ln-97"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-98" name="ln-98"></a><span class="k">            write</span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span> <span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">)</span> <span class="n">error</span><span class="p">%</span><span class="n">message</span>
-<a id="ln-99" name="ln-99"></a>            <span class="k">stop </span><span class="mi">1</span>
-<a id="ln-100" name="ln-100"></a>        <span class="k">end if</span>
-<a id="ln-101" name="ln-101"></a><span class="k">    end subroutine </span><span class="n">handle_error</span>
-<a id="ln-102" name="ln-102"></a>
-<a id="ln-103" name="ln-103"></a>    <span class="c">!&gt; Save access to working directory in settings, in case setting have not been allocated</span>
-<a id="ln-104" name="ln-104"></a>    <span class="k">subroutine </span><span class="n">get_working_dir</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">)</span>
-<a id="ln-105" name="ln-105"></a>        <span class="k">class</span><span class="p">(</span><span class="n">fpm_cmd_settings</span><span class="p">),</span> <span class="k">optional</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">settings</span>
-<a id="ln-106" name="ln-106"></a>        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span> <span class="k">allocatable</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="kd">::</span> <span class="n">working_dir</span>
-<a id="ln-107" name="ln-107"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">settings</span><span class="p">))</span> <span class="k">then</span>
-<a id="ln-108" name="ln-108"></a><span class="k">            </span><span class="n">working_dir</span> <span class="o">=</span> <span class="n">settings</span><span class="p">%</span><span class="n">working_dir</span>
-<a id="ln-109" name="ln-109"></a>        <span class="k">end if</span>
-<a id="ln-110" name="ln-110"></a><span class="k">    end subroutine </span><span class="n">get_working_dir</span>
-<a id="ln-111" name="ln-111"></a>
-<a id="ln-112" name="ln-112"></a><span class="k">end program </span><span class="n">main</span>
+    <div class="hl"><pre><span></span><a id="ln-1" name="ln-1" href="#ln-1"></a><span class="k">program </span><span class="n">main</span><span class="w"></span>
+<a id="ln-2" name="ln-2" href="#ln-2"></a><span class="k">use</span><span class="p">,</span><span class="w"> </span><span class="k">intrinsic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iso_fortran_env</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="n">output_unit</span><span class="w"></span>
+<a id="ln-3" name="ln-3" href="#ln-3"></a><span class="k">use </span><span class="n">fpm_command_line</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-4" name="ln-4" href="#ln-4"></a><span class="w">        </span><span class="n">fpm_cmd_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-5" name="ln-5" href="#ln-5"></a><span class="w">        </span><span class="n">fpm_new_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-6" name="ln-6" href="#ln-6"></a><span class="w">        </span><span class="n">fpm_build_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-7" name="ln-7" href="#ln-7"></a><span class="w">        </span><span class="n">fpm_run_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-8" name="ln-8" href="#ln-8"></a><span class="w">        </span><span class="n">fpm_test_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-9" name="ln-9" href="#ln-9"></a><span class="w">        </span><span class="n">fpm_install_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-10" name="ln-10" href="#ln-10"></a><span class="w">        </span><span class="n">fpm_update_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-11" name="ln-11" href="#ln-11"></a><span class="w">        </span><span class="n">get_command_line_settings</span><span class="w"></span>
+<a id="ln-12" name="ln-12" href="#ln-12"></a><span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">error_t</span><span class="w"></span>
+<a id="ln-13" name="ln-13" href="#ln-13"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">exists</span><span class="p">,</span><span class="w"> </span><span class="n">parent_dir</span><span class="p">,</span><span class="w"> </span><span class="n">join_path</span><span class="w"></span>
+<a id="ln-14" name="ln-14" href="#ln-14"></a><span class="k">use </span><span class="n">fpm</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_build</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_run</span><span class="w"></span>
+<a id="ln-15" name="ln-15" href="#ln-15"></a><span class="k">use </span><span class="n">fpm_cmd_install</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_install</span><span class="w"></span>
+<a id="ln-16" name="ln-16" href="#ln-16"></a><span class="k">use </span><span class="n">fpm_cmd_new</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_new</span><span class="w"></span>
+<a id="ln-17" name="ln-17" href="#ln-17"></a><span class="k">use </span><span class="n">fpm_cmd_update</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">cmd_update</span><span class="w"></span>
+<a id="ln-18" name="ln-18" href="#ln-18"></a><span class="k">use </span><span class="n">fpm_os</span><span class="p">,</span><span class="w">  </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">change_directory</span><span class="p">,</span><span class="w"> </span><span class="n">get_current_directory</span><span class="w"></span>
+<a id="ln-19" name="ln-19" href="#ln-19"></a>
+<a id="ln-20" name="ln-20" href="#ln-20"></a><span class="k">implicit none</span>
+<a id="ln-21" name="ln-21" href="#ln-21"></a>
+<a id="ln-22" name="ln-22" href="#ln-22"></a><span class="k">class</span><span class="p">(</span><span class="n">fpm_cmd_settings</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="w"></span>
+<a id="ln-23" name="ln-23" href="#ln-23"></a><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+<a id="ln-24" name="ln-24" href="#ln-24"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pwd_start</span><span class="p">,</span><span class="w"> </span><span class="n">pwd_working</span><span class="p">,</span><span class="w"> </span><span class="n">working_dir</span><span class="p">,</span><span class="w"> </span><span class="n">project_root</span><span class="w"></span>
+<a id="ln-25" name="ln-25" href="#ln-25"></a>
+<a id="ln-26" name="ln-26" href="#ln-26"></a><span class="k">call </span><span class="n">get_command_line_settings</span><span class="p">(</span><span class="n">cmd_settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-27" name="ln-27" href="#ln-27"></a>
+<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="k">call </span><span class="n">get_current_directory</span><span class="p">(</span><span class="n">pwd_start</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-30" name="ln-30" href="#ln-30"></a>
+<a id="ln-31" name="ln-31" href="#ln-31"></a><span class="k">call </span><span class="n">get_working_dir</span><span class="p">(</span><span class="n">cmd_settings</span><span class="p">,</span><span class="w"> </span><span class="n">working_dir</span><span class="p">)</span><span class="w"></span>
+<a id="ln-32" name="ln-32" href="#ln-32"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">working_dir</span><span class="p">))</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<a id="ln-33" name="ln-33" href="#ln-33"></a><span class="w">    </span><span class="c">! Change working directory if requested</span>
+<a id="ln-34" name="ln-34" href="#ln-34"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="k">        call </span><span class="n">change_directory</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-37" name="ln-37" href="#ln-37"></a>
+<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="w">        </span><span class="k">call </span><span class="n">get_current_directory</span><span class="p">(</span><span class="n">pwd_working</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-39" name="ln-39" href="#ln-39"></a><span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-40" name="ln-40" href="#ln-40"></a><span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: Entering directory &#39;&quot;</span><span class="o">//</span><span class="n">pwd_working</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span><span class="w"></span>
+<a id="ln-41" name="ln-41" href="#ln-41"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="k">        </span><span class="n">pwd_working</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pwd_start</span><span class="w"></span>
+<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-44" name="ln-44" href="#ln-44"></a><span class="k">else</span>
+<a id="ln-45" name="ln-45" href="#ln-45"></a><span class="k">    </span><span class="n">pwd_working</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pwd_start</span><span class="w"></span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="k">end if</span>
+<a id="ln-47" name="ln-47" href="#ln-47"></a>
+<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">has_manifest</span><span class="p">(</span><span class="n">pwd_working</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="k">    </span><span class="n">project_root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pwd_working</span><span class="w"></span>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="w">    </span><span class="k">do while</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">has_manifest</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span><span class="w"></span>
+<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="w">        </span><span class="n">working_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parent_dir</span><span class="p">(</span><span class="n">project_root</span><span class="p">)</span><span class="w"></span>
+<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="k">        </span><span class="n">project_root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">working_dir</span><span class="w"></span>
+<a id="ln-54" name="ln-54" href="#ln-54"></a><span class="w">    </span><span class="k">end do</span>
+<a id="ln-55" name="ln-55" href="#ln-55"></a>
+<a id="ln-56" name="ln-56" href="#ln-56"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">has_manifest</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="k">        call </span><span class="n">change_directory</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-58" name="ln-58" href="#ln-58"></a><span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: Entering directory &#39;&quot;</span><span class="o">//</span><span class="n">project_root</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span><span class="w"></span>
+<a id="ln-60" name="ln-60" href="#ln-60"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="k">end if</span>
+<a id="ln-62" name="ln-62" href="#ln-62"></a>
+<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="k">select type</span><span class="p">(</span><span class="n">settings</span><span class="o">=&gt;</span><span class="n">cmd_settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-64" name="ln-64" href="#ln-64"></a><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_new_settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-65" name="ln-65" href="#ln-65"></a><span class="w">    </span><span class="k">call </span><span class="n">cmd_new</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-66" name="ln-66" href="#ln-66"></a><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_build_settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-67" name="ln-67" href="#ln-67"></a><span class="w">    </span><span class="k">call </span><span class="n">cmd_build</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-68" name="ln-68" href="#ln-68"></a><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_run_settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-69" name="ln-69" href="#ln-69"></a><span class="w">    </span><span class="k">call </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"></span>
+<a id="ln-70" name="ln-70" href="#ln-70"></a><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_test_settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-71" name="ln-71" href="#ln-71"></a><span class="w">    </span><span class="k">call </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w"></span>
+<a id="ln-72" name="ln-72" href="#ln-72"></a><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_install_settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-73" name="ln-73" href="#ln-73"></a><span class="w">    </span><span class="k">call </span><span class="n">cmd_install</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-74" name="ln-74" href="#ln-74"></a><span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_update_settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-75" name="ln-75" href="#ln-75"></a><span class="w">    </span><span class="k">call </span><span class="n">cmd_update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
+<a id="ln-76" name="ln-76" href="#ln-76"></a><span class="k">end select</span>
+<a id="ln-77" name="ln-77" href="#ln-77"></a>
+<a id="ln-78" name="ln-78" href="#ln-78"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-79" name="ln-79" href="#ln-79"></a><span class="k">    write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: Leaving directory &#39;&quot;</span><span class="o">//</span><span class="n">project_root</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span><span class="w"></span>
+<a id="ln-80" name="ln-80" href="#ln-80"></a><span class="k">end if</span>
+<a id="ln-81" name="ln-81" href="#ln-81"></a>
+<a id="ln-82" name="ln-82" href="#ln-82"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pwd_start</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">pwd_working</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-83" name="ln-83" href="#ln-83"></a><span class="k">    write</span><span class="p">(</span><span class="n">output_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(*(a))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;fpm: Leaving directory &#39;&quot;</span><span class="o">//</span><span class="n">pwd_working</span><span class="o">//</span><span class="s2">&quot;&#39;&quot;</span><span class="w"></span>
+<a id="ln-84" name="ln-84" href="#ln-84"></a><span class="k">end if</span>
+<a id="ln-85" name="ln-85" href="#ln-85"></a>
+<a id="ln-86" name="ln-86" href="#ln-86"></a><span class="k">contains</span>
+<a id="ln-87" name="ln-87" href="#ln-87"></a>
+<a id="ln-88" name="ln-88" href="#ln-88"></a><span class="k">    function </span><span class="n">has_manifest</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"></span>
+<a id="ln-89" name="ln-89" href="#ln-89"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dir</span><span class="w"></span>
+<a id="ln-90" name="ln-90" href="#ln-90"></a><span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_manifest</span><span class="w"></span>
+<a id="ln-91" name="ln-91" href="#ln-91"></a>
+<a id="ln-92" name="ln-92" href="#ln-92"></a><span class="w">        </span><span class="n">has_manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exists</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">))</span><span class="w"></span>
+<a id="ln-93" name="ln-93" href="#ln-93"></a><span class="w">    </span><span class="k">end function </span><span class="n">has_manifest</span><span class="w"></span>
+<a id="ln-94" name="ln-94" href="#ln-94"></a>
+<a id="ln-95" name="ln-95" href="#ln-95"></a><span class="w">    </span><span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-96" name="ln-96" href="#ln-96"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+<a id="ln-97" name="ln-97" href="#ln-97"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-98" name="ln-98" href="#ln-98"></a><span class="k">            write</span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"></span>
+<a id="ln-99" name="ln-99" href="#ln-99"></a><span class="w">            </span><span class="k">stop </span><span class="mi">1</span><span class="w"></span>
+<a id="ln-100" name="ln-100" href="#ln-100"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-101" name="ln-101" href="#ln-101"></a><span class="k">    end subroutine </span><span class="n">handle_error</span><span class="w"></span>
+<a id="ln-102" name="ln-102" href="#ln-102"></a>
+<a id="ln-103" name="ln-103" href="#ln-103"></a><span class="w">    </span><span class="c">!&gt; Save access to working directory in settings, in case setting have not been allocated</span>
+<a id="ln-104" name="ln-104" href="#ln-104"></a><span class="w">    </span><span class="k">subroutine </span><span class="n">get_working_dir</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">working_dir</span><span class="p">)</span><span class="w"></span>
+<a id="ln-105" name="ln-105" href="#ln-105"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">fpm_cmd_settings</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">settings</span><span class="w"></span>
+<a id="ln-106" name="ln-106" href="#ln-106"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">working_dir</span><span class="w"></span>
+<a id="ln-107" name="ln-107" href="#ln-107"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">settings</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-108" name="ln-108" href="#ln-108"></a><span class="k">            </span><span class="n">working_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">working_dir</span><span class="w"></span>
+<a id="ln-109" name="ln-109" href="#ln-109"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-110" name="ln-110" href="#ln-110"></a><span class="k">    end subroutine </span><span class="n">get_working_dir</span><span class="w"></span>
+<a id="ln-111" name="ln-111" href="#ln-111"></a>
+<a id="ln-112" name="ln-112" href="#ln-112"></a><span class="k">end program </span><span class="n">main</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -397,14 +397,14 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

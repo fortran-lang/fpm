@@ -276,7 +276,7 @@ public function git_target_tag(url, tag) result(self)
     
     
     
-   <h3>Return Value <small><span class="anchor" id="variable-self~20"></span>type(<a href='../type/git_target_t.html'>git_target_t</a>)
+   <h3>Return Value <small><span class="anchor" id="variable-self~24"></span>type(<a href='../type/git_target_t.html'>git_target_t</a>)
   </small></h3>
     <p>New git target</p>
     
@@ -342,22 +342,22 @@ public function git_target_tag(url, tag) result(self)
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span>    <span class="k">function </span><span class="n">git_target_tag</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">function </span><span class="n">git_target_tag</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"></span>
 
-        <span class="c">!&gt; Target URL of the git repository</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">url</span>
+<span class="w">        </span><span class="c">!&gt; Target URL of the git repository</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">url</span><span class="w"></span>
 
-        <span class="c">!&gt; Tag name of interest</span>
-        <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tag</span>
+<span class="w">        </span><span class="c">!&gt; Tag name of interest</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tag</span><span class="w"></span>
 
-        <span class="c">!&gt; New git target</span>
-        <span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">self</span>
+<span class="w">        </span><span class="c">!&gt; New git target</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
 
-        <span class="n">self</span><span class="p">%</span><span class="n">descriptor</span> <span class="o">=</span> <span class="n">git_descriptor</span><span class="p">%</span><span class="n">tag</span>
-        <span class="n">self</span><span class="p">%</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
-        <span class="n">self</span><span class="p">%</span><span class="n">object</span> <span class="o">=</span> <span class="n">tag</span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">descriptor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">git_descriptor</span><span class="p">%</span><span class="n">tag</span><span class="w"></span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">url</span><span class="w"></span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tag</span><span class="w"></span>
 
-    <span class="k">end function </span><span class="n">git_target_tag</span>
+<span class="w">    </span><span class="k">end function </span><span class="n">git_target_tag</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -373,14 +373,14 @@ public function git_target_tag(url, tag) result(self)
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

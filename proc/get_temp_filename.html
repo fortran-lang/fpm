@@ -324,38 +324,38 @@ Works with MinGW</p>
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">get_temp_filename</span><span class="p">()</span> <span class="k">result</span><span class="p">(</span><span class="n">tempfile</span><span class="p">)</span>
-    <span class="c">!</span>
-    <span class="k">use </span><span class="nb">iso_c_binding</span><span class="p">,</span> <span class="k">only</span><span class="p">:</span> <span class="kt">c_ptr</span><span class="p">,</span> <span class="nb">C_NULL_PTR</span><span class="p">,</span> <span class="nb">c_f_pointer</span>
-<span class="nb">    </span><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">tempfile</span>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">get_temp_filename</span><span class="p">()</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">tempfile</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="c">!</span>
+<span class="w">    </span><span class="k">use </span><span class="nb">iso_c_binding</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="kt">c_ptr</span><span class="p">,</span><span class="w"> </span><span class="nb">C_NULL_PTR</span><span class="p">,</span><span class="w"> </span><span class="nb">c_f_pointer</span>
+<span class="nb">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tempfile</span><span class="w"></span>
 
-    <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">c_tempfile_ptr</span>
-    <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">c_tempfile</span><span class="p">(:)</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c_tempfile_ptr</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c_tempfile</span><span class="p">(:)</span><span class="w"></span>
 
-    <span class="k">interface</span>
+<span class="w">    </span><span class="k">interface</span>
 
-<span class="k">        function </span><span class="n">c_tempnam</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span><span class="n">pfx</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tempnam&quot;</span><span class="p">)</span>
-            <span class="k">import</span>
-<span class="k">            type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">dir</span>
-            <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">pfx</span>
-            <span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tmp</span>
-        <span class="k">end function </span><span class="n">c_tempnam</span>
+<span class="k">        function </span><span class="n">c_tempnam</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span><span class="n">pfx</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span><span class="w"> </span><span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tempnam&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">import</span>
+<span class="k">            type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dir</span><span class="w"></span>
+<span class="w">            </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pfx</span><span class="w"></span>
+<span class="w">            </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tmp</span><span class="w"></span>
+<span class="w">        </span><span class="k">end function </span><span class="n">c_tempnam</span><span class="w"></span>
 
-        <span class="k">subroutine </span><span class="n">c_free</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span> <span class="k">BIND</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">)</span>
-            <span class="k">import</span>
-<span class="k">            type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span> <span class="k">value</span> <span class="kd">::</span> <span class="n">ptr</span>
-        <span class="k">end subroutine </span><span class="n">c_free</span>
+<span class="w">        </span><span class="k">subroutine </span><span class="n">c_free</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="w"> </span><span class="k">BIND</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">import</span>
+<span class="k">            type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ptr</span><span class="w"></span>
+<span class="w">        </span><span class="k">end subroutine </span><span class="n">c_free</span><span class="w"></span>
 
-    <span class="k">end interface</span>
+<span class="w">    </span><span class="k">end interface</span>
 
-<span class="k">    </span><span class="n">c_tempfile_ptr</span> <span class="o">=</span> <span class="n">c_tempnam</span><span class="p">(</span><span class="nb">C_NULL_PTR</span><span class="p">,</span> <span class="nb">C_NULL_PTR</span><span class="p">)</span>
-    <span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">c_tempfile_ptr</span><span class="p">,</span><span class="n">c_tempfile</span><span class="p">,[</span><span class="n">LINE_BUFFER_LEN</span><span class="p">])</span>
+<span class="k">    </span><span class="n">c_tempfile_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c_tempnam</span><span class="p">(</span><span class="nb">C_NULL_PTR</span><span class="p">,</span><span class="w"> </span><span class="nb">C_NULL_PTR</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">c_tempfile_ptr</span><span class="p">,</span><span class="n">c_tempfile</span><span class="p">,[</span><span class="n">LINE_BUFFER_LEN</span><span class="p">])</span><span class="w"></span>
 
-    <span class="n">tempfile</span> <span class="o">=</span> <span class="n">f_string</span><span class="p">(</span><span class="n">c_tempfile</span><span class="p">)</span>
+<span class="w">    </span><span class="n">tempfile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f_string</span><span class="p">(</span><span class="n">c_tempfile</span><span class="p">)</span><span class="w"></span>
 
-    <span class="k">call </span><span class="n">c_free</span><span class="p">(</span><span class="n">c_tempfile_ptr</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="n">c_free</span><span class="p">(</span><span class="n">c_tempfile_ptr</span><span class="p">)</span><span class="w"></span>
 
-<span class="k">end function </span><span class="n">get_temp_filename</span>
+<span class="k">end function </span><span class="n">get_temp_filename</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -371,14 +371,14 @@ Works with MinGW</p>
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

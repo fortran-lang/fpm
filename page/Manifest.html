@@ -200,19 +200,19 @@ Every manifest file consists of the following sections:</p>
 It is used when listing the project as dependency for another package and the default name of the library and executable target.
 Therefore, the project name must always be present.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;hello_world&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;hello_world&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-version">Project version</h2>
 <p>The version number of the project is specified as string.
 A standardized way to manage and specify versions is the <a href="https://semver.org">Semantic Versioning</a> scheme.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">version</span> <span class="o">=</span> <span class="s">&quot;1.0.0&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;1.0.0&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <p>The version entry can also contain a filename relative to the project root, which contains the version number of the project</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">version</span> <span class="o">=</span> <span class="s">&quot;VERSION&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;VERSION&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-license">Project license</h2>
@@ -220,54 +220,54 @@ A standardized way to manage and specify versions is the <a href="https://semver
 A standardized way to specify licensing information are <a href="https://spdx.org/licenses/">SPDX</a> identifiers.</p>
 <p><em>Examples:</em></p>
 <p>Projects licensed under the <a href="https://www.gnu.org/licenses/lgpl-3.0-standalone.html">GNU Lesser General Public License</a>, either version 3 or any later version, is specified as</p>
-<div class="codehilite"><pre><span></span><code><span class="n">license</span> <span class="o">=</span> <span class="s">&quot;LGPL-3.0-or-later&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;LGPL-3.0-or-later&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <p>Dual licensed project under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache license, version 2.0</a> or the <a href="https://opensource.org/licenses/MIT">MIT license</a> are specified as</p>
-<div class="codehilite"><pre><span></span><code><span class="n">license</span> <span class="o">=</span> <span class="s">&quot;Apache-2.0 OR MIT&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">license</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Apache-2.0 OR MIT&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-maintainer">Project maintainer</h2>
 <p>Information on the project maintainer and means to reach out to them.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">maintainer</span> <span class="o">=</span> <span class="s">&quot;jane.doe@example.com&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">maintainer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;jane.doe@example.com&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-author">Project author</h2>
 <p>Information on the project author.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">author</span> <span class="o">=</span> <span class="s">&quot;Jane Doe&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Jane Doe&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-copyright">Project copyright</h2>
 <p>A statement clarifying the copyright status of the project.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">copyright</span> <span class="o">=</span> <span class="s">&quot;Copyright 2020 Jane Doe&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">copyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Copyright 2020 Jane Doe&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-description">Project description</h2>
 <p>The description provides a short summary on the project.
 It should be plain text and not using any markup formatting.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">description</span> <span class="o">=</span> <span class="s">&quot;A short summary on this project&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;A short summary on this project&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-categories">Project categories</h2>
 <p>The project can be associated with different categories.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">categories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;io&quot;</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="n">categories</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;io&quot;</span><span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-keywords">Project keywords</h2>
 <p>The keywords field is an array of strings describing the project.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">keywords</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;hdf5&quot;</span><span class="p">,</span> <span class="s">&quot;mpi&quot;</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="n">keywords</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;hdf5&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;mpi&quot;</span><span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-homepage">Project homepage</h2>
 <p>URL to the webpage of the project.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="n">homepage</span> <span class="o">=</span> <span class="s">&quot;https://stdlib.fortran-lang.org&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">homepage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://stdlib.fortran-lang.org&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="project-targets">Project targets</h2>
@@ -279,9 +279,9 @@ A library is generated if the source directory or include directory is found in 
 The default source and include directories are <code>src</code> and <code>include</code>; these can be modified in the <em>library</em> section using the <em>source-dir</em> and <em>include-dir</em> entries.
 Paths for the source and include directories are given relative to the project root and use <code>/</code> as path separator on all platforms.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="k">[library]</span>
-<span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;lib&quot;</span>
-<span class="n">include-dir</span> <span class="o">=</span> <span class="s">&quot;inc&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[library]</span><span class="w"></span>
+<span class="n">source-dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;lib&quot;</span><span class="w"></span>
+<span class="n">include-dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;inc&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h4 id="include-directory">Include directory</h4>
@@ -292,8 +292,8 @@ Paths for the source and include directories are given relative to the project r
 <em>include-dir</em> can contain one or more directories, where multiple directories are specified using a list of strings.
 Include directories from all project dependencies are passed to the compiler using the appropriate compiler flag.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="k">[library]</span>
-<span class="n">include-dir</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;include&quot;</span><span class="p">,</span> <span class="s">&quot;third_party/include&quot;</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[library]</span><span class="w"></span>
+<span class="n">include-dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;include&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;third_party/include&quot;</span><span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <blockquote>
@@ -314,23 +314,23 @@ See <a href="#link-external-libraries">external libraries</a> for more details.<
 <p>Linking against libraries is supported in Fortran fpm only</p>
 </blockquote>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="k">[[ executable ]]</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;app-name&quot;</span>
-<span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;prog&quot;</span>
-<span class="n">main</span> <span class="o">=</span> <span class="s">&quot;program.f90&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[[ executable ]]</span><span class="w"></span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;app-name&quot;</span><span class="w"></span>
+<span class="n">source-dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;prog&quot;</span><span class="w"></span>
+<span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;program.f90&quot;</span><span class="w"></span>
 
-<span class="k">[[ executable ]]</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;app-tool&quot;</span>
-<span class="n">link</span> <span class="o">=</span> <span class="s">&quot;z&quot;</span>
-<span class="k">[executable.dependencies]</span>
-<span class="n">helloff</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span> <span class="p">}</span>
+<span class="k">[[ executable ]]</span><span class="w"></span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;app-tool&quot;</span><span class="w"></span>
+<span class="n">link</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;z&quot;</span><span class="w"></span>
+<span class="k">[executable.dependencies]</span><span class="w"></span>
+<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 <p>Specifying many separate executables can be done by using inline tables for brevity instead</p>
-<div class="codehilite"><pre><span></span><code><span class="n">executable</span> <span class="o">=</span> <span class="p">[</span>
-  <span class="p">{</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;a-prog&quot;</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;app-tool&quot;</span><span class="p">,</span> <span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;tool&quot;</span> <span class="p">},</span>
-<span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="n">executable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;a-prog&quot;</span><span class="w"> </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;app-tool&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">source-dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;tool&quot;</span><span class="w"> </span><span class="p">},</span><span class="w"></span>
+<span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <h3 id="example-targets">Example targets</h3>
@@ -348,16 +348,16 @@ See <a href="#link-external-libraries">external libraries</a> for more details.<
 <p>Linking against libraries is supported in Fortran fpm only</p>
 </blockquote>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="k">[[ example ]]</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;demo-app&quot;</span>
-<span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;demo&quot;</span>
-<span class="n">main</span> <span class="o">=</span> <span class="s">&quot;program.f90&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[[ example ]]</span><span class="w"></span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;demo-app&quot;</span><span class="w"></span>
+<span class="n">source-dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;demo&quot;</span><span class="w"></span>
+<span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;program.f90&quot;</span><span class="w"></span>
 
-<span class="k">[[ example ]]</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;example-tool&quot;</span>
-<span class="n">link</span> <span class="o">=</span> <span class="s">&quot;z&quot;</span>
-<span class="k">[example.dependencies]</span>
-<span class="n">helloff</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span> <span class="p">}</span>
+<span class="k">[[ example ]]</span><span class="w"></span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;example-tool&quot;</span><span class="w"></span>
+<span class="n">link</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;z&quot;</span><span class="w"></span>
+<span class="k">[example.dependencies]</span><span class="w"></span>
+<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 <h3 id="test-targets">Test targets</h3>
@@ -376,16 +376,16 @@ See <a href="#link-external-libraries">external libraries</a> for more details.<
 <p>Linking against libraries is supported in Fortran fpm only</p>
 </blockquote>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="k">[[ test ]]</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;test-name&quot;</span>
-<span class="n">source-dir</span> <span class="o">=</span> <span class="s">&quot;testing&quot;</span>
-<span class="n">main</span> <span class="o">=</span> <span class="s">&quot;tester.F90&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[[ test ]]</span><span class="w"></span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;test-name&quot;</span><span class="w"></span>
+<span class="n">source-dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;testing&quot;</span><span class="w"></span>
+<span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;tester.F90&quot;</span><span class="w"></span>
 
-<span class="k">[[ test ]]</span>
-<span class="n">name</span> <span class="o">=</span> <span class="s">&quot;tester&quot;</span>
-<span class="n">link</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;blas&quot;</span><span class="p">,</span> <span class="s">&quot;lapack&quot;</span><span class="p">]</span>
-<span class="k">[test.dependencies]</span>
-<span class="n">helloff</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span> <span class="p">}</span>
+<span class="k">[[ test ]]</span><span class="w"></span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;tester&quot;</span><span class="w"></span>
+<span class="n">link</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;blas&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;lapack&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="k">[test.dependencies]</span><span class="w"></span>
+<span class="n">helloff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://gitlab.com/everythingfunctional/helloff.git&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="link-external-libraries">Link external libraries</h2>
@@ -398,14 +398,14 @@ When possible the project should only link one native library.
 The list of library dependencies is exported to dependent packages.</p>
 <p><em>Example:</em></p>
 <p>To link against the zlib compression library use</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
-<span class="n">link</span> <span class="o">=</span> <span class="s">&quot;z&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span><span class="w"></span>
+<span class="n">link</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;z&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <p>To dependent on LAPACK also BLAS should be linked.
 In this case the order of the libraries matters:</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
-<span class="n">link</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;blas&quot;</span><span class="p">,</span> <span class="s">&quot;lapack&quot;</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span><span class="w"></span>
+<span class="n">link</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;blas&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;lapack&quot;</span><span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="use-system-installed-modules">Use system-installed modules</h2>
@@ -417,14 +417,14 @@ of the user to specify the necessary include directories using compiler flags su
 the compiler can locate external module files during compilation.</p>
 </blockquote>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
-<span class="n">external-modules</span> <span class="o">=</span> <span class="s">&quot;netcdf&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span><span class="w"></span>
+<span class="n">external-modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;netcdf&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <p>Multiple external modules can be specified as a list.</p>
 <p><em>Example:</em></p>
-<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
-<span class="n">external-modules</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;netcdf&quot;</span><span class="p">,</span> <span class="s">&quot;h5lt&quot;</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span><span class="w"></span>
+<span class="n">external-modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;netcdf&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;h5lt&quot;</span><span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="automatic-target-discovery">Automatic target discovery</h2>
@@ -435,10 +435,10 @@ the compiler can locate external module files during compilation.</p>
 The automatic discovery recursively searches the <code>app</code>, <code>example</code>, and <code>test</code> directories for <code>program</code> definitions and declares them as executable, example, and test targets, respectively.
 The automatic discovery is enabled by default.</p>
 <p>To disable the automatic discovery of targets set the <em>auto-executables</em>, <em>auto-examples</em>, and <em>auto-tests</em> entry to <em>false</em>.</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[build]</span>
-<span class="n">auto-executables</span> <span class="o">=</span> <span class="kc">false</span>
-<span class="n">auto-examples</span> <span class="o">=</span> <span class="kc">false</span>
-<span class="n">auto-tests</span> <span class="o">=</span> <span class="kc">false</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[build]</span><span class="w"></span>
+<span class="n">auto-executables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
+<span class="n">auto-examples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
+<span class="n">auto-tests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="specifying-dependencies">Specifying dependencies</h2>
@@ -446,37 +446,37 @@ The automatic discovery is enabled by default.</p>
 When declared in the manifest root the dependencies are exported with the project.</p>
 <h3 id="local-dependencies">Local dependencies</h3>
 <p>To declare local dependencies use the <em>path</em> entry.</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
-<span class="n">my-utils</span> <span class="o">=</span> <span class="p">{</span> <span class="n">path</span> <span class="o">=</span> <span class="s">&quot;utils&quot;</span> <span class="p">}</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span><span class="w"></span>
+<span class="n">my-utils</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;utils&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 <p>Local dependency paths are given relative to the project root and use <code>/</code> as path separator on all platforms.</p>
 <h3 id="dependencies-from-version-control-systems">Dependencies from version control systems</h3>
 <p>Dependencies can be specified by the projects git repository.</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
-<span class="n">toml-f</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span> <span class="p">}</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span><span class="w"></span>
+<span class="n">toml-f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 <p>To use a specific upstream branch declare the <em>branch</em> name with</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
-<span class="n">toml-f</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span> <span class="n">branch</span> <span class="o">=</span> <span class="s">&quot;main&quot;</span> <span class="p">}</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span><span class="w"></span>
+<span class="n">toml-f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">branch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;main&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 <p>Alternatively, reference tags by using the <em>tag</em> entry</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
-<span class="n">toml-f</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> <span class="s">&quot;v0.2.1&quot;</span> <span class="p">}</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span><span class="w"></span>
+<span class="n">toml-f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;v0.2.1&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 <p>To pin a specific revision specify the commit hash in the <em>rev</em> entry</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
-<span class="n">toml-f</span> <span class="o">=</span> <span class="p">{</span> <span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span> <span class="n">rev</span> <span class="o">=</span> <span class="s">&quot;2f5eaba&quot;</span> <span class="p">}</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span><span class="w"></span>
+<span class="n">toml-f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;2f5eaba&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 <p>For more verbose layout use normal tables rather than inline tables to specify dependencies</p>
-<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span>
-<span class="k">[dependencies.toml-f]</span>
-<span class="n">git</span> <span class="o">=</span> <span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span>
-<span class="n">rev</span> <span class="o">=</span> <span class="s">&quot;2f5eaba864ff630ba0c3791126a3f811b6e437f3&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[dependencies]</span><span class="w"></span>
+<span class="k">[dependencies.toml-f]</span><span class="w"></span>
+<span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://github.com/toml-f/toml-f&quot;</span><span class="w"></span>
+<span class="n">rev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;2f5eaba864ff630ba0c3791126a3f811b6e437f3&quot;</span><span class="w"></span>
 </code></pre></div>
 
 <h3 id="development-dependencies">Development dependencies</h3>
@@ -485,8 +485,8 @@ When declared in the manifest root the dependencies are exported with the projec
 <p>In the <em>install</em> section components for the installation can be selected.
 By default only executables are installed, library projects can set the <em>library</em> boolean to also installatation the module files and the archive.</p>
 <p><em>Example</em></p>
-<div class="codehilite"><pre><span></span><code><span class="k">[install]</span>
-<span class="n">library</span> <span class="o">=</span> <span class="kc">true</span>
+<div class="codehilite"><pre><span></span><code><span class="k">[install]</span><span class="w"></span>
+<span class="n">library</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="additional-free-data-field">Additional free data field</h2>
@@ -548,14 +548,14 @@ If you have a tool that uses the <em>extra</em> section in the package manifest,
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>

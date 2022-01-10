@@ -246,9 +246,9 @@ public function which(command) result(pathname)
   
   <td></td><td>::</td>
   <td><strong>command</strong></td><td><h2 id="name">NAME</h2>
-<div class="codehilite"><pre><span></span><code> <span class="n">which</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="p">[</span><span class="n">M_io</span><span class="p">:</span><span class="n">ENVIRONMENT</span><span class="p">]</span> <span class="n">given</span> <span class="n">a</span> <span class="n">command</span> <span class="n">name</span> <span class="n">find</span> <span class="n">the</span> <span class="n">pathname</span> <span class="n">by</span> <span class="n">searching</span>
-             <span class="n">the</span> <span class="n">directories</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">environment</span> <span class="n">variable</span> <span class="o">$</span><span class="n">PATH</span>
- <span class="p">(</span><span class="n">LICENSE</span><span class="p">:</span><span class="n">PD</span><span class="p">)</span>
+<div class="codehilite"><pre><span></span><code><span class="w"> </span><span class="n">which</span><span class="p">(</span><span class="mi">3</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">M_io</span><span class="p">:</span><span class="n">ENVIRONMENT</span><span class="p">]</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">pathname</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">searching</span><span class="w"></span>
+<span class="w">             </span><span class="n">the</span><span class="w"> </span><span class="n">directories</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="n">variable</span><span class="w"> </span><span class="o">$</span><span class="n">PATH</span><span class="w"></span>
+<span class="w"> </span><span class="p">(</span><span class="n">LICENSE</span><span class="p">:</span><span class="n">PD</span><span class="p">)</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="syntax">SYNTAX</h2>
@@ -258,8 +258,8 @@ character(len=:),allocatable :: pathname
 </code></pre></div>
 
 <h2 id="description">DESCRIPTION</h2>
-<div class="codehilite"><pre><span></span><code><span class="n">Given</span> <span class="n">a</span> <span class="n">command</span> <span class="n">name</span> <span class="n">find</span> <span class="n">the</span> <span class="n">first</span> <span class="n">file</span> <span class="n">with</span> <span class="n">that</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">directories</span>
-<span class="n">specified</span> <span class="n">by</span> <span class="n">the</span> <span class="n">environment</span> <span class="n">variable</span> <span class="o">$</span><span class="n">PATH</span><span class="o">.</span>
+<div class="codehilite"><pre><span></span><code><span class="n">Given</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">directories</span><span class="w"></span>
+<span class="n">specified</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="n">variable</span><span class="w"> </span><span class="o">$</span><span class="n">PATH</span><span class="o">.</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="options">OPTIONS</h2>
@@ -369,7 +369,7 @@ character(len=:),allocatable :: pathname
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">which</span><span class="p">(</span><span class="n">command</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">pathname</span><span class="p">)</span>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">which</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">pathname</span><span class="p">)</span><span class="w"></span>
 <span class="c">!&gt;</span>
 <span class="c">!!##NAME</span>
 <span class="c">!!     which(3f) - [M_io:ENVIRONMENT] given a command name find the pathname by searching</span>
@@ -412,11 +412,11 @@ character(len=:),allocatable :: pathname
 <span class="c">!!##LICENSE</span>
 <span class="c">!!    Public Domain</span>
 
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>     <span class="kd">::</span> <span class="n">command</span>
-<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span>    <span class="kd">::</span> <span class="n">pathname</span><span class="p">,</span> <span class="n">checkon</span><span class="p">,</span> <span class="n">paths</span><span class="p">(:),</span> <span class="n">exts</span><span class="p">(:)</span>
-<span class="kt">integer</span>                         <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
-   <span class="n">pathname</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-   <span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;PATH&#39;</span><span class="p">),</span><span class="n">paths</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="n">separator</span><span class="p">().</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;\&#39;))</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">command</span><span class="w"></span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">pathname</span><span class="p">,</span><span class="w"> </span><span class="n">checkon</span><span class="p">,</span><span class="w"> </span><span class="n">paths</span><span class="p">(:),</span><span class="w"> </span><span class="n">exts</span><span class="p">(:)</span><span class="w"></span>
+<span class="kt">integer</span><span class="w">                         </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="w"></span>
+<span class="w">   </span><span class="n">pathname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="w"></span>
+<span class="w">   </span><span class="k">call </span><span class="n">split</span><span class="p">(</span><span class="n">get_env</span><span class="p">(</span><span class="s1">&#39;PATH&#39;</span><span class="p">),</span><span class="n">paths</span><span class="p">,</span><span class="n">delimiters</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="n">separator</span><span class="p">().</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;\&#39;))</span>
 <span class="s1">   SEARCH: do i=1,size(paths)</span>
 <span class="s1">      checkon=trim(join_path(trim(paths(i)),command))</span>
 <span class="s1">      select case(separator())</span>
@@ -441,13 +441,13 @@ character(len=:),allocatable :: pathname
 <span class="s1">         call split(get_env(&#39;</span><span class="n">PATHEXT</span><span class="s1">&#39;),exts,delimiters=&#39;</span><span class="p">;</span><span class="s1">&#39;)</span>
 <span class="s1">         do j=1,size(exts)</span>
 <span class="s1">            if(exists(checkon//&#39;</span><span class="p">.</span><span class="s1">&#39;//trim(exts(j))))then</span>
-<span class="s1">               pathname=checkon//&#39;</span><span class="p">.</span><span class="err">&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">exts</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
-               <span class="k">exit </span><span class="n">SEARCH</span>
-            <span class="k">endif</span>
+<span class="s1">               pathname=checkon//&#39;</span><span class="p">.</span><span class="err">&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">exts</span><span class="p">(</span><span class="n">j</span><span class="p">))</span><span class="w"></span>
+<span class="w">               </span><span class="k">exit </span><span class="n">SEARCH</span><span class="w"></span>
+<span class="w">            </span><span class="k">endif</span>
 <span class="k">         enddo</span>
 <span class="k">      end select</span>
-<span class="k">   enddo </span><span class="n">SEARCH</span>
-<span class="k">end function </span><span class="n">which</span>
+<span class="k">   enddo </span><span class="n">SEARCH</span><span class="w"></span>
+<span class="k">end function </span><span class="n">which</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -463,14 +463,14 @@ character(len=:),allocatable :: pathname
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2021 
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
                                           </p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2021-12-13 07:02  
+             on 2022-01-10 07:13  
             
           </p>
         </div>
