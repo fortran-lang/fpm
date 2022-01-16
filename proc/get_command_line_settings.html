@@ -138,7 +138,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.6% of total for procedures.">235 statements</a>
+    title=" 6.9% of total for procedures.">247 statements</a>
      </li> 
      
      
@@ -332,6 +332,7 @@ public subroutine get_command_line_settings(cmd_settings)
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fc_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cc_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ar_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;AR&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">fflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ldflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;LDFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">fc_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;gfortran&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cc_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ar_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">flags_default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
 
 <span class="w">        </span><span class="k">call </span><span class="n">set_help</span><span class="p">()</span><span class="w"></span>
 <span class="w">        </span><span class="c">! text for --version switch,</span>
@@ -470,10 +471,14 @@ public subroutine get_command_line_settings(cmd_settings)
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">help_new</span><span class="p">,</span><span class="w"> </span><span class="n">version_text</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">select case</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">unnamed</span><span class="p">))</span><span class="w"></span>
 <span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
-<span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(7x,g0,/))&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]&#39;</span><span class="w"></span>
-<span class="w">                </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;directory name required&#39;</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="k">case</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;backfill&#39;</span><span class="p">))</span><span class="k">then</span>
+<span class="k">                   </span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="w">   </span>
+<span class="w">                </span><span class="k">else</span>
+<span class="k">                   write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(7x,g0,/))&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                   </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;&lt;USAGE&gt; fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]&#39;</span><span class="w"></span>
+<span class="w">                   </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;directory name required&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">endif</span>
+<span class="k">            case</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
 <span class="w">                </span><span class="n">name</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="n">unnamed</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="w"></span>
 <span class="w">            </span><span class="k">case </span><span class="n">default</span><span class="w"></span>
 <span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(7x,g0)&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
@@ -481,13 +486,21 @@ public subroutine get_command_line_settings(cmd_settings)
 <span class="w">                </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;only one directory name allowed&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">end select</span><span class="w"></span>
 <span class="w">            </span><span class="c">!*! canon_path is not converting &quot;.&quot;, etc.</span>
-<span class="w">            </span><span class="n">name</span><span class="o">=</span><span class="n">canon_path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="k">               call </span><span class="n">get_current_directory</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                  write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(&quot;[Error]&quot;, 1x, a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="w"></span>
+<span class="w">                  </span><span class="k">stop </span><span class="mi">1</span><span class="w"></span>
+<span class="w">               </span><span class="k">endif</span>
+<span class="k">            endif</span>
+<span class="k">            </span><span class="n">name</span><span class="o">=</span><span class="n">canon_path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_fortran_name</span><span class="p">(</span><span class="n">to_fortran_name</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">name</span><span class="p">)))</span><span class="w"> </span><span class="p">)</span><span class="k">then</span>
 <span class="k">                write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(g0)&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;&lt;ERROR&gt; the fpm project name must be made of up to 63 ASCII letters,&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="s1">&#39;        numbers, underscores, or hyphens, and start with a letter.&#39;</span><span class="p">]</span><span class="w"></span>
 <span class="w">                </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">endif</span>
+
 
 <span class="k">            allocate</span><span class="p">(</span><span class="n">fpm_new_settings</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd_settings</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="w"> </span><span class="n">specified</span><span class="p">([</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="s1">&#39;src&#39;</span><span class="p">,</span><span class="s1">&#39;lib&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;example&#39;</span><span class="p">,</span><span class="s1">&#39;bare&#39;</span><span class="p">]))</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
@@ -751,7 +764,7 @@ public subroutine get_command_line_settings(cmd_settings)
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2022-01-10 07:14  
+             on 2022-01-16 12:57  
             
           </p>
         </div>

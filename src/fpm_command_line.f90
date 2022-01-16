@@ -31,10 +31,12 @@ use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, fnv_1a, to_fortran_name, is_fortran_name
 use fpm_filesystem,   only : basename, canon_path, which
 use fpm_environment,  only : run, get_command_arguments_quoted
-use fpm_error,        only : fpm_stop
+use fpm_os,           only : get_current_directory
+use fpm_error,        only : fpm_stop, error_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
+
 implicit none
 
 private
@@ -179,6 +181,7 @@ contains
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", ldflags_env = "LDFLAGS", &
             & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " "
+        type(error_t), allocatable :: error
 
         call set_help()
         ! text for --version switch,
@@ -317,9 +320,13 @@ contains
             & help_new, version_text)
             select case(size(unnamed))
             case(1)
-                write(stderr,'(*(7x,g0,/))') &
-                & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
-                call fpm_stop(1,'directory name required')
+                if(lget('backfill'))then
+                   name='.'   
+                else
+                   write(stderr,'(*(7x,g0,/))') &
+                   & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
+                   call fpm_stop(1,'directory name required')
+                endif
             case(2)
                 name=trim(unnamed(2))
             case default
@@ -328,6 +335,13 @@ contains
                 call fpm_stop(2,'only one directory name allowed')
             end select
             !*! canon_path is not converting ".", etc.
+            if(name.eq.'.')then
+               call get_current_directory(name, error)
+               if (allocated(error)) then
+                  write(stderr, '("[Error]", 1x, a)') error%message
+                  stop 1
+               endif
+            endif
             name=canon_path(name)
             if( .not.is_fortran_name(to_fortran_name(basename(name))) )then
                 write(stderr,'(g0)') [ character(len=72) :: &
@@ -335,6 +349,7 @@ contains
                 & '        numbers, underscores, or hyphens, and start with a letter.']
                 call fpm_stop(4,' ')
             endif
+
 
             allocate(fpm_new_settings :: cmd_settings)
             if (any( specified([character(len=10) :: 'src','lib','app','test','example','bare'])) &
@@ -1079,7 +1094,7 @@ contains
     '   fpm new A --full # create example/ and an annotated fpm.toml as well', &
     '   fpm new A --bare # create no directories                            ', &
     '   create any missing files in current directory                       ', &
-    '   fpm new `pwd` --full --backfill                                     ', &
+    '   fpm new --full --backfill                                           ', &
     '' ]
     help_test=[character(len=80) :: &
     'NAME                                                                   ', &
