@@ -612,7 +612,6 @@ function git_user(what) result(user)
   if (len(user)==0) then
     user = default_user(what)
   end if
-  return
 end function git_user
 
 subroutine create_verified_basic_manifest(filename)
