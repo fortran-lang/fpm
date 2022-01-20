@@ -576,7 +576,6 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
 contains
 
 function default_user(what) result(user)
-  implicit none
   character(len=*), intent(in) :: what
   character(len=:), allocatable :: user
   if (what=="uname") then
