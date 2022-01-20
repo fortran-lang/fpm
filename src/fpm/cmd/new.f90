@@ -592,7 +592,7 @@ function git_user(what) result(user)
   character(len=:), allocatable :: user
   character(len=:), allocatable :: temp_user, iomsg
   integer :: stat, unit
-  allocate(temp_user, source=get_temp_filename())
+  temp_user = get_temp_filename()
   if (what=="uname") then
     user = "git config --get user.name > " // temp_user
   else
