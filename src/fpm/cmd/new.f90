@@ -577,7 +577,7 @@ contains
 
 function default_user(what) result(user)
   implicit none
-  character(len=5), intent(in) :: what
+  character(len=*), intent(in) :: what
   character(len=:), allocatable :: user
   if (what=="uname") then
     user = "Jane Doe"
