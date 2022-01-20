@@ -575,6 +575,48 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
     call run('git init ' // settings%name)
 contains
 
+function default_user(what) result(user)
+  implicit none
+  character(len=5), intent(in) :: what
+  character(len=:), allocatable :: user
+  if (what=="uname") then
+    user = "Jane Doe"
+  else
+    user = "jane.doe@example.com"
+  end if
+  return
+end function default_user
+
+function git_user(what) result(user)
+  use fpm_filesystem, only : get_temp_filename, getline
+  implicit none
+  character(len=5), intent(in) :: what
+  character(len=:), allocatable :: user
+  character(len=:), allocatable :: temp_user, iomsg
+  integer :: stat, unit
+  allocate(temp_user, source=get_temp_filename())
+  if (what=="uname") then
+    user = "git config --get user.name > " // temp_user
+  else
+    user = "git config --get user.email > " // temp_user
+  end if
+  call execute_command_line(user, exitstat=stat)
+  if (stat /= 0) then
+    user = default_user(what)
+    return
+  end if
+  open(file=temp_user, newunit=unit)
+  call getline(unit, user, stat, iomsg)
+  if (stat /= 0) then
+    user = default_user(what)
+  end if
+  close(unit, status="delete")
+  if (len(user)==0) then
+    user = default_user(what)
+  end if
+  return
+end function git_user
+
 subroutine create_verified_basic_manifest(filename)
 !> create a basic but verified default manifest file
 use fpm_toml, only : toml_table, toml_serializer, set_value
@@ -603,9 +645,9 @@ character(len=*),intent(in) :: filename
     call set_value(table, "name",       BNAME)
     call set_value(table, "version",    "0.1.0")
     call set_value(table, "license",    "license")
-    call set_value(table, "author",     "Jane Doe")
-    call set_value(table, "maintainer", "jane.doe@example.com")
-    call set_value(table, "copyright",  'Copyright '//date(1:4)//', Jane Doe')
+    call set_value(table, "author",     git_user("uname"))
+    call set_value(table, "maintainer", git_user("email"))
+    call set_value(table, "copyright",  'Copyright '//date(1:4)//', '//git_user("uname"))
     ! continue building of manifest
     ! ...
     call new_package(package, table, error=error)
