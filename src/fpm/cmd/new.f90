@@ -588,7 +588,6 @@ end function default_user
 
 function git_user(what) result(user)
   use fpm_filesystem, only : get_temp_filename, getline
-  implicit none
   character(len=*), intent(in) :: what
   character(len=:), allocatable :: user
   character(len=:), allocatable :: temp_user, iomsg
