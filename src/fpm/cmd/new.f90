@@ -583,7 +583,6 @@ function default_user(what) result(user)
   else
     user = "jane.doe@example.com"
   end if
-  return
 end function default_user
 
 function git_user(what) result(user)
