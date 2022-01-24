@@ -581,8 +581,8 @@ contains
 function git_metadata(what) result(returned)
 !> get metadata values such as email address and git name from git(1) or return appropriate default
   use fpm_filesystem, only : get_temp_filename, getline
-  character(len=*), intent(in)  :: what     !> keyword designating what git metatdata to query
-  character(len=:), allocatable :: returned !> value to return for requested keyword
+  character(len=*), intent(in)  :: what     ! keyword designating what git metatdata to query
+  character(len=:), allocatable :: returned ! value to return for requested keyword
   character(len=:), allocatable :: command
   character(len=:), allocatable :: temp_filename
   character(len=:), allocatable :: iomsg
