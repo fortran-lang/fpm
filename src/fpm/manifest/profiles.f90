@@ -3,6 +3,7 @@
 !> A profiles table can currently have the following subtables:
 !> Profile names - any string, if omitted, flags are appended to all matching profiles
 !> Compiler - any from the following list, omitting it yields an error
+!>
 !> - "gfortran"
 !> - "ifort"
 !> - "ifx"
@@ -17,8 +18,10 @@
 !> - "crayftn"
 !> - "xlf90"
 !> - "ftn95"
+!>
 !> OS - any from the following list, if omitted, the profile is used if and only
 !> if there is no profile perfectly matching the current configuration
+!>
 !> - "linux"
 !> - "macos"
 !> - "windows"
@@ -280,10 +283,10 @@ module fpm_manifest_profile
               end do
             else if (.not. os_valid) then
                 call validate_os_name(key_name, is_valid)
-                err_message = "Unnexpected key " // key_name // " found in profile table "//profile_name//" "//compiler_name//"."
+                err_message = "Unexpected key " // key_name // " found in profile table "//profile_name//" "//compiler_name//"."
                 if (.not. is_valid) call syntax_error(error, err_message)
             else
-                err_message = "Unnexpected key " // key_name // " found in profile table "//profile_name//" "//compiler_name//"."
+                err_message = "Unexpected key " // key_name // " found in profile table "//profile_name//" "//compiler_name//"."
                 call syntax_error(error, err_message)
             end if
           end do
@@ -566,7 +569,7 @@ module fpm_manifest_profile
           end if
         end do
 
-        profiles_size=profiles_size+size(default_profiles)
+        profiles_size = profiles_size + size(default_profiles)
         allocate(profiles(profiles_size))
         
         do profindex=1, size(default_profiles)
