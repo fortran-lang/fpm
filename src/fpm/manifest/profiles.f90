@@ -680,6 +680,11 @@ module fpm_manifest_profile
                 & OS_ALL, &
                 & flags = ' -O4 -coarray=single -PIC', &
                 & is_built_in=.true.), &
+              & new_profile('release', &
+                &'lfortran', &
+                & OS_ALL, &
+                & flags = ' flag_lfortran_opt', &
+                & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'caf', &
                 & OS_ALL, &
@@ -725,9 +730,14 @@ module fpm_manifest_profile
                 & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
-                & 'nagfor', &
+                & 'ifx', &
+                & OS_WINDOWS, &
+                & flags = ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl', &
+                & is_built_in=.true.), &
+              & new_profile('debug', &
+                & 'lfortran', &
                 & OS_ALL, &
-                & flags = ' -g -C=all -O0 -gline -coarray=single -PIC', &
+                & flags = '', &
                 & is_built_in=.true.) &
               &]
       end function get_default_profiles
