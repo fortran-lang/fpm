@@ -394,6 +394,7 @@ contains
 
     end subroutine test_dependencies_typeerror
 
+    !> Include a table of profiles in toml, check whether they are parsed correctly and stored in package
     subroutine test_profiles(error)
 
         !> Error handling
@@ -469,6 +470,7 @@ contains
         end if
     end subroutine test_profiles
 
+    !> 'flags' is a key-value entry, test should fail as it is defined as a table
     subroutine test_profiles_keyvalue_table(error)
 
         !> Error handling
