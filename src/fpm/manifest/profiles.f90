@@ -416,7 +416,7 @@ module fpm_manifest_profile
             l_os_name = lower(os_name)
             call validate_os_name(l_os_name, is_valid)
             if (is_valid) then
-              call fatal_error(error,'*traverse_oss*:Error: Invalid OS name.')
+              call fatal_error(error,'*traverse_oss*:Error: Name of the operating system must be a lowercase string.')
             end if
             if (allocated(error)) return
 
