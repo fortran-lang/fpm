@@ -4,24 +4,18 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   
    <meta name="description" content="Fortran Package Manager">
-    
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>
-All Types &ndash; Fortran-lang/fpm
+    <title>All Types &ndash; Fortran-lang/fpm
 </title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/local.css" rel="stylesheet">
-    
     <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-    
-    
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -50,60 +44,28 @@ All Types &ndash; Fortran-lang/fpm
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-        
             <li><a href='../page/index.html'>Packaging and contributing</a></li>
-      
             <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
               <a href="#" class="dropdown-toggle"
               data-toggle="dropdown" role="button"
               aria-haspopup="true"
      aria-expanded="false">Contents <span class="caret"></span></a>
         <ul class="dropdown-menu">
-          
-              
             <li><a href="../lists/files.html">Source Files</a></li>
-        
-        
-        
             <li><a href="../lists/modules.html">Modules</a></li>
-        
-            
-                                
             <li><a href="../lists/procedures.html">Procedures</a></li>
-        
-               
-            <li><a href="../lists/types.html">Derived Types</a></li>
-        
-        
+                   <li><a href="../lists/types.html">Derived Types</a></li>
             <li><a href="../program/main.html">Program</a></li>
-               
-        
-        
+       
             </ul>
         
             </li>
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
-
-                             
-<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
-
-
+                             <li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
 <li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
-
-
-
           </ul>
-        
         <form action="../search.html" class="navbar-form navbar-right" role="search">
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
@@ -112,13 +74,11 @@ All Types &ndash; Fortran-lang/fpm
         <button type="submit" class="btn btn-default">Submit</button>
 -->
         </form>
-        
         </div><!--/.nav-collapse -->
       </div>
     </nav>
 
     <div class="container">
-    
       <div class="row">
         <div class="col-lg-12" id='text'>
 			 <h1>Derived Types</h1>
@@ -126,86 +86,53 @@ All Types &ndash; Fortran-lang/fpm
 			 <thead>
 			 <tr><th>Type</th><th>Location</th><th>Extends</th><th>Description</th></tr>
 			 </thead><tbody>
-			 
 			   <tr><td><a href='../type/archiver_t.html'>archiver_t</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>None</td><td><p>Definition of archiver object</p></td></tr>
-			 
 			   <tr><td><a href='../type/build_config_t.html'>build_config_t</a></td><td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td><td>None</td><td><p>Configuration data for build</p></td></tr>
-			 
 			   <tr><td><a href='../type/build_target_ptr.html'>build_target_ptr</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>None</td><td><p>Wrapper type for constructing arrays of <code><a href="../type/build_target_t.html">build_target_t</a></code> pointers</p></td></tr>
-			 
 			   <tr><td><a href='../type/build_target_t.html'>build_target_t</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>None</td><td><p>Type describing a generated build target</p></td></tr>
-			 
 			   <tr><td><a href='../type/compiler_t.html'>compiler_t</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>None</td><td><p>Definition of compiler object</p></td></tr>
-			 
 			   <tr><td><a href='../type/dependency_config_t.html'>dependency_config_t</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>None</td><td><p>Configuration meta data for a dependency</p></td></tr>
-			 
 			   <tr><td><a href='../type/dependency_node_t.html'>dependency_node_t</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td><a href='../type/dependency_config_t.html'>dependency_config_t</a></td><td><p>Dependency node in the projects dependency tree</p></td></tr>
-			 
 			   <tr><td><a href='../type/dependency_tree_t.html'>dependency_tree_t</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>None</td><td><p>Respresentation of a projects dependencies</p><a href="../type/dependency_tree_t.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../type/enum_descriptor.html'>enum_descriptor</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>None</td><td><p>Possible git target</p></td></tr>
-			 
 			   <tr><td><a href='../type/error_t.html'>error_t</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>None</td><td><p>Data type defining an error</p></td></tr>
-			 
 			   <tr><td><a href='../type/example_config_t.html'>example_config_t</a></td><td><a href='../module/fpm_manifest_example.html'>fpm_manifest_example</a></td><td><a href='../type/executable_config_t.html'>executable_config_t</a></td><td><p>Configuation meta data for an example</p></td></tr>
-			 
 			   <tr><td><a href='../type/executable_config_t.html'>executable_config_t</a></td><td><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></td><td>None</td><td><p>Configuation meta data for an executable</p></td></tr>
-			 
 			   <tr><td><a href='../type/fpm_build_settings.html'>fpm_build_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td><a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a></td><td></td></tr>
-			 
 			   <tr><td><a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td>None</td><td></td></tr>
-			 
 			   <tr><td><a href='../type/fpm_install_settings.html'>fpm_install_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td><a href='../type/fpm_build_settings.html'>fpm_build_settings</a></td><td></td></tr>
-			 
 			   <tr><td><a href='../type/fpm_model_t.html'>fpm_model_t</a></td><td><a href='../module/fpm_model.html'>fpm_model</a></td><td>None</td><td><p>Type describing everything required to build
  the root package and its dependencies.</p></td></tr>
-			 
 			   <tr><td><a href='../type/fpm_new_settings.html'>fpm_new_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td><a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a></td><td></td></tr>
-			 
 			   <tr><td><a href='../type/fpm_run_settings.html'>fpm_run_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td><a href='../type/fpm_build_settings.html'>fpm_build_settings</a></td><td></td></tr>
-			 
 			   <tr><td><a href='../type/fpm_test_settings.html'>fpm_test_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td><a href='../type/fpm_run_settings.html'>fpm_run_settings</a></td><td></td></tr>
-			 
 			   <tr><td><a href='../type/fpm_update_settings.html'>fpm_update_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td><a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a></td><td><p>Settings for interacting and updating with project dependencies</p></td></tr>
-			 
 			   <tr><td><a href='../type/git_target_t.html'>git_target_t</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>None</td><td><p>Description of an git target</p></td></tr>
-			 
 			   <tr><td><a href='../type/install_config_t.html'>install_config_t</a></td><td><a href='../module/fpm_manifest_install.html'>fpm_manifest_install</a></td><td>None</td><td><p>Configuration data for installation</p></td></tr>
-			 
 			   <tr><td><a href='../type/installer_t.html'>installer_t</a></td><td><a href='../module/fpm_installer.html'>fpm_installer</a></td><td>None</td><td><p>Declaration of the installer type</p></td></tr>
-			 
 			   <tr><td><a href='../type/library_config_t.html'>library_config_t</a></td><td><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></td><td>None</td><td><p>Configuration meta data for a library</p></td></tr>
-			 
 			   <tr><td><a href='../type/package_config_t.html'>package_config_t</a></td><td><a href='../module/fpm_manifest_package.html'>fpm_manifest_package</a></td><td>None</td><td><p>Package meta data</p></td></tr>
-			 
 			   <tr><td><a href='../type/srcfile_t.html'>srcfile_t</a></td><td><a href='../module/fpm_model.html'>fpm_model</a></td><td>None</td><td><p>Type for describing a source file</p></td></tr>
-			 
 			   <tr><td><a href='../type/string_t.html'>string_t</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>None</td><td></td></tr>
-			 
 			   <tr><td><a href='../type/test_config_t.html'>test_config_t</a></td><td><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></td><td><a href='../type/executable_config_t.html'>executable_config_t</a></td><td><p>Configuation meta data for an test</p></td></tr>
-			 
 			   <tr><td><a href='../type/version_t.html'>version_t</a></td><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td>None</td><td></td></tr>
-			 
 			 </tbody></table>
              
         </div>
       </div>
-
     <hr>    
     </div> <!-- /container -->
     <footer>
       <div class="container">
       <div class="row">
         <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
-                                          </p>
+</p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2022-01-16 12:57  
-            
-          </p>
+ on 2022-02-09 07:22            </p>
         </div>
       </div>
       <br>
@@ -232,14 +159,11 @@ All Types &ndash; Fortran-lang/fpm
         extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
       });
     </script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
     
     <script src="../tipuesearch/tipuesearch_content.js"></script>
     <script src="../tipuesearch/tipuesearch_set.js"></script>
     <script src="../tipuesearch/tipuesearch.js"></script>
-    
     
   </body>
 </html>

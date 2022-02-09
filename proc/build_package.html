@@ -4,9 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   
    <meta name="description" content="Fortran Package Manager">
-    
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
@@ -16,10 +14,7 @@
     <link href="../css/pygments.css" rel="stylesheet">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/local.css" rel="stylesheet">
-    
     <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-    
-    
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -48,60 +43,28 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-        
             <li><a href='../page/index.html'>Packaging and contributing</a></li>
-      
             <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
               <a href="#" class="dropdown-toggle"
               data-toggle="dropdown" role="button"
               aria-haspopup="true"
      aria-expanded="false">Contents <span class="caret"></span></a>
         <ul class="dropdown-menu">
-          
-              
             <li><a href="../lists/files.html">Source Files</a></li>
-        
-        
-        
             <li><a href="../lists/modules.html">Modules</a></li>
-        
-            
-                                
             <li><a href="../lists/procedures.html">Procedures</a></li>
-        
-               
-            <li><a href="../lists/types.html">Derived Types</a></li>
-        
-        
+                   <li><a href="../lists/types.html">Derived Types</a></li>
             <li><a href="../program/main.html">Program</a></li>
-               
-        
-        
+       
             </ul>
         
             </li>
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
-
-                             
-<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
-
-
+                             <li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
 <li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
-
-
-
           </ul>
-        
         <form action="../search.html" class="navbar-form navbar-right" role="search">
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
@@ -110,51 +73,29 @@
         <button type="submit" class="btn btn-default">Submit</button>
 -->
         </form>
-        
         </div><!--/.nav-collapse -->
       </div>
     </nav>
 
     <div class="container">
-    
-  
   <div class="row">
     <h1>build_package
       <small>Subroutine</small>
-    
     </h1>
-    
-<div class="row">
+    <div class="row">
   <div class="col-lg-12">
 <div class="well well-sm">
   <ul class="list-inline" style="margin-bottom:0px;display:inline">
-     
-     
-     
-     
-     
-    
-    
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
     title=" 1.3% of total for procedures.">47 statements</a>
      </li> 
-     
-     
-     
     <li><i class="fa fa-code"></i><a href="../src/fpm_backend.f90"> Source File</a></li>
-     
-     
   </ul>
   <ol class="breadcrumb in-well text-right">
-  
-    
      <li><a href='../sourcefile/fpm_backend.f90.html'>fpm_backend.f90</a></li>
-    
      <li><a href='../module/fpm_backend.html'>fpm_backend</a></li>
-    
-  
      <li class="active">build_package</li>
   </ol>
 </div>
@@ -170,254 +111,62 @@
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    
-<div id="sidebar">
-  
-<h3>Contents</h3>
+    <div id="sidebar">
+  <h3>Contents</h3>
  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/build_package.html#src">build_package</a>
-  </div>
-</div>
-
-
+<em>None</em>
 
 </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>
-public subroutine build_package(targets, model)
+    <h2>public subroutine build_package(targets, model)</h2>
     
-    
-   
-</h2>
-    
-  
 
-
-    
     <p>Top-level routine to build package described by <code>model</code></p>
-    
 
     <h3>Arguments</h3>
-    
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
+      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
-
-  
-  
-  
-  
 <tr>
-  
   <td><span class="anchor" id="variable-targets"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
   <td><strong>targets</strong>(:)</td><td></td>
-  
 </tr>
-
-  
-  
-  
-  
 <tr>
-  
-  <td><span class="anchor" id="variable-model~3"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
+  <td><span class="anchor" id="variable-model~2"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
   <td><strong>model</strong></td><td></td>
-  
 </tr>
-
 </tbody>
 </table>
 
-    
-    
-    
-    
-     
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      
-<h3>Contents</h3>
+      <h3>Contents</h3>
  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/build_package.html#src">build_package</a>
-  </div>
-</div>
-
-
+<em>None</em>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
 
-    
 
-    
-    
-    
     
     
 
     
     
-    
-    
-    
 
 
-    
-    
-    
-    <section>
-    <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">build_package</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">targets</span><span class="p">(:)</span><span class="w"></span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">model</span><span class="w"></span>
-
-<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="w"></span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">queue</span><span class="p">(:)</span><span class="w"></span>
-<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">schedule_ptr</span><span class="p">(:),</span><span class="w"> </span><span class="nb">stat</span><span class="p">(:)</span><span class="w"></span>
-<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">build_failed</span><span class="p">,</span><span class="w"> </span><span class="n">skip_current</span><span class="w"></span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">build_dirs</span><span class="p">(:)</span><span class="w"></span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">temp</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">! Need to make output directory for include (mod) files</span>
-<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">build_dirs</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="w"></span>
-<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="w"></span>
-<span class="w">       </span><span class="k">associate</span><span class="p">(</span><span class="k">target</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span><span class="w"></span>
-<span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_dir</span><span class="w"> </span><span class="p">.</span><span class="n">in</span><span class="p">.</span><span class="w"> </span><span class="n">build_dirs</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
-<span class="k">          </span><span class="n">temp</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">target</span><span class="p">%</span><span class="n">output_dir</span><span class="w"></span>
-<span class="w">          </span><span class="n">build_dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">build_dirs</span><span class="p">,</span><span class="w"> </span><span class="n">temp</span><span class="p">]</span><span class="w"></span>
-<span class="w">       </span><span class="k">end associate</span>
-<span class="k">    end do</span>
-
-<span class="k">    do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">build_dirs</span><span class="p">)</span><span class="w"></span>
-<span class="w">       </span><span class="k">call </span><span class="n">mkdir</span><span class="p">(</span><span class="n">build_dirs</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="k">end do</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">! Perform depth-first topological sort of targets</span>
-<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">call </span><span class="n">sort_target</span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">    </span><span class="k">end do</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">! Construct build schedule queue</span>
-<span class="w">    </span><span class="k">call </span><span class="n">schedule_targets</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="n">schedule_ptr</span><span class="p">,</span><span class="w"> </span><span class="n">targets</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">! Initialise build status flags</span>
-<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">queue</span><span class="p">)))</span><span class="w"></span>
-<span class="w">    </span><span class="nb">stat</span><span class="p">(:)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
-<span class="w">    </span><span class="n">build_failed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">! Loop over parallel schedule regions</span>
-<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">schedule_ptr</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! Build targets in schedule region i</span>
-<span class="w">        </span><span class="c">!$omp parallel do default(shared) private(skip_current) schedule(dynamic,1)</span>
-<span class="w">        </span><span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">i</span><span class="p">),(</span><span class="n">schedule_ptr</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">            </span><span class="c">! Check if build already failed</span>
-<span class="w">            </span><span class="c">!$omp atomic read</span>
-<span class="w">            </span><span class="n">skip_current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">build_failed</span><span class="w"></span>
-
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">skip_current</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                call </span><span class="n">build_target</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">,</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">))</span><span class="w"></span>
-<span class="w">            </span><span class="k">end if</span><span class="w"></span>
-
-<span class="w">            </span><span class="c">! Set global flag if this target failed to build</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
-<span class="w">                </span><span class="c">!$omp atomic write</span>
-<span class="w">                </span><span class="n">build_failed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
-<span class="w">            </span><span class="k">end if</span>
-
-<span class="k">        end do</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! Check if this schedule region failed: exit with message if failed</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">build_failed</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0:,1x))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;&lt;ERROR&gt; Compilation failed for object &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">queue</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span><span class="w"></span>
-<span class="w">                </span><span class="k">end if</span>
-<span class="k">            end do</span>
-<span class="k">            call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;stopping due to failed compilation&#39;</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">end if</span>
-
-<span class="k">    end do</span>
-
-<span class="k">end subroutine </span><span class="n">build_package</span><span class="w"></span>
-</pre></div>
-
-    </section>
-    <br>
     
     
     </div>
   </div>
-
 
     <hr>    
     </div> <!-- /container -->
@@ -425,15 +174,13 @@ public subroutine build_package(targets, model)
       <div class="container">
       <div class="row">
         <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
-                                          </p>
+</p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2022-01-16 12:57  
-            
-          </p>
+ on 2022-02-09 07:22            </p>
         </div>
       </div>
       <br>
@@ -460,14 +207,11 @@ public subroutine build_package(targets, model)
         extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
       });
     </script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
     
     <script src="../tipuesearch/tipuesearch_content.js"></script>
     <script src="../tipuesearch/tipuesearch_set.js"></script>
     <script src="../tipuesearch/tipuesearch.js"></script>
-    
     
   </body>
 </html>

@@ -4,9 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   
    <meta name="description" content="Fortran Package Manager">
-    
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
@@ -16,10 +14,7 @@
     <link href="../css/pygments.css" rel="stylesheet">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/local.css" rel="stylesheet">
-    
     <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-    
-    
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -48,60 +43,28 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-        
             <li><a href='../page/index.html'>Packaging and contributing</a></li>
-      
             <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
               <a href="#" class="dropdown-toggle"
               data-toggle="dropdown" role="button"
               aria-haspopup="true"
      aria-expanded="false">Contents <span class="caret"></span></a>
         <ul class="dropdown-menu">
-          
-              
             <li><a href="../lists/files.html">Source Files</a></li>
-        
-        
-        
             <li><a href="../lists/modules.html">Modules</a></li>
-        
-            
-                                
             <li><a href="../lists/procedures.html">Procedures</a></li>
-        
-               
-            <li><a href="../lists/types.html">Derived Types</a></li>
-        
-        
+                   <li><a href="../lists/types.html">Derived Types</a></li>
             <li><a href="../program/main.html">Program</a></li>
-               
-        
-        
+       
             </ul>
         
             </li>
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
-
-                             
-<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
-
-
+                             <li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
 <li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
-
-
-
           </ul>
-        
         <form action="../search.html" class="navbar-form navbar-right" role="search">
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
@@ -110,49 +73,28 @@
         <button type="submit" class="btn btn-default">Submit</button>
 -->
         </form>
-        
         </div><!--/.nav-collapse -->
       </div>
     </nav>
 
     <div class="container">
-    
-  
   <div class="row">
     <h1>fpm_installer 
     <small>Module</small>
-    
     </h1>
-    
-<div class="row">
+    <div class="row">
   <div class="col-lg-12">
 <div class="well well-sm">
   <ul class="list-inline" style="margin-bottom:0px;display:inline">
-     
-     
-     
-     
-     
-    
-    
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
     title=" 2.8% of total for modules and submodules.">173 statements</a>
      </li> 
-     
-     
-     
     <li><i class="fa fa-code"></i><a href="../src/installer.f90"> Source File</a></li>
-     
-     
   </ul>
   <ol class="breadcrumb in-well text-right">
-  
-    
      <li><a href='../sourcefile/installer.f90.html'>installer.f90</a></li>
-    
-  
      <li class="active">fpm_installer</li>
   </ol>
 </div>
@@ -168,56 +110,25 @@
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    
-<div id="sidebar">
-  
-<h3>Contents</h3>
+    <div id="sidebar">
+  <h3>Contents</h3>
  
-
-
-
-
-
-
-
-
-
-
-
-
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-0">Derived Types</a></h3></div>
   <div id="types-0" class="panel-collapse collapse">
     <div class="list-group">
-      
       <a class="list-group-item" href="../module/fpm_installer.html#type-installer_t">installer_t</a>
-      
     </div>
   </div>
 </div>
-
-
-
-
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
   <div class="list-group">
     <div id="subs-0" class="panel-collapse collapse">
-      
       <a class="list-group-item" href="../module/fpm_installer.html#proc-new_installer">new_installer</a>
-      
     </div>
   </div>
 </div>
-
-
-
-
-
-
-
-
-
 
 </div>
 
@@ -228,333 +139,163 @@
 <p>The installer provides a way to install objects to their respective directories
 in the installation prefix, a generic install command allows to install
 to any directory within the prefix.</p>
-      <br>
-    
-  
-    <div class="panel panel-default">
+<br>        <div class="panel panel-default">
       <div class="panel-heading">
   <h3 class="panel-title">Uses</h3>
       </div>
       <ul class="list-group">
-      
       <li class="list-group-item">
   <ul class="list-inline">
-    
-    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
-    
     <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-    
-    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-    
     <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-    
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
   </ul>
       </li>
-      
-      
-      
       </ul>
     </div>
-    
 
     
-    
-
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      
-<h3>Contents</h3>
+      <h3>Contents</h3>
  
-
-
-
-
-
-
-
-
-
-
-
-
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-1">Derived Types</a></h3></div>
   <div id="types-1" class="panel-collapse collapse">
     <div class="list-group">
-      
       <a class="list-group-item" href="../module/fpm_installer.html#type-installer_t">installer_t</a>
-      
     </div>
   </div>
 </div>
-
-
-
-
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
   <div class="list-group">
     <div id="subs-1" class="panel-collapse collapse">
-      
       <a class="list-group-item" href="../module/fpm_installer.html#proc-new_installer">new_installer</a>
-      
     </div>
   </div>
 </div>
-
-
-
-
-
-
-
-
-
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
 
-    
 
     
     
-    
-    
-    
 
-    
-    
     
     <section>
      <h2>Derived Types</h2>
-   
-     
-<div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="type-installer_t"></span><h3>type, public :: <a href='../type/installer_t.html'>installer_t</a>
-    
-  </h3></div>
+     <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="type-installer_t"></span><h3>type, public :: <a href='../type/installer_t.html'>installer_t</a>  </h3></div>
   <div class="panel-body">
-    
-    
     <p>Declaration of the installer type</p>
-    
-     
-     
-          
      
      <h4>Type-Bound Procedures</h4>
       <table class="table table-striped varlist">
       <tbody>
-      
        <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-install'>install</a></strong>  </td>
        <td><p>Install a generic file into a subdirectory in the installation prefix</p></td></tr>
-      
        <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-install_executable'>install_executable</a></strong>  </td>
        <td><p>Install an executable in its correct subdirectory</p></td></tr>
-      
        <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-install_header'>install_header</a></strong>  </td>
        <td><p>Install a header/module in its correct subdirectory</p></td></tr>
-      
        <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-install_library'>install_library</a></strong>  </td>
        <td><p>Install a library in its correct subdirectory</p></td></tr>
-      
        <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-make_dir'>make_dir</a></strong>  </td>
        <td><p>Create a new directory in the prefix, type-bound for unit testing purposes</p></td></tr>
-      
        <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-run'>run</a></strong>  </td>
        <td><p>Run an installation command, type-bound for unit testing purposes</p></td></tr>
-      
        </tbody>
        </table>
-     
   </div>
 </div>
 
-     
     </section>
   <br>
     
-    
-    
 
-    
     <section>
     <h2>Subroutines</h2>
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-new_installer"></span><h3>
-public subroutine <a href='../proc/new_installer.html'>new_installer</a>(self, prefix, bindir, libdir, includedir, verbosity, copy)
-    
-    
-   
-</h3></div>
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-new_installer"></span><h3>public subroutine <a href='../proc/new_installer.html'>new_installer</a>(self, prefix, bindir, libdir, includedir, verbosity, copy)</h3></div>
   <div class="panel-body">
        
-    
-
-
-
-
-
-
-
 <p>Create a new instance of an installer</p>
     
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
-
-  
-  
-  
-  
 <tr>
-  
   <td><span class="anchor" ></span>type(<a href='../type/installer_t.html'>installer_t</a>),</td>
-  <td>intent(out)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
   <td><strong>self</strong></td><td><p>Instance of the installer</p></td>
-  
 </tr>
-
-  
-  
-  
-  
 <tr>
-  
   <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
   <td><strong>prefix</strong></td><td><p>Path to installation directory</p></td>
-  
 </tr>
-
-  
-  
-  
-  
 <tr>
-  
   <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
   <td><strong>bindir</strong></td><td><p>Binary dir relative to the installation prefix</p></td>
-  
 </tr>
-
-  
-  
-  
-  
 <tr>
-  
   <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
   <td><strong>libdir</strong></td><td><p>Library directory relative to the installation prefix</p></td>
-  
 </tr>
-
-  
-  
-  
-  
 <tr>
-  
   <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
   <td><strong>includedir</strong></td><td><p>Include directory relative to the installation prefix</p></td>
-  
 </tr>
-
-  
-  
-  
-  
 <tr>
-  
   <td><span class="anchor" ></span>integer,</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
   <td><strong>verbosity</strong></td><td><p>Verbosity of the installer</p></td>
-  
 </tr>
-
-  
-  
-  
-  
 <tr>
-  
   <td><span class="anchor" ></span>character(len=*),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
   <td><strong>copy</strong></td><td><p>Copy command</p></td>
-  
 </tr>
-
 </tbody>
 </table>
 
-      
-    
-    
 
   </div>
   </div>
 
-    
     </section>    
     <br>
-    
-    
     
     </div>
   </div>
 
-  
     <hr>    
     </div> <!-- /container -->
     <footer>
       <div class="container">
       <div class="row">
         <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
-                                          </p>
+</p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2022-01-16 12:57  
-            
-          </p>
+ on 2022-02-09 07:22            </p>
         </div>
       </div>
       <br>
@@ -581,14 +322,11 @@ public subroutine <a href='../proc/new_installer.html'>new_installer</a>(self, p
         extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
       });
     </script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
     
     <script src="../tipuesearch/tipuesearch_content.js"></script>
     <script src="../tipuesearch/tipuesearch_set.js"></script>
     <script src="../tipuesearch/tipuesearch.js"></script>
-    
     
   </body>
 </html>

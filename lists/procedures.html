@@ -4,24 +4,18 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   
    <meta name="description" content="Fortran Package Manager">
-    
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>
-All Procedures &ndash; Fortran-lang/fpm
+    <title>All Procedures &ndash; Fortran-lang/fpm
 </title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/local.css" rel="stylesheet">
-    
     <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-    
-    
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -50,60 +44,28 @@ All Procedures &ndash; Fortran-lang/fpm
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-        
             <li><a href='../page/index.html'>Packaging and contributing</a></li>
-      
             <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
               <a href="#" class="dropdown-toggle"
               data-toggle="dropdown" role="button"
               aria-haspopup="true"
      aria-expanded="false">Contents <span class="caret"></span></a>
         <ul class="dropdown-menu">
-          
-              
             <li><a href="../lists/files.html">Source Files</a></li>
-        
-        
-        
             <li><a href="../lists/modules.html">Modules</a></li>
-        
-            
-                                
             <li><a href="../lists/procedures.html">Procedures</a></li>
-        
-               
-            <li><a href="../lists/types.html">Derived Types</a></li>
-        
-        
+                   <li><a href="../lists/types.html">Derived Types</a></li>
             <li><a href="../program/main.html">Program</a></li>
-               
-        
-        
+       
             </ul>
         
             </li>
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
-
-                             
-<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
-
-
+                             <li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
 <li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
-
-
-
           </ul>
-        
         <form action="../search.html" class="navbar-form navbar-right" role="search">
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
@@ -112,336 +74,198 @@ All Procedures &ndash; Fortran-lang/fpm
         <button type="submit" class="btn btn-default">Submit</button>
 -->
         </form>
-        
         </div><!--/.nav-collapse -->
       </div>
     </nav>
 
     <div class="container">
-    
       <div class="row">
         <div class="col-lg-12" id='text'>
 			 <h1>Procedures</h1>
 			 <table class="table table-striped">
 			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
 			 <tbody>
-			 
 			   <tr><td><a href='../proc/add_dependency.html'>add_dependency</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Add pointer to dependeny in target%dependencies</p></td></tr>
-			 
 			   <tr><td><a href='../proc/add_executable_sources.html'>add_executable_sources</a></td><td><a href='../module/fpm_sources.html'>fpm_sources</a></td><td>Subroutine</td><td><p>Add to <code>sources</code> using the executable and test entries in the manifest and
 applies any executable-specific overrides such as <code>executable%name</code>.
 Adds all sources (including modules) from each <code>executable%source_dir</code></p></td></tr>
-			 
 			   <tr><td><a href='../proc/add_sources_from_dir.html'>add_sources_from_dir</a></td><td><a href='../module/fpm_sources.html'>fpm_sources</a></td><td>Subroutine</td><td><p>Add to <code>sources</code> by looking for source files in <code>directory</code></p></td></tr>
-			 
 			   <tr><td><a href='../proc/add_target.html'>add_target</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Allocate a new target and append to target list</p></td></tr>
-			 
 			   <tr><td><a href='../proc/bad_name_error.html'>bad_name_error</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/basename.html'>basename</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Extract filename from path with/without suffix</p></td></tr>
-			 
 			   <tr><td><a href='../proc/build_model.html'>build_model</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/build_package.html'>build_package</a></td><td><a href='../module/fpm_backend.html'>fpm_backend</a></td><td>Subroutine</td><td><p>Top-level routine to build package described by <code>model</code></p></td></tr>
-			 
 			   <tr><td><a href='../proc/canon_path.html'>canon_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Canonicalize path for comparison
 * Handles path string redundancies
 * Does not test existence of path</p><a href="../proc/canon_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/change_directory.html'>change_directory</a></td><td><a href='../module/fpm_os.html'>fpm_os</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../interface/char.html'>char</a></td><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/check_compiler.html'>check_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/check_modules_for_duplicates.html'>check_modules_for_duplicates</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/checkout.html'>checkout</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/cmd_build.html'>cmd_build</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/cmd_install.html'>cmd_install</a></td><td><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></td><td>Subroutine</td><td><p>Entry point for the fpm-install subcommand</p></td></tr>
-			 
 			   <tr><td><a href='../proc/cmd_new.html'>cmd_new</a></td><td><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></td><td>Subroutine</td><td><p>TOP DIRECTORY NAME PROCESSING
 see if requested new directory already exists and process appropriately
 temporarily change to new directory as a test. NB: System dependent</p></td></tr>
-			 
 			   <tr><td><a href='../proc/cmd_run.html'>cmd_run</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/cmd_update.html'>cmd_update</a></td><td><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></td><td>Subroutine</td><td><p>Entry point for the update subcommand</p></td></tr>
-			 
 			   <tr><td><a href='../proc/compile_c.html'>compile_c</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a C object</p></td></tr>
-			 
 			   <tr><td><a href='../proc/compile_fortran.html'>compile_fortran</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a Fortran object</p></td></tr>
-			 
 			   <tr><td><a href='../interface/debug.html'>debug</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Interface</td><td><p>Create debug printout</p></td></tr>
-			 
 			   <tr><td><a href='../proc/debug_archiver.html'>debug_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>String representation of an archiver object</p></td></tr>
-			 
 			   <tr><td><a href='../proc/debug_compiler.html'>debug_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>String representation of a compiler object</p></td></tr>
-			 
 			   <tr><td><a href='../proc/default_example.html'>default_example</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate test in case we find the default example/ directory</p></td></tr>
-			 
 			   <tr><td><a href='../proc/default_executable.html'>default_executable</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate executable in case we find the default app directory</p></td></tr>
-			 
 			   <tr><td><a href='../proc/default_library.html'>default_library</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate library in case we find the default src directory</p></td></tr>
-			 
 			   <tr><td><a href='../proc/default_test.html'>default_test</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Populate test in case we find the default test/ directory</p></td></tr>
-			 
 			   <tr><td><a href='../proc/delete_file.html'>delete_file</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>delete a file by filename</p></td></tr>
-			 
 			   <tr><td><a href='../proc/dirname.html'>dirname</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Extract dirname from path</p></td></tr>
-			 
 			   <tr><td><a href='../proc/enumerate_libraries.html'>enumerate_libraries</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>Enumerate libraries, based on compiler and platform</p></td></tr>
-			 
 			   <tr><td><a href='../proc/env_variable.html'>env_variable</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>return value of environment variable</p></td></tr>
-			 
 			   <tr><td><a href='../proc/exists.html'>exists</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if pathname already exists</p></td></tr>
-			 
 			   <tr><td><a href='../proc/f_string.html'>f_string</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>return Fortran character variable when given a C-like array of
 single characters terminated with a C_NULL_CHAR character</p></td></tr>
-			 
 			   <tr><td><a href='../proc/fatal_error.html'>fatal_error</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td><p>Generic fatal runtime error</p></td></tr>
-			 
 			   <tr><td><a href='../proc/file_not_found_error.html'>file_not_found_error</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td><p>Error created when a file is missing or not found</p></td></tr>
-			 
 			   <tr><td><a href='../proc/file_parse_error.html'>file_parse_error</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td><p>Error created when file parsing fails</p></td></tr>
-			 
 			   <tr><td><a href='../proc/fileclose.html'>fileclose</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>simple close of a LUN.  On error show message and stop (by default)</p></td></tr>
-			 
 			   <tr><td><a href='../proc/fileopen.html'>fileopen</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>procedure to open filename as a sequential &ldquo;text&rdquo; file</p></td></tr>
-			 
 			   <tr><td><a href='../proc/filewrite.html'>filewrite</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>procedure to write filedata to file filename</p></td></tr>
-			 
 			   <tr><td><a href='../proc/filter_executable_targets.html'>filter_executable_targets</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/filter_library_targets.html'>filter_library_targets</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/filter_modules.html'>filter_modules</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../interface/fnv_1a.html'>fnv_1a</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/fpm_stop.html'>fpm_stop</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_command_arguments_quoted.html'>get_command_arguments_quoted</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_command_line_settings.html'>get_command_line_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td>Subroutine</td><td><p>! canon_path is not converting &ldquo;.&rdquo;, etc.
 &amp; &lsquo;<ERROR> unknown help topic &ldquo;&rsquo;//trim(unnamed(i)).&rsquo;not found in:&rsquo;,manual]</p></td></tr>
-			 
 			   <tr><td><a href='../proc/get_compiler_id.html'>get_compiler_id</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_current_directory.html'>get_current_directory</a></td><td><a href='../module/fpm_os.html'>fpm_os</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_debug_compile_flags.html'>get_debug_compile_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_default_c_compiler.html'>get_default_c_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_default_flags.html'>get_default_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_env.html'>get_env</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>get named environment variable value. It it is blank or
  not set return the optional default value
 !print <em>, NAME, &rdquo; is not defined in the environment. Strange&hellip;&rdquo;
 !print </em>, &ldquo;This processor doesn&rsquo;t support environment variables. Boooh!&rdquo;</p></td></tr>
-			 
 			   <tr><td><a href='../proc/get_id.html'>get_id</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_include_flag.html'>get_include_flag</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_list.html'>get_list</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_module_flag.html'>get_module_flag</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_os_type.html'>get_os_type</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>Determine the OS type</p><a href="../proc/get_os_type.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/get_package_data.html'>get_package_data</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Obtain package meta data from a configuation file</p></td></tr>
-			 
 			   <tr><td><a href='../proc/get_release_compile_flags.html'>get_release_compile_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/get_temp_filename.html'>get_temp_filename</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Get a unused temporary filename
  Calls posix &lsquo;tempnam&rsquo; - not recommended, but
   we have no security concerns for this application
   and use here is temporary.
 Works with MinGW</p></td></tr>
-			 
 			   <tr><td><a href='../proc/get_working_dir.html'>get_working_dir</a></td><td><a href='../program/main.html'>main</a></td><td>Subroutine</td><td><p>Save access to working directory in settings, in case setting have not been allocated</p></td></tr>
-			 
 			   <tr><td><a href='../proc/getline.html'>getline</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>read a line of arbitrary length into a CHARACTER variable from the specified LUN</p></td></tr>
-			 
 			   <tr><td><a href='../proc/git_revision.html'>git_revision</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/git_target_branch.html'>git_target_branch</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Function</td><td><p>Target a branch in the git repository</p></td></tr>
-			 
 			   <tr><td><a href='../proc/git_target_default.html'>git_target_default</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Function</td><td><p>Default target</p></td></tr>
-			 
 			   <tr><td><a href='../proc/git_target_revision.html'>git_target_revision</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Function</td><td><p>Target a specific git revision</p></td></tr>
-			 
 			   <tr><td><a href='../proc/git_target_tag.html'>git_target_tag</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Function</td><td><p>Target a git tag</p></td></tr>
-			 
 			   <tr><td><a href='../proc/glob.html'>glob</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>glob(3f) compares given STRING for match to PATTERN which may
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/handle_error~2.html'>handle_error</a></td><td><a href='../program/main.html'>main</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/has_manifest.html'>has_manifest</a></td><td><a href='../program/main.html'>main</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/info.html'>info</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td><p>Show information on git target</p></td></tr>
-			 
 			   <tr><td><a href='../proc/is_dir.html'>is_dir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if a name matches an existing directory path</p></td></tr>
-			 
 			   <tr><td><a href='../proc/is_fortran_name.html'>is_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/is_unknown.html'>is_unknown</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/join.html'>join</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>JOIN(3f) appends the elements of a CHARACTER array into a single
    CHARACTER variable, with elements 1 to N joined from left to right.
    By default each element is trimmed of trailing spaces and the
    default separator is a null string.</p><a href="../proc/join.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/join_path.html'>join_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Construct path by joining strings with os file separator</p></td></tr>
-			 
 			   <tr><td><a href='../interface/len_trim.html'>len_trim</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/link.html'>link</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Link an executable</p></td></tr>
-			 
 			   <tr><td><a href='../proc/list_files.html'>list_files</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Get file &amp; directory names in directory <code>dir</code> using iso_c_binding.</p><a href="../proc/list_files.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/lower.html'>lower</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Changes a string to lowercase over optional specified column range</p></td></tr>
-			 
 			   <tr><td><a href='../proc/make_archive.html'>make_archive</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create an archive</p></td></tr>
-			 
 			   <tr><td><a href='../proc/mkdir.html'>mkdir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Create a directory. Create subdirectories as needed</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_archiver.html'>new_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new archiver instance</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_build_config.html'>new_build_config</a></td><td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td><td>Subroutine</td><td><p>Construct a new build configuration from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_compiler.html'>new_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new compiler instance</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_dependencies.html'>new_dependencies</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct new dependency array from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_dependency.html'>new_dependency</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct a new dependency configuration from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_dependency_node.html'>new_dependency_node</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td><p>Create a new dependency node from a configuration</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_dependency_tree.html'>new_dependency_tree</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td><p>Create a new dependency tree</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_example.html'>new_example</a></td><td><a href='../module/fpm_manifest_example.html'>fpm_manifest_example</a></td><td>Subroutine</td><td><p>Construct a new example configuration from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_executable.html'>new_executable</a></td><td><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></td><td>Subroutine</td><td><p>Construct a new executable configuration from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_install_config.html'>new_install_config</a></td><td><a href='../module/fpm_manifest_install.html'>fpm_manifest_install</a></td><td>Subroutine</td><td><p>Create a new installation configuration from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_installer.html'>new_installer</a></td><td><a href='../module/fpm_installer.html'>fpm_installer</a></td><td>Subroutine</td><td><p>Create a new instance of an installer</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_library.html'>new_library</a></td><td><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></td><td>Subroutine</td><td><p>Construct a new library configuration from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_package.html'>new_package</a></td><td><a href='../module/fpm_manifest_package.html'>fpm_manifest_package</a></td><td>Subroutine</td><td><p>Construct a new package configuration from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/new_test.html'>new_test</a></td><td><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></td><td>Subroutine</td><td><p>Construct a new test configuration from a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../interface/new_version.html'>new_version</a></td><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/notabs.html'>notabs</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Subroutine</td><td><p>notabs(3f) - [fpm_strings:NONALPHA] expand tab characters
    (LICENSE:PD)</p><a href="../proc/notabs.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/number_of_rows.html'>number_of_rows</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Determine number or rows in a file given a LUN</p></td></tr>
-			 
 			   <tr><td><a href='../interface/operator%28.in.%29.html'>operator(.in.)</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/os_is_unix.html'>os_is_unix</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>Compare the output of <a href="../proc/get_os_type.html">get_os_type</a> or the optional
 passed INTEGER value to the value for OS_WINDOWS
 and return .TRUE. if they match and .FALSE. otherwise</p></td></tr>
-			 
 			   <tr><td><a href='../proc/parent_dir.html'>parent_dir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Extract dirname from path</p></td></tr>
-			 
 			   <tr><td><a href='../proc/parse_c_source.html'>parse_c_source</a></td><td><a href='../module/fpm_source_parsing.html'>fpm_source_parsing</a></td><td>Function</td><td><p>Parsing of c source files</p><a href="../proc/parse_c_source.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/parse_f_source.html'>parse_f_source</a></td><td><a href='../module/fpm_source_parsing.html'>fpm_source_parsing</a></td><td>Function</td><td><p>Parsing of free-form fortran source files</p><a href="../proc/parse_f_source.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/read_lines.html'>read_lines</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>read lines into an array of TYPE(STRING_T) variables</p></td></tr>
-			 
 			   <tr><td><a href='../proc/read_lines_expanded.html'>read_lines_expanded</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>read lines into an array of TYPE(STRING_T) variables expanding tabs</p></td></tr>
-			 
 			   <tr><td><a href='../proc/read_package_file.html'>read_package_file</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td><p>Process the configuration file to a TOML data structure</p></td></tr>
-			 
 			   <tr><td><a href='../proc/replace.html'>replace</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Returns string with characters in charset replaced with target_char.</p></td></tr>
-			 
 			   <tr><td><a href='../interface/resize~2.html'>resize</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../interface/resize.html'>resize</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Interface</td><td><p>Overloaded reallocation interface</p></td></tr>
-			 
 			   <tr><td><a href='../proc/resolve_module_dependencies.html'>resolve_module_dependencies</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Add dependencies to source-based targets (<code>FPM_TARGET_OBJECT</code>)
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/resolve_target_linking.html'>resolve_target_linking</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Construct the linker flags string for each target
  <code>target%link_flags</code> includes non-library objects and library flags</p></td></tr>
-			 
 			   <tr><td><a href='../proc/run.html'>run</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Subroutine</td><td><p>echo command string and pass it to the system for execution</p></td></tr>
-			 
 			   <tr><td><a href='../proc/schedule_targets.html'>schedule_targets</a></td><td><a href='../module/fpm_backend.html'>fpm_backend</a></td><td>Subroutine</td><td><p>Construct a build schedule from the sorted targets.</p><a href="../proc/schedule_targets.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/separator.html'>separator</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>sample usage</p><a href="../proc/separator.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/show_model.html'>show_model</a></td><td><a href='../module/fpm_model.html'>fpm_model</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/sort_target.html'>sort_target</a></td><td><a href='../module/fpm_backend.html'>fpm_backend</a></td><td>Subroutine</td><td><p>Topologically sort a target for scheduling by
  recursing over its dependencies.</p><a href="../proc/sort_target.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../proc/split.html'>split</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Subroutine</td><td><p>parse string on delimiter characters and store tokens into an allocatable array
  given a line of structure &rdquo; par1 par2 par3 &hellip; parn &rdquo; store each par(n) into a separate variable in array.</p><a href="../proc/split.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			 
 			   <tr><td><a href='../interface/str.html'>str</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../interface/str_ends_with.html'>str_ends_with</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/string_array_contains.html'>string_array_contains</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Check if array of TYPE(STRING_T) matches a particular CHARACTER string</p></td></tr>
-			 
 			   <tr><td><a href='../proc/string_cat.html'>string_cat</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Concatenate an array of type(string_t) into
  a single CHARACTER variable</p></td></tr>
-			 
 			   <tr><td><a href='../interface/string_t.html'>string_t</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/syntax_error.html'>syntax_error</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/targets_from_sources.html'>targets_from_sources</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>High-level wrapper to generate build target information</p></td></tr>
-			 
 			   <tr><td><a href='../proc/to_fortran_name.html'>to_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Returns string with special characters replaced with an underscore.
 For now, only a hyphen is treated as a special character, but this can be
 expanded to other characters if needed.</p></td></tr>
-			 
 			   <tr><td><a href='../proc/unix_path.html'>unix_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for 1</p></td></tr>
-			 
 			   <tr><td><a href='../proc/warnwrite.html'>warnwrite</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>write trimmed character data to a file if it does not exist</p></td></tr>
-			 
 			   <tr><td><a href='../proc/which.html'>which</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/windows_path.html'>windows_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for windows</p></td></tr>
-			 
 			   <tr><td><a href='../proc/write_response_file.html'>write_response_file</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Response files allow to read command line options from files.
 Whitespace is used to separate the arguments, we will use newlines
 as separator to create readable response files which can be inspected
 in case of errors.</p></td></tr>
-			 
 			 </tbody></table>
              
         </div>
       </div>
-
     <hr>    
     </div> <!-- /container -->
     <footer>
       <div class="container">
       <div class="row">
         <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
-                                          </p>
+</p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2022-01-16 12:57  
-            
-          </p>
+ on 2022-02-09 07:22            </p>
         </div>
       </div>
       <br>
@@ -468,14 +292,11 @@ in case of errors.</p></td></tr>
         extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
       });
     </script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
     
     <script src="../tipuesearch/tipuesearch_content.js"></script>
     <script src="../tipuesearch/tipuesearch_set.js"></script>
     <script src="../tipuesearch/tipuesearch.js"></script>
-    
     
   </body>
 </html>

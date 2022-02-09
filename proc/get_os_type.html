@@ -4,9 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   
    <meta name="description" content="Fortran Package Manager">
-    
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
@@ -16,10 +14,7 @@
     <link href="../css/pygments.css" rel="stylesheet">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/local.css" rel="stylesheet">
-    
     <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-    
-    
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -48,60 +43,28 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-        
             <li><a href='../page/index.html'>Packaging and contributing</a></li>
-      
             <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
               <a href="#" class="dropdown-toggle"
               data-toggle="dropdown" role="button"
               aria-haspopup="true"
      aria-expanded="false">Contents <span class="caret"></span></a>
         <ul class="dropdown-menu">
-          
-              
             <li><a href="../lists/files.html">Source Files</a></li>
-        
-        
-        
             <li><a href="../lists/modules.html">Modules</a></li>
-        
-            
-                                
             <li><a href="../lists/procedures.html">Procedures</a></li>
-        
-               
-            <li><a href="../lists/types.html">Derived Types</a></li>
-        
-        
+                   <li><a href="../lists/types.html">Derived Types</a></li>
             <li><a href="../program/main.html">Program</a></li>
-               
-        
-        
+       
             </ul>
         
             </li>
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
-
-
-
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
-
-                             
-<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
-
-
+                             <li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
 <li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
-
-
-
           </ul>
-        
         <form action="../search.html" class="navbar-form navbar-right" role="search">
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
@@ -110,51 +73,29 @@
         <button type="submit" class="btn btn-default">Submit</button>
 -->
         </form>
-        
         </div><!--/.nav-collapse -->
       </div>
     </nav>
 
     <div class="container">
-    
-  
   <div class="row">
     <h1>get_os_type
       <small>Function</small>
-    
     </h1>
-    
-<div class="row">
+    <div class="row">
   <div class="col-lg-12">
 <div class="well well-sm">
   <ul class="list-inline" style="margin-bottom:0px;display:inline">
-     
-     
-     
-     
-     
-    
-    
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
     title=" 2.1% of total for procedures.">75 statements</a>
      </li> 
-     
-     
-     
     <li><i class="fa fa-code"></i><a href="../src/fpm_environment.f90"> Source File</a></li>
-     
-     
   </ul>
   <ol class="breadcrumb in-well text-right">
-  
-    
      <li><a href='../sourcefile/fpm_environment.f90.html'>fpm_environment.f90</a></li>
-    
      <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-    
-  
      <li class="active">get_os_type</li>
   </ol>
 </div>
@@ -170,57 +111,19 @@
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    
-<div id="sidebar">
-  
-<h3>Contents</h3>
+    <div id="sidebar">
+  <h3>Contents</h3>
  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/get_os_type.html#src">get_os_type</a>
-  </div>
-</div>
-
-
+<em>None</em>
 
 </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>
-public function get_os_type() result(r)
+    <h2>public function get_os_type() result(r)</h2>
     
-    
-   
-</h2>
-    
-  
 
-
-    
     <p>Determine the OS type</p>
 <p>Returns one of OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN,
 OS_SOLARIS, OS_FREEBSD, OS_OPENBSD.</p>
@@ -229,210 +132,34 @@ found on Windows. Then, <code>OSTYPE</code> is read in and compared with common
 names. If this fails too, check the existence of files that can be
 found on specific system types only.</p>
 <p>Returns OS_UNKNOWN if the operating system cannot be determined.</p>
-    
 
     <h3>Arguments</h3>
-    
     <em>None</em>
     <br>
+   <h3>Return Value <small><span class="anchor" id="variable-r"></span>integer</small></h3>
     
-    
-    
-    
-    
-    
-    
-   <h3>Return Value <small><span class="anchor" id="variable-r"></span>integer
-  </small></h3>
-    
-    
-    
-    
-     
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      
-<h3>Contents</h3>
+      <h3>Contents</h3>
  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/get_os_type.html#src">get_os_type</a>
-  </div>
-</div>
-
-
+<em>None</em>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
 
-    
 
-    
-    
-    
     
     
 
     
     
-    
-    
-    
 
 
-    
-    
-    
-    <section>
-    <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="w">    </span><span class="kt">integer </span><span class="k">function </span><span class="n">get_os_type</span><span class="p">()</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="c">!!</span>
-<span class="w">        </span><span class="c">!! Returns one of OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, OS_CYGWIN,</span>
-<span class="w">        </span><span class="c">!! OS_SOLARIS, OS_FREEBSD, OS_OPENBSD.</span>
-<span class="w">        </span><span class="c">!!</span>
-<span class="w">        </span><span class="c">!! At first, the environment variable `OS` is checked, which is usually</span>
-<span class="w">        </span><span class="c">!! found on Windows. Then, `OSTYPE` is read in and compared with common</span>
-<span class="w">        </span><span class="c">!! names. If this fails too, check the existence of files that can be</span>
-<span class="w">        </span><span class="c">!! found on specific system types only.</span>
-<span class="w">        </span><span class="c">!!</span>
-<span class="w">        </span><span class="c">!! Returns OS_UNKNOWN if the operating system cannot be determined.</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">val</span><span class="w"></span>
-<span class="w">        </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="w"></span>
-<span class="w">        </span><span class="kt">logical</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">file_exists</span><span class="w"></span>
-<span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">save</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">first_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
-<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">save</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_UNKNOWN</span><span class="w"></span>
-<span class="w">        </span><span class="c">!omp threadprivate(ret, first_run)</span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">first_run</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ret</span><span class="w"></span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span>
-
-<span class="k">        </span><span class="n">first_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_UNKNOWN</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! Check environment variable `OS`.</span>
-<span class="w">        </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OS&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Windows_NT&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="w"></span>
-<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! Check environment variable `OSTYPE`.</span>
-<span class="w">        </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OSTYPE&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
-<span class="w">            </span><span class="c">! Linux</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;linux&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_LINUX</span><span class="w"></span>
-<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">                </span><span class="k">return</span>
-<span class="k">            end if</span><span class="w"></span>
-
-<span class="w">            </span><span class="c">! macOS</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;darwin&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_MACOS</span><span class="w"></span>
-<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">                </span><span class="k">return</span>
-<span class="k">            end if</span><span class="w"></span>
-
-<span class="w">            </span><span class="c">! Windows, MSYS, MinGW, Git Bash</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;win&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;msys&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="w"></span>
-<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">                </span><span class="k">return</span>
-<span class="k">            end if</span><span class="w"></span>
-
-<span class="w">            </span><span class="c">! Cygwin</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cygwin&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_CYGWIN</span><span class="w"></span>
-<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">                </span><span class="k">return</span>
-<span class="k">            end if</span><span class="w"></span>
-
-<span class="w">            </span><span class="c">! Solaris, OpenIndiana, ...</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;SunOS&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;solaris&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_SOLARIS</span><span class="w"></span>
-<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">                </span><span class="k">return</span>
-<span class="k">            end if</span><span class="w"></span>
-
-<span class="w">            </span><span class="c">! FreeBSD</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;FreeBSD&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;freebsd&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_FREEBSD</span><span class="w"></span>
-<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">                </span><span class="k">return</span>
-<span class="k">            end if</span><span class="w"></span>
-
-<span class="w">            </span><span class="c">! OpenBSD</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;OpenBSD&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;openbsd&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_OPENBSD</span><span class="w"></span>
-<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">                </span><span class="k">return</span>
-<span class="k">            end if</span>
-<span class="k">        end if</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! Linux</span>
-<span class="w">        </span><span class="k">inquire</span><span class="w"> </span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/etc/os-release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file_exists</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_LINUX</span><span class="w"></span>
-<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! macOS</span>
-<span class="w">        </span><span class="k">inquire</span><span class="w"> </span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/usr/bin/sw_vers&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file_exists</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_MACOS</span><span class="w"></span>
-<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span><span class="w"></span>
-
-<span class="w">        </span><span class="c">! FreeBSD</span>
-<span class="w">        </span><span class="k">inquire</span><span class="w"> </span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/bin/freebsd-version&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file_exists</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_FREEBSD</span><span class="w"></span>
-<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span>
-<span class="k">    end function </span><span class="n">get_os_type</span><span class="w"></span>
-</pre></div>
-
-    </section>
-    <br>
     
     
     </div>
   </div>
-
 
     <hr>    
     </div> <!-- /container -->
@@ -440,15 +167,13 @@ found on specific system types only.</p>
       <div class="container">
       <div class="row">
         <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
-                                          </p>
+</p>
         </div>
         <div class="col-xs-6 col-md-6">
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
-             on 2022-01-16 12:57  
-            
-          </p>
+ on 2022-02-09 07:22            </p>
         </div>
       </div>
       <br>
@@ -475,14 +200,11 @@ found on specific system types only.</p>
         extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
       });
     </script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
     
     <script src="../tipuesearch/tipuesearch_content.js"></script>
     <script src="../tipuesearch/tipuesearch_set.js"></script>
     <script src="../tipuesearch/tipuesearch.js"></script>
-    
     
   </body>
 </html>
