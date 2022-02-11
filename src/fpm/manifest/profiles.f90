@@ -353,9 +353,9 @@ module fpm_manifest_profile
                  & flags, c_flags, link_time_flags, file_scope_flags)
         profindex = profindex + 1
       end subroutine get_flags
-
-      !> Traverse operating system tables
-      subroutine traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size, profiles, profindex)
+      
+      !> Traverse operating system tables to obtain number of profiles
+      subroutine traverse_oss_for_size(profile_name, compiler_name, os_list, table, profiles_size, error)
         
         !> Name of profile
         character(len=:), allocatable, intent(in) :: profile_name
@@ -373,19 +373,12 @@ module fpm_manifest_profile
         type(error_t), allocatable, intent(out) :: error
 
         !> Number of profiles in list of profiles
-        integer, intent(inout), optional :: profiles_size
+        integer, intent(inout) :: profiles_size
 
-        !> List of profiles
-        type(profile_config_t), allocatable, intent(inout), optional :: profiles(:)
-
-        !> Index in the list of profiles
-        integer, intent(inout), optional :: profindex
-        
         type(toml_key), allocatable :: key_list(:)
         character(len=:), allocatable :: os_name, l_os_name
         type(toml_table), pointer :: os_node
-        character(len=:), allocatable :: flags
-        integer :: ios, stat, os_type
+        integer :: ios, stat
         logical :: is_valid, key_val_added, is_key_val
 
         if (size(os_list)<1) return
@@ -400,17 +393,8 @@ module fpm_manifest_profile
               return
             end if
             call os_node%get_keys(key_list)
-            if (present(profiles_size)) then
-              profiles_size = profiles_size + 1
-              call validate_profile_table(profile_name, compiler_name, key_list, os_node, error, .true.)
-            else
-              if (.not.(present(profiles).and.present(profindex))) then
-                call fatal_error(error, "Both profiles and profindex have to be present")
-                return
-              end if
-              call match_os_type(os_name, os_type)
-              call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, .true.)
-            end if
+            profiles_size = profiles_size + 1
+            call validate_profile_table(profile_name, compiler_name, key_list, os_node, error, .true.)
           else
             ! Not lowercase OS name
             l_os_name = lower(os_name)
@@ -428,23 +412,81 @@ module fpm_manifest_profile
               is_key_val = .true.
             end if
             os_node=>table
-            if (present(profiles_size)) then
-              if (is_key_val.and..not.key_val_added) then
-                key_val_added = .true.
-                is_key_val = .false.
-                profiles_size = profiles_size + 1
-              else if (.not.is_key_val) then
-                profiles_size = profiles_size + 1
-              end if
-              call validate_profile_table(profile_name, compiler_name, os_list, os_node, error, .false.)
-            else
-              if (.not.(present(profiles).and.present(profindex))) then
-                call fatal_error(error, "Both profiles and profindex have to be present")
-                return
-              end if
-              os_type = OS_ALL
-              call get_flags(profile_name, compiler_name, os_type, os_list, os_node, profiles, profindex, .false.)
+            if (is_key_val.and..not.key_val_added) then
+              key_val_added = .true.
+              is_key_val = .false.
+              profiles_size = profiles_size + 1
+            else if (.not.is_key_val) then
+              profiles_size = profiles_size + 1
             end if
+            call validate_profile_table(profile_name, compiler_name, os_list, os_node, error, .false.)
+          end if
+        end do
+      end subroutine traverse_oss_for_size
+
+
+      !> Traverse operating system tables to obtain profiles
+      subroutine traverse_oss(profile_name, compiler_name, os_list, table, profiles, profindex, error)
+        
+        !> Name of profile
+        character(len=:), allocatable, intent(in) :: profile_name
+
+        !> Name of compiler
+        character(len=:), allocatable, intent(in) :: compiler_name
+
+        !> List of OSs in table with profile name and compiler name given
+        type(toml_key), allocatable, intent(in) :: os_list(:)
+
+        !> Table containing OS tables
+        type(toml_table), pointer, intent(in) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> List of profiles
+        type(profile_config_t), allocatable, intent(inout) :: profiles(:)
+
+        !> Index in the list of profiles
+        integer, intent(inout) :: profindex
+        
+        type(toml_key), allocatable :: key_list(:)
+        character(len=:), allocatable :: os_name, l_os_name
+        type(toml_table), pointer :: os_node
+        integer :: ios, stat, os_type
+        logical :: is_valid, is_key_val
+
+        if (size(os_list)<1) return
+        do ios = 1, size(os_list)
+          os_name = os_list(ios)%key
+          call validate_os_name(os_name, is_valid)
+          if (is_valid) then
+            call get_value(table, os_name, os_node, stat=stat)
+            if (stat /= toml_stat%success) then
+              call syntax_error(error, "os "//os_name//" has to be a table")
+              return
+            end if
+            call os_node%get_keys(key_list)
+            call match_os_type(os_name, os_type)
+            call get_flags(profile_name, compiler_name, os_type, key_list, os_node, profiles, profindex, .true.)
+          else
+            ! Not lowercase OS name
+            l_os_name = lower(os_name)
+            call validate_os_name(l_os_name, is_valid)
+            if (is_valid) then
+              call fatal_error(error,'*traverse_oss*:Error: Name of the operating system must be a lowercase string.')
+            end if
+            if (allocated(error)) return
+
+            ! Missing OS name
+            is_key_val = .false.
+            os_name = os_list(ios)%key
+            call get_value(table, os_name, os_node, stat=stat)
+            if (stat /= toml_stat%success) then
+              is_key_val = .true.
+            end if
+            os_node=>table
+            os_type = OS_ALL
+            call get_flags(profile_name, compiler_name, os_type, os_list, os_node, profiles, profindex, .false.)
           end if
         end do
       end subroutine traverse_oss
@@ -491,7 +533,7 @@ module fpm_manifest_profile
             end if
             call comp_node%get_keys(os_list)
             if (present(profiles_size)) then
-              call traverse_oss(profile_name, compiler_name, os_list, comp_node, error, profiles_size=profiles_size)
+              call traverse_oss_for_size(profile_name, compiler_name, os_list, comp_node, profiles_size, error)
               if (allocated(error)) return
             else
               if (.not.(present(profiles).and.present(profindex))) then
@@ -499,7 +541,7 @@ module fpm_manifest_profile
                 return
               end if
               call traverse_oss(profile_name, compiler_name, os_list, comp_node, &
-                                & error, profiles=profiles, profindex=profindex)
+                                & profiles, profindex, error)
               if (allocated(error)) return
             end if
           else
@@ -554,7 +596,7 @@ module fpm_manifest_profile
               os_list = prof_list(iprof:iprof)
               profile_name = 'all'
               compiler_name = DEFAULT_COMPILER
-              call traverse_oss(profile_name, compiler_name, os_list, table, error, profiles_size=profiles_size)
+              call traverse_oss_for_size(profile_name, compiler_name, os_list, table, profiles_size, error)
               if (allocated(error)) return
             else
               call get_value(table, profile_name, prof_node, stat=stat)
@@ -592,7 +634,7 @@ module fpm_manifest_profile
               profile_name = 'all'
               compiler_name = DEFAULT_COMPILER
               prof_node=>table
-              call traverse_oss(profile_name, compiler_name, os_list, prof_node, error, profiles=profiles, profindex=profindex)
+              call traverse_oss(profile_name, compiler_name, os_list, prof_node, profiles, profindex, error)
               if (allocated(error)) return
             else
               call get_value(table, profile_name, prof_node, stat=stat)
