@@ -96,12 +96,12 @@ subroutine console_update_line(console,line_no,str)
 
     !$omp critical
 
-    n = console%n_line - line_no !+ 1 !+ 1
+    n = console%n_line - line_no
 
     ! Step back to line
     write(stdout,'(A)',advance="no") repeat(LINE_UP,n)//LINE_RESET
 
-    write(stdout,*) str
+    write(stdout,'(A)') str
 
     ! Step forward to end
     write(stdout,'(A)',advance="no") repeat(LINE_DOWN,n)//LINE_RESET
