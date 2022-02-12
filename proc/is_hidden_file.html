@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>build_package &ndash; Fortran-lang/fpm</title>
+    <title>is_hidden_file &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -79,8 +79,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>build_package
-      <small>Subroutine</small>
+    <h1>is_hidden_file
+      <small>Function</small>
     </h1>
     <div class="row">
   <div class="col-lg-12">
@@ -89,14 +89,14 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.3% of total for procedures.">47 statements</a>
+    title=" 0.2% of total for procedures.">8 statements</a>
      </li> 
-    <li><i class="fa fa-code"></i><a href="../src/fpm_backend.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_filesystem.F90"> Source File</a></li>
   </ul>
   <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/fpm_backend.f90.html'>fpm_backend.f90</a></li>
-     <li><a href='../module/fpm_backend.html'>fpm_backend</a></li>
-     <li class="active">build_package</li>
+     <li><a href='../sourcefile/fpm_filesystem.f90.html'>fpm_filesystem.F90</a></li>
+     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+     <li class="active">is_hidden_file</li>
   </ol>
 </div>
 </div>
@@ -121,30 +121,26 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine build_package(targets, model)</h2>
+    <h2>public function is_hidden_file(file_basename) result(r)</h2>
     
 
-    <p>Top-level routine to build package described by <code>model</code></p>
+    <p>test if a file is hidden</p>
 
     <h3>Arguments</h3>
       <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
-  <td><span class="anchor" id="variable-targets"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
-<td>intent(inout)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>targets</strong>(:)</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-model~2"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-file_basename"></span>character,</td>
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>model</strong></td><td></td>
+  <td><strong>file_basename</strong></td><td></td>
 </tr>
 </tbody>
 </table>
 
+   <h3>Return Value <small><span class="anchor" id="variable-r~4"></span>logical</small></h3>
+    
     <br>
 
     <section class="visible-xs visible-sm hidden-md">

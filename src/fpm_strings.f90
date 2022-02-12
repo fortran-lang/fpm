@@ -39,7 +39,7 @@ use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_po
 implicit none
 
 private
-public :: f_string, lower, split, str_ends_with, string_t
+public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
@@ -114,6 +114,19 @@ pure logical function str_ends_with_any(s, e) result(r)
     r = .false.
 
 end function str_ends_with_any
+
+!> test if a CHARACTER string begins with a specified prefix
+pure logical function str_begins_with_str(s, e) result(r)
+    character(*), intent(in) :: s, e
+    integer :: n1, n2
+    n1 = 1
+    n2 = 1 + len(e)-1
+    if (n2 > len(s)) then
+        r = .false.
+    else
+        r = (s(n1:n2) == e)
+    end if
+end function str_begins_with_str
 
 !> return Fortran character variable when given a C-like array of
 !! single characters terminated with a C_NULL_CHAR character
