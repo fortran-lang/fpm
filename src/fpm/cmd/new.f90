@@ -56,9 +56,10 @@ module fpm_cmd_new
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : OS_LINUX, OS_MACOS, OS_WINDOWS
 use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
-use fpm_filesystem, only : fileopen, fileclose, filewrite, warnwrite, run
+use fpm_filesystem, only : fileopen, fileclose, filewrite, warnwrite, which, run
 use fpm_strings, only : join, to_fortran_name
 use fpm_error, only : fpm_stop
+
 use,intrinsic :: iso_fortran_env, only : stderr=>error_unit
 implicit none
 private
@@ -572,8 +573,57 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         call create_verified_basic_manifest(join_path(settings%name, 'fpm.toml'))
     endif
     ! assumes git(1) is installed and in path
-    call run('git init ' // settings%name)
+    if(which('git').ne.'')then
+      call run('git init ' // settings%name)
+    endif
 contains
+
+function git_metadata(what) result(returned)
+!> get metadata values such as email address and git name from git(1) or return appropriate default
+  use fpm_filesystem, only : get_temp_filename, getline
+  character(len=*), intent(in)  :: what     ! keyword designating what git metatdata to query
+  character(len=:), allocatable :: returned ! value to return for requested keyword
+  character(len=:), allocatable :: command
+  character(len=:), allocatable :: temp_filename
+  character(len=:), allocatable :: iomsg
+  character(len=:), allocatable :: temp_value
+  integer :: stat, unit
+  temp_filename = get_temp_filename()
+  ! for known keywords set default value for RETURNED and associated git(1) command for query
+  select case(what)
+  case('uname')
+    returned = "Jane Doe"
+    command = "git config --get user.name > " // temp_filename
+  case('email')
+    returned = "jane.doe@example.com"
+    command = "git config --get user.email > " // temp_filename
+  case default
+    write(stderr,'(*(g0,1x))')&
+    & '<ERROR> *git_metadata* unknown metadata name ',trim(what)
+    returned=''
+    return
+  end select
+  ! Execute command if git(1) is in command path
+  if(which('git')/='')then
+     call run(command, exitstat=stat)
+     if (stat /= 0) then ! If command failed just return default
+        return
+     else ! Command did not return an error so try to read expected output file
+        open(file=temp_filename, newunit=unit,iostat=stat)
+        if(stat == 0)then
+           ! Read file into a scratch variable until status of doing so is checked
+           call getline(unit, temp_value, stat, iomsg)
+           if (stat == 0 .and. temp_value /= '') then
+              ! Return output from successful command
+              returned=temp_value
+           endif
+        endif
+        ! Always do the CLOSE because a failed open has unpredictable results.
+        ! Add IOSTAT so a failed close does not cause program to stop
+        close(unit, status="delete",iostat=stat)
+     endif
+  endif
+end function git_metadata
 
 subroutine create_verified_basic_manifest(filename)
 !> create a basic but verified default manifest file
@@ -603,9 +653,9 @@ character(len=*),intent(in) :: filename
     call set_value(table, "name",       BNAME)
     call set_value(table, "version",    "0.1.0")
     call set_value(table, "license",    "license")
-    call set_value(table, "author",     "Jane Doe")
-    call set_value(table, "maintainer", "jane.doe@example.com")
-    call set_value(table, "copyright",  'Copyright '//date(1:4)//', Jane Doe')
+    call set_value(table, "author",     git_metadata('uname'))
+    call set_value(table, "maintainer", git_metadata('email'))
+    call set_value(table, "copyright",  'Copyright '//date(1:4)//', '//git_metadata('uname'))
     ! continue building of manifest
     ! ...
     call new_package(package, table, error=error)

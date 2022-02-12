@@ -39,7 +39,7 @@ use fpm_environment, only: &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
-use fpm_strings, only: string_cat, string_t
+use fpm_strings, only: split, string_cat, string_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver
 public :: debug
@@ -60,6 +60,8 @@ enum, bind(C)
         id_nvhpc, &
         id_nag, &
         id_flang, &
+        id_flang_new, &
+        id_f18, &
         id_ibmxl, &
         id_cray, &
         id_lahey, &
@@ -383,7 +385,8 @@ function get_include_flag(self, path) result(flags)
     case default
         flags = "-I "//path
 
-    case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, id_flang, &
+    case(id_caf, id_gcc, id_f95, id_cray, id_nvhpc, id_pgi, &
+        & id_flang, id_flang_new, id_f18, &
         & id_intel_classic_nix, id_intel_classic_mac, &
         & id_intel_llvm_nix, id_lahey, id_nag, id_ibmxl, &
         & id_lfortran)
@@ -409,6 +412,9 @@ function get_module_flag(self, path) result(flags)
 
     case(id_nvhpc, id_pgi, id_flang)
         flags = "-module "//path
+
+    case(id_flang_new, id_f18)
+        flags = "-module-dir "//path
 
     case(id_intel_classic_nix, id_intel_classic_mac, &
         & id_intel_llvm_nix)
@@ -446,7 +452,7 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     case(id_intel_llvm_nix,id_intel_llvm_windows)
         c_compiler = 'icx'
 
-    case(id_flang)
+    case(id_flang, id_flang_new, id_f18)
         c_compiler='clang'
 
     case(id_ibmxl)
@@ -470,7 +476,7 @@ function get_compiler_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
     integer(kind=compiler_enum) :: id
 
-    character(len=:), allocatable :: command, output
+    character(len=:), allocatable :: full_command, full_command_parts(:), command, output
     integer :: stat, io
 
     ! Check whether we are dealing with an MPI compiler wrapper first
@@ -478,14 +484,18 @@ function get_compiler_id(compiler) result(id)
         & .or. check_compiler(compiler, "mpif90") &
         & .or. check_compiler(compiler, "mpif77")) then
         output = get_temp_filename()
-        call run(compiler//" -showme:command > "//output//" 2>&1", &
+        call run(compiler//" -show > "//output//" 2>&1", &
             & echo=.false., exitstat=stat)
         if (stat == 0) then
             open(file=output, newunit=io, iostat=stat)
-            if (stat == 0) call getline(io, command, stat)
+            if (stat == 0) call getline(io, full_command, stat)
             close(io, iostat=stat)
 
             ! If we get a command from the wrapper, we will try to identify it
+            call split(full_command, full_command_parts, delimiters=' ')
+            if(size(full_command_parts) > 0)then
+               command = trim(full_command_parts(1))
+            endif
             if (allocated(command)) then
                 id = get_id(command)
                 if (id /= id_unknown) return
@@ -554,6 +564,16 @@ function get_id(compiler) result(id)
 
     if (check_compiler(compiler, "nagfor")) then
         id = id_nag
+        return
+    end if
+
+    if (check_compiler(compiler, "flang-new")) then
+        id = id_flang_new
+        return
+    end if
+
+    if (check_compiler(compiler, "f18")) then
+        id = id_f18
         return
     end if
 
