@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.5% of total for modules and submodules.">399 statements</a>
+    title=" 6.5% of total for modules and submodules.">412 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm_compiler.f90"> Source File</a></li>
   </ul>
@@ -236,9 +236,9 @@
       <ul class="list-group">
       <li class="list-group-item">
   <ul class="list-inline">
-    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
     <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
   </ul>
       </li>
       </ul>
@@ -759,6 +759,11 @@
 <td>public</td>  <td></td><td>::</td>
   <td><strong>use_response_file</strong></td><td> =</td><td>.false.</td><td><p>Use response files to pass arguments</p></td>
 </tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~2"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td><p>Verbose output of command</p></td>
+</tr>
 </tbody>
 </table>
 
@@ -800,6 +805,11 @@
   <td><span class="anchor" id="variable-id"></span>integer(kind=compiler_enum),</td>
 <td>public</td>  <td></td><td>::</td>
   <td><strong>id</strong></td><td> =</td><td>id_unknown</td><td><p>Identifier of the compiler</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td><p>Verbose output of command</p></td>
 </tr>
 </tbody>
 </table>
@@ -1093,7 +1103,7 @@
     <section>
     <h2>Subroutines</h2>
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-compile_c"></span><h3>public subroutine <a href='../proc/compile_c.html'>compile_c</a>(self, input, output, args, stat)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-compile_c"></span><h3>public subroutine <a href='../proc/compile_c.html'>compile_c</a>(self, input, output, args, log_file, stat)</h3></div>
   <div class="panel-body">
        
 <p>Compile a C object</p>
@@ -1126,6 +1136,12 @@
   <td><strong>args</strong></td><td><p>Arguments for compiler</p></td>
 </tr>
 <tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>log_file</strong></td><td><p>Compiler output log file</p></td>
+</tr>
+<tr>
   <td><span class="anchor" ></span>integer,</td>
 <td>intent(out)</td>
   <td></td>  <td></td><td>::</td>
@@ -1139,7 +1155,7 @@
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-compile_fortran"></span><h3>public subroutine <a href='../proc/compile_fortran.html'>compile_fortran</a>(self, input, output, args, stat)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-compile_fortran"></span><h3>public subroutine <a href='../proc/compile_fortran.html'>compile_fortran</a>(self, input, output, args, log_file, stat)</h3></div>
   <div class="panel-body">
        
 <p>Compile a Fortran object</p>
@@ -1170,6 +1186,12 @@
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>args</strong></td><td><p>Arguments for compiler</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>log_file</strong></td><td><p>Compiler output log file</p></td>
 </tr>
 <tr>
   <td><span class="anchor" ></span>integer,</td>
@@ -1263,7 +1285,7 @@
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-link"></span><h3>public subroutine <a href='../proc/link.html'>link</a>(self, output, args, stat)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-link"></span><h3>public subroutine <a href='../proc/link.html'>link</a>(self, output, args, log_file, stat)</h3></div>
   <div class="panel-body">
        
 <p>Link an executable</p>
@@ -1290,6 +1312,12 @@
   <td><strong>args</strong></td><td><p>Arguments for compiler</p></td>
 </tr>
 <tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>log_file</strong></td><td><p>Compiler output log file</p></td>
+</tr>
+<tr>
   <td><span class="anchor" ></span>integer,</td>
 <td>intent(out)</td>
   <td></td>  <td></td><td>::</td>
@@ -1303,7 +1331,7 @@
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-make_archive"></span><h3>public subroutine <a href='../proc/make_archive.html'>make_archive</a>(self, output, args, stat)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-make_archive"></span><h3>public subroutine <a href='../proc/make_archive.html'>make_archive</a>(self, output, args, log_file, stat)</h3></div>
   <div class="panel-body">
        
 <p>Create an archive</p>
@@ -1330,6 +1358,12 @@
   <td><strong>args</strong>(:)</td><td><p>Object files to include into the archive</p></td>
 </tr>
 <tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>log_file</strong></td><td><p>Compiler output log file</p></td>
+</tr>
+<tr>
   <td><span class="anchor" ></span>integer,</td>
 <td>intent(out)</td>
   <td></td>  <td></td><td>::</td>
@@ -1343,7 +1377,7 @@
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-new_archiver"></span><h3>public subroutine <a href='../proc/new_archiver.html'>new_archiver</a>(self, ar)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-new_archiver"></span><h3>public subroutine <a href='../proc/new_archiver.html'>new_archiver</a>(self, ar, echo, verbose)</h3></div>
   <div class="panel-body">
        
 <p>Create new archiver instance</p>
@@ -1363,6 +1397,18 @@
   <td></td>  <td></td><td>::</td>
   <td><strong>ar</strong></td><td><p>User provided archiver command</p></td>
 </tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>echo</strong></td><td><p>Echo compiler command</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td><p>Verbose mode: dump compiler output</p></td>
+</tr>
 </tbody>
 </table>
 
@@ -1371,7 +1417,7 @@
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-new_compiler"></span><h3>public subroutine <a href='../proc/new_compiler.html'>new_compiler</a>(self, fc, cc)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-new_compiler"></span><h3>public subroutine <a href='../proc/new_compiler.html'>new_compiler</a>(self, fc, cc, echo, verbose)</h3></div>
   <div class="panel-body">
        
 <p>Create new compiler instance</p>
@@ -1396,6 +1442,18 @@
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>cc</strong></td><td><p>C compiler name or path</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>echo</strong></td><td><p>Echo compiler command</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td><p>Verbose mode: dump compiler output</p></td>
 </tr>
 </tbody>
 </table>
@@ -1453,7 +1511,7 @@ in case of errors.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-02-12 12:34            </p>
+ on 2022-02-14 19:05            </p>
         </div>
       </div>
       <br>

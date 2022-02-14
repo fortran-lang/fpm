@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta name="description" content="Fortran Package Manager">
+    <meta name="author" content="fortran-lang/fpm contributors" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>fpm_backend_output.f90 &ndash; Fortran-lang/fpm</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">Fortran-lang/fpm </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href='../page/index.html'>Packaging and contributing</a></li>
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+            <li><a href="../lists/files.html">Source Files</a></li>
+            <li><a href="../lists/modules.html">Modules</a></li>
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+                   <li><a href="../lists/types.html">Derived Types</a></li>
+            <li><a href="../program/main.html">Program</a></li>
+       
+            </ul>
+        
+            </li>
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+                             <li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+<li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
+          </ul>
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+  <div class="row">
+    <h1>fpm_backend_output.f90
+    <small>Source File</small>
+    </h1>
+    <div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 1.4% of total for source files.">93 statements</a>
+     </li> 
+    <li><i class="fa fa-code"></i><a href="../src/fpm_backend_output.f90"> Source File</a></li>
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+     <li class="active">fpm_backend_output.f90</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    <div id="sidebar">
+  <h3>Contents</h3>
+ 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#mods-0">Modules</a></h3></div>
+  <div id="mods-0" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../module/fpm_backend_output.html">fpm_backend_output</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/fpm_backend_output.f90.html#src">fpm_backend_output.f90</a>
+  </div>
+</div>
+
+</div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      <h3>Contents</h3>
+ 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#mods-1">Modules</a></h3></div>
+  <div id="mods-1" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../module/fpm_backend_output.html">fpm_backend_output</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/fpm_backend_output.f90.html#src">fpm_backend_output.f90</a>
+  </div>
+</div>
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    <section>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a id="ln-1" name="ln-1" href="#ln-1"></a><span class="c">!&gt;# Build Backend Progress Output</span>
+<a id="ln-2" name="ln-2" href="#ln-2"></a><span class="c">!&gt; This module provides a derived type `build_progress_t` for printing build status</span>
+<a id="ln-3" name="ln-3" href="#ln-3"></a><span class="c">!&gt; and progress messages to the console while the backend is building the package.</span>
+<a id="ln-4" name="ln-4" href="#ln-4"></a><span class="c">!&gt;</span>
+<a id="ln-5" name="ln-5" href="#ln-5"></a><span class="c">!&gt; The `build_progress_t` type supports two modes: `normal` and `plain`</span>
+<a id="ln-6" name="ln-6" href="#ln-6"></a><span class="c">!&gt; where the former does &#39;pretty&#39; output and the latter does not.</span>
+<a id="ln-7" name="ln-7" href="#ln-7"></a><span class="c">!&gt; The `normal` mode is intended for typical interactive usage whereas</span>
+<a id="ln-8" name="ln-8" href="#ln-8"></a><span class="c">!&gt; &#39;plain&#39; mode is used with the `--verbose` flag or when `stdout` is not attached</span>
+<a id="ln-9" name="ln-9" href="#ln-9"></a><span class="c">!&gt; to a terminal (e.g. when piping or redirecting `stdout`). In these cases,</span>
+<a id="ln-10" name="ln-10" href="#ln-10"></a><span class="c">!&gt; the pretty output must be suppressed to avoid control codes being output.</span>
+<a id="ln-11" name="ln-11" href="#ln-11"></a>
+<a id="ln-12" name="ln-12" href="#ln-12"></a><span class="k">module </span><span class="n">fpm_backend_output</span><span class="w"></span>
+<a id="ln-13" name="ln-13" href="#ln-13"></a><span class="k">use </span><span class="n">iso_fortran_env</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">stdout</span><span class="o">=&gt;</span><span class="n">output_unit</span><span class="w"></span>
+<a id="ln-14" name="ln-14" href="#ln-14"></a><span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">basename</span><span class="w"></span>
+<a id="ln-15" name="ln-15" href="#ln-15"></a><span class="k">use </span><span class="n">fpm_targets</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">build_target_ptr</span><span class="w"></span>
+<a id="ln-16" name="ln-16" href="#ln-16"></a><span class="k">use </span><span class="n">fpm_backend_console</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">console_t</span><span class="p">,</span><span class="w"> </span><span class="n">LINE_RESET</span><span class="p">,</span><span class="w"> </span><span class="n">COLOR_RED</span><span class="p">,</span><span class="w"> </span><span class="n">COLOR_GREEN</span><span class="p">,</span><span class="w"> </span><span class="n">COLOR_YELLOW</span><span class="p">,</span><span class="w"> </span><span class="n">COLOR_RESET</span><span class="w"></span>
+<a id="ln-17" name="ln-17" href="#ln-17"></a><span class="k">implicit none</span>
+<a id="ln-18" name="ln-18" href="#ln-18"></a>
+<a id="ln-19" name="ln-19" href="#ln-19"></a><span class="k">private</span>
+<a id="ln-20" name="ln-20" href="#ln-20"></a><span class="k">public </span><span class="n">build_progress_t</span><span class="w"></span>
+<a id="ln-21" name="ln-21" href="#ln-21"></a>
+<a id="ln-22" name="ln-22" href="#ln-22"></a><span class="c">!&gt; Build progress object</span>
+<a id="ln-23" name="ln-23" href="#ln-23"></a><span class="k">type </span><span class="n">build_progress_t</span><span class="w"></span>
+<a id="ln-24" name="ln-24" href="#ln-24"></a><span class="w">    </span><span class="c">!&gt; Console object for updating console lines</span>
+<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">console_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">console</span><span class="w"></span>
+<a id="ln-26" name="ln-26" href="#ln-26"></a><span class="w">    </span><span class="c">!&gt; Number of completed targets</span>
+<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n_complete</span><span class="w"></span>
+<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="w">    </span><span class="c">!&gt; Total number of targets scheduled</span>
+<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n_target</span><span class="w"></span>
+<a id="ln-30" name="ln-30" href="#ln-30"></a><span class="w">    </span><span class="c">!&gt; &#39;Plain&#39; output (no colors or updating)</span>
+<a id="ln-31" name="ln-31" href="#ln-31"></a><span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">plain_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<a id="ln-32" name="ln-32" href="#ln-32"></a><span class="w">    </span><span class="c">!&gt; Store needed when updating previous console lines</span>
+<a id="ln-33" name="ln-33" href="#ln-33"></a><span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_lines</span><span class="p">(:)</span><span class="w"></span>
+<a id="ln-34" name="ln-34" href="#ln-34"></a><span class="w">    </span><span class="c">!&gt; Queue of scheduled build targets</span>
+<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_queue</span><span class="p">(:)</span><span class="w"></span>
+<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="k">contains</span><span class="w"></span>
+<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="w">    </span><span class="c">!&gt; Output &#39;compiling&#39; status for build target</span>
+<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiling_status</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_status_compiling</span><span class="w"></span>
+<a id="ln-39" name="ln-39" href="#ln-39"></a><span class="w">    </span><span class="c">!&gt; Output &#39;complete&#39; status for build target</span>
+<a id="ln-40" name="ln-40" href="#ln-40"></a><span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">completed_status</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_status_complete</span><span class="w"></span>
+<a id="ln-41" name="ln-41" href="#ln-41"></a><span class="w">    </span><span class="c">!&gt; Output finished status for whole package</span>
+<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">success</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">output_progress_success</span><span class="w"></span>
+<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="k">end type </span><span class="n">build_progress_t</span><span class="w"></span>
+<a id="ln-44" name="ln-44" href="#ln-44"></a>
+<a id="ln-45" name="ln-45" href="#ln-45"></a><span class="c">!&gt; Constructor for build_progress_t</span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="k">interface </span><span class="n">build_progress_t</span><span class="w"></span>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">new_build_progress</span><span class="w"></span>
+<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="k">end interface </span><span class="n">build_progress_t</span><span class="w"></span>
+<a id="ln-49" name="ln-49" href="#ln-49"></a>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="k">contains</span><span class="w"></span>
+<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="w">    </span>
+<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">    </span><span class="c">!&gt; Initialise a new build progress object</span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">    </span><span class="k">function </span><span class="n">new_build_progress</span><span class="p">(</span><span class="n">target_queue</span><span class="p">,</span><span class="n">plain_mode</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">progress</span><span class="p">)</span><span class="w"></span>
+<a id="ln-54" name="ln-54" href="#ln-54"></a><span class="w">        </span><span class="c">!&gt; The queue of scheduled targets</span>
+<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_queue</span><span class="p">(:)</span><span class="w"></span>
+<a id="ln-56" name="ln-56" href="#ln-56"></a><span class="w">        </span><span class="c">!&gt; Enable &#39;plain&#39; output for progress object</span>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">plain_mode</span><span class="w"></span>
+<a id="ln-58" name="ln-58" href="#ln-58"></a><span class="w">        </span><span class="c">!&gt; Progress object to initialise</span>
+<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">build_progress_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">progress</span><span class="w"></span>
+<a id="ln-60" name="ln-60" href="#ln-60"></a>
+<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="w">        </span><span class="n">progress</span><span class="p">%</span><span class="n">n_target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">target_queue</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<a id="ln-62" name="ln-62" href="#ln-62"></a><span class="w">        </span><span class="n">progress</span><span class="p">%</span><span class="n">target_queue</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">target_queue</span><span class="w"></span>
+<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="w">        </span><span class="n">progress</span><span class="p">%</span><span class="n">plain_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">plain_mode</span><span class="w"></span>
+<a id="ln-64" name="ln-64" href="#ln-64"></a><span class="w">        </span><span class="n">progress</span><span class="p">%</span><span class="n">n_complete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<a id="ln-65" name="ln-65" href="#ln-65"></a>
+<a id="ln-66" name="ln-66" href="#ln-66"></a><span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">progress</span><span class="p">%</span><span class="n">output_lines</span><span class="p">(</span><span class="n">progress</span><span class="p">%</span><span class="n">n_target</span><span class="p">))</span><span class="w"></span>
+<a id="ln-67" name="ln-67" href="#ln-67"></a>
+<a id="ln-68" name="ln-68" href="#ln-68"></a><span class="w">    </span><span class="k">end function </span><span class="n">new_build_progress</span><span class="w"></span>
+<a id="ln-69" name="ln-69" href="#ln-69"></a>
+<a id="ln-70" name="ln-70" href="#ln-70"></a><span class="w">    </span><span class="c">!&gt; Output &#39;compiling&#39; status for build target and overall percentage progress</span>
+<a id="ln-71" name="ln-71" href="#ln-71"></a><span class="w">    </span><span class="k">subroutine </span><span class="n">output_status_compiling</span><span class="p">(</span><span class="n">progress</span><span class="p">,</span><span class="w"> </span><span class="n">queue_index</span><span class="p">)</span><span class="w"></span>
+<a id="ln-72" name="ln-72" href="#ln-72"></a><span class="w">        </span><span class="c">!&gt; Progress object</span>
+<a id="ln-73" name="ln-73" href="#ln-73"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">build_progress_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">progress</span><span class="w"></span>
+<a id="ln-74" name="ln-74" href="#ln-74"></a><span class="w">        </span><span class="c">!&gt; Index of build target in the target queue</span>
+<a id="ln-75" name="ln-75" href="#ln-75"></a><span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">queue_index</span><span class="w"></span>
+<a id="ln-76" name="ln-76" href="#ln-76"></a>
+<a id="ln-77" name="ln-77" href="#ln-77"></a><span class="w">        </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_name</span><span class="w"></span>
+<a id="ln-78" name="ln-78" href="#ln-78"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_string</span><span class="w"></span>
+<a id="ln-79" name="ln-79" href="#ln-79"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">overall_progress</span><span class="w"></span>
+<a id="ln-80" name="ln-80" href="#ln-80"></a>
+<a id="ln-81" name="ln-81" href="#ln-81"></a><span class="w">        </span><span class="k">associate</span><span class="p">(</span><span class="k">target</span><span class="o">=&gt;</span><span class="n">progress</span><span class="p">%</span><span class="n">target_queue</span><span class="p">(</span><span class="n">queue_index</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span><span class="w"></span>
+<a id="ln-82" name="ln-82" href="#ln-82"></a>
+<a id="ln-83" name="ln-83" href="#ln-83"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-84" name="ln-84" href="#ln-84"></a><span class="k">                </span><span class="n">target_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">)</span><span class="w"></span>
+<a id="ln-85" name="ln-85" href="#ln-85"></a><span class="w">            </span><span class="k">else</span>
+<a id="ln-86" name="ln-86" href="#ln-86"></a><span class="k">                </span><span class="n">target_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)</span><span class="w"></span>
+<a id="ln-87" name="ln-87" href="#ln-87"></a><span class="w">            </span><span class="k">end if</span>
+<a id="ln-88" name="ln-88" href="#ln-88"></a>
+<a id="ln-89" name="ln-89" href="#ln-89"></a><span class="k">            write</span><span class="p">(</span><span class="n">overall_progress</span><span class="p">,</span><span class="s1">&#39;(A,I4,A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="mi">100</span><span class="o">*</span><span class="n">progress</span><span class="p">%</span><span class="n">n_complete</span><span class="o">/</span><span class="n">progress</span><span class="p">%</span><span class="n">n_target</span><span class="p">,</span><span class="s1">&#39;%]&#39;</span><span class="w"></span>
+<a id="ln-90" name="ln-90" href="#ln-90"></a>
+<a id="ln-91" name="ln-91" href="#ln-91"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">progress</span><span class="p">%</span><span class="n">plain_mode</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="c">! Plain output</span>
+<a id="ln-92" name="ln-92" href="#ln-92"></a>
+<a id="ln-93" name="ln-93" href="#ln-93"></a><span class="w">                </span><span class="c">!$omp critical</span>
+<a id="ln-94" name="ln-94" href="#ln-94"></a><span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A8,A30)&#39;</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">overall_progress</span><span class="p">),</span><span class="n">target_name</span><span class="w"></span>
+<a id="ln-95" name="ln-95" href="#ln-95"></a><span class="w">                </span><span class="c">!$omp end critical</span>
+<a id="ln-96" name="ln-96" href="#ln-96"></a>
+<a id="ln-97" name="ln-97" href="#ln-97"></a><span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="c">! Pretty output</span>
+<a id="ln-98" name="ln-98" href="#ln-98"></a>
+<a id="ln-99" name="ln-99" href="#ln-99"></a><span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="n">output_string</span><span class="p">,</span><span class="s1">&#39;(A,T40,A,A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">target_name</span><span class="p">,</span><span class="w"> </span><span class="n">COLOR_YELLOW</span><span class="o">//</span><span class="s1">&#39;compiling...&#39;</span><span class="o">//</span><span class="n">COLOR_RESET</span><span class="w"></span>
+<a id="ln-100" name="ln-100" href="#ln-100"></a>
+<a id="ln-101" name="ln-101" href="#ln-101"></a><span class="w">                </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">console</span><span class="p">%</span><span class="n">write_line</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">output_string</span><span class="p">),</span><span class="n">progress</span><span class="p">%</span><span class="n">output_lines</span><span class="p">(</span><span class="n">queue_index</span><span class="p">))</span><span class="w"></span>
+<a id="ln-102" name="ln-102" href="#ln-102"></a>
+<a id="ln-103" name="ln-103" href="#ln-103"></a><span class="w">                </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">console</span><span class="p">%</span><span class="n">write_line</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">overall_progress</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;Compiling...&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"></span>
+<a id="ln-104" name="ln-104" href="#ln-104"></a>
+<a id="ln-105" name="ln-105" href="#ln-105"></a><span class="w">            </span><span class="k">end if</span>
+<a id="ln-106" name="ln-106" href="#ln-106"></a>
+<a id="ln-107" name="ln-107" href="#ln-107"></a><span class="k">        end associate</span>
+<a id="ln-108" name="ln-108" href="#ln-108"></a>
+<a id="ln-109" name="ln-109" href="#ln-109"></a><span class="k">    end subroutine </span><span class="n">output_status_compiling</span><span class="w"></span>
+<a id="ln-110" name="ln-110" href="#ln-110"></a>
+<a id="ln-111" name="ln-111" href="#ln-111"></a><span class="w">    </span><span class="c">!&gt; Output &#39;complete&#39; status for build target and update overall percentage progress</span>
+<a id="ln-112" name="ln-112" href="#ln-112"></a><span class="w">    </span><span class="k">subroutine </span><span class="n">output_status_complete</span><span class="p">(</span><span class="n">progress</span><span class="p">,</span><span class="w"> </span><span class="n">queue_index</span><span class="p">,</span><span class="w"> </span><span class="n">build_stat</span><span class="p">)</span><span class="w"></span>
+<a id="ln-113" name="ln-113" href="#ln-113"></a><span class="w">        </span><span class="c">!&gt; Progress object</span>
+<a id="ln-114" name="ln-114" href="#ln-114"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">build_progress_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">progress</span><span class="w"></span>
+<a id="ln-115" name="ln-115" href="#ln-115"></a><span class="w">        </span><span class="c">!&gt; Index of build target in the target queue</span>
+<a id="ln-116" name="ln-116" href="#ln-116"></a><span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">queue_index</span><span class="w"></span>
+<a id="ln-117" name="ln-117" href="#ln-117"></a><span class="w">        </span><span class="c">!&gt; Build status flag</span>
+<a id="ln-118" name="ln-118" href="#ln-118"></a><span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">build_stat</span><span class="w"></span>
+<a id="ln-119" name="ln-119" href="#ln-119"></a>
+<a id="ln-120" name="ln-120" href="#ln-120"></a><span class="w">        </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">target_name</span><span class="w"></span>
+<a id="ln-121" name="ln-121" href="#ln-121"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">output_string</span><span class="w"></span>
+<a id="ln-122" name="ln-122" href="#ln-122"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">overall_progress</span><span class="w"></span>
+<a id="ln-123" name="ln-123" href="#ln-123"></a>
+<a id="ln-124" name="ln-124" href="#ln-124"></a><span class="w">        </span><span class="c">!$omp critical </span>
+<a id="ln-125" name="ln-125" href="#ln-125"></a><span class="w">        </span><span class="n">progress</span><span class="p">%</span><span class="n">n_complete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">progress</span><span class="p">%</span><span class="n">n_complete</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<a id="ln-126" name="ln-126" href="#ln-126"></a><span class="w">        </span><span class="c">!$omp end critical</span>
+<a id="ln-127" name="ln-127" href="#ln-127"></a>
+<a id="ln-128" name="ln-128" href="#ln-128"></a><span class="w">        </span><span class="k">associate</span><span class="p">(</span><span class="k">target</span><span class="o">=&gt;</span><span class="n">progress</span><span class="p">%</span><span class="n">target_queue</span><span class="p">(</span><span class="n">queue_index</span><span class="p">)%</span><span class="n">ptr</span><span class="p">)</span><span class="w"></span>
+<a id="ln-129" name="ln-129" href="#ln-129"></a>
+<a id="ln-130" name="ln-130" href="#ln-130"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-131" name="ln-131" href="#ln-131"></a><span class="k">                </span><span class="n">target_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">source</span><span class="p">%</span><span class="n">file_name</span><span class="p">)</span><span class="w"></span>
+<a id="ln-132" name="ln-132" href="#ln-132"></a><span class="w">            </span><span class="k">else</span>
+<a id="ln-133" name="ln-133" href="#ln-133"></a><span class="k">                </span><span class="n">target_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="k">target</span><span class="p">%</span><span class="n">output_file</span><span class="p">)</span><span class="w"></span>
+<a id="ln-134" name="ln-134" href="#ln-134"></a><span class="w">            </span><span class="k">end if</span>
+<a id="ln-135" name="ln-135" href="#ln-135"></a>
+<a id="ln-136" name="ln-136" href="#ln-136"></a><span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">build_stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-137" name="ln-137" href="#ln-137"></a><span class="k">                write</span><span class="p">(</span><span class="n">output_string</span><span class="p">,</span><span class="s1">&#39;(A,T40,A,A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">target_name</span><span class="p">,</span><span class="n">COLOR_GREEN</span><span class="o">//</span><span class="s1">&#39;done.&#39;</span><span class="o">//</span><span class="n">COLOR_RESET</span><span class="w"></span>
+<a id="ln-138" name="ln-138" href="#ln-138"></a><span class="w">            </span><span class="k">else</span>
+<a id="ln-139" name="ln-139" href="#ln-139"></a><span class="k">                write</span><span class="p">(</span><span class="n">output_string</span><span class="p">,</span><span class="s1">&#39;(A,T40,A,A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">target_name</span><span class="p">,</span><span class="n">COLOR_RED</span><span class="o">//</span><span class="s1">&#39;failed.&#39;</span><span class="o">//</span><span class="n">COLOR_RESET</span><span class="w"></span>
+<a id="ln-140" name="ln-140" href="#ln-140"></a><span class="w">            </span><span class="k">end if</span>
+<a id="ln-141" name="ln-141" href="#ln-141"></a>
+<a id="ln-142" name="ln-142" href="#ln-142"></a><span class="k">            write</span><span class="p">(</span><span class="n">overall_progress</span><span class="p">,</span><span class="s1">&#39;(A,I4,A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="mi">100</span><span class="o">*</span><span class="n">progress</span><span class="p">%</span><span class="n">n_complete</span><span class="o">/</span><span class="n">progress</span><span class="p">%</span><span class="n">n_target</span><span class="p">,</span><span class="s1">&#39;%] &#39;</span><span class="w"></span>
+<a id="ln-143" name="ln-143" href="#ln-143"></a>
+<a id="ln-144" name="ln-144" href="#ln-144"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">progress</span><span class="p">%</span><span class="n">plain_mode</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w">  </span><span class="c">! Plain output</span>
+<a id="ln-145" name="ln-145" href="#ln-145"></a>
+<a id="ln-146" name="ln-146" href="#ln-146"></a><span class="w">                </span><span class="c">!$omp critical</span>
+<a id="ln-147" name="ln-147" href="#ln-147"></a><span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A8,A30,A7)&#39;</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">overall_progress</span><span class="p">),</span><span class="n">target_name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;done.&#39;</span><span class="w"></span>
+<a id="ln-148" name="ln-148" href="#ln-148"></a><span class="w">                </span><span class="c">!$omp end critical</span>
+<a id="ln-149" name="ln-149" href="#ln-149"></a>
+<a id="ln-150" name="ln-150" href="#ln-150"></a><span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="c">! Pretty output</span>
+<a id="ln-151" name="ln-151" href="#ln-151"></a>
+<a id="ln-152" name="ln-152" href="#ln-152"></a><span class="w">                </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">console</span><span class="p">%</span><span class="n">update_line</span><span class="p">(</span><span class="n">progress</span><span class="p">%</span><span class="n">output_lines</span><span class="p">(</span><span class="n">queue_index</span><span class="p">),</span><span class="nb">trim</span><span class="p">(</span><span class="n">output_string</span><span class="p">))</span><span class="w"></span>
+<a id="ln-153" name="ln-153" href="#ln-153"></a>
+<a id="ln-154" name="ln-154" href="#ln-154"></a><span class="w">                </span><span class="k">call </span><span class="n">progress</span><span class="p">%</span><span class="n">console</span><span class="p">%</span><span class="n">write_line</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">overall_progress</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;Compiling...&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"></span>
+<a id="ln-155" name="ln-155" href="#ln-155"></a>
+<a id="ln-156" name="ln-156" href="#ln-156"></a><span class="w">            </span><span class="k">end if</span>
+<a id="ln-157" name="ln-157" href="#ln-157"></a>
+<a id="ln-158" name="ln-158" href="#ln-158"></a><span class="k">        end associate</span>
+<a id="ln-159" name="ln-159" href="#ln-159"></a>
+<a id="ln-160" name="ln-160" href="#ln-160"></a><span class="k">    end subroutine </span><span class="n">output_status_complete</span><span class="w"></span>
+<a id="ln-161" name="ln-161" href="#ln-161"></a>
+<a id="ln-162" name="ln-162" href="#ln-162"></a><span class="w">    </span><span class="c">!&gt; Output finished status for whole package</span>
+<a id="ln-163" name="ln-163" href="#ln-163"></a><span class="w">    </span><span class="k">subroutine </span><span class="n">output_progress_success</span><span class="p">(</span><span class="n">progress</span><span class="p">)</span><span class="w"></span>
+<a id="ln-164" name="ln-164" href="#ln-164"></a><span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">build_progress_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">progress</span><span class="w"></span>
+<a id="ln-165" name="ln-165" href="#ln-165"></a>
+<a id="ln-166" name="ln-166" href="#ln-166"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">progress</span><span class="p">%</span><span class="n">plain_mode</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="c">! Plain output</span>
+<a id="ln-167" name="ln-167" href="#ln-167"></a>
+<a id="ln-168" name="ln-168" href="#ln-168"></a><span class="w">            </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;[100%] Project compiled successfully.&#39;</span><span class="w"></span>
+<a id="ln-169" name="ln-169" href="#ln-169"></a>
+<a id="ln-170" name="ln-170" href="#ln-170"></a><span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="c">! Pretty output</span>
+<a id="ln-171" name="ln-171" href="#ln-171"></a>
+<a id="ln-172" name="ln-172" href="#ln-172"></a><span class="w">            </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">LINE_RESET</span><span class="o">//</span><span class="n">COLOR_GREEN</span><span class="o">//</span><span class="s1">&#39;[100%] Project compiled successfully.&#39;</span><span class="o">//</span><span class="n">COLOR_RESET</span><span class="w"></span>
+<a id="ln-173" name="ln-173" href="#ln-173"></a>
+<a id="ln-174" name="ln-174" href="#ln-174"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-175" name="ln-175" href="#ln-175"></a>
+<a id="ln-176" name="ln-176" href="#ln-176"></a><span class="k">    end subroutine </span><span class="n">output_progress_success</span><span class="w"></span>
+<a id="ln-177" name="ln-177" href="#ln-177"></a>
+<a id="ln-178" name="ln-178" href="#ln-178"></a><span class="k">end module </span><span class="n">fpm_backend_output</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    </div>
+  </div>
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2022 
+</p>
+        </div>
+        <div class="col-xs-6 col-md-6">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2022-02-14 19:05            </p>
+        </div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+  </body>
+</html>

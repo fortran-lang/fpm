@@ -11,7 +11,6 @@ module fpm_environment
     private
     public :: get_os_type
     public :: os_is_unix
-    public :: run
     public :: get_env
     public :: get_command_arguments_quoted
     public :: separator
@@ -154,35 +153,8 @@ contains
         else
             build_os = get_os_type()
         end if
-        unix = os /= OS_WINDOWS
+        unix = build_os /= OS_WINDOWS
     end function os_is_unix
-
-    !> echo command string and pass it to the system for execution
-    subroutine run(cmd,echo,exitstat)
-        character(len=*), intent(in) :: cmd
-        logical,intent(in),optional  :: echo
-        integer, intent(out),optional  :: exitstat
-        logical :: echo_local
-        integer :: stat
-
-        if(present(echo))then
-           echo_local=echo
-        else
-           echo_local=.true.
-        endif
-        if(echo_local) print *, '+ ', cmd
-
-        call execute_command_line(cmd, exitstat=stat)
-
-        if (present(exitstat)) then
-            exitstat = stat
-        else
-            if (stat /= 0) then
-                call fpm_stop(1,'*run*:Command failed')
-            end if
-        end if
-
-    end subroutine run
 
     !> get named environment variable value. It it is blank or
     !! not set return the optional default value

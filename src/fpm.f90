@@ -4,8 +4,9 @@ use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: run, get_env
-use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename, filewrite, mkdir
+use fpm_environment, only: get_env
+use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, &
+                   basename, filewrite, mkdir, run
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -59,8 +60,10 @@ subroutine build_model(model, settings, package, error)
       call filewrite(join_path("build", ".gitignore"),["*"])
     end if
 
-    call new_compiler(model%compiler, settings%compiler, settings%c_compiler)
-    call new_archiver(model%archiver, settings%archiver)
+    call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
+        & echo=settings%verbose, verbose=settings%verbose)
+    call new_archiver(model%archiver, settings%archiver, &
+        & echo=settings%verbose, verbose=settings%verbose)
 
     if (settings%flag == '') then
         flags = model%compiler%get_default_flags(settings%profile == "release")
@@ -284,7 +287,7 @@ if(settings%list)then
 else if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(targets,model)
+    call build_package(targets,model,verbose=settings%verbose)
 endif
 
 end subroutine cmd_build
@@ -415,7 +418,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model)
+    call build_package(targets,model,verbose=settings%verbose)
 
     if (settings%list) then
          call compact_list()

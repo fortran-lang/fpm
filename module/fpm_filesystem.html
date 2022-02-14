@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.6% of total for modules and submodules.">527 statements</a>
+    title=" 9.2% of total for modules and submodules.">590 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm_filesystem.F90"> Source File</a></li>
   </ul>
@@ -113,6 +113,14 @@
     <div id="sidebar">
   <h3>Contents</h3>
  
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../module/fpm_filesystem.html#variable-line_buffer_len">LINE_BUFFER_LEN</a>
+    </div>
+  </div>
+</div>
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
   <div id="funcs-0" class="panel-collapse collapse">
@@ -147,6 +155,7 @@
       <a class="list-group-item" href="../module/fpm_filesystem.html#proc-getline">getline</a>
       <a class="list-group-item" href="../module/fpm_filesystem.html#proc-list_files">list_files</a>
       <a class="list-group-item" href="../module/fpm_filesystem.html#proc-mkdir">mkdir</a>
+      <a class="list-group-item" href="../module/fpm_filesystem.html#proc-run">run</a>
       <a class="list-group-item" href="../module/fpm_filesystem.html#proc-warnwrite">warnwrite</a>
     </div>
   </div>
@@ -165,10 +174,10 @@
       <ul class="list-group">
       <li class="list-group-item">
   <ul class="list-inline">
-    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     <li><a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a></li>
     <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
     <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
   </ul>
       </li>
@@ -181,6 +190,14 @@
     <section class="visible-xs visible-sm hidden-md">
       <h3>Contents</h3>
  
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../module/fpm_filesystem.html#variable-line_buffer_len">LINE_BUFFER_LEN</a>
+    </div>
+  </div>
+</div>
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
   <div id="funcs-1" class="panel-collapse collapse">
@@ -215,6 +232,7 @@
       <a class="list-group-item" href="../module/fpm_filesystem.html#proc-getline">getline</a>
       <a class="list-group-item" href="../module/fpm_filesystem.html#proc-list_files">list_files</a>
       <a class="list-group-item" href="../module/fpm_filesystem.html#proc-mkdir">mkdir</a>
+      <a class="list-group-item" href="../module/fpm_filesystem.html#proc-run">run</a>
       <a class="list-group-item" href="../module/fpm_filesystem.html#proc-warnwrite">warnwrite</a>
     </div>
   </div>
@@ -224,6 +242,21 @@
     <br class="visible-xs visible-sm hidden-md">
 
 
+    <section>
+    <h2>Variables</h2>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-line_buffer_len"></span>integer,</td>
+<td>public,</td>  <td>parameter</td><td>::</td>
+  <td><strong>LINE_BUFFER_LEN</strong></td><td> =</td><td>1000</td><td></td>
+</tr>
+</tbody>
+</table>
+
+    </section>
+    <br>
     
     
 
@@ -864,7 +897,7 @@ character(len=:),allocatable :: pathname
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-mkdir"></span><h3>public subroutine <a href='../proc/mkdir.html'>mkdir</a>(dir)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-mkdir"></span><h3>public subroutine <a href='../proc/mkdir.html'>mkdir</a>(dir, echo)</h3></div>
   <div class="panel-body">
        
 <p>Create a directory. Create subdirectories as needed</p>
@@ -877,6 +910,58 @@ character(len=:),allocatable :: pathname
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>dir</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>echo</strong></td><td></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-run"></span><h3>public subroutine <a href='../proc/run.html'>run</a>(cmd, echo, exitstat, verbose, redirect)</h3></div>
+  <div class="panel-body">
+       
+<p>echo command string and pass it to the system for execution</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>cmd</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>echo</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(out),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>exitstat</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>redirect</strong></td><td></td>
 </tr>
 </tbody>
 </table>
@@ -931,7 +1016,7 @@ character(len=:),allocatable :: pathname
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-02-12 12:34            </p>
+ on 2022-02-14 19:05            </p>
         </div>
       </div>
       <br>
