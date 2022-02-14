@@ -6,7 +6,7 @@ module fpm_filesystem
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
     use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, notabs
+    use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop
     implicit none
@@ -14,6 +14,7 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
+    public :: is_hidden_file
     public :: read_lines, read_lines_expanded
     public :: which, run, LINE_BUFFER_LEN
 
@@ -250,6 +251,15 @@ logical function is_dir(dir)
 
 end function is_dir
 
+!> test if a file is hidden
+logical function is_hidden_file(file_basename) result(r)
+    character(*), intent(in) :: file_basename
+    if (len(file_basename) <= 2) then
+        r = .false.
+    else
+        r = str_begins_with_str(file_basename, '.')
+    end if
+end function is_hidden_file
 
 !> Construct path by joining strings with os file separator
 function join_path(a1,a2,a3,a4,a5) result(path)
