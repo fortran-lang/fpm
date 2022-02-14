@@ -1,9 +1,9 @@
 program new_test
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_filesystem,  only : is_dir, list_files, exists, windows_path, join_path, &
-  dirname
+  dirname, run
 use fpm_strings,     only : string_t, operator(.in.)
-use fpm_environment, only : run, get_os_type
+use fpm_environment, only : get_os_type
 use fpm_environment, only : OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_WINDOWS
 implicit none
 type(string_t), allocatable    :: file_names(:)

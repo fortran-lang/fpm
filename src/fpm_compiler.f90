@@ -27,7 +27,6 @@
 ! Unisys            ?          ?       ?               ?             ?          discontinued
 module fpm_compiler
 use fpm_environment, only: &
-        run, &
         get_env, &
         get_os_type, &
         OS_LINUX, &
@@ -39,7 +38,7 @@ use fpm_environment, only: &
         OS_OPENBSD, &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
-    & getline
+    & getline, run
 use fpm_strings, only: split, string_cat, string_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver
@@ -81,6 +80,8 @@ type :: compiler_t
     character(len=:), allocatable :: cc
     !> Print all commands
     logical :: echo = .true.
+    !> Verbose output of command
+    logical :: verbose = .true.
 contains
     !> Get default compiler flags
     procedure :: get_default_flags
@@ -109,6 +110,8 @@ type :: archiver_t
     logical :: use_response_file = .false.
     !> Print all command
     logical :: echo = .true.
+    !> Verbose output of command
+    logical :: verbose = .true.
 contains
     !> Create static archive
     procedure :: make_archive
@@ -639,16 +642,22 @@ end function enumerate_libraries
 
 
 !> Create new compiler instance
-subroutine new_compiler(self, fc, cc)
+subroutine new_compiler(self, fc, cc, echo, verbose)
     !> New instance of the compiler
     type(compiler_t), intent(out) :: self
     !> Fortran compiler name or path
     character(len=*), intent(in) :: fc
     !> C compiler name or path
     character(len=*), intent(in) :: cc
+    !> Echo compiler command
+    logical, intent(in) :: echo
+    !> Verbose mode: dump compiler output
+    logical, intent(in) :: verbose
 
     self%id = get_compiler_id(fc)
-
+    
+    self%echo = echo
+    self%verbose = verbose
     self%fc = fc
     if (len_trim(cc) > 0) then
       self%cc = cc
@@ -659,11 +668,15 @@ end subroutine new_compiler
 
 
 !> Create new archiver instance
-subroutine new_archiver(self, ar)
+subroutine new_archiver(self, ar, echo, verbose)
     !> New instance of the archiver
     type(archiver_t), intent(out) :: self
     !> User provided archiver command
     character(len=*), intent(in) :: ar
+    !> Echo compiler command
+    logical, intent(in) :: echo
+    !> Verbose mode: dump compiler output
+    logical, intent(in) :: verbose
 
     integer :: estat, os_type
 
@@ -697,12 +710,13 @@ subroutine new_archiver(self, ar)
       end if
     end if
     self%use_response_file = os_type == OS_WINDOWS
-    self%echo = .true.
+    self%echo = echo
+    self%verbose = verbose
 end subroutine new_archiver
 
 
 !> Compile a Fortran object
-subroutine compile_fortran(self, input, output, args, stat)
+subroutine compile_fortran(self, input, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -711,16 +725,18 @@ subroutine compile_fortran(self, input, output, args, stat)
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     call run(self%fc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, exitstat=stat)
+        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_fortran
 
 
 !> Compile a C object
-subroutine compile_c(self, input, output, args, stat)
+subroutine compile_c(self, input, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -729,47 +745,55 @@ subroutine compile_c(self, input, output, args, stat)
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     call run(self%cc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, exitstat=stat)
+        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_c
 
 
 !> Link an executable
-subroutine link(self, output, args, stat)
+subroutine link(self, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Output file of object
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
-    call run(self%fc // " " // args // " -o " // output, echo=self%echo, exitstat=stat)
+    call run(self%fc // " " // args // " -o " // output, echo=self%echo, &
+        & verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine link
 
 
 !> Create an archive
-subroutine make_archive(self, output, args, stat)
+subroutine make_archive(self, output, args, log_file, stat)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
     !> Name of the archive to generate
     character(len=*), intent(in) :: output
     !> Object files to include into the archive
     type(string_t), intent(in) :: args(:)
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     if (self%use_response_file) then
         call write_response_file(output//".resp" , args)
-        call run(self%ar // output // " @" // output//".resp", echo=self%echo, exitstat=stat)
+        call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
+            &  verbose=self%verbose, redirect=log_file, exitstat=stat)
         call delete_file(output//".resp")
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
-            & echo=self%echo, exitstat=stat)
+            & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     end if
 end subroutine make_archive
 
