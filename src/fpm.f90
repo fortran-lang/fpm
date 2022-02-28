@@ -1,8 +1,9 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, fnv_1a
+use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, fnv_1a, lower
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
-                      fpm_run_settings, fpm_install_settings, fpm_test_settings
+                      fpm_run_settings, fpm_install_settings, fpm_test_settings, &
+                      fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: get_env
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, &
@@ -24,7 +25,7 @@ use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stderr=>error_unit
 implicit none
 private
-public :: cmd_build, cmd_run
+public :: cmd_build, cmd_run, cmd_clean
 public :: build_model, check_modules_for_duplicates
 
 contains
@@ -501,5 +502,25 @@ subroutine cmd_run(settings,test)
     end subroutine compact_list
 
 end subroutine cmd_run
+
+subroutine cmd_clean(settings)
+    class(fpm_clean_settings), intent(in) :: settings
+	  character(len=1) :: response
+	  if (is_dir("build")) then
+	      write(stdout, '(A)', advance='no') "Delete the build directory (y/n)? "
+		    read(stdin, '(A1)') response
+		    if (lower(response) == 'y') then
+		        if(settings%unix) then
+		            call run('rm -rf build', .false.)
+		        else
+		            call run('rmdir /s/q build', .false.)
+		        end if
+	      else
+		        write (stdout, '(A)') "fpm: The response was not affirmative, build directory was not deleted."
+		    end if
+	  else
+	      write (stdout, '(A)') "fpm: No build directory found."
+    end if
+end subroutine cmd_clean
 
 end module fpm
