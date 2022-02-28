@@ -505,21 +505,21 @@ end subroutine cmd_run
 
 subroutine cmd_clean(settings)
     class(fpm_clean_settings), intent(in) :: settings
-	  character(len=1) :: response
-	  if (is_dir("build")) then
-	      write(stdout, '(A)', advance='no') "Delete the build directory (y/n)? "
-		    read(stdin, '(A1)') response
-		    if (lower(response) == 'y') then
-		        if(settings%unix) then
-		            call run('rm -rf build', .false.)
-		        else
-		            call run('rmdir /s/q build', .false.)
-		        end if
-	      else
-		        write (stdout, '(A)') "fpm: The response was not affirmative, build directory was not deleted."
-		    end if
-	  else
-	      write (stdout, '(A)') "fpm: No build directory found."
+    character(len=1) :: response
+    if (is_dir("build")) then
+        write(stdout, '(A)', advance='no') "Delete the build directory (y/n)? "
+        read(stdin, '(A1)') response
+        if (lower(response) == 'y') then
+            if(settings%unix) then
+                call run('rm -rf build', .false.)
+            else
+                call run('rmdir /s/q build', .false.)
+            end if
+        else
+            write (stdout, '(A)') "fpm: The response was not affirmative, build directory was not deleted."
+        end if
+    else
+        write (stdout, '(A)') "fpm: No build directory found."
     end if
 end subroutine cmd_clean
 
