@@ -516,7 +516,7 @@ subroutine cmd_clean(settings)
                 call run('rmdir /s/q build', .false.)
             end if
         else
-            write (stdout, '(A)') "fpm: The response was not affirmative, build directory was not deleted."
+            write (stdout, '(A)') "fpm: Build directory was not deleted."
         end if
     else
         write (stdout, '(A)') "fpm: No build directory found."
