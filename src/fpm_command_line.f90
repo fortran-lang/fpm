@@ -106,7 +106,8 @@ type, extends(fpm_cmd_settings)  :: fpm_update_settings
 end type
 
 type, extends(fpm_cmd_settings)  :: fpm_clean_settings
-    logical :: unix
+    logical                       :: unix         ! is the system os unix?
+    character(len=:), allocatable :: calling_dir  ! directory clean called from
 end type
 
 character(len=:),allocatable :: name
@@ -481,6 +482,7 @@ contains
             if(lget('list'))then
                call printhelp(help_list_dash)
             endif
+
         case('test')
             call set_args(common_args // compiler_args // run_args // ' --', &
               help_test,version_text)
@@ -543,7 +545,8 @@ contains
         case('clean')
             call set_args(common_args, help_clean)
             allocate(fpm_clean_settings :: cmd_settings)
-            cmd_settings=fpm_clean_settings(unix=unix)
+            call get_current_directory(working_dir, error)
+            cmd_settings=fpm_clean_settings(unix=unix, calling_dir=working_dir)
 
         case default
 

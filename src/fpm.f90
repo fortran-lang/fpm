@@ -506,6 +506,7 @@ end subroutine cmd_run
 subroutine cmd_clean(settings)
     class(fpm_clean_settings), intent(in) :: settings
     character(len=1) :: response
+    write(stdout, '(*(a))') "fpm: Clean calling directory '"//settings%calling_dir//"'"
     if (is_dir("build")) then
         write(stdout, '(A)', advance='no') "Delete the build directory (y/n)? "
         read(stdin, '(A1)') response
