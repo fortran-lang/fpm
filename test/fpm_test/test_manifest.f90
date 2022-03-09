@@ -194,6 +194,16 @@ contains
             return
         end if
 
+        if (.not.(allocated(package%library%library_dir))) then
+            call test_failed(error,"Default library-dir list not allocated")
+            return
+        end if
+
+        if (.not.("lib".in.package%library%library_dir)) then
+            call test_failed(error,"'lib' not in default library-dir list")
+            return
+        end if
+
     end subroutine test_default_library
 
 
@@ -597,6 +607,16 @@ contains
 
         if (.not.("include".in.library%include_dir)) then
             call test_failed(error,"'include' not in default include-dir list")
+            return
+        end if
+
+        if (.not.allocated(library%library_dir)) then
+            call test_failed(error,"Default library-dir list not allocated")
+            return
+        end if
+
+        if (.not.("lib".in.library%library_dir)) then
+            call test_failed(error,"'lib' not in default library-dir list")
             return
         end if
 

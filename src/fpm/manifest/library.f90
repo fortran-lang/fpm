@@ -6,6 +6,7 @@
 !>[library]
 !>source-dir = "path"
 !>include-dir = ["path1","path2"]
+!>library-dir = ["path3","path4"]
 !>build-script = "file"
 !>```
 module fpm_manifest_library
@@ -26,6 +27,7 @@ module fpm_manifest_library
 
         !> Include path prefix
         type(string_t), allocatable :: include_dir(:)
+        type(string_t), allocatable :: library_dir(:)
 
         !> Alternative build script to be invoked
         character(len=:), allocatable :: build_script
@@ -61,10 +63,16 @@ contains
 
         call get_list(table, "include-dir", self%include_dir, error)
         if (allocated(error)) return
+        call get_list(table, "library-dir", self%library_dir, error)
+        if (allocated(error)) return
 
         ! Set default value of include-dir if not found in manifest
         if (.not.allocated(self%include_dir)) then
             self%include_dir = [string_t("include")]
+        end if
+        !@todo: Set default value of library-dir `lib` if not found in manifest?
+        if (.not.allocated(self%library_dir)) then
+            self%library_dir = [string_t("lib")]
         end if
 
     end subroutine new_library
@@ -93,7 +101,7 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
                 exit
 
-            case("source-dir", "include-dir", "build-script")
+            case("source-dir", "include-dir", "build-script", "library-dir")
                 continue
 
             end select
@@ -131,6 +139,9 @@ contains
         end if
         if (allocated(self%include_dir)) then
             write(unit, fmt) "- include directory", string_cat(self%include_dir,",")
+        end if
+        if (allocated(self%library_dir)) then
+            write(unit, fmt) "- library directory", string_cat(self%library_dir,",")
         end if
         if (allocated(self%build_script)) then
             write(unit, fmt) "- custom build", self%build_script

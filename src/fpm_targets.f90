@@ -462,7 +462,7 @@ subroutine resolve_target_linking(targets, model)
 
     integer :: i
     character(:), allocatable :: global_link_flags, local_link_flags
-    character(:), allocatable :: global_include_flags
+    character(:), allocatable :: global_include_flags, global_libray_dir_flags
 
     if (size(targets) == 0) return
 
@@ -474,10 +474,17 @@ subroutine resolve_target_linking(targets, model)
     end if
 
     allocate(character(0) :: global_include_flags)
+    allocate(character(0) :: global_libray_dir_flags)
     if (allocated(model%include_dirs)) then
         if (size(model%include_dirs) > 0) then
             global_include_flags = global_include_flags // &
             & " -I" // string_cat(model%include_dirs," -I")
+        end if
+    end if
+    if (allocated(model%library_dirs)) then
+        if (size(model%library_dirs) > 0) then
+            global_libray_dir_flags = global_libray_dir_flags // &
+            & " -L" // string_cat(model%library_dirs," -L")
         end if
     end if
 
@@ -491,6 +498,9 @@ subroutine resolve_target_linking(targets, model)
             end if
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
+            end if
+            if (len(global_libray_dir_flags) > 0) then
+                target%compile_flags = target%compile_flags//global_libray_dir_flags
             end if
             target%output_dir = get_output_dir(model%build_prefix, target%compile_flags)
             target%output_file = join_path(target%output_dir, target%output_name)

@@ -37,6 +37,7 @@ contains
 
         self%source_dir = "src"
         self%include_dir = [string_t("include")]
+        self%library_dir = [string_t("lib")]
 
     end subroutine default_library
 

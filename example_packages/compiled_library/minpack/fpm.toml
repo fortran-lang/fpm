@@ -1,0 +1,9 @@
+name = "minpack"
+
+[library]
+include-dir = ["inc"]
+library-dir = ["src"]
+
+[build]
+link = "minpack"
+external-modules = ["minpack_module"]

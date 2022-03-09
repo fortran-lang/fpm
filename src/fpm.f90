@@ -43,11 +43,12 @@ subroutine build_model(model, settings, package, error)
     character(len=:), allocatable :: manifest, lib_dir, flags, cflags, ldflags
 
     logical :: duplicates_found = .false.
-    type(string_t) :: include_dir
+    type(string_t) :: include_dir, library_dir
 
     model%package_name = package%name
 
     allocate(model%include_dirs(0))
+    allocate(model%library_dirs(0))
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
 
@@ -182,6 +183,15 @@ subroutine build_model(model, settings, package, error)
                     end do
                 end if
 
+                if (allocated(dependency%library%library_dir)) then
+                    do j=1,size(dependency%library%library_dir)
+                        library_dir%s = join_path(dep%proj_dir, dependency%library%library_dir(j)%s)
+                        if (is_dir(library_dir%s)) then
+                            model%library_dirs = [model%library_dirs, library_dir]
+                        end if
+                    end do
+                end if
+
             end if
 
             if (allocated(dependency%build%link)) then
@@ -203,6 +213,7 @@ subroutine build_model(model, settings, package, error)
         write(*,*)'<INFO> C COMPILER OPTIONS:  ', model%c_compile_flags
         write(*,*)'<INFO> LINKER OPTIONS:  ', model%link_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
+        write(*,*)'<INFO> LIBRARY DIRECTORIES:  [', string_cat(model%library_dirs,','),']'
      end if
 
     ! Check for duplicate modules

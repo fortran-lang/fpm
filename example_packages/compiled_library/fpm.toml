@@ -1,0 +1,4 @@
+name = "compiled_library"
+
+[dependencies]
+minpack = { path = "./minpack" }
