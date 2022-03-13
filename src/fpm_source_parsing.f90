@@ -15,7 +15,7 @@
 !> - `[[parse_c_source]]`
 !>
 module fpm_source_parsing
-use fpm_error, only: error_t, file_parse_error, fatal_error
+use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
 use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, is_fortran_name
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
@@ -77,9 +77,17 @@ function parse_f_source(f_filename,error) result(f_source)
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
+    logical :: exists
     integer :: fh, n_use, n_include, n_mod, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
+
+    ! check the f_filename exists before attempting to process 
+	inquire(file=f_filename, exist=exists)
+	if (.not. exists) then
+		call file_not_found_error(error, f_filename)
+		return
+	end if
 
     f_source%file_name = f_filename
 
