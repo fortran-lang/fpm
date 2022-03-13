@@ -51,9 +51,11 @@ contains
             & new_unittest("subdirectory-module-use", &
                             test_subdirectory_module_use), &
             & new_unittest("invalid-subdirectory-module-use", &
-                            test_invalid_subdirectory_module_use, should_fail=.true.) &
+                            test_invalid_subdirectory_module_use, should_fail=.true.), &
+            & new_unittest("tree-shake-module", & 
+                            test_tree_shake_module, should_fail=.false.) &
             ]
-
+            
     end subroutine collect_module_dependencies
 
 
@@ -494,6 +496,77 @@ contains
             return
         end if
     end subroutine test_package_module_duplicates_two_packages
+
+
+    !> Check tree-shaking of unused modules
+    !>  Unused module should not be included in targets
+    subroutine test_tree_shake_module(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+        character(:), allocatable :: scope_str
+
+        allocate(model%external_modules(0))
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(4))
+
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
+                                    scope = FPM_SCOPE_LIB, &
+                                    provides=[string_t('my_mod_1')])  ! indirectly used
+
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
+                                    scope = FPM_SCOPE_LIB, &
+                                    provides=[string_t('my_mod_2')], &
+                                    uses=[string_t('my_mod_1')])      ! directly used
+
+        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_3.f90", &
+                                    scope = FPM_SCOPE_LIB, &
+                                    provides=[string_t('my_mod_3')])  ! unused module
+
+        model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
+                                    scope=FPM_SCOPE_APP, &
+                                    uses=[string_t('my_mod_2')])
+
+        call targets_from_sources(targets,model,error)
+        if (allocated(error)) return
+
+        if (size(targets) /= 5) then
+            call test_failed(error,scope_str//'Incorrect number of targets - expecting three')
+            return
+        end if
+
+        call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
+                          deps=[targets(2),targets(3)], &
+                          links=[targets(2),targets(3)],error=error)
+
+        if (allocated(error)) return
+
+        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
+                            source=model%packages(1)%sources(1),error=error)
+
+        if (allocated(error)) return
+
+        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
+                            deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
+
+        if (allocated(error)) return
+
+        call check_target(targets(4)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
+                            deps=[targets(3)],source=model%packages(1)%sources(4),error=error)
+
+        if (allocated(error)) return
+
+        call check_target(targets(5)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=2, &
+                            deps=[targets(1),targets(4)], &
+                            links=[targets(4)], error=error)
+
+        if (allocated(error)) return
+
+    end subroutine test_tree_shake_module
+
 
     !> Check program using a non-library module in a differente sub-directory
     subroutine test_invalid_subdirectory_module_use(error)
