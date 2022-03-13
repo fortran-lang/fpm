@@ -22,7 +22,7 @@ use fpm_model, only: srcfile_t, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-use fpm_filesystem, only: read_lines, read_lines_expanded
+use fpm_filesystem, only: read_lines, read_lines_expanded, exists
 implicit none
 
 private
@@ -77,14 +77,11 @@ function parse_f_source(f_filename,error) result(f_source)
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
-    logical :: exists
     integer :: fh, n_use, n_include, n_mod, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
 
-    ! check the f_filename exists before attempting to process 
-    inquire(file=f_filename, exist=exists)
-    if (.not. exists) then
+    if (.not. exists(f_filename)) then
         call file_not_found_error(error, f_filename)
         return
     end if
