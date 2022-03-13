@@ -3,5 +3,13 @@ program say_Hello
 
     implicit none
 
+    interface
+        function external_function() result(i)
+            integer :: i
+        end function external_function
+    end interface
+
     print *, make_greeting("World")
+    print *, external_function()
+
 end program say_Hello

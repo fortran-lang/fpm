@@ -1,3 +1,5 @@
+! This module is directly by the executables and
+!  hence should not be dropped during tree-shaking/pruning
 module greet_m
     use subdir_constants, only: GREET_STR
     implicit none

@@ -1,3 +1,5 @@
+! This module is used indirectly by the executables
+!  and hence should not be dropped during tree-shaking/pruning
 module subdir_constants
 implicit none
 

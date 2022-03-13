@@ -1,3 +1,6 @@
+! This module is not used by any other sources
+!  and only contains a module (no non-module subprograms),
+!  therefore it should be dropped during tree-shaking/pruning
 module farewell_m
     use subdir_constants, only: FAREWELL_STR
     implicit none
