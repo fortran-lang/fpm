@@ -76,6 +76,7 @@ function parse_f_source(f_filename,error) result(f_source)
     type(srcfile_t) :: f_source
     type(error_t), allocatable, intent(out) :: error
 
+    logical :: inside_module
     integer :: stat
     integer :: fh, n_use, n_include, n_mod, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
@@ -103,6 +104,7 @@ function parse_f_source(f_filename,error) result(f_source)
         n_use = 0
         n_include = 0
         n_mod = 0
+        inside_module = .false.
         file_loop: do i=1,size(file_lines_lower)
 
             ! Skip comment lines
@@ -242,7 +244,11 @@ function parse_f_source(f_filename,error) result(f_source)
                     f_source%modules_provided(n_mod) = string_t(mod_name)
                 end if
 
-                f_source%unit_type = FPM_UNIT_MODULE
+                if (f_source%unit_type == FPM_UNIT_UNKNOWN) then
+                    f_source%unit_type = FPM_UNIT_MODULE
+                end if
+
+                inside_module = .true.
 
                 cycle
 
@@ -274,10 +280,14 @@ function parse_f_source(f_filename,error) result(f_source)
                           file_lines_lower(i)%s)
                     return
                 end if
-
-                f_source%unit_type = FPM_UNIT_SUBMODULE
+                
+                if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+                    f_source%unit_type = FPM_UNIT_SUBMODULE
+                end if
 
                 n_use = n_use + 1
+
+                inside_module = .true.
 
                 if (pass == 2) then
 
@@ -323,15 +333,34 @@ function parse_f_source(f_filename,error) result(f_source)
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
                 cycle
-                
+
+            end if
+
+            ! Parse end module statement
+            !  (to check for code outside of modules)
+            if (index(file_lines_lower(i)%s,'end') == 1) then
+
+                temp_string = split_n(file_lines_lower(i)%s,n=2,delims=' ',stat=stat)
+
+                if (stat == 0) then
+                    if (temp_string == 'module' .or. temp_string == 'submodule') then
+
+                        inside_module = .false.
+                        cycle
+
+                    end if
+                end if
+
+            end if
+
+            ! Any statements not yet parsed are assumed to be other code statements
+            if (.not.inside_module .and. f_source%unit_type /= FPM_UNIT_PROGRAM) then
+
+                f_source%unit_type = FPM_UNIT_SUBPROGRAM
+
             end if
 
         end do file_loop
-
-        ! Default to subprogram unit type
-        if (f_source%unit_type == FPM_UNIT_UNKNOWN) then
-            f_source%unit_type = FPM_UNIT_SUBPROGRAM
-        end if
 
         if (pass == 1) then
             allocate(f_source%modules_used(n_use))

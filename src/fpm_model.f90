@@ -14,6 +14,23 @@
 !> __Source type:__ `FPM_UNIT_*`
 !> Describes the type of source file — determines build target generation
 !>
+!> The logical order of precedence for assigning `unit_type` is as follows:
+!>
+!>```
+!> if source-file contains program then
+!>   unit_type = FPM_UNIT_PROGRAM
+!> else if source-file contains non-module subroutine/function then
+!>   unit_type = FPM_UNIT_SUBPROGRAM
+!> else if source-file contains submodule then
+!>   unit_type = FPM_UNIT_SUBMODULE
+!> else if source-file contains module then
+!>   unit_type = FPM_UNIT_MODULE
+!> end if
+!>```
+!>
+!> @note A source file is only designated `FPM_UNIT_MODULE` if it **only** contains modules - no non-module subprograms.
+!> (This allows tree-shaking/pruning of build targets based on unused module dependencies.)
+!>
 !> __Source scope:__ `FPM_SCOPE_*`
 !> Describes the scoping rules for using modules — controls module dependency resolution
 !>
@@ -34,13 +51,13 @@ public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
 
 !> Source type unknown
 integer, parameter :: FPM_UNIT_UNKNOWN = -1
-!> Source type is fortran program
+!> Source contains a fortran program
 integer, parameter :: FPM_UNIT_PROGRAM = 1
-!> Source type is fortran module
+!> Source **only** contains one or more fortran modules
 integer, parameter :: FPM_UNIT_MODULE = 2
-!> Source type is fortran submodule
+!> Source contains one or more fortran submodules
 integer, parameter :: FPM_UNIT_SUBMODULE = 3
-!> Source type is fortran subprogram
+!> Source contains one or more fortran subprogram not within modules
 integer, parameter :: FPM_UNIT_SUBPROGRAM = 4
 !> Source type is c source file
 integer, parameter :: FPM_UNIT_CSOURCE = 5
