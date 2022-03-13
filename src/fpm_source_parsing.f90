@@ -173,6 +173,8 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 end if
 
+                cycle
+
             end if
 
             ! Process 'INCLUDE' statements
@@ -194,6 +196,9 @@ function parse_f_source(f_filename,error) result(f_source)
                             return
                         end if
                     end if
+
+                    cycle
+
                 end if
             end if
 
@@ -238,6 +243,8 @@ function parse_f_source(f_filename,error) result(f_source)
                 end if
 
                 f_source%unit_type = FPM_UNIT_MODULE
+
+                cycle
 
             end if
 
@@ -293,6 +300,8 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 end if
 
+                cycle
+
             end if
 
             ! Detect if contains a program
@@ -313,6 +322,8 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
+                cycle
+                
             end if
 
         end do file_loop
