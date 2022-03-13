@@ -105,6 +105,11 @@ function parse_f_source(f_filename,error) result(f_source)
         n_mod = 0
         file_loop: do i=1,size(file_lines_lower)
 
+            ! Skip comment lines
+            if (index(file_lines_lower(i)%s,'!') == 1) then
+                cycle
+            end if
+
             ! Skip lines that are continued: not statements
             if (i > 1) then
                 ic = index(file_lines_lower(i-1)%s,'!')
