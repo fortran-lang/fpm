@@ -248,7 +248,14 @@ function parse_f_source(f_filename,error) result(f_source)
                     f_source%unit_type = FPM_UNIT_MODULE
                 end if
 
-                inside_module = .true.
+                if (.not.inside_module) then    
+                    inside_module = .true.
+                else
+                    ! Must have missed an end module statement (can't assume a pure module)
+                    if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+                        f_source%unit_type = FPM_UNIT_SUBPROGRAM
+                    end if
+                end if
 
                 cycle
 
@@ -361,6 +368,12 @@ function parse_f_source(f_filename,error) result(f_source)
             end if
 
         end do file_loop
+
+        ! If unable to parse end of module statement, then can't assume pure module
+        !  (there could be non-module subprograms present)
+        if (inside_module .and. f_source%unit_type == FPM_UNIT_MODULE) then
+            f_source%unit_type = FPM_UNIT_SUBPROGRAM
+        end if
 
         if (pass == 1) then
             allocate(f_source%modules_used(n_use))
