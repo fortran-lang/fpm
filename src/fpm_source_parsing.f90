@@ -15,14 +15,14 @@
 !> - `[[parse_c_source]]`
 !>
 module fpm_source_parsing
-use fpm_error, only: error_t, file_parse_error, fatal_error
+use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
 use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, is_fortran_name
 use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
                     FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-use fpm_filesystem, only: read_lines, read_lines_expanded
+use fpm_filesystem, only: read_lines, read_lines_expanded, exists
 implicit none
 
 private
@@ -81,6 +81,11 @@ function parse_f_source(f_filename,error) result(f_source)
     integer :: fh, n_use, n_include, n_mod, n_parent, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
+
+    if (.not. exists(f_filename)) then
+        call file_not_found_error(error, f_filename)
+        return
+    end if
 
     f_source%file_name = f_filename
 
