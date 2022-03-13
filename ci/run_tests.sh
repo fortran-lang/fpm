@@ -62,6 +62,14 @@ test ! -x ./build/gfortran_*/app/unused
 test ! -x ./build/gfortran_*/test/unused_test
 popd
 
+pushd tree_shake
+"$fpm" build
+"$fpm" run
+"$fpm" test
+test ! -e ./build/gfortran_*/tree_shake/src_farewell_m.f90.o
+test ! -e ./build/gfortran_*/tree_shake/src_farewell_m.f90.o.log
+popd
+
 pushd version_file
 "$fpm" build
 "$fpm" run
