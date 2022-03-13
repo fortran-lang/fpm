@@ -83,11 +83,11 @@ function parse_f_source(f_filename,error) result(f_source)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
 
     ! check the f_filename exists before attempting to process 
-	inquire(file=f_filename, exist=exists)
-	if (.not. exists) then
-		call file_not_found_error(error, f_filename)
-		return
-	end if
+    inquire(file=f_filename, exist=exists)
+    if (.not. exists) then
+        call file_not_found_error(error, f_filename)
+        return
+    end if
 
     f_source%file_name = f_filename
 
