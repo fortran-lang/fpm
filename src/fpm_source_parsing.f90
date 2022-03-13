@@ -78,7 +78,7 @@ function parse_f_source(f_filename,error) result(f_source)
 
     logical :: inside_module
     integer :: stat
-    integer :: fh, n_use, n_include, n_mod, i, j, ic, pass
+    integer :: fh, n_use, n_include, n_mod, n_parent, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
 
@@ -104,11 +104,13 @@ function parse_f_source(f_filename,error) result(f_source)
         n_use = 0
         n_include = 0
         n_mod = 0
+        n_parent = 0
         inside_module = .false.
         file_loop: do i=1,size(file_lines_lower)
 
             ! Skip comment lines
-            if (index(file_lines_lower(i)%s,'!') == 1) then
+            if (index(file_lines_lower(i)%s,'!') == 1 .or. &
+                len_trim(file_lines_lower(i)%s) < 1) then
                 cycle
             end if
 
@@ -296,6 +298,8 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 inside_module = .true.
 
+                n_parent = n_parent + 1
+
                 if (pass == 2) then
 
                     if (index(temp_string,':') > 0) then
@@ -312,7 +316,7 @@ function parse_f_source(f_filename,error) result(f_source)
                     end if
 
                     f_source%modules_used(n_use)%s = temp_string
-
+                    f_source%parent_modules(n_parent)%s = temp_string
                     f_source%modules_provided(n_mod)%s = mod_name
 
                 end if
@@ -379,6 +383,7 @@ function parse_f_source(f_filename,error) result(f_source)
             allocate(f_source%modules_used(n_use))
             allocate(f_source%include_dependencies(n_include))
             allocate(f_source%modules_provided(n_mod))
+            allocate(f_source%parent_modules(n_parent))
         end if
 
     end do

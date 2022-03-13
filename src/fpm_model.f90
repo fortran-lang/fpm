@@ -95,6 +95,9 @@ type srcfile_t
     !> Type of source unit
     integer :: unit_type = FPM_UNIT_UNKNOWN
 
+    !> Parent modules (submodules only)
+    type(string_t), allocatable :: parent_modules(:)
+
     !>  Modules USEd by this source file (lowerstring)
     type(string_t), allocatable :: modules_used(:)
 
@@ -222,6 +225,12 @@ function info_srcfile(source) result(s)
     do i = 1, size(source%modules_provided)
         s = s // '"' // source%modules_provided(i)%s // '"'
         if (i < size(source%modules_provided)) s = s // ", "
+    end do
+    s = s // "]"
+    s = s // ", parent_modules=["
+    do i = 1, size(source%parent_modules)
+        s = s // '"' // source%parent_modules(i)%s // '"'
+        if (i < size(source%parent_modules)) s = s // ", "
     end do
     s = s // "]"
     !    integer :: unit_type = FPM_UNIT_UNKNOWN

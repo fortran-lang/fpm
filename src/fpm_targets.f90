@@ -508,6 +508,22 @@ subroutine prune_build_targets(targets)
 
                     end do
 
+                elseif (target%source%unit_type == FPM_UNIT_SUBMODULE) then
+                    ! Remove submodules if their parents are not used
+
+                    exclude_target(i) = .true.
+                    target%skip = .true.
+                    do j=1,size(target%source%parent_modules)
+
+                        if (target%source%parent_modules(j)%s .in. modules_used) then
+                            
+                            exclude_target(i) = .false.
+                            target%skip = .false.
+
+                        end if 
+
+                    end do
+
                 end if
             end if
 
@@ -543,7 +559,7 @@ subroutine prune_build_targets(targets)
     recursive subroutine collect_used_modules(target)
         type(build_target_t), intent(in) :: target
 
-        integer :: j
+        integer :: j, k
 
         if (allocated(target%source)) then
             do j=1,size(target%source%modules_used)
@@ -552,14 +568,28 @@ subroutine prune_build_targets(targets)
 
                     modules_used = [modules_used, target%source%modules_used(j)]
 
+                    ! Recurse into child submodules
+                    do k=1,size(targets)
+                        if (allocated(targets(k)%ptr%source)) then
+                            if (targets(k)%ptr%source%unit_type == FPM_UNIT_SUBMODULE) then
+                                if (target%source%modules_used(j)%s .in. targets(k)%ptr%source%parent_modules) then
+                                    call collect_used_modules(targets(k)%ptr)
+                                end if
+                            end if
+                        end if
+                    end do
+
                 end if
 
             end do
         end if
 
+        ! Recurse into dependencies
         do j=1,size(target%dependencies)
 
-            call collect_used_modules(target%dependencies(j)%ptr)
+            if (target%dependencies(j)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
+                call collect_used_modules(target%dependencies(j)%ptr)
+            end if
 
         end do
 
