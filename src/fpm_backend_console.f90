@@ -101,7 +101,7 @@ subroutine console_update_line(console,line_no,str)
     ! Step back to line
     write(stdout,'(A)',advance="no") repeat(LINE_UP,n)//LINE_RESET
 
-    write(stdout,'(A)') str
+    write(stdout,'(A)',advance="no") str
 
     ! Step forward to end
     write(stdout,'(A)',advance="no") repeat(LINE_DOWN,n)//LINE_RESET
