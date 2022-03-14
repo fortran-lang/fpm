@@ -114,7 +114,12 @@
     <div id="sidebar">
   <h3>Contents</h3>
  
-<em>None</em>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/parse_c_source.html#src">parse_c_source</a>
+  </div>
+</div>
 
 </div>
 
@@ -156,7 +161,12 @@
     <section class="visible-xs visible-sm hidden-md">
       <h3>Contents</h3>
  
-<em>None</em>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/parse_c_source.html#src">parse_c_source</a>
+  </div>
+</div>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -170,6 +180,81 @@
 
 
     
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span><span class="k">function </span><span class="n">parse_c_source</span><span class="p">(</span><span class="n">c_filename</span><span class="p">,</span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">c_source</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c_filename</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c_source</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">n_include</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="k">pass</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span>
+<span class="nb">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_lines</span><span class="p">(:)</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">c_source</span><span class="p">%</span><span class="n">file_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c_filename</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">c_filename</span><span class="p">),</span><span class="w"> </span><span class="s2">&quot;.c&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_UNIT_CSOURCE</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">elseif</span><span class="w"> </span><span class="p">(</span><span class="n">str_ends_with</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">c_filename</span><span class="p">),</span><span class="w"> </span><span class="s2">&quot;.h&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_UNIT_CHEADER</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">modules_used</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">modules_provided</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">c_filename</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">file_lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read_lines</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">    </span><span class="c">! Ignore empty files, returned as FPM_UNIT_UNKNOWN</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        </span><span class="n">c_source</span><span class="p">%</span><span class="n">unit_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_UNIT_UNKNOWN</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span>
+<span class="k">    end if</span>
+
+<span class="k">    </span><span class="n">c_source</span><span class="p">%</span><span class="n">digest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fnv_1a</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">do pass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="w"></span>
+<span class="w">        </span><span class="n">n_include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="n">file_loop</span><span class="p">:</span><span class="w"> </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">file_lines</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">            </span><span class="c">! Process &#39;INCLUDE&#39; statements</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">lower</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">)),</span><span class="s1">&#39;#include&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                </span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">                </span><span class="n">n_include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_include</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">pass</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">                    </span><span class="n">c_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                     </span><span class="p">&amp;</span><span class="w">   </span><span class="n">split_n</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delims</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        call </span><span class="n">file_parse_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="n">c_filename</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                            </span><span class="s1">&#39;unable to get c include file&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                            </span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="nb">index</span><span class="p">(</span><span class="n">file_lines</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="s1">&#39;&quot;&#39;</span><span class="p">))</span><span class="w"></span>
+<span class="w">                        </span><span class="k">return</span>
+<span class="k">                    end if</span>
+
+<span class="k">                end if</span>
+
+<span class="k">            end if</span>
+
+<span class="k">        end do </span><span class="n">file_loop</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">pass</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            allocate</span><span class="p">(</span><span class="n">c_source</span><span class="p">%</span><span class="n">include_dependencies</span><span class="p">(</span><span class="n">n_include</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+
+<span class="k">    end do</span>
+
+<span class="k">end function </span><span class="n">parse_c_source</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
     
     </div>
   </div>
@@ -186,7 +271,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-03-13 16:50            </p>
+ on 2022-03-14 19:43            </p>
         </div>
       </div>
       <br>

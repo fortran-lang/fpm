@@ -128,6 +128,12 @@
     </div>
   </div>
 </div>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../type/dependency_tree_t.html#src">dependency_tree_t</a>
+  </div>
+</div>
 
 </div>
 
@@ -155,6 +161,12 @@ with a binary-search tree or a hash table in the future.</p>
       <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve">resolve</a>
       <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-update~2">update</a>
     </div>
+  </div>
+</div>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../type/dependency_tree_t.html#src">dependency_tree_t</a>
   </div>
 </div>
 
@@ -700,6 +712,71 @@ with a binary-search tree or a hash table in the future.</p>
 
     </section>
     
+    <section>
+    <h3><span class="anchor" id="src"></span>Source Code</h3>
+    <div class="highlight"><pre><span></span><span class="w">  </span><span class="k">type</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency_tree_t</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Unit for IO</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output_unit</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Verbosity of printout</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbosity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Installation prefix for dependencies</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dep_dir</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Number of currently registered dependencies</span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ndep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Flattend list of all dependencies</span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_node_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dep</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Cache file</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cache</span><span class="w"></span>
+<span class="w">  </span><span class="k">contains</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Overload procedure to add new dependencies to the tree</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">add_project</span><span class="p">,</span><span class="w"> </span><span class="n">add_project_dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">add_dependencies</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">      </span><span class="n">add_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Main entry point to add a project</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_project</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Add a project and its dependencies to the dependency tree</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_project_dependencies</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Add a list of dependencies to the dependency tree</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_dependencies</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Add a single dependency to the dependency tree</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Resolve dependencies</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">resolve_dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">resolve_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Resolve dependencies</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_dependencies</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Resolve dependencies</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Find a dependency in the tree</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">find_dependency</span><span class="p">,</span><span class="w"> </span><span class="n">find_name</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Find a dependency from an dependency configuration</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Find a dependency by its name</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find_name</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Depedendncy resolution finished</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">finished</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Reading of dependency tree</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">load_from_file</span><span class="p">,</span><span class="w"> </span><span class="n">load_from_unit</span><span class="p">,</span><span class="w"> </span><span class="n">load_from_toml</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Read dependency tree from file</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_file</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Read dependency tree from formatted unit</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_unit</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Read dependency tree from TOML data structure</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">load_from_toml</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Writing of dependency tree</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">dump_to_file</span><span class="p">,</span><span class="w"> </span><span class="n">dump_to_unit</span><span class="p">,</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Write dependency tree to file</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_file</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Write dependency tree to formatted unit</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_unit</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Write dependency tree to TOML data structure</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Update dependency tree</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">update_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Update a list of dependencies</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update_dependency</span><span class="w"></span>
+<span class="w">  </span><span class="k">end type </span><span class="n">dependency_tree_t</span><span class="w"></span>
+</pre></div>
+
+    </section>
     
     </div>
   </div>
@@ -716,7 +793,7 @@ with a binary-search tree or a hash table in the future.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-03-13 16:50            </p>
+ on 2022-03-14 19:43            </p>
         </div>
       </div>
       <br>

@@ -114,7 +114,12 @@
     <div id="sidebar">
   <h3>Contents</h3>
  
-<em>None</em>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/cmd_build.html#src">cmd_build</a>
+  </div>
+</div>
 
 </div>
 
@@ -143,7 +148,12 @@
     <section class="visible-xs visible-sm hidden-md">
       <h3>Contents</h3>
  
-<em>None</em>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/cmd_build.html#src">cmd_build</a>
+  </div>
+</div>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -157,6 +167,47 @@
 
 
     
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">cmd_build</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
+<span class="k">type</span><span class="p">(</span><span class="n">fpm_build_settings</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">settings</span><span class="w"></span>
+<span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">package</span><span class="w"></span>
+<span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">model</span><span class="w"></span>
+<span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">targets</span><span class="p">(:)</span><span class="w"></span>
+<span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+
+<span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
+
+<span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w"></span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_build*:package error:&#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="k">end if</span>
+
+<span class="k">call </span><span class="n">build_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_build*:model error:&#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="k">end if</span>
+
+<span class="k">call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_build*:target error:&#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="k">end if</span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span><span class="k">then</span>
+<span class="k">    do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span><span class="w"></span>
+<span class="w">    </span><span class="k">enddo</span>
+<span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">show_model</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    call </span><span class="n">show_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="w"></span>
+<span class="k">else</span>
+<span class="k">    call </span><span class="n">build_package</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="w"></span>
+<span class="k">endif</span>
+
+<span class="k">end subroutine </span><span class="n">cmd_build</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
     
     </div>
   </div>
@@ -173,7 +224,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-03-13 16:50            </p>
+ on 2022-03-14 19:43            </p>
         </div>
       </div>
       <br>

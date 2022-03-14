@@ -141,6 +141,12 @@
     </div>
   </div>
 </div>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../type/compiler_t.html#src">compiler_t</a>
+  </div>
+</div>
 
 </div>
 
@@ -179,6 +185,12 @@
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-is_unknown">is_unknown</a>
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-link">link</a>
     </div>
+  </div>
+</div>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../type/compiler_t.html#src">compiler_t</a>
   </div>
 </div>
 
@@ -563,6 +575,40 @@
 
     </section>
     
+    <section>
+    <h3><span class="anchor" id="src"></span>Source Code</h3>
+    <div class="highlight"><pre><span></span><span class="k">type</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compiler_t</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Identifier of the compiler</span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id_unknown</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Path to the Fortran compiler</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fc</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Path to the C compiler</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cc</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Print all commands</span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Verbose output of command</span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="k">contains</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Get default compiler flags</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_default_flags</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Get flag for module output directories</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_module_flag</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Get flag for include directories</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_include_flag</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Compile a Fortran object</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_fortran</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Compile a C object</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_c</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Link executable</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">link</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Check whether compiler is recognized</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_unknown</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Enumerate libraries, based on compiler and platform</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">enumerate_libraries</span><span class="w"></span>
+<span class="k">end type </span><span class="n">compiler_t</span><span class="w"></span>
+</pre></div>
+
+    </section>
     
     </div>
   </div>
@@ -579,7 +625,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-03-13 16:50            </p>
+ on 2022-03-14 19:43            </p>
         </div>
       </div>
       <br>

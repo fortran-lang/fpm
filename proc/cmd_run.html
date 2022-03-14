@@ -114,7 +114,12 @@
     <div id="sidebar">
   <h3>Contents</h3>
  
-<em>None</em>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/cmd_run.html#src">cmd_run</a>
+  </div>
+</div>
 
 </div>
 
@@ -149,7 +154,12 @@
     <section class="visible-xs visible-sm hidden-md">
       <h3>Contents</h3>
  
-<em>None</em>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/cmd_run.html#src">cmd_run</a>
+  </div>
+</div>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -163,6 +173,221 @@
 
 
     
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">cmd_run</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span><span class="n">test</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">fpm_run_settings</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">settings</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">test</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">col_width</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">found</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">package</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_model_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">model</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">targets</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exe_cmd</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">executables</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exe_target</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">srcfile_t</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exe_source</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">run_scope</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">(:)</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">toomany</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">call </span><span class="n">get_package_data</span><span class="p">(</span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">apply_defaults</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;*cmd_run*:package error:&#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    call </span><span class="n">build_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">fpm_build_settings</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;*cmd_run*:model error:&#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    call </span><span class="n">targets_from_sources</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;*cmd_run*:targets error:&#39;</span><span class="o">//</span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">test</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">       </span><span class="n">run_scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FPM_SCOPE_TEST</span><span class="w"></span>
+<span class="w">    </span><span class="k">else</span>
+<span class="k">       </span><span class="n">run_scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="n">FPM_SCOPE_EXAMPLE</span><span class="p">,</span><span class="w"> </span><span class="n">FPM_SCOPE_APP</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">example</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end if</span><span class="w"></span>
+
+<span class="w">    </span><span class="c">! Enumerate executable targets to run</span>
+<span class="w">    </span><span class="n">col_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
+<span class="w">    </span><span class="n">found</span><span class="p">(:)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">exe_target</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">             </span><span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">            </span><span class="n">exe_source</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="w"></span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">run_scope</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">                </span><span class="n">col_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">col_width</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="p">))</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">                    </span><span class="n">exe_cmd</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="w"></span>
+<span class="w">                    </span><span class="n">executables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">executables</span><span class="p">,</span><span class="w"> </span><span class="n">exe_cmd</span><span class="p">]</span><span class="w"></span>
+
+<span class="w">                </span><span class="k">else</span>
+
+<span class="k">                    do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glob</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">exe_name</span><span class="p">),</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">j</span><span class="p">))))</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">                            </span><span class="n">found</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="w">                            </span><span class="n">exe_cmd</span><span class="p">%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="w"></span>
+<span class="w">                            </span><span class="n">executables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">executables</span><span class="p">,</span><span class="w"> </span><span class="n">exe_cmd</span><span class="p">]</span><span class="w"></span>
+
+<span class="w">                        </span><span class="k">end if</span>
+
+<span class="k">                    end do</span>
+
+<span class="k">                end if</span>
+
+<span class="k">            end if</span>
+
+<span class="k">        end if</span>
+
+<span class="k">    end do</span><span class="w"></span>
+
+<span class="w">    </span><span class="c">! Check if any apps/tests were found</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">col_width</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">test</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;No tests to run&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;No executables to run&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">    end if</span><span class="w"></span>
+
+<span class="w">    </span><span class="c">! Check all names are valid</span>
+<span class="w">    </span><span class="c">! or no name and found more than one file</span>
+<span class="w">    </span><span class="n">toomany</span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">).</span><span class="n">eq</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">).</span><span class="n">gt</span><span class="p">.</span><span class="mi">1</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="nb">any</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">found</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">    </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">    </span><span class="p">&amp;</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="p">(</span><span class="n">toomany</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">test</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w">  </span><span class="p">(</span><span class="n">toomany</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="w"> </span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">    </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">    </span><span class="p">&amp;</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        </span><span class="n">line</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">line</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="k">then</span><span class="w"> </span><span class="c">! do not report these special strings</span>
+<span class="w">           </span><span class="k">if</span><span class="p">(</span><span class="nb">any</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">found</span><span class="p">))</span><span class="k">then</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="s2">&quot;no&quot;</span><span class="p">)</span><span class="s1">&#39;&lt;ERROR&gt;*cmd_run*:specified names &#39;</span><span class="w"></span>
+<span class="w">              </span><span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
+<span class="w">                  </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">found</span><span class="p">(</span><span class="n">j</span><span class="p">))</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="s2">&quot;no&quot;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;&quot;&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">j</span><span class="p">))</span><span class="o">//</span><span class="s1">&#39;&quot; &#39;</span><span class="w"></span>
+<span class="w">              </span><span class="k">end do</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;not found.&#39;</span><span class="w"></span>
+<span class="w">              </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="w"></span>
+<span class="w">           </span><span class="k">else if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="k">then</span>
+<span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="s2">&quot;yes&quot;</span><span class="p">)</span><span class="s1">&#39;&lt;INFO&gt;when more than one executable is available&#39;</span><span class="w"></span>
+<span class="w">              </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="s2">&quot;yes&quot;</span><span class="p">)</span><span class="s1">&#39;      program names must be specified.&#39;</span><span class="w"></span>
+<span class="w">           </span><span class="k">endif</span>
+<span class="k">        endif</span>
+
+<span class="k">        call </span><span class="n">compact_list_all</span><span class="p">()</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">line</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">line</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="k">then</span><span class="w"> </span><span class="c">! do not report these special strings</span>
+<span class="w">           </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">           call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">endif</span>
+
+<span class="k">    end if</span>
+
+<span class="k">    call </span><span class="n">build_package</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">list</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">         call </span><span class="n">compact_list</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="k">else</span>
+
+<span class="k">        allocate</span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)))</span><span class="w"></span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exists</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                if</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="w"> </span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="k">                    if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="k">then</span>
+<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                             </span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="k">else</span>
+<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">runner</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                             </span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="k">endif</span>
+<span class="k">                else</span>
+<span class="k">                    if</span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">))</span><span class="k">then</span>
+<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="k">else</span>
+<span class="k">                       call </span><span class="n">run</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s2">&quot; &quot;</span><span class="o">//</span><span class="n">settings</span><span class="p">%</span><span class="n">args</span><span class="p">,</span><span class="n">echo</span><span class="o">=</span><span class="n">settings</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                             </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="k">endif</span>
+<span class="k">                endif</span>
+<span class="k">            else</span>
+<span class="k">                call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_run*:&#39;</span><span class="o">//</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="o">//</span><span class="s1">&#39; not found&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">        end do</span>
+
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(*(g0:,1x))&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;&lt;ERROR&gt; Execution failed for object &quot;&#39;</span><span class="p">,</span><span class="n">basename</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">),</span><span class="s1">&#39;&quot;&#39;</span><span class="w"></span>
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">            end do</span>
+<span class="k">            call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*cmd_run*:stopping due to failed executions&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+
+<span class="k">    endif</span>
+<span class="k">    contains</span>
+<span class="k">    subroutine </span><span class="n">compact_list_all</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">LINE_WIDTH</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">80</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">nCol</span><span class="w"></span>
+<span class="w">        </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="n">nCol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LINE_WIDTH</span><span class="o">/</span><span class="n">col_width</span><span class="w"></span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;Available names:&#39;</span><span class="w"></span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">            </span><span class="n">exe_target</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="w"></span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">target_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FPM_TARGET_EXECUTABLE</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                </span><span class="nb">allocated</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">                </span><span class="n">exe_source</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">exe_target</span><span class="p">%</span><span class="n">dependencies</span><span class="p">(</span><span class="mi">1</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">source</span><span class="w"></span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exe_source</span><span class="p">%</span><span class="n">unit_scope</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">run_scope</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+
+<span class="k">                    write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="s2">&quot;no &quot;</span><span class="p">,</span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">nCol</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)))</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                        </span><span class="p">&amp;</span><span class="w"> </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">col_width</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="n">exe_target</span><span class="p">%</span><span class="n">output_file</span><span class="p">,</span><span class="w"> </span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)]</span><span class="w"></span>
+<span class="w">                    </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">            end if</span>
+<span class="k">        end do</span>
+<span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">compact_list_all</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">subroutine </span><span class="n">compact_list</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">LINE_WIDTH</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">80</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">nCol</span><span class="w"></span>
+<span class="w">        </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="n">nCol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LINE_WIDTH</span><span class="o">/</span><span class="n">col_width</span><span class="w"></span>
+<span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;Matched names:&#39;</span><span class="w"></span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="n">executables</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">,</span><span class="n">advance</span><span class="o">=</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="s2">&quot;no &quot;</span><span class="p">,</span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">nCol</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)))</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                </span><span class="p">&amp;</span><span class="w"> </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">col_width</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="n">executables</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">suffix</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)]</span><span class="w"></span>
+<span class="w">            </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="k">enddo</span>
+<span class="k">        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">compact_list</span><span class="w"></span>
+
+<span class="k">end subroutine </span><span class="n">cmd_run</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
     
     </div>
   </div>
@@ -179,7 +404,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-03-13 16:50            </p>
+ on 2022-03-14 19:43            </p>
         </div>
       </div>
       <br>
