@@ -17,6 +17,7 @@ module fpm_filesystem
     public :: is_hidden_file
     public :: read_lines, read_lines_expanded
     public :: which, run, LINE_BUFFER_LEN
+    public :: os_delete_dir
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -365,7 +366,7 @@ subroutine mkdir(dir, echo)
 
     integer :: stat
     logical :: echo_local
-    
+
     if(present(echo))then
         echo_local=echo
      else
@@ -384,7 +385,7 @@ subroutine mkdir(dir, echo)
 
         case (OS_WINDOWS)
             call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
-            
+
             if (echo_local) then
                 write (*, '(" + ",2a)') 'mkdir ' // windows_path(dir)
             end if
@@ -885,7 +886,7 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     else
         verbose_local=.true.
     end if
-    
+
     if (present(redirect)) then
         redirect_str =  ">"//redirect//" 2>&1"
     else
@@ -917,7 +918,7 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
         close(fh)
 
     end if
-    
+
     if (present(exitstat)) then
         exitstat = stat
     else
@@ -928,5 +929,15 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
 end subroutine run
 
+!> delete dir using system os remove directory commands
+subroutine os_delete_dir(unix, dir)
+    logical, intent(in) :: unix
+    character(len=*), intent(in) :: dir
+    if (unix) then
+        call run('rm -rf ' // dir, .false.)
+    else
+        call run('rmdir /s/q ' // dir, .false.)
+    end if
+end subroutine os_delete_dir
 
 end module fpm_filesystem

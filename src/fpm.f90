@@ -7,7 +7,7 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
 use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: get_env
 use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, &
-                   basename, filewrite, mkdir, run
+                   basename, filewrite, mkdir, run, os_delete_dir
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
@@ -23,6 +23,7 @@ use fpm_error, only : error_t, fatal_error, fpm_stop
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
+use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 implicit none
 private
 public :: cmd_build, cmd_run, cmd_clean
@@ -503,22 +504,42 @@ subroutine cmd_run(settings,test)
 
 end subroutine cmd_run
 
-subroutine cmd_clean(settings)
-    class(fpm_clean_settings), intent(in) :: settings
-    character(len=1) :: response
-    write(stdout, '(*(a))') "fpm: Clean calling directory '"//settings%calling_dir//"'"
-    if (is_dir("build")) then
-        write(stdout, '(A)', advance='no') "Delete the build directory (y/n)? "
-        read(stdin, '(A1)') response
-        if (lower(response) == 'y') then
-            if(settings%unix) then
-                call run('rm -rf build', .false.)
-            else
-                call run('rmdir /s/q build', .false.)
-            end if
-        else
-            write (stdout, '(A)') "fpm: Build directory was not deleted."
+subroutine delete_skip(unix)
+    !> delete directories in the build folder, skipping dependencies
+    logical, intent(in) :: unix
+    character(len=:), allocatable :: dir
+    type(string_t), allocatable :: files(:)
+    integer :: i
+    call list_files('build', files, .false.)
+    do i = 1, size(files)
+        if (is_dir(files(i)%s)) then
+            dir = files(i)%s
+            if (dir /= 'build/dependencies') call os_delete_dir(unix, dir)
         end if
+    end do
+end subroutine delete_skip
+
+subroutine cmd_clean(settings)
+    !> fpm clean called
+    class(fpm_clean_settings), intent(in) :: settings
+    ! character(len=:), allocatable :: dir
+    ! type(string_t), allocatable :: files(:)
+    character(len=1) :: response
+    if (is_dir('build')) then
+        ! remove the entire build directory
+        if (settings%clean_call) then
+            call os_delete_dir(settings%unix, 'build')
+            return
+        end if
+        ! remove the build directory but skip dependencies
+        if (settings%clean_skip) then
+            call delete_skip(settings%unix)
+            return
+        end if
+        ! prompt to remove the build directory but skip dependencies
+        write(stdout, '(A)', advance='no') "Delete build, excluding dependencies (y/n)? "
+        read(stdin, '(A1)') response
+        if (lower(response) == 'y') call delete_skip(settings%unix)
     else
         write (stdout, '(A)') "fpm: No build directory found."
     end if

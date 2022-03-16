@@ -105,9 +105,11 @@ type, extends(fpm_cmd_settings)  :: fpm_update_settings
     logical :: clean
 end type
 
-type, extends(fpm_cmd_settings)  :: fpm_clean_settings
-    logical                       :: unix         ! is the system os unix?
+type, extends(fpm_cmd_settings)   :: fpm_clean_settings
+    logical                       :: unix
     character(len=:), allocatable :: calling_dir  ! directory clean called from
+    logical                       :: clean_skip=.false.
+    logical                       :: clean_call=.false.
 end type
 
 character(len=:),allocatable :: name
@@ -543,10 +545,17 @@ contains
                 clean=lget('clean'))
 
         case('clean')
-            call set_args(common_args, help_clean)
+            call set_args(common_args // &
+            &   ' --skip'             // &
+            &   ' --all',                &
+                help_install, version_text)
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
-            cmd_settings=fpm_clean_settings(unix=unix, calling_dir=working_dir)
+            cmd_settings=fpm_clean_settings( &
+            &   unix=unix,                   &
+            &   calling_dir=working_dir,     &
+            &   clean_skip=lget('skip'),     &
+                clean_call=lget('all'))
 
         case default
 
@@ -627,7 +636,7 @@ contains
    '  test      Run the test programs                                       ', &
    '  update    Update and manage project dependencies                      ', &
    '  install   Install project                                             ', &
-   '  clean     Delete the "build" directory                                ', &
+   '  clean     Delete the build                                            ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
@@ -647,6 +656,7 @@ contains
    '      [--list] [--compiler COMPILER_NAME] [-- ARGS]                             ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
+   ' clean [--skip] [--all]                                                         ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -743,13 +753,14 @@ contains
     '  + build    Compile the packages into the "build/" directory.         ', &
     '  + new      Create a new Fortran package directory with sample files. ', &
     '  + update   Update the project dependencies.                          ', &
-    '  + run      Run the local package binaries. defaults to all binaries  ', &
+    '  + run      Run the local package binaries. Defaults to all binaries  ', &
     '             for that release.                                         ', &
     '  + test     Run the tests.                                            ', &
     '  + help     Alternate to the --help switch for displaying help text.  ', &
     '  + list     Display brief descriptions of all subcommands.            ', &
-    '  + install  Install project                                           ', &
-    '  + clean    Delete the "build" directory                              ', &
+    '  + install  Install project.                                          ', &
+    '  + clean    Delete directories in the build/ directory, except        ', &
+    '             dependencies. Prompts for confirmation to delete.         ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                                ', &
@@ -766,7 +777,7 @@ contains
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
-    '    clean                                                                       ', &
+    '    clean [--skip] [-all]                                                       ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -782,6 +793,10 @@ contains
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
     '  -- ARGS    Arguments to pass to executables.                         ', &
+    '  --skip     Delete directories in the build/ directory without        ', &
+    '             prompting, but skip dependencies.                         ', &
+    '  --all      Delete directories in the build/ directory without        ', &
+    '             prompting, including dependencies.                        ', &
     '                                                                       ', &
     'VALID FOR ALL SUBCOMMANDS                                              ', &
     '  --help     Show help text and exit                                   ', &
@@ -832,7 +847,7 @@ contains
     '    fpm new --help                                                     ', &
     '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
     '    fpm install --prefix ~/.local                                               ', &
-    '    fpm clean                                                                   ', &
+    '    fpm clean --all                                                             ', &
     '                                                                                ', &
     'SEE ALSO                                                                        ', &
     '                                                                                ', &
@@ -1022,8 +1037,8 @@ contains
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
     'SYNOPSIS                                                               ', &
-   '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|            ', &
-   '      [--full|--bare][--backfill]                                       ', &
+    '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|           ', &
+    '      [--full|--bare][--backfill]                                      ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
@@ -1245,16 +1260,18 @@ contains
     '' ]
     help_clean=[character(len=80) :: &
     'NAME', &
-    ' clean(1) - delete the "build" directory', &
+    ' clean(1) - delete the build', &
     '', &
     'SYNOPSIS', &
     ' fpm clean', &
     '', &
     'DESCRIPTION', &
-    ' Prompts the user to confirm deletion of the "build" directory. If affirmative,', &
-    ' the "build" directory in the project root is deleted using os system specific', &
-    ' commands, forcing the recursive removal of all files and directories,', &
-    ' including dependencies.', &
+    ' Prompts the user to confirm deletion of the build. If affirmative,', &
+    ' directories in the build/ directory are deleted, except dependencies.', &
+    '', &
+    'OPTIONS', &
+    ' --skip           delete the build without prompting but skip dependencies.', &
+    ' --all            delete the build without prompting including dependencies.', &
     '' ]
      end subroutine set_help
 
