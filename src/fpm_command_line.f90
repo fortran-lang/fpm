@@ -777,7 +777,7 @@ contains
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
-    '    clean [--skip] [-all]                                                       ', &
+    '    clean [--skip] [--all]                                                       ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -826,8 +826,8 @@ contains
     '     # my build options                                                ', &
     '     options build                                                     ', &
     '     options --compiler gfortran                                       ', &
-    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused \', &
-    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring \', &
+    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused  ', &
+    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring  ', &
     '      -frecord-marker=4 -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"     ', &
     '                                                                       ', &
     '   Note --flag would have to be on one line as response files do not   ', &
