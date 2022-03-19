@@ -81,7 +81,7 @@ contains
                                     provides=[string_t('my_mod_2')], &
                                     uses=[string_t('my_mod_1')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
         if (allocated(error)) return
 
         if (allocated(error)) then
@@ -151,7 +151,7 @@ contains
                                     scope=exe_scope, &
                                     uses=[string_t('my_mod_1')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
         if (allocated(error)) return
 
         if (size(targets) /= 4) then
@@ -204,7 +204,7 @@ contains
                                     provides=[string_t('app_mod')], &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
         if (allocated(error)) return
 
         if (size(targets) /= 2) then
@@ -266,7 +266,7 @@ contains
                                     scope=exe_scope, &
                                     uses=[string_t('app_mod2')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
         if (allocated(error)) return
 
         if (size(targets) /= 4) then
@@ -320,7 +320,7 @@ contains
                                     provides=[string_t('my_mod_2')], &
                                     uses=[string_t('my_mod_3')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
 
     end subroutine test_missing_library_use
 
@@ -346,7 +346,7 @@ contains
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('my_mod_2')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
 
     end subroutine test_missing_program_use
 
@@ -373,7 +373,7 @@ contains
                                     provides=[string_t('my_mod')], &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
 
     end subroutine test_invalid_library_use
 
@@ -399,7 +399,7 @@ contains
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
 
     end subroutine test_subdirectory_module_use
 
@@ -530,7 +530,7 @@ contains
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('my_mod_2')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,prune=.true.,error=error)
         if (allocated(error)) return
 
         if (size(targets) /= 5) then
@@ -589,7 +589,7 @@ contains
                                     scope=FPM_SCOPE_APP, &
                                     uses=[string_t('app_mod')])
 
-        call targets_from_sources(targets,model,error)
+        call targets_from_sources(targets,model,.false.,error)
 
     end subroutine test_invalid_subdirectory_module_use
 
