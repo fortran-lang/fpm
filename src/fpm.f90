@@ -275,7 +275,7 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:model error:'//error%message)
 end if
 
-call targets_from_sources(targets, model, error)
+call targets_from_sources(targets, model, settings%prune, error)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:target error:'//error%message)
 end if
@@ -321,7 +321,7 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run*:model error:'//error%message)
     end if
 
-    call targets_from_sources(targets, model, error)
+    call targets_from_sources(targets, model, settings%prune, error)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run*:targets error:'//error%message)
     end if

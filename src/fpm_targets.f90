@@ -120,7 +120,7 @@ end type build_target_t
 contains
 
 !> High-level wrapper to generate build target information
-subroutine targets_from_sources(targets,model,error)
+subroutine targets_from_sources(targets,model,prune,error)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
@@ -128,6 +128,9 @@ subroutine targets_from_sources(targets,model,error)
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
 
+    !> Enable tree-shaking/pruning of module dependencies
+    logical, intent(in) :: prune
+    
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 
@@ -136,7 +139,9 @@ subroutine targets_from_sources(targets,model,error)
     call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
 
-    call prune_build_targets(targets)
+    if (prune) then
+        call prune_build_targets(targets)
+    end if
 
     call resolve_target_linking(targets,model)
 
