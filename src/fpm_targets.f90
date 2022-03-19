@@ -78,6 +78,9 @@ type build_target_t
     !> File path of build log file relative to cwd
     character(:), allocatable :: output_log_file
 
+    !> Name of parent package
+    character(:), allocatable :: package_name
+
     !> Primary source for this build target
     type(srcfile_t), allocatable :: source
 
@@ -140,7 +143,7 @@ subroutine targets_from_sources(targets,model,prune,error)
     if (allocated(error)) return
 
     if (prune) then
-        call prune_build_targets(targets)
+        call prune_build_targets(targets,root_package=model%package_name)
     end if
 
     call resolve_target_linking(targets,model)
@@ -198,7 +201,7 @@ subroutine build_target_list(targets,model)
                       i=1,size(model%packages(j)%sources)), &
                       j=1,size(model%packages))])
 
-    if (with_lib) call add_target(targets,type = FPM_TARGET_ARCHIVE,&
+    if (with_lib) call add_target(targets,package=model%package_name,type = FPM_TARGET_ARCHIVE,&
                             output_name = join_path(&
                                    model%package_name,'lib'//model%package_name//'.a'))
 
@@ -215,7 +218,7 @@ subroutine build_target_list(targets,model)
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
-                    call add_target(targets,source = sources(i), &
+                    call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
                                 output_name = get_object_name(sources(i)))
@@ -227,7 +230,7 @@ subroutine build_target_list(targets,model)
 
                 case (FPM_UNIT_PROGRAM)
 
-                    call add_target(targets,type = FPM_TARGET_OBJECT,&
+                    call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_OBJECT,&
                                 output_name = get_object_name(sources(i)), &
                                 source = sources(i) &
                                 )
@@ -246,7 +249,7 @@ subroutine build_target_list(targets,model)
 
                     end if
 
-                    call add_target(targets,type = FPM_TARGET_EXECUTABLE,&
+                    call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
                                     output_name = join_path(exe_dir, &
                                     sources(i)%exe_name//xsuffix))
@@ -296,8 +299,9 @@ end subroutine build_target_list
 
 
 !> Allocate a new target and append to target list
-subroutine add_target(targets,type,output_name,source,link_libraries)
+subroutine add_target(targets,package,type,output_name,source,link_libraries)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
+    character(*), intent(in) :: package
     integer, intent(in) :: type
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
@@ -325,6 +329,7 @@ subroutine add_target(targets,type,output_name,source,link_libraries)
     allocate(new_target)
     new_target%target_type = type
     new_target%output_name = output_name
+    new_target%package_name = package
     if (present(source)) new_target%source = source
     if (present(link_libraries)) new_target%link_libraries = link_libraries
     allocate(new_target%dependencies(0))
@@ -461,14 +466,23 @@ end function find_module_dependency
 
 
 !> Perform tree-shaking to remove unused module targets
-subroutine prune_build_targets(targets)
+subroutine prune_build_targets(targets, root_package)
+
+    !> Build target list to prune
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
+
+    !> Name of root package
+    character(*), intent(in) :: root_package 
 
     integer :: i, j, nexec
     type(string_t), allocatable :: modules_used(:)
     logical :: exclude_target(size(targets))
     logical, allocatable :: exclude_from_archive(:)
     
+    if (size(targets) < 1) then
+        return
+    end if
+
     nexec = 0
     allocate(modules_used(0))
 
@@ -484,10 +498,21 @@ subroutine prune_build_targets(targets)
 
     end do
 
-    ! Can't prune targets without executables
-    !  (everything will be built)
+    ! If there aren't any executables, then prune
+    !  based on modules used in root package
     if (nexec < 1) then
-        return
+        
+        do i=1,size(targets)
+            
+            if (targets(i)%ptr%package_name == root_package .and. &
+                 targets(i)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
+    
+                call collect_used_modules(targets(i)%ptr)
+    
+            end if
+            
+        end do
+
     end if
 
     exclude_target(:) = .false.
@@ -530,6 +555,12 @@ subroutine prune_build_targets(targets)
                     end do
 
                 end if
+            end if
+
+            ! (If there aren't any executables then we only prune modules from dependencies)
+            if (nexec < 1 .and. target%package_name == root_package) then
+                exclude_target(i) = .false.
+                target%skip = .false.
             end if
 
         end associate        
