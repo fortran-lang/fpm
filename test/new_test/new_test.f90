@@ -13,22 +13,22 @@ character(len=:),allocatable   :: path
 character(len=*),parameter     :: scr = 'fpm_scratch_'
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ! run a variety of "fpm new" variations and verify expected files are generated
-' new', &
-' new name-with-hyphens', &
-' new '//scr//'A', &
-' new '//scr//'B --lib', &
-' new '//scr//'C --app', &
-' new '//scr//'D --test', &
-' new '//scr//'E --lib --test ', &
-' new '//scr//'F --lib --app', &
-' new '//scr//'G --test --app', &
-' new '//scr//'H --example', &
-' new '//scr//'BB --lib', &
-' new '//scr//'BB --test ', &
-' new '//scr//'BB --backfill --test', &
-' new '//scr//'CC --test --src --app', &
-' new --version', &
-' new --help']
+'new', &
+'new name-with-hyphens', &
+'new '//scr//'A', &
+'new '//scr//'B --lib', &
+'new '//scr//'C --app', &
+'new '//scr//'D --test', &
+'new '//scr//'E --lib --test ', &
+'new '//scr//'F --lib --app', &
+'new '//scr//'G --test --app', &
+'new '//scr//'H --example', &
+'new '//scr//'BB --lib', &
+'new '//scr//'BB --test ', &
+'new '//scr//'BB --backfill --test', &
+'new '//scr//'CC --test --src --app', &
+'new --version', &
+'new --help']
 integer :: estat, cstat
 character(len=256)            :: message
 character(len=:),allocatable  :: directories(:)
