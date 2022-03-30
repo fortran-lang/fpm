@@ -777,7 +777,7 @@ contains
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
-    '    clean [--skip] [-all]                                                       ', &
+    '    clean [--skip] [--all]                                                       ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
