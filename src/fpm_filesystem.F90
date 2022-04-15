@@ -369,9 +369,9 @@ subroutine mkdir(dir, echo)
 
     if(present(echo))then
         echo_local=echo
-     else
+      else
         echo_local=.true.
-     end if
+    end if
 
     if (is_dir(dir)) return
 
@@ -929,15 +929,36 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
 end subroutine run
 
-!> delete dir using system os remove directory commands
-subroutine os_delete_dir(unix, dir)
+!> Delete directory using system OS remove directory commands
+subroutine os_delete_dir(unix, dir, echo)
     logical, intent(in) :: unix
     character(len=*), intent(in) :: dir
+    logical, intent(in), optional :: echo
+
+    logical :: echo_local
+
+    if(present(echo))then
+        echo_local=echo
+      else
+        echo_local=.true.
+    end if
+
     if (unix) then
         call run('rm -rf ' // dir, .false.)
+
+        if (echo_local) then
+          write (*, '(" + ",2a)') 'rm -rf ' // dir
+        end if
+
     else
         call run('rmdir /s/q ' // dir, .false.)
+
+        if (echo_local) then
+          write (*, '(" + ",2a)') 'rmdir /s/q ' // dir
+        end if
+
     end if
+
 end subroutine os_delete_dir
 
 end module fpm_filesystem

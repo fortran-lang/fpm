@@ -759,7 +759,7 @@ contains
     '  + help     Alternate to the --help switch for displaying help text.  ', &
     '  + list     Display brief descriptions of all subcommands.            ', &
     '  + install  Install project.                                          ', &
-    '  + clean    Delete directories in the build/ directory, except        ', &
+    '  + clean    Delete directories in the "build/" directory, except      ', &
     '             dependencies. Prompts for confirmation to delete.         ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &

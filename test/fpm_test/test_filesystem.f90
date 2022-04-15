@@ -1,6 +1,7 @@
 module test_filesystem
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
-    use fpm_filesystem, only: canon_path
+    use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir
+    use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     implicit none
     private
 
@@ -16,7 +17,8 @@ contains
         type(unittest_t), allocatable, intent(out) :: testsuite(:)
 
         testsuite = [ &
-            & new_unittest("canon-path", test_canon_path) &
+            & new_unittest("canon-path", test_canon_path), &
+            & new_unittest("create-delete-directory", test_mkdir_rmdir) &
             ]
 
     end subroutine collect_filesystem
@@ -96,11 +98,102 @@ contains
 
         if (actual /= expected) then
             call test_failed(error, &
-                "Character value missmatch "//&
+                "Character value mismatch "//&
                 "expected '"//expected//"' but got '"//actual//"'")
         end if
 
     end subroutine check_string
+
+
+    subroutine test_mkdir_rmdir(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        logical :: is_win
+
+        is_win = (get_os_type() == OS_WINDOWS)
+
+        if (is_win) then
+            call check_mkdir(error, "tmpdir\subdir")
+          else
+            call check_mkdir(error, "tmpdir/subdir")
+        end if
+        if (allocated(error)) return
+
+        if (is_win) then
+            call check_rmdir(error, "tmpdir\subdir")
+          else
+            call check_rmdir(error, "tmpdir/subdir")
+        end if
+        if (allocated(error)) return
+
+        call check_rmdir(error, "tmpdir")
+        if (allocated(error)) return
+
+    end subroutine test_mkdir_rmdir
+
+
+    !> Create a directory and verify its existence
+    subroutine check_mkdir(error, path)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Directory path
+        character(len=*), intent(in) :: path
+
+        logical :: stat
+
+        ! Directory shouldn't exist before it's created
+        stat = (is_dir(path) .eqv. .false.)
+        if (.not. stat) then
+            call test_failed(error, &
+                "Directory path "//path//" already exists before its creation")
+        end if
+
+        ! Create directory
+        call mkdir(path)
+
+        ! Check that directory is indeed created
+        stat = (is_dir(path) .eqv. .true.)
+        if (.not. stat) then
+            call test_failed(error, &
+                "Directory path "//path//" cannot be created")
+        end if
+
+      end subroutine check_mkdir
+
+
+    !> Create a directory and verify its existence
+    subroutine check_rmdir(error, path)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Directory path
+        character(len=*), intent(in) :: path
+
+        logical :: stat
+
+        ! Directory should exist before it's deleted
+        stat = (is_dir(path) .eqv. .true.)
+        if (.not. stat) then
+            call test_failed(error, &
+                "Directory path "//path//" doesn't exist before its deletion")
+        end if
+
+        ! Delete directory
+        call os_delete_dir(os_is_unix(),path)
+
+        ! Check that directory is indeed deleted
+        stat = (is_dir(path) .eqv. .false.)
+        if (.not. stat) then
+            call test_failed(error, &
+                "Directory path "//path//" cannot be deleted")
+        end if
+
+      end subroutine check_rmdir
 
 
 end module test_filesystem

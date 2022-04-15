@@ -31,6 +31,8 @@ module fpm_installer
     integer :: verbosity = 1
     !> Command to copy objects into the installation prefix
     character(len=:), allocatable :: copy
+    !> Command to move objects into the installation prefix
+    character(len=:), allocatable :: move
     !> Cached operating system
     integer :: os
   contains
@@ -69,11 +71,18 @@ module fpm_installer
   !> Copy command on Windows platforms
   character(len=*), parameter :: default_copy_win = "copy"
 
+  !> Move command on Unix platforms
+  character(len=*), parameter :: default_move_unix = "mv"
+
+  !> Move command on Windows platforms
+  character(len=*), parameter :: default_move_win = "move"
+
+
 contains
 
   !> Create a new instance of an installer
   subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, &
-          copy)
+          copy, move)
     !> Instance of the installer
     type(installer_t), intent(out) :: self
     !> Path to installation directory
@@ -88,6 +97,8 @@ contains
     integer, intent(in), optional :: verbosity
     !> Copy command
     character(len=*), intent(in), optional :: copy
+    !> Move command
+    character(len=*), intent(in), optional :: move
 
     self%os = get_os_type()
 
@@ -98,6 +109,16 @@ contains
         self%copy = default_copy_unix
       else
         self%copy = default_copy_win
+      end if
+    end if
+
+    if (present(move)) then
+      self%move = move
+    else
+      if (os_is_unix(self%os)) then
+        self%move = default_move_unix
+      else
+        self%move = default_move_win
       end if
     end if
 
@@ -238,7 +259,12 @@ contains
       end if
     end if
 
-    call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
+    ! move instead of copy if already installed
+    if (exists(install_dest)) then
+      call self%run(self%move//' "'//source//'" "'//install_dest//'"', error)
+    else
+      call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
+    end if
     if (allocated(error)) return
 
   end subroutine install
