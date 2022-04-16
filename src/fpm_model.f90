@@ -200,6 +200,13 @@ function info_srcfile(source) result(s)
     case default
         s = s // "INVALID"
     end select
+    !    type(string_t), allocatable :: modules_provided(:)
+    s = s // ", modules_provided=["
+    do i = 1, size(source%modules_provided)
+        s = s // '"' // source%modules_provided(i)%s // '"'
+        if (i < size(source%modules_provided)) s = s // ", "
+    end do
+    s = s // "]"
     !    integer :: unit_type = FPM_UNIT_UNKNOWN
     s = s // ", unit_type="
     select case(source%unit_type)
@@ -220,42 +227,27 @@ function info_srcfile(source) result(s)
     case default
         s = s // "INVALID"
     end select
-
-    select case (source%unit_type)
-    case (FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, FPM_UNIT_SUBMODULE, &
-         FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER)
-        !    type(string_t), allocatable :: modules_provided(:)
-        s = s // ", modules_provided=["
-        do i = 1, size(source%modules_provided)
-            s = s // '"' // source%modules_provided(i)%s // '"'
-            if (i < size(source%modules_provided)) s = s // ", "
-        end do
-        s = s // "]"
-        
-        !    type(string_t), allocatable :: modules_used(:)
-        s = s // ", modules_used=["
-        do i = 1, size(source%modules_used)
-            s = s // '"' // source%modules_used(i)%s // '"'
-            if (i < size(source%modules_used)) s = s // ", "
-        end do
-        s = s // "]"
-        !    type(string_t), allocatable :: include_dependencies(:)
-        s = s // ", include_dependencies=["
-        do i = 1, size(source%include_dependencies)
-            s = s // '"' // source%include_dependencies(i)%s // '"'
-            if (i < size(source%include_dependencies)) s = s // ", "
-        end do
-        s = s // "]"
-        !    type(string_t), allocatable :: link_libraries(:)
-        s = s // ", link_libraries=["
-        do i = 1, size(source%link_libraries)
-            s = s // '"' // source%link_libraries(i)%s // '"'
-            if (i < size(source%link_libraries)) s = s // ", "
-        end do
-        s = s // "]"
-    case default
-        ! pass
-    end select
+    !    type(string_t), allocatable :: modules_used(:)
+    s = s // ", modules_used=["
+    do i = 1, size(source%modules_used)
+        s = s // '"' // source%modules_used(i)%s // '"'
+        if (i < size(source%modules_used)) s = s // ", "
+    end do
+    s = s // "]"
+    !    type(string_t), allocatable :: include_dependencies(:)
+    s = s // ", include_dependencies=["
+    do i = 1, size(source%include_dependencies)
+        s = s // '"' // source%include_dependencies(i)%s // '"'
+        if (i < size(source%include_dependencies)) s = s // ", "
+    end do
+    s = s // "]"
+    !    type(string_t), allocatable :: link_libraries(:)
+    s = s // ", link_libraries=["
+    do i = 1, size(source%link_libraries)
+        s = s // '"' // source%link_libraries(i)%s // '"'
+        if (i < size(source%link_libraries)) s = s // ", "
+    end do
+    s = s // "]"
     !    integer(int64) :: digest
     s = s // ", digest=" // str(source%digest)
     !end type srcfile_t
