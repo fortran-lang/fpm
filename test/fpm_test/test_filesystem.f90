@@ -180,8 +180,7 @@ contains
         call os_delete_dir(os_is_unix(),path)
 
         ! Check that directory is indeed deleted
-        stat = (is_dir(path) .eqv. .false.)
-        if (.not. stat) then
+        if (is_dir(path)) then
             call test_failed(error, &
                 "Directory path "//path//" cannot be deleted")
         end if
