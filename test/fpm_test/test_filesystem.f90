@@ -110,15 +110,8 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        logical :: is_win
 
-        is_win = (get_os_type() == OS_WINDOWS)
-
-        if (is_win) then
-            call check_mkdir(error, "tmpdir\subdir")
-          else
-            call check_mkdir(error, "tmpdir/subdir")
-        end if
+        call check_mkdir(error, join_path("tmpdir","subdir"))
         if (allocated(error)) return
 
         if (is_win) then
