@@ -153,8 +153,7 @@ contains
         call mkdir(path)
 
         ! Check that directory is indeed created
-        stat = (is_dir(path) .eqv. .true.)
-        if (.not. stat) then
+        if (.not.is_dir(path)) then
             call test_failed(error, &
                 "Directory path "//path//" cannot be created")
         end if
