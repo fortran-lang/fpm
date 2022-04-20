@@ -1,6 +1,7 @@
 module test_filesystem
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
-    use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir
+    use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
+                              join_path
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     implicit none
     private
@@ -110,15 +111,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-
         call check_mkdir(error, join_path("tmpdir","subdir"))
-        if (allocated(error)) return
-
-        if (is_win) then
-            call check_rmdir(error, "tmpdir\subdir")
-          else
-            call check_rmdir(error, "tmpdir/subdir")
-        end if
         if (allocated(error)) return
 
         call check_rmdir(error, "tmpdir")

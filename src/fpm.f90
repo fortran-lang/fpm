@@ -1,5 +1,6 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, fnv_1a, lower
+use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, fnv_1a, &
+                      lower, str_ends_with
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings, &
