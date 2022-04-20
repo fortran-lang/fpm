@@ -140,6 +140,7 @@ contains
         if (is_dir(path)) then
             call test_failed(error, &
                 "Directory path "//path//" already exists before its creation")
+            return
         end if
 
         ! Create directory
