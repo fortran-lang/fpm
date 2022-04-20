@@ -170,11 +170,8 @@ contains
         !> Directory path
         character(len=*), intent(in) :: path
 
-        logical :: stat
-
         ! Directory should exist before it's deleted
-        stat = (is_dir(path) .eqv. .true.)
-        if (.not. stat) then
+        if (.not. is_dir(path)) then
             call test_failed(error, &
                 "Directory path "//path//" doesn't exist before its deletion")
         end if
