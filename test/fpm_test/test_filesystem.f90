@@ -168,6 +168,7 @@ contains
         if (.not. is_dir(path)) then
             call test_failed(error, &
                 "Directory path "//path//" doesn't exist before its deletion")
+            return
         end if
 
         ! Delete directory
