@@ -514,7 +514,7 @@ subroutine delete_skip(unix)
     do i = 1, size(files)
         if (is_dir(files(i)%s)) then
             dir = files(i)%s
-            if (dir /= 'build/dependencies') call os_delete_dir(unix, dir)
+            if (.not.str_ends_with(dir,'dependencies')) call os_delete_dir(unix, dir)
         end if
     end do
 end subroutine delete_skip
