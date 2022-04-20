@@ -548,7 +548,7 @@ contains
             call set_args(common_args // &
             &   ' --skip'             // &
             &   ' --all',                &
-                help_install, version_text)
+                help_clean, version_text)
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
             cmd_settings=fpm_clean_settings( &
