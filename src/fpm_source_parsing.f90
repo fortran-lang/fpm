@@ -99,10 +99,8 @@ function parse_f_source(f_filename,error) result(f_source)
        file_lines_lower(i)%s=adjustl(lower(file_lines_lower(i)%s))
     enddo
 
-    ! Ignore empty files, returned as FPM_UNIT_UNKNOWN
-    if (len_trim(file_lines_lower) < 1) return
-
-    f_source%digest = fnv_1a(file_lines)
+    ! fnv_1a can only be applied to non-zero-length arrays
+    if (len_trim(file_lines_lower) > 0) f_source%digest = fnv_1a(file_lines)
 
     do pass = 1,2
         n_use = 0
