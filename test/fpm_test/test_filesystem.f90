@@ -143,11 +143,8 @@ contains
         !> Directory path
         character(len=*), intent(in) :: path
 
-        logical :: stat
-
         ! Directory shouldn't exist before it's created
-        stat = (is_dir(path) .eqv. .false.)
-        if (.not. stat) then
+        if (is_dir(path)) then
             call test_failed(error, &
                 "Directory path "//path//" already exists before its creation")
         end if
