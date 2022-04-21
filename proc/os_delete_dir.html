@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>debug_archiver &ndash; Fortran-lang/fpm</title>
+    <title>os_delete_dir &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -79,8 +79,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>debug_archiver
-      <small>Function</small>
+    <h1>os_delete_dir
+      <small>Subroutine</small>
     </h1>
     <div class="row">
   <div class="col-lg-12">
@@ -89,14 +89,14 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.1% of total for procedures.">5 statements</a>
+    title=" 0.6% of total for procedures.">22 statements</a>
      </li> 
-    <li><i class="fa fa-code"></i><a href="../src/fpm_compiler.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/fpm_filesystem.F90"> Source File</a></li>
   </ul>
   <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.f90</a></li>
-     <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
-     <li class="active">debug_archiver</li>
+     <li><a href='../sourcefile/fpm_filesystem.f90.html'>fpm_filesystem.F90</a></li>
+     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+     <li class="active">os_delete_dir</li>
   </ol>
 </div>
 </div>
@@ -117,7 +117,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/debug_archiver.html#src">debug_archiver</a>
+    <a class="list-group-item" href="../proc/os_delete_dir.html#src">os_delete_dir</a>
   </div>
 </div>
 
@@ -126,26 +126,36 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public pure function debug_archiver(self) result(repr)</h2>
+    <h2>public subroutine os_delete_dir(1, dir, echo)</h2>
     
 
-    <p>String representation of an archiver object</p>
+    <p>Delete directory using system OS remove directory commands</p>
 
     <h3>Arguments</h3>
       <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
-  <td><span class="anchor" id="variable-self"></span>type(<a href='../type/archiver_t.html'>archiver_t</a>),</td>
+  <td><span class="anchor" id="variable-1"></span>logical,</td>
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the archiver object</p></td>
+  <td><strong>1</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-dir~6"></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>dir</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-echo~4"></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>echo</strong></td><td></td>
 </tr>
 </tbody>
 </table>
 
-   <h3>Return Value <small><span class="anchor" id="variable-repr"></span>character(len=:),allocatable</small></h3>
-    <p>Representation as string</p>
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
@@ -154,7 +164,7 @@
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/debug_archiver.html#src">debug_archiver</a>
+    <a class="list-group-item" href="../proc/os_delete_dir.html#src">os_delete_dir</a>
   </div>
 </div>
 
@@ -172,14 +182,36 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">pure function </span><span class="n">debug_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Instance of the archiver object</span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Representation as string</span>
-<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">repr</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">os_delete_dir</span><span class="p">(</span><span class="n">unix</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unix</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dir</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span><span class="w"></span>
 
-<span class="w">    </span><span class="n">repr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;ar=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="w"></span>
-<span class="k">end function </span><span class="n">debug_archiver</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo_local</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">echo</span><span class="p">))</span><span class="k">then</span>
+<span class="k">        </span><span class="n">echo_local</span><span class="o">=</span><span class="n">echo</span><span class="w"></span>
+<span class="w">      </span><span class="k">else</span>
+<span class="k">        </span><span class="n">echo_local</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">unix</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;rm -rf &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">          write</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(&quot; + &quot;,2a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;rm -rf &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+
+<span class="k">    else</span>
+<span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;rmdir /s/q &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">          write</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(&quot; + &quot;,2a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;rmdir /s/q &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+
+<span class="k">    end if</span>
+
+<span class="k">end subroutine </span><span class="n">os_delete_dir</span><span class="w"></span>
 </pre></div>
 
     </section>

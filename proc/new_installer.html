@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.2% of total for procedures.">44 statements</a>
+    title=" 1.4% of total for procedures.">54 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/installer.f90"> Source File</a></li>
   </ul>
@@ -126,7 +126,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, copy)</h2>
+    <h2>public subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, copy, move)</h2>
     
 
     <p>Create a new instance of an installer</p>
@@ -177,6 +177,12 @@
   <td>optional</td>  <td></td><td>::</td>
   <td><strong>copy</strong></td><td><p>Copy command</p></td>
 </tr>
+<tr>
+  <td><span class="anchor" id="variable-move~2"></span>character(len=*),</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>move</strong></td><td><p>Move command</p></td>
+</tr>
 </tbody>
 </table>
 
@@ -207,7 +213,7 @@
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
     <div class="highlight"><pre><span></span><span class="w">  </span><span class="k">subroutine </span><span class="n">new_installer</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">prefix</span><span class="p">,</span><span class="w"> </span><span class="n">bindir</span><span class="p">,</span><span class="w"> </span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="n">includedir</span><span class="p">,</span><span class="w"> </span><span class="n">verbosity</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">          </span><span class="n">copy</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="n">copy</span><span class="p">,</span><span class="w"> </span><span class="n">move</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Instance of the installer</span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">installer_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Path to installation directory</span>
@@ -222,6 +228,8 @@
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbosity</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Copy command</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">copy</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Move command</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">move</span><span class="w"></span>
 
 <span class="w">    </span><span class="n">self</span><span class="p">%</span><span class="n">os</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_os_type</span><span class="p">()</span><span class="w"></span>
 
@@ -232,6 +240,16 @@
 <span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">copy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">default_copy_unix</span><span class="w"></span>
 <span class="w">      </span><span class="k">else</span>
 <span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">copy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">default_copy_win</span><span class="w"></span>
+<span class="w">      </span><span class="k">end if</span>
+<span class="k">    end if</span>
+
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">move</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">      </span><span class="n">self</span><span class="p">%</span><span class="n">move</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">move</span><span class="w"></span>
+<span class="w">    </span><span class="k">else</span>
+<span class="k">      if</span><span class="w"> </span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">os</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">move</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">default_move_unix</span><span class="w"></span>
+<span class="w">      </span><span class="k">else</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">move</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">default_move_win</span><span class="w"></span>
 <span class="w">      </span><span class="k">end if</span>
 <span class="k">    end if</span>
 
@@ -286,7 +304,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-04-20 15:26            </p>
+ on 2022-04-21 12:36            </p>
         </div>
       </div>
       <br>

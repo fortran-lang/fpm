@@ -88,7 +88,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="100.0% of total for programs.">85 statements</a>
+    title="100.0% of total for programs.">87 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/main.f90"> Source File</a></li>
   </ul>
@@ -161,15 +161,15 @@
       <ul class="list-group">
       <li class="list-group-item">
   <ul class="list-inline">
-    <li><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
-    <li><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></li>
-    <li><a href='../module/fpm.html'>fpm</a></li>
     <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
-    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-    <li><a href='../module/fpm_os.html'>fpm_os</a></li>
-    <li><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></li>
+    <li><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></li>
     <li><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></li>
+    <li><a href='../module/fpm.html'>fpm</a></li>
+    <li><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+    <li><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></li>
+    <li><a href='../module/fpm_os.html'>fpm_os</a></li>
   </ul>
       </li>
       </ul>
@@ -358,10 +358,11 @@
 <span class="w">        </span><span class="n">fpm_test_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">        </span><span class="n">fpm_install_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">        </span><span class="n">fpm_update_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">        </span><span class="n">fpm_clean_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">        </span><span class="n">get_command_line_settings</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">error_t</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">exists</span><span class="p">,</span><span class="w"> </span><span class="n">parent_dir</span><span class="p">,</span><span class="w"> </span><span class="n">join_path</span><span class="w"></span>
-<span class="k">use </span><span class="n">fpm</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_build</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_run</span><span class="w"></span>
+<span class="k">use </span><span class="n">fpm</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_build</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_run</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_clean</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_cmd_install</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_install</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_cmd_new</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_new</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_cmd_update</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">cmd_update</span><span class="w"></span>
@@ -423,6 +424,8 @@
 <span class="w">    </span><span class="k">call </span><span class="n">cmd_install</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
 <span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_update_settings</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="k">call </span><span class="n">cmd_update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
+<span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_clean_settings</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">call </span><span class="n">cmd_clean</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
 <span class="k">end select</span>
 
 <span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
@@ -479,7 +482,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-04-20 15:26            </p>
+ on 2022-04-21 12:36            </p>
         </div>
       </div>
       <br>
