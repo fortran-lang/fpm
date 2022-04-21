@@ -33,6 +33,7 @@ character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ' help install >> fpm_scratch_help.txt',&
 ' help list    >> fpm_scratch_help.txt',&
 ' help help    >> fpm_scratch_help.txt',&
+' help clean   >> fpm_scratch_help.txt',&
 ' --version    >> fpm_scratch_help.txt',&
 ! generate manual
 ' help manual   > fpm_scratch_manual.txt']
@@ -41,7 +42,7 @@ character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 !'fpm run -- --list       >> fpm_scratch_help.txt',&
 !'fpm run -- list --list  >> fpm_scratch_help.txt',&
 character(len=*),parameter :: names(*)=[character(len=10) ::&
-   'fpm','new','update','build','run','test','runner','install','list','help']
+   'fpm','new','update','build','run','test','runner','install','list','help','clean']
 character(len=:), allocatable :: prog
 integer :: length
 

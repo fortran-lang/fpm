@@ -27,10 +27,12 @@ integer                              :: act_cstat, act_estat
 integer                              :: i, ios
 logical                              :: w_e,act_w_e          ; namelist/act_cli/act_w_e
 logical                              :: w_t,act_w_t          ; namelist/act_cli/act_w_t
+logical                              :: c_s,act_c_s          ; namelist/act_cli/act_c_s
+logical                              :: c_a,act_c_a          ; namelist/act_cli/act_c_a
 
 character(len=63)                    :: profile,act_profile  ; namelist/act_cli/act_profile
 character(len=:),allocatable         :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,name,profile,args
+namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,name,profile,args
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -42,7 +44,7 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 'CMD="new",                                           ESTAT=1,', &
 !'CMD="new -unknown",                                  ESTAT=2,', &
 'CMD="new my_project another yet_another -test", ESTAT=2,', &
-'CMD="new my_project --app",              W_E=T,       NAME="my_project",',  &
+'CMD="new my_project --app",                          W_E=T,       NAME="my_project",',  &
 'CMD="new my_project --app --test",                   W_E=T,W_T=T, NAME="my_project",',  &
 'CMD="new my_project --test",                               W_T=T, NAME="my_project",',  &
 'CMD="new my_project",                                W_E=T,W_T=T, NAME="my_project",',  &
@@ -64,7 +66,11 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
    &NAME="proj1","p2","project3",profile="release" ARGS="""arg1"" ""-x"" ""and a long one""",                         ', &
 
 'CMD="build",                                                      NAME= profile="",ARGS="",', &
-'CMD="build --profile release",                                            NAME= profile="release",ARGS="",', &
+'CMD="build --profile release",                                    NAME= profile="release",ARGS="",', &
+
+'CMD="clean",                                                      NAME= ARGS="",', &
+'CMD="clean --skip",                                        C_S=T, NAME= ARGS="",', &
+'CMD="clean --all",                                   C_A=T,       NAME= ARGS="",', &
 ' ' ]
 character(len=256) :: readme(3)
 
@@ -95,6 +101,8 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
       profile=""                     ! --profile PROF
       w_e=.false.                    ! --app
       w_t=.false.                    ! --test
+      c_s=.false.                    ! --skip
+      c_a=.false.                    ! --all
       args=repeat(' ',132)           ! -- ARGS
       cmd=repeat(' ',132)            ! the command line arguments to test
       cstat=0                        ! status values from EXECUTE_COMMAND_LINE()
@@ -112,6 +120,8 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
              act_profile=''
              act_w_e=.false.
              act_w_t=.false.
+             act_c_s=.false.
+             act_c_a=.false.
              act_args=repeat(' ',132)
              read(lun,nml=act_cli,iostat=ios,iomsg=message)
              if(ios.ne.0)then
@@ -193,9 +203,10 @@ use fpm_command_line, only: &
         fpm_build_settings, &
         fpm_run_settings, &
         fpm_test_settings, &
+        fpm_clean_settings, &
         fpm_install_settings, &
         get_command_line_settings
-use fpm, only: cmd_build, cmd_run
+use fpm, only: cmd_build, cmd_run, cmd_clean
 use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
 class(fpm_cmd_settings), allocatable :: cmd_settings
@@ -206,6 +217,8 @@ allocate (character(len=len(name)) :: act_name(0) )
 act_args=''
 act_w_e=.false.
 act_w_t=.false.
+act_c_s=.false.
+act_c_a=.false.
 act_profile=''
 
 select type(settings=>cmd_settings)
@@ -223,6 +236,9 @@ type is (fpm_test_settings)
     act_profile=settings%profile
     act_name=settings%name
     act_args=settings%args
+type is (fpm_clean_settings)
+    act_c_s=settings%clean_skip
+    act_c_a=settings%clean_call
 type is (fpm_install_settings)
 end select
 
