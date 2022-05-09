@@ -486,13 +486,21 @@ subroutine prune_build_targets(targets, root_package)
     nexec = 0
     allocate(modules_used(0))
 
-    ! Enumerate modules used by executables and their dependencies
+    ! Enumerate modules used by executables, non-module subprograms and their dependencies
     do i=1,size(targets)
             
         if (targets(i)%ptr%target_type == FPM_TARGET_EXECUTABLE) then
 
             nexec = nexec + 1
             call collect_used_modules(targets(i)%ptr)
+
+        elseif (allocated(targets(i)%ptr%source)) then
+
+            if (targets(i)%ptr%source%unit_type == FPM_UNIT_SUBPROGRAM) then
+
+                call collect_used_modules(targets(i)%ptr)
+
+            end if
 
         end if
 

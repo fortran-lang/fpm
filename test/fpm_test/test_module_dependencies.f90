@@ -53,7 +53,9 @@ contains
             & new_unittest("invalid-subdirectory-module-use", &
                             test_invalid_subdirectory_module_use, should_fail=.true.), &
             & new_unittest("tree-shake-module", & 
-                            test_tree_shake_module, should_fail=.false.) &
+                            test_tree_shake_module, should_fail=.false.), &
+            & new_unittest("tree-shake-subprogram-with-module", & 
+                            test_tree_shake_subprogram_with_module, should_fail=.false.) &
             ]
             
     end subroutine collect_module_dependencies
@@ -534,7 +536,7 @@ contains
         if (allocated(error)) return
 
         if (size(targets) /= 5) then
-            call test_failed(error,scope_str//'Incorrect number of targets - expecting three')
+            call test_failed(error,scope_str//'Incorrect number of targets - expecting five')
             return
         end if
 
@@ -566,6 +568,75 @@ contains
         if (allocated(error)) return
 
     end subroutine test_tree_shake_module
+
+
+    !> Check tree-shaking of modules used via a subprogram source
+    !>  (Subprogram type is a source containing any non-module subroutines/functions)
+    !>  Subprograms cannot be pruned, so neither can their dependencies
+    subroutine test_tree_shake_subprogram_with_module(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(build_target_ptr), allocatable :: targets(:)
+        character(:), allocatable :: scope_str
+
+        allocate(model%external_modules(0))
+        allocate(model%packages(1))
+        allocate(model%packages(1)%sources(4))
+
+        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
+                                    scope = FPM_SCOPE_LIB, &
+                                    provides=[string_t('my_mod_1')])  ! used via subprogram
+
+        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_SUBPROGRAM,file_name="src/my_subprogram.f90", &
+                                    scope = FPM_SCOPE_LIB, &
+                                    uses=[string_t('my_mod_1')])      ! subprogram (never pruned)
+
+        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_3.f90", &
+                                    scope = FPM_SCOPE_LIB, &
+                                    provides=[string_t('my_mod_3')])  ! unused module
+
+        model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
+                                    scope=FPM_SCOPE_APP)
+
+        call targets_from_sources(targets,model,prune=.true.,error=error)
+        if (allocated(error)) return
+
+        if (size(targets) /= 5) then
+            call test_failed(error,scope_str//'Incorrect number of targets - expecting five')
+            return
+        end if
+
+        call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
+                          deps=[targets(2)], &
+                          links=[targets(2),targets(3)],error=error)
+
+        if (allocated(error)) return
+
+        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
+                            source=model%packages(1)%sources(1),error=error)
+
+        if (allocated(error)) return
+
+        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
+                            deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
+
+        if (allocated(error)) return
+
+        call check_target(targets(4)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
+                            source=model%packages(1)%sources(4),error=error)
+
+        if (allocated(error)) return
+
+        call check_target(targets(5)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=2, &
+                            deps=[targets(1),targets(4)], &
+                            links=[targets(4)], error=error)
+
+        if (allocated(error)) return
+
+    end subroutine test_tree_shake_subprogram_with_module
 
 
     !> Check program using a non-library module in a differente sub-directory
