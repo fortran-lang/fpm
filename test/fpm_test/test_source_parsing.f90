@@ -311,6 +311,7 @@ contains
 
         open(file=temp_file, newunit=unit)
         write(unit, '(a)') &
+            & '#define preprocesor_line_outside', &
             & 'module  my_mod ! A trailing comment', &
             & 'use module_one', &
             & 'interface', &
