@@ -515,6 +515,8 @@ subroutine prune_build_targets(targets, root_package)
 
     end if
 
+    call reset_target_flags(targets)
+
     exclude_target(:) = .false.
 
     ! Exclude purely module targets if they are not used anywhere
@@ -592,10 +594,17 @@ subroutine prune_build_targets(targets, root_package)
 
     contains
 
+    !> Recursively collect which modules are actually used
     recursive subroutine collect_used_modules(target)
-        type(build_target_t), intent(in) :: target
+        type(build_target_t), intent(inout) :: target
 
         integer :: j, k
+
+        if (target%touched) then
+            return
+        else
+            target%touched = .true.
+        end if
 
         if (allocated(target%source)) then
             do j=1,size(target%source%modules_used)
@@ -630,6 +639,20 @@ subroutine prune_build_targets(targets, root_package)
         end do
 
     end subroutine collect_used_modules
+
+    !> Reset target flags after recursive search
+    subroutine reset_target_flags(targets)
+        type(build_target_ptr), intent(inout) :: targets(:)
+
+        integer :: i
+
+        do i=1,size(targets)
+
+            targets(i)%ptr%touched = .false.
+
+        end do
+
+    end subroutine reset_target_flags
 
 end subroutine prune_build_targets
 
