@@ -113,8 +113,9 @@ function parse_f_source(f_filename,error) result(f_source)
         inside_module = .false.
         file_loop: do i=1,size(file_lines_lower)
 
-            ! Skip comment lines
+            ! Skip comment lines and preprocessor directives
             if (index(file_lines_lower(i)%s,'!') == 1 .or. &
+                index(file_lines_lower(i)%s,'#') == 1 .or. &
                 len_trim(file_lines_lower(i)%s) < 1) then
                 cycle
             end if
