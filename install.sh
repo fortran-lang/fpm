@@ -64,11 +64,10 @@ fi
 
 $FETCH $SOURCE_URL > $BOOTSTRAP_DIR/fpm.F90
 
-export SAVEDIR="$(pwd)"
+SAVEDIR="$(pwd)"
 cd $BOOTSTRAP_DIR
 $FC $FFLAGS fpm.F90 -o fpm
 cd "$SAVEDIR"
-unset -v SAVEDIR
 
 $BOOTSTRAP_DIR/fpm update
 $BOOTSTRAP_DIR/fpm install --compiler "$FC" --flag "$FFLAGS" --prefix "$PREFIX"
