@@ -18,22 +18,6 @@ usage()
     echo ""
 }
 
-# pushd and popd is a bash built-in feature
-# Custom pushd and popd implementation for shells other than bash
-# Not an actual stack!
-
-my_pushd()
-{
-    export SAVEDIR=$(pwd)
-    cd "$1"
-}
-
-my_popd()
-{
-    cd "$SAVEDIR"
-    unset -v SAVEDIR
-}
-
 PREFIX="$HOME/.local"
 
 while [ "$1" != "" ]; do
@@ -80,17 +64,11 @@ fi
 
 $FETCH $SOURCE_URL > $BOOTSTRAP_DIR/fpm.F90
 
-if command -v pushd > /dev/null 2>&1; then
-    PUSHD=pushd
-    POPD=popd
-else
-    PUSHD=my_pushd
-    POPD=my_popd
-fi
-
-$PUSHD $BOOTSTRAP_DIR
-    $FC $FFLAGS fpm.F90 -o fpm
-$POPD
+export SAVEDIR="$(pwd)"
+cd $BOOTSTRAP_DIR
+$FC $FFLAGS fpm.F90 -o fpm
+cd "$SAVEDIR"
+unset -v SAVEDIR
 
 $BOOTSTRAP_DIR/fpm update
 $BOOTSTRAP_DIR/fpm install --compiler "$FC" --flag "$FFLAGS" --prefix "$PREFIX"
