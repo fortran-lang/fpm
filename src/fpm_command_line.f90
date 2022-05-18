@@ -23,7 +23,7 @@
 !> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
 !> is complete and consistent as well.
 module fpm_command_line
-use fpm_environment,  only : get_os_type, get_env, &
+use fpm_environment,  only : get_os_type, get_env, os_is_unix, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
@@ -47,6 +47,7 @@ public :: fpm_cmd_settings, &
           fpm_run_settings, &
           fpm_test_settings, &
           fpm_update_settings, &
+          fpm_clean_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
@@ -104,6 +105,13 @@ type, extends(fpm_cmd_settings)  :: fpm_update_settings
     logical :: clean
 end type
 
+type, extends(fpm_cmd_settings)   :: fpm_clean_settings
+    logical                       :: unix
+    character(len=:), allocatable :: calling_dir  ! directory clean called from
+    logical                       :: clean_skip=.false.
+    logical                       :: clean_call=.false.
+end type
+
 character(len=:),allocatable :: name
 character(len=:),allocatable :: os_type
 character(len=ibug),allocatable :: names(:)
@@ -113,9 +121,10 @@ character(len=:), allocatable :: version_text(:)
 character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), help_update(:), &
-                 & help_list(:), help_list_dash(:), help_list_nodash(:)
+                 & help_list(:), help_list_dash(:), help_list_nodash(:), &
+                 & help_clean(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
-&  ' ',     'fpm',     'new',   'build',  'run',     &
+&  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
@@ -174,6 +183,8 @@ contains
         character(len=4096)           :: cmdarg
         integer                       :: i
         integer                       :: widest
+        integer                       :: os
+        logical                       :: unix
         type(fpm_install_settings), allocatable :: install_settings
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, archiver
@@ -184,8 +195,9 @@ contains
         type(error_t), allocatable :: error
 
         call set_help()
+        os = get_os_type()
         ! text for --version switch,
-        select case (get_os_type())
+        select case (os)
             case (OS_LINUX);   os_type =  "OS Type:     Linux"
             case (OS_MACOS);   os_type =  "OS Type:     macOS"
             case (OS_WINDOWS); os_type =  "OS Type:     Windows"
@@ -196,6 +208,7 @@ contains
             case (OS_UNKNOWN); os_type =  "OS Type:     Unknown"
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
+        unix = os_is_unix(os)
         version_text = [character(len=80) :: &
          &  'Version:     0.5.0, alpha',                               &
          &  'Program:     fpm(1)',                                     &
@@ -321,7 +334,7 @@ contains
             select case(size(unnamed))
             case(1)
                 if(lget('backfill'))then
-                   name='.'   
+                   name='.'
                 else
                    write(stderr,'(*(7x,g0,/))') &
                    & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
@@ -424,6 +437,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_help]
                 case('version' )
                    help_text=[character(len=widest) :: help_text, version_text]
+                case('clean' )
+                   help_text=[character(len=widest) :: help_text, help_clean]
                 case default
                    help_text=[character(len=widest) :: help_text, &
                    & '<ERROR> unknown help topic "'//trim(unnamed(i))//'"']
@@ -469,6 +484,7 @@ contains
             if(lget('list'))then
                call printhelp(help_list_dash)
             endif
+
         case('test')
             call set_args(common_args // compiler_args // run_args // ' --', &
               help_test,version_text)
@@ -527,6 +543,19 @@ contains
             cmd_settings=fpm_update_settings(name=names, &
                 fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
                 clean=lget('clean'))
+
+        case('clean')
+            call set_args(common_args // &
+            &   ' --skip'             // &
+            &   ' --all',                &
+                help_clean, version_text)
+            allocate(fpm_clean_settings :: cmd_settings)
+            call get_current_directory(working_dir, error)
+            cmd_settings=fpm_clean_settings( &
+            &   unix=unix,                   &
+            &   calling_dir=working_dir,     &
+            &   clean_skip=lget('skip'),     &
+                clean_call=lget('all'))
 
         case default
 
@@ -607,6 +636,7 @@ contains
    '  test      Run the test programs                                       ', &
    '  update    Update and manage project dependencies                      ', &
    '  install   Install project                                             ', &
+   '  clean     Delete the build                                            ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
@@ -626,6 +656,7 @@ contains
    '      [--list] [--compiler COMPILER_NAME] [-- ARGS]                             ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
+   ' clean [--skip] [--all]                                                         ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -722,12 +753,14 @@ contains
     '  + build    Compile the packages into the "build/" directory.         ', &
     '  + new      Create a new Fortran package directory with sample files. ', &
     '  + update   Update the project dependencies.                          ', &
-    '  + run      Run the local package binaries. defaults to all binaries  ', &
+    '  + run      Run the local package binaries. Defaults to all binaries  ', &
     '             for that release.                                         ', &
     '  + test     Run the tests.                                            ', &
     '  + help     Alternate to the --help switch for displaying help text.  ', &
     '  + list     Display brief descriptions of all subcommands.            ', &
-    '  + install  Install project                                           ', &
+    '  + install  Install project.                                          ', &
+    '  + clean    Delete directories in the "build/" directory, except      ', &
+    '             dependencies. Prompts for confirmation to delete.         ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                                ', &
@@ -743,7 +776,8 @@ contains
     '    help [NAME(s)]                                                              ', &
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
-    '    [options]                                                                   ', &
+    '            [options]                                                           ', &
+    '    clean [--skip] [--all]                                                       ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -759,6 +793,10 @@ contains
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
     '  -- ARGS    Arguments to pass to executables.                         ', &
+    '  --skip     Delete directories in the build/ directory without        ', &
+    '             prompting, but skip dependencies.                         ', &
+    '  --all      Delete directories in the build/ directory without        ', &
+    '             prompting, including dependencies.                        ', &
     '                                                                       ', &
     'VALID FOR ALL SUBCOMMANDS                                              ', &
     '  --help     Show help text and exit                                   ', &
@@ -788,8 +826,8 @@ contains
     '     # my build options                                                ', &
     '     options build                                                     ', &
     '     options --compiler gfortran                                       ', &
-    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused \', &
-    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring \', &
+    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused  ', &
+    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring  ', &
     '      -frecord-marker=4 -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"     ', &
     '                                                                       ', &
     '   Note --flag would have to be on one line as response files do not   ', &
@@ -809,6 +847,7 @@ contains
     '    fpm new --help                                                     ', &
     '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
     '    fpm install --prefix ~/.local                                               ', &
+    '    fpm clean --all                                                             ', &
     '                                                                                ', &
     'SEE ALSO                                                                        ', &
     '                                                                                ', &
@@ -998,8 +1037,8 @@ contains
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
     'SYNOPSIS                                                               ', &
-   '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|            ', &
-   '      [--full|--bare][--backfill]                                       ', &
+    '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|           ', &
+    '      [--full|--bare][--backfill]                                      ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
@@ -1219,7 +1258,22 @@ contains
     '', &
     '    fpm install --prefix $PWD --bindir exe', &
     '' ]
-    end subroutine set_help
+    help_clean=[character(len=80) :: &
+    'NAME', &
+    ' clean(1) - delete the build', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm clean', &
+    '', &
+    'DESCRIPTION', &
+    ' Prompts the user to confirm deletion of the build. If affirmative,', &
+    ' directories in the build/ directory are deleted, except dependencies.', &
+    '', &
+    'OPTIONS', &
+    ' --skip           delete the build without prompting but skip dependencies.', &
+    ' --all            delete the build without prompting including dependencies.', &
+    '' ]
+     end subroutine set_help
 
     subroutine get_char_arg(var, arg)
       character(len=:), allocatable, intent(out) :: var
