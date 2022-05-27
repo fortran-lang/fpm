@@ -314,11 +314,10 @@ end function join_path
 integer function number_of_rows(s) result(nrows)
     integer,intent(in)::s
     integer :: ios
-    character(len=100) :: r
     rewind(s)
     nrows = 0
     do
-        read(s, '(A)', iostat=ios) r
+        read(s, *, iostat=ios)
         if (ios /= 0) exit
         nrows = nrows + 1
     end do
