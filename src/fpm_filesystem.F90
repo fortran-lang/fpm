@@ -457,7 +457,7 @@ recursive subroutine list_files(dir, files, recurse)
 
     r = c_closedir(dir_handle)
 
-    if (r .ne. 0) then
+    if (r /= 0) then
         print *, 'c_closedir() failed'
         error stop
     end if
@@ -472,7 +472,7 @@ recursive subroutine list_files(dir, files, recurse)
             allocate(sub_dir_files(0))
 
             do i=1,size(files)
-                if (c_is_dir(files(i)%s//c_null_char) .ne. 0) then
+                if (c_is_dir(files(i)%s//c_null_char) /= 0) then
                     call list_files(files(i)%s, dir_files, recurse=.true.)
                     sub_dir_files = [sub_dir_files, dir_files]
                 end if
@@ -714,7 +714,7 @@ character(len=256)            :: message
 
     message=' '
     ios=0
-    if(filename.ne.' ')then
+    if(filename/=' ')then
         open(file=filename, &
         & newunit=lun, &
         & form='formatted', &    ! FORM    = FORMATTED | UNFORMATTED
@@ -728,7 +728,7 @@ character(len=256)            :: message
         lun=stdout
         ios=0
     endif
-    if(ios.ne.0)then
+    if(ios/=0)then
         lun=-1
         if(present(ier))then
            ier=ios
@@ -745,9 +745,9 @@ integer,intent(in)    :: lun
 integer,intent(out),optional :: ier
 character(len=256)    :: message
 integer               :: ios
-    if(lun.ne.-1)then
+    if(lun/=-1)then
         close(unit=lun,iostat=ios,iomsg=message)
-        if(ios.ne.0)then
+        if(ios/=0)then
             if(present(ier))then
                ier=ios
             else
@@ -765,12 +765,12 @@ character(len=*),intent(in)           :: filedata(:)
 integer                               :: lun, i, ios
 character(len=256)                    :: message
     call fileopen(filename,lun)
-    if(lun.ne.-1)then ! program currently stops on error on open, but might
+    if(lun/=-1)then ! program currently stops on error on open, but might
                       ! want it to continue so -1 (unallowed LUN) indicates error
        ! write file
        do i=1,size(filedata)
            write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
-           if(ios.ne.0)then
+           if(ios/=0)then
                call fpm_stop(5,'*filewrite*:'//filename//':'//trim(message))
            endif
        enddo

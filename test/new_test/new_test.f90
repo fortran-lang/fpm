@@ -123,7 +123,7 @@ character(len=:),allocatable  :: rm_command
          !! Warning: This only looks for expected files. If there are more files than expected it does not fail
          call list_files(trim(directories(i)), file_names,recurse=.true.)
 
-         if(size(expected).ne.size(file_names))then
+         if(size(expected)/=size(file_names))then
             write(*,*)'WARNING: unexpected number of files in file list=',size(file_names),' expected ',size(expected)
             write(*,'("EXPECTED: ",*(g0:,","))')(scr//trim(expected(j)),j=1,size(expected))
             write(*,'("FOUND:    ",*(g0:,","))')(trim(file_names(j)%s),j=1,size(file_names))

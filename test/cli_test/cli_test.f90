@@ -124,7 +124,7 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              act_c_a=.false.
              act_args=repeat(' ',132)
              read(lun,nml=act_cli,iostat=ios,iomsg=message)
-             if(ios.ne.0)then
+             if(ios/=0)then
                 write(*,'(a)')'ERROR:',trim(message)
              endif
              close(unit=lun)

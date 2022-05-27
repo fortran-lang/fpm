@@ -90,7 +90,7 @@ integer :: length
          tally=[tally,count(page1=='SYNOPSIS')==1]
          tally=[tally,count(page1=='DESCRIPTION')==1]
          af=count(.not.tally)
-         if(be.ne.af)then
+         if(be/=af)then
             write(*,*)'<ERROR>missing expected sections in ',names(i)
             write(*,*)page1(1) ! assuming at least size 1 for debugging mingw
             write(*,*)count(page1=='NAME')
@@ -120,11 +120,11 @@ integer :: length
    book2=pack(book1,index(book2,' + build/')==0)
    write(*,*)'<INFO>book1 ',size(book1), len(book1)
    write(*,*)'<INFO>book2 ',size(book2), len(book2)
-   if(size(book1).ne.size(book2))then
+   if(size(book1)/=size(book2))then
          write(*,*)'<ERROR>manual and "debug" appended pages are not the same size'
          tally=[tally,.false.]
    else
-      if(all(book1.ne.book2))then
+      if(all(book1/=book2))then
          tally=[tally,.false.]
          write(*,*)'<ERROR>manual and "debug" appended pages are not the same'
       else
@@ -166,7 +166,7 @@ character(len=k1) :: message
 open(file=filename,newunit=lun,iostat=ios,iomsg=message)
 if(ios==0)then
    close(unit=lun,iostat=ios,status='delete',iomsg=message)
-   if(ios.ne.0)then
+   if(ios/=0)then
       write(*,*)'<ERROR>'//trim(message)
    endif
 else
@@ -198,7 +198,7 @@ character(len=4096)                      :: local_filename
       if(allocated(text))deallocate(text) ! make sure text array not allocated
       allocate ( text(nchars) )           ! make enough storage to hold file
       read(igetunit,iostat=ios,iomsg=message) text      ! load input file -> text array
-      if(ios.ne.0)then
+      if(ios/=0)then
          call stderr_local( '*slurp* bad read of '//trim(local_filename)//':'//trim(message) )
       endif
    else
@@ -261,7 +261,7 @@ character(len=1),parameter   :: cr=char(13)
       endif
    enddo
    if(sz.gt.0)then
-      if(array(sz).ne.nl)then
+      if(array(sz)/=nl)then
          lines=lines+1
       endif
    endif
@@ -277,7 +277,7 @@ character(len=1),parameter   :: cr=char(13)
          linecount=linecount+1
          position=1
       elseif(array(i)==cr)then
-      elseif(linelength.ne.0)then
+      elseif(linelength/=0)then
          if(position.gt.len(table))then
             write(*,*)'<ERROR> adding character past edge of text',table(linecount),array(i)
          elseif(linecount.gt.size(table))then

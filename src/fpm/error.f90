@@ -166,7 +166,7 @@ contains
         integer, intent(in) :: value
         !> Error message
         character(len=*), intent(in) :: message
-        if(message.ne.'')then
+        if(message/='')then
            if(value.gt.0)then
               write(stderr,'("<ERROR>",a)')trim(message)
            else

@@ -136,12 +136,12 @@ contains
         call new_version(v1, [0, 9, 1])
         call new_version(v2, [0, 9])
 
-        if (.not. v1.ne.v2) then
+        if (.not. v1/=v2) then
            call test_failed(error, "Version comparison failed")
            return
         end if
 
-        if (.not. v2.ne.v1) then
+        if (.not. v2/=v1) then
            call test_failed(error, "Version comparison failed")
            return
         end if

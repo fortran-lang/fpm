@@ -559,7 +559,7 @@ contains
 
         case default
 
-            if(which('fpm-'//cmdarg).ne.'')then
+            if(which('fpm-'//cmdarg)/='')then
                 call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted(),.false.)
             else
                 call set_args('&

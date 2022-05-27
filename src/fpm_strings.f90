@@ -348,7 +348,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
 
     ! decide on value for optional DELIMITERS parameter
     if (present(delimiters)) then                                     ! optional delimiter list was present
-        if(delimiters.ne.'')then                                       ! if DELIMITERS was specified and not null use it
+        if(delimiters/='')then                                       ! if DELIMITERS was specified and not null use it
             dlim=delimiters
         else                                                           ! DELIMITERS was specified on call as empty string
             dlim=' '//char(9)//char(10)//char(11)//char(12)//char(13)//char(0) ! use default delimiter when not specified
@@ -861,9 +861,9 @@ character(len=:),allocatable :: tbookmark, wbookmark
             glob=.true.
             return
          endif
-         if(wildtext(wi:wi) .ne. '?') then
+         if(wildtext(wi:wi) /= '?') then
             ! Fast-forward to next possible match.
-            do while (tametext(ti:ti) .ne. wildtext(wi:wi))
+            do while (tametext(ti:ti) /= wildtext(wi:wi))
                ti=ti+1
                if (tametext(ti:ti)==NULL)then
                   glob=.false.
@@ -873,15 +873,15 @@ character(len=:),allocatable :: tbookmark, wbookmark
          endif
          wbookmark = wildtext(wi:)
          tbookmark = tametext(ti:)
-      elseif(tametext(ti:ti) .ne. wildtext(wi:wi) .and. wildtext(wi:wi) .ne. '?') then
+      elseif(tametext(ti:ti) /= wildtext(wi:wi) .and. wildtext(wi:wi) /= '?') then
          ! Got a non-match. If we've set our bookmarks, back up to one or both of them and retry.
-         if(wbookmark.ne.NULL) then
-            if(wildtext(wi:).ne. wbookmark) then
+         if(wbookmark/=NULL) then
+            if(wildtext(wi:)/= wbookmark) then
                wildtext = wbookmark;
                wlen=len_trim(wbookmark)
                wi=1
                ! Don't go this far back again.
-               if (tametext(ti:ti) .ne. wildtext(wi:wi)) then
+               if (tametext(ti:ti) /= wildtext(wi:wi)) then
                   tbookmark=tbookmark(2:)
                   tametext = tbookmark
                   ti=1
@@ -890,7 +890,7 @@ character(len=:),allocatable :: tbookmark, wbookmark
                   wi=wi+1
                endif
             endif
-            if (tametext(ti:ti).ne.NULL) then
+            if (tametext(ti:ti)/=NULL) then
                ti=ti+1
                cycle                             ! "mississippi" matches "*sip*"
             endif
@@ -901,7 +901,7 @@ character(len=:),allocatable :: tbookmark, wbookmark
       ti=ti+1
       wi=wi+1
       if (tametext(ti:ti)==NULL) then          ! How do you match a tame text string?
-         if(wildtext(wi:wi).ne.NULL)then
+         if(wildtext(wi:wi)/=NULL)then
             do while (wildtext(wi:wi) == '*')    ! The tame way: unique up on it!
                wi=wi+1                           ! "x" matches "x*"
                if(wildtext(wi:wi)==NULL)exit
@@ -995,7 +995,7 @@ function is_fortran_name(line) result (lout)
     character(len=:),allocatable :: name
     logical                      :: lout
         name=trim(line)
-        if(len(name).ne.0)then
+        if(len(name)/=0)then
             lout = .true.                                  &
              & .and. verify(name(1:1), lower//upper) == 0  &
              & .and. verify(name,allowed) == 0             &
