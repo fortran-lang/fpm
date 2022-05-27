@@ -380,7 +380,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
         icol=1                                                      ! initialize pointer into input line
         INFINITE: do i30=1,ilen,1                                   ! store into each array element
             ibegin(i30)=icol                                         ! assume start new token on the character
-            if(index(dlim(1:idlim),input_line(icol:icol)).eq.0)then  ! if current character is not a delimiter
+            if(index(dlim(1:idlim),input_line(icol:icol))==0)then  ! if current character is not a delimiter
             iterm(i30)=ilen                                       ! initially assume no more tokens
             do i10=1,idlim                                        ! search for next delimiter
                 ifound=index(input_line(ibegin(i30):ilen),dlim(i10:i10))
@@ -574,7 +574,7 @@ integer                              :: i
    if(present(left))then  ; left_local=left   ; else ; left_local=''    ; endif
    if(present(right))then ; right_local=right ; else ; right_local=''   ; endif
    string=''
-   if(size(str).eq.0)then
+   if(size(str)==0)then
       string=string//left_local//right_local
    else
       do i = 1,size(str)-1
@@ -851,13 +851,13 @@ character(len=:),allocatable :: tbookmark, wbookmark
    do                                            ! Walk the text strings one character at a time.
       if(wildtext(wi:wi) == '*')then             ! How do you match a unique text string?
          do i=wi,wlen                            ! Easy: unique up on it!
-            if(wildtext(wi:wi).eq.'*')then
+            if(wildtext(wi:wi)=='*')then
                wi=wi+1
             else
                exit
             endif
          enddo
-         if(wildtext(wi:wi).eq.NULL) then        ! "x" matches "*"
+         if(wildtext(wi:wi)==NULL) then        ! "x" matches "*"
             glob=.true.
             return
          endif
@@ -865,7 +865,7 @@ character(len=:),allocatable :: tbookmark, wbookmark
             ! Fast-forward to next possible match.
             do while (tametext(ti:ti) .ne. wildtext(wi:wi))
                ti=ti+1
-               if (tametext(ti:ti).eq.NULL)then
+               if (tametext(ti:ti)==NULL)then
                   glob=.false.
                   return                         ! "x" doesn't match "*y*"
                endif
@@ -900,14 +900,14 @@ character(len=:),allocatable :: tbookmark, wbookmark
       endif
       ti=ti+1
       wi=wi+1
-      if (tametext(ti:ti).eq.NULL) then          ! How do you match a tame text string?
+      if (tametext(ti:ti)==NULL) then          ! How do you match a tame text string?
          if(wildtext(wi:wi).ne.NULL)then
             do while (wildtext(wi:wi) == '*')    ! The tame way: unique up on it!
                wi=wi+1                           ! "x" matches "x*"
-               if(wildtext(wi:wi).eq.NULL)exit
+               if(wildtext(wi:wi)==NULL)exit
             enddo
          endif
-         if (wildtext(wi:wi).eq.NULL)then
+         if (wildtext(wi:wi)==NULL)then
             glob=.true.
             return                               ! "x" matches "x"
          endif

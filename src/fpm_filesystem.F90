@@ -419,7 +419,7 @@ recursive subroutine list_files(dir, files, recurse)
     type(string_t) :: files_tmp(N_MAX)
     integer(kind=c_int) :: r
 
-    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) .eq. 0) then
+    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) == 0) then
         allocate (files(0))
         return
     end if
@@ -440,7 +440,7 @@ recursive subroutine list_files(dir, files, recurse)
         else
             string_fortran = f_string(c_get_d_name(dir_entry_c))
 
-            if ((string_fortran .eq. '.' .or. string_fortran .eq. '..')) then
+            if ((string_fortran == '.' .or. string_fortran == '..')) then
                 cycle
             end if
 
@@ -827,7 +827,7 @@ character(len=*),intent(in)     :: command
 character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)
 integer                         :: i, j
    pathname=''
-   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator().eq.'\'))
+   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator()=='\'))
    SEARCH: do i=1,size(paths)
       checkon=trim(join_path(trim(paths(i)),command))
       select case(separator())

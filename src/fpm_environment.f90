@@ -190,7 +190,7 @@ contains
         else
            VALUE=''
         endif
-        if(VALUE.eq.''.and.present(DEFAULT))VALUE=DEFAULT
+        if(VALUE==''.and.present(DEFAULT))VALUE=DEFAULT
      end function get_env
 
     function get_command_arguments_quoted() result(args)
@@ -200,7 +200,7 @@ contains
     integer                      :: ilength, istatus, i
     ilength=0
     args=''
-        quote=merge('"',"'",separator().eq.'\')
+        quote=merge('"',"'",separator()=='\')
         do i=2,command_argument_count() ! look at all arguments after subcommand
             call get_command_argument(number=i,length=ilength,status=istatus)
             if(istatus /= 0) then

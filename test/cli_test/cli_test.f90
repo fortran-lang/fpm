@@ -78,7 +78,7 @@ readme(1)='&EXPECTED'  ! top and bottom line for a NAMELIST group read from TEST
 readme(3)=' /'
 tally=[logical ::]     ! an array that tabulates the command test results as pass or fail.
 
-if(command_argument_count().eq.0)then  ! assume if called with no arguments to do the tests. This means you cannot
+if(command_argument_count()==0)then  ! assume if called with no arguments to do the tests. This means you cannot
                                        ! have a test of no parameters. Could improve on this.
                                        ! if called with parameters assume this is a test and call the routine to
                                        ! parse the resulting values after calling the CLI command line parser
@@ -91,7 +91,7 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
    write(*,*)'command=',command
 
    do i=1,size(tests)
-      if(tests(i).eq.' ')then
+      if(tests(i)==' ')then
          open(file='_test_cli',newunit=lun,delim='quote')
          close(unit=lun,status='delete')
          exit
@@ -113,8 +113,8 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
       write(*,'(*(g0))')'START:  TEST ',i,' CMD=',trim(cmd)
       ! call this program which will crack command line and write results to scratch file _test_cli
       call execute_command_line(command//' '//trim(cmd),cmdstat=act_cstat,exitstat=act_estat)
-      if(cstat.eq.act_cstat.and.estat.eq.act_estat)then
-          if(estat.eq.0)then
+      if(cstat==act_cstat.and.estat==act_estat)then
+          if(estat==0)then
              open(file='_test_cli',newunit=lun,delim='quote')
              act_name=[(repeat(' ',len(act_name)),i=1,max_names)]
              act_profile=''
@@ -130,12 +130,12 @@ if(command_argument_count().eq.0)then  ! assume if called with no arguments to d
              close(unit=lun)
              ! compare results to expected values
              subtally=[logical ::]
-             call test_test('NAME',all(act_name.eq.name))
-             call test_test('PROFILE',act_profile.eq.profile)
+             call test_test('NAME',all(act_name==name))
+             call test_test('PROFILE',act_profile==profile)
              call test_test('WITH_EXPECTED',act_w_e.eqv.w_e)
              call test_test('WITH_TESTED',act_w_t.eqv.w_t)
              call test_test('WITH_TEST',act_w_t.eqv.w_t)
-             call test_test('ARGS',act_args.eq.args)
+             call test_test('ARGS',act_args==args)
              if(all(subtally))then
                 write(*,'(*(g0))')'PASSED: TEST ',i,' STATUS: expected ',cstat,' ',estat,' actual ',act_cstat,' ',act_estat,&
                 & ' for [',trim(cmd),']'

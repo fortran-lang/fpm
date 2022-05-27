@@ -271,14 +271,14 @@ contains
             ! convert special string '..' to equivalent (shorter) '*'
             ! to allow for a string that does not require shift-key and quoting
             do i=1,size(names)
-               if(names(i).eq.'..')names(i)='*'
+               if(names(i)=='..')names(i)='*'
             enddo
 
             c_compiler = sget('c-compiler')
             archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
-            if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
+            if(specified('runner') .and. val_runner=='')val_runner='echo'
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
@@ -348,7 +348,7 @@ contains
                 call fpm_stop(2,'only one directory name allowed')
             end select
             !*! canon_path is not converting ".", etc.
-            if(name.eq.'.')then
+            if(name=='.')then
                call get_current_directory(name, error)
                if (allocated(error)) then
                   write(stderr, '("[Error]", 1x, a)') error%message
@@ -402,12 +402,12 @@ contains
         case('help','manual')
             call set_args(common_args, help_help,version_text)
             if(size(unnamed).lt.2)then
-                if(unnamed(1).eq.'help')then
+                if(unnamed(1)=='help')then
                    unnamed=['   ', 'fpm']
                 else
                    unnamed=manual
                 endif
-            elseif(unnamed(2).eq.'manual')then
+            elseif(unnamed(2)=='manual')then
                 unnamed=manual
             endif
             widest=256
@@ -505,14 +505,14 @@ contains
             ! convert special string '..' to equivalent (shorter) '*'
             ! to allow for a string that does not require shift-key and quoting
             do i=1,size(names)
-               if(names(i).eq.'..')names(i)='*'
+               if(names(i)=='..')names(i)='*'
             enddo
 
             c_compiler = sget('c-compiler')
             archiver = sget('archiver')
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
-            if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
+            if(specified('runner') .and. val_runner=='')val_runner='echo'
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
@@ -570,7 +570,7 @@ contains
                 help_text=help_usage
                 if(lget('list'))then
                    help_text=help_list_dash
-                elseif(len_trim(cmdarg).eq.0)then
+                elseif(len_trim(cmdarg)==0)then
                     write(stdout,'(*(a))')'Fortran Package Manager:'
                     write(stdout,'(*(a))')' '
                     call printhelp(help_list_nodash)
@@ -595,7 +595,7 @@ contains
         character(len=:), allocatable :: flags
 
         val_compiler=sget('compiler')
-        if(val_compiler.eq.'') then
+        if(val_compiler=='') then
             val_compiler='gfortran'
         endif
 

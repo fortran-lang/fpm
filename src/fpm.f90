@@ -390,7 +390,7 @@ subroutine cmd_run(settings,test)
 
     ! Check all names are valid
     ! or no name and found more than one file
-    toomany= size(settings%name).eq.0 .and. size(executables).gt.1
+    toomany= size(settings%name)==0 .and. size(executables).gt.1
     if ( any(.not.found) &
     & .or. &
     & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner .ne. '') ) &
@@ -413,7 +413,7 @@ subroutine cmd_run(settings,test)
 
         call compact_list_all()
 
-        if(line.eq.'.' .or. line.eq.' ')then ! do not report these special strings
+        if(line=='.' .or. line==' ')then ! do not report these special strings
            call fpm_stop(0,'')
         else
            call fpm_stop(1,'')
