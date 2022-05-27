@@ -190,7 +190,7 @@ character(len=4096)                      :: local_filename
    local_filename=filename
    if(ios==0)then  ! if file was successfully opened
       inquire(unit=igetunit, size=nchars)
-      if(nchars.le.0)then
+      if(nchars<=0)then
          call stderr_local( '*slurp* empty file '//trim(local_filename) )
          return
       endif

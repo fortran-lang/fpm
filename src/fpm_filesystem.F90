@@ -104,7 +104,7 @@ function basename(path,suffix) result (base)
     endif
     if(.not.with_suffix)then
         call split(base,file_parts,delimiters='.')
-        if(size(file_parts).ge.2)then
+        if(size(file_parts)>=2)then
            base = trim(file_parts(size(file_parts)-1))
         endif
     endif

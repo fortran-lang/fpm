@@ -213,7 +213,7 @@ contains
            return
         end if
 
-        if (.not. v1 .ge. v2) then
+        if (.not. v1 >= v2) then
            call test_failed(error, "Version comparison failed (ge)")
            return
         end if
@@ -223,7 +223,7 @@ contains
            return
         end if
 
-        if (.not. v2 .le. v1) then
+        if (.not. v2 <= v1) then
            call test_failed(error, "Version comparison failed (le)")
            return
         end if
