@@ -167,7 +167,7 @@ contains
         !> Error message
         character(len=*), intent(in) :: message
         if(message/='')then
-           if(value.gt.0)then
+           if(value>0)then
               write(stderr,'("<ERROR>",a)')trim(message)
            else
               write(stderr,'("<INFO> ",a)')trim(message)

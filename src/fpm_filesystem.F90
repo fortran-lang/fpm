@@ -97,7 +97,7 @@ function basename(path,suffix) result (base)
     end if
 
     call split(path,file_parts,delimiters='\/')
-    if(size(file_parts).gt.0)then
+    if(size(file_parts)>0)then
        base = trim(file_parts(size(file_parts)))
     else
        base = ''
@@ -446,7 +446,7 @@ recursive subroutine list_files(dir, files, recurse)
 
             i = i + 1
 
-            if (i .gt. N_MAX) then
+            if (i > N_MAX) then
                 files = [files, files_tmp]
                 i = 1
             end if
@@ -462,7 +462,7 @@ recursive subroutine list_files(dir, files, recurse)
         error stop
     end if
 
-    if (i .gt. 0) then
+    if (i > 0) then
         files = [files, files_tmp(1:i)]
     end if
 

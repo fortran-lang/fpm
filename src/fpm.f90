@@ -390,7 +390,7 @@ subroutine cmd_run(settings,test)
 
     ! Check all names are valid
     ! or no name and found more than one file
-    toomany= size(settings%name)==0 .and. size(executables).gt.1
+    toomany= size(settings%name)==0 .and. size(executables)>1
     if ( any(.not.found) &
     & .or. &
     & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner /= '') ) &

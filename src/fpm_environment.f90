@@ -213,7 +213,7 @@ contains
                 if(istatus /= 0) then
                     write(stderr,'(*(g0,1x))')'<ERROR>*get_command_arguments_stack* error obtaining argument ',i
                     exit
-                elseif(ilength.gt.0)then
+                elseif(ilength>0)then
                     if(index(arg//' ','-')/=1)then
                         args=args//quote//arg//quote//' '
                     elseif(index(arg,' ')/=0)then

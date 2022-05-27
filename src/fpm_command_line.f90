@@ -251,7 +251,7 @@ contains
 
             call check_build_vals()
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -491,7 +491,7 @@ contains
 
             call check_build_vals()
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -533,7 +533,7 @@ contains
             call set_args(common_args // ' --fetch-only F --clean F', &
                 help_update, version_text)
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -611,7 +611,7 @@ contains
     integer :: iii,ii
         if(allocated(lines))then
            ii=size(lines)
-           if(ii .gt. 0 .and. len(lines).gt. 0) then
+           if(ii > 0 .and. len(lines)> 0) then
                write(stdout,'(g0)')(trim(lines(iii)), iii=1, ii)
            else
                write(stdout,'(a)')'<WARNING> *printhelp* output requested is empty'

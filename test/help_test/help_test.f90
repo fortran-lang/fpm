@@ -260,7 +260,7 @@ character(len=1),parameter   :: cr=char(13)
          length=length+1
       endif
    enddo
-   if(sz.gt.0)then
+   if(sz>0)then
       if(array(sz)/=nl)then
          lines=lines+1
       endif
@@ -278,9 +278,9 @@ character(len=1),parameter   :: cr=char(13)
          position=1
       elseif(array(i)==cr)then
       elseif(linelength/=0)then
-         if(position.gt.len(table))then
+         if(position>len(table))then
             write(*,*)'<ERROR> adding character past edge of text',table(linecount),array(i)
-         elseif(linecount.gt.size(table))then
+         elseif(linecount>size(table))then
             write(*,*)'<ERROR> adding line past end of text',linecount,size(table)
          else
             table(linecount)(position:position)=array(i)

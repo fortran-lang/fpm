@@ -208,7 +208,7 @@ contains
         call new_version(v1, [1, 0, 8])
         call new_version(v2, [1, 0])
 
-        if (.not. v1 .gt. v2) then
+        if (.not. v1 > v2) then
            call test_failed(error, "Version comparison failed (gt)")
            return
         end if

@@ -384,7 +384,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
             iterm(i30)=ilen                                       ! initially assume no more tokens
             do i10=1,idlim                                        ! search for next delimiter
                 ifound=index(input_line(ibegin(i30):ilen),dlim(i10:i10))
-                IF(ifound.gt.0)then
+                IF(ifound>0)then
                     iterm(i30)=min(iterm(i30),ifound+ibegin(i30)-2)
                 endif
             enddo
@@ -396,7 +396,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
             endif
             imax=max(imax,iterm(i30)-ibegin(i30)+1)
             icount=i30                                               ! increment count of number of tokens found
-            if(icol.gt.ilen)then                                     ! no text left
+            if(icol>ilen)then                                     ! no text left
             exit INFINITE
             endif
         enddo INFINITE
