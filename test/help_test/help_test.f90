@@ -79,7 +79,7 @@ integer :: length
          write(*,'(*(g0))')'<INFO>CMD=',path,' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
          tally=[tally,all([estat==0,cstat==0])]
          call swallow('fpm_scratch_help.txt',page1)
-         if(size(page1).lt.3)then
+         if(size(page1)<3)then
             write(*,*)'<ERROR>help for '//names(i)//' ridiculiously small'
             tally=[tally,.false.]
             exit
@@ -138,7 +138,7 @@ integer :: length
    !lines=max(count(char(10)==book2),count(char(13)==book2))
    chars=sum(len_trim(book2)) ! SUM TRIMMED LENGTH
    lines=size(book2)
-   if( (chars.lt.12000) .or. (lines.lt.350) )then
+   if( (chars<12000) .or. (lines<350) )then
       write(*,*)'<ERROR>"debug" manual is suspiciously small, bytes=',chars,' lines=',lines
       tally=[tally,.false.]
    else

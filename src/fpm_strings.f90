@@ -418,7 +418,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
     end select
 
     do i20=1,icount                                                ! fill the array with the tokens that were found
-        if(iterm(i20).lt.ibegin(i20))then
+        if(iterm(i20)<ibegin(i20))then
             select case (trim(adjustl(nlls)))
             case ('ignore','','ignoreend')
             case default

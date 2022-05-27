@@ -401,7 +401,7 @@ contains
 
         case('help','manual')
             call set_args(common_args, help_help,version_text)
-            if(size(unnamed).lt.2)then
+            if(size(unnamed)<2)then
                 if(unnamed(1)=='help')then
                    unnamed=['   ', 'fpm']
                 else

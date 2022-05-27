@@ -218,7 +218,7 @@ contains
            return
         end if
 
-        if (.not. v2 .lt. v1) then
+        if (.not. v2 < v1) then
            call test_failed(error, "Version comparison failed (lt)")
            return
         end if
