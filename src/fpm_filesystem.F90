@@ -379,14 +379,14 @@ subroutine mkdir(dir, echo)
             call execute_command_line('mkdir -p ' // dir, exitstat=stat)
 
             if (echo_local) then
-                write (*, '(" + ",2a)') 'mkdir -p ' // dir
+                write (*, *) '+ mkdir -p ' // dir
             end if
 
         case (OS_WINDOWS)
             call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
 
             if (echo_local) then
-                write (*, '(" + ",2a)') 'mkdir ' // windows_path(dir)
+                write (*, *) '+ mkdir ' // windows_path(dir)
             end if
 
     end select
@@ -946,14 +946,14 @@ subroutine os_delete_dir(unix, dir, echo)
         call run('rm -rf ' // dir, .false.)
 
         if (echo_local) then
-          write (*, '(" + ",2a)') 'rm -rf ' // dir
+          write (*, *) '+ rm -rf ' // dir
         end if
 
     else
         call run('rmdir /s/q ' // dir, .false.)
 
         if (echo_local) then
-          write (*, '(" + ",2a)') 'rmdir /s/q ' // dir
+          write (*, *) '+ rmdir /s/q ' // dir
         end if
 
     end if
