@@ -96,6 +96,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
         if (allocated(error)) return
 
         dir_sources(i)%unit_scope = scope
+        allocate(dir_sources(i)%link_libraries(0))
 
         ! Exclude executables unless specified otherwise
         exclude_source(i) = (dir_sources(i)%unit_type == FPM_UNIT_PROGRAM)
