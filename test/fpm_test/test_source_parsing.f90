@@ -643,6 +643,11 @@ contains
             return
         end if
 
+        if (allocated(f_source%link_libraries)) then
+            call test_failed(error,'Unexpected link_libraries - expecting unallocated')
+            return
+        end if
+
         if (.not.('proto.h' .in. f_source%include_dependencies)) then
             call test_failed(error,'Missing file in include_dependencies')
             return
