@@ -123,7 +123,7 @@ function parse_f_source(f_filename,error) result(f_source)
 
             ! Detect exported C-API via bind(C)
             if (.not.inside_interface .and. &
-                index(file_lines_lower(i)%s,'bind(c') > 0) then
+                parse_subsequence(file_lines_lower(i)%s,'bind','(','c')) then
                 
                 do j=i,1,-1
 
@@ -172,15 +172,10 @@ function parse_f_source(f_filename,error) result(f_source)
             end if
 
             ! Detect end of interface block
-            if (index(file_lines_lower(i)%s,'end') == 1 .and. &
-                len(file_lines_lower(i)%s) > 3) then
+            if (parse_sequence(file_lines_lower(i)%s,'end','interface')) then
 
-                if (index(adjustl(file_lines_lower(i)%s(4:)),'interface') == 1) then
-
-                    inside_interface = .false.
-                    cycle
-
-                end if
+                inside_interface = .false.
+                cycle
 
             end if
 
@@ -407,18 +402,11 @@ function parse_f_source(f_filename,error) result(f_source)
 
             ! Parse end module statement
             !  (to check for code outside of modules)
-            if (index(file_lines_lower(i)%s,'end') == 1) then
-
-                temp_string = split_n(file_lines_lower(i)%s,n=2,delims=' ',stat=stat)
-
-                if (stat == 0) then
-                    if (temp_string == 'module' .or. temp_string == 'submodule') then
-
-                        inside_module = .false.
-                        cycle
-
-                    end if
-                end if
+            if (parse_sequence(file_lines_lower(i)%s,'end','module') .or. &
+                parse_sequence(file_lines_lower(i)%s,'end','submodule')) then
+                
+                inside_module = .false.
+                cycle
 
             end if
 
@@ -567,4 +555,98 @@ function split_n(string,delims,n,stat) result(substring)
 
 end function split_n
 
+
+!> Parse a subsequence of blank-separated tokens within a string
+!>  (see parse_sequence)
+function parse_subsequence(string,t1,t2,t3,t4) result(found)
+    character(*), intent(in) :: string
+    character(*), intent(in) :: t1
+    character(*), intent(in), optional :: t2, t3, t4
+    logical :: found
+
+    integer :: offset, i
+
+    found = .false.
+    offset = 1
+
+    do 
+
+        i = index(string(offset:),t1)
+
+        if (i == 0) return
+
+        offset = offset + i - 1
+
+        found = parse_sequence(string(offset:),t1,t2,t3,t4)
+
+        if (found) return
+
+        offset = offset + len(t1)
+
+        if (offset > len(string)) return
+
+    end do
+
+end function parse_subsequence
+
+!> Helper utility to parse sequences of tokens
+!> that may be optionally separated by zero or more spaces
+function parse_sequence(string,t1,t2,t3,t4) result(found)
+    character(*), intent(in) :: string
+    character(*), intent(in) :: t1
+    character(*), intent(in), optional :: t2, t3, t4
+    logical :: found
+
+    integer :: post, n, incr, pos, token_n
+    logical :: match
+
+    n = len(string)
+    found = .false.
+    pos = 1
+
+    do token_n=1,4
+
+        do while (pos <= n)
+            if (string(pos:pos) /= ' ') then
+                exit
+            end if
+            pos = pos + 1
+        end do
+
+        select case(token_n)
+        case(1)
+            incr = len(t1)
+            match = string(pos:pos+incr-1) == t1
+        case(2)
+            if (.not.present(t2)) exit
+            incr = len(t2)
+            if (pos+incr-1>n) return
+            match = string(pos:pos+incr-1) == t2
+        case(3)
+            if (.not.present(t3)) exit
+            incr = len(t3)
+            if (pos+incr-1>n) return
+            match = string(pos:pos+incr-1) == t3
+        case(4)
+            if (.not.present(t4)) exit
+            incr = len(t4)
+            if (pos+incr-1>n) return
+            match = string(pos:pos+incr-1) == t4
+        case default
+            exit
+        end select
+
+        if (.not.match) then
+            return
+        end if
+
+        pos = pos + incr
+
+    end do
+
+    found = .true.
+
+end function parse_sequence
+
 end module fpm_source_parsing
+
