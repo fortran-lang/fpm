@@ -75,11 +75,7 @@ character(len=:),allocatable  :: rm_command
    do i=1,size(cmds)
       message=''
       write(*,*)path//' '//cmds(i)
-      if (get_os_type() == OS_WINDOWS) then
-         call execute_command_line(path//'fpm.exe'//' '//cmds(i),exitstat=estat,cmdstat=cstat,cmdmsg=message)
-      else
-         call execute_command_line(path//'fpm'//' '//cmds(i),exitstat=estat,cmdstat=cstat,cmdmsg=message)
-      end if
+      call execute_command_line(path//' '//cmds(i),exitstat=estat,cmdstat=cstat,cmdmsg=message)
       write(*,'(*(g0))')'CMD=',trim(cmds(i)),' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
    enddo
 
@@ -178,9 +174,12 @@ contains
     allocate(character(len=length) :: prog)
     call get_command_argument(0, prog)
     path = dirname(prog)
-    prog = join_path(path, "..", "app", "")
+    prog = join_path(path, "..", "app", "fpm")
     if (.not.exists(prog)) then
-       prog = join_path(path, "..", "..", "app", "")
+       prog = join_path(path, "..", "..", "app", "fpm")
+    end if
+    if (get_os_type() == OS_WINDOWS) then
+      prog = prog // '.exe'
     end if
   end function
 end program new_test
