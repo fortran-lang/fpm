@@ -76,7 +76,7 @@ function parse_f_source(f_filename,error) result(f_source)
     type(srcfile_t) :: f_source
     type(error_t), allocatable, intent(out) :: error
 
-    logical :: inside_module
+    logical :: inside_module, inside_interface
     integer :: stat
     integer :: fh, n_use, n_include, n_mod, n_parent, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
@@ -111,6 +111,7 @@ function parse_f_source(f_filename,error) result(f_source)
         n_mod = 0
         n_parent = 0
         inside_module = .false.
+        inside_interface = .false.
         file_loop: do i=1,size(file_lines_lower)
 
             ! Skip comment lines and preprocessor directives
@@ -118,6 +119,36 @@ function parse_f_source(f_filename,error) result(f_source)
                 index(file_lines_lower(i)%s,'#') == 1 .or. &
                 len_trim(file_lines_lower(i)%s) < 1) then
                 cycle
+            end if
+
+            ! Detect exported C-API via bind(C)
+            if (.not.inside_interface .and. &
+                index(file_lines_lower(i)%s,'bind(c') > 0) then
+                
+                do j=i,1,-1
+
+                    if (index(file_lines_lower(j)%s,'function') > 0 .or. &
+                        index(file_lines_lower(j)%s,'subroutine') > 0) then
+                        f_source%unit_type = FPM_UNIT_SUBPROGRAM
+                        exit
+                    end if
+
+                    if (j>1) then
+
+                        ic = index(file_lines_lower(j-1)%s,'!')
+                        if (ic < 1) then
+                            ic = len(file_lines_lower(j-1)%s)
+                        end if
+
+                        temp_string = trim(file_lines_lower(j-1)%s(1:ic))
+                        if (index(temp_string,'&') /= len(temp_string)) then
+                            exit
+                        end if
+
+                    end if
+
+                end do
+
             end if
 
             ! Skip lines that are continued: not statements
@@ -130,6 +161,27 @@ function parse_f_source(f_filename,error) result(f_source)
                 if (len(temp_string) > 0 .and. index(temp_string,'&') == len(temp_string)) then
                     cycle
                 end if
+            end if
+
+            ! Detect beginning of interface block
+            if (index(file_lines_lower(i)%s,'interface') == 1) then
+
+                inside_interface = .true.
+                cycle
+
+            end if
+
+            ! Detect end of interface block
+            if (index(file_lines_lower(i)%s,'end') == 1 .and. &
+                len(file_lines_lower(i)%s) > 3) then
+
+                if (index(adjustl(file_lines_lower(i)%s(4:)),'interface') == 1) then
+
+                    inside_interface = .false.
+                    cycle
+
+                end if
+
             end if
 
             ! Process 'USE' statements
