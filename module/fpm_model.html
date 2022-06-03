@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.8% of total for modules and submodules.">182 statements</a>
+    title=" 2.8% of total for modules and submodules.">189 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm_model.f90"> Source File</a></li>
   </ul>
@@ -166,6 +166,20 @@
 <h3 id="enumerations">Enumerations</h3>
 <p><strong>Source type:</strong> <code>FPM_UNIT_*</code>
  Describes the type of source file — determines build target generation</p>
+<p>The logical order of precedence for assigning <code>unit_type</code> is as follows:</p>
+<div class="codehilite"><pre><span></span><code> <span class="k">if</span> <span class="nv">source</span><span class="o">-</span><span class="nv">file</span> <span class="nv">contains</span> <span class="nv">program</span> <span class="k">then</span>
+   <span class="nv">unit_type</span> <span class="o">=</span> <span class="nv">FPM_UNIT_PROGRAM</span>
+ <span class="k">else</span> <span class="k">if</span> <span class="nv">source</span><span class="o">-</span><span class="nv">file</span> <span class="nv">contains</span> <span class="nv">non</span><span class="o">-</span><span class="nv">module</span> <span class="nv">subroutine</span><span class="o">/</span><span class="nv">function</span> <span class="k">then</span>
+   <span class="nv">unit_type</span> <span class="o">=</span> <span class="nv">FPM_UNIT_SUBPROGRAM</span>
+ <span class="k">else</span> <span class="k">if</span> <span class="nv">source</span><span class="o">-</span><span class="nv">file</span> <span class="nv">contains</span> <span class="nv">submodule</span> <span class="k">then</span>
+   <span class="nv">unit_type</span> <span class="o">=</span> <span class="nv">FPM_UNIT_SUBMODULE</span>
+ <span class="k">else</span> <span class="k">if</span> <span class="nv">source</span><span class="o">-</span><span class="nv">file</span> <span class="nv">contains</span> <span class="nv">module</span> <span class="k">then</span>
+   <span class="nv">unit_type</span> <span class="o">=</span> <span class="nv">FPM_UNIT_MODULE</span>
+ <span class="k">end</span> <span class="k">if</span>
+</code></pre></div>
+
+<p></p><div class="alert alert-info" role="alert"><h4>Note</h4><p>A source file is only designated <code>FPM_UNIT_MODULE</code> if it <strong>only</strong> contains modules - no non-module subprograms.
+ (This allows tree-shaking/pruning of build targets based on unused module dependencies.)</p></div>
 <p><strong>Source scope:</strong> <code>FPM_SCOPE_*</code>
  Describes the scoping rules for using modules — controls module dependency resolution</p>
 <br>        <div class="panel panel-default">
@@ -175,9 +189,9 @@
       <ul class="list-group">
       <li class="list-group-item">
   <ul class="list-inline">
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
     <li><a href='../module/fpm_dependency.html'>fpm_dependency</a></li>
-    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
   </ul>
       </li>
@@ -280,22 +294,22 @@
 <tr>
   <td><span class="anchor" id="variable-fpm_unit_module"></span>integer,</td>
 <td>public,</td>  <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_MODULE</strong></td><td> =</td><td>2</td><td><p>Source type is fortran module</p></td>
+  <td><strong>FPM_UNIT_MODULE</strong></td><td> =</td><td>2</td><td><p>Source <strong>only</strong> contains one or more fortran modules</p></td>
 </tr>
 <tr>
   <td><span class="anchor" id="variable-fpm_unit_program"></span>integer,</td>
 <td>public,</td>  <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_PROGRAM</strong></td><td> =</td><td>1</td><td><p>Source type is fortran program</p></td>
+  <td><strong>FPM_UNIT_PROGRAM</strong></td><td> =</td><td>1</td><td><p>Source contains a fortran program</p></td>
 </tr>
 <tr>
   <td><span class="anchor" id="variable-fpm_unit_submodule"></span>integer,</td>
 <td>public,</td>  <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_SUBMODULE</strong></td><td> =</td><td>3</td><td><p>Source type is fortran submodule</p></td>
+  <td><strong>FPM_UNIT_SUBMODULE</strong></td><td> =</td><td>3</td><td><p>Source contains one or more fortran submodules</p></td>
 </tr>
 <tr>
   <td><span class="anchor" id="variable-fpm_unit_subprogram"></span>integer,</td>
 <td>public,</td>  <td>parameter</td><td>::</td>
-  <td><strong>FPM_UNIT_SUBPROGRAM</strong></td><td> =</td><td>4</td><td><p>Source type is fortran subprogram</p></td>
+  <td><strong>FPM_UNIT_SUBPROGRAM</strong></td><td> =</td><td>4</td><td><p>Source contains one or more fortran subprogram not within modules</p></td>
 </tr>
 <tr>
   <td><span class="anchor" id="variable-fpm_unit_unknown"></span>integer,</td>
@@ -374,7 +388,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-05-28 13:41            </p>
+ on 2022-06-03 14:21            </p>
         </div>
       </div>
       <br>
