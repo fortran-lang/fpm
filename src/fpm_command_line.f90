@@ -71,6 +71,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
     logical                      :: show_model=.false.
     logical                      :: build_tests=.false.
+    logical                      :: prune=.true.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: c_compiler
     character(len=:),allocatable :: archiver
@@ -130,6 +131,15 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
     val_profile
 
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
+character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
+    ' --profile PROF    Selects the compilation profile for the build.               ',&
+    '                   Currently available profiles are "release" for               ',&
+    '                   high optimization and "debug" for full debug options.        ',&
+    '                   If --flag is not specified the "debug" flags are the         ',&
+    '                   default.                                                     ',&
+    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   '&
+    ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
     ' --compiler NAME    Specify a compiler name. The default is "gfortran"          ',&
@@ -232,6 +242,7 @@ contains
 
         compiler_args = &
           ' --profile " "' // &
+          ' --no-prune F' // &
           ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
           ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
           ' --archiver "'//get_fpm_env(ar_env, ar_default)//'"' // &
@@ -282,6 +293,7 @@ contains
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
+            & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
             & archiver=archiver, &
@@ -309,6 +321,7 @@ contains
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
             & profile=val_profile,&
+            & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
             & archiver=archiver, &
@@ -462,6 +475,7 @@ contains
             install_settings = fpm_install_settings(&
                 list=lget('list'), &
                 profile=val_profile,&
+                prune=.not.lget('no-prune'), &
                 compiler=val_compiler, &
                 c_compiler=c_compiler, &
                 archiver=archiver, &
@@ -516,6 +530,7 @@ contains
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
+            & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
             & archiver=archiver, &
@@ -644,7 +659,7 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests]                                                                ', &
+   '       [--tests] [--no-prune]                                                   ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
@@ -765,14 +780,15 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests]                                                             ', &
+    '          [--tests] [--no-prune]                                                ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
     '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
-    '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]       ', &
+    '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME]                 ', &
+    '        [--no-prune] [-- ARGS]                                                  ', &
     '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]         ', &
-    '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]                  ', &
+    '         [--runner "CMD"] [--compiler COMPILER_NAME] [--no-prune] [-- ARGS]     ', &
     '    help [NAME(s)]                                                              ', &
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
@@ -782,11 +798,7 @@ contains
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
     '             Change working directory to PATH before running any command', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common, &
     help_text_compiler, &
     help_text_flag, &
     '  --list     List candidates instead of building or running them. On   ', &
@@ -909,11 +921,7 @@ contains
     '                   the special characters from shell expansion.        ', &
     ' --all   Run all examples or applications. An alias for --target ''*''.  ', &
     ' --example  Run example programs instead of applications.              ', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common, &
     help_text_compiler, &
     help_text_flag, &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
@@ -980,11 +988,7 @@ contains
     ' specified in the "fpm.toml" file.                                     ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common,&
     help_text_compiler, &
     help_text_flag, &
     ' --list        list candidates instead of building or running them     ', &
@@ -1157,11 +1161,7 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Note The glob string normally needs quoted to       ', &
     '                   protect the special characters from shell expansion.', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common,&
     help_text_compiler, &
     help_text_flag, &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
@@ -1226,11 +1226,7 @@ contains
     'OPTIONS', &
     ' --list            list all installable targets for this project,', &
     '                   but do not install any of them', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common,&
     help_text_flag, &
     ' --no-rebuild      do not rebuild project before installation', &
     ' --prefix DIR      path to installation directory (requires write access),', &

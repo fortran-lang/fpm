@@ -38,7 +38,7 @@ contains
     call build_model(model, settings%fpm_build_settings, package, error)
     call handle_error(error)
 
-    call targets_from_sources(targets, model, error)
+    call targets_from_sources(targets, model, settings%prune, error)
     call handle_error(error)
 
     installable = (allocated(package%library) .and. package%install%library) &

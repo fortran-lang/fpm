@@ -78,6 +78,9 @@ type build_target_t
     !> File path of build log file relative to cwd
     character(:), allocatable :: output_log_file
 
+    !> Name of parent package
+    character(:), allocatable :: package_name
+
     !> Primary source for this build target
     type(srcfile_t), allocatable :: source
 
@@ -120,7 +123,7 @@ end type build_target_t
 contains
 
 !> High-level wrapper to generate build target information
-subroutine targets_from_sources(targets,model,error)
+subroutine targets_from_sources(targets,model,prune,error)
 
     !> The generated list of build targets
     type(build_target_ptr), intent(out), allocatable :: targets(:)
@@ -128,6 +131,9 @@ subroutine targets_from_sources(targets,model,error)
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
 
+    !> Enable tree-shaking/pruning of module dependencies
+    logical, intent(in) :: prune
+    
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 
@@ -135,6 +141,10 @@ subroutine targets_from_sources(targets,model,error)
 
     call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
+
+    if (prune) then
+        call prune_build_targets(targets,root_package=model%package_name)
+    end if
 
     call resolve_target_linking(targets,model)
 
@@ -191,7 +201,7 @@ subroutine build_target_list(targets,model)
                       i=1,size(model%packages(j)%sources)), &
                       j=1,size(model%packages))])
 
-    if (with_lib) call add_target(targets,type = FPM_TARGET_ARCHIVE,&
+    if (with_lib) call add_target(targets,package=model%package_name,type = FPM_TARGET_ARCHIVE,&
                             output_name = join_path(&
                                    model%package_name,'lib'//model%package_name//'.a'))
 
@@ -208,7 +218,7 @@ subroutine build_target_list(targets,model)
                 select case (sources(i)%unit_type)
                 case (FPM_UNIT_MODULE,FPM_UNIT_SUBMODULE,FPM_UNIT_SUBPROGRAM,FPM_UNIT_CSOURCE)
 
-                    call add_target(targets,source = sources(i), &
+                    call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
                                 output_name = get_object_name(sources(i)))
@@ -220,7 +230,7 @@ subroutine build_target_list(targets,model)
 
                 case (FPM_UNIT_PROGRAM)
 
-                    call add_target(targets,type = FPM_TARGET_OBJECT,&
+                    call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_OBJECT,&
                                 output_name = get_object_name(sources(i)), &
                                 source = sources(i) &
                                 )
@@ -239,7 +249,7 @@ subroutine build_target_list(targets,model)
 
                     end if
 
-                    call add_target(targets,type = FPM_TARGET_EXECUTABLE,&
+                    call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
                                     output_name = join_path(exe_dir, &
                                     sources(i)%exe_name//xsuffix))
@@ -289,8 +299,9 @@ end subroutine build_target_list
 
 
 !> Allocate a new target and append to target list
-subroutine add_target(targets,type,output_name,source,link_libraries)
+subroutine add_target(targets,package,type,output_name,source,link_libraries)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
+    character(*), intent(in) :: package
     integer, intent(in) :: type
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
@@ -318,6 +329,7 @@ subroutine add_target(targets,type,output_name,source,link_libraries)
     allocate(new_target)
     new_target%target_type = type
     new_target%output_name = output_name
+    new_target%package_name = package
     if (present(source)) new_target%source = source
     if (present(link_libraries)) new_target%link_libraries = link_libraries
     allocate(new_target%dependencies(0))
@@ -451,6 +463,206 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
     end do
 
 end function find_module_dependency
+
+
+!> Perform tree-shaking to remove unused module targets
+subroutine prune_build_targets(targets, root_package)
+
+    !> Build target list to prune
+    type(build_target_ptr), intent(inout), allocatable :: targets(:)
+
+    !> Name of root package
+    character(*), intent(in) :: root_package 
+
+    integer :: i, j, nexec
+    type(string_t), allocatable :: modules_used(:)
+    logical :: exclude_target(size(targets))
+    logical, allocatable :: exclude_from_archive(:)
+    
+    if (size(targets) < 1) then
+        return
+    end if
+
+    nexec = 0
+    allocate(modules_used(0))
+
+    ! Enumerate modules used by executables, non-module subprograms and their dependencies
+    do i=1,size(targets)
+            
+        if (targets(i)%ptr%target_type == FPM_TARGET_EXECUTABLE) then
+
+            nexec = nexec + 1
+            call collect_used_modules(targets(i)%ptr)
+
+        elseif (allocated(targets(i)%ptr%source)) then
+
+            if (targets(i)%ptr%source%unit_type == FPM_UNIT_SUBPROGRAM) then
+
+                call collect_used_modules(targets(i)%ptr)
+
+            end if
+
+        end if
+
+    end do
+
+    ! If there aren't any executables, then prune
+    !  based on modules used in root package
+    if (nexec < 1) then
+        
+        do i=1,size(targets)
+            
+            if (targets(i)%ptr%package_name == root_package .and. &
+                 targets(i)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
+    
+                call collect_used_modules(targets(i)%ptr)
+    
+            end if
+            
+        end do
+
+    end if
+
+    call reset_target_flags(targets)
+
+    exclude_target(:) = .false.
+
+    ! Exclude purely module targets if they are not used anywhere
+    do i=1,size(targets)
+        associate(target=>targets(i)%ptr)
+
+            if (allocated(target%source)) then
+                if (target%source%unit_type == FPM_UNIT_MODULE) then
+
+                    exclude_target(i) = .true.
+                    target%skip = .true.
+
+                    do j=1,size(target%source%modules_provided)
+
+                        if (target%source%modules_provided(j)%s .in. modules_used) then
+                            
+                            exclude_target(i) = .false.
+                            target%skip = .false.
+
+                        end if 
+
+                    end do
+
+                elseif (target%source%unit_type == FPM_UNIT_SUBMODULE) then
+                    ! Remove submodules if their parents are not used
+
+                    exclude_target(i) = .true.
+                    target%skip = .true.
+                    do j=1,size(target%source%parent_modules)
+
+                        if (target%source%parent_modules(j)%s .in. modules_used) then
+                            
+                            exclude_target(i) = .false.
+                            target%skip = .false.
+
+                        end if 
+
+                    end do
+
+                end if
+            end if
+
+            ! (If there aren't any executables then we only prune modules from dependencies)
+            if (nexec < 1 .and. target%package_name == root_package) then
+                exclude_target(i) = .false.
+                target%skip = .false.
+            end if
+
+        end associate        
+    end do
+
+    targets = pack(targets,.not.exclude_target)
+
+    ! Remove unused targets from archive dependency list
+    if (targets(1)%ptr%target_type == FPM_TARGET_ARCHIVE) then
+        associate(archive=>targets(1)%ptr)
+
+            allocate(exclude_from_archive(size(archive%dependencies)))
+            exclude_from_archive(:) = .false.
+
+            do i=1,size(archive%dependencies)
+
+                if (archive%dependencies(i)%ptr%skip) then
+
+                    exclude_from_archive(i) = .true.
+
+                end if
+
+            end do
+
+            archive%dependencies = pack(archive%dependencies,.not.exclude_from_archive)
+
+        end associate
+    end if
+
+    contains
+
+    !> Recursively collect which modules are actually used
+    recursive subroutine collect_used_modules(target)
+        type(build_target_t), intent(inout) :: target
+
+        integer :: j, k
+
+        if (target%touched) then
+            return
+        else
+            target%touched = .true.
+        end if
+
+        if (allocated(target%source)) then
+            do j=1,size(target%source%modules_used)
+                        
+                if (.not.(target%source%modules_used(j)%s .in. modules_used)) then
+
+                    modules_used = [modules_used, target%source%modules_used(j)]
+
+                    ! Recurse into child submodules
+                    do k=1,size(targets)
+                        if (allocated(targets(k)%ptr%source)) then
+                            if (targets(k)%ptr%source%unit_type == FPM_UNIT_SUBMODULE) then
+                                if (target%source%modules_used(j)%s .in. targets(k)%ptr%source%parent_modules) then
+                                    call collect_used_modules(targets(k)%ptr)
+                                end if
+                            end if
+                        end if
+                    end do
+
+                end if
+
+            end do
+        end if
+
+        ! Recurse into dependencies
+        do j=1,size(target%dependencies)
+
+            if (target%dependencies(j)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
+                call collect_used_modules(target%dependencies(j)%ptr)
+            end if
+
+        end do
+
+    end subroutine collect_used_modules
+
+    !> Reset target flags after recursive search
+    subroutine reset_target_flags(targets)
+        type(build_target_ptr), intent(inout) :: targets(:)
+
+        integer :: i
+
+        do i=1,size(targets)
+
+            targets(i)%ptr%touched = .false.
+
+        end do
+
+    end subroutine reset_target_flags
+
+end subroutine prune_build_targets
 
 
 !> Construct the linker flags string for each target

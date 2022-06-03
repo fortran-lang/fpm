@@ -330,13 +330,13 @@ contains
         type(build_target_ptr), allocatable :: targets(:)
         integer :: i
 
-        call add_target(targets,FPM_TARGET_ARCHIVE,get_temp_filename())
+        call add_target(targets,'test-package',FPM_TARGET_ARCHIVE,get_temp_filename())
 
-        call add_target(targets,FPM_TARGET_OBJECT,get_temp_filename())
+        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
 
-        call add_target(targets,FPM_TARGET_OBJECT,get_temp_filename())
+        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
 
-        call add_target(targets,FPM_TARGET_OBJECT,get_temp_filename())
+        call add_target(targets,'test-package',FPM_TARGET_OBJECT,get_temp_filename())
 
         ! Library depends on all objects
         call add_dependency(targets(1)%ptr,targets(2)%ptr)

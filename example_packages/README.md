@@ -20,6 +20,8 @@ the features demonstrated in each package and which versions of fpm are supporte
 | makefile_complex    | External build command (makefile); local path dependency      |            Y            |  N  |
 | program_with_module | App-only; module+program in single source file                |            Y            |  Y  |
 | submodules          | Lib-only; submodules (3 levels)                               |            N            |  Y  |
+| tree_shake          | Test tree-shaking/pruning of unused module dependencies       |            N            |  Y  |
+| submodule_tree_shake| Test tree-shaking/pruning with submodules dependencies        |            N            |  Y  |
 | link_external       | Link external library                                         |            N            |  Y  |
 | link_executable     | Link external library to a single executable                  |            N            |  Y  |
 | version_file        | Read version number from a file in the project root           |            N            |  Y  |
