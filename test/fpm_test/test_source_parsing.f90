@@ -26,6 +26,9 @@ contains
             & new_unittest("include-stmt", test_include_stmt), &
             & new_unittest("program", test_program), &
             & new_unittest("module", test_module), &
+            & new_unittest("module-with-subprogram", test_module_with_subprogram), &
+            & new_unittest("module-with-c-api", test_module_with_c_api), &
+            & new_unittest("module-end-stmt", test_module_end_stmt), &
             & new_unittest("program-with-module", test_program_with_module), &
             & new_unittest("submodule", test_submodule), &
             & new_unittest("submodule-ancestor", test_submodule_ancestor), &
@@ -309,10 +312,11 @@ contains
 
         open(file=temp_file, newunit=unit)
         write(unit, '(a)') &
+            & '#define preprocesor_line_outside', &
             & 'module  my_mod ! A trailing comment', &
             & 'use module_one', &
             & 'interface', &
-            & '  module subroutine f()', &
+            & '  module subroutine f() bind(C)', &
             & 'end interface', &
             & 'integer :: program', &
             & 'program = 1', &
@@ -322,6 +326,10 @@ contains
             & 'contains', &
             & 'module subroutine&', &
             & ' e()', &
+            & ' integer, parameter :: c = 1', &
+            & ' integer :: & ', &
+            & '       bind(c)', &
+            & ' bind(c) = 1', &
             & 'end subroutine e', &
             & 'module subroutine f()', &
             & 'end subroutine f', &
@@ -335,7 +343,8 @@ contains
             & 'string = " &', &
             & 'module name !"', &
             & 'end function i', &
-            & 'end module test'
+            & 'end module test', &
+            & '! A trailing comment outside of module'
         close(unit)
 
         f_source = parse_f_source(temp_file,error)
@@ -369,6 +378,168 @@ contains
         end if
 
     end subroutine test_module
+
+
+    !> Try to parse fortran module with subroutine outside of module
+    !>  (this should be detected as FPM_UNIT_SUBPROGRAM not FPM_UNIT_MODULE)
+    subroutine test_module_with_subprogram(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'module  my_mod', &
+            & 'contains', &
+            & 'module subroutine f()', &
+            & 'end subroutine f', &
+            & 'module function g()', &
+            & 'end function g', &
+            & 'end module test',&
+            & 'function h()', &
+            & 'end function'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_SUBPROGRAM) then
+            call test_failed(error,'Wrong unit type detected - expecting FPM_UNIT_SUBPROGRAM')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error,'Unexpected modules_provided - expecting one')
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 0) then
+            call test_failed(error,'Incorrect number of modules_used - expecting zero')
+            return
+        end if
+
+    end subroutine test_module_with_subprogram
+
+
+    !> Try to parse fortran modules without the full end module statement
+    !>  This should be detected as FPM_UNIT_SUBPROGRAM not FPM_UNIT_MODULE
+    !>  because we cannot guarantee if non-module subprograms are present
+    subroutine test_module_end_stmt(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'module mod1', &
+            & 'contains', &
+            & 'module subroutine f()', &
+            & 'end subroutine f', &
+            & 'module function g()', &
+            & 'end function g', &
+            & 'end', &
+            & 'module mod2', &
+            & 'contains', &
+            & 'module subroutine f()', &
+            & 'end subroutine f', &
+            & 'module function g()', &
+            & 'end function g', &
+            & 'end module mod2'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_SUBPROGRAM) then
+            call test_failed(error,'Wrong unit type detected - expecting FPM_UNIT_SUBPROGRAM')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 2) then
+            call test_failed(error,'Unexpected modules_provided - expecting two')
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 0) then
+            call test_failed(error,'Incorrect number of modules_used - expecting zero')
+            return
+        end if
+
+        if (.not.('mod1' .in. f_source%modules_provided)) then
+            call test_failed(error,'Missing module in modules_provided')
+            return
+        end if
+
+        if (.not.('mod2' .in. f_source%modules_provided)) then
+            call test_failed(error,'Missing module in modules_provided')
+            return
+        end if
+
+    end subroutine test_module_end_stmt
+
+
+    !> Try to parse fortran module with exported C-API via bind(c)
+    !>  (this should be detected as FPM_UNIT_SUBPROGRAM not FPM_UNIT_MODULE to prevent pruning)
+    subroutine test_module_with_c_api(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'module  my_mod', &
+            & 'contains', &
+            & 'subroutine f() &', &
+            & '           bind(C)', &
+            & 'end subroutine f', &
+            & 'module function g()', &
+            & 'end function g', &
+            & 'end module test'
+        close(unit)
+
+        f_source = parse_f_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_SUBPROGRAM) then
+            call test_failed(error,'Wrong unit type detected - expecting FPM_UNIT_SUBPROGRAM')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 1) then
+            call test_failed(error,'Unexpected modules_provided - expecting one')
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 0) then
+            call test_failed(error,'Incorrect number of modules_used - expecting zero')
+            return
+        end if
+
+    end subroutine test_module_with_c_api
 
 
     !> Try to parse combined fortran module and program
@@ -640,6 +811,11 @@ contains
 
         if (size(f_source%include_dependencies) /= 2) then
             call test_failed(error,'Incorrect number of include_dependencies - expecting two')
+            return
+        end if
+
+        if (allocated(f_source%link_libraries)) then
+            call test_failed(error,'Unexpected link_libraries - expecting unallocated')
             return
         end if
 

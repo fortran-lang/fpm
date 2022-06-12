@@ -76,8 +76,9 @@ function parse_f_source(f_filename,error) result(f_source)
     type(srcfile_t) :: f_source
     type(error_t), allocatable, intent(out) :: error
 
+    logical :: inside_module, inside_interface
     integer :: stat
-    integer :: fh, n_use, n_include, n_mod, i, j, ic, pass
+    integer :: fh, n_use, n_include, n_mod, n_parent, i, j, ic, pass
     type(string_t), allocatable :: file_lines(:), file_lines_lower(:)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
 
@@ -99,16 +100,54 @@ function parse_f_source(f_filename,error) result(f_source)
        file_lines_lower(i)%s=adjustl(lower(file_lines_lower(i)%s))
     enddo
 
-    ! Ignore empty files, returned as FPM_UNIT_UNKNOWN
-    if (len_trim(file_lines_lower) < 1) return
-
-    f_source%digest = fnv_1a(file_lines)
+    ! fnv_1a can only be applied to non-zero-length arrays
+    if (len_trim(file_lines_lower) > 0) f_source%digest = fnv_1a(file_lines)
 
     do pass = 1,2
         n_use = 0
         n_include = 0
         n_mod = 0
+        n_parent = 0
+        inside_module = .false.
+        inside_interface = .false.
         file_loop: do i=1,size(file_lines_lower)
+
+            ! Skip comment lines and preprocessor directives
+            if (index(file_lines_lower(i)%s,'!') == 1 .or. &
+                index(file_lines_lower(i)%s,'#') == 1 .or. &
+                len_trim(file_lines_lower(i)%s) < 1) then
+                cycle
+            end if
+
+            ! Detect exported C-API via bind(C)
+            if (.not.inside_interface .and. &
+                parse_subsequence(file_lines_lower(i)%s,'bind','(','c')) then
+                
+                do j=i,1,-1
+
+                    if (index(file_lines_lower(j)%s,'function') > 0 .or. &
+                        index(file_lines_lower(j)%s,'subroutine') > 0) then
+                        f_source%unit_type = FPM_UNIT_SUBPROGRAM
+                        exit
+                    end if
+
+                    if (j>1) then
+
+                        ic = index(file_lines_lower(j-1)%s,'!')
+                        if (ic < 1) then
+                            ic = len(file_lines_lower(j-1)%s)
+                        end if
+
+                        temp_string = trim(file_lines_lower(j-1)%s(1:ic))
+                        if (index(temp_string,'&') /= len(temp_string)) then
+                            exit
+                        end if
+
+                    end if
+
+                end do
+
+            end if
 
             ! Skip lines that are continued: not statements
             if (i > 1) then
@@ -120,6 +159,22 @@ function parse_f_source(f_filename,error) result(f_source)
                 if (len(temp_string) > 0 .and. index(temp_string,'&') == len(temp_string)) then
                     cycle
                 end if
+            end if
+
+            ! Detect beginning of interface block
+            if (index(file_lines_lower(i)%s,'interface') == 1) then
+
+                inside_interface = .true.
+                cycle
+
+            end if
+
+            ! Detect end of interface block
+            if (parse_sequence(file_lines_lower(i)%s,'end','interface')) then
+
+                inside_interface = .false.
+                cycle
+
             end if
 
             ! Process 'USE' statements
@@ -173,6 +228,8 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 end if
 
+                cycle
+
             end if
 
             ! Process 'INCLUDE' statements
@@ -194,6 +251,9 @@ function parse_f_source(f_filename,error) result(f_source)
                             return
                         end if
                     end if
+
+                    cycle
+
                 end if
             end if
 
@@ -237,7 +297,20 @@ function parse_f_source(f_filename,error) result(f_source)
                     f_source%modules_provided(n_mod) = string_t(mod_name)
                 end if
 
-                f_source%unit_type = FPM_UNIT_MODULE
+                if (f_source%unit_type == FPM_UNIT_UNKNOWN) then
+                    f_source%unit_type = FPM_UNIT_MODULE
+                end if
+
+                if (.not.inside_module) then    
+                    inside_module = .true.
+                else
+                    ! Must have missed an end module statement (can't assume a pure module)
+                    if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+                        f_source%unit_type = FPM_UNIT_SUBPROGRAM
+                    end if
+                end if
+
+                cycle
 
             end if
 
@@ -267,10 +340,16 @@ function parse_f_source(f_filename,error) result(f_source)
                           file_lines_lower(i)%s)
                     return
                 end if
-
-                f_source%unit_type = FPM_UNIT_SUBMODULE
+                
+                if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+                    f_source%unit_type = FPM_UNIT_SUBMODULE
+                end if
 
                 n_use = n_use + 1
+
+                inside_module = .true.
+
+                n_parent = n_parent + 1
 
                 if (pass == 2) then
 
@@ -288,10 +367,12 @@ function parse_f_source(f_filename,error) result(f_source)
                     end if
 
                     f_source%modules_used(n_use)%s = temp_string
-
+                    f_source%parent_modules(n_parent)%s = temp_string
                     f_source%modules_provided(n_mod)%s = mod_name
 
                 end if
+
+                cycle
 
             end if
 
@@ -313,12 +394,32 @@ function parse_f_source(f_filename,error) result(f_source)
 
                 f_source%unit_type = FPM_UNIT_PROGRAM
 
+                cycle
+
+            end if
+
+            ! Parse end module statement
+            !  (to check for code outside of modules)
+            if (parse_sequence(file_lines_lower(i)%s,'end','module') .or. &
+                parse_sequence(file_lines_lower(i)%s,'end','submodule')) then
+                
+                inside_module = .false.
+                cycle
+
+            end if
+
+            ! Any statements not yet parsed are assumed to be other code statements
+            if (.not.inside_module .and. f_source%unit_type /= FPM_UNIT_PROGRAM) then
+
+                f_source%unit_type = FPM_UNIT_SUBPROGRAM
+
             end if
 
         end do file_loop
 
-        ! Default to subprogram unit type
-        if (f_source%unit_type == FPM_UNIT_UNKNOWN) then
+        ! If unable to parse end of module statement, then can't assume pure module
+        !  (there could be non-module subprograms present)
+        if (inside_module .and. f_source%unit_type == FPM_UNIT_MODULE) then
             f_source%unit_type = FPM_UNIT_SUBPROGRAM
         end if
 
@@ -326,6 +427,7 @@ function parse_f_source(f_filename,error) result(f_source)
             allocate(f_source%modules_used(n_use))
             allocate(f_source%include_dependencies(n_include))
             allocate(f_source%modules_provided(n_mod))
+            allocate(f_source%parent_modules(n_parent))
         end if
 
     end do
@@ -451,4 +553,99 @@ function split_n(string,delims,n,stat) result(substring)
 
 end function split_n
 
+
+!> Parse a subsequence of blank-separated tokens within a string
+!>  (see parse_sequence)
+function parse_subsequence(string,t1,t2,t3,t4) result(found)
+    character(*), intent(in) :: string
+    character(*), intent(in) :: t1
+    character(*), intent(in), optional :: t2, t3, t4
+    logical :: found
+
+    integer :: offset, i
+
+    found = .false.
+    offset = 1
+
+    do 
+
+        i = index(string(offset:),t1)
+
+        if (i == 0) return
+
+        offset = offset + i - 1
+
+        found = parse_sequence(string(offset:),t1,t2,t3,t4)
+
+        if (found) return
+
+        offset = offset + len(t1)
+
+        if (offset > len(string)) return
+
+    end do
+
+end function parse_subsequence
+
+!> Helper utility to parse sequences of tokens
+!> that may be optionally separated by zero or more spaces
+function parse_sequence(string,t1,t2,t3,t4) result(found)
+    character(*), intent(in) :: string
+    character(*), intent(in) :: t1
+    character(*), intent(in), optional :: t2, t3, t4
+    logical :: found
+
+    integer :: post, n, incr, pos, token_n
+    logical :: match
+
+    n = len(string)
+    found = .false.
+    pos = 1
+
+    do token_n=1,4
+
+        do while (pos <= n)
+            if (string(pos:pos) /= ' ') then
+                exit
+            end if
+            pos = pos + 1
+        end do
+
+        select case(token_n)
+        case(1)
+            incr = len(t1)
+            if (pos+incr-1>n) return
+            match = string(pos:pos+incr-1) == t1
+        case(2)
+            if (.not.present(t2)) exit
+            incr = len(t2)
+            if (pos+incr-1>n) return
+            match = string(pos:pos+incr-1) == t2
+        case(3)
+            if (.not.present(t3)) exit
+            incr = len(t3)
+            if (pos+incr-1>n) return
+            match = string(pos:pos+incr-1) == t3
+        case(4)
+            if (.not.present(t4)) exit
+            incr = len(t4)
+            if (pos+incr-1>n) return
+            match = string(pos:pos+incr-1) == t4
+        case default
+            exit
+        end select
+
+        if (.not.match) then
+            return
+        end if
+
+        pos = pos + incr
+
+    end do
+
+    found = .true.
+
+end function parse_sequence
+
 end module fpm_source_parsing
+
