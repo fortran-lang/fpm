@@ -22,19 +22,19 @@ integer                        :: chars
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ! build manual as pieces using various help commands
 ! debug version
-' --version                           ',& ! verify fpm version being used
-' --help        > fpm_scratch_help.txt',&
-' help new     >> fpm_scratch_help.txt',&
-' help update  >> fpm_scratch_help.txt',&
-' build --help >> fpm_scratch_help.txt',&
-' help run     >> fpm_scratch_help.txt',&
-' help test    >> fpm_scratch_help.txt',&
-' help runner  >> fpm_scratch_help.txt',&
-' help install >> fpm_scratch_help.txt',&
-' help list    >> fpm_scratch_help.txt',&
-' help help    >> fpm_scratch_help.txt',&
-' help clean   >> fpm_scratch_help.txt',&
-' --version    >> fpm_scratch_help.txt',&
+'--version                           ',& ! verify fpm version being used
+'--help        > fpm_scratch_help.txt',&
+'help new     >> fpm_scratch_help.txt',&
+'help update  >> fpm_scratch_help.txt',&
+'build --help >> fpm_scratch_help.txt',&
+'help run     >> fpm_scratch_help.txt',&
+'help test    >> fpm_scratch_help.txt',&
+'help runner  >> fpm_scratch_help.txt',&
+'help install >> fpm_scratch_help.txt',&
+'help list    >> fpm_scratch_help.txt',&
+'help help    >> fpm_scratch_help.txt',&
+'help clean   >> fpm_scratch_help.txt',&
+'--version    >> fpm_scratch_help.txt',&
 ! generate manual
 ' help manual   > fpm_scratch_manual.txt']
 
@@ -106,7 +106,7 @@ integer :: length
    ! execute the fpm(1) commands
    do i=1,size(cmds)
       message=''
-      path= prog // cmds(i)
+      path= prog //' '//cmds(i)
       call execute_command_line(path,exitstat=estat,cmdstat=cstat,cmdmsg=message)
       write(*,'(*(g0))')'<INFO>CMD=',path,' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
       tally=[tally,all([estat.eq.0,cstat.eq.0])]
