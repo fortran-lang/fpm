@@ -614,6 +614,7 @@ function parse_sequence(string,t1,t2,t3,t4) result(found)
         select case(token_n)
         case(1)
             incr = len(t1)
+            if (pos+incr-1>n) return
             match = string(pos:pos+incr-1) == t1
         case(2)
             if (.not.present(t2)) exit

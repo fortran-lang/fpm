@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.2% of total for source files.">355 statements</a>
+    title=" 5.2% of total for source files.">356 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm_source_parsing.f90"> Source File</a></li>
   </ul>
@@ -772,39 +772,40 @@
 <a id="ln-614" name="ln-614" href="#ln-614"></a><span class="k">        select case</span><span class="p">(</span><span class="n">token_n</span><span class="p">)</span><span class="w"></span>
 <a id="ln-615" name="ln-615" href="#ln-615"></a><span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
 <a id="ln-616" name="ln-616" href="#ln-616"></a><span class="w">            </span><span class="n">incr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span><span class="w"></span>
-<a id="ln-617" name="ln-617" href="#ln-617"></a><span class="w">            </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t1</span><span class="w"></span>
-<a id="ln-618" name="ln-618" href="#ln-618"></a><span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
-<a id="ln-619" name="ln-619" href="#ln-619"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">t2</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
-<a id="ln-620" name="ln-620" href="#ln-620"></a><span class="k">            </span><span class="n">incr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span><span class="w"></span>
-<a id="ln-621" name="ln-621" href="#ln-621"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="o">&gt;</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<a id="ln-622" name="ln-622" href="#ln-622"></a><span class="k">            </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t2</span><span class="w"></span>
-<a id="ln-623" name="ln-623" href="#ln-623"></a><span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
-<a id="ln-624" name="ln-624" href="#ln-624"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">t3</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
-<a id="ln-625" name="ln-625" href="#ln-625"></a><span class="k">            </span><span class="n">incr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">t3</span><span class="p">)</span><span class="w"></span>
-<a id="ln-626" name="ln-626" href="#ln-626"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="o">&gt;</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<a id="ln-627" name="ln-627" href="#ln-627"></a><span class="k">            </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t3</span><span class="w"></span>
-<a id="ln-628" name="ln-628" href="#ln-628"></a><span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
-<a id="ln-629" name="ln-629" href="#ln-629"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">t4</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
-<a id="ln-630" name="ln-630" href="#ln-630"></a><span class="k">            </span><span class="n">incr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">t4</span><span class="p">)</span><span class="w"></span>
-<a id="ln-631" name="ln-631" href="#ln-631"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="o">&gt;</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
-<a id="ln-632" name="ln-632" href="#ln-632"></a><span class="k">            </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t4</span><span class="w"></span>
-<a id="ln-633" name="ln-633" href="#ln-633"></a><span class="w">        </span><span class="k">case </span><span class="n">default</span><span class="w"></span>
-<a id="ln-634" name="ln-634" href="#ln-634"></a><span class="w">            </span><span class="k">exit</span>
-<a id="ln-635" name="ln-635" href="#ln-635"></a><span class="k">        end select</span>
-<a id="ln-636" name="ln-636" href="#ln-636"></a>
-<a id="ln-637" name="ln-637" href="#ln-637"></a><span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">match</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-638" name="ln-638" href="#ln-638"></a><span class="k">            return</span>
-<a id="ln-639" name="ln-639" href="#ln-639"></a><span class="k">        end if</span>
-<a id="ln-640" name="ln-640" href="#ln-640"></a>
-<a id="ln-641" name="ln-641" href="#ln-641"></a><span class="k">        </span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">incr</span><span class="w"></span>
-<a id="ln-642" name="ln-642" href="#ln-642"></a>
-<a id="ln-643" name="ln-643" href="#ln-643"></a><span class="w">    </span><span class="k">end do</span>
-<a id="ln-644" name="ln-644" href="#ln-644"></a>
-<a id="ln-645" name="ln-645" href="#ln-645"></a><span class="k">    </span><span class="n">found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
-<a id="ln-646" name="ln-646" href="#ln-646"></a>
-<a id="ln-647" name="ln-647" href="#ln-647"></a><span class="k">end function </span><span class="n">parse_sequence</span><span class="w"></span>
-<a id="ln-648" name="ln-648" href="#ln-648"></a>
-<a id="ln-649" name="ln-649" href="#ln-649"></a><span class="k">end module </span><span class="n">fpm_source_parsing</span><span class="w"></span>
+<a id="ln-617" name="ln-617" href="#ln-617"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="o">&gt;</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-618" name="ln-618" href="#ln-618"></a><span class="k">            </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t1</span><span class="w"></span>
+<a id="ln-619" name="ln-619" href="#ln-619"></a><span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<a id="ln-620" name="ln-620" href="#ln-620"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">t2</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
+<a id="ln-621" name="ln-621" href="#ln-621"></a><span class="k">            </span><span class="n">incr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span><span class="w"></span>
+<a id="ln-622" name="ln-622" href="#ln-622"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="o">&gt;</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-623" name="ln-623" href="#ln-623"></a><span class="k">            </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t2</span><span class="w"></span>
+<a id="ln-624" name="ln-624" href="#ln-624"></a><span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-625" name="ln-625" href="#ln-625"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">t3</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
+<a id="ln-626" name="ln-626" href="#ln-626"></a><span class="k">            </span><span class="n">incr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">t3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-627" name="ln-627" href="#ln-627"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="o">&gt;</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-628" name="ln-628" href="#ln-628"></a><span class="k">            </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t3</span><span class="w"></span>
+<a id="ln-629" name="ln-629" href="#ln-629"></a><span class="w">        </span><span class="k">case</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-630" name="ln-630" href="#ln-630"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">t4</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span>
+<a id="ln-631" name="ln-631" href="#ln-631"></a><span class="k">            </span><span class="n">incr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">t4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-632" name="ln-632" href="#ln-632"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="o">&gt;</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-633" name="ln-633" href="#ln-633"></a><span class="k">            </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">incr</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">t4</span><span class="w"></span>
+<a id="ln-634" name="ln-634" href="#ln-634"></a><span class="w">        </span><span class="k">case </span><span class="n">default</span><span class="w"></span>
+<a id="ln-635" name="ln-635" href="#ln-635"></a><span class="w">            </span><span class="k">exit</span>
+<a id="ln-636" name="ln-636" href="#ln-636"></a><span class="k">        end select</span>
+<a id="ln-637" name="ln-637" href="#ln-637"></a>
+<a id="ln-638" name="ln-638" href="#ln-638"></a><span class="k">        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">match</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-639" name="ln-639" href="#ln-639"></a><span class="k">            return</span>
+<a id="ln-640" name="ln-640" href="#ln-640"></a><span class="k">        end if</span>
+<a id="ln-641" name="ln-641" href="#ln-641"></a>
+<a id="ln-642" name="ln-642" href="#ln-642"></a><span class="k">        </span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">incr</span><span class="w"></span>
+<a id="ln-643" name="ln-643" href="#ln-643"></a>
+<a id="ln-644" name="ln-644" href="#ln-644"></a><span class="w">    </span><span class="k">end do</span>
+<a id="ln-645" name="ln-645" href="#ln-645"></a>
+<a id="ln-646" name="ln-646" href="#ln-646"></a><span class="k">    </span><span class="n">found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<a id="ln-647" name="ln-647" href="#ln-647"></a>
+<a id="ln-648" name="ln-648" href="#ln-648"></a><span class="k">end function </span><span class="n">parse_sequence</span><span class="w"></span>
+<a id="ln-649" name="ln-649" href="#ln-649"></a>
+<a id="ln-650" name="ln-650" href="#ln-650"></a><span class="k">end module </span><span class="n">fpm_source_parsing</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -823,7 +824,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-06-03 14:21            </p>
+ on 2022-06-12 09:58            </p>
         </div>
       </div>
       <br>
