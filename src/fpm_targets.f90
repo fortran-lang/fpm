@@ -615,24 +615,26 @@ subroutine prune_build_targets(targets, root_package)
         end if
 
         if (allocated(target%source)) then
-            do j=1,size(target%source%modules_used)
-                        
-                if (.not.(target%source%modules_used(j)%s .in. modules_used)) then
 
-                    modules_used = [modules_used, target%source%modules_used(j)]
+            ! Add modules from this target and from any of it's children submodules
+            do j=1,size(target%source%modules_provided)
 
-                    ! Recurse into child submodules
-                    do k=1,size(targets)
-                        if (allocated(targets(k)%ptr%source)) then
-                            if (targets(k)%ptr%source%unit_type == FPM_UNIT_SUBMODULE) then
-                                if (target%source%modules_used(j)%s .in. targets(k)%ptr%source%parent_modules) then
-                                    call collect_used_modules(targets(k)%ptr)
-                                end if
-                            end if
-                        end if
-                    end do
+                if (.not.(target%source%modules_provided(j)%s .in. modules_used)) then
+
+                    modules_used = [modules_used, target%source%modules_provided(j)]
 
                 end if
+
+                ! Recurse into child submodules
+                do k=1,size(targets)
+                    if (allocated(targets(k)%ptr%source)) then
+                        if (targets(k)%ptr%source%unit_type == FPM_UNIT_SUBMODULE) then
+                            if (target%source%modules_provided(j)%s .in. targets(k)%ptr%source%parent_modules) then
+                                call collect_used_modules(targets(k)%ptr)
+                            end if
+                        end if
+                    end if
+                end do
 
             end do
         end if

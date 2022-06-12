@@ -76,8 +76,6 @@ test ! -e ./build/gfortran_*/submodule_tree_shake/src_parent_unused.f90.o
 test ! -e ./build/gfortran_*/submodule_tree_shake/src_parent_unused.f90.o.log
 test ! -e ./build/gfortran_*/submodule_tree_shake/src_child_unused.f90.o
 test ! -e ./build/gfortran_*/submodule_tree_shake/src_child_unused.f90.o.log
-test ! -e ./build/gfortran_*/submodule_tree_shake/src_grandchild.f90.o
-test ! -e ./build/gfortran_*/submodule_tree_shake/src_grandchild.f90.o.log
 popd
 
 pushd version_file

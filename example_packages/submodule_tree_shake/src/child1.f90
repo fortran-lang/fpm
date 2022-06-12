@@ -10,7 +10,7 @@ end interface
 contains
 
 module procedure my_sub1
-    a = 1
+    a = my_fun()
 end procedure my_sub1
 
 end submodule child1
