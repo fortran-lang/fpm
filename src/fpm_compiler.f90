@@ -774,6 +774,9 @@ end subroutine link
 
 
 !> Create an archive
+!> @todo An OMP critical section is added for Windows OS,
+!> which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+!> see issue #707 and #708.
 subroutine make_archive(self, output, args, log_file, stat)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
