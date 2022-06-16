@@ -574,7 +574,7 @@ contains
 
         case default
 
-             if(cmdarg.ne.''.and.which('fpm-'//cmdarg).ne.'')then
+            if(cmdarg.ne.''.and.which('fpm-'//cmdarg).ne.'')then
 
                 call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted(),.false.)
             else
