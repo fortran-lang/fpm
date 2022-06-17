@@ -774,6 +774,9 @@ end subroutine link
 
 
 !> Create an archive
+!> @todo An OMP critical section is added for Windows OS,
+!> which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+!> see issue #707 and #708.
 subroutine make_archive(self, output, args, log_file, stat)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
@@ -787,10 +790,12 @@ subroutine make_archive(self, output, args, log_file, stat)
     integer, intent(out) :: stat
 
     if (self%use_response_file) then
+        !$omp critical
         call write_response_file(output//".resp" , args)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
             &  verbose=self%verbose, redirect=log_file, exitstat=stat)
         call delete_file(output//".resp")
+        !$omp end critical
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
             & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)

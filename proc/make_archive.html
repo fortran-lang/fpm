@@ -129,7 +129,10 @@
     <h2>public subroutine make_archive(self, output, args, log_file, stat)</h2>
     
 
-    <p>Create an archive</p>
+    <p>Create an archive
+</p><div class="alert alert-success" role="alert"><h4>Todo</h4><p>An OMP critical section is added for Windows OS,
+which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+see issue #707 and #708.</p></div>
 
     <h3>Arguments</h3>
       <table class="table table-striped varlist">
@@ -206,11 +209,13 @@
 <span class="w">    </span><span class="c">!&gt; Status flag</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
 
-<span class="nb">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<span class="nb">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">        </span><span class="c">!$omp critical</span>
+<span class="w">        </span><span class="k">call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; @&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">  </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">call </span><span class="n">delete_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="c">!$omp end critical</span>
 <span class="w">    </span><span class="k">else</span>
 <span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
@@ -236,7 +241,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-06-17 20:55            </p>
+ on 2022-06-17 20:57            </p>
         </div>
       </div>
       <br>
