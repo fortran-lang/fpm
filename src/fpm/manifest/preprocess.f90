@@ -15,7 +15,7 @@ module fpm_mainfest_preprocess
    implicit none
    private
 
-   public :: preprocess_config_t, new_preprocess_config
+   public :: preprocess_config_t, new_preprocess_config, new_preprocessors
 
    !> Configuration meta data for a preprocessor
    type :: preprocess_config_t
@@ -104,6 +104,39 @@ contains
          end select
       end do
    end subroutine check
+
+   !> Construct new preprocess array from a TOML data structure.
+   subroutine new_preprocessors(preprocessors, table, error)
+
+      !> Instance of the preprocess configuration
+      type(preprocess_config_t), allocatable, intent(out) :: preprocessors(:)
+
+      !> Instance of the TOML data structure
+      type(toml_table), intent(inout) :: table
+
+      !> Error handling
+      type(error_t), allocatable, intent(out) :: error
+
+      type(toml_table), pointer :: node
+      type(toml_key), allocatable :: list(:)
+      integer :: iprep, stat
+
+      call table%get_keys(list)
+      ! An empty table is okay
+      if (size(list) < 1) return
+
+      allocate(preprocessors(size(list)))
+      do iprep = 1, size(list)
+         call get_value(table, list(iprep)%key, node, stat=stat)
+         if (stat /= toml_stat%success) then
+            call syntax_error(error, "Preprocessor "//list(iprep)%key//" must be a table entry")
+            exit
+         end if
+         call new_preprocess_config(preprocessors(iprep), node, error)
+         if (allocated(error)) exit
+      end do
+
+   end subroutine new_preprocessors
 
    !> Write information on this instance
    subroutine info(self, unit, verbosity)
