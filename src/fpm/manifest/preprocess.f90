@@ -8,6 +8,8 @@
 !> suffixes = ["F90", "f90"]
 !> directories = ["src/feature1", "src/models"]
 !> macros = []
+!> ```
+
 module fpm_mainfest_preprocess
    use fpm_error, only : error_t, syntax_error
    use fpm_strings, only : string_t
