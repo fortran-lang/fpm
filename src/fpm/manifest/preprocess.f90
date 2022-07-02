@@ -124,8 +124,11 @@ contains
       integer :: iprep, stat
 
       call table%get_keys(list)
-      ! An empty table is okay
-      if (size(list) < 1) return
+
+      ! An empty table is not allowed
+      if (size(list) == 0) then
+         call syntax_error(error, "No preprocessors defined")
+      end if
 
       allocate(preprocessors(size(list)))
       do iprep = 1, size(list)
