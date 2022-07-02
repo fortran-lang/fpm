@@ -40,6 +40,8 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t
+use fpm_manifest, only : get_package_data, package_config_t
+use fpm_error, only: error_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver
 public :: debug
@@ -177,6 +179,9 @@ character(*), parameter :: &
 character(*), parameter :: &
     flag_lfortran_opt = " --fast"
 
+character(*), parameter :: &
+    flag_cpp_preprocessor = " -cpp"
+    
 contains
 
 
@@ -375,6 +380,32 @@ subroutine get_debug_compile_flags(id, flags)
         flags = ""
     end select
 end subroutine get_debug_compile_flags
+
+subroutine set_preprocessor_flags (flags)
+    type(package_config_t) :: package
+    type(error_t), allocatable :: error
+    character(len=:), allocatable :: flags
+    integer :: i
+
+    call get_package_data(package, "fpm.toml", error)
+
+    if (allocated(error)) then 
+       return
+    end if
+    
+    !> Check the size of preprocess array.
+    if (.not.allocated(package%preprocess)) then
+        return
+    end if
+
+    do i = 1, size(package%preprocess)
+        if (package%preprocess(i)%name == "cpp") then
+            flags = flag_cpp_preprocessor// flags
+            exit
+        end if
+    end do
+
+end subroutine set_preprocessor_flags
 
 function get_include_flag(self, path) result(flags)
     class(compiler_t), intent(in) :: self
