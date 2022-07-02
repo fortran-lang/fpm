@@ -393,7 +393,7 @@ subroutine set_preprocessor_flags (flags)
        return
     end if
     
-    !> Check the size of preprocess array.
+    !> Check if there is preprocess table
     if (.not.allocated(package%preprocess)) then
         return
     end if
