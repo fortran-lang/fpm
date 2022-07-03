@@ -7,7 +7,7 @@ contains
    subroutine say_hello
       print *, "Hello, preprocess_cpp!"
 #ifndef TESTMACRO
-      This should break the build.
+      This breaks the build.
 #endif
    end subroutine say_hello
 end module preprocess_cpp

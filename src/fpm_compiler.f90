@@ -393,7 +393,7 @@ subroutine set_preprocessor_flags (flags)
        return
     end if
     
-    !> Check if there is preprocess table
+    !> Check if there is a preprocess table
     if (.not.allocated(package%preprocess)) then
         return
     end if
