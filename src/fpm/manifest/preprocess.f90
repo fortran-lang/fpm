@@ -164,6 +164,8 @@ contains
          pr = 1
       end if
 
+      if (pr < 1) return 
+
       write(unit, fmt) "Preprocessor"
       if (allocated(self%name)) then
          write(unit, fmt) "- name", self%name
