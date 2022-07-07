@@ -78,7 +78,7 @@ subroutine build_model(model, settings, package, error)
         end select
     end if
 
-    call set_preprocessor_flags(flags)
+    call set_preprocessor_flags(model%compiler%id, flags)
 
     cflags = trim(settings%cflag)
     ldflags = trim(settings%ldflag)

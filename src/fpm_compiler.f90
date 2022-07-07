@@ -179,8 +179,6 @@ character(*), parameter :: &
 character(*), parameter :: &
     flag_lfortran_opt = " --fast"
 
-character(*), parameter :: &
-    flag_cpp_preprocessor = " -cpp"
     
 contains
 
@@ -381,10 +379,13 @@ subroutine get_debug_compile_flags(id, flags)
     end select
 end subroutine get_debug_compile_flags
 
-subroutine set_preprocessor_flags (flags)
+subroutine set_preprocessor_flags (id, flags)
+    integer(compiler_enum), intent(in) :: id
     type(package_config_t) :: package
     type(error_t), allocatable :: error
     character(len=:), allocatable :: flags
+    character(len=:), allocatable :: flag_cpp_preprocessor
+    
     integer :: i
 
     call get_package_data(package, "fpm.toml", error)
@@ -397,6 +398,18 @@ subroutine set_preprocessor_flags (flags)
     if (.not.allocated(package%preprocess)) then
         return
     end if
+
+    !> Modify the flag_cpp_preprocessor on the basis of the compiler.
+    select case(id)
+    case default
+        flag_cpp_preprocessor = ""
+    case(id_caf, id_gcc, id_f95, id_nvhpc)
+        flag_cpp_preprocessor = "-cpp"
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, id_intel_llvm_nix, id_intel_llvm_windows, id_nag)
+        flag_cpp_preprocessor = "-fpp"
+    case(id_lfortran)
+        flag_cpp_preprocessor = "--cpp"
+    end select
 
     do i = 1, size(package%preprocess)
         if (package%preprocess(i)%name == "cpp") then
