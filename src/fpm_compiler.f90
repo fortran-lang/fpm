@@ -405,7 +405,9 @@ subroutine set_preprocessor_flags (id, flags)
         flag_cpp_preprocessor = ""
     case(id_caf, id_gcc, id_f95, id_nvhpc)
         flag_cpp_preprocessor = "-cpp"
-    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows, id_intel_llvm_nix, id_intel_llvm_windows, id_nag)
+    case(id_intel_classic_windows, id_intel_llvm_windows)
+        flag_cpp_preprocessor = "/fpp"
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, id_nag)
         flag_cpp_preprocessor = "-fpp"
     case(id_lfortran)
         flag_cpp_preprocessor = "--cpp"
