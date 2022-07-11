@@ -12,7 +12,7 @@ use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists,
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: new_compiler, new_archiver
+use fpm_compiler, only: new_compiler, new_archiver, set_preprocessor_flags
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
@@ -77,6 +77,9 @@ subroutine build_model(model, settings, package, error)
             flags = flags // model%compiler%get_default_flags(settings%profile == "release")
         end select
     end if
+
+    call set_preprocessor_flags(model%compiler%id, flags)
+
     cflags = trim(settings%cflag)
     ldflags = trim(settings%ldflag)
 
