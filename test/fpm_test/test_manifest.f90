@@ -61,7 +61,10 @@ contains
             & new_unittest("example-empty", test_example_empty, should_fail=.true.), &
             & new_unittest("install-library", test_install_library), &
             & new_unittest("install-empty", test_install_empty), &
-            & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.)]
+            & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.), &
+            & new_unittest("preprocess-empty", test_preprocess_empty), &
+            & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
+            & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.)]
 
     end subroutine collect_manifest
 
@@ -96,7 +99,12 @@ contains
             & '[executable.dependencies]', &
             & '[''library'']', &
             & 'source-dir = """', &
-            & 'lib""" # comment'
+            & 'lib""" # comment', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', &
+            & 'suffixes = ["F90", "f90"]', &
+            & 'directories = ["src/feature1", "src/models"]', &
+            & 'macros = ["FOO", "BAR"]'
         close(unit)
 
         call get_package_data(package, manifest, error)
@@ -138,6 +146,16 @@ contains
 
         if (allocated(package%test)) then
             call test_failed(error, "test is present in package but not in package file")
+            return
+        end if
+
+        if (.not.allocated(package%preprocess)) then
+            call test_failed(error, "Preprocessor is not present in package data")
+            return
+        end if
+
+        if (size(package%preprocess) /= 1) then
+            call test_failed(error, "Number of preprocessors in package is not one")
             return
         end if
 
@@ -1080,6 +1098,61 @@ contains
         call new_install_config(install, table, error)
 
     end subroutine test_install_wrongkey
+    
+    subroutine test_preprocess_empty(error)
+        use fpm_mainfest_preprocess
+        use fpm_toml, only : new_table, toml_table
 
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(preprocess_config_t) :: preprocess
+
+        call new_table(table)
+        table%key = "example"
+
+        call new_preprocess_config(preprocess, table, error)
+
+    end subroutine test_preprocess_empty
+
+    !> Pass a TOML table with not allowed keys
+    subroutine test_preprocess_wrongkey(error)
+        use fpm_mainfest_preprocess
+        use fpm_toml, only : new_table, add_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_table), pointer :: child
+        integer :: stat
+        type(preprocess_config_t) :: preprocess
+
+        call new_table(table)
+        table%key = 'example'
+        call add_table(table, 'wrong-field', child, stat)
+
+        call new_preprocess_config(preprocess, table, error)
+    
+    end subroutine test_preprocess_wrongkey
+
+    !> Preprocess table cannot be empty.
+    subroutine test_preprocessors_empty(error)
+        use fpm_mainfest_preprocess
+        use fpm_toml, only : new_table, toml_table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(preprocess_config_t), allocatable :: preprocessors(:)
+
+        call new_table(table)
+
+        call new_preprocessors(preprocessors, table, error)
+        if (allocated(error)) return
+
+    end subroutine test_preprocessors_empty
 
 end module test_manifest
