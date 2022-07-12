@@ -101,6 +101,21 @@ For more details check the package information [here](https://spack.readthedocs.
 [Spack]: https://spack.io
 
 
+#### [Homebrew]
+
+Fpm is available with Homebrew via the [fortran-lang/homebrew-fortran] tap.
+To use Homebrew to install fpm, execute
+
+```
+brew tap fortran-lang/fortran
+brew install fpm
+```
+
+For more details check the package information [here](https://spack.readthedocs.io/en/latest/package_list.html#fpm).
+
+[Homebrew]: https://homebrew.io
+[fortran-lang/homebrew-fortran]: https://github.com/fortran-lang/homebrew-fortran
+
 #### Github Actions
 
 To setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
