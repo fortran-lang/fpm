@@ -101,20 +101,20 @@ For more details check the package information [here](https://spack.readthedocs.
 [Spack]: https://spack.io
 
 
-#### [Homebrew]
+#### Homebrew
 
-Fpm is available with Homebrew via the [fortran-lang/homebrew-fortran] tap.
-To use Homebrew to install fpm, execute
+The Fortran Package Manager (fpm) is available for the [homebrew](https://brew.sh/) package manager on MacOS via an additional tap.
+To install fpm via brew, include the new tap and install it using
 
 ```
 brew tap fortran-lang/fortran
 brew install fpm
 ```
 
-For more details check the package information [here](https://spack.readthedocs.io/en/latest/package_list.html#fpm).
+Binary distributions are available for MacOS 11 (Catalina) and 12 (Big Sur) for x86_64 architectures. For other platforms fpm will be built locally from source automatically.
 
-[Homebrew]: https://homebrew.io
-[fortran-lang/homebrew-fortran]: https://github.com/fortran-lang/homebrew-fortran
+Fpm should be available and functional after those steps.
+For more details checkout the tap [here](https://github.com/fortran-lang/homebrew-fortran).
 
 #### Github Actions
 
