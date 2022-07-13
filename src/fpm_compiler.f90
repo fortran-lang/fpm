@@ -416,11 +416,54 @@ subroutine set_preprocessor_flags (id, flags)
     do i = 1, size(package%preprocess)
         if (package%preprocess(i)%name == "cpp") then
             flags = flag_cpp_preprocessor// flags
+            call get_macros_from_manifest(id, flags, i)
             exit
         end if
     end do
 
 end subroutine set_preprocessor_flags
+
+!> This subroutine will check and get all the macros that are defined in the manifest file
+!> under preprocess section for a specific preprocessor
+subroutine get_macros_from_manifest(id, flags, index_of_preprocessor)
+    integer(compiler_enum), intent(in) :: id
+    type(package_config_t) :: package
+    type(error_t), allocatable :: error
+    character(len=:), allocatable :: flags
+    character(len=:), allocatable :: macro_definition_symbol
+
+    integer :: i
+    integer :: index_of_preprocessor
+
+    call get_package_data(package, "fpm.toml", error)
+
+    if (allocated(error)) then 
+       return
+    end if
+    
+    !> Check if there is a preprocess table
+    if (.not.allocated(package%preprocess)) then
+        return
+    end if
+
+    !> Check if macros are defined in the manifest file
+    if (.not.allocated(package%preprocess(index_of_preprocessor)%macros)) then
+        return
+    end if
+
+    !> Set macro defintion symbol on the basis of compiler used
+    select case(id)
+    case default
+        macro_definition_symbol = "-D"
+    case (id_intel_classic_windows)
+        macro_definition_symbol = "/D"
+    end select
+
+    do i = 1, size(package%preprocess(index_of_preprocessor)%macros)
+        flags = flags//' '//macro_definition_symbol//package%preprocess(index_of_preprocessor)%macros(i)%s
+    end do
+    
+end subroutine get_macros_from_manifest
 
 function get_include_flag(self, path) result(flags)
     class(compiler_t), intent(in) :: self
