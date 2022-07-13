@@ -118,5 +118,9 @@ pushd c_main
 "$fpm" run
 popd
 
+pushd hello_fpm_path
+"$fpm" run
+popd
+
 # Cleanup
 rm -rf ./*/build
