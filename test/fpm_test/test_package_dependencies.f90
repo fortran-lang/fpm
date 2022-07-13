@@ -186,6 +186,9 @@ contains
         call new_dependencies(nodes, table, error=error)
         if (allocated(error)) return
 
+        call new_dependencies(nodes, table, root='.', error=error)
+        if (allocated(error)) return
+
         call new_dependency_tree(deps%dependency_tree_t)
         call deps%add(nodes, error)
         if (allocated(error)) return
