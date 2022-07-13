@@ -93,7 +93,7 @@ subroutine build_package(targets,model,verbose)
 
     ! Check if queue is empty
     if (.not.verbose .and. size(queue) < 1) then
-        write(*, '(a)') 'Project is up to date'
+        write(stderr, '(a)') 'Project is up to date'
         return
     end if
 

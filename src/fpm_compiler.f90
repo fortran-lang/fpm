@@ -40,6 +40,8 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t
+use fpm_manifest, only : get_package_data, package_config_t
+use fpm_error, only: error_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver
 public :: debug
@@ -177,6 +179,7 @@ character(*), parameter :: &
 character(*), parameter :: &
     flag_lfortran_opt = " --fast"
 
+    
 contains
 
 
@@ -375,6 +378,49 @@ subroutine get_debug_compile_flags(id, flags)
         flags = ""
     end select
 end subroutine get_debug_compile_flags
+
+subroutine set_preprocessor_flags (id, flags)
+    integer(compiler_enum), intent(in) :: id
+    type(package_config_t) :: package
+    type(error_t), allocatable :: error
+    character(len=:), allocatable :: flags
+    character(len=:), allocatable :: flag_cpp_preprocessor
+    
+    integer :: i
+
+    call get_package_data(package, "fpm.toml", error)
+
+    if (allocated(error)) then 
+       return
+    end if
+    
+    !> Check if there is a preprocess table
+    if (.not.allocated(package%preprocess)) then
+        return
+    end if
+
+    !> Modify the flag_cpp_preprocessor on the basis of the compiler.
+    select case(id)
+    case default
+        flag_cpp_preprocessor = ""
+    case(id_caf, id_gcc, id_f95, id_nvhpc)
+        flag_cpp_preprocessor = "-cpp"
+    case(id_intel_classic_windows, id_intel_llvm_windows)
+        flag_cpp_preprocessor = "/fpp"
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, id_nag)
+        flag_cpp_preprocessor = "-fpp"
+    case(id_lfortran)
+        flag_cpp_preprocessor = "--cpp"
+    end select
+
+    do i = 1, size(package%preprocess)
+        if (package%preprocess(i)%name == "cpp") then
+            flags = flag_cpp_preprocessor// flags
+            exit
+        end if
+    end do
+
+end subroutine set_preprocessor_flags
 
 function get_include_flag(self, path) result(flags)
     class(compiler_t), intent(in) :: self
@@ -774,6 +820,9 @@ end subroutine link
 
 
 !> Create an archive
+!> @todo An OMP critical section is added for Windows OS,
+!> which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+!> see issue #707 and #708.
 subroutine make_archive(self, output, args, log_file, stat)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
@@ -787,10 +836,12 @@ subroutine make_archive(self, output, args, log_file, stat)
     integer, intent(out) :: stat
 
     if (self%use_response_file) then
+        !$omp critical
         call write_response_file(output//".resp" , args)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
             &  verbose=self%verbose, redirect=log_file, exitstat=stat)
         call delete_file(output//".resp")
+        !$omp end critical
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
             & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)

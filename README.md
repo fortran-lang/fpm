@@ -37,7 +37,7 @@ Binaries for the latest stable release are available [to download](https://githu
 
 __Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
 
-_e.g._ `$ chmod u+x fpm-0.5.0-linux-x86_64`
+_e.g._ `$ chmod u+x fpm-0.6.0-linux-x86_64`
 
 The binaries at the [current tag](https://github.com/fortran-lang/fpm/releases/tag/current) are updated automatically to always provide the current git version from the default branch.
 
