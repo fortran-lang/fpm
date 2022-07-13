@@ -2,3 +2,4 @@ name = "preprocess_cpp"
 
 [preprocess]
 [preprocess.cpp]
+macros = ["TESTMACRO"]
