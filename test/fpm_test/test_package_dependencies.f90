@@ -183,7 +183,7 @@ contains
         call add_table(table, "proj4", ptr)
         call set_value(ptr, "path", "vendor")
 
-        call new_dependencies(nodes, table, error)
+        call new_dependencies(nodes, table, error=error)
         if (allocated(error)) return
 
         call new_dependency_tree(deps%dependency_tree_t)

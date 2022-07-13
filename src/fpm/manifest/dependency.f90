@@ -57,13 +57,16 @@ contains
 
 
     !> Construct a new dependency configuration from a TOML data structure
-    subroutine new_dependency(self, table, error)
+    subroutine new_dependency(self, table, root, error)
 
         !> Instance of the dependency configuration
         type(dependency_config_t), intent(out) :: self
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
+
+        !> Root directory of the manifest
+        character(*), intent(in), optional :: root
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -77,6 +80,7 @@ contains
 
         call get_value(table, "path", url)
         if (allocated(url)) then
+            if (present(root)) url = root//url  ! Relative to the fpm.toml it’s written in
             call move_alloc(url, self%path)
         else
             call get_value(table, "git", url)
@@ -173,13 +177,16 @@ contains
 
 
     !> Construct new dependency array from a TOML data structure
-    subroutine new_dependencies(deps, table, error)
+    subroutine new_dependencies(deps, table, root, error)
 
         !> Instance of the dependency configuration
         type(dependency_config_t), allocatable, intent(out) :: deps(:)
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
+
+        !> Root directory of the manifest
+        character(*), intent(in), optional :: root
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -199,7 +206,7 @@ contains
                 call syntax_error(error, "Dependency "//list(idep)%key//" must be a table entry")
                 exit
             end if
-            call new_dependency(deps(idep), node, error)
+            call new_dependency(deps(idep), node, root, error)
             if (allocated(error)) exit
         end do
 

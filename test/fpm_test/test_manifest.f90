@@ -252,7 +252,7 @@ contains
         call new_table(table)
         table%key = "example"
 
-        call new_dependency(dependency, table, error)
+        call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_empty
 
@@ -274,7 +274,7 @@ contains
         call set_value(table, 'path', '"package"', stat)
         call set_value(table, 'tag', '"v20.1"', stat)
 
-        call new_dependency(dependency, table, error)
+        call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_pathtag
 
@@ -295,7 +295,7 @@ contains
         table%key = 'example'
         call set_value(table, 'tag', '"v20.1"', stat)
 
-        call new_dependency(dependency, table, error)
+        call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_nourl
 
@@ -317,7 +317,7 @@ contains
         call set_value(table, 'path', '"package"', stat)
         call set_value(table, 'git', '"https://gitea.com/fortran-lang/pack"', stat)
 
-        call new_dependency(dependency, table, error)
+        call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_gitpath
 
@@ -340,7 +340,7 @@ contains
         call set_value(table, 'branch', '"latest"', stat)
         call set_value(table, 'tag', '"v20.1"', stat)
 
-        call new_dependency(dependency, table, error)
+        call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_gitconflict
 
@@ -361,7 +361,7 @@ contains
         table%key = 'example'
         call set_value(table, 'not-available', '"anywhere"', stat)
 
-        call new_dependency(dependency, table, error)
+        call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_wrongkey
 
@@ -379,7 +379,7 @@ contains
 
         call new_table(table)
 
-        call new_dependencies(dependencies, table, error)
+        call new_dependencies(dependencies, table, error=error)
         if (allocated(error)) return
 
         if (allocated(dependencies)) then
@@ -405,7 +405,7 @@ contains
         call new_table(table)
         call add_array(table, 'dep1', children, stat)
 
-        call new_dependencies(dependencies, table, error)
+        call new_dependencies(dependencies, table, error=error)
 
     end subroutine test_dependencies_typeerror
 
