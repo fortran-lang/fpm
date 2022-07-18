@@ -39,7 +39,7 @@ use fpm_environment, only: &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
-use fpm_strings, only: split, string_cat, string_t
+use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only: error_t
 implicit none
@@ -431,6 +431,8 @@ subroutine get_macros_from_manifest(id, flags, index_of_preprocessor)
     type(error_t), allocatable :: error
     character(len=:), allocatable :: flags
     character(len=:), allocatable :: macro_definition_symbol
+    character(:), allocatable :: valued_macros(:)
+    character(len=:), allocatable :: version
 
     integer :: i
     integer :: index_of_preprocessor
@@ -460,7 +462,29 @@ subroutine get_macros_from_manifest(id, flags, index_of_preprocessor)
     end select
 
     do i = 1, size(package%preprocess(index_of_preprocessor)%macros)
+        
+        !> Split the macro name and value.
+        call split(package%preprocess(index_of_preprocessor)%macros(i)%s, valued_macros, delimiters="=")
+ 
+        if (size(valued_macros) > 1) then
+            !> Check if the value of macro starts with '{' character.
+            if (str_begins_with_str(trim(valued_macros(size(valued_macros))), "{")) then
+
+                !> Check if the value of macro ends with '}' character.
+                if (str_ends_with(trim(valued_macros(size(valued_macros))), "}")) then
+
+                    !> Check if the string contains "version" as substring.
+                    if (index(valued_macros(size(valued_macros)), "version") /= 0) then
+                        call package%version%to_string(version)
+                        flags = flags//' '//macro_definition_symbol//valued_macros(1)//'='//version
+                        cycle
+                    end if
+                end if
+            end if 
+        end if
+
         flags = flags//' '//macro_definition_symbol//package%preprocess(index_of_preprocessor)%macros(i)%s
+
     end do
     
 end subroutine get_macros_from_manifest
