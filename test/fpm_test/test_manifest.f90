@@ -64,7 +64,8 @@ contains
             & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.), &
             & new_unittest("preprocess-empty", test_preprocess_empty), &
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
-            & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.)]
+            & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
+            & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.)]
 
     end subroutine collect_manifest
 
@@ -1154,5 +1155,42 @@ contains
         if (allocated(error)) return
 
     end subroutine test_preprocessors_empty
+
+    !> Test macro parsing function get_macros_from_manifest
+    subroutine test_macro_parsing(error)
+        use fpm_compiler, only: get_macros_from_manifest, compiler_enum
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: flags
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit, i
+        integer(compiler_enum)  :: id
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', & 
+            & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
+        close(unit) 
+
+        call get_package_data(package, temp_file, error)
+
+        if (allocated(error)) return
+
+        call get_macros_from_manifest(id, flags, package, 1)
+
+        if (flags /= "-DFOO -DBAR=2 -DVERSION=0.1.0") then
+            call test_failed(error, "Macros were not parsed correctly")
+        end if
+        
+    end subroutine test_macro_parsing
 
 end module test_manifest
