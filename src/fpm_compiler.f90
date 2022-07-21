@@ -26,6 +26,7 @@
 ! Open64            ?          ?       -module         -I            -mp        discontinued
 ! Unisys            ?          ?       ?               ?             ?          discontinued
 module fpm_compiler
+use,intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use fpm_environment, only: &
         get_env, &
         get_os_type, &
@@ -412,6 +413,8 @@ subroutine set_preprocessor_flags (id, flags, package)
             flags = flag_cpp_preprocessor// flags
             call get_macros_from_manifest(id, flags, package, i)
             exit
+        else
+            write(stderr, '(a)') 'Warning: preprocessor ' // package%preprocess(i)%name // ' is not supported; will ignore it'
         end if
     end do
 
