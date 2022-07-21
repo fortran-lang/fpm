@@ -382,9 +382,8 @@ end subroutine get_debug_compile_flags
 
 subroutine set_preprocessor_flags (id, flags, package)
     integer(compiler_enum), intent(in) :: id
+    character(len=:), allocatable, intent(inout) :: flags
     type(package_config_t), intent(in) :: package
-    type(error_t), allocatable :: error
-    character(len=:), allocatable :: flags
     character(len=:), allocatable :: flag_cpp_preprocessor
     
     integer :: i
@@ -424,15 +423,14 @@ end subroutine set_preprocessor_flags
 !> under preprocess section for a specific preprocessor
 subroutine get_macros_from_manifest(id, flags, package, index_of_preprocessor)
     integer(compiler_enum), intent(in) :: id
+    character(len=:), allocatable, intent(inout) :: flags
     type(package_config_t), intent(in) :: package
-    type(error_t), allocatable :: error
-    character(len=:), allocatable :: flags
+    integer, intent(in) :: index_of_preprocessor
     character(len=:), allocatable :: macro_definition_symbol
     character(:), allocatable :: valued_macros(:)
     character(len=:), allocatable :: version
 
     integer :: i
-    integer :: index_of_preprocessor
 
     !> Check if there is a preprocess table
     if (.not.allocated(package%preprocess)) then

@@ -118,5 +118,9 @@ pushd c_main
 "$fpm" run
 popd
 
+pushd preprocess_cpp
+"$fpm" build
+popd
+
 # Cleanup
 rm -rf ./*/build
