@@ -40,7 +40,7 @@ use fpm_environment, only: &
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
-use fpm_manifest, only : get_package_data, package_config_t
+use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver
@@ -379,21 +379,15 @@ subroutine get_debug_compile_flags(id, flags)
     end select
 end subroutine get_debug_compile_flags
 
-subroutine set_preprocessor_flags (id, flags)
+subroutine set_preprocessor_flags (id, flags, package)
     integer(compiler_enum), intent(in) :: id
-    type(package_config_t) :: package
+    type(package_config_t), intent(in) :: package
     type(error_t), allocatable :: error
     character(len=:), allocatable :: flags
     character(len=:), allocatable :: flag_cpp_preprocessor
     
     integer :: i
 
-    call get_package_data(package, "fpm.toml", error)
-
-    if (allocated(error)) then 
-       return
-    end if
-    
     !> Check if there is a preprocess table
     if (.not.allocated(package%preprocess)) then
         return
@@ -416,7 +410,7 @@ subroutine set_preprocessor_flags (id, flags)
     do i = 1, size(package%preprocess)
         if (package%preprocess(i)%name == "cpp") then
             flags = flag_cpp_preprocessor// flags
-            call get_macros_from_manifest(id, flags, i)
+            call get_macros_from_manifest(id, flags, package, i)
             exit
         end if
     end do
@@ -425,9 +419,9 @@ end subroutine set_preprocessor_flags
 
 !> This subroutine will check and get all the macros that are defined in the manifest file
 !> under preprocess section for a specific preprocessor
-subroutine get_macros_from_manifest(id, flags, index_of_preprocessor)
+subroutine get_macros_from_manifest(id, flags, package, index_of_preprocessor)
     integer(compiler_enum), intent(in) :: id
-    type(package_config_t) :: package
+    type(package_config_t), intent(in) :: package
     type(error_t), allocatable :: error
     character(len=:), allocatable :: flags
     character(len=:), allocatable :: macro_definition_symbol
@@ -437,12 +431,6 @@ subroutine get_macros_from_manifest(id, flags, index_of_preprocessor)
     integer :: i
     integer :: index_of_preprocessor
 
-    call get_package_data(package, "fpm.toml", error)
-
-    if (allocated(error)) then 
-       return
-    end if
-    
     !> Check if there is a preprocess table
     if (.not.allocated(package%preprocess)) then
         return
@@ -457,9 +445,14 @@ subroutine get_macros_from_manifest(id, flags, index_of_preprocessor)
     select case(id)
     case default
         macro_definition_symbol = "-D"
-    case (id_intel_classic_windows)
+    case (id_intel_classic_windows, id_intel_llvm_windows)
         macro_definition_symbol = "/D"
     end select
+
+    !> Check if flags are not allocated.
+    if (.not.allocated(flags)) then
+        flags=''
+    end if
 
     do i = 1, size(package%preprocess(index_of_preprocessor)%macros)
         
@@ -476,17 +469,27 @@ subroutine get_macros_from_manifest(id, flags, index_of_preprocessor)
                     !> Check if the string contains "version" as substring.
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
                         call package%version%to_string(version)
-                        flags = flags//' '//macro_definition_symbol//valued_macros(1)//'='//version
+                        !> These conditions are placed in order to ensure proper spacing between the macros.
+                        if (len(flags) == 0) then
+                            flags = flags//macro_definition_symbol//trim(valued_macros(1))//'='//version
+                        else 
+                            flags = flags//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version
+                        end if
                         cycle
                     end if
                 end if
             end if 
         end if
-
-        flags = flags//' '//macro_definition_symbol//package%preprocess(index_of_preprocessor)%macros(i)%s
+         
+        !> These conditions are placed in order to ensure proper spacing between the macros.
+        if (len(flags) == 0) then
+            flags = flags//macro_definition_symbol//package%preprocess(index_of_preprocessor)%macros(i)%s
+        else 
+            flags = flags//' '//macro_definition_symbol//package%preprocess(index_of_preprocessor)%macros(i)%s
+        end if
 
     end do
-    
+
 end subroutine get_macros_from_manifest
 
 function get_include_flag(self, path) result(flags)
