@@ -27,6 +27,8 @@ module fpm_manifest_dependency
     use fpm_git, only : git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_filesystem, only: windows_path
+    use fpm_environment, only: get_os_type, OS_WINDOWS
     implicit none
     private
 
@@ -80,6 +82,7 @@ contains
 
         call get_value(table, "path", url)
         if (allocated(url)) then
+            if (get_os_type() == OS_WINDOWS) url = windows_path(url)
             if (present(root)) url = root//url  ! Relative to the fpm.toml it’s written in
             call move_alloc(url, self%path)
         else
