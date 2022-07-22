@@ -76,7 +76,7 @@ contains
 
         character(:), allocatable :: target_name
         character(100) :: output_string
-        character(100) :: overall_progress
+        character(7) :: overall_progress
 
         associate(target=>progress%target_queue(queue_index)%ptr)
 
@@ -86,12 +86,12 @@ contains
                 target_name = basename(target%output_file)
             end if
 
-            write(overall_progress,'(A,I4,A)') '[',100*progress%n_complete/progress%n_target,'%]'
+            write(overall_progress,'(A,I3,A)') '[',100*progress%n_complete/progress%n_target,'%] '
 
             if (progress%plain_mode) then ! Plain output
 
                 !$omp critical
-                write(*,'(A8,A30)') trim(overall_progress),target_name
+                write(*,'(A7,A30)') overall_progress,target_name
                 !$omp end critical
 
             else ! Pretty output
@@ -100,7 +100,7 @@ contains
 
                 call progress%console%write_line(trim(output_string),progress%output_lines(queue_index))
 
-                call progress%console%write_line(trim(overall_progress)//'Compiling...',advance=.false.)
+                call progress%console%write_line(overall_progress//'Compiling...',advance=.false.)
 
             end if
 
@@ -119,7 +119,7 @@ contains
 
         character(:), allocatable :: target_name
         character(100) :: output_string
-        character(100) :: overall_progress
+        character(7) :: overall_progress
 
         !$omp critical 
         progress%n_complete = progress%n_complete + 1
@@ -139,19 +139,19 @@ contains
                 write(output_string,'(A,T40,A,A)') target_name,COLOR_RED//'failed.'//COLOR_RESET
             end if
 
-            write(overall_progress,'(A,I4,A)') '[',100*progress%n_complete/progress%n_target,'%] '
+            write(overall_progress,'(A,I3,A)') '[',100*progress%n_complete/progress%n_target,'%] '
 
             if (progress%plain_mode) then  ! Plain output
 
                 !$omp critical
-                write(*,'(A8,A30,A7)') trim(overall_progress),target_name, 'done.'
+                write(*,'(A7,A30,A7)') overall_progress,target_name, 'done.'
                 !$omp end critical
 
             else ! Pretty output
 
                 call progress%console%update_line(progress%output_lines(queue_index),trim(output_string))
 
-                call progress%console%write_line(trim(overall_progress)//'Compiling...',advance=.false.)
+                call progress%console%write_line(overall_progress//'Compiling...',advance=.false.)
 
             end if
 

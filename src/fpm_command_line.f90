@@ -28,7 +28,7 @@ use fpm_environment,  only : get_os_type, get_env, os_is_unix, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
-use fpm_strings,      only : lower, split, fnv_1a, to_fortran_name, is_fortran_name
+use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name
 use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
@@ -262,7 +262,7 @@ contains
 
             call check_build_vals()
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -282,14 +282,14 @@ contains
             ! convert special string '..' to equivalent (shorter) '*'
             ! to allow for a string that does not require shift-key and quoting
             do i=1,size(names)
-               if(names(i).eq.'..')names(i)='*'
+               if(names(i)=='..')names(i)='*'
             enddo
 
             c_compiler = sget('c-compiler')
             archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
-            if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
+            if(specified('runner') .and. val_runner=='')val_runner='echo'
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
@@ -361,7 +361,7 @@ contains
                 call fpm_stop(2,'only one directory name allowed')
             end select
             !*! canon_path is not converting ".", etc.
-            if(name.eq.'.')then
+            if(name=='.')then
                call get_current_directory(name, error)
                if (allocated(error)) then
                   write(stderr, '("[Error]", 1x, a)') error%message
@@ -414,13 +414,13 @@ contains
 
         case('help','manual')
             call set_args(common_args, help_help,version_text)
-            if(size(unnamed).lt.2)then
-                if(unnamed(1).eq.'help')then
+            if(size(unnamed)<2)then
+                if(unnamed(1)=='help')then
                    unnamed=['   ', 'fpm']
                 else
                    unnamed=manual
                 endif
-            elseif(unnamed(2).eq.'manual')then
+            elseif(unnamed(2)=='manual')then
                 unnamed=manual
             endif
             widest=256
@@ -505,7 +505,7 @@ contains
 
             call check_build_vals()
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -519,14 +519,14 @@ contains
             ! convert special string '..' to equivalent (shorter) '*'
             ! to allow for a string that does not require shift-key and quoting
             do i=1,size(names)
-               if(names(i).eq.'..')names(i)='*'
+               if(names(i)=='..')names(i)='*'
             enddo
 
             c_compiler = sget('c-compiler')
             archiver = sget('archiver')
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
-            if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
+            if(specified('runner') .and. val_runner=='')val_runner='echo'
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
@@ -548,7 +548,7 @@ contains
             call set_args(common_args // ' --fetch-only F --clean F', &
                 help_update, version_text)
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -575,7 +575,6 @@ contains
         case default
 
             if(cmdarg.ne.''.and.which('fpm-'//cmdarg).ne.'')then
-
                 call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted(),.false.)
             else
                 call set_args('&
@@ -586,7 +585,7 @@ contains
                 help_text=help_usage
                 if(lget('list'))then
                    help_text=help_list_dash
-                elseif(len_trim(cmdarg).eq.0)then
+                elseif(len_trim(cmdarg)==0)then
                     write(stdout,'(*(a))')'Fortran Package Manager:'
                     write(stdout,'(*(a))')' '
                     call printhelp(help_list_nodash)
@@ -611,7 +610,7 @@ contains
         character(len=:), allocatable :: flags
 
         val_compiler=sget('compiler')
-        if(val_compiler.eq.'') then
+        if(val_compiler=='') then
             val_compiler='gfortran'
         endif
 
@@ -627,7 +626,7 @@ contains
     integer :: iii,ii
         if(allocated(lines))then
            ii=size(lines)
-           if(ii .gt. 0 .and. len(lines).gt. 0) then
+           if(ii > 0 .and. len(lines)> 0) then
                write(stdout,'(g0)')(trim(lines(iii)), iii=1, ii)
            else
                write(stdout,'(a)')'<WARNING> *printhelp* output requested is empty'

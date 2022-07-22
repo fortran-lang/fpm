@@ -241,7 +241,7 @@ ifort_bug*!sep_cache=sep</p>
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w"></span>
 <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fname</span><span class="w"></span>
 
-<span class="w">   </span><span class="c">!*ifort_bug*!   if(sep_cache.ne.&#39; &#39;)then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS</span>
+<span class="w">   </span><span class="c">!*ifort_bug*!   if(sep_cache/=&#39; &#39;)then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS</span>
 <span class="w">   </span><span class="c">!*ifort_bug*!      sep=sep_cache</span>
 <span class="w">   </span><span class="c">!*ifort_bug*!      return</span>
 <span class="w">   </span><span class="c">!*ifort_bug*!   endif</span>
@@ -253,18 +253,18 @@ ifort_bug*!sep_cache=sep</p>
 <span class="w">   </span><span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="n">arg0_length</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">arg0</span><span class="p">)</span><span class="w"></span>
 <span class="w">   </span><span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">arg0</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="n">istat</span><span class="p">)</span><span class="w"></span>
 <span class="w">   </span><span class="c">! check argument name</span>
-<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">arg0</span><span class="p">,</span><span class="s1">&#39;\&#39;).ne.0)then</span>
+<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">arg0</span><span class="p">,</span><span class="s1">&#39;\&#39;)/=0)then</span>
 <span class="s1">      sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<span class="s1">   elseif(index(arg0,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
+<span class="s1">   elseif(index(arg0,&#39;</span><span class="o">/</span><span class="s1">&#39;)/=0)then</span>
 <span class="s1">      sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <span class="s1">   else</span>
 <span class="s1">      ! try name returned by INQUIRE(3f)</span>
 <span class="s1">      existing=.false.</span>
 <span class="s1">      name=&#39;</span><span class="w"> </span><span class="s1">&#39;</span>
 <span class="s1">      inquire(file=arg0,iostat=istat,exist=existing,name=name)</span>
-<span class="s1">      if(index(name,&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)then</span>
+<span class="s1">      if(index(name,&#39;</span><span class="err">\</span><span class="s1">&#39;)/=0)then</span>
 <span class="s1">         sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<span class="s1">      elseif(index(name,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
+<span class="s1">      elseif(index(name,&#39;</span><span class="o">/</span><span class="s1">&#39;)/=0)then</span>
 <span class="s1">         sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <span class="s1">      else</span>
 <span class="s1">         ! well, try some common syntax and assume in current directory</span>
@@ -278,7 +278,7 @@ ifort_bug*!sep_cache=sep</p>
 <span class="s1">            if(existing)then</span>
 <span class="s1">               sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <span class="s1">            else ! check environment variable PATH</span>
-<span class="s1">               sep=merge(&#39;</span><span class="err">\</span><span class="s1">&#39;,&#39;</span><span class="o">/</span><span class="s1">&#39;,index(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)</span>
+<span class="s1">               sep=merge(&#39;</span><span class="err">\</span><span class="s1">&#39;,&#39;</span><span class="o">/</span><span class="s1">&#39;,index(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),&#39;</span><span class="err">\</span><span class="s1">&#39;)/=0)</span>
 <span class="s1">               !*!write(*,*)&#39;</span><span class="o">&lt;</span><span class="n">WARNING</span><span class="o">&gt;</span><span class="n">unknown</span><span class="w"> </span><span class="nb">system </span><span class="n">directory</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">separator</span><span class="err">&#39;</span><span class="w"></span>
 <span class="w">            </span><span class="k">endif</span>
 <span class="k">         endif</span>
@@ -306,7 +306,7 @@ ifort_bug*!sep_cache=sep</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-07-14 07:12            </p>
+ on 2022-07-22 14:52            </p>
         </div>
       </div>
       <br>

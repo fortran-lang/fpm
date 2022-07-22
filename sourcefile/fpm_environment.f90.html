@@ -329,7 +329,7 @@
 <a id="ln-171" name="ln-171" href="#ln-171"></a><span class="nb">    </span><span class="kt">integer</span><span class="w">                              </span><span class="kd">::</span><span class="w"> </span><span class="n">length</span><span class="w"></span>
 <a id="ln-172" name="ln-172" href="#ln-172"></a><span class="w">        </span><span class="c">! get length required to hold value</span>
 <a id="ln-173" name="ln-173" href="#ln-173"></a><span class="w">        </span><span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="w"></span>
-<a id="ln-174" name="ln-174" href="#ln-174"></a><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">NAME</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-174" name="ln-174" href="#ln-174"></a><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">NAME</span><span class="o">/=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
 <a id="ln-175" name="ln-175" href="#ln-175"></a><span class="k">           call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="o">=</span><span class="n">howbig</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w"></span>
 <a id="ln-176" name="ln-176" href="#ln-176"></a><span class="w">           </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
 <a id="ln-177" name="ln-177" href="#ln-177"></a><span class="w">           </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
@@ -343,12 +343,12 @@
 <a id="ln-185" name="ln-185" href="#ln-185"></a><span class="w">               </span><span class="k">allocate</span><span class="p">(</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">howbig</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">VALUE</span><span class="p">)</span><span class="w"></span>
 <a id="ln-186" name="ln-186" href="#ln-186"></a><span class="w">               </span><span class="c">! get value</span>
 <a id="ln-187" name="ln-187" href="#ln-187"></a><span class="w">               </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span><span class="k">VALUE</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">trim_name</span><span class="o">=</span><span class="p">.</span><span class="n">true</span><span class="p">.)</span><span class="w"></span>
-<a id="ln-188" name="ln-188" href="#ln-188"></a><span class="w">               </span><span class="k">if</span><span class="p">(</span><span class="nb">stat</span><span class="p">.</span><span class="n">ne</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="w"></span>
+<a id="ln-188" name="ln-188" href="#ln-188"></a><span class="w">               </span><span class="k">if</span><span class="p">(</span><span class="nb">stat</span><span class="o">/=</span><span class="mi">0</span><span class="p">)</span><span class="k">VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="w"></span>
 <a id="ln-189" name="ln-189" href="#ln-189"></a><span class="w">           </span><span class="k">end select</span>
 <a id="ln-190" name="ln-190" href="#ln-190"></a><span class="k">        else</span>
 <a id="ln-191" name="ln-191" href="#ln-191"></a><span class="k">           VALUE</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="w"></span>
 <a id="ln-192" name="ln-192" href="#ln-192"></a><span class="w">        </span><span class="k">endif</span>
-<a id="ln-193" name="ln-193" href="#ln-193"></a><span class="k">        if</span><span class="p">(</span><span class="k">VALUE</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;&#39;</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">DEFAULT</span><span class="p">))</span><span class="k">VALUE</span><span class="o">=</span><span class="n">DEFAULT</span><span class="w"></span>
+<a id="ln-193" name="ln-193" href="#ln-193"></a><span class="k">        if</span><span class="p">(</span><span class="k">VALUE</span><span class="o">==</span><span class="s1">&#39;&#39;</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">DEFAULT</span><span class="p">))</span><span class="k">VALUE</span><span class="o">=</span><span class="n">DEFAULT</span><span class="w"></span>
 <a id="ln-194" name="ln-194" href="#ln-194"></a><span class="w">     </span><span class="k">end function </span><span class="n">get_env</span><span class="w"></span>
 <a id="ln-195" name="ln-195" href="#ln-195"></a>
 <a id="ln-196" name="ln-196" href="#ln-196"></a><span class="w">    </span><span class="k">function </span><span class="n">get_command_arguments_quoted</span><span class="p">()</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="w"></span>
@@ -358,7 +358,7 @@
 <a id="ln-200" name="ln-200" href="#ln-200"></a><span class="w">    </span><span class="kt">integer</span><span class="w">                      </span><span class="kd">::</span><span class="w"> </span><span class="n">ilength</span><span class="p">,</span><span class="w"> </span><span class="n">istatus</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
 <a id="ln-201" name="ln-201" href="#ln-201"></a><span class="w">    </span><span class="n">ilength</span><span class="o">=</span><span class="mi">0</span><span class="w"></span>
 <a id="ln-202" name="ln-202" href="#ln-202"></a><span class="w">    </span><span class="n">args</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="w"></span>
-<a id="ln-203" name="ln-203" href="#ln-203"></a><span class="w">        </span><span class="n">quote</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span><span class="n">separator</span><span class="p">().</span><span class="n">eq</span><span class="p">.</span><span class="s1">&#39;\&#39;)</span>
+<a id="ln-203" name="ln-203" href="#ln-203"></a><span class="w">        </span><span class="n">quote</span><span class="o">=</span><span class="nb">merge</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span><span class="n">separator</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;\&#39;)</span>
 <a id="ln-204" name="ln-204" href="#ln-204"></a><span class="s1">        do i=2,command_argument_count() ! look at all arguments after subcommand</span>
 <a id="ln-205" name="ln-205" href="#ln-205"></a><span class="s1">            call get_command_argument(number=i,length=ilength,status=istatus)</span>
 <a id="ln-206" name="ln-206" href="#ln-206"></a><span class="s1">            if(istatus /= 0) then</span>
@@ -371,10 +371,10 @@
 <a id="ln-213" name="ln-213" href="#ln-213"></a><span class="s1">                if(istatus /= 0) then</span>
 <a id="ln-214" name="ln-214" href="#ln-214"></a><span class="s1">                    write(stderr,&#39;</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">g0</span><span class="p">,</span><span class="mi">1</span><span class="n">x</span><span class="p">))</span><span class="s1">&#39;)&#39;</span><span class="o">&lt;</span><span class="n">ERROR</span><span class="o">&gt;*</span><span class="n">get_command_arguments_stack</span><span class="o">*</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="n">obtaining</span><span class="w"> </span><span class="n">argument</span><span class="w"> </span><span class="s1">&#39;,i</span>
 <a id="ln-215" name="ln-215" href="#ln-215"></a><span class="s1">                    exit</span>
-<a id="ln-216" name="ln-216" href="#ln-216"></a><span class="s1">                elseif(ilength.gt.0)then</span>
-<a id="ln-217" name="ln-217" href="#ln-217"></a><span class="s1">                    if(index(arg//&#39;</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="o">-</span><span class="s1">&#39;).ne.1)then</span>
+<a id="ln-216" name="ln-216" href="#ln-216"></a><span class="s1">                elseif(ilength&gt;0)then</span>
+<a id="ln-217" name="ln-217" href="#ln-217"></a><span class="s1">                    if(index(arg//&#39;</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="o">-</span><span class="s1">&#39;)/=1)then</span>
 <a id="ln-218" name="ln-218" href="#ln-218"></a><span class="s1">                        args=args//quote//arg//quote//&#39;</span><span class="w"> </span><span class="s1">&#39;</span>
-<a id="ln-219" name="ln-219" href="#ln-219"></a><span class="s1">                    elseif(index(arg,&#39;</span><span class="w"> </span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-219" name="ln-219" href="#ln-219"></a><span class="s1">                    elseif(index(arg,&#39;</span><span class="w"> </span><span class="s1">&#39;)/=0)then</span>
 <a id="ln-220" name="ln-220" href="#ln-220"></a><span class="s1">                        args=args//quote//arg//quote//&#39;</span><span class="w"> </span><span class="s1">&#39;</span>
 <a id="ln-221" name="ln-221" href="#ln-221"></a><span class="s1">                    else</span>
 <a id="ln-222" name="ln-222" href="#ln-222"></a><span class="s1">                        args=args//arg//&#39;</span><span class="w"> </span><span class="s1">&#39;</span>
@@ -431,7 +431,7 @@
 <a id="ln-273" name="ln-273" href="#ln-273"></a><span class="s1">character(len=4096)          :: name</span>
 <a id="ln-274" name="ln-274" href="#ln-274"></a><span class="s1">character(len=:),allocatable :: fname</span>
 <a id="ln-275" name="ln-275" href="#ln-275"></a>
-<a id="ln-276" name="ln-276" href="#ln-276"></a><span class="s1">   !*ifort_bug*!   if(sep_cache.ne.&#39;</span><span class="w"> </span><span class="s1">&#39;)then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS</span>
+<a id="ln-276" name="ln-276" href="#ln-276"></a><span class="s1">   !*ifort_bug*!   if(sep_cache/=&#39;</span><span class="w"> </span><span class="s1">&#39;)then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS</span>
 <a id="ln-277" name="ln-277" href="#ln-277"></a><span class="s1">   !*ifort_bug*!      sep=sep_cache</span>
 <a id="ln-278" name="ln-278" href="#ln-278"></a><span class="s1">   !*ifort_bug*!      return</span>
 <a id="ln-279" name="ln-279" href="#ln-279"></a><span class="s1">   !*ifort_bug*!   endif</span>
@@ -443,18 +443,18 @@
 <a id="ln-285" name="ln-285" href="#ln-285"></a><span class="s1">   allocate(character(len=arg0_length) :: arg0)</span>
 <a id="ln-286" name="ln-286" href="#ln-286"></a><span class="s1">   call get_command_argument(0,arg0,status=istat)</span>
 <a id="ln-287" name="ln-287" href="#ln-287"></a><span class="s1">   ! check argument name</span>
-<a id="ln-288" name="ln-288" href="#ln-288"></a><span class="s1">   if(index(arg0,&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-288" name="ln-288" href="#ln-288"></a><span class="s1">   if(index(arg0,&#39;</span><span class="err">\</span><span class="s1">&#39;)/=0)then</span>
 <a id="ln-289" name="ln-289" href="#ln-289"></a><span class="s1">      sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<a id="ln-290" name="ln-290" href="#ln-290"></a><span class="s1">   elseif(index(arg0,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-290" name="ln-290" href="#ln-290"></a><span class="s1">   elseif(index(arg0,&#39;</span><span class="o">/</span><span class="s1">&#39;)/=0)then</span>
 <a id="ln-291" name="ln-291" href="#ln-291"></a><span class="s1">      sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <a id="ln-292" name="ln-292" href="#ln-292"></a><span class="s1">   else</span>
 <a id="ln-293" name="ln-293" href="#ln-293"></a><span class="s1">      ! try name returned by INQUIRE(3f)</span>
 <a id="ln-294" name="ln-294" href="#ln-294"></a><span class="s1">      existing=.false.</span>
 <a id="ln-295" name="ln-295" href="#ln-295"></a><span class="s1">      name=&#39;</span><span class="w"> </span><span class="s1">&#39;</span>
 <a id="ln-296" name="ln-296" href="#ln-296"></a><span class="s1">      inquire(file=arg0,iostat=istat,exist=existing,name=name)</span>
-<a id="ln-297" name="ln-297" href="#ln-297"></a><span class="s1">      if(index(name,&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-297" name="ln-297" href="#ln-297"></a><span class="s1">      if(index(name,&#39;</span><span class="err">\</span><span class="s1">&#39;)/=0)then</span>
 <a id="ln-298" name="ln-298" href="#ln-298"></a><span class="s1">         sep=&#39;</span><span class="err">\</span><span class="s1">&#39;</span>
-<a id="ln-299" name="ln-299" href="#ln-299"></a><span class="s1">      elseif(index(name,&#39;</span><span class="o">/</span><span class="s1">&#39;).ne.0)then</span>
+<a id="ln-299" name="ln-299" href="#ln-299"></a><span class="s1">      elseif(index(name,&#39;</span><span class="o">/</span><span class="s1">&#39;)/=0)then</span>
 <a id="ln-300" name="ln-300" href="#ln-300"></a><span class="s1">         sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <a id="ln-301" name="ln-301" href="#ln-301"></a><span class="s1">      else</span>
 <a id="ln-302" name="ln-302" href="#ln-302"></a><span class="s1">         ! well, try some common syntax and assume in current directory</span>
@@ -468,7 +468,7 @@
 <a id="ln-310" name="ln-310" href="#ln-310"></a><span class="s1">            if(existing)then</span>
 <a id="ln-311" name="ln-311" href="#ln-311"></a><span class="s1">               sep=&#39;</span><span class="o">/</span><span class="s1">&#39;</span>
 <a id="ln-312" name="ln-312" href="#ln-312"></a><span class="s1">            else ! check environment variable PATH</span>
-<a id="ln-313" name="ln-313" href="#ln-313"></a><span class="s1">               sep=merge(&#39;</span><span class="err">\</span><span class="s1">&#39;,&#39;</span><span class="o">/</span><span class="s1">&#39;,index(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),&#39;</span><span class="err">\</span><span class="s1">&#39;).ne.0)</span>
+<a id="ln-313" name="ln-313" href="#ln-313"></a><span class="s1">               sep=merge(&#39;</span><span class="err">\</span><span class="s1">&#39;,&#39;</span><span class="o">/</span><span class="s1">&#39;,index(get_env(&#39;</span><span class="n">PATH</span><span class="s1">&#39;),&#39;</span><span class="err">\</span><span class="s1">&#39;)/=0)</span>
 <a id="ln-314" name="ln-314" href="#ln-314"></a><span class="s1">               !*!write(*,*)&#39;</span><span class="o">&lt;</span><span class="n">WARNING</span><span class="o">&gt;</span><span class="n">unknown</span><span class="w"> </span><span class="nb">system </span><span class="n">directory</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">separator</span><span class="err">&#39;</span><span class="w"></span>
 <a id="ln-315" name="ln-315" href="#ln-315"></a><span class="w">            </span><span class="k">endif</span>
 <a id="ln-316" name="ln-316" href="#ln-316"></a><span class="k">         endif</span>
@@ -495,7 +495,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-07-14 07:12            </p>
+ on 2022-07-22 14:52            </p>
         </div>
       </div>
       <br>
