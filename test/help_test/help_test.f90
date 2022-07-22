@@ -77,25 +77,25 @@ integer :: length
          message=''
          call execute_command_line(path,exitstat=estat,cmdstat=cstat,cmdmsg=message)
          write(*,'(*(g0))')'<INFO>CMD=',path,' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
-         tally=[tally,all([estat.eq.0,cstat.eq.0])]
+         tally=[tally,all([estat==0,cstat==0])]
          call swallow('fpm_scratch_help.txt',page1)
-         if(size(page1).lt.3)then
+         if(size(page1)<3)then
             write(*,*)'<ERROR>help for '//names(i)//' ridiculiously small'
             tally=[tally,.false.]
             exit
          endif
-         !!write(*,*)findloc(page1,'NAME').eq.1
+         !!write(*,*)findloc(page1,'NAME')==1
          be=count(.not.tally)
-         tally=[tally,count(page1.eq.'NAME').eq.1]
-         tally=[tally,count(page1.eq.'SYNOPSIS').eq.1]
-         tally=[tally,count(page1.eq.'DESCRIPTION').eq.1]
+         tally=[tally,count(page1=='NAME')==1]
+         tally=[tally,count(page1=='SYNOPSIS')==1]
+         tally=[tally,count(page1=='DESCRIPTION')==1]
          af=count(.not.tally)
-         if(be.ne.af)then
+         if(be/=af)then
             write(*,*)'<ERROR>missing expected sections in ',names(i)
             write(*,*)page1(1) ! assuming at least size 1 for debugging mingw
-            write(*,*)count(page1.eq.'NAME')
-            write(*,*)count(page1.eq.'SYNOPSIS')
-            write(*,*)count(page1.eq.'DESCRIPTION')
+            write(*,*)count(page1=='NAME')
+            write(*,*)count(page1=='SYNOPSIS')
+            write(*,*)count(page1=='DESCRIPTION')
             write(*,'(a)')page1
          endif
          write(*,*)'<INFO>have completed ',count(tally),' tests'
@@ -109,22 +109,22 @@ integer :: length
       path= prog //' '//cmds(i)
       call execute_command_line(path,exitstat=estat,cmdstat=cstat,cmdmsg=message)
       write(*,'(*(g0))')'<INFO>CMD=',path,' EXITSTAT=',estat,' CMDSTAT=',cstat,' MESSAGE=',trim(message)
-      tally=[tally,all([estat.eq.0,cstat.eq.0])]
+      tally=[tally,all([estat==0,cstat==0])]
    enddo
 
    ! compare book written in fragments with manual
    call swallow('fpm_scratch_help.txt',book1)
    call swallow('fpm_scratch_manual.txt',book2)
    ! get rid of lines from run() which is not on stderr at the moment
-   book1=pack(book1,index(book1,' + build/').eq.0)
-   book2=pack(book1,index(book2,' + build/').eq.0)
+   book1=pack(book1,index(book1,' + build/')==0)
+   book2=pack(book1,index(book2,' + build/')==0)
    write(*,*)'<INFO>book1 ',size(book1), len(book1)
    write(*,*)'<INFO>book2 ',size(book2), len(book2)
-   if(size(book1).ne.size(book2))then
+   if(size(book1)/=size(book2))then
          write(*,*)'<ERROR>manual and "debug" appended pages are not the same size'
          tally=[tally,.false.]
    else
-      if(all(book1.ne.book2))then
+      if(all(book1/=book2))then
          tally=[tally,.false.]
          write(*,*)'<ERROR>manual and "debug" appended pages are not the same'
       else
@@ -135,10 +135,10 @@ integer :: length
 
    ! overall size of manual
    !chars=size(book2)
-   !lines=max(count(char(10).eq.book2),count(char(13).eq.book2))
+   !lines=max(count(char(10)==book2),count(char(13)==book2))
    chars=sum(len_trim(book2)) ! SUM TRIMMED LENGTH
    lines=size(book2)
-   if( (chars.lt.12000) .or. (lines.lt.350) )then
+   if( (chars<12000) .or. (lines<350) )then
       write(*,*)'<ERROR>"debug" manual is suspiciously small, bytes=',chars,' lines=',lines
       tally=[tally,.false.]
    else
@@ -164,9 +164,9 @@ integer :: ios
 integer :: lun
 character(len=k1) :: message
 open(file=filename,newunit=lun,iostat=ios,iomsg=message)
-if(ios.eq.0)then
+if(ios==0)then
    close(unit=lun,iostat=ios,status='delete',iomsg=message)
-   if(ios.ne.0)then
+   if(ios/=0)then
       write(*,*)'<ERROR>'//trim(message)
    endif
 else
@@ -188,9 +188,9 @@ character(len=4096)                      :: local_filename
    open(newunit=igetunit, file=trim(filename), action="read", iomsg=message,&
     &form="unformatted", access="stream",status='old',iostat=ios)
    local_filename=filename
-   if(ios.eq.0)then  ! if file was successfully opened
+   if(ios==0)then  ! if file was successfully opened
       inquire(unit=igetunit, size=nchars)
-      if(nchars.le.0)then
+      if(nchars<=0)then
          call stderr_local( '*slurp* empty file '//trim(local_filename) )
          return
       endif
@@ -198,7 +198,7 @@ character(len=4096)                      :: local_filename
       if(allocated(text))deallocate(text) ! make sure text array not allocated
       allocate ( text(nchars) )           ! make enough storage to hold file
       read(igetunit,iostat=ios,iomsg=message) text      ! load input file -> text array
-      if(ios.ne.0)then
+      if(ios/=0)then
          call stderr_local( '*slurp* bad read of '//trim(local_filename)//':'//trim(message) )
       endif
    else
@@ -252,7 +252,7 @@ character(len=1),parameter   :: cr=char(13)
    length=0
    sz=size(array)
    do i=1,sz
-      if(array(i).eq.nl)then
+      if(array(i)==nl)then
          linelength=max(linelength,length)
          lines=lines+1
          length=0
@@ -260,8 +260,8 @@ character(len=1),parameter   :: cr=char(13)
          length=length+1
       endif
    enddo
-   if(sz.gt.0)then
-      if(array(sz).ne.nl)then
+   if(sz>0)then
+      if(array(sz)/=nl)then
          lines=lines+1
       endif
    endif
@@ -273,14 +273,14 @@ character(len=1),parameter   :: cr=char(13)
    linecount=1
    position=1
    do i=1,sz
-      if(array(i).eq.nl)then
+      if(array(i)==nl)then
          linecount=linecount+1
          position=1
-      elseif(array(i).eq.cr)then
-      elseif(linelength.ne.0)then
-         if(position.gt.len(table))then
+      elseif(array(i)==cr)then
+      elseif(linelength/=0)then
+         if(position>len(table))then
             write(*,*)'<ERROR> adding character past edge of text',table(linecount),array(i)
-         elseif(linecount.gt.size(table))then
+         elseif(linecount>size(table))then
             write(*,*)'<ERROR> adding line past end of text',linecount,size(table)
          else
             table(linecount)(position:position)=array(i)

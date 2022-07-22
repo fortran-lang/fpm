@@ -57,7 +57,10 @@ character(len=:),allocatable  :: rm_command
     case (OS_WINDOWS)
        path=windows_path(cmdpath)
        is_os_windows=.true.
-       call execute_command_line('rmdir fpm_scratch_* /s /q',exitstat=estat,cmdstat=cstat,cmdmsg=message)
+       do i=1,size(directories)
+          call execute_command_line('rmdir /s /q fpm_scratch_'//trim(shortdirs(i)),exitstat=estat,&
+             cmdstat=cstat,cmdmsg=message)
+       end do
     case default
        write(*,*)'ERROR: unknown OS. Stopping test'
        stop 2
@@ -123,7 +126,7 @@ character(len=:),allocatable  :: rm_command
          !! Warning: This only looks for expected files. If there are more files than expected it does not fail
          call list_files(trim(directories(i)), file_names,recurse=.true.)
 
-         if(size(expected).ne.size(file_names))then
+         if(size(expected)/=size(file_names))then
             write(*,*)'WARNING: unexpected number of files in file list=',size(file_names),' expected ',size(expected)
             write(*,'("EXPECTED: ",*(g0:,","))')(scr//trim(expected(j)),j=1,size(expected))
             write(*,'("FOUND:    ",*(g0:,","))')(trim(file_names(j)%s),j=1,size(file_names))
@@ -150,7 +153,12 @@ character(len=:),allocatable  :: rm_command
    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
       rm_command = 'rm -rf ' // dirs_to_be_removed
    case (OS_WINDOWS)
-      rm_command = 'rmdir ' // dirs_to_be_removed // ' /s /q'
+      do i=1,size(directories)
+         rm_command = 'rmdir /s /q fpm_scratch_'//trim(shortdirs(i))
+         call execute_command_line('rmdir /s /q fpm_scratch_'//trim(shortdirs(i)),exitstat=estat,&
+            cmdstat=cstat,cmdmsg=message)
+      end do
+      rm_command = 'rmdir /s /q name-with-hyphens'
    end select
    call execute_command_line(rm_command, exitstat=estat,cmdstat=cstat,cmdmsg=message)
 

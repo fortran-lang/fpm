@@ -1,5 +1,5 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, fnv_1a, &
+use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, &
                       lower, str_ends_with
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
@@ -393,14 +393,14 @@ subroutine cmd_run(settings,test)
 
     ! Check all names are valid
     ! or no name and found more than one file
-    toomany= size(settings%name).eq.0 .and. size(executables).gt.1
+    toomany= size(settings%name)==0 .and. size(executables)>1
     if ( any(.not.found) &
     & .or. &
-    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner .ne. '') ) &
+    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner /= '') ) &
     & .and. &
     & .not.settings%list) then
         line=join(settings%name)
-        if(line.ne.'.')then ! do not report these special strings
+        if(line/='.')then ! do not report these special strings
            if(any(.not.found))then
               write(stderr,'(A)',advance="no")'<ERROR>*cmd_run*:specified names '
               do j=1,size(settings%name)
@@ -416,7 +416,7 @@ subroutine cmd_run(settings,test)
 
         call compact_list_all()
 
-        if(line.eq.'.' .or. line.eq.' ')then ! do not report these special strings
+        if(line=='.' .or. line==' ')then ! do not report these special strings
            call fpm_stop(0,'')
         else
            call fpm_stop(1,'')
@@ -433,7 +433,7 @@ subroutine cmd_run(settings,test)
         allocate(stat(size(executables)))
         do i=1,size(executables)
             if (exists(executables(i)%s)) then
-                if(settings%runner .ne. ' ')then
+                if(settings%runner /= ' ')then
                     if(.not.allocated(settings%args))then
                        call run(settings%runner//' '//executables(i)%s, &
                              echo=settings%verbose, exitstat=stat(i))

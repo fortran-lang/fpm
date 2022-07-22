@@ -97,14 +97,14 @@ function basename(path,suffix) result (base)
     end if
 
     call split(path,file_parts,delimiters='\/')
-    if(size(file_parts).gt.0)then
+    if(size(file_parts)>0)then
        base = trim(file_parts(size(file_parts)))
     else
        base = ''
     endif
     if(.not.with_suffix)then
         call split(base,file_parts,delimiters='.')
-        if(size(file_parts).ge.2)then
+        if(size(file_parts)>=2)then
            base = trim(file_parts(size(file_parts)-1))
         endif
     endif
@@ -314,11 +314,10 @@ end function join_path
 integer function number_of_rows(s) result(nrows)
     integer,intent(in)::s
     integer :: ios
-    character(len=100) :: r
     rewind(s)
     nrows = 0
     do
-        read(s, '(A)', iostat=ios) r
+        read(s, *, iostat=ios)
         if (ios /= 0) exit
         nrows = nrows + 1
     end do
@@ -380,14 +379,14 @@ subroutine mkdir(dir, echo)
             call execute_command_line('mkdir -p ' // dir, exitstat=stat)
 
             if (echo_local) then
-                write (*, '(" + ",2a)') 'mkdir -p ' // dir
+                write (*, *) '+ mkdir -p ' // dir
             end if
 
         case (OS_WINDOWS)
             call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
 
             if (echo_local) then
-                write (*, '(" + ",2a)') 'mkdir ' // windows_path(dir)
+                write (*, *) '+ mkdir ' // windows_path(dir)
             end if
 
     end select
@@ -420,7 +419,7 @@ recursive subroutine list_files(dir, files, recurse)
     type(string_t) :: files_tmp(N_MAX)
     integer(kind=c_int) :: r
 
-    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) .eq. 0) then
+    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) == 0) then
         allocate (files(0))
         return
     end if
@@ -441,13 +440,13 @@ recursive subroutine list_files(dir, files, recurse)
         else
             string_fortran = f_string(c_get_d_name(dir_entry_c))
 
-            if ((string_fortran .eq. '.' .or. string_fortran .eq. '..')) then
+            if ((string_fortran == '.' .or. string_fortran == '..')) then
                 cycle
             end if
 
             i = i + 1
 
-            if (i .gt. N_MAX) then
+            if (i > N_MAX) then
                 files = [files, files_tmp]
                 i = 1
             end if
@@ -458,12 +457,12 @@ recursive subroutine list_files(dir, files, recurse)
 
     r = c_closedir(dir_handle)
 
-    if (r .ne. 0) then
+    if (r /= 0) then
         print *, 'c_closedir() failed'
         error stop
     end if
 
-    if (i .gt. 0) then
+    if (i > 0) then
         files = [files, files_tmp(1:i)]
     end if
 
@@ -473,7 +472,7 @@ recursive subroutine list_files(dir, files, recurse)
             allocate(sub_dir_files(0))
 
             do i=1,size(files)
-                if (c_is_dir(files(i)%s//c_null_char) .ne. 0) then
+                if (c_is_dir(files(i)%s//c_null_char) /= 0) then
                     call list_files(files(i)%s, dir_files, recurse=.true.)
                     sub_dir_files = [sub_dir_files, dir_files]
                 end if
@@ -715,7 +714,7 @@ character(len=256)            :: message
 
     message=' '
     ios=0
-    if(filename.ne.' ')then
+    if(filename/=' ')then
         open(file=filename, &
         & newunit=lun, &
         & form='formatted', &    ! FORM    = FORMATTED | UNFORMATTED
@@ -729,7 +728,7 @@ character(len=256)            :: message
         lun=stdout
         ios=0
     endif
-    if(ios.ne.0)then
+    if(ios/=0)then
         lun=-1
         if(present(ier))then
            ier=ios
@@ -746,9 +745,9 @@ integer,intent(in)    :: lun
 integer,intent(out),optional :: ier
 character(len=256)    :: message
 integer               :: ios
-    if(lun.ne.-1)then
+    if(lun/=-1)then
         close(unit=lun,iostat=ios,iomsg=message)
-        if(ios.ne.0)then
+        if(ios/=0)then
             if(present(ier))then
                ier=ios
             else
@@ -766,12 +765,12 @@ character(len=*),intent(in)           :: filedata(:)
 integer                               :: lun, i, ios
 character(len=256)                    :: message
     call fileopen(filename,lun)
-    if(lun.ne.-1)then ! program currently stops on error on open, but might
+    if(lun/=-1)then ! program currently stops on error on open, but might
                       ! want it to continue so -1 (unallowed LUN) indicates error
        ! write file
        do i=1,size(filedata)
            write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
-           if(ios.ne.0)then
+           if(ios/=0)then
                call fpm_stop(5,'*filewrite*:'//filename//':'//trim(message))
            endif
        enddo
@@ -828,7 +827,7 @@ character(len=*),intent(in)     :: command
 character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)
 integer                         :: i, j
    pathname=''
-   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator().eq.'\'))
+   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator()=='\'))
    SEARCH: do i=1,size(paths)
       checkon=trim(join_path(trim(paths(i)),command))
       select case(separator())
@@ -947,14 +946,14 @@ subroutine os_delete_dir(unix, dir, echo)
         call run('rm -rf ' // dir, .false.)
 
         if (echo_local) then
-          write (*, '(" + ",2a)') 'rm -rf ' // dir
+          write (*, *) '+ rm -rf ' // dir
         end if
 
     else
         call run('rmdir /s/q ' // dir, .false.)
 
         if (echo_local) then
-          write (*, '(" + ",2a)') 'rmdir /s/q ' // dir
+          write (*, *) '+ rmdir /s/q ' // dir
         end if
 
     end if

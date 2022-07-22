@@ -74,12 +74,12 @@ contains
         call new_version(v1, [0, 9, 0])
         call new_version(v2, [0, 9])
 
-        if (.not. v1.eq.v2) then
+        if (.not. v1==v2) then
            call test_failed(error, "Version comparison failed")
            return
         end if
 
-        if (.not. v2.eq.v1) then
+        if (.not. v2==v1) then
            call test_failed(error, "Version comparison failed")
            return
         end if
@@ -136,12 +136,12 @@ contains
         call new_version(v1, [0, 9, 1])
         call new_version(v2, [0, 9])
 
-        if (.not. v1.ne.v2) then
+        if (.not. v1/=v2) then
            call test_failed(error, "Version comparison failed")
            return
         end if
 
-        if (.not. v2.ne.v1) then
+        if (.not. v2/=v1) then
            call test_failed(error, "Version comparison failed")
            return
         end if
@@ -208,22 +208,22 @@ contains
         call new_version(v1, [1, 0, 8])
         call new_version(v2, [1, 0])
 
-        if (.not. v1 .gt. v2) then
+        if (.not. v1 > v2) then
            call test_failed(error, "Version comparison failed (gt)")
            return
         end if
 
-        if (.not. v1 .ge. v2) then
+        if (.not. v1 >= v2) then
            call test_failed(error, "Version comparison failed (ge)")
            return
         end if
 
-        if (.not. v2 .lt. v1) then
+        if (.not. v2 < v1) then
            call test_failed(error, "Version comparison failed (lt)")
            return
         end if
 
-        if (.not. v2 .le. v1) then
+        if (.not. v2 <= v1) then
            call test_failed(error, "Version comparison failed (le)")
            return
         end if
