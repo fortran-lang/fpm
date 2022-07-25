@@ -65,7 +65,8 @@ contains
             & new_unittest("preprocess-empty", test_preprocess_empty), &
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
-            & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.)]
+            & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
+            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.)]
 
     end subroutine collect_manifest
 
@@ -1167,7 +1168,7 @@ contains
 
         type(package_config_t) :: package
         character(:), allocatable :: temp_file
-        integer :: unit, i
+        integer :: unit
         integer(compiler_enum)  :: id
 
         allocate(temp_file, source=get_temp_filename())
@@ -1192,5 +1193,63 @@ contains
         end if
         
     end subroutine test_macro_parsing
+
+    !> Test macro parsing of the package and its dependency.
+    subroutine test_macro_parsing_dependency(error)
+        use fpm_compiler, only: get_macros_from_manifest, compiler_enum
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: flagsOfPackage, flagsOfDependency
+
+        type(package_config_t) :: package, dependency
+
+        character(:), allocatable :: toml_file_package
+        character(:), allocatable :: toml_file_dependency
+
+        integer :: unit
+        integer(compiler_enum)  :: id
+
+        allocate(toml_file_package, source=get_temp_filename())
+        allocate(toml_file_dependency, source=get_temp_filename())
+
+        open(file=toml_file_package, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '[dependencies.dependency-name]', & 
+            & 'git = "https://github.com/fortran-lang/dependency-name"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', & 
+            & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
+        close(unit)
+
+        open(file=toml_file_dependency, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "dependency-name"', &
+            & 'version = "0.2.0"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', & 
+            & 'macros = ["FOO1", "BAR2=2", "VERSION={version}"]'
+        close(unit)
+
+        call get_package_data(package, toml_file_package, error)
+
+        if (allocated(error)) return
+
+        call get_package_data(dependency, toml_file_dependency, error)
+
+        if (allocated(error)) return
+
+        call get_macros_from_manifest(id, flagsOfPackage, package, 1)
+        call get_macros_from_manifest(id, flagsOfDependency, dependency, 1)
+
+        if (flagsOfPackage == flagsOfDependency) then
+            call test_failed(error, "Macros of package and dependency should not be equal")
+        end if
+        
+    end subroutine test_macro_parsing_dependency
 
 end module test_manifest
