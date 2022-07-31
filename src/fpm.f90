@@ -44,6 +44,7 @@ subroutine build_model(model, settings, package, error)
     integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir, flags, cflags, ldflags
+    character(len=:), allocatable :: version
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
@@ -166,6 +167,17 @@ subroutine build_model(model, settings, package, error)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
+            call package%version%to_string(version)
+            model%packages(i)%version = version
+            
+            if (allocated(dependency%preprocess)) then
+                do j = 1, size(dependency%preprocess)
+                    if (package%preprocess(j)%name == "cpp") then
+                        model%packages(i)%macros = dependency%preprocess(j)%macros
+                    end if
+                end do
+            end if
+
             if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
 
             if (allocated(dependency%library)) then

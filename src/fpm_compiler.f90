@@ -44,7 +44,7 @@ use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_wi
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t
 implicit none
-public :: compiler_t, new_compiler, archiver_t, new_archiver
+public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
 
 enum, bind(C)
@@ -410,7 +410,6 @@ subroutine set_preprocessor_flags (id, flags, package)
     do i = 1, size(package%preprocess)
         if (package%preprocess(i)%name == "cpp") then
             flags = flag_cpp_preprocessor// flags
-            call get_macros_from_manifest(id, flags, package, i)
             exit
         else
             write(stderr, '(a)') 'Warning: preprocessor ' // package%preprocess(i)%name // ' is not supported; will ignore it'
@@ -419,26 +418,22 @@ subroutine set_preprocessor_flags (id, flags, package)
 
 end subroutine set_preprocessor_flags
 
-!> This subroutine will check and get all the macros that are defined in the manifest file
-!> under preprocess section for a specific preprocessor
-subroutine get_macros_from_manifest(id, flags, package, index_of_preprocessor)
+!> This function will parse and read the macros list and 
+!> return them as defined flags.
+function get_macros(id, macros_list, version) result(macros)
     integer(compiler_enum), intent(in) :: id
-    character(len=:), allocatable, intent(inout) :: flags
-    type(package_config_t), intent(in) :: package
-    integer, intent(in) :: index_of_preprocessor
+    character(len=:), allocatable, intent(in) :: version
+    type(string_t), allocatable, intent(in) :: macros_list(:)
+
+    character(len=:), allocatable :: macros
     character(len=:), allocatable :: macro_definition_symbol
     character(:), allocatable :: valued_macros(:)
-    character(len=:), allocatable :: version
+    
 
     integer :: i
 
-    !> Check if there is a preprocess table
-    if (.not.allocated(package%preprocess)) then
-        return
-    end if
-
-    !> Check if macros are defined in the manifest file
-    if (.not.allocated(package%preprocess(index_of_preprocessor)%macros)) then
+    if (.not.allocated(macros_list)) then
+        macros = ""
         return
     end if
 
@@ -450,15 +445,15 @@ subroutine get_macros_from_manifest(id, flags, package, index_of_preprocessor)
         macro_definition_symbol = "/D"
     end select
 
-    !> Check if flags are not allocated.
-    if (.not.allocated(flags)) then
-        flags=''
+    !> Check if macros are not allocated.
+    if (.not.allocated(macros)) then
+        macros=""
     end if
 
-    do i = 1, size(package%preprocess(index_of_preprocessor)%macros)
+    do i = 1, size(macros_list)
         
         !> Split the macro name and value.
-        call split(package%preprocess(index_of_preprocessor)%macros(i)%s, valued_macros, delimiters="=")
+        call split(macros_list(i)%s, valued_macros, delimiters="=")
  
         if (size(valued_macros) > 1) then
             !> Check if the value of macro starts with '{' character.
@@ -469,12 +464,12 @@ subroutine get_macros_from_manifest(id, flags, package, index_of_preprocessor)
 
                     !> Check if the string contains "version" as substring.
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
-                        call package%version%to_string(version)
+                    
                         !> These conditions are placed in order to ensure proper spacing between the macros.
-                        if (len(flags) == 0) then
-                            flags = flags//macro_definition_symbol//trim(valued_macros(1))//'='//version
+                        if (len(macros) == 0) then
+                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
                         else 
-                            flags = flags//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version
+                            macros = macros//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version
                         end if
                         cycle
                     end if
@@ -483,15 +478,15 @@ subroutine get_macros_from_manifest(id, flags, package, index_of_preprocessor)
         end if
          
         !> These conditions are placed in order to ensure proper spacing between the macros.
-        if (len(flags) == 0) then
-            flags = flags//macro_definition_symbol//package%preprocess(index_of_preprocessor)%macros(i)%s
+        if (len(macros) == 0) then
+            macros = ' '//macros//macro_definition_symbol//macros_list(i)%s
         else 
-            flags = flags//' '//macro_definition_symbol//package%preprocess(index_of_preprocessor)%macros(i)%s
+            macros = macros//' '//macro_definition_symbol//macros_list(i)%s
         end if
 
     end do
 
-end subroutine get_macros_from_manifest
+end function get_macros
 
 function get_include_flag(self, path) result(flags)
     class(compiler_t), intent(in) :: self
