@@ -1159,12 +1159,13 @@ contains
 
     !> Test macro parsing function get_macros_from_manifest
     subroutine test_macro_parsing(error)
-        use fpm_compiler, only: get_macros_from_manifest, compiler_enum
+        use fpm_compiler, only: get_macros, compiler_enum
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
         character(len=:), allocatable :: flags
+        character(len=:), allocatable :: version
 
         type(package_config_t) :: package
         character(:), allocatable :: temp_file
@@ -1186,9 +1187,9 @@ contains
 
         if (allocated(error)) return
 
-        call get_macros_from_manifest(id, flags, package, 1)
+        call package%version%to_string(version)
 
-        if (flags /= "-DFOO -DBAR=2 -DVERSION=0.1.0") then
+        if (get_macros(id, package%preprocess(1)%macros, version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
             call test_failed(error, "Macros were not parsed correctly")
         end if
         
@@ -1196,12 +1197,13 @@ contains
 
     !> Test macro parsing of the package and its dependency.
     subroutine test_macro_parsing_dependency(error)
-        use fpm_compiler, only: get_macros_from_manifest, compiler_enum
+        use fpm_compiler, only: get_macros, compiler_enum
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: flagsOfPackage, flagsOfDependency
+        character(len=:), allocatable :: macrosPackage, macrosDependency
+        character(len=:), allocatable :: versionPackage, versionDependency
 
         type(package_config_t) :: package, dependency
 
@@ -1243,10 +1245,13 @@ contains
 
         if (allocated(error)) return
 
-        call get_macros_from_manifest(id, flagsOfPackage, package, 1)
-        call get_macros_from_manifest(id, flagsOfDependency, dependency, 1)
+        call package%version%to_string(versionPackage)
+        call dependency%version%to_string(versionDependency)
 
-        if (flagsOfPackage == flagsOfDependency) then
+        macrosPackage = get_macros(id, package%preprocess(1)%macros, versionPackage)
+        macrosDependency = get_macros(id, dependency%preprocess(1)%macros, versionDependency)
+
+        if (macrosPackage == macrosDependency) then
             call test_failed(error, "Macros of package and dependency should not be equal")
         end if
         
