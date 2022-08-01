@@ -6,10 +6,9 @@ module preprocess_hello_dependency
 contains
   subroutine say_hello
 
-!> This build should break because we do not have FOO defined as macro in the fpm.toml file of
-!> this package.
-#ifndef FOO
-    This breaks the build inside dependency. This implies that macros are not getting passed to the dependeny.
+!> If this build fails, then it implies that macros are getting passed to the dependency.
+#ifdef FOO
+    This breaks the build inside dependency. This implies that macros are getting passed to the dependeny.
 #endif
     print *, "Hello, preprocess_hello_dependency!"
   end subroutine say_hello
