@@ -64,7 +64,9 @@ contains
             & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.), &
             & new_unittest("preprocess-empty", test_preprocess_empty), &
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
-            & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.)]
+            & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
+            & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
+            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.)]
 
     end subroutine collect_manifest
 
@@ -1154,5 +1156,105 @@ contains
         if (allocated(error)) return
 
     end subroutine test_preprocessors_empty
+
+    !> Test macro parsing function get_macros_from_manifest
+    subroutine test_macro_parsing(error)
+        use fpm_compiler, only: get_macros, compiler_enum
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: flags
+        character(len=:), allocatable :: version
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        integer(compiler_enum)  :: id
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', & 
+            & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
+        close(unit) 
+
+        call get_package_data(package, temp_file, error)
+
+        if (allocated(error)) return
+
+        call package%version%to_string(version)
+
+        if (get_macros(id, package%preprocess(1)%macros, version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
+            call test_failed(error, "Macros were not parsed correctly")
+        end if
+        
+    end subroutine test_macro_parsing
+
+    !> Test macro parsing of the package and its dependency.
+    subroutine test_macro_parsing_dependency(error)
+        use fpm_compiler, only: get_macros, compiler_enum
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: macrosPackage, macrosDependency
+        character(len=:), allocatable :: versionPackage, versionDependency
+
+        type(package_config_t) :: package, dependency
+
+        character(:), allocatable :: toml_file_package
+        character(:), allocatable :: toml_file_dependency
+
+        integer :: unit
+        integer(compiler_enum)  :: id
+
+        allocate(toml_file_package, source=get_temp_filename())
+        allocate(toml_file_dependency, source=get_temp_filename())
+
+        open(file=toml_file_package, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[dependencies]', &
+            & '[dependencies.dependency-name]', & 
+            & 'git = "https://github.com/fortran-lang/dependency-name"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', & 
+            & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
+        close(unit)
+
+        open(file=toml_file_dependency, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "dependency-name"', &
+            & 'version = "0.2.0"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', & 
+            & 'macros = ["FOO1", "BAR2=2", "VERSION={version}"]'
+        close(unit)
+
+        call get_package_data(package, toml_file_package, error)
+
+        if (allocated(error)) return
+
+        call get_package_data(dependency, toml_file_dependency, error)
+
+        if (allocated(error)) return
+
+        call package%version%to_string(versionPackage)
+        call dependency%version%to_string(versionDependency)
+
+        macrosPackage = get_macros(id, package%preprocess(1)%macros, versionPackage)
+        macrosDependency = get_macros(id, dependency%preprocess(1)%macros, versionDependency)
+
+        if (macrosPackage == macrosDependency) then
+            call test_failed(error, "Macros of package and dependency should not be equal")
+        end if
+        
+    end subroutine test_macro_parsing_dependency
 
 end module test_manifest
