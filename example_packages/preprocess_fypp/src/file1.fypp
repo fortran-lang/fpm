@@ -1,0 +1,2 @@
+#:set LOGLEVEL = 1
+print *, "LOGLEVEL: ${LOGLEVEL}$"
