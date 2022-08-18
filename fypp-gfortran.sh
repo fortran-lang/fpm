@@ -15,7 +15,7 @@ else
   njob="$(nproc)"
 fi
 
-# Create directories for the fpm project.
+# Create directory for saving preprocessed files.
 mkdir -p "$destdir/preprocessed_files"
 
 # Preprocess all files with .fypp extension in source directory.
@@ -25,8 +25,6 @@ find src -iname "*.fypp" \
     | cut -f1 -d. | xargs -P "$njob" -I{} "$fypp" "src/{}.fypp" "$destdir/preprocessed_files/{}.f90" \
 
 args=("$@")
-
-file=$(printf "%s\n" "${args[@]}" | grep -P '^.+\.[fF]90')
 
 exec gfortran "${args[@]}"
 
