@@ -6,13 +6,6 @@ from pathlib import Path
 # Read the system arguments.
 args = sys.argv[1:]
 
-# Set the output directory.
-output_dir = Path("build" , "preprocessed_files")
-
-# If output directory does not exist, create it.
-if not output_dir.exists():
-    output_dir.mkdir(parents=True)
-
 # Get the filenames with .fypp extension and convert to string.
 source_file = [arg for arg in args if arg.endswith(".fypp")]
 output_file = [arg for arg in args if arg.endswith(".o")]
