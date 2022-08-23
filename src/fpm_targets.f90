@@ -270,8 +270,9 @@ subroutine build_target_list(targets,model)
 
                     call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_OBJECT,&
                                 output_name = get_object_name(sources(i)), &
-                                source = sources(i) &
-                                )
+                                source = sources(i), &
+                                macros = model%packages(j)%macros, &
+                                version = model%packages(j)%version)
 
                     if (sources(i)%unit_scope == FPM_SCOPE_APP) then
 
