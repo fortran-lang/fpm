@@ -2,9 +2,10 @@
 module test_source_parsing
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: get_temp_filename
-    use fpm_source_parsing, only: parse_f_source, parse_c_source
+    use fpm_source_parsing, only: parse_f_source, parse_c_source, parse_cpp_source
     use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
-                         FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE
+                         FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
+                         FPM_UNIT_CPPSOURCE
     use fpm_strings, only: operator(.in.)
     implicit none
     private
@@ -41,7 +42,8 @@ contains
             & new_unittest("invalid-module", &
                            test_invalid_module, should_fail=.true.), &
             & new_unittest("invalid-submodule", &
-                           test_invalid_submodule, should_fail=.true.) &
+                           test_invalid_submodule, should_fail=.true.), &
+            & new_unittest("cppsource", test_cppsource) &
             ]
 
     end subroutine collect_source_parsing
@@ -836,6 +838,81 @@ contains
 
     end subroutine test_csource
 
+    !> Try to parse standard cpp source for includes
+    subroutine test_cppsource(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        character(:), allocatable :: temp_file
+        type(srcfile_t), allocatable :: f_source
+
+        allocate(temp_file, source=get_temp_filename())
+        temp_file = temp_file//'.cpp'
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & '#include "file1.h"', &
+            & '#include "file2.h"', &
+            & 'void sum(int a) {', &
+            & ' #include "function_body.cpp"', &
+            & ' // This is the function body.', &
+            & ' return', &
+            & '}'
+        close(unit)
+
+        f_source = parse_cpp_source(temp_file,error)
+        if (allocated(error)) then
+            return
+        end if
+
+        if (f_source%unit_type /= FPM_UNIT_CPPSOURCE) then
+            call test_failed(error,'Wrong unit type detected - expecting FPM_UNIT_CSOURCE')
+            return
+        end if
+
+        if (size(f_source%modules_provided) /= 0) then
+            call test_failed(error,'Unexpected modules_provided - expecting zero')
+            return
+        end if
+
+        if (size(f_source%modules_used) /= 0) then
+            call test_failed(error,'Incorrect number of modules_used - expecting zero')
+            return
+        end if
+
+        if (size(f_source%include_dependencies) /= 3) then
+            call test_failed(error,'Incorrect number of include_dependencies - expecting two')
+            return
+        end if
+
+        if (allocated(f_source%link_libraries)) then
+            call test_failed(error,'Unexpected link_libraries - expecting unallocated')
+            return
+        end if
+        
+        if (size(f_source%parent_modules) /= 0) then
+            call test_failed(error,'Incorrect number of parent_modules - expecting zero')
+            return
+        end if
+
+        if (.not.('file1.h' .in. f_source%include_dependencies)) then
+            call test_failed(error,'Missing file in include_dependencies')
+            return
+        end if
+
+        if (.not.('file2.h' .in. f_source%include_dependencies)) then
+            call test_failed(error,'Missing file in include_dependencies')
+            return
+        end if
+
+        if (.not.('function_body.cpp' .in. f_source%include_dependencies)) then
+            call test_failed(error,'Missing file in include_dependencies')
+            return
+        end if
+
+    end subroutine test_cppsource
 
     !> Try to parse fortran program with invalid use statement
     subroutine test_invalid_use_stmt(error)
