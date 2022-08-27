@@ -37,7 +37,7 @@ private
 
 public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
-       FPM_TARGET_C_OBJECT
+       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public resolve_target_linking, add_target, add_dependency
@@ -55,6 +55,8 @@ integer, parameter :: FPM_TARGET_ARCHIVE = 2
 integer, parameter :: FPM_TARGET_OBJECT = 3
 !> Target type is c compiled object
 integer, parameter :: FPM_TARGET_C_OBJECT = 4
+!> Target type is cpp compiled object
+integer, parameter :: FPM_TARGET_CPP_OBJECT = 5
 
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
@@ -237,6 +239,14 @@ subroutine build_target_list(targets,model)
                         ! Archive depends on object
                         call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
                     end if
+
+                case (FPM_UNIT_CPPSOURCE) 
+
+                    call add_target(targets,package=model%packages(j)%name,source = sources(i), &
+                                type = FPM_UNIT_CPPSOURCE, &
+                                output_name = get_object_name(sources(i)), &
+                                macros = model%packages(j)%macros, &
+                                version = model%packages(j)%version)
 
                 case (FPM_UNIT_PROGRAM)
 

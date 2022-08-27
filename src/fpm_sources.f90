@@ -8,7 +8,7 @@ use fpm_error, only: error_t
 use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, list_files, is_hidden_file
 use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.)
-use fpm_source_parsing, only: parse_f_source, parse_c_source
+use fpm_source_parsing, only: parse_f_source, parse_c_source, parse_cpp_source
 use fpm_manifest_executable, only: executable_config_t
 implicit none
 
@@ -38,6 +38,10 @@ function parse_source(source_file_path,error) result(source)
     else if (str_ends_with(lower(source_file_path), [".c", ".h"])) then
 
         source = parse_c_source(source_file_path,error)
+
+    else if (str_ends_with(lower(source_file_path), [".cpp"])) then 
+
+        source = parse_cpp_source(source_file_path, error)
 
     end if
 
@@ -84,7 +88,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
     is_source = [(.not.(is_hidden_file(basename(file_names(i)%s))) .and. &
                  .not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
                  (str_ends_with(lower(file_names(i)%s), fortran_suffixes) .or. &
-                 str_ends_with(lower(file_names(i)%s),[".c",".h"]) ),i=1,size(file_names))]
+                 str_ends_with(lower(file_names(i)%s),[".c  ",".h  ", ".cpp"]) ),i=1,size(file_names))]
     src_file_names = pack(file_names,is_source)
 
     allocate(dir_sources(size(src_file_names)))

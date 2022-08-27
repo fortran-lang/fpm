@@ -21,12 +21,13 @@ use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
-                    FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
+                    FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
+                    FPM_UNIT_CPPSOURCE
 use fpm_filesystem, only: read_lines, read_lines_expanded, exists
 implicit none
 
 private
-public :: parse_f_source, parse_c_source
+public :: parse_f_source, parse_c_source, parse_cpp_source
 
 character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
                              ['iso_c_binding  ', &
@@ -511,6 +512,80 @@ function parse_c_source(c_filename,error) result(c_source)
     end do
 
 end function parse_c_source
+
+!> Parsing of cpp source files
+!>
+!> The following statements are recognised and parsed:
+!>
+!> - `#include` preprocessor statement
+!>
+function parse_cpp_source(c_filename,error) result(cpp_source)
+    character(*), intent(in) :: c_filename
+    type(srcfile_t) :: cpp_source
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: fh, n_include, i, pass, stat
+    type(string_t), allocatable :: file_lines(:)
+
+    cpp_source%file_name = c_filename
+
+    if (str_ends_with(lower(c_filename), ".cpp")) then
+
+        cpp_source%unit_type = FPM_UNIT_CPPSOURCE
+
+    end if
+
+    allocate(cpp_source%modules_used(0))
+    allocate(cpp_source%modules_provided(0))
+    allocate(cpp_source%parent_modules(0))
+
+    open(newunit=fh,file=c_filename,status='old')
+    file_lines = read_lines(fh)
+    close(fh)
+
+    ! Ignore empty files, returned as FPM_UNIT_UNKNOWN
+    if (len_trim(file_lines) < 1) then
+        cpp_source%unit_type = FPM_UNIT_UNKNOWN
+        return
+    end if
+
+    cpp_source%digest = fnv_1a(file_lines)
+
+    do pass = 1,2
+        n_include = 0
+        file_loop: do i=1,size(file_lines)
+
+            ! Process 'INCLUDE' statements
+            if (index(adjustl(lower(file_lines(i)%s)),'#include') == 1 .and. &
+                index(file_lines(i)%s,'"') > 0) then
+
+                n_include = n_include + 1
+
+                if (pass == 2) then
+
+                    cpp_source%include_dependencies(n_include)%s = &
+                     &   split_n(file_lines(i)%s,n=2,delims='"',stat=stat)
+                    if (stat /= 0) then
+                        call file_parse_error(error,c_filename, &
+                            'unable to get cpp include file',i, &
+                            file_lines(i)%s,index(file_lines(i)%s,'"'))
+                        return
+                    end if
+
+                end if
+
+            end if
+
+        end do file_loop
+
+        if (pass == 1) then
+            allocate(cpp_source%include_dependencies(n_include))
+        end if
+
+    end do
+
+end function parse_cpp_source
+
 
 !> Split a string on one or more delimeters
 !>  and return the nth substring if it exists
