@@ -588,9 +588,9 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
 end subroutine get_default_c_compiler
 
 !> Get C++ Compiler.
-subroutine get_default_cpp_compiler(f_compiler, c_compiler)
+subroutine get_default_cpp_compiler(f_compiler, cpp_compiler)
     character(len=*), intent(in) :: f_compiler
-    character(len=:), allocatable, intent(out) :: c_compiler
+    character(len=:), allocatable, intent(out) :: cpp_compiler
     integer(compiler_enum) :: id
 
     id = get_compiler_id(f_compiler)
@@ -598,26 +598,26 @@ subroutine get_default_cpp_compiler(f_compiler, c_compiler)
     select case(id)
 
     case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows)
-        c_compiler = 'icpc'
+        cpp_compiler = 'icpc'
 
     case(id_intel_llvm_nix,id_intel_llvm_windows)
-        c_compiler = 'icpx'
+        cpp_compiler = 'icpx'
 
     case(id_flang, id_flang_new, id_f18)
-        c_compiler='clang'
+        cpp_compiler='clang'
 
     case(id_ibmxl)
-        c_compiler='xlc++'
+        cpp_compiler='xlc++'
 
     case(id_lfortran)
-        c_compiler = 'cc'
+        cpp_compiler = 'cc'
 
     case(id_gcc)
-        c_compiler = 'g++'
+        cpp_compiler = 'g++'
 
     case default
         ! Fall-back to using Fortran compiler
-        c_compiler = f_compiler
+        cpp_compiler = f_compiler
     end select
 
 end subroutine get_default_cpp_compiler
