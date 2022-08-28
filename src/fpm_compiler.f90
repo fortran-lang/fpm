@@ -793,7 +793,7 @@ end function enumerate_libraries
 
 
 !> Create new compiler instance
-subroutine new_compiler(self, fc, cc, cppc, echo, verbose)
+subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     !> New instance of the compiler
     type(compiler_t), intent(out) :: self
     !> Fortran compiler name or path
@@ -801,7 +801,7 @@ subroutine new_compiler(self, fc, cc, cppc, echo, verbose)
     !> C compiler name or path
     character(len=*), intent(in) :: cc
     !> C++ Compiler name or path
-    character(len=*), intent(in) :: cppc
+    character(len=*), intent(in) :: cxx
     !> Echo compiler command
     logical, intent(in) :: echo
     !> Verbose mode: dump compiler output

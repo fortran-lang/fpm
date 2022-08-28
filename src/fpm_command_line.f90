@@ -203,7 +203,7 @@ contains
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", ldflags_env = "LDFLAGS", &
             & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " ", &
-            & cppc_env = "CPPC", cppc_default = " "
+            & cxx_env = "CXX", cxx_default = " "
         type(error_t), allocatable :: error
 
         call set_help()
@@ -247,7 +247,7 @@ contains
           ' --no-prune F' // &
           ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
           ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
-          ' --cpp-compiler "'//get_fpm_env(cppc_env, cppc_default)//'"' // &
+          ' --cpp-compiler "'//get_fpm_env(cxx_env, cxx_default)//'"' // &
           ' --archiver "'//get_fpm_env(ar_env, ar_default)//'"' // &
           ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
           ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
