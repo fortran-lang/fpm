@@ -8,7 +8,7 @@ use fpm_error, only: error_t
 use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, list_files, is_hidden_file
 use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.)
-use fpm_source_parsing, only: parse_f_source, parse_c_source, parse_cpp_source
+use fpm_source_parsing, only: parse_f_source, parse_c_source
 use fpm_manifest_executable, only: executable_config_t
 implicit none
 
@@ -17,6 +17,7 @@ public :: add_sources_from_dir, add_executable_sources
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
+character(4), parameter :: c_suffixes(3) = [".c  ", ".h  ", ".cpp"]
 
 contains
 
@@ -35,13 +36,9 @@ function parse_source(source_file_path,error) result(source)
             source%exe_name = basename(source_file_path,suffix=.false.)
         end if
 
-    else if (str_ends_with(lower(source_file_path), [".c", ".h"])) then
+    else if (str_ends_with(lower(source_file_path), c_suffixes)) then
 
         source = parse_c_source(source_file_path,error)
-
-    else if (str_ends_with(lower(source_file_path), [".cpp"])) then 
-
-        source = parse_cpp_source(source_file_path, error)
 
     end if
 
