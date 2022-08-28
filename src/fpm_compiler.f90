@@ -82,7 +82,7 @@ type :: compiler_t
     !> Path to the C compiler
     character(len=:), allocatable :: cc
     !> Path to the C++ compiler
-    character(len=:), allocatable :: cppc
+    character(len=:), allocatable :: cxx
     !> Print all commands
     logical :: echo = .true.
     !> Verbose output of command
@@ -816,7 +816,7 @@ subroutine new_compiler(self, fc, cc, cppc, echo, verbose)
       self%cc = cc
     else
       call get_default_c_compiler(self%fc, self%cc)
-      call get_default_cpp_compiler(self%fc, self%cppc)
+      call get_default_cpp_compiler(self%fc, self%cxx)
     end if
 end subroutine new_compiler
 
@@ -923,7 +923,7 @@ subroutine compile_cpp(self, input, output, args, log_file, stat)
     !> Status flag
     integer, intent(out) :: stat
 
-    call run(self%cppc // " -c " // input // " " // args // " -o " // output, &
+    call run(self%cxx // " -c " // input // " " // args // " -o " // output, &
         & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_cpp
 
