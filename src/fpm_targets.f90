@@ -248,6 +248,9 @@ subroutine build_target_list(targets,model)
                                 macros = model%packages(j)%macros, &
                                 version = model%packages(j)%version)
 
+                    !> Add stdc++ as a linker flag.
+                    model%link_flags = model%link_flags // "stdc++"
+
                 case (FPM_UNIT_PROGRAM)
 
                     call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_OBJECT,&
