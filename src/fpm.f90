@@ -16,7 +16,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_preprocessor_flags
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
-use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
+use fpm_targets, only: targets_from_sources, &
                         resolve_target_linking, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
@@ -99,6 +99,61 @@ subroutine build_model(model, settings, package, error)
 
     allocate(model%packages(model%deps%ndep))
 
+    do i = 1, model%deps%ndep
+        associate(dep => model%deps%dep(i))
+            manifest = join_path(dep%proj_dir, "fpm.toml")
+
+            call get_package_data(dependency, manifest, error, &
+                apply_defaults=.true.)
+            if (allocated(error)) exit
+
+            model%packages(i)%name = dependency%name
+            call package%version%to_string(version)
+            model%packages(i)%version = version
+            
+            if (allocated(dependency%preprocess)) then
+                do j = 1, size(dependency%preprocess)
+                    if (package%preprocess(j)%name == "cpp") then
+                        model%packages(i)%macros = dependency%preprocess(j)%macros
+                    end if
+                end do
+            end if
+
+            if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
+
+            if (allocated(dependency%library)) then
+
+                if (allocated(dependency%library%source_dir)) then
+                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
+                    if (is_dir(lib_dir)) then
+                        call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
+                            error=error)
+                        if (allocated(error)) exit
+                    end if
+                end if
+
+                if (allocated(dependency%library%include_dir)) then
+                    do j=1,size(dependency%library%include_dir)
+                        include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir(j)%s)
+                        if (is_dir(include_dir%s)) then
+                            model%include_dirs = [model%include_dirs, include_dir]
+                        end if
+                    end do
+                end if
+
+            end if
+
+            if (allocated(dependency%build%link)) then
+                model%link_libraries = [model%link_libraries, dependency%build%link]
+            end if
+
+            if (allocated(dependency%build%external_modules)) then
+                model%external_modules = [model%external_modules, dependency%build%external_modules]
+            end if
+        end associate
+    end do
+    if (allocated(error)) return
+
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
@@ -158,60 +213,6 @@ subroutine build_model(model, settings, package, error)
 
     endif
 
-    do i = 1, model%deps%ndep
-        associate(dep => model%deps%dep(i))
-            manifest = join_path(dep%proj_dir, "fpm.toml")
-
-            call get_package_data(dependency, manifest, error, &
-                apply_defaults=.true.)
-            if (allocated(error)) exit
-
-            model%packages(i)%name = dependency%name
-            call package%version%to_string(version)
-            model%packages(i)%version = version
-            
-            if (allocated(dependency%preprocess)) then
-                do j = 1, size(dependency%preprocess)
-                    if (package%preprocess(j)%name == "cpp") then
-                        model%packages(i)%macros = dependency%preprocess(j)%macros
-                    end if
-                end do
-            end if
-
-            if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
-
-            if (allocated(dependency%library)) then
-
-                if (allocated(dependency%library%source_dir)) then
-                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
-                    if (is_dir(lib_dir)) then
-                        call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                            error=error)
-                        if (allocated(error)) exit
-                    end if
-                end if
-
-                if (allocated(dependency%library%include_dir)) then
-                    do j=1,size(dependency%library%include_dir)
-                        include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir(j)%s)
-                        if (is_dir(include_dir%s)) then
-                            model%include_dirs = [model%include_dirs, include_dir]
-                        end if
-                    end do
-                end if
-
-            end if
-
-            if (allocated(dependency%build%link)) then
-                model%link_libraries = [model%link_libraries, dependency%build%link]
-            end if
-
-            if (allocated(dependency%build%external_modules)) then
-                model%external_modules = [model%external_modules, dependency%build%external_modules]
-            end if
-        end associate
-    end do
-    if (allocated(error)) return
 
     if (settings%verbose) then
         write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix

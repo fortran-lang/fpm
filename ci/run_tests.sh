@@ -126,5 +126,9 @@ pushd preprocess_hello
 "$fpm" build
 popd
 
+pushd fpm_test_exe_issues
+"$fpm" build
+popd
+
 # Cleanup
 rm -rf ./*/build
