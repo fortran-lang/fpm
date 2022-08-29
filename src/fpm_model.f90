@@ -155,6 +155,9 @@ type :: fpm_model_t
     !> Command line flags passed to C for compilation
     character(:), allocatable :: c_compile_flags
 
+    !> Command line flags passed to C++ for compilation
+    character(:), allocatable :: cpp_compile_flags
+
     !> Command line flags passed to the linker
     character(:), allocatable :: link_flags
 
@@ -319,6 +322,7 @@ function info_model(model) result(s)
     !    character(:), allocatable :: fortran_compile_flags
     s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
     s = s // ', c_compile_flags="' // model%c_compile_flags // '"'
+    s = s // ', cpp_compile_flags="' // model%cpp_compile_flags // '"'
     s = s // ', link_flags="' // model%link_flags // '"'
     s = s // ', build_prefix="' // model%build_prefix // '"'
     !    type(string_t), allocatable :: link_libraries(:)

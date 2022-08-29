@@ -243,13 +243,20 @@ subroutine build_target_list(targets,model)
                 case (FPM_UNIT_CPPSOURCE) 
 
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
-                                type = FPM_UNIT_CPPSOURCE, &
+                                type = FPM_TARGET_CPP_OBJECT, &
                                 output_name = get_object_name(sources(i)), &
                                 macros = model%packages(j)%macros, &
                                 version = model%packages(j)%version)
 
-                    !> Add stdc++ as a linker flag.
-                    model%link_flags = model%link_flags // "stdc++"
+                    if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
+                        ! Archive depends on object
+                        call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                    end if
+
+                    !> Add stdc++ as a linker flag. If not already there.
+                    if (.not. ("stdc++" .in. model%link_libraries)) then
+                        model%link_libraries = [model%link_libraries, string_t("stdc++")]
+                    end if
 
                 case (FPM_UNIT_PROGRAM)
 
@@ -725,10 +732,12 @@ subroutine resolve_target_linking(targets, model)
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
-            if (target%target_type /= FPM_TARGET_C_OBJECT) then
+            if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
                 target%compile_flags = model%fortran_compile_flags
-            else
+            else if (target%target_type == FPM_TARGET_C_OBJECT) then
                 target%compile_flags = model%c_compile_flags
+            else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
+                target%compile_flags = model%cpp_compile_flags
             end if
 
             !> Get macros as flags.

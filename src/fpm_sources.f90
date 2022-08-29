@@ -85,7 +85,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
     is_source = [(.not.(is_hidden_file(basename(file_names(i)%s))) .and. &
                  .not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
                  (str_ends_with(lower(file_names(i)%s), fortran_suffixes) .or. &
-                 str_ends_with(lower(file_names(i)%s),[".c  ",".h  ", ".cpp"]) ),i=1,size(file_names))]
+                 str_ends_with(lower(file_names(i)%s), c_suffixes) ),i=1,size(file_names))]
     src_file_names = pack(file_names,is_source)
 
     allocate(dir_sources(size(src_file_names)))

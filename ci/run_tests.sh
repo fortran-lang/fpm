@@ -127,7 +127,7 @@ pushd preprocess_hello
 popd
 
 pushd cpp_files
-"$fpm" build
+"$fpm" test
 popd
 
 # Cleanup

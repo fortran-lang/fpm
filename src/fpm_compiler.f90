@@ -816,6 +816,11 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
       self%cc = cc
     else
       call get_default_c_compiler(self%fc, self%cc)
+    end if
+
+    if (len_trim(cxx) > 0) then
+      self%cxx = cxx
+    else
       call get_default_cpp_compiler(self%fc, self%cxx)
     end if
 end subroutine new_compiler

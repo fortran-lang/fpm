@@ -79,6 +79,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     character(len=:),allocatable :: profile
     character(len=:),allocatable :: flag
     character(len=:),allocatable :: cflag
+    character(len=:),allocatable :: cxxflag
     character(len=:),allocatable :: ldflag
 end type
 
@@ -129,7 +130,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
-character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
+character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
     val_profile
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
@@ -201,7 +202,7 @@ contains
             & c_compiler, cpp_compiler, archiver
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
-            & fflags_env = "FFLAGS", cflags_env = "CFLAGS", ldflags_env = "LDFLAGS", &
+            & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
             & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " ", &
             & cxx_env = "CXX", cxx_default = " "
         type(error_t), allocatable :: error
@@ -251,6 +252,7 @@ contains
           ' --archiver "'//get_fpm_env(ar_env, ar_default)//'"' // &
           ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
           ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
+          ' --cxx-flag:: "'//get_fpm_env(cxxflags_env, flags_default)//'"' // &
           ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
 
         ! now set subcommand-specific help text and process commandline
@@ -303,6 +305,7 @@ contains
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
+            & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
             & example=lget('example'), &
             & list=lget('list'),&
@@ -332,6 +335,7 @@ contains
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
+            & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
             & list=lget('list'),&
             & show_model=lget('show-model'),&
@@ -487,6 +491,7 @@ contains
                 archiver=archiver, &
                 flag=val_flag, &
                 cflag=val_cflag, &
+                cxxflag=val_cxxflag, &
                 ldflag=val_ldflag, &
                 no_rebuild=lget('no-rebuild'), &
                 verbose=lget('verbose'))
@@ -543,6 +548,7 @@ contains
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
+            & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
             & example=.false., &
             & list=lget('list'), &
@@ -623,6 +629,7 @@ contains
 
         val_flag = " " // sget('flag')
         val_cflag = " " // sget('c-flag')
+        val_cxxflag = " "// sget('cxx-flag')
         val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
 

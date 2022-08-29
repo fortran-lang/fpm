@@ -43,7 +43,7 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, ldflags
+    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
     character(len=:), allocatable :: version
 
     logical :: duplicates_found = .false.
@@ -82,6 +82,7 @@ subroutine build_model(model, settings, package, error)
     call set_preprocessor_flags(model%compiler%id, flags, package)
 
     cflags = trim(settings%cflag)
+    cxxflags = trim(settings%cxxflag)
     ldflags = trim(settings%ldflag)
 
     if (model%compiler%is_unknown()) then
@@ -93,6 +94,7 @@ subroutine build_model(model, settings, package, error)
 
     model%fortran_compile_flags = flags
     model%c_compile_flags = cflags
+    model%cpp_compile_flags = cxxflags
     model%link_flags = ldflags
 
     model%include_tests = settings%build_tests
