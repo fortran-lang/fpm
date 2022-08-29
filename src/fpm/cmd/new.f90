@@ -573,7 +573,7 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         call create_verified_basic_manifest(join_path(settings%name, 'fpm.toml'))
     endif
     ! assumes git(1) is installed and in path
-    if(which('git').ne.'')then
+    if(which('git')/='')then
       call run('git init ' // settings%name)
     endif
 contains

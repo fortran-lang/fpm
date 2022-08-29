@@ -9,5 +9,14 @@ contains
 #ifndef TESTMACRO
       This breaks the build.
 #endif
+
+#if TESTMACRO2 != 3
+      This breaks the build.
+#endif
+
+#if TESTMACRO3 != 1
+      This breaks the build.
+#endif
+
    end subroutine say_hello
 end module preprocess_cpp

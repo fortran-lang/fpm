@@ -30,6 +30,7 @@ use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize
+use fpm_compiler, only: get_macros
 implicit none
 
 private
@@ -116,6 +117,12 @@ type build_target_t
 
     !> Previous source file hash
     integer(int64), allocatable :: digest_cached
+
+    !> List of macros
+    type(string_t), allocatable :: macros(:)
+
+    !> Version number
+    character(:), allocatable :: version
 
 end type build_target_t
 
@@ -221,7 +228,10 @@ subroutine build_target_list(targets,model)
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
-                                output_name = get_object_name(sources(i)))
+                                output_name = get_object_name(sources(i)), &
+                                macros = model%packages(j)%macros, &
+                                version = model%packages(j)%version)
+                                
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
@@ -299,13 +309,15 @@ end subroutine build_target_list
 
 
 !> Allocate a new target and append to target list
-subroutine add_target(targets,package,type,output_name,source,link_libraries)
+subroutine add_target(targets,package,type,output_name,source,link_libraries, macros, version)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     character(*), intent(in) :: package
     integer, intent(in) :: type
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
+    type(string_t), intent(in), optional :: macros(:)
+    character(*), intent(in), optional :: version
 
     integer :: i
     type(build_target_t), pointer :: new_target
@@ -332,6 +344,8 @@ subroutine add_target(targets,package,type,output_name,source,link_libraries)
     new_target%package_name = package
     if (present(source)) new_target%source = source
     if (present(link_libraries)) new_target%link_libraries = link_libraries
+    if (present(macros)) new_target%macros = macros
+    if (present(version)) new_target%version = version
     allocate(new_target%dependencies(0))
 
     targets = [targets, build_target_ptr(new_target)]
@@ -703,6 +717,12 @@ subroutine resolve_target_linking(targets, model)
             else
                 target%compile_flags = model%c_compile_flags
             end if
+
+            !> Get macros as flags.
+            target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
+                                                            target%macros, &
+                                                            target%version)
+ 
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if

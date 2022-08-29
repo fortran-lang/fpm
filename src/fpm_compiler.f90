@@ -26,6 +26,7 @@
 ! Open64            ?          ?       -module         -I            -mp        discontinued
 ! Unisys            ?          ?       ?               ?             ?          discontinued
 module fpm_compiler
+use,intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use fpm_environment, only: &
         get_env, &
         get_os_type, &
@@ -39,11 +40,11 @@ use fpm_environment, only: &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
-use fpm_strings, only: split, string_cat, string_t
-use fpm_manifest, only : get_package_data, package_config_t
+use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
+use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t
 implicit none
-public :: compiler_t, new_compiler, archiver_t, new_archiver
+public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
 
 enum, bind(C)
@@ -379,21 +380,14 @@ subroutine get_debug_compile_flags(id, flags)
     end select
 end subroutine get_debug_compile_flags
 
-subroutine set_preprocessor_flags (id, flags)
+subroutine set_preprocessor_flags (id, flags, package)
     integer(compiler_enum), intent(in) :: id
-    type(package_config_t) :: package
-    type(error_t), allocatable :: error
-    character(len=:), allocatable :: flags
+    character(len=:), allocatable, intent(inout) :: flags
+    type(package_config_t), intent(in) :: package
     character(len=:), allocatable :: flag_cpp_preprocessor
     
     integer :: i
 
-    call get_package_data(package, "fpm.toml", error)
-
-    if (allocated(error)) then 
-       return
-    end if
-    
     !> Check if there is a preprocess table
     if (.not.allocated(package%preprocess)) then
         return
@@ -417,10 +411,82 @@ subroutine set_preprocessor_flags (id, flags)
         if (package%preprocess(i)%name == "cpp") then
             flags = flag_cpp_preprocessor// flags
             exit
+        else
+            write(stderr, '(a)') 'Warning: preprocessor ' // package%preprocess(i)%name // ' is not supported; will ignore it'
         end if
     end do
 
 end subroutine set_preprocessor_flags
+
+!> This function will parse and read the macros list and 
+!> return them as defined flags.
+function get_macros(id, macros_list, version) result(macros)
+    integer(compiler_enum), intent(in) :: id
+    character(len=:), allocatable, intent(in) :: version
+    type(string_t), allocatable, intent(in) :: macros_list(:)
+
+    character(len=:), allocatable :: macros
+    character(len=:), allocatable :: macro_definition_symbol
+    character(:), allocatable :: valued_macros(:)
+    
+
+    integer :: i
+
+    if (.not.allocated(macros_list)) then
+        macros = ""
+        return
+    end if
+
+    !> Set macro defintion symbol on the basis of compiler used
+    select case(id)
+    case default
+        macro_definition_symbol = "-D"
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        macro_definition_symbol = "/D"
+    end select
+
+    !> Check if macros are not allocated.
+    if (.not.allocated(macros)) then
+        macros=""
+    end if
+
+    do i = 1, size(macros_list)
+        
+        !> Split the macro name and value.
+        call split(macros_list(i)%s, valued_macros, delimiters="=")
+ 
+        if (size(valued_macros) > 1) then
+            !> Check if the value of macro starts with '{' character.
+            if (str_begins_with_str(trim(valued_macros(size(valued_macros))), "{")) then
+
+                !> Check if the value of macro ends with '}' character.
+                if (str_ends_with(trim(valued_macros(size(valued_macros))), "}")) then
+
+                    !> Check if the string contains "version" as substring.
+                    if (index(valued_macros(size(valued_macros)), "version") /= 0) then
+                    
+                        !> These conditions are placed in order to ensure proper spacing between the macros.
+                        if (len(macros) == 0) then
+                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
+                        else 
+                            macros = macros//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version
+                        end if
+                        cycle
+                    end if
+                end if
+            end if 
+        end if
+         
+        !> These conditions are placed in order to ensure proper spacing between the macros.
+        if (len(macros) == 0) then
+            macros = ' '//macros//macro_definition_symbol//macros_list(i)%s
+        else 
+            macros = macros//' '//macro_definition_symbol//macros_list(i)%s
+        end if
+
+    end do
+
+end function get_macros
 
 function get_include_flag(self, path) result(flags)
     class(compiler_t), intent(in) :: self

@@ -53,7 +53,7 @@ contains
       type(toml_table), intent(inout) :: table
 
       !> Error handling
-      type(error_t), allocatable, intent(inout) :: error
+      type(error_t), allocatable, intent(out) :: error
 
       call check(table, error)
       if (allocated(error)) return

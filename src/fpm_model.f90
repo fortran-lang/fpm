@@ -122,6 +122,12 @@ type package_t
     !> Array of sources
     type(srcfile_t), allocatable :: sources(:)
 
+    !> List of macros.
+    type(string_t), allocatable :: macros(:)
+
+    !> Package version number.
+    character(:), allocatable :: version
+
 end type package_t
 
 

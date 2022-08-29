@@ -1,0 +1,8 @@
+name = "preprocess_hello"
+
+[preprocess]
+[preprocess.cpp]
+macros = ["FOO"]
+
+[dependencies]
+preprocess_hello_dependency = { path = "../preprocess_hello_dependency" }
