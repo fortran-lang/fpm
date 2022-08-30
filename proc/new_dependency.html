@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.9% of total for procedures.">34 statements</a>
+    title=" 0.9% of total for procedures.">37 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/dependency.f90"> Source File</a></li>
   </ul>
@@ -126,7 +126,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine new_dependency(self, table, error)</h2>
+    <h2>public subroutine new_dependency(self, table, root, error)</h2>
     
 
     <p>Construct a new dependency configuration from a TOML data structure</p>
@@ -136,19 +136,25 @@
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
-  <td><span class="anchor" id="variable-self~27"></span>type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),</td>
+  <td><span class="anchor" id="variable-self~32"></span>type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),</td>
 <td>intent(out)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>self</strong></td><td><p>Instance of the dependency configuration</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-table~4"></span>type(toml_table),</td>
+  <td><span class="anchor" id="variable-table~10"></span>type(toml_table),</td>
 <td>intent(inout)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>table</strong></td><td><p>Instance of the TOML data structure</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-error~21"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-root~2"></span>character,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>root</strong></td><td><p>Root directory of the manifest</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-error~27"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
 <td>intent(out),</td>
   <td></td>  <td>allocatable</td><td>::</td>
   <td><strong>error</strong></td><td><p>Error handling</p></td>
@@ -182,13 +188,16 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">new_dependency</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">new_dependency</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; Instance of the dependency configuration</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; Instance of the TOML data structure</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">table</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; Root directory of the manifest</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">root</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; Error handling</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
@@ -202,7 +211,9 @@
 
 <span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;path&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">url</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">url</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">path</span><span class="p">)</span><span class="w"></span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">get_os_type</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="p">)</span><span class="w"> </span><span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">windows_path</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">root</span><span class="p">))</span><span class="w"> </span><span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="o">//</span><span class="n">url</span><span class="w">  </span><span class="c">! Relative to the fpm.toml it’s written in</span>
+<span class="w">            </span><span class="k">call </span><span class="nb">move_alloc</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">path</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">else</span>
 <span class="k">            call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;git&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">url</span><span class="p">)</span><span class="w"></span>
 
@@ -252,7 +263,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-08-04 12:29            </p>
+ on 2022-08-30 16:42            </p>
         </div>
       </div>
       <br>

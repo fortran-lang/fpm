@@ -219,7 +219,6 @@ function dirname(path) result (dir)
     character(:), allocatable :: dir
 
     dir = path(1:scan(path,'/\',back=.true.))
-    if (len_trim(dir) == 0) dir = "."
 
 end function dirname
 
@@ -287,7 +286,11 @@ function join_path(a1,a2,a3,a4,a5) result(path)
         has_cache = .true.
     end if
 
-    path = a1 // filesep // a2
+    if (a1 == "") then
+        path = a2
+    else
+        path = a1 // filesep // a2
+    end if
 
     if (present(a3)) then
         path = path // filesep // a3
