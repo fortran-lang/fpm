@@ -7,8 +7,9 @@ module cpp_files
 
   interface
     integer function intvec_maxval(array, n) bind(C, name = "intvec_maxval")
-      integer, intent(in) :: array(*)
-      integer, intent(in), value :: n
+      import :: c_int, c_size_t
+      integer(c_int), intent(in) :: array(*)
+      integer(c_size_t), intent(in), value :: n
     end function intvec_maxval
   end interface
 end module cpp_files
