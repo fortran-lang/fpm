@@ -3,10 +3,12 @@ module cpp_files
   implicit none
   private
 
-  public :: hello_world
+  public :: intvec_maxval
 
   interface
-    subroutine hello_world() bind(C, name = "hello_world")
-    end subroutine hello_world
+    integer function intvec_maxval(array, n) bind(C, name = "intvec_maxval")
+      integer, intent(in) :: array(*)
+      integer, intent(in), value :: n
+    end function intvec_maxval
   end interface
 end module cpp_files

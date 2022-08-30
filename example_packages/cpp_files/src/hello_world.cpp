@@ -1,9 +1,14 @@
-#include <iostream>
+#include <vector>
+#include <algorithm>
 
 extern "C" {
-  int hello_world();
+
+int intvec_maxval(int* array, size_t n){
+
+  std::vector<int> vec(array, array + n);
+  
+  return *(std::max_element(vec.begin(), vec.end()));
+  
 }
 
-int hello_world() {
-    std::cout << "Hello World";
 }
