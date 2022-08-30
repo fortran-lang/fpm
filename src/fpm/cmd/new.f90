@@ -369,8 +369,8 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
         &'                                                                                ',&
         &'#M_strings = { path = "M_strings" }                                             ',&
         &'                                                                                ',&
-        &'  #  If you specify paths outside of your repository (ie. paths with a          ',&
-        &'  #  slash in them) things will not work for your users!                        ',&
+        &'  # This tells fpm that we depend on a crate called M_strings which is found    ',&
+        &'  # in the M_strings folder (relative to the fpm.toml it’s written in).         ',&
         &'  #                                                                             ',&
         &'  # For a more verbose layout use normal tables rather than inline tables       ',&
         &'  # to specify dependencies:                                                    ',&

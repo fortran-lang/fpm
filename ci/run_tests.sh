@@ -118,6 +118,10 @@ pushd c_main
 "$fpm" run
 popd
 
+pushd hello_fpm_path
+"$fpm" run
+popd
+
 pushd preprocess_cpp
 "$fpm" build
 popd

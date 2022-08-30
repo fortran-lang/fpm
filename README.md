@@ -66,7 +66,8 @@ or from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 #### [MSYS2]
 
-Fpm is available as MinGW package in the MSYS2 package manager.
+Fpm is available as MinGW package in the MSYS2 package manager,
+which supports parallelization of the target compilation.
 To install fpm with pacman use
 
 ```

@@ -192,13 +192,13 @@ contains
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
-            call new_dependencies(self%dependency, child, error)
+            call new_dependencies(self%dependency, child, root, error)
             if (allocated(error)) return
         end if
 
         call get_value(table, "dev-dependencies", child, requested=.false.)
         if (associated(child)) then
-            call new_dependencies(self%dev_dependency, child, error)
+            call new_dependencies(self%dev_dependency, child, root, error)
             if (allocated(error)) return
         end if
 
