@@ -27,7 +27,7 @@ module fpm_targets
 use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
-use fpm_environment, only: get_os_type, OS_WINDOWS
+use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize
 use fpm_compiler, only: get_macros
@@ -255,7 +255,13 @@ subroutine build_target_list(targets,model)
 
                     !> Add stdc++ as a linker flag. If not already there.
                     if (.not. ("stdc++" .in. model%link_libraries)) then
-                        model%link_libraries = [model%link_libraries, string_t("stdc++")]
+
+                        if (get_os_type() == OS_MACOS) then
+                            model%link_libraries = [model%link_libraries, string_t("c++")]
+                        else
+                            model%link_libraries = [model%link_libraries, string_t("stdc++")]
+                        end if
+
                     end if
 
                 case (FPM_UNIT_PROGRAM)
