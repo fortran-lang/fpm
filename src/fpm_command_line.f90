@@ -74,7 +74,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: prune=.true.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: c_compiler
-    character(len=:),allocatable :: cpp_compiler
+    character(len=:),allocatable :: cxx_compiler
     character(len=:),allocatable :: archiver
     character(len=:),allocatable :: profile
     character(len=:),allocatable :: flag
@@ -199,7 +199,7 @@ contains
         logical                       :: unix
         type(fpm_install_settings), allocatable :: install_settings
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cpp_compiler, archiver
+            & c_compiler, cxx_compiler, archiver
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -248,7 +248,7 @@ contains
           ' --no-prune F' // &
           ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
           ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
-          ' --cpp-compiler "'//get_fpm_env(cxx_env, cxx_default)//'"' // &
+          ' --cxx-compiler "'//get_fpm_env(cxx_env, cxx_default)//'"' // &
           ' --archiver "'//get_fpm_env(ar_env, ar_default)//'"' // &
           ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
           ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
@@ -291,7 +291,7 @@ contains
             enddo
 
             c_compiler = sget('c-compiler')
-            cpp_compiler = sget('cpp-compiler')
+            cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
@@ -324,7 +324,7 @@ contains
             call check_build_vals()
 
             c_compiler = sget('c-compiler')
-            cpp_compiler = sget('cpp-compiler')
+            cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
@@ -479,7 +479,7 @@ contains
             call check_build_vals()
 
             c_compiler = sget('c-compiler')
-            cpp_compiler = sget('cpp-compiler')
+            cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(install_settings)
             install_settings = fpm_install_settings(&
@@ -534,7 +534,7 @@ contains
             enddo
 
             c_compiler = sget('c-compiler')
-            cpp_compiler = sget('cpp-compiler')
+            cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')

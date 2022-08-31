@@ -65,7 +65,7 @@ subroutine build_model(model, settings, package, error)
     end if
 
     call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
-        & settings%cpp_compiler, echo=settings%verbose, verbose=settings%verbose)
+        & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
     call new_archiver(model%archiver, settings%archiver, &
         & echo=settings%verbose, verbose=settings%verbose)
 
