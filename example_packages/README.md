@@ -27,3 +27,7 @@ the features demonstrated in each package and which versions of fpm are supporte
 | version_file        | Read version number from a file in the project root           |            N            |  Y  |
 | with_c              | Compile with `c` source files                                 |            N            |  Y  |
 | with_makefile       | External build command (makefile)                             |            Y            |  N  |
+| preprocess_cpp      | Lib only; C Preprocessing; Macro parsing                      |            N            |  Y  |
+| preprocess_hello    | App only; Macros remains local to the package                 |            N            |  Y  |
+| preprocess_hello_dependency | Lib only; Macros not getting passed here from root    |            N            |  Y  |
+| cpp_files           | C++ Files get compiled using fpm                              |            N            |  Y  |
