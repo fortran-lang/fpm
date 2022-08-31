@@ -743,7 +743,7 @@ subroutine resolve_target_linking(targets, model)
             else if (target%target_type == FPM_TARGET_C_OBJECT) then
                 target%compile_flags = model%c_compile_flags
             else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = model%cpp_compile_flags
+                target%compile_flags = model%cxx_compile_flags
             end if
 
             !> Get macros as flags.

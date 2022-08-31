@@ -302,6 +302,7 @@ contains
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
+            & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
@@ -332,6 +333,7 @@ contains
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
+            & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
@@ -488,6 +490,7 @@ contains
                 prune=.not.lget('no-prune'), &
                 compiler=val_compiler, &
                 c_compiler=c_compiler, &
+                cxx_compiler=cxx_compiler, &
                 archiver=archiver, &
                 flag=val_flag, &
                 cflag=val_cflag, &
@@ -545,6 +548,7 @@ contains
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
+            & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &

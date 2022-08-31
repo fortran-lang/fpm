@@ -94,7 +94,7 @@ subroutine build_model(model, settings, package, error)
 
     model%fortran_compile_flags = flags
     model%c_compile_flags = cflags
-    model%cpp_compile_flags = cxxflags
+    model%cxx_compile_flags = cxxflags
     model%link_flags = ldflags
 
     model%include_tests = settings%build_tests
@@ -219,8 +219,10 @@ subroutine build_model(model, settings, package, error)
         write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix
         write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
         write(*,*)'<INFO> C COMPILER:  ',model%compiler%cc
+        write(*,*)'<INFO> CXX COMPILER: ',model%compiler%cxx
         write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
         write(*,*)'<INFO> C COMPILER OPTIONS:  ', model%c_compile_flags
+        write(*,*)'<INFO> CXX COMPILER OPTIONS: ', model%cxx_compile_flags
         write(*,*)'<INFO> LINKER OPTIONS:  ', model%link_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
      end if
