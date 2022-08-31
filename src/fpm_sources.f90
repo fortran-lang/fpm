@@ -17,7 +17,7 @@ public :: add_sources_from_dir, add_executable_sources
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
-character(4), parameter :: c_suffixes(3) = [".c  ", ".h  ", ".cpp"]
+character(4), parameter :: c_suffixes(4) = [".c  ", ".h  ", ".cpp", ".hpp"]
 
 contains
 
