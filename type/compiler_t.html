@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 5.0% of total for derived types.</p>Including implementation: 106 statements,  5.8% of total for derived types.">16 statements</a>
+    title="<p> 5.6% of total for derived types.</p>Including implementation: 117 statements,  6.4% of total for derived types.">18 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm_compiler.f90"> Source File</a></li>
   </ul>
@@ -119,6 +119,7 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       <a class="list-group-item" href="../type/compiler_t.html#variable-cc">cc</a>
+      <a class="list-group-item" href="../type/compiler_t.html#variable-cxx">cxx</a>
       <a class="list-group-item" href="../type/compiler_t.html#variable-echo">echo</a>
       <a class="list-group-item" href="../type/compiler_t.html#variable-fc">fc</a>
       <a class="list-group-item" href="../type/compiler_t.html#variable-id">id</a>
@@ -131,6 +132,7 @@
   <div id="boundprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_c">compile_c</a>
+      <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_cpp">compile_cpp</a>
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_fortran">compile_fortran</a>
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-enumerate_libraries">enumerate_libraries</a>
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_default_flags">get_default_flags</a>
@@ -165,6 +167,7 @@
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       <a class="list-group-item" href="../type/compiler_t.html#variable-cc">cc</a>
+      <a class="list-group-item" href="../type/compiler_t.html#variable-cxx">cxx</a>
       <a class="list-group-item" href="../type/compiler_t.html#variable-echo">echo</a>
       <a class="list-group-item" href="../type/compiler_t.html#variable-fc">fc</a>
       <a class="list-group-item" href="../type/compiler_t.html#variable-id">id</a>
@@ -177,6 +180,7 @@
   <div id="boundprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_c">compile_c</a>
+      <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_cpp">compile_cpp</a>
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-compile_fortran">compile_fortran</a>
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-enumerate_libraries">enumerate_libraries</a>
       <a class="list-group-item" href="../type/compiler_t.html#boundprocedure-get_default_flags">get_default_flags</a>
@@ -206,6 +210,11 @@
   <td><span class="anchor" id="variable-cc"></span>character(len=:),</td>
 <td>public,</td>  <td>allocatable</td><td>::</td>
   <td><strong>cc</strong></td><td></td><td></td><td><p>Path to the C compiler</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxx"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx</strong></td><td></td><td></td><td><p>Path to the C++ compiler</p></td>
 </tr>
 <tr>
   <td><span class="anchor" id="variable-echo"></span>logical,</td>
@@ -248,6 +257,64 @@
       <li class="list-group-item">
           <h3>public subroutine <a href='../proc/compile_c.html'>compile_c</a>(self, input, output, args, log_file, stat)</h3>
 <p>Compile a C object</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>class(<a href='../type/compiler_t.html'>compiler_t</a>),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>self</strong></td><td><p>Instance of the compiler object</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>input</strong></td><td><p>Source file input</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>output</strong></td><td><p>Output file of object</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>args</strong></td><td><p>Arguments for compiler</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>log_file</strong></td><td><p>Compiler output log file</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>stat</strong></td><td><p>Status flag</p></td>
+</tr>
+</tbody>
+</table>
+
+
+      </li>
+  </ul>
+</div>
+
+     <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-compile_cpp"></span><h3>procedure, public :: <strong>compile_cpp</strong>    </h3></div>
+  <div class="panel-body">
+    
+    <p>Compile a CPP object</p>
+  </div>
+  <ul class="list-group">
+      <li class="list-group-item">
+          <h3>public subroutine <a href='../proc/compile_cpp.html'>compile_cpp</a>(self, input, output, args, log_file, stat)</h3>
+<p>Compile a CPP object</p>
     
 <h4>Arguments</h4>      <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
@@ -584,6 +651,8 @@
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fc</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Path to the C compiler</span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cc</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Path to the C++ compiler</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cxx</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Print all commands</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Verbose output of command</span>
@@ -599,6 +668,8 @@
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_fortran</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Compile a C object</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_c</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Compile a CPP object</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">compile_cpp</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Link executable</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">link</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Check whether compiler is recognized</span>
@@ -625,7 +696,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-08-30 16:42            </p>
+ on 2022-08-31 12:48            </p>
         </div>
       </div>
       <br>

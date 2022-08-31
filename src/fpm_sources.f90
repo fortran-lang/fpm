@@ -17,6 +17,7 @@ public :: add_sources_from_dir, add_executable_sources
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
+character(4), parameter :: c_suffixes(4) = [".c  ", ".h  ", ".cpp", ".hpp"]
 
 contains
 
@@ -35,7 +36,7 @@ function parse_source(source_file_path,error) result(source)
             source%exe_name = basename(source_file_path,suffix=.false.)
         end if
 
-    else if (str_ends_with(lower(source_file_path), [".c", ".h"])) then
+    else if (str_ends_with(lower(source_file_path), c_suffixes)) then
 
         source = parse_c_source(source_file_path,error)
 
@@ -84,7 +85,7 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
     is_source = [(.not.(is_hidden_file(basename(file_names(i)%s))) .and. &
                  .not.(canon_path(file_names(i)%s) .in. existing_src_files) .and. &
                  (str_ends_with(lower(file_names(i)%s), fortran_suffixes) .or. &
-                 str_ends_with(lower(file_names(i)%s),[".c",".h"]) ),i=1,size(file_names))]
+                 str_ends_with(lower(file_names(i)%s), c_suffixes) ),i=1,size(file_names))]
     src_file_names = pack(file_names,is_source)
 
     allocate(dir_sources(size(src_file_names)))

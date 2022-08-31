@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 7.0% of total for modules and submodules.">489 statements</a>
+    title=" 7.5% of total for modules and submodules.">528 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm_compiler.f90"> Source File</a></li>
   </ul>
@@ -210,9 +210,11 @@
   <div class="list-group">
     <div id="subs-0" class="panel-collapse collapse">
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-compile_c">compile_c</a>
+      <a class="list-group-item" href="../module/fpm_compiler.html#proc-compile_cpp">compile_cpp</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-compile_fortran">compile_fortran</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_debug_compile_flags">get_debug_compile_flags</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_c_compiler">get_default_c_compiler</a>
+      <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_cxx_compiler">get_default_cxx_compiler</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_release_compile_flags">get_release_compile_flags</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-link">link</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-make_archive">make_archive</a>
@@ -238,12 +240,12 @@
       <ul class="list-group">
       <li class="list-group-item">
   <ul class="list-inline">
-    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-    <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
-    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
-    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
   </ul>
       </li>
       </ul>
@@ -352,9 +354,11 @@
   <div class="list-group">
     <div id="subs-1" class="panel-collapse collapse">
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-compile_c">compile_c</a>
+      <a class="list-group-item" href="../module/fpm_compiler.html#proc-compile_cpp">compile_cpp</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-compile_fortran">compile_fortran</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_debug_compile_flags">get_debug_compile_flags</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_c_compiler">get_default_c_compiler</a>
+      <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_default_cxx_compiler">get_default_cxx_compiler</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-get_release_compile_flags">get_release_compile_flags</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-link">link</a>
       <a class="list-group-item" href="../module/fpm_compiler.html#proc-make_archive">make_archive</a>
@@ -799,6 +803,11 @@
   <td><strong>cc</strong></td><td></td><td></td><td><p>Path to the C compiler</p></td>
 </tr>
 <tr>
+  <td><span class="anchor" id="variable-cxx"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx</strong></td><td></td><td></td><td><p>Path to the C++ compiler</p></td>
+</tr>
+<tr>
   <td><span class="anchor" id="variable-echo"></span>logical,</td>
 <td>public</td>  <td></td><td>::</td>
   <td><strong>echo</strong></td><td> =</td><td>.true.</td><td><p>Print all commands</p></td>
@@ -827,6 +836,8 @@
       <tbody>
        <tr><td>procedure, public :: <strong><a href='../type/compiler_t.html#boundprocedure-compile_c'>compile_c</a></strong>  </td>
        <td><p>Compile a C object</p></td></tr>
+       <tr><td>procedure, public :: <strong><a href='../type/compiler_t.html#boundprocedure-compile_cpp'>compile_cpp</a></strong>  </td>
+       <td><p>Compile a CPP object</p></td></tr>
        <tr><td>procedure, public :: <strong><a href='../type/compiler_t.html#boundprocedure-compile_fortran'>compile_fortran</a></strong>  </td>
        <td><p>Compile a Fortran object</p></td></tr>
        <tr><td>procedure, public :: <strong><a href='../type/compiler_t.html#boundprocedure-enumerate_libraries'>enumerate_libraries</a></strong>  </td>
@@ -1201,6 +1212,58 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
   </div>
 
       <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-compile_cpp"></span><h3>public subroutine <a href='../proc/compile_cpp.html'>compile_cpp</a>(self, input, output, args, log_file, stat)</h3></div>
+  <div class="panel-body">
+       
+<p>Compile a CPP object</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>class(<a href='../type/compiler_t.html'>compiler_t</a>),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>self</strong></td><td><p>Instance of the compiler object</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>input</strong></td><td><p>Source file input</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>output</strong></td><td><p>Output file of object</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>args</strong></td><td><p>Arguments for compiler</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>log_file</strong></td><td><p>Compiler output log file</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>stat</strong></td><td><p>Status flag</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-compile_fortran"></span><h3>public subroutine <a href='../proc/compile_fortran.html'>compile_fortran</a>(self, input, output, args, log_file, stat)</h3></div>
   <div class="panel-body">
        
@@ -1296,6 +1359,34 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
 <td>intent(out),</td>
   <td></td>  <td>allocatable</td><td>::</td>
   <td><strong>c_compiler</strong></td><td></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-get_default_cxx_compiler"></span><h3>public subroutine <a href='../proc/get_default_cxx_compiler.html'>get_default_cxx_compiler</a>(f_compiler, cxx_compiler)</h3></div>
+  <div class="panel-body">
+       
+<p>Get C++ Compiler.</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>f_compiler</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=:),</td>
+<td>intent(out),</td>
+  <td></td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx_compiler</strong></td><td></td>
 </tr>
 </tbody>
 </table>
@@ -1464,7 +1555,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-new_compiler"></span><h3>public subroutine <a href='../proc/new_compiler.html'>new_compiler</a>(self, fc, cc, echo, verbose)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-new_compiler"></span><h3>public subroutine <a href='../proc/new_compiler.html'>new_compiler</a>(self, fc, cc, cxx, echo, verbose)</h3></div>
   <div class="panel-body">
        
 <p>Create new compiler instance</p>
@@ -1489,6 +1580,12 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>cc</strong></td><td><p>C compiler name or path</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=*),</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>cxx</strong></td><td><p>C++ Compiler name or path</p></td>
 </tr>
 <tr>
   <td><span class="anchor" ></span>logical,</td>
@@ -1593,7 +1690,7 @@ in case of errors.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-08-30 16:42            </p>
+ on 2022-08-31 12:48            </p>
         </div>
       </div>
       <br>
