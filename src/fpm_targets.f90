@@ -27,7 +27,7 @@ module fpm_targets
 use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
-use fpm_environment, only: get_os_type, OS_WINDOWS
+use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize
 use fpm_compiler, only: get_macros
@@ -37,7 +37,7 @@ private
 
 public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
-       FPM_TARGET_C_OBJECT
+       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public resolve_target_linking, add_target, add_dependency
@@ -55,6 +55,8 @@ integer, parameter :: FPM_TARGET_ARCHIVE = 2
 integer, parameter :: FPM_TARGET_OBJECT = 3
 !> Target type is c compiled object
 integer, parameter :: FPM_TARGET_C_OBJECT = 4
+!> Target type is cpp compiled object
+integer, parameter :: FPM_TARGET_CPP_OBJECT = 5
 
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
@@ -236,6 +238,30 @@ subroutine build_target_list(targets,model)
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
                         call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                    end if
+
+                case (FPM_UNIT_CPPSOURCE) 
+
+                    call add_target(targets,package=model%packages(j)%name,source = sources(i), &
+                                type = FPM_TARGET_CPP_OBJECT, &
+                                output_name = get_object_name(sources(i)), &
+                                macros = model%packages(j)%macros, &
+                                version = model%packages(j)%version)
+
+                    if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
+                        ! Archive depends on object
+                        call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                    end if
+
+                    !> Add stdc++ as a linker flag. If not already there.
+                    if (.not. ("stdc++" .in. model%link_libraries)) then
+
+                        if (get_os_type() == OS_MACOS) then
+                            model%link_libraries = [model%link_libraries, string_t("c++")]
+                        else
+                            model%link_libraries = [model%link_libraries, string_t("stdc++")]
+                        end if
+
                     end if
 
                 case (FPM_UNIT_PROGRAM)
@@ -712,10 +738,12 @@ subroutine resolve_target_linking(targets, model)
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
-            if (target%target_type /= FPM_TARGET_C_OBJECT) then
+            if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
                 target%compile_flags = model%fortran_compile_flags
-            else
+            else if (target%target_type == FPM_TARGET_C_OBJECT) then
                 target%compile_flags = model%c_compile_flags
+            else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
+                target%compile_flags = model%cxx_compile_flags
             end if
 
             !> Get macros as flags.

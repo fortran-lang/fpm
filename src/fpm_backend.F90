@@ -33,7 +33,8 @@ use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getl
 use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
-                       FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
+                       FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
+                       FPM_TARGET_CPP_OBJECT
 use fpm_backend_output
 implicit none
 
@@ -321,6 +322,10 @@ subroutine build_target(model,target,verbose,stat)
 
     case (FPM_TARGET_C_OBJECT)
         call model%compiler%compile_c(target%source%file_name, target%output_file, &
+            & target%compile_flags, target%output_log_file, stat)
+
+    case (FPM_TARGET_CPP_OBJECT)
+        call model%compiler%compile_cpp(target%source%file_name, target%output_file, &
             & target%compile_flags, target%output_log_file, stat)
 
     case (FPM_TARGET_EXECUTABLE)

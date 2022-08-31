@@ -47,7 +47,8 @@ public :: fpm_model_t, srcfile_t, show_model
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
           FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
-          FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
+          FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST, &
+          FPM_UNIT_CPPSOURCE
 
 !> Source type unknown
 integer, parameter :: FPM_UNIT_UNKNOWN = -1
@@ -63,7 +64,8 @@ integer, parameter :: FPM_UNIT_SUBPROGRAM = 4
 integer, parameter :: FPM_UNIT_CSOURCE = 5
 !> Source type is c header file
 integer, parameter :: FPM_UNIT_CHEADER = 6
-
+!> Souce type is c++ source file.
+integer, parameter :: FPM_UNIT_CPPSOURCE = 7
 
 !> Source has no module-use scope
 integer, parameter :: FPM_SCOPE_UNKNOWN = -1
@@ -152,6 +154,9 @@ type :: fpm_model_t
 
     !> Command line flags passed to C for compilation
     character(:), allocatable :: c_compile_flags
+
+    !> Command line flags passed to C++ for compilation
+    character(:), allocatable :: cxx_compile_flags
 
     !> Command line flags passed to the linker
     character(:), allocatable :: link_flags
@@ -254,6 +259,8 @@ function info_srcfile(source) result(s)
         s = s // "FPM_UNIT_SUBPROGRAM"
     case (FPM_UNIT_CSOURCE)
         s = s // "FPM_UNIT_CSOURCE"
+    case (FPM_UNIT_CPPSOURCE)
+        s = s // "FPM_UNIT_CPPSOURCE"
     case (FPM_UNIT_CHEADER)
         s = s // "FPM_UNIT_CHEADER"
     case default
@@ -315,6 +322,7 @@ function info_model(model) result(s)
     !    character(:), allocatable :: fortran_compile_flags
     s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
     s = s // ', c_compile_flags="' // model%c_compile_flags // '"'
+    s = s // ', cxx_compile_flags="' // model%cxx_compile_flags // '"'
     s = s // ', link_flags="' // model%link_flags // '"'
     s = s // ', build_prefix="' // model%build_prefix // '"'
     !    type(string_t), allocatable :: link_libraries(:)

@@ -81,6 +81,8 @@ type :: compiler_t
     character(len=:), allocatable :: fc
     !> Path to the C compiler
     character(len=:), allocatable :: cc
+    !> Path to the C++ compiler
+    character(len=:), allocatable :: cxx
     !> Print all commands
     logical :: echo = .true.
     !> Verbose output of command
@@ -96,6 +98,8 @@ contains
     procedure :: compile_fortran
     !> Compile a C object
     procedure :: compile_c
+    !> Compile a CPP object
+    procedure :: compile_cpp
     !> Link executable
     procedure :: link
     !> Check whether compiler is recognized
@@ -583,6 +587,41 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
 
 end subroutine get_default_c_compiler
 
+!> Get C++ Compiler.
+subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
+    character(len=*), intent(in) :: f_compiler
+    character(len=:), allocatable, intent(out) :: cxx_compiler
+    integer(compiler_enum) :: id
+
+    id = get_compiler_id(f_compiler)
+
+    select case(id)
+
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows)
+        cxx_compiler = 'icpc'
+
+    case(id_intel_llvm_nix,id_intel_llvm_windows)
+        cxx_compiler = 'icpx'
+
+    case(id_flang, id_flang_new, id_f18)
+        cxx_compiler='clang'
+
+    case(id_ibmxl)
+        cxx_compiler='xlc++'
+
+    case(id_lfortran)
+        cxx_compiler = 'cc'
+
+    case(id_gcc)
+        cxx_compiler = 'g++'
+
+    case default
+        ! Fall-back to using Fortran compiler
+        cxx_compiler = f_compiler
+    end select
+
+end subroutine get_default_cxx_compiler
+
 
 function get_compiler_id(compiler) result(id)
     character(len=*), intent(in) :: compiler
@@ -754,13 +793,15 @@ end function enumerate_libraries
 
 
 !> Create new compiler instance
-subroutine new_compiler(self, fc, cc, echo, verbose)
+subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     !> New instance of the compiler
     type(compiler_t), intent(out) :: self
     !> Fortran compiler name or path
     character(len=*), intent(in) :: fc
     !> C compiler name or path
     character(len=*), intent(in) :: cc
+    !> C++ Compiler name or path
+    character(len=*), intent(in) :: cxx
     !> Echo compiler command
     logical, intent(in) :: echo
     !> Verbose mode: dump compiler output
@@ -775,6 +816,12 @@ subroutine new_compiler(self, fc, cc, echo, verbose)
       self%cc = cc
     else
       call get_default_c_compiler(self%fc, self%cc)
+    end if
+
+    if (len_trim(cxx) > 0) then
+      self%cxx = cxx
+    else
+      call get_default_cxx_compiler(self%fc, self%cxx)
     end if
 end subroutine new_compiler
 
@@ -866,6 +913,24 @@ subroutine compile_c(self, input, output, args, log_file, stat)
         & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_c
 
+!> Compile a CPP object
+subroutine compile_cpp(self, input, output, args, log_file, stat)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Source file input
+    character(len=*), intent(in) :: input
+    !> Output file of object
+    character(len=*), intent(in) :: output
+    !> Arguments for compiler
+    character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
+    !> Status flag
+    integer, intent(out) :: stat
+
+    call run(self%cxx // " -c " // input // " " // args // " -o " // output, &
+        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+end subroutine compile_cpp
 
 !> Link an executable
 subroutine link(self, output, args, log_file, stat)

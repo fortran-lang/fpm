@@ -130,5 +130,9 @@ pushd preprocess_hello
 "$fpm" build
 popd
 
+pushd cpp_files
+"$fpm" test
+popd
+
 # Cleanup
 rm -rf ./*/build
