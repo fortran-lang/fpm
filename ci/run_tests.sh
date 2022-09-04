@@ -122,6 +122,10 @@ pushd c_main
 "$fpm" run
 popd
 
+pushd app_with_c
+"$fpm" run
+popd
+
 pushd hello_fpm_path
 "$fpm" run
 popd
