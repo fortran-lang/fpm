@@ -148,6 +148,8 @@ subroutine targets_from_sources(targets,model,prune,error)
 
     call build_target_list(targets,model)
 
+    call collect_exe_link_dependencies(targets)
+
     call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
 
@@ -332,6 +334,57 @@ subroutine build_target_list(targets,model)
     end function get_object_name
 
 end subroutine build_target_list
+
+
+!> Add non-library non-module dependencies for executable targets
+!>
+!>  Executable targets will link to any non-program non-module source files that
+!>   are in the same directory or in a subdirectory.
+!>
+!>  (Note: Fortran module dependencies are handled separately in
+!>    `resolve_module_dependencies` and `resolve_target_linking`.)
+!>
+subroutine collect_exe_link_dependencies(targets)
+    type(build_target_ptr), intent(inout) :: targets(:)
+
+    integer :: i, j
+    character(:), allocatable :: exe_source_dir
+
+    ! Add non-module dependencies for executables
+    do j=1,size(targets)
+
+        if (targets(j)%ptr%target_type == FPM_TARGET_EXECUTABLE) then
+
+            do i=1,size(targets)
+
+                if (i == j) cycle
+
+                associate(exe => targets(j)%ptr, dep => targets(i)%ptr)
+
+                    exe_source_dir = dirname(exe%dependencies(1)%ptr%source%file_name)
+
+                    if (allocated(dep%source)) then
+
+                        if (dep%source%unit_scope /= FPM_SCOPE_LIB .and. &
+                            dep%source%unit_type /= FPM_UNIT_PROGRAM .and. &
+                            dep%source%unit_type /= FPM_UNIT_MODULE .and. &
+                            index(dirname(dep%source%file_name), exe_source_dir) == 1) then
+
+                            call add_dependency(exe, dep) 
+
+                        end if
+
+                    end if
+
+                end associate
+
+            end do
+
+        end if
+
+    end do
+
+end subroutine collect_exe_link_dependencies
 
 
 !> Allocate a new target and append to target list
