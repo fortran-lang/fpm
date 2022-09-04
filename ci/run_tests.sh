@@ -92,6 +92,10 @@ pushd submodules
 "$fpm" build
 popd
 
+pushd app_with_submodule
+"$fpm" run --all
+popd
+
 pushd program_with_module
 "$fpm" build
 "$fpm" run --target Program_with_module
