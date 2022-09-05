@@ -6,6 +6,8 @@ the features demonstrated in each package and which versions of fpm are supporte
 
 | Name                | Features                                                      | Bootstrap (Haskell) fpm | fpm |
 |---------------------|---------------------------------------------------------------|:-----------------------:|:---:|
+| app_with_c          | C files located in app directory (not src)                    |            N            |  Y  |
+| app_with_submodule  | Submodules located in app directory (not src)                 |            N            |  Y  |
 | auto_discovery_off  | Default layout with auto-discovery disabled                   |            N            |  Y  |
 | c_header_only       | C header-only library                                         |            N            |  Y  |
 | c_includes          | C library with c include directory and dependency includes    |            N            |  Y  |
