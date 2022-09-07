@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -ex
 
 cd "$(dirname $0)/.."
@@ -135,6 +135,10 @@ pushd preprocess_cpp
 popd
 
 pushd preprocess_hello
+"$fpm" build
+popd
+
+pushd fpm_test_exe_issues
 "$fpm" build
 popd
 
