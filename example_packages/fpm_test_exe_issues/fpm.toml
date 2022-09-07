@@ -1,4 +1,4 @@
-# See #734
+# See https://github.com/fortran-lang/fpm/issues/734
 name = "fpm-test"
 
 [build]
