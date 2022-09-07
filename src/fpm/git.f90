@@ -1,7 +1,7 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
     use fpm_error, only: error_t, fatal_error
-    use fpm_filesystem, only : get_temp_filename, getline
+    use fpm_filesystem, only : get_temp_filename, getline, join_path
     implicit none
 
     public :: git_target_t
@@ -141,13 +141,14 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: stat
-        character(len=:), allocatable :: object
+        character(len=:), allocatable :: object, workdir
 
         if (allocated(self%object)) then
             object = self%object
         else
             object = 'HEAD'
         end if
+        workdir = "--work-tree="//local_path//" --git-dir="//join_path(local_path, ".git")
 
         call execute_command_line("git init "//local_path, exitstat=stat)
 
@@ -156,7 +157,7 @@ contains
             return
         end if
 
-        call execute_command_line("git -C "//local_path//" fetch --depth=1 "// &
+        call execute_command_line("git "//workdir//" fetch --depth=1 "// &
                                   self%url//" "//object, exitstat=stat)
 
         if (stat /= 0) then
@@ -164,7 +165,7 @@ contains
             return
         end if
 
-        call execute_command_line("git -C "//local_path//" checkout -qf FETCH_HEAD", exitstat=stat)
+        call execute_command_line("git "//workdir//" checkout -qf FETCH_HEAD", exitstat=stat)
 
         if (stat /= 0) then
             call fatal_error(error,'Error while checking out git repository for remote dependency')
@@ -186,11 +187,12 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: stat, unit, istart, iend
-        character(len=:), allocatable :: temp_file, line, iomsg
+        character(len=:), allocatable :: temp_file, line, iomsg, workdir
         character(len=*), parameter :: hexdigits = '0123456789abcdef'
 
+        workdir = "--work-tree="//local_path//" --git-dir="//join_path(local_path, ".git")
         allocate(temp_file, source=get_temp_filename())
-        line = "git -C "//local_path//" log -n 1 > "//temp_file
+        line = "git "//workdir//" log -n 1 > "//temp_file
         call execute_command_line(line, exitstat=stat)
 
         if (stat /= 0) then
