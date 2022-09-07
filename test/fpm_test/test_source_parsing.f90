@@ -4,7 +4,8 @@ module test_source_parsing
     use fpm_filesystem, only: get_temp_filename
     use fpm_source_parsing, only: parse_f_source, parse_c_source
     use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
-                         FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE
+                         FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
+                         FPM_UNIT_CPPSOURCE
     use fpm_strings, only: operator(.in.)
     implicit none
     private
@@ -835,7 +836,6 @@ contains
         end if
 
     end subroutine test_csource
-
 
     !> Try to parse fortran program with invalid use statement
     subroutine test_invalid_use_stmt(error)

@@ -14,7 +14,7 @@ module fpm_manifest
     use fpm_manifest_library, only : library_config_t
     use fpm_mainfest_preprocess, only : preprocess_config_t
     use fpm_manifest_package, only : package_config_t, new_package
-    use fpm_error, only : error_t, fatal_error, file_not_found_error
+    use fpm_error, only : error_t, fatal_error
     use fpm_toml, only : toml_table, read_package_file
     use fpm_manifest_test, only : test_config_t
     use fpm_filesystem, only: join_path, exists, dirname, is_dir

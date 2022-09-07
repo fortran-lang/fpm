@@ -92,6 +92,10 @@ pushd submodules
 "$fpm" build
 popd
 
+pushd app_with_submodule
+"$fpm" run --all
+popd
+
 pushd program_with_module
 "$fpm" build
 "$fpm" run --target Program_with_module
@@ -118,6 +122,14 @@ pushd c_main
 "$fpm" run
 popd
 
+pushd app_with_c
+"$fpm" run
+popd
+
+pushd hello_fpm_path
+"$fpm" run
+popd
+
 pushd preprocess_cpp
 "$fpm" build
 popd
@@ -128,6 +140,10 @@ popd
 
 pushd fpm_test_exe_issues
 "$fpm" build
+popd
+
+pushd cpp_files
+"$fpm" test
 popd
 
 # Cleanup

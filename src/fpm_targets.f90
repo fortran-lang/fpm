@@ -27,7 +27,7 @@ module fpm_targets
 use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
-use fpm_environment, only: get_os_type, OS_WINDOWS
+use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize
 use fpm_compiler, only: get_macros
@@ -37,7 +37,7 @@ private
 
 public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_ARCHIVE, FPM_TARGET_OBJECT, &
-       FPM_TARGET_C_OBJECT
+       FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
 public resolve_target_linking, add_target, add_dependency
@@ -55,6 +55,8 @@ integer, parameter :: FPM_TARGET_ARCHIVE = 2
 integer, parameter :: FPM_TARGET_OBJECT = 3
 !> Target type is c compiled object
 integer, parameter :: FPM_TARGET_C_OBJECT = 4
+!> Target type is cpp compiled object
+integer, parameter :: FPM_TARGET_CPP_OBJECT = 5
 
 !> Wrapper type for constructing arrays of `[[build_target_t]]` pointers
 type build_target_ptr
@@ -145,6 +147,8 @@ subroutine targets_from_sources(targets,model,prune,error)
     type(error_t), intent(out), allocatable :: error
 
     call build_target_list(targets,model)
+
+    call collect_exe_link_dependencies(targets)
 
     call resolve_module_dependencies(targets,model%external_modules,error)
     if (allocated(error)) return
@@ -238,6 +242,30 @@ subroutine build_target_list(targets,model)
                         call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
                     end if
 
+                case (FPM_UNIT_CPPSOURCE) 
+
+                    call add_target(targets,package=model%packages(j)%name,source = sources(i), &
+                                type = FPM_TARGET_CPP_OBJECT, &
+                                output_name = get_object_name(sources(i)), &
+                                macros = model%packages(j)%macros, &
+                                version = model%packages(j)%version)
+
+                    if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
+                        ! Archive depends on object
+                        call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
+                    end if
+
+                    !> Add stdc++ as a linker flag. If not already there.
+                    if (.not. ("stdc++" .in. model%link_libraries)) then
+
+                        if (get_os_type() == OS_MACOS) then
+                            model%link_libraries = [model%link_libraries, string_t("c++")]
+                        else
+                            model%link_libraries = [model%link_libraries, string_t("stdc++")]
+                        end if
+
+                    end if
+
                 case (FPM_UNIT_PROGRAM)
 
                     call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_OBJECT,&
@@ -306,6 +334,57 @@ subroutine build_target_list(targets,model)
     end function get_object_name
 
 end subroutine build_target_list
+
+
+!> Add non-library non-module dependencies for executable targets
+!>
+!>  Executable targets will link to any non-program non-module source files that
+!>   are in the same directory or in a subdirectory.
+!>
+!>  (Note: Fortran module dependencies are handled separately in
+!>    `resolve_module_dependencies` and `resolve_target_linking`.)
+!>
+subroutine collect_exe_link_dependencies(targets)
+    type(build_target_ptr), intent(inout) :: targets(:)
+
+    integer :: i, j
+    character(:), allocatable :: exe_source_dir
+
+    ! Add non-module dependencies for executables
+    do j=1,size(targets)
+
+        if (targets(j)%ptr%target_type == FPM_TARGET_EXECUTABLE) then
+
+            do i=1,size(targets)
+
+                if (i == j) cycle
+
+                associate(exe => targets(j)%ptr, dep => targets(i)%ptr)
+
+                    exe_source_dir = dirname(exe%dependencies(1)%ptr%source%file_name)
+
+                    if (allocated(dep%source)) then
+
+                        if (dep%source%unit_scope /= FPM_SCOPE_LIB .and. &
+                            dep%source%unit_type /= FPM_UNIT_PROGRAM .and. &
+                            dep%source%unit_type /= FPM_UNIT_MODULE .and. &
+                            index(dirname(dep%source%file_name), exe_source_dir) == 1) then
+
+                            call add_dependency(exe, dep) 
+
+                        end if
+
+                    end if
+
+                end associate
+
+            end do
+
+        end if
+
+    end do
+
+end subroutine collect_exe_link_dependencies
 
 
 !> Allocate a new target and append to target list
@@ -712,10 +791,12 @@ subroutine resolve_target_linking(targets, model)
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
-            if (target%target_type /= FPM_TARGET_C_OBJECT) then
+            if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
                 target%compile_flags = model%fortran_compile_flags
-            else
+            else if (target%target_type == FPM_TARGET_C_OBJECT) then
                 target%compile_flags = model%c_compile_flags
+            else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
+                target%compile_flags = model%cxx_compile_flags
             end if
 
             !> Get macros as flags.

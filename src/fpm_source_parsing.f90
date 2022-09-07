@@ -21,7 +21,8 @@ use fpm_model, only: srcfile_t, &
                     FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
                     FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
                     FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
-                    FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
+                    FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
+                    FPM_UNIT_CPPSOURCE
 use fpm_filesystem, only: read_lines, read_lines_expanded, exists
 implicit none
 
@@ -435,7 +436,7 @@ function parse_f_source(f_filename,error) result(f_source)
 end function parse_f_source
 
 
-!> Parsing of c source files
+!> Parsing of c, cpp source files
 !>
 !> The following statements are recognised and parsed:
 !>
@@ -455,9 +456,13 @@ function parse_c_source(c_filename,error) result(c_source)
 
         c_source%unit_type = FPM_UNIT_CSOURCE
 
-    elseif (str_ends_with(lower(c_filename), ".h")) then
+    else if (str_ends_with(lower(c_filename), ".h")) then
 
         c_source%unit_type = FPM_UNIT_CHEADER
+
+    else if (str_ends_with(lower(c_filename), ".cpp")) then 
+
+        c_source%unit_type = FPM_UNIT_CPPSOURCE
 
     end if
 
