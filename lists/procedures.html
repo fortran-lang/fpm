@@ -138,6 +138,7 @@ single characters terminated with a C_NULL_CHAR character</p></td></tr>
 			   <tr><td><a href='../proc/filter_executable_targets.html'>filter_executable_targets</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/filter_library_targets.html'>filter_library_targets</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/filter_modules.html'>filter_modules</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td></td></tr>
+			   <tr><td><a href='../proc/find_profile.html'>find_profile</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Look for profile with given configuration in array profiles</p></td></tr>
 			   <tr><td><a href='../interface/fnv_1a.html'>fnv_1a</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			   <tr><td><a href='../proc/fpm_stop.html'>fpm_stop</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/get_command_arguments_quoted.html'>get_command_arguments_quoted</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td></td></tr>
@@ -149,10 +150,13 @@ single characters terminated with a C_NULL_CHAR character</p></td></tr>
 			   <tr><td><a href='../proc/get_default_c_compiler.html'>get_default_c_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/get_default_cxx_compiler.html'>get_default_cxx_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Get C++ Compiler.</p></td></tr>
 			   <tr><td><a href='../proc/get_default_flags.html'>get_default_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/get_default_profiles.html'>get_default_profiles</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Function</td><td><p>Construct an array of built-in profiles</p></td></tr>
 			   <tr><td><a href='../proc/get_env.html'>get_env</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>get named environment variable value. It it is blank or
  not set return the optional default value
 !print <em>, NAME, &rdquo; is not defined in the environment. Strange&hellip;&rdquo;
 !print </em>, &ldquo;This processor doesn&rsquo;t support environment variables. Boooh!&rdquo;</p></td></tr>
+			   <tr><td><a href='../proc/get_flags.html'>get_flags</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Look for flags, c-flags, link-time-flags key-val pairs
+and files table in a given table and create new profiles</p></td></tr>
 			   <tr><td><a href='../proc/get_id.html'>get_id</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/get_include_flag.html'>get_include_flag</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/get_list.html'>get_list</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td></td></tr>
@@ -182,6 +186,8 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/handle_error~2.html'>handle_error</a></td><td><a href='../program/main.html'>main</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/has_manifest.html'>has_manifest</a></td><td><a href='../program/main.html'>main</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/info.html'>info</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td><p>Show information on git target</p></td></tr>
+			   <tr><td><a href='../proc/info~8.html'>info</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Write information on instance</p></td></tr>
+			   <tr><td><a href='../proc/info_profile.html'>info_profile</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Function</td><td><p>Print a representation of profile_config_t</p></td></tr>
 			   <tr><td><a href='../proc/is_dir.html'>is_dir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if a name matches an existing directory path</p></td></tr>
 			   <tr><td><a href='../proc/is_fortran_name.html'>is_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/is_hidden_file.html'>is_hidden_file</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if a file is hidden</p></td></tr>
@@ -197,6 +203,7 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/lower.html'>lower</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Changes a string to lowercase over optional specified column range</p></td></tr>
 			   <tr><td><a href='../proc/make_archive.html'>make_archive</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create an archive
 </p><a href="../proc/make_archive.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
+			   <tr><td><a href='../proc/match_os_type.html'>match_os_type</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Match os_type enum to a lowercase string with name of OS</p></td></tr>
 			   <tr><td><a href='../proc/mkdir.html'>mkdir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Create a directory. Create subdirectories as needed</p></td></tr>
 			   <tr><td><a href='../proc/new_archiver.html'>new_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new archiver instance</p></td></tr>
 			   <tr><td><a href='../proc/new_build_config.html'>new_build_config</a></td><td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td><td>Subroutine</td><td><p>Construct a new build configuration from a TOML data structure</p></td></tr>
@@ -213,6 +220,8 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/new_package.html'>new_package</a></td><td><a href='../module/fpm_manifest_package.html'>fpm_manifest_package</a></td><td>Subroutine</td><td><p>Construct a new package configuration from a TOML data structure</p></td></tr>
 			   <tr><td><a href='../proc/new_preprocess_config.html'>new_preprocess_config</a></td><td><a href='../module/fpm_mainfest_preprocess.html'>fpm_mainfest_preprocess</a></td><td>Subroutine</td><td><p>Construct a new preprocess configuration from TOML data structure</p></td></tr>
 			   <tr><td><a href='../proc/new_preprocessors.html'>new_preprocessors</a></td><td><a href='../module/fpm_mainfest_preprocess.html'>fpm_mainfest_preprocess</a></td><td>Subroutine</td><td><p>Construct new preprocess array from a TOML data structure.</p></td></tr>
+			   <tr><td><a href='../proc/new_profile.html'>new_profile</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Function</td><td><p>Construct a new profile configuration from a TOML data structure</p></td></tr>
+			   <tr><td><a href='../proc/new_profiles.html'>new_profiles</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Construct new profiles array from a TOML data structure</p></td></tr>
 			   <tr><td><a href='../proc/new_test.html'>new_test</a></td><td><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></td><td>Subroutine</td><td><p>Construct a new test configuration from a TOML data structure</p></td></tr>
 			   <tr><td><a href='../interface/new_version.html'>new_version</a></td><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td>Interface</td><td></td></tr>
 			   <tr><td><a href='../proc/notabs.html'>notabs</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Subroutine</td><td><p>notabs(3f) - [fpm_strings:NONALPHA] expand tab characters
@@ -258,7 +267,13 @@ Modify the flag_cpp_preprocessor on the basis of the compiler.</p></td></tr>
 			   <tr><td><a href='../proc/to_fortran_name.html'>to_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Returns string with special characters replaced with an underscore.
 For now, only a hyphen is treated as a special character, but this can be
 expanded to other characters if needed.</p></td></tr>
+			   <tr><td><a href='../proc/traverse_compilers.html'>traverse_compilers</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Traverse compiler tables</p></td></tr>
+			   <tr><td><a href='../proc/traverse_oss.html'>traverse_oss</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Traverse operating system tables to obtain profiles</p></td></tr>
+			   <tr><td><a href='../proc/traverse_oss_for_size.html'>traverse_oss_for_size</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Traverse operating system tables to obtain number of profiles</p></td></tr>
 			   <tr><td><a href='../proc/unix_path.html'>unix_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for 1</p></td></tr>
+			   <tr><td><a href='../proc/validate_compiler_name.html'>validate_compiler_name</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Check if compiler name is a valid compiler name</p></td></tr>
+			   <tr><td><a href='../proc/validate_os_name.html'>validate_os_name</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Check if os_name is a valid name of a supported OS</p></td></tr>
+			   <tr><td><a href='../proc/validate_profile_table.html'>validate_profile_table</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/warnwrite.html'>warnwrite</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>write trimmed character data to a file if it does not exist</p></td></tr>
 			   <tr><td><a href='../proc/which.html'>which</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/windows_path.html'>windows_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Replace file system separators for windows</p></td></tr>
@@ -282,7 +297,7 @@ in case of errors.</p></td></tr>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-09-08 11:43            </p>
+ on 2022-09-08 19:02            </p>
         </div>
       </div>
       <br>
