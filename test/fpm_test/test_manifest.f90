@@ -4,6 +4,7 @@ module test_manifest
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_manifest
+    use fpm_manifest_profile, only: profile_config_t, find_profile
     use fpm_strings, only: operator(.in.)
     implicit none
     private
@@ -33,6 +34,8 @@ contains
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
+            & new_unittest("profiles", test_profiles), &
+            & new_unittest("profiles-keyvalue-table", test_profiles_keyvalue_table, should_fail=.true.), &
             & new_unittest("executable-empty", test_executable_empty, should_fail=.true.), &
             & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
             & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
@@ -411,6 +414,104 @@ contains
 
     end subroutine test_dependencies_typeerror
 
+    !> Include a table of profiles in toml, check whether they are parsed correctly and stored in package
+    subroutine test_profiles(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(len=*), parameter :: manifest = 'fpm-profiles.toml'
+        integer :: unit
+        character(:), allocatable :: profile_name, compiler, flags
+        logical :: profile_found
+        type(profile_config_t) :: chosen_profile
+
+        open(file=manifest, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[profiles.release.gfortran.linux]', &
+            & 'flags = "1" #release.gfortran.linux', &
+            & '[profiles.release.gfortran]', &
+            & 'flags = "2" #release.gfortran.all', &
+            & '[profiles.gfortran.linux]', &
+            & 'flags = "3" #all.gfortran.linux', &
+            & '[profiles.gfortran]', &
+            & 'flags = "4" #all.gfortran.all', &
+            & '[profiles.release.ifort]', &
+            & 'flags = "5" #release.ifort.all'
+        close(unit)
+
+        call get_package_data(package, manifest, error)
+
+        open(file=manifest, newunit=unit)
+        close(unit, status='delete')
+
+        if (allocated(error)) return
+
+        profile_name = 'release'
+        compiler = 'gfortran'
+        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+        if (.not.(chosen_profile%flags.eq.'1 3')) then
+            call test_failed(error, "Failed to append flags from profiles named 'all'")
+            return
+        end if
+
+        profile_name = 'release'
+        compiler = 'gfortran'
+        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
+        if (.not.(chosen_profile%flags.eq.'2 4')) then
+            call test_failed(error, "Failed to choose profile with OS 'all'")
+            return
+        end if
+
+        profile_name = 'publish'
+        compiler = 'gfortran'
+        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+        if (allocated(chosen_profile%flags)) then
+            call test_failed(error, "Profile named "//profile_name//" should not exist")
+            return
+        end if
+
+        profile_name = 'debug'
+        compiler = 'ifort'
+        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
+        if (.not.(chosen_profile%flags.eq.' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
+            call test_failed(error, "Failed to load built-in profile"//flags)
+            return
+        end if
+
+        profile_name = 'release'
+        compiler = 'ifort'
+        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+        if (.not.(chosen_profile%flags.eq.'5')) then
+            call test_failed(error, "Failed to overwrite built-in profile")
+            return
+        end if
+    end subroutine test_profiles
+
+    !> 'flags' is a key-value entry, test should fail as it is defined as a table
+    subroutine test_profiles_keyvalue_table(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(len=*), parameter :: manifest = 'fpm-profiles-error.toml'
+        integer :: unit
+        character(:), allocatable :: profile_name, compiler, flags
+
+        open(file=manifest, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[profiles.linux.flags]'
+        close(unit)
+
+        call get_package_data(package, manifest, error)
+
+        open(file=manifest, newunit=unit)
+        close(unit, status='delete')
+    end subroutine test_profiles_keyvalue_table
 
     !> Executables cannot be created from empty tables
     subroutine test_executable_empty(error)
