@@ -46,20 +46,24 @@ else
     pwd_working = pwd_start
 end if
 
-if (.not.has_manifest(pwd_working)) then
-    project_root = pwd_working
-    do while(.not.has_manifest(project_root))
-        working_dir = parent_dir(project_root)
-        if (len(working_dir) == 0) exit
-        project_root = working_dir
-    end do
+select type (settings => cmd_settings)
+type is (fpm_new_settings)
+class default
+    if (.not.has_manifest(pwd_working)) then
+        project_root = pwd_working
+        do while(.not.has_manifest(project_root))
+            working_dir = parent_dir(project_root)
+            if (len(working_dir) == 0) exit
+            project_root = working_dir
+        end do
 
-    if (has_manifest(project_root)) then
-        call change_directory(project_root, error)
-        call handle_error(error)
-        write(output_unit, '(*(a))') "fpm: Entering directory '"//project_root//"'"
+        if (has_manifest(project_root)) then
+            call change_directory(project_root, error)
+            call handle_error(error)
+            write(output_unit, '(*(a))') "fpm: Entering directory '"//project_root//"'"
+        end if
     end if
-end if
+end select
 
 select type(settings=>cmd_settings)
 type is (fpm_new_settings)
