@@ -6,6 +6,8 @@ the features demonstrated in each package and which versions of fpm are supporte
 
 | Name                | Features                                                      | Bootstrap (Haskell) fpm | fpm |
 |---------------------|---------------------------------------------------------------|:-----------------------:|:---:|
+| app_with_c          | C files located in app directory (not src)                    |            N            |  Y  |
+| app_with_submodule  | Submodules located in app directory (not src)                 |            N            |  Y  |
 | auto_discovery_off  | Default layout with auto-discovery disabled                   |            N            |  Y  |
 | c_header_only       | C header-only library                                         |            N            |  Y  |
 | c_includes          | C library with c include directory and dependency includes    |            N            |  Y  |
@@ -20,8 +22,14 @@ the features demonstrated in each package and which versions of fpm are supporte
 | makefile_complex    | External build command (makefile); local path dependency      |            Y            |  N  |
 | program_with_module | App-only; module+program in single source file                |            Y            |  Y  |
 | submodules          | Lib-only; submodules (3 levels)                               |            N            |  Y  |
+| tree_shake          | Test tree-shaking/pruning of unused module dependencies       |            N            |  Y  |
+| submodule_tree_shake| Test tree-shaking/pruning with submodules dependencies        |            N            |  Y  |
 | link_external       | Link external library                                         |            N            |  Y  |
 | link_executable     | Link external library to a single executable                  |            N            |  Y  |
 | version_file        | Read version number from a file in the project root           |            N            |  Y  |
 | with_c              | Compile with `c` source files                                 |            N            |  Y  |
 | with_makefile       | External build command (makefile)                             |            Y            |  N  |
+| preprocess_cpp      | Lib only; C preprocessing; Macro parsing                      |            N            |  Y  |
+| preprocess_hello    | App only; Macros remain local to the package                 |            N            |  Y  |
+| preprocess_hello_dependency | Lib only; Macros not getting passed here from root    |            N            |  Y  |
+| cpp_files           | C++ files get compiled using fpm                              |            N            |  Y  |

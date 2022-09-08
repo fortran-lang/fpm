@@ -26,8 +26,8 @@
 ! Open64            ?          ?       -module         -I            -mp        discontinued
 ! Unisys            ?          ?       ?               ?             ?          discontinued
 module fpm_compiler
+use,intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use fpm_environment, only: &
-        run, &
         get_env, &
         get_os_type, &
         OS_LINUX, &
@@ -39,10 +39,12 @@ use fpm_environment, only: &
         OS_OPENBSD, &
         OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
-    & getline
-use fpm_strings, only: split, string_cat, string_t
+    & getline, run
+use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
+use fpm_manifest, only : package_config_t
+use fpm_error, only: error_t
 implicit none
-public :: compiler_t, new_compiler, archiver_t, new_archiver
+public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
 
 enum, bind(C)
@@ -79,8 +81,12 @@ type :: compiler_t
     character(len=:), allocatable :: fc
     !> Path to the C compiler
     character(len=:), allocatable :: cc
+    !> Path to the C++ compiler
+    character(len=:), allocatable :: cxx
     !> Print all commands
     logical :: echo = .true.
+    !> Verbose output of command
+    logical :: verbose = .true.
 contains
     !> Get default compiler flags
     procedure :: get_default_flags
@@ -92,6 +98,8 @@ contains
     procedure :: compile_fortran
     !> Compile a C object
     procedure :: compile_c
+    !> Compile a CPP object
+    procedure :: compile_cpp
     !> Link executable
     procedure :: link
     !> Check whether compiler is recognized
@@ -109,6 +117,8 @@ type :: archiver_t
     logical :: use_response_file = .false.
     !> Print all command
     logical :: echo = .true.
+    !> Verbose output of command
+    logical :: verbose = .true.
 contains
     !> Create static archive
     procedure :: make_archive
@@ -174,6 +184,7 @@ character(*), parameter :: &
 character(*), parameter :: &
     flag_lfortran_opt = " --fast"
 
+    
 contains
 
 
@@ -373,6 +384,114 @@ subroutine get_debug_compile_flags(id, flags)
     end select
 end subroutine get_debug_compile_flags
 
+subroutine set_preprocessor_flags (id, flags, package)
+    integer(compiler_enum), intent(in) :: id
+    character(len=:), allocatable, intent(inout) :: flags
+    type(package_config_t), intent(in) :: package
+    character(len=:), allocatable :: flag_cpp_preprocessor
+    
+    integer :: i
+
+    !> Check if there is a preprocess table
+    if (.not.allocated(package%preprocess)) then
+        return
+    end if
+
+    !> Modify the flag_cpp_preprocessor on the basis of the compiler.
+    select case(id)
+    case default
+        flag_cpp_preprocessor = ""
+    case(id_caf, id_gcc, id_f95, id_nvhpc)
+        flag_cpp_preprocessor = "-cpp"
+    case(id_intel_classic_windows, id_intel_llvm_windows)
+        flag_cpp_preprocessor = "/fpp"
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, id_nag)
+        flag_cpp_preprocessor = "-fpp"
+    case(id_lfortran)
+        flag_cpp_preprocessor = "--cpp"
+    end select
+
+    do i = 1, size(package%preprocess)
+        if (package%preprocess(i)%name == "cpp") then
+            flags = flag_cpp_preprocessor// flags
+            exit
+        else
+            write(stderr, '(a)') 'Warning: preprocessor ' // package%preprocess(i)%name // ' is not supported; will ignore it'
+        end if
+    end do
+
+end subroutine set_preprocessor_flags
+
+!> This function will parse and read the macros list and 
+!> return them as defined flags.
+function get_macros(id, macros_list, version) result(macros)
+    integer(compiler_enum), intent(in) :: id
+    character(len=:), allocatable, intent(in) :: version
+    type(string_t), allocatable, intent(in) :: macros_list(:)
+
+    character(len=:), allocatable :: macros
+    character(len=:), allocatable :: macro_definition_symbol
+    character(:), allocatable :: valued_macros(:)
+    
+
+    integer :: i
+
+    if (.not.allocated(macros_list)) then
+        macros = ""
+        return
+    end if
+
+    !> Set macro defintion symbol on the basis of compiler used
+    select case(id)
+    case default
+        macro_definition_symbol = "-D"
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        macro_definition_symbol = "/D"
+    end select
+
+    !> Check if macros are not allocated.
+    if (.not.allocated(macros)) then
+        macros=""
+    end if
+
+    do i = 1, size(macros_list)
+        
+        !> Split the macro name and value.
+        call split(macros_list(i)%s, valued_macros, delimiters="=")
+ 
+        if (size(valued_macros) > 1) then
+            !> Check if the value of macro starts with '{' character.
+            if (str_begins_with_str(trim(valued_macros(size(valued_macros))), "{")) then
+
+                !> Check if the value of macro ends with '}' character.
+                if (str_ends_with(trim(valued_macros(size(valued_macros))), "}")) then
+
+                    !> Check if the string contains "version" as substring.
+                    if (index(valued_macros(size(valued_macros)), "version") /= 0) then
+                    
+                        !> These conditions are placed in order to ensure proper spacing between the macros.
+                        if (len(macros) == 0) then
+                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
+                        else 
+                            macros = macros//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version
+                        end if
+                        cycle
+                    end if
+                end if
+            end if 
+        end if
+         
+        !> These conditions are placed in order to ensure proper spacing between the macros.
+        if (len(macros) == 0) then
+            macros = ' '//macros//macro_definition_symbol//macros_list(i)%s
+        else 
+            macros = macros//' '//macro_definition_symbol//macros_list(i)%s
+        end if
+
+    end do
+
+end function get_macros
+
 function get_include_flag(self, path) result(flags)
     class(compiler_t), intent(in) :: self
     character(len=*), intent(in) :: path
@@ -467,6 +586,41 @@ subroutine get_default_c_compiler(f_compiler, c_compiler)
     end select
 
 end subroutine get_default_c_compiler
+
+!> Get C++ Compiler.
+subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
+    character(len=*), intent(in) :: f_compiler
+    character(len=:), allocatable, intent(out) :: cxx_compiler
+    integer(compiler_enum) :: id
+
+    id = get_compiler_id(f_compiler)
+
+    select case(id)
+
+    case(id_intel_classic_nix, id_intel_classic_mac, id_intel_classic_windows)
+        cxx_compiler = 'icpc'
+
+    case(id_intel_llvm_nix,id_intel_llvm_windows)
+        cxx_compiler = 'icpx'
+
+    case(id_flang, id_flang_new, id_f18)
+        cxx_compiler='clang'
+
+    case(id_ibmxl)
+        cxx_compiler='xlc++'
+
+    case(id_lfortran)
+        cxx_compiler = 'cc'
+
+    case(id_gcc)
+        cxx_compiler = 'g++'
+
+    case default
+        ! Fall-back to using Fortran compiler
+        cxx_compiler = f_compiler
+    end select
+
+end subroutine get_default_cxx_compiler
 
 
 function get_compiler_id(compiler) result(id)
@@ -639,31 +793,49 @@ end function enumerate_libraries
 
 
 !> Create new compiler instance
-subroutine new_compiler(self, fc, cc)
+subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     !> New instance of the compiler
     type(compiler_t), intent(out) :: self
     !> Fortran compiler name or path
     character(len=*), intent(in) :: fc
     !> C compiler name or path
     character(len=*), intent(in) :: cc
+    !> C++ Compiler name or path
+    character(len=*), intent(in) :: cxx
+    !> Echo compiler command
+    logical, intent(in) :: echo
+    !> Verbose mode: dump compiler output
+    logical, intent(in) :: verbose
 
     self%id = get_compiler_id(fc)
-
+    
+    self%echo = echo
+    self%verbose = verbose
     self%fc = fc
     if (len_trim(cc) > 0) then
       self%cc = cc
     else
       call get_default_c_compiler(self%fc, self%cc)
     end if
+
+    if (len_trim(cxx) > 0) then
+      self%cxx = cxx
+    else
+      call get_default_cxx_compiler(self%fc, self%cxx)
+    end if
 end subroutine new_compiler
 
 
 !> Create new archiver instance
-subroutine new_archiver(self, ar)
+subroutine new_archiver(self, ar, echo, verbose)
     !> New instance of the archiver
     type(archiver_t), intent(out) :: self
     !> User provided archiver command
     character(len=*), intent(in) :: ar
+    !> Echo compiler command
+    logical, intent(in) :: echo
+    !> Verbose mode: dump compiler output
+    logical, intent(in) :: verbose
 
     integer :: estat, os_type
 
@@ -697,12 +869,13 @@ subroutine new_archiver(self, ar)
       end if
     end if
     self%use_response_file = os_type == OS_WINDOWS
-    self%echo = .true.
+    self%echo = echo
+    self%verbose = verbose
 end subroutine new_archiver
 
 
 !> Compile a Fortran object
-subroutine compile_fortran(self, input, output, args, stat)
+subroutine compile_fortran(self, input, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -711,16 +884,18 @@ subroutine compile_fortran(self, input, output, args, stat)
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     call run(self%fc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, exitstat=stat)
+        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_fortran
 
 
 !> Compile a C object
-subroutine compile_c(self, input, output, args, stat)
+subroutine compile_c(self, input, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Source file input
@@ -729,47 +904,78 @@ subroutine compile_c(self, input, output, args, stat)
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     call run(self%cc // " -c " // input // " " // args // " -o " // output, &
-        & echo=self%echo, exitstat=stat)
+        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine compile_c
 
+!> Compile a CPP object
+subroutine compile_cpp(self, input, output, args, log_file, stat)
+    !> Instance of the compiler object
+    class(compiler_t), intent(in) :: self
+    !> Source file input
+    character(len=*), intent(in) :: input
+    !> Output file of object
+    character(len=*), intent(in) :: output
+    !> Arguments for compiler
+    character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
+    !> Status flag
+    integer, intent(out) :: stat
+
+    call run(self%cxx // " -c " // input // " " // args // " -o " // output, &
+        & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
+end subroutine compile_cpp
 
 !> Link an executable
-subroutine link(self, output, args, stat)
+subroutine link(self, output, args, log_file, stat)
     !> Instance of the compiler object
     class(compiler_t), intent(in) :: self
     !> Output file of object
     character(len=*), intent(in) :: output
     !> Arguments for compiler
     character(len=*), intent(in) :: args
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
-    call run(self%fc // " " // args // " -o " // output, echo=self%echo, exitstat=stat)
+    call run(self%fc // " " // args // " -o " // output, echo=self%echo, &
+        & verbose=self%verbose, redirect=log_file, exitstat=stat)
 end subroutine link
 
 
 !> Create an archive
-subroutine make_archive(self, output, args, stat)
+!> @todo An OMP critical section is added for Windows OS,
+!> which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+!> see issue #707 and #708.
+subroutine make_archive(self, output, args, log_file, stat)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
     !> Name of the archive to generate
     character(len=*), intent(in) :: output
     !> Object files to include into the archive
     type(string_t), intent(in) :: args(:)
+    !> Compiler output log file
+    character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
 
     if (self%use_response_file) then
+        !$omp critical
         call write_response_file(output//".resp" , args)
-        call run(self%ar // output // " @" // output//".resp", echo=self%echo, exitstat=stat)
+        call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
+            &  verbose=self%verbose, redirect=log_file, exitstat=stat)
         call delete_file(output//".resp")
+        !$omp end critical
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
-            & echo=self%echo, exitstat=stat)
+            & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     end if
 end subroutine make_archive
 

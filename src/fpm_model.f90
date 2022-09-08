@@ -14,6 +14,23 @@
 !> __Source type:__ `FPM_UNIT_*`
 !> Describes the type of source file — determines build target generation
 !>
+!> The logical order of precedence for assigning `unit_type` is as follows:
+!>
+!>```
+!> if source-file contains program then
+!>   unit_type = FPM_UNIT_PROGRAM
+!> else if source-file contains non-module subroutine/function then
+!>   unit_type = FPM_UNIT_SUBPROGRAM
+!> else if source-file contains submodule then
+!>   unit_type = FPM_UNIT_SUBMODULE
+!> else if source-file contains module then
+!>   unit_type = FPM_UNIT_MODULE
+!> end if
+!>```
+!>
+!> @note A source file is only designated `FPM_UNIT_MODULE` if it **only** contains modules - no non-module subprograms.
+!> (This allows tree-shaking/pruning of build targets based on unused module dependencies.)
+!>
 !> __Source scope:__ `FPM_SCOPE_*`
 !> Describes the scoping rules for using modules — controls module dependency resolution
 !>
@@ -30,23 +47,25 @@ public :: fpm_model_t, srcfile_t, show_model
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
           FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
-          FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
+          FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST, &
+          FPM_UNIT_CPPSOURCE
 
 !> Source type unknown
 integer, parameter :: FPM_UNIT_UNKNOWN = -1
-!> Source type is fortran program
+!> Source contains a fortran program
 integer, parameter :: FPM_UNIT_PROGRAM = 1
-!> Source type is fortran module
+!> Source **only** contains one or more fortran modules
 integer, parameter :: FPM_UNIT_MODULE = 2
-!> Source type is fortran submodule
+!> Source contains one or more fortran submodules
 integer, parameter :: FPM_UNIT_SUBMODULE = 3
-!> Source type is fortran subprogram
+!> Source contains one or more fortran subprogram not within modules
 integer, parameter :: FPM_UNIT_SUBPROGRAM = 4
 !> Source type is c source file
 integer, parameter :: FPM_UNIT_CSOURCE = 5
 !> Source type is c header file
 integer, parameter :: FPM_UNIT_CHEADER = 6
-
+!> Souce type is c++ source file.
+integer, parameter :: FPM_UNIT_CPPSOURCE = 7
 
 !> Source has no module-use scope
 integer, parameter :: FPM_SCOPE_UNKNOWN = -1
@@ -78,6 +97,9 @@ type srcfile_t
     !> Type of source unit
     integer :: unit_type = FPM_UNIT_UNKNOWN
 
+    !> Parent modules (submodules only)
+    type(string_t), allocatable :: parent_modules(:)
+
     !>  Modules USEd by this source file (lowerstring)
     type(string_t), allocatable :: modules_used(:)
 
@@ -101,6 +123,12 @@ type package_t
 
     !> Array of sources
     type(srcfile_t), allocatable :: sources(:)
+
+    !> List of macros.
+    type(string_t), allocatable :: macros(:)
+
+    !> Package version number.
+    character(:), allocatable :: version
 
 end type package_t
 
@@ -126,6 +154,9 @@ type :: fpm_model_t
 
     !> Command line flags passed to C for compilation
     character(:), allocatable :: c_compile_flags
+
+    !> Command line flags passed to C++ for compilation
+    character(:), allocatable :: cxx_compile_flags
 
     !> Command line flags passed to the linker
     character(:), allocatable :: link_flags
@@ -207,6 +238,12 @@ function info_srcfile(source) result(s)
         if (i < size(source%modules_provided)) s = s // ", "
     end do
     s = s // "]"
+    s = s // ", parent_modules=["
+    do i = 1, size(source%parent_modules)
+        s = s // '"' // source%parent_modules(i)%s // '"'
+        if (i < size(source%parent_modules)) s = s // ", "
+    end do
+    s = s // "]"
     !    integer :: unit_type = FPM_UNIT_UNKNOWN
     s = s // ", unit_type="
     select case(source%unit_type)
@@ -222,6 +259,8 @@ function info_srcfile(source) result(s)
         s = s // "FPM_UNIT_SUBPROGRAM"
     case (FPM_UNIT_CSOURCE)
         s = s // "FPM_UNIT_CSOURCE"
+    case (FPM_UNIT_CPPSOURCE)
+        s = s // "FPM_UNIT_CPPSOURCE"
     case (FPM_UNIT_CHEADER)
         s = s // "FPM_UNIT_CHEADER"
     case default
@@ -283,6 +322,7 @@ function info_model(model) result(s)
     !    character(:), allocatable :: fortran_compile_flags
     s = s // ', fortran_compile_flags="' // model%fortran_compile_flags // '"'
     s = s // ', c_compile_flags="' // model%c_compile_flags // '"'
+    s = s // ', cxx_compile_flags="' // model%cxx_compile_flags // '"'
     s = s // ', link_flags="' // model%link_flags // '"'
     s = s // ', build_prefix="' // model%build_prefix // '"'
     !    type(string_t), allocatable :: link_libraries(:)

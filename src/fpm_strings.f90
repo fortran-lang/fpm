@@ -39,7 +39,7 @@ use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_po
 implicit none
 
 private
-public :: f_string, lower, split, str_ends_with, string_t
+public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
@@ -114,6 +114,19 @@ pure logical function str_ends_with_any(s, e) result(r)
     r = .false.
 
 end function str_ends_with_any
+
+!> test if a CHARACTER string begins with a specified prefix
+pure logical function str_begins_with_str(s, e) result(r)
+    character(*), intent(in) :: s, e
+    integer :: n1, n2
+    n1 = 1
+    n2 = 1 + len(e)-1
+    if (n2 > len(s)) then
+        r = .false.
+    else
+        r = (s(n1:n2) == e)
+    end if
+end function str_begins_with_str
 
 !> return Fortran character variable when given a C-like array of
 !! single characters terminated with a C_NULL_CHAR character
@@ -335,7 +348,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
 
     ! decide on value for optional DELIMITERS parameter
     if (present(delimiters)) then                                     ! optional delimiter list was present
-        if(delimiters.ne.'')then                                       ! if DELIMITERS was specified and not null use it
+        if(delimiters/='')then                                       ! if DELIMITERS was specified and not null use it
             dlim=delimiters
         else                                                           ! DELIMITERS was specified on call as empty string
             dlim=' '//char(9)//char(10)//char(11)//char(12)//char(13)//char(0) ! use default delimiter when not specified
@@ -367,11 +380,11 @@ subroutine split(input_line,array,delimiters,order,nulls)
         icol=1                                                      ! initialize pointer into input line
         INFINITE: do i30=1,ilen,1                                   ! store into each array element
             ibegin(i30)=icol                                         ! assume start new token on the character
-            if(index(dlim(1:idlim),input_line(icol:icol)).eq.0)then  ! if current character is not a delimiter
+            if(index(dlim(1:idlim),input_line(icol:icol))==0)then  ! if current character is not a delimiter
             iterm(i30)=ilen                                       ! initially assume no more tokens
             do i10=1,idlim                                        ! search for next delimiter
                 ifound=index(input_line(ibegin(i30):ilen),dlim(i10:i10))
-                IF(ifound.gt.0)then
+                IF(ifound>0)then
                     iterm(i30)=min(iterm(i30),ifound+ibegin(i30)-2)
                 endif
             enddo
@@ -383,7 +396,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
             endif
             imax=max(imax,iterm(i30)-ibegin(i30)+1)
             icount=i30                                               ! increment count of number of tokens found
-            if(icol.gt.ilen)then                                     ! no text left
+            if(icol>ilen)then                                     ! no text left
             exit INFINITE
             endif
         enddo INFINITE
@@ -405,7 +418,7 @@ subroutine split(input_line,array,delimiters,order,nulls)
     end select
 
     do i20=1,icount                                                ! fill the array with the tokens that were found
-        if(iterm(i20).lt.ibegin(i20))then
+        if(iterm(i20)<ibegin(i20))then
             select case (trim(adjustl(nlls)))
             case ('ignore','','ignoreend')
             case default
@@ -561,7 +574,7 @@ integer                              :: i
    if(present(left))then  ; left_local=left   ; else ; left_local=''    ; endif
    if(present(right))then ; right_local=right ; else ; right_local=''   ; endif
    string=''
-   if(size(str).eq.0)then
+   if(size(str)==0)then
       string=string//left_local//right_local
    else
       do i = 1,size(str)-1
@@ -838,21 +851,21 @@ character(len=:),allocatable :: tbookmark, wbookmark
    do                                            ! Walk the text strings one character at a time.
       if(wildtext(wi:wi) == '*')then             ! How do you match a unique text string?
          do i=wi,wlen                            ! Easy: unique up on it!
-            if(wildtext(wi:wi).eq.'*')then
+            if(wildtext(wi:wi)=='*')then
                wi=wi+1
             else
                exit
             endif
          enddo
-         if(wildtext(wi:wi).eq.NULL) then        ! "x" matches "*"
+         if(wildtext(wi:wi)==NULL) then        ! "x" matches "*"
             glob=.true.
             return
          endif
-         if(wildtext(wi:wi) .ne. '?') then
+         if(wildtext(wi:wi) /= '?') then
             ! Fast-forward to next possible match.
-            do while (tametext(ti:ti) .ne. wildtext(wi:wi))
+            do while (tametext(ti:ti) /= wildtext(wi:wi))
                ti=ti+1
-               if (tametext(ti:ti).eq.NULL)then
+               if (tametext(ti:ti)==NULL)then
                   glob=.false.
                   return                         ! "x" doesn't match "*y*"
                endif
@@ -860,15 +873,15 @@ character(len=:),allocatable :: tbookmark, wbookmark
          endif
          wbookmark = wildtext(wi:)
          tbookmark = tametext(ti:)
-      elseif(tametext(ti:ti) .ne. wildtext(wi:wi) .and. wildtext(wi:wi) .ne. '?') then
+      elseif(tametext(ti:ti) /= wildtext(wi:wi) .and. wildtext(wi:wi) /= '?') then
          ! Got a non-match. If we've set our bookmarks, back up to one or both of them and retry.
-         if(wbookmark.ne.NULL) then
-            if(wildtext(wi:).ne. wbookmark) then
+         if(wbookmark/=NULL) then
+            if(wildtext(wi:)/= wbookmark) then
                wildtext = wbookmark;
                wlen=len_trim(wbookmark)
                wi=1
                ! Don't go this far back again.
-               if (tametext(ti:ti) .ne. wildtext(wi:wi)) then
+               if (tametext(ti:ti) /= wildtext(wi:wi)) then
                   tbookmark=tbookmark(2:)
                   tametext = tbookmark
                   ti=1
@@ -877,7 +890,7 @@ character(len=:),allocatable :: tbookmark, wbookmark
                   wi=wi+1
                endif
             endif
-            if (tametext(ti:ti).ne.NULL) then
+            if (tametext(ti:ti)/=NULL) then
                ti=ti+1
                cycle                             ! "mississippi" matches "*sip*"
             endif
@@ -887,14 +900,14 @@ character(len=:),allocatable :: tbookmark, wbookmark
       endif
       ti=ti+1
       wi=wi+1
-      if (tametext(ti:ti).eq.NULL) then          ! How do you match a tame text string?
-         if(wildtext(wi:wi).ne.NULL)then
+      if (tametext(ti:ti)==NULL) then          ! How do you match a tame text string?
+         if(wildtext(wi:wi)/=NULL)then
             do while (wildtext(wi:wi) == '*')    ! The tame way: unique up on it!
                wi=wi+1                           ! "x" matches "x*"
-               if(wildtext(wi:wi).eq.NULL)exit
+               if(wildtext(wi:wi)==NULL)exit
             enddo
          endif
-         if (wildtext(wi:wi).eq.NULL)then
+         if (wildtext(wi:wi)==NULL)then
             glob=.true.
             return                               ! "x" matches "x"
          endif
@@ -982,7 +995,7 @@ function is_fortran_name(line) result (lout)
     character(len=:),allocatable :: name
     logical                      :: lout
         name=trim(line)
-        if(len(name).ne.0)then
+        if(len(name)/=0)then
             lout = .true.                                  &
              & .and. verify(name(1:1), lower//upper) == 0  &
              & .and. verify(name,allowed) == 0             &

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -ex
 
 cd "$(dirname $0)/.."
@@ -62,6 +62,22 @@ test ! -x ./build/gfortran_*/app/unused
 test ! -x ./build/gfortran_*/test/unused_test
 popd
 
+pushd tree_shake
+"$fpm" build
+"$fpm" run
+"$fpm" test
+test ! -e ./build/gfortran_*/tree_shake/src_farewell_m.f90.o
+test ! -e ./build/gfortran_*/tree_shake/src_farewell_m.f90.o.log
+popd
+
+pushd submodule_tree_shake
+"$fpm" run
+test ! -e ./build/gfortran_*/submodule_tree_shake/src_parent_unused.f90.o
+test ! -e ./build/gfortran_*/submodule_tree_shake/src_parent_unused.f90.o.log
+test ! -e ./build/gfortran_*/submodule_tree_shake/src_child_unused.f90.o
+test ! -e ./build/gfortran_*/submodule_tree_shake/src_child_unused.f90.o.log
+popd
+
 pushd version_file
 "$fpm" build
 "$fpm" run
@@ -74,6 +90,10 @@ popd
 
 pushd submodules
 "$fpm" build
+popd
+
+pushd app_with_submodule
+"$fpm" run --all
 popd
 
 pushd program_with_module
@@ -100,6 +120,30 @@ popd
 
 pushd c_main
 "$fpm" run
+popd
+
+pushd app_with_c
+"$fpm" run
+popd
+
+pushd hello_fpm_path
+"$fpm" run
+popd
+
+pushd preprocess_cpp
+"$fpm" build
+popd
+
+pushd preprocess_hello
+"$fpm" build
+popd
+
+pushd fpm_test_exe_issues
+"$fpm" build
+popd
+
+pushd cpp_files
+"$fpm" test
 popd
 
 # Cleanup

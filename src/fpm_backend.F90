@@ -29,23 +29,34 @@ module fpm_backend
 
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_error, only : fpm_stop
-use fpm_environment, only: run, get_os_type, OS_WINDOWS
-use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir
+use fpm_filesystem, only: basename, dirname, join_path, exists, mkdir, run, getline
 use fpm_model, only: fpm_model_t
 use fpm_strings, only: string_t, operator(.in.)
 use fpm_targets, only: build_target_t, build_target_ptr, FPM_TARGET_OBJECT, &
-                       FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE
+                       FPM_TARGET_C_OBJECT, FPM_TARGET_ARCHIVE, FPM_TARGET_EXECUTABLE, &
+                       FPM_TARGET_CPP_OBJECT
+use fpm_backend_output
 implicit none
 
 private
 public :: build_package, sort_target, schedule_targets
 
+#ifndef FPM_BOOTSTRAP
+interface
+    function c_isatty() bind(C, name = 'c_isatty')
+        use, intrinsic :: iso_c_binding, only: c_int
+        integer(c_int) :: c_isatty
+    end function
+end interface
+#endif
+
 contains
 
 !> Top-level routine to build package described by `model`
-subroutine build_package(targets,model)
+subroutine build_package(targets,model,verbose)
     type(build_target_ptr), intent(inout) :: targets(:)
     type(fpm_model_t), intent(in) :: model
+    logical, intent(in) :: verbose
 
     integer :: i, j
     type(build_target_ptr), allocatable :: queue(:)
@@ -53,6 +64,9 @@ subroutine build_package(targets,model)
     logical :: build_failed, skip_current
     type(string_t), allocatable :: build_dirs(:)
     type(string_t) :: temp
+
+    type(build_progress_t) :: progress
+    logical :: plain_output
 
     ! Need to make output directory for include (mod) files
     allocate(build_dirs(0))
@@ -65,7 +79,7 @@ subroutine build_package(targets,model)
     end do
 
     do i = 1, size(build_dirs)
-       call mkdir(build_dirs(i)%s)
+       call mkdir(build_dirs(i)%s,verbose)
     end do
 
     ! Perform depth-first topological sort of targets
@@ -78,10 +92,25 @@ subroutine build_package(targets,model)
     ! Construct build schedule queue
     call schedule_targets(queue, schedule_ptr, targets)
 
+    ! Check if queue is empty
+    if (.not.verbose .and. size(queue) < 1) then
+        write(stderr, '(a)') 'Project is up to date'
+        return
+    end if
+
     ! Initialise build status flags
     allocate(stat(size(queue)))
     stat(:) = 0
     build_failed = .false.
+
+    ! Set output mode
+#ifndef FPM_BOOTSTRAP
+    plain_output = (.not.(c_isatty()==1)) .or. verbose
+#else
+    plain_output = .true.
+#endif
+
+    progress = build_progress_t(queue,plain_output)
 
     ! Loop over parallel schedule regions
     do i=1,size(schedule_ptr)-1
@@ -95,7 +124,9 @@ subroutine build_package(targets,model)
             skip_current = build_failed
 
             if (.not.skip_current) then
-                call build_target(model,queue(j)%ptr,stat(j))
+                call progress%compiling_status(j)
+                call build_target(model,queue(j)%ptr,verbose,stat(j))
+                call progress%completed_status(j,stat(j))
             end if
 
             ! Set global flag if this target failed to build
@@ -108,6 +139,12 @@ subroutine build_package(targets,model)
 
         ! Check if this schedule region failed: exit with message if failed
         if (build_failed) then
+            write(*,*)
+            do j=1,size(stat)
+                if (stat(j) /= 0) Then
+                    call print_build_log(queue(j)%ptr)
+                end if
+            end do
             do j=1,size(stat)
                 if (stat(j) /= 0) then
                     write(stderr,'(*(g0:,1x))') '<ERROR> Compilation failed for object "',basename(queue(j)%ptr%output_file),'"'
@@ -117,6 +154,8 @@ subroutine build_package(targets,model)
         end if
 
     end do
+
+    call progress%success()
 
 end subroutine build_package
 
@@ -261,16 +300,17 @@ end subroutine schedule_targets
 !>
 !> If successful, also caches the source file digest to disk.
 !>
-subroutine build_target(model,target,stat)
+subroutine build_target(model,target,verbose,stat)
     type(fpm_model_t), intent(in) :: model
     type(build_target_t), intent(in), target :: target
+    logical, intent(in) :: verbose
     integer, intent(out) :: stat
 
     integer :: fh
 
     !$omp critical
     if (.not.exists(dirname(target%output_file))) then
-        call mkdir(dirname(target%output_file))
+        call mkdir(dirname(target%output_file),verbose)
     end if
     !$omp end critical
 
@@ -278,18 +318,23 @@ subroutine build_target(model,target,stat)
 
     case (FPM_TARGET_OBJECT)
         call model%compiler%compile_fortran(target%source%file_name, target%output_file, &
-            & target%compile_flags, stat)
+            & target%compile_flags, target%output_log_file, stat)
 
     case (FPM_TARGET_C_OBJECT)
         call model%compiler%compile_c(target%source%file_name, target%output_file, &
-            & target%compile_flags, stat)
+            & target%compile_flags, target%output_log_file, stat)
+
+    case (FPM_TARGET_CPP_OBJECT)
+        call model%compiler%compile_cpp(target%source%file_name, target%output_file, &
+            & target%compile_flags, target%output_log_file, stat)
 
     case (FPM_TARGET_EXECUTABLE)
         call model%compiler%link(target%output_file, &
-            & target%compile_flags//" "//target%link_flags, stat)
+            & target%compile_flags//" "//target%link_flags, target%output_log_file, stat)
 
     case (FPM_TARGET_ARCHIVE)
-        call model%archiver%make_archive(target%output_file, target%link_objects, stat)
+        call model%archiver%make_archive(target%output_file, target%link_objects, &
+            & target%output_log_file, stat)
 
     end select
 
@@ -301,5 +346,31 @@ subroutine build_target(model,target,stat)
 
 end subroutine build_target
 
+
+!> Read and print the build log for target
+!>
+subroutine print_build_log(target)
+    type(build_target_t), intent(in), target :: target
+
+    integer :: fh, ios
+    character(:), allocatable :: line
+
+    if (exists(target%output_log_file)) then
+
+        open(newunit=fh,file=target%output_log_file,status='old')
+        do
+            call getline(fh, line, ios)
+            if (ios /= 0) exit
+            write(*,'(A)') trim(line)
+        end do
+        close(fh)
+
+    else
+
+        write(stderr,'(*(g0:,1x))') '<ERROR> Unable to find build log "',basename(target%output_log_file),'"'
+
+    end if
+
+end subroutine print_build_log
 
 end module fpm_backend

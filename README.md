@@ -37,7 +37,7 @@ Binaries for the latest stable release are available [to download](https://githu
 
 __Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
 
-_e.g._ `$ chmod u+x fpm-0.5.0-linux-x86_64`
+_e.g._ `$ chmod u+x fpm-0.6.0-linux-x86_64`
 
 The binaries at the [current tag](https://github.com/fortran-lang/fpm/releases/tag/current) are updated automatically to always provide the current git version from the default branch.
 
@@ -66,7 +66,8 @@ or from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 #### [MSYS2]
 
-Fpm is available as MinGW package in the MSYS2 package manager.
+Fpm is available as MinGW package in the MSYS2 package manager,
+which supports parallelization of the target compilation.
 To install fpm with pacman use
 
 ```
@@ -100,6 +101,21 @@ For more details check the package information [here](https://spack.readthedocs.
 
 [Spack]: https://spack.io
 
+
+#### Homebrew
+
+The Fortran Package Manager (fpm) is available for the [Homebrew](https://brew.sh/) package manager via an additional tap.
+To install fpm via brew, include the new tap and install using
+
+```
+brew tap fortran-lang/fortran
+brew install fpm
+```
+
+Binary distributions are available for MacOS 11 (Catalina) and 12 (Big Sur) for x86_64 architectures. For other platforms fpm will be built locally from source automatically.
+
+Fpm should be available and functional after those steps.
+For more details checkout the tap [here](https://github.com/fortran-lang/homebrew-fortran).
 
 #### Github Actions
 

@@ -1,0 +1,5 @@
+name = "hello_fpm_path"
+
+[dependencies]
+utils1 = { path = "crate/utils1" }
+utils2 = { path = "crate/utils2" }

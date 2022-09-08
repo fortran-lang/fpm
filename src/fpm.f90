@@ -1,19 +1,22 @@
 module fpm
-use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, fnv_1a
+use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, &
+                      lower, str_ends_with
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
-                      fpm_run_settings, fpm_install_settings, fpm_test_settings
+                      fpm_run_settings, fpm_install_settings, fpm_test_settings, &
+                      fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: run, get_env
-use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, basename, filewrite, mkdir
+use fpm_environment, only: get_env
+use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, &
+                   basename, filewrite, mkdir, run, os_delete_dir
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: new_compiler, new_archiver
+use fpm_compiler, only: new_compiler, new_archiver, set_preprocessor_flags
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
-use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
+use fpm_targets, only: targets_from_sources, &
                         resolve_target_linking, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
@@ -21,9 +24,10 @@ use fpm_error, only : error_t, fatal_error, fpm_stop
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
+use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
 implicit none
 private
-public :: cmd_build, cmd_run
+public :: cmd_build, cmd_run, cmd_clean
 public :: build_model, check_modules_for_duplicates
 
 contains
@@ -39,7 +43,8 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, ldflags
+    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
+    character(len=:), allocatable :: version
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
@@ -59,8 +64,10 @@ subroutine build_model(model, settings, package, error)
       call filewrite(join_path("build", ".gitignore"),["*"])
     end if
 
-    call new_compiler(model%compiler, settings%compiler, settings%c_compiler)
-    call new_archiver(model%archiver, settings%archiver)
+    call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
+        & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
+    call new_archiver(model%archiver, settings%archiver, &
+        & echo=settings%verbose, verbose=settings%verbose)
 
     if (settings%flag == '') then
         flags = model%compiler%get_default_flags(settings%profile == "release")
@@ -71,7 +78,11 @@ subroutine build_model(model, settings, package, error)
             flags = flags // model%compiler%get_default_flags(settings%profile == "release")
         end select
     end if
+
+    call set_preprocessor_flags(model%compiler%id, flags, package)
+
     cflags = trim(settings%cflag)
+    cxxflags = trim(settings%cxxflag)
     ldflags = trim(settings%ldflag)
 
     if (model%compiler%is_unknown()) then
@@ -83,11 +94,67 @@ subroutine build_model(model, settings, package, error)
 
     model%fortran_compile_flags = flags
     model%c_compile_flags = cflags
+    model%cxx_compile_flags = cxxflags
     model%link_flags = ldflags
 
     model%include_tests = settings%build_tests
 
     allocate(model%packages(model%deps%ndep))
+
+    do i = 1, model%deps%ndep
+        associate(dep => model%deps%dep(i))
+            manifest = join_path(dep%proj_dir, "fpm.toml")
+
+            call get_package_data(dependency, manifest, error, &
+                apply_defaults=.true.)
+            if (allocated(error)) exit
+
+            model%packages(i)%name = dependency%name
+            call package%version%to_string(version)
+            model%packages(i)%version = version
+            
+            if (allocated(dependency%preprocess)) then
+                do j = 1, size(dependency%preprocess)
+                    if (package%preprocess(j)%name == "cpp") then
+                        model%packages(i)%macros = dependency%preprocess(j)%macros
+                    end if
+                end do
+            end if
+
+            if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
+
+            if (allocated(dependency%library)) then
+
+                if (allocated(dependency%library%source_dir)) then
+                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
+                    if (is_dir(lib_dir)) then
+                        call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
+                            error=error)
+                        if (allocated(error)) exit
+                    end if
+                end if
+
+                if (allocated(dependency%library%include_dir)) then
+                    do j=1,size(dependency%library%include_dir)
+                        include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir(j)%s)
+                        if (is_dir(include_dir%s)) then
+                            model%include_dirs = [model%include_dirs, include_dir]
+                        end if
+                    end do
+                end if
+
+            end if
+
+            if (allocated(dependency%build%link)) then
+                model%link_libraries = [model%link_libraries, dependency%build%link]
+            end if
+
+            if (allocated(dependency%build%external_modules)) then
+                model%external_modules = [model%external_modules, dependency%build%external_modules]
+            end if
+        end associate
+    end do
+    if (allocated(error)) return
 
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
@@ -148,56 +215,15 @@ subroutine build_model(model, settings, package, error)
 
     endif
 
-    do i = 1, model%deps%ndep
-        associate(dep => model%deps%dep(i))
-            manifest = join_path(dep%proj_dir, "fpm.toml")
-
-            call get_package_data(dependency, manifest, error, &
-                apply_defaults=.true.)
-            if (allocated(error)) exit
-
-            model%packages(i)%name = dependency%name
-            if (.not.allocated(model%packages(i)%sources)) allocate(model%packages(i)%sources(0))
-
-            if (allocated(dependency%library)) then
-
-                if (allocated(dependency%library%source_dir)) then
-                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
-                    if (is_dir(lib_dir)) then
-                        call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                            error=error)
-                        if (allocated(error)) exit
-                    end if
-                end if
-
-                if (allocated(dependency%library%include_dir)) then
-                    do j=1,size(dependency%library%include_dir)
-                        include_dir%s = join_path(dep%proj_dir, dependency%library%include_dir(j)%s)
-                        if (is_dir(include_dir%s)) then
-                            model%include_dirs = [model%include_dirs, include_dir]
-                        end if
-                    end do
-                end if
-
-            end if
-
-            if (allocated(dependency%build%link)) then
-                model%link_libraries = [model%link_libraries, dependency%build%link]
-            end if
-
-            if (allocated(dependency%build%external_modules)) then
-                model%external_modules = [model%external_modules, dependency%build%external_modules]
-            end if
-        end associate
-    end do
-    if (allocated(error)) return
 
     if (settings%verbose) then
         write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix
         write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
         write(*,*)'<INFO> C COMPILER:  ',model%compiler%cc
+        write(*,*)'<INFO> CXX COMPILER: ',model%compiler%cxx
         write(*,*)'<INFO> COMPILER OPTIONS:  ', model%fortran_compile_flags
         write(*,*)'<INFO> C COMPILER OPTIONS:  ', model%c_compile_flags
+        write(*,*)'<INFO> CXX COMPILER OPTIONS: ', model%cxx_compile_flags
         write(*,*)'<INFO> LINKER OPTIONS:  ', model%link_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
      end if
@@ -272,7 +298,7 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:model error:'//error%message)
 end if
 
-call targets_from_sources(targets, model, error)
+call targets_from_sources(targets, model, settings%prune, error)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build*:target error:'//error%message)
 end if
@@ -284,7 +310,7 @@ if(settings%list)then
 else if (settings%show_model) then
     call show_model(model)
 else
-    call build_package(targets,model)
+    call build_package(targets,model,verbose=settings%verbose)
 endif
 
 end subroutine cmd_build
@@ -318,7 +344,7 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run*:model error:'//error%message)
     end if
 
-    call targets_from_sources(targets, model, error)
+    call targets_from_sources(targets, model, settings%prune, error)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run*:targets error:'//error%message)
     end if
@@ -384,14 +410,14 @@ subroutine cmd_run(settings,test)
 
     ! Check all names are valid
     ! or no name and found more than one file
-    toomany= size(settings%name).eq.0 .and. size(executables).gt.1
+    toomany= size(settings%name)==0 .and. size(executables)>1
     if ( any(.not.found) &
     & .or. &
-    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner .ne. '') ) &
+    & ( (toomany .and. .not.test) .or.  (toomany .and. settings%runner /= '') ) &
     & .and. &
     & .not.settings%list) then
         line=join(settings%name)
-        if(line.ne.'.')then ! do not report these special strings
+        if(line/='.')then ! do not report these special strings
            if(any(.not.found))then
               write(stderr,'(A)',advance="no")'<ERROR>*cmd_run*:specified names '
               do j=1,size(settings%name)
@@ -407,7 +433,7 @@ subroutine cmd_run(settings,test)
 
         call compact_list_all()
 
-        if(line.eq.'.' .or. line.eq.' ')then ! do not report these special strings
+        if(line=='.' .or. line==' ')then ! do not report these special strings
            call fpm_stop(0,'')
         else
            call fpm_stop(1,'')
@@ -415,7 +441,7 @@ subroutine cmd_run(settings,test)
 
     end if
 
-    call build_package(targets,model)
+    call build_package(targets,model,verbose=settings%verbose)
 
     if (settings%list) then
          call compact_list()
@@ -424,7 +450,7 @@ subroutine cmd_run(settings,test)
         allocate(stat(size(executables)))
         do i=1,size(executables)
             if (exists(executables(i)%s)) then
-                if(settings%runner .ne. ' ')then
+                if(settings%runner /= ' ')then
                     if(.not.allocated(settings%args))then
                        call run(settings%runner//' '//executables(i)%s, &
                              echo=settings%verbose, exitstat=stat(i))
@@ -498,5 +524,46 @@ subroutine cmd_run(settings,test)
     end subroutine compact_list
 
 end subroutine cmd_run
+
+subroutine delete_skip(unix)
+    !> delete directories in the build folder, skipping dependencies
+    logical, intent(in) :: unix
+    character(len=:), allocatable :: dir
+    type(string_t), allocatable :: files(:)
+    integer :: i
+    call list_files('build', files, .false.)
+    do i = 1, size(files)
+        if (is_dir(files(i)%s)) then
+            dir = files(i)%s
+            if (.not.str_ends_with(dir,'dependencies')) call os_delete_dir(unix, dir)
+        end if
+    end do
+end subroutine delete_skip
+
+subroutine cmd_clean(settings)
+    !> fpm clean called
+    class(fpm_clean_settings), intent(in) :: settings
+    ! character(len=:), allocatable :: dir
+    ! type(string_t), allocatable :: files(:)
+    character(len=1) :: response
+    if (is_dir('build')) then
+        ! remove the entire build directory
+        if (settings%clean_call) then
+            call os_delete_dir(settings%unix, 'build')
+            return
+        end if
+        ! remove the build directory but skip dependencies
+        if (settings%clean_skip) then
+            call delete_skip(settings%unix)
+            return
+        end if
+        ! prompt to remove the build directory but skip dependencies
+        write(stdout, '(A)', advance='no') "Delete build, excluding dependencies (y/n)? "
+        read(stdin, '(A1)') response
+        if (lower(response) == 'y') call delete_skip(settings%unix)
+    else
+        write (stdout, '(A)') "fpm: No build directory found."
+    end if
+end subroutine cmd_clean
 
 end module fpm

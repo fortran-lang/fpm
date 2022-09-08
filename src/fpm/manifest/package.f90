@@ -41,6 +41,7 @@ module fpm_manifest_package
     use fpm_manifest_library, only : library_config_t, new_library
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
+    use fpm_mainfest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
@@ -94,6 +95,9 @@ module fpm_manifest_package
 
         !> Test meta data
         type(test_config_t), allocatable :: test(:)
+
+        !> Preprocess meta data
+        type(preprocess_config_t), allocatable :: preprocess(:)
 
     contains
 
@@ -194,13 +198,13 @@ contains
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
-            call new_dependencies(self%dependency, child, error)
+            call new_dependencies(self%dependency, child, root, error)
             if (allocated(error)) return
         end if
 
         call get_value(table, "dev-dependencies", child, requested=.false.)
         if (associated(child)) then
-            call new_dependencies(self%dev_dependency, child, error)
+            call new_dependencies(self%dev_dependency, child, root, error)
             if (allocated(error)) return
         end if
 
@@ -282,6 +286,11 @@ contains
             if (allocated(error)) return
         end if
 
+        call get_value(table, "preprocess", child, requested=.false.)
+        if (associated(child)) then
+            call new_preprocessors(self%preprocess, child, error)
+            if (allocated(error)) return
+        end if
     end subroutine new_package
 
 
@@ -319,7 +328,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "profiles", "test", "executable", &
-                    & "example", "library", "install", "extra")
+                    & "example", "library", "install", "extra", "preprocess")
                 continue
 
             end select

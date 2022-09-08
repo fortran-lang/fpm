@@ -12,8 +12,9 @@ module fpm_manifest
     use fpm_manifest_executable, only : executable_config_t
     use fpm_manifest_dependency, only : dependency_config_t
     use fpm_manifest_library, only : library_config_t
+    use fpm_mainfest_preprocess, only : preprocess_config_t
     use fpm_manifest_package, only : package_config_t, new_package
-    use fpm_error, only : error_t, fatal_error, file_not_found_error
+    use fpm_error, only : error_t, fatal_error
     use fpm_toml, only : toml_table, read_package_file
     use fpm_manifest_test, only : test_config_t
     use fpm_filesystem, only: join_path, exists, dirname, is_dir
@@ -23,7 +24,7 @@ module fpm_manifest
 
     public :: get_package_data, default_executable, default_library, default_test
     public :: default_example
-    public :: package_config_t, dependency_config_t
+    public :: package_config_t, dependency_config_t, preprocess_config_t
 
 
 contains

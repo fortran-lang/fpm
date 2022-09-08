@@ -5,8 +5,8 @@ module fpm_filesystem
     use fpm_environment, only: get_os_type, &
                                OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                                OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
-    use fpm_environment, only: separator, get_env
-    use fpm_strings, only: f_string, replace, string_t, split, notabs
+    use fpm_environment, only: separator, get_env, os_is_unix
+    use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
     use fpm_error, only : fpm_stop
     implicit none
@@ -14,8 +14,10 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
+    public :: is_hidden_file
     public :: read_lines, read_lines_expanded
-    public :: which
+    public :: which, run, LINE_BUFFER_LEN
+    public :: os_delete_dir
 
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
@@ -95,14 +97,14 @@ function basename(path,suffix) result (base)
     end if
 
     call split(path,file_parts,delimiters='\/')
-    if(size(file_parts).gt.0)then
+    if(size(file_parts)>0)then
        base = trim(file_parts(size(file_parts)))
     else
        base = ''
     endif
     if(.not.with_suffix)then
         call split(base,file_parts,delimiters='.')
-        if(size(file_parts).ge.2)then
+        if(size(file_parts)>=2)then
            base = trim(file_parts(size(file_parts)-1))
         endif
     endif
@@ -217,7 +219,6 @@ function dirname(path) result (dir)
     character(:), allocatable :: dir
 
     dir = path(1:scan(path,'/\',back=.true.))
-    if (len_trim(dir) == 0) dir = "."
 
 end function dirname
 
@@ -250,6 +251,15 @@ logical function is_dir(dir)
 
 end function is_dir
 
+!> test if a file is hidden
+logical function is_hidden_file(file_basename) result(r)
+    character(*), intent(in) :: file_basename
+    if (len(file_basename) <= 2) then
+        r = .false.
+    else
+        r = str_begins_with_str(file_basename, '.')
+    end if
+end function is_hidden_file
 
 !> Construct path by joining strings with os file separator
 function join_path(a1,a2,a3,a4,a5) result(path)
@@ -276,7 +286,11 @@ function join_path(a1,a2,a3,a4,a5) result(path)
         has_cache = .true.
     end if
 
-    path = a1 // filesep // a2
+    if (a1 == "") then
+        path = a2
+    else
+        path = a1 // filesep // a2
+    end if
 
     if (present(a3)) then
         path = path // filesep // a3
@@ -303,11 +317,10 @@ end function join_path
 integer function number_of_rows(s) result(nrows)
     integer,intent(in)::s
     integer :: ios
-    character(len=100) :: r
     rewind(s)
     nrows = 0
     do
-        read(s, '(A)', iostat=ios) r
+        read(s, *, iostat=ios)
         if (ios /= 0) exit
         nrows = nrows + 1
     end do
@@ -349,20 +362,36 @@ function read_lines(fh) result(lines)
 end function read_lines
 
 !> Create a directory. Create subdirectories as needed
-subroutine mkdir(dir)
+subroutine mkdir(dir, echo)
     character(len=*), intent(in) :: dir
-    integer                      :: stat
+    logical, intent(in), optional :: echo
+
+    integer :: stat
+    logical :: echo_local
+
+    if(present(echo))then
+        echo_local=echo
+      else
+        echo_local=.true.
+    end if
 
     if (is_dir(dir)) return
 
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
             call execute_command_line('mkdir -p ' // dir, exitstat=stat)
-            write (*, '(" + ",2a)') 'mkdir -p ' // dir
+
+            if (echo_local) then
+                write (*, *) '+ mkdir -p ' // dir
+            end if
 
         case (OS_WINDOWS)
             call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
-            write (*, '(" + ",2a)') 'mkdir ' // windows_path(dir)
+
+            if (echo_local) then
+                write (*, *) '+ mkdir ' // windows_path(dir)
+            end if
+
     end select
 
     if (stat /= 0) then
@@ -393,7 +422,7 @@ recursive subroutine list_files(dir, files, recurse)
     type(string_t) :: files_tmp(N_MAX)
     integer(kind=c_int) :: r
 
-    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) .eq. 0) then
+    if (c_is_dir(dir(1:len_trim(dir))//c_null_char) == 0) then
         allocate (files(0))
         return
     end if
@@ -414,13 +443,13 @@ recursive subroutine list_files(dir, files, recurse)
         else
             string_fortran = f_string(c_get_d_name(dir_entry_c))
 
-            if ((string_fortran .eq. '.' .or. string_fortran .eq. '..')) then
+            if ((string_fortran == '.' .or. string_fortran == '..')) then
                 cycle
             end if
 
             i = i + 1
 
-            if (i .gt. N_MAX) then
+            if (i > N_MAX) then
                 files = [files, files_tmp]
                 i = 1
             end if
@@ -431,12 +460,12 @@ recursive subroutine list_files(dir, files, recurse)
 
     r = c_closedir(dir_handle)
 
-    if (r .ne. 0) then
+    if (r /= 0) then
         print *, 'c_closedir() failed'
         error stop
     end if
 
-    if (i .gt. 0) then
+    if (i > 0) then
         files = [files, files_tmp(1:i)]
     end if
 
@@ -446,7 +475,7 @@ recursive subroutine list_files(dir, files, recurse)
             allocate(sub_dir_files(0))
 
             do i=1,size(files)
-                if (c_is_dir(files(i)%s//c_null_char) .ne. 0) then
+                if (c_is_dir(files(i)%s//c_null_char) /= 0) then
                     call list_files(files(i)%s, dir_files, recurse=.true.)
                     sub_dir_files = [sub_dir_files, dir_files]
                 end if
@@ -688,7 +717,7 @@ character(len=256)            :: message
 
     message=' '
     ios=0
-    if(filename.ne.' ')then
+    if(filename/=' ')then
         open(file=filename, &
         & newunit=lun, &
         & form='formatted', &    ! FORM    = FORMATTED | UNFORMATTED
@@ -702,7 +731,7 @@ character(len=256)            :: message
         lun=stdout
         ios=0
     endif
-    if(ios.ne.0)then
+    if(ios/=0)then
         lun=-1
         if(present(ier))then
            ier=ios
@@ -719,9 +748,9 @@ integer,intent(in)    :: lun
 integer,intent(out),optional :: ier
 character(len=256)    :: message
 integer               :: ios
-    if(lun.ne.-1)then
+    if(lun/=-1)then
         close(unit=lun,iostat=ios,iomsg=message)
-        if(ios.ne.0)then
+        if(ios/=0)then
             if(present(ier))then
                ier=ios
             else
@@ -739,12 +768,12 @@ character(len=*),intent(in)           :: filedata(:)
 integer                               :: lun, i, ios
 character(len=256)                    :: message
     call fileopen(filename,lun)
-    if(lun.ne.-1)then ! program currently stops on error on open, but might
+    if(lun/=-1)then ! program currently stops on error on open, but might
                       ! want it to continue so -1 (unallowed LUN) indicates error
        ! write file
        do i=1,size(filedata)
            write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
-           if(ios.ne.0)then
+           if(ios/=0)then
                call fpm_stop(5,'*filewrite*:'//filename//':'//trim(message))
            endif
        enddo
@@ -801,7 +830,7 @@ character(len=*),intent(in)     :: command
 character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)
 integer                         :: i, j
    pathname=''
-   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator().eq.'\'))
+   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator()=='\'))
    SEARCH: do i=1,size(paths)
       checkon=trim(join_path(trim(paths(i)),command))
       select case(separator())
@@ -833,5 +862,105 @@ integer                         :: i, j
       end select
    enddo SEARCH
 end function which
+
+!> echo command string and pass it to the system for execution
+subroutine run(cmd,echo,exitstat,verbose,redirect)
+    character(len=*), intent(in) :: cmd
+    logical,intent(in),optional  :: echo
+    integer, intent(out),optional  :: exitstat
+    logical, intent(in), optional :: verbose
+    character(*), intent(in), optional :: redirect
+
+    logical :: echo_local, verbose_local
+    character(:), allocatable :: redirect_str
+    character(:), allocatable :: line
+    integer :: stat, fh, ios
+
+
+    if(present(echo))then
+       echo_local=echo
+    else
+       echo_local=.true.
+    end if
+
+    if(present(verbose))then
+        verbose_local=verbose
+    else
+        verbose_local=.true.
+    end if
+
+    if (present(redirect)) then
+        redirect_str =  ">"//redirect//" 2>&1"
+    else
+        if(verbose_local)then
+            ! No redirection but verbose output
+            redirect_str = ""
+        else
+            ! No redirection and non-verbose output
+            if (os_is_unix()) then
+                redirect_str = ">/dev/null 2>&1"
+            else
+                redirect_str = ">NUL 2>&1"
+            end if
+        end if
+    end if
+
+    if(echo_local) print *, '+ ', cmd
+
+    call execute_command_line(cmd//redirect_str, exitstat=stat)
+
+    if (verbose_local.and.present(redirect)) then
+
+        open(newunit=fh,file=redirect,status='old')
+        do
+            call getline(fh, line, ios)
+            if (ios /= 0) exit
+            write(*,'(A)') trim(line)
+        end do
+        close(fh)
+
+    end if
+
+    if (present(exitstat)) then
+        exitstat = stat
+    else
+        if (stat /= 0) then
+            call fpm_stop(1,'*run*:Command failed')
+        end if
+    end if
+
+end subroutine run
+
+!> Delete directory using system OS remove directory commands
+subroutine os_delete_dir(unix, dir, echo)
+    logical, intent(in) :: unix
+    character(len=*), intent(in) :: dir
+    logical, intent(in), optional :: echo
+
+    logical :: echo_local
+
+    if(present(echo))then
+        echo_local=echo
+      else
+        echo_local=.true.
+    end if
+
+    if (unix) then
+        call run('rm -rf ' // dir, .false.)
+
+        if (echo_local) then
+          write (*, *) '+ rm -rf ' // dir
+        end if
+
+    else
+        call run('rmdir /s/q ' // dir, .false.)
+
+        if (echo_local) then
+          write (*, *) '+ rmdir /s/q ' // dir
+        end if
+
+    end if
+
+end subroutine os_delete_dir
 
 end module fpm_filesystem

@@ -11,7 +11,6 @@ module fpm_environment
     private
     public :: get_os_type
     public :: os_is_unix
-    public :: run
     public :: get_env
     public :: get_command_arguments_quoted
     public :: separator
@@ -154,35 +153,8 @@ contains
         else
             build_os = get_os_type()
         end if
-        unix = os /= OS_WINDOWS
+        unix = build_os /= OS_WINDOWS
     end function os_is_unix
-
-    !> echo command string and pass it to the system for execution
-    subroutine run(cmd,echo,exitstat)
-        character(len=*), intent(in) :: cmd
-        logical,intent(in),optional  :: echo
-        integer, intent(out),optional  :: exitstat
-        logical :: echo_local
-        integer :: stat
-
-        if(present(echo))then
-           echo_local=echo
-        else
-           echo_local=.true.
-        endif
-        if(echo_local) print *, '+ ', cmd
-
-        call execute_command_line(cmd, exitstat=stat)
-
-        if (present(exitstat)) then
-            exitstat = stat
-        else
-            if (stat /= 0) then
-                call fpm_stop(1,'*run*:Command failed')
-            end if
-        end if
-
-    end subroutine run
 
     !> get named environment variable value. It it is blank or
     !! not set return the optional default value
@@ -199,7 +171,7 @@ contains
     integer                              :: length
         ! get length required to hold value
         length=0
-        if(NAME.ne.'')then
+        if(NAME/='')then
            call get_environment_variable(NAME, length=howbig,status=stat,trim_name=.true.)
            select case (stat)
            case (1)
@@ -213,12 +185,12 @@ contains
                allocate(character(len=max(howbig,1)) :: VALUE)
                ! get value
                call get_environment_variable(NAME,VALUE,status=stat,trim_name=.true.)
-               if(stat.ne.0)VALUE=''
+               if(stat/=0)VALUE=''
            end select
         else
            VALUE=''
         endif
-        if(VALUE.eq.''.and.present(DEFAULT))VALUE=DEFAULT
+        if(VALUE==''.and.present(DEFAULT))VALUE=DEFAULT
      end function get_env
 
     function get_command_arguments_quoted() result(args)
@@ -228,7 +200,7 @@ contains
     integer                      :: ilength, istatus, i
     ilength=0
     args=''
-        quote=merge('"',"'",separator().eq.'\')
+        quote=merge('"',"'",separator()=='\')
         do i=2,command_argument_count() ! look at all arguments after subcommand
             call get_command_argument(number=i,length=ilength,status=istatus)
             if(istatus /= 0) then
@@ -241,10 +213,10 @@ contains
                 if(istatus /= 0) then
                     write(stderr,'(*(g0,1x))')'<ERROR>*get_command_arguments_stack* error obtaining argument ',i
                     exit
-                elseif(ilength.gt.0)then
-                    if(index(arg//' ','-').ne.1)then
+                elseif(ilength>0)then
+                    if(index(arg//' ','-')/=1)then
                         args=args//quote//arg//quote//' '
-                    elseif(index(arg,' ').ne.0)then
+                    elseif(index(arg,' ')/=0)then
                         args=args//quote//arg//quote//' '
                     else
                         args=args//arg//' '
@@ -301,7 +273,7 @@ character(len=1)             :: sep
 character(len=4096)          :: name
 character(len=:),allocatable :: fname
 
-   !*ifort_bug*!   if(sep_cache.ne.' ')then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS
+   !*ifort_bug*!   if(sep_cache/=' ')then  ! use cached value. NOTE:  A parallel code might theoretically use multiple OS
    !*ifort_bug*!      sep=sep_cache
    !*ifort_bug*!      return
    !*ifort_bug*!   endif
@@ -313,18 +285,18 @@ character(len=:),allocatable :: fname
    allocate(character(len=arg0_length) :: arg0)
    call get_command_argument(0,arg0,status=istat)
    ! check argument name
-   if(index(arg0,'\').ne.0)then
+   if(index(arg0,'\')/=0)then
       sep='\'
-   elseif(index(arg0,'/').ne.0)then
+   elseif(index(arg0,'/')/=0)then
       sep='/'
    else
       ! try name returned by INQUIRE(3f)
       existing=.false.
       name=' '
       inquire(file=arg0,iostat=istat,exist=existing,name=name)
-      if(index(name,'\').ne.0)then
+      if(index(name,'\')/=0)then
          sep='\'
-      elseif(index(name,'/').ne.0)then
+      elseif(index(name,'/')/=0)then
          sep='/'
       else
          ! well, try some common syntax and assume in current directory
@@ -338,7 +310,7 @@ character(len=:),allocatable :: fname
             if(existing)then
                sep='/'
             else ! check environment variable PATH
-               sep=merge('\','/',index(get_env('PATH'),'\').ne.0)
+               sep=merge('\','/',index(get_env('PATH'),'\')/=0)
                !*!write(*,*)'<WARNING>unknown system directory path separator'
             endif
          endif

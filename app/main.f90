@@ -8,10 +8,11 @@ use fpm_command_line, only: &
         fpm_test_settings, &
         fpm_install_settings, &
         fpm_update_settings, &
+        fpm_clean_settings, &
         get_command_line_settings
 use fpm_error, only: error_t
 use fpm_filesystem, only: exists, parent_dir, join_path
-use fpm, only: cmd_build, cmd_run
+use fpm, only: cmd_build, cmd_run, cmd_clean
 use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
 use fpm_cmd_update, only : cmd_update
@@ -45,20 +46,24 @@ else
     pwd_working = pwd_start
 end if
 
-if (.not.has_manifest(pwd_working)) then
-    project_root = pwd_working
-    do while(.not.has_manifest(project_root))
-        working_dir = parent_dir(project_root)
-        if (len(working_dir) == 0) exit
-        project_root = working_dir
-    end do
+select type (settings => cmd_settings)
+type is (fpm_new_settings)
+class default
+    if (.not.has_manifest(pwd_working)) then
+        project_root = pwd_working
+        do while(.not.has_manifest(project_root))
+            working_dir = parent_dir(project_root)
+            if (len(working_dir) == 0) exit
+            project_root = working_dir
+        end do
 
-    if (has_manifest(project_root)) then
-        call change_directory(project_root, error)
-        call handle_error(error)
-        write(output_unit, '(*(a))') "fpm: Entering directory '"//project_root//"'"
+        if (has_manifest(project_root)) then
+            call change_directory(project_root, error)
+            call handle_error(error)
+            write(output_unit, '(*(a))') "fpm: Entering directory '"//project_root//"'"
+        end if
     end if
-end if
+end select
 
 select type(settings=>cmd_settings)
 type is (fpm_new_settings)
@@ -73,6 +78,8 @@ type is (fpm_install_settings)
     call cmd_install(settings)
 type is (fpm_update_settings)
     call cmd_update(settings)
+type is (fpm_clean_settings)
+    call cmd_clean(settings)
 end select
 
 if (allocated(project_root)) then

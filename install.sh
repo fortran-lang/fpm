@@ -42,7 +42,7 @@ done
 
 set -u # error on use of undefined variable
 
-SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v0.5.0/fpm-0.5.0.F90"
+SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v0.6.0/fpm-0.6.0.F90"
 BOOTSTRAP_DIR="build/bootstrap"
 if [ -z ${FC+x} ]; then
     FC="gfortran"
@@ -64,7 +64,10 @@ fi
 
 $FETCH $SOURCE_URL > $BOOTSTRAP_DIR/fpm.F90
 
-$FC $FFLAGS -J $BOOTSTRAP_DIR $BOOTSTRAP_DIR/fpm.F90 -o $BOOTSTRAP_DIR/fpm
+SAVEDIR="$(pwd)"
+cd $BOOTSTRAP_DIR
+$FC $FFLAGS fpm.F90 -o fpm
+cd "$SAVEDIR"
 
 $BOOTSTRAP_DIR/fpm update
 $BOOTSTRAP_DIR/fpm install --compiler "$FC" --flag "$FFLAGS" --prefix "$PREFIX"

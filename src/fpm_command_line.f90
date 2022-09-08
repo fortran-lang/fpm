@@ -23,16 +23,16 @@
 !> ``fpm-help`` and ``fpm --list`` help pages below to make sure the help output
 !> is complete and consistent as well.
 module fpm_command_line
-use fpm_environment,  only : get_os_type, get_env, &
+use fpm_environment,  only : get_os_type, get_env, os_is_unix, &
                              OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
                              OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
-use fpm_strings,      only : lower, split, fnv_1a, to_fortran_name, is_fortran_name
-use fpm_filesystem,   only : basename, canon_path, which
-use fpm_environment,  only : run, get_command_arguments_quoted
-use fpm_os,           only : get_current_directory
+use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name
+use fpm_filesystem,   only : basename, canon_path, which, run
+use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
+use fpm_os,           only : get_current_directory
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -47,6 +47,7 @@ public :: fpm_cmd_settings, &
           fpm_run_settings, &
           fpm_test_settings, &
           fpm_update_settings, &
+          fpm_clean_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
@@ -70,12 +71,15 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: list=.false.
     logical                      :: show_model=.false.
     logical                      :: build_tests=.false.
+    logical                      :: prune=.true.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: c_compiler
+    character(len=:),allocatable :: cxx_compiler
     character(len=:),allocatable :: archiver
     character(len=:),allocatable :: profile
     character(len=:),allocatable :: flag
     character(len=:),allocatable :: cflag
+    character(len=:),allocatable :: cxxflag
     character(len=:),allocatable :: ldflag
 end type
 
@@ -104,6 +108,13 @@ type, extends(fpm_cmd_settings)  :: fpm_update_settings
     logical :: clean
 end type
 
+type, extends(fpm_cmd_settings)   :: fpm_clean_settings
+    logical                       :: unix
+    character(len=:), allocatable :: calling_dir  ! directory clean called from
+    logical                       :: clean_skip=.false.
+    logical                       :: clean_call=.false.
+end type
+
 character(len=:),allocatable :: name
 character(len=:),allocatable :: os_type
 character(len=ibug),allocatable :: names(:)
@@ -113,14 +124,24 @@ character(len=:), allocatable :: version_text(:)
 character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), help_update(:), &
-                 & help_list(:), help_list_dash(:), help_list_nodash(:)
+                 & help_list(:), help_list_dash(:), help_list_nodash(:), &
+                 & help_clean(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
-&  ' ',     'fpm',     'new',   'build',  'run',     &
+&  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
-character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_ldflag, &
+character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
     val_profile
 
+!   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
+character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
+    ' --profile PROF    Selects the compilation profile for the build.               ',&
+    '                   Currently available profiles are "release" for               ',&
+    '                   high optimization and "debug" for full debug options.        ',&
+    '                   If --flag is not specified the "debug" flags are the         ',&
+    '                   default.                                                     ',&
+    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   '&
+    ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
     ' --compiler NAME    Specify a compiler name. The default is "gfortran"          ',&
@@ -174,18 +195,22 @@ contains
         character(len=4096)           :: cmdarg
         integer                       :: i
         integer                       :: widest
+        integer                       :: os
+        logical                       :: unix
         type(fpm_install_settings), allocatable :: install_settings
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, archiver
+            & c_compiler, cxx_compiler, archiver
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
-            & fflags_env = "FFLAGS", cflags_env = "CFLAGS", ldflags_env = "LDFLAGS", &
-            & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " "
+            & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
+            & fc_default = "gfortran", cc_default = " ", ar_default = " ", flags_default = " ", &
+            & cxx_env = "CXX", cxx_default = " "
         type(error_t), allocatable :: error
 
         call set_help()
+        os = get_os_type()
         ! text for --version switch,
-        select case (get_os_type())
+        select case (os)
             case (OS_LINUX);   os_type =  "OS Type:     Linux"
             case (OS_MACOS);   os_type =  "OS Type:     macOS"
             case (OS_WINDOWS); os_type =  "OS Type:     Windows"
@@ -196,8 +221,9 @@ contains
             case (OS_UNKNOWN); os_type =  "OS Type:     Unknown"
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
+        unix = os_is_unix(os)
         version_text = [character(len=80) :: &
-         &  'Version:     0.5.0, alpha',                               &
+         &  'Version:     0.6.0, alpha',                               &
          &  'Program:     fpm(1)',                                     &
          &  'Description: A Fortran package manager and build system', &
          &  'Home Page:   https://github.com/fortran-lang/fpm',        &
@@ -219,11 +245,14 @@ contains
 
         compiler_args = &
           ' --profile " "' // &
+          ' --no-prune F' // &
           ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
           ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
+          ' --cxx-compiler "'//get_fpm_env(cxx_env, cxx_default)//'"' // &
           ' --archiver "'//get_fpm_env(ar_env, ar_default)//'"' // &
           ' --flag:: "'//get_fpm_env(fflags_env, flags_default)//'"' // &
           ' --c-flag:: "'//get_fpm_env(cflags_env, flags_default)//'"' // &
+          ' --cxx-flag:: "'//get_fpm_env(cxxflags_env, flags_default)//'"' // &
           ' --link-flag:: "'//get_fpm_env(ldflags_env, flags_default)//'"'
 
         ! now set subcommand-specific help text and process commandline
@@ -238,7 +267,7 @@ contains
 
             call check_build_vals()
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -258,22 +287,26 @@ contains
             ! convert special string '..' to equivalent (shorter) '*'
             ! to allow for a string that does not require shift-key and quoting
             do i=1,size(names)
-               if(names(i).eq.'..')names(i)='*'
+               if(names(i)=='..')names(i)='*'
             enddo
 
             c_compiler = sget('c-compiler')
+            cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(fpm_run_settings :: cmd_settings)
             val_runner=sget('runner')
-            if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
+            if(specified('runner') .and. val_runner=='')val_runner='echo'
             cmd_settings=fpm_run_settings(&
             & args=remaining,&
             & profile=val_profile,&
+            & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
+            & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
+            & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
             & example=lget('example'), &
             & list=lget('list'),&
@@ -292,15 +325,19 @@ contains
             call check_build_vals()
 
             c_compiler = sget('c-compiler')
+            cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
             & profile=val_profile,&
+            & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
+            & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
+            & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
             & list=lget('list'),&
             & show_model=lget('show-model'),&
@@ -321,7 +358,7 @@ contains
             select case(size(unnamed))
             case(1)
                 if(lget('backfill'))then
-                   name='.'   
+                   name='.'
                 else
                    write(stderr,'(*(7x,g0,/))') &
                    & '<USAGE> fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|[--full|--bare] [--backfill]'
@@ -335,7 +372,7 @@ contains
                 call fpm_stop(2,'only one directory name allowed')
             end select
             !*! canon_path is not converting ".", etc.
-            if(name.eq.'.')then
+            if(name=='.')then
                call get_current_directory(name, error)
                if (allocated(error)) then
                   write(stderr, '("[Error]", 1x, a)') error%message
@@ -388,13 +425,13 @@ contains
 
         case('help','manual')
             call set_args(common_args, help_help,version_text)
-            if(size(unnamed).lt.2)then
-                if(unnamed(1).eq.'help')then
+            if(size(unnamed)<2)then
+                if(unnamed(1)=='help')then
                    unnamed=['   ', 'fpm']
                 else
                    unnamed=manual
                 endif
-            elseif(unnamed(2).eq.'manual')then
+            elseif(unnamed(2)=='manual')then
                 unnamed=manual
             endif
             widest=256
@@ -424,6 +461,8 @@ contains
                    help_text=[character(len=widest) :: help_text, help_help]
                 case('version' )
                    help_text=[character(len=widest) :: help_text, version_text]
+                case('clean' )
+                   help_text=[character(len=widest) :: help_text, help_clean]
                 case default
                    help_text=[character(len=widest) :: help_text, &
                    & '<ERROR> unknown help topic "'//trim(unnamed(i))//'"']
@@ -442,16 +481,20 @@ contains
             call check_build_vals()
 
             c_compiler = sget('c-compiler')
+            cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(install_settings)
             install_settings = fpm_install_settings(&
                 list=lget('list'), &
                 profile=val_profile,&
+                prune=.not.lget('no-prune'), &
                 compiler=val_compiler, &
                 c_compiler=c_compiler, &
+                cxx_compiler=cxx_compiler, &
                 archiver=archiver, &
                 flag=val_flag, &
                 cflag=val_cflag, &
+                cxxflag=val_cxxflag, &
                 ldflag=val_ldflag, &
                 no_rebuild=lget('no-rebuild'), &
                 verbose=lget('verbose'))
@@ -469,13 +512,14 @@ contains
             if(lget('list'))then
                call printhelp(help_list_dash)
             endif
+
         case('test')
             call set_args(common_args // compiler_args // run_args // ' --', &
               help_test,version_text)
 
             call check_build_vals()
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -489,22 +533,26 @@ contains
             ! convert special string '..' to equivalent (shorter) '*'
             ! to allow for a string that does not require shift-key and quoting
             do i=1,size(names)
-               if(names(i).eq.'..')names(i)='*'
+               if(names(i)=='..')names(i)='*'
             enddo
 
             c_compiler = sget('c-compiler')
+            cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
             allocate(fpm_test_settings :: cmd_settings)
             val_runner=sget('runner')
-            if(specified('runner') .and. val_runner.eq.'')val_runner='echo'
+            if(specified('runner') .and. val_runner=='')val_runner='echo'
             cmd_settings=fpm_test_settings(&
             & args=remaining, &
             & profile=val_profile, &
+            & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
+            & cxx_compiler=cxx_compiler, &
             & archiver=archiver, &
             & flag=val_flag, &
             & cflag=val_cflag, &
+            & cxxflag=val_cxxflag, &
             & ldflag=val_ldflag, &
             & example=.false., &
             & list=lget('list'), &
@@ -517,7 +565,7 @@ contains
             call set_args(common_args // ' --fetch-only F --clean F', &
                 help_update, version_text)
 
-            if( size(unnamed) .gt. 1 )then
+            if( size(unnamed) > 1 )then
                 names=unnamed(2:)
             else
                 names=[character(len=len(names)) :: ]
@@ -528,9 +576,22 @@ contains
                 fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
                 clean=lget('clean'))
 
+        case('clean')
+            call set_args(common_args // &
+            &   ' --skip'             // &
+            &   ' --all',                &
+                help_clean, version_text)
+            allocate(fpm_clean_settings :: cmd_settings)
+            call get_current_directory(working_dir, error)
+            cmd_settings=fpm_clean_settings( &
+            &   unix=unix,                   &
+            &   calling_dir=working_dir,     &
+            &   clean_skip=lget('skip'),     &
+                clean_call=lget('all'))
+
         case default
 
-            if(which('fpm-'//cmdarg).ne.'')then
+            if(cmdarg.ne.''.and.which('fpm-'//cmdarg).ne.'')then
                 call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted(),.false.)
             else
                 call set_args('&
@@ -541,7 +602,7 @@ contains
                 help_text=help_usage
                 if(lget('list'))then
                    help_text=help_list_dash
-                elseif(len_trim(cmdarg).eq.0)then
+                elseif(len_trim(cmdarg)==0)then
                     write(stdout,'(*(a))')'Fortran Package Manager:'
                     write(stdout,'(*(a))')' '
                     call printhelp(help_list_nodash)
@@ -566,12 +627,13 @@ contains
         character(len=:), allocatable :: flags
 
         val_compiler=sget('compiler')
-        if(val_compiler.eq.'') then
+        if(val_compiler=='') then
             val_compiler='gfortran'
         endif
 
         val_flag = " " // sget('flag')
         val_cflag = " " // sget('c-flag')
+        val_cxxflag = " "// sget('cxx-flag')
         val_ldflag = " " // sget('link-flag')
         val_profile = sget('profile')
 
@@ -582,7 +644,7 @@ contains
     integer :: iii,ii
         if(allocated(lines))then
            ii=size(lines)
-           if(ii .gt. 0 .and. len(lines).gt. 0) then
+           if(ii > 0 .and. len(lines)> 0) then
                write(stdout,'(g0)')(trim(lines(iii)), iii=1, ii)
            else
                write(stdout,'(a)')'<WARNING> *printhelp* output requested is empty'
@@ -607,6 +669,7 @@ contains
    '  test      Run the test programs                                       ', &
    '  update    Update and manage project dependencies                      ', &
    '  install   Install project                                             ', &
+   '  clean     Delete the build                                            ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
@@ -614,7 +677,7 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests]                                                                ', &
+   '       [--tests] [--no-prune]                                                   ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
@@ -626,6 +689,7 @@ contains
    '      [--list] [--compiler COMPILER_NAME] [-- ARGS]                             ', &
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
+   ' clean [--skip] [--all]                                                         ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -722,43 +786,47 @@ contains
     '  + build    Compile the packages into the "build/" directory.         ', &
     '  + new      Create a new Fortran package directory with sample files. ', &
     '  + update   Update the project dependencies.                          ', &
-    '  + run      Run the local package binaries. defaults to all binaries  ', &
+    '  + run      Run the local package binaries. Defaults to all binaries  ', &
     '             for that release.                                         ', &
     '  + test     Run the tests.                                            ', &
     '  + help     Alternate to the --help switch for displaying help text.  ', &
     '  + list     Display brief descriptions of all subcommands.            ', &
-    '  + install  Install project                                           ', &
+    '  + install  Install project.                                          ', &
+    '  + clean    Delete directories in the "build/" directory, except      ', &
+    '             dependencies. Prompts for confirmation to delete.         ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests]                                                             ', &
+    '          [--tests] [--no-prune]                                                ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
     '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
-    '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]       ', &
+    '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME]                 ', &
+    '        [--no-prune] [-- ARGS]                                                  ', &
     '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]         ', &
-    '         [--runner "CMD"] [--compiler COMPILER_NAME] [-- ARGS]                  ', &
+    '         [--runner "CMD"] [--compiler COMPILER_NAME] [--no-prune] [-- ARGS]     ', &
     '    help [NAME(s)]                                                              ', &
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
-    '    [options]                                                                   ', &
+    '            [options]                                                           ', &
+    '    clean [--skip] [--all]                                                       ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
     '             Change working directory to PATH before running any command', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common, &
     help_text_compiler, &
     help_text_flag, &
     '  --list     List candidates instead of building or running them. On   ', &
     '             the fpm(1) command this shows a brief list of subcommands.', &
     '  --runner CMD   Provides a command to prefix program execution paths. ', &
     '  -- ARGS    Arguments to pass to executables.                         ', &
+    '  --skip     Delete directories in the build/ directory without        ', &
+    '             prompting, but skip dependencies.                         ', &
+    '  --all      Delete directories in the build/ directory without        ', &
+    '             prompting, including dependencies.                        ', &
     '                                                                       ', &
     'VALID FOR ALL SUBCOMMANDS                                              ', &
     '  --help     Show help text and exit                                   ', &
@@ -788,8 +856,8 @@ contains
     '     # my build options                                                ', &
     '     options build                                                     ', &
     '     options --compiler gfortran                                       ', &
-    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused \', &
-    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring \', &
+    '     options --flag "-pg -static -pthread -Wunreachable-code -Wunused  ', &
+    '      -Wuninitialized -g -O -fbacktrace -fdump-core -fno-underscoring  ', &
     '      -frecord-marker=4 -L/usr/X11R6/lib -L/usr/X11R6/lib64 -lX11"     ', &
     '                                                                       ', &
     '   Note --flag would have to be on one line as response files do not   ', &
@@ -809,6 +877,7 @@ contains
     '    fpm new --help                                                     ', &
     '    fpm run myprogram --profile release -- -x 10 -y 20 --title "my title"       ', &
     '    fpm install --prefix ~/.local                                               ', &
+    '    fpm clean --all                                                             ', &
     '                                                                                ', &
     'SEE ALSO                                                                        ', &
     '                                                                                ', &
@@ -870,11 +939,7 @@ contains
     '                   the special characters from shell expansion.        ', &
     ' --all   Run all examples or applications. An alias for --target ''*''.  ', &
     ' --example  Run example programs instead of applications.              ', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common, &
     help_text_compiler, &
     help_text_flag, &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
@@ -941,11 +1006,7 @@ contains
     ' specified in the "fpm.toml" file.                                     ', &
     '                                                                       ', &
     'OPTIONS                                                                ', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common,&
     help_text_compiler, &
     help_text_flag, &
     ' --list        list candidates instead of building or running them     ', &
@@ -998,8 +1059,8 @@ contains
     'NAME                                                                   ', &
     ' new(1) - the fpm(1) subcommand to initialize a new project            ', &
     'SYNOPSIS                                                               ', &
-   '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|            ', &
-   '      [--full|--bare][--backfill]                                       ', &
+    '  fpm new NAME [[--lib|--src] [--app] [--test] [--example]]|           ', &
+    '      [--full|--bare][--backfill]                                      ', &
     ' fpm new --help|--version                                              ', &
     '                                                                       ', &
     'DESCRIPTION                                                            ', &
@@ -1118,11 +1179,7 @@ contains
     '                   any single character and "*" represents any string. ', &
     '                   Note The glob string normally needs quoted to       ', &
     '                   protect the special characters from shell expansion.', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common,&
     help_text_compiler, &
     help_text_flag, &
     ' --runner CMD  A command to prefix the program execution paths with.   ', &
@@ -1187,11 +1244,7 @@ contains
     'OPTIONS', &
     ' --list            list all installable targets for this project,', &
     '                   but do not install any of them', &
-    ' --profile PROF    selects the compilation profile for the build.',&
-    '                   Currently available profiles are "release" for',&
-    '                   high optimization and "debug" for full debug options.',&
-    '                   If --flag is not specified the "debug" flags are the',&
-    '                   default. ',&
+    help_text_build_common,&
     help_text_flag, &
     ' --no-rebuild      do not rebuild project before installation', &
     ' --prefix DIR      path to installation directory (requires write access),', &
@@ -1219,7 +1272,22 @@ contains
     '', &
     '    fpm install --prefix $PWD --bindir exe', &
     '' ]
-    end subroutine set_help
+    help_clean=[character(len=80) :: &
+    'NAME', &
+    ' clean(1) - delete the build', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm clean', &
+    '', &
+    'DESCRIPTION', &
+    ' Prompts the user to confirm deletion of the build. If affirmative,', &
+    ' directories in the build/ directory are deleted, except dependencies.', &
+    '', &
+    'OPTIONS', &
+    ' --skip           delete the build without prompting but skip dependencies.', &
+    ' --all            delete the build without prompting including dependencies.', &
+    '' ]
+     end subroutine set_help
 
     subroutine get_char_arg(var, arg)
       character(len=:), allocatable, intent(out) :: var

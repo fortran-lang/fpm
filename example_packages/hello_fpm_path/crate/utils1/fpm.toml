@@ -1,0 +1,4 @@
+name = "utils1"
+
+[dependencies]
+utils1_1 = { path = "../utils1_1" }

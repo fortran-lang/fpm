@@ -1,9 +1,9 @@
 program new_test
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
 use fpm_filesystem,  only : is_dir, list_files, exists, windows_path, join_path, &
-  dirname
+  dirname, run
 use fpm_strings,     only : string_t, operator(.in.)
-use fpm_environment, only : run, get_os_type
+use fpm_environment, only : get_os_type
 use fpm_environment, only : OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, OS_WINDOWS
 implicit none
 type(string_t), allocatable    :: file_names(:)
@@ -13,22 +13,22 @@ character(len=:),allocatable   :: path
 character(len=*),parameter     :: scr = 'fpm_scratch_'
 character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 ! run a variety of "fpm new" variations and verify expected files are generated
-' new', &
-' new name-with-hyphens', &
-' new '//scr//'A', &
-' new '//scr//'B --lib', &
-' new '//scr//'C --app', &
-' new '//scr//'D --test', &
-' new '//scr//'E --lib --test ', &
-' new '//scr//'F --lib --app', &
-' new '//scr//'G --test --app', &
-' new '//scr//'H --example', &
-' new '//scr//'BB --lib', &
-' new '//scr//'BB --test ', &
-' new '//scr//'BB --backfill --test', &
-' new '//scr//'CC --test --src --app', &
-' new --version', &
-' new --help']
+'new', &
+'new name-with-hyphens', &
+'new '//scr//'A', &
+'new '//scr//'B --lib', &
+'new '//scr//'C --app', &
+'new '//scr//'D --test', &
+'new '//scr//'E --lib --test ', &
+'new '//scr//'F --lib --app', &
+'new '//scr//'G --test --app', &
+'new '//scr//'H --example', &
+'new '//scr//'BB --lib', &
+'new '//scr//'BB --test ', &
+'new '//scr//'BB --backfill --test', &
+'new '//scr//'CC --test --src --app', &
+'new --version', &
+'new --help']
 integer :: estat, cstat
 character(len=256)            :: message
 character(len=:),allocatable  :: directories(:)
@@ -57,7 +57,10 @@ character(len=:),allocatable  :: rm_command
     case (OS_WINDOWS)
        path=windows_path(cmdpath)
        is_os_windows=.true.
-       call execute_command_line('rmdir fpm_scratch_* /s /q',exitstat=estat,cmdstat=cstat,cmdmsg=message)
+       do i=1,size(directories)
+          call execute_command_line('rmdir /s /q fpm_scratch_'//trim(shortdirs(i)),exitstat=estat,&
+             cmdstat=cstat,cmdmsg=message)
+       end do
     case default
        write(*,*)'ERROR: unknown OS. Stopping test'
        stop 2
@@ -123,7 +126,7 @@ character(len=:),allocatable  :: rm_command
          !! Warning: This only looks for expected files. If there are more files than expected it does not fail
          call list_files(trim(directories(i)), file_names,recurse=.true.)
 
-         if(size(expected).ne.size(file_names))then
+         if(size(expected)/=size(file_names))then
             write(*,*)'WARNING: unexpected number of files in file list=',size(file_names),' expected ',size(expected)
             write(*,'("EXPECTED: ",*(g0:,","))')(scr//trim(expected(j)),j=1,size(expected))
             write(*,'("FOUND:    ",*(g0:,","))')(trim(file_names(j)%s),j=1,size(file_names))
@@ -150,7 +153,12 @@ character(len=:),allocatable  :: rm_command
    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
       rm_command = 'rm -rf ' // dirs_to_be_removed
    case (OS_WINDOWS)
-      rm_command = 'rmdir ' // dirs_to_be_removed // ' /s /q'
+      do i=1,size(directories)
+         rm_command = 'rmdir /s /q fpm_scratch_'//trim(shortdirs(i))
+         call execute_command_line('rmdir /s /q fpm_scratch_'//trim(shortdirs(i)),exitstat=estat,&
+            cmdstat=cstat,cmdmsg=message)
+      end do
+      rm_command = 'rmdir /s /q name-with-hyphens'
    end select
    call execute_command_line(rm_command, exitstat=estat,cmdstat=cstat,cmdmsg=message)
 

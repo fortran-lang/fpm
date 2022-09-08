@@ -1,0 +1,15 @@
+# See https://github.com/fortran-lang/fpm/issues/734
+name = "fpm-test"
+
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+
+[install]
+library = false
+
+[[executable]]
+name = "main"
+source-dir = "src"
+main = "main.f90"
