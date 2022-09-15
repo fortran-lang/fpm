@@ -8,7 +8,7 @@ copyright = "2020 fpm contributors"
 [dependencies]
 [dependencies.toml-f]
 git = "https://github.com/toml-f/toml-f"
-rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3"
+rev = "e49f5523e4ee67db6628618864504448fb8c8939"
 
 [dependencies.M_CLI2]
 git = "https://github.com/urbanjost/M_CLI2.git"
