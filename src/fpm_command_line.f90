@@ -483,8 +483,7 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
-            allocate(install_settings)
-            install_settings = fpm_install_settings(&
+            allocate(install_settings, source=fpm_install_settings(&
                 list=lget('list'), &
                 profile=val_profile,&
                 prune=.not.lget('no-prune'), &
@@ -497,7 +496,7 @@ contains
                 cxxflag=val_cxxflag, &
                 ldflag=val_ldflag, &
                 no_rebuild=lget('no-rebuild'), &
-                verbose=lget('verbose'))
+                verbose=lget('verbose')))
             call get_char_arg(install_settings%prefix, 'prefix')
             call get_char_arg(install_settings%libdir, 'libdir')
             call get_char_arg(install_settings%bindir, 'bindir')
