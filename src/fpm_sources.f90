@@ -65,13 +65,16 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
 
     integer :: i
     logical, allocatable :: is_source(:), exclude_source(:)
+    logical :: recurse_
     type(string_t), allocatable :: file_names(:)
     type(string_t), allocatable :: src_file_names(:)
     type(string_t), allocatable :: existing_src_files(:)
     type(srcfile_t), allocatable :: dir_sources(:)
 
+    recurse_ = .true.
+    if (present(recurse)) recurse_ = recurse
     ! Scan directory for sources
-    call list_files(directory, file_names,recurse=merge(recurse,.true.,present(recurse)))
+    call list_files(directory, file_names,recurse=recurse_)
 
     if (allocated(sources)) then
         allocate(existing_src_files(size(sources)))
