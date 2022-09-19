@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.8% of total for procedures.">263 statements</a>
+    title=" 5.8% of total for procedures.">262 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm_command_line.f90"> Source File</a></li>
   </ul>
@@ -465,8 +465,7 @@
 <span class="w">            </span><span class="n">c_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;c-compiler&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">cxx_compiler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;cxx-compiler&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="n">archiver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sget</span><span class="p">(</span><span class="s1">&#39;archiver&#39;</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">install_settings</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="n">install_settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fpm_install_settings</span><span class="p">(&amp;</span><span class="w"></span>
+<span class="w">            </span><span class="k">allocate</span><span class="p">(</span><span class="n">install_settings</span><span class="p">,</span><span class="w"> </span><span class="n">source</span><span class="o">=</span><span class="n">fpm_install_settings</span><span class="p">(&amp;</span><span class="w"></span>
 <span class="w">                </span><span class="n">list</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">                </span><span class="n">profile</span><span class="o">=</span><span class="n">val_profile</span><span class="p">,&amp;</span><span class="w"></span>
 <span class="w">                </span><span class="n">prune</span><span class="o">=</span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;no-prune&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
@@ -479,7 +478,7 @@
 <span class="w">                </span><span class="n">cxxflag</span><span class="o">=</span><span class="n">val_cxxflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">                </span><span class="n">ldflag</span><span class="o">=</span><span class="n">val_ldflag</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">                </span><span class="n">no_rebuild</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;no-rebuild&#39;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">                </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">))</span><span class="w"></span>
+<span class="w">                </span><span class="n">verbose</span><span class="o">=</span><span class="n">lget</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">)))</span><span class="w"></span>
 <span class="w">            </span><span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">prefix</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;prefix&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">libdir</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;libdir&#39;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">call </span><span class="n">get_char_arg</span><span class="p">(</span><span class="n">install_settings</span><span class="p">%</span><span class="n">bindir</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;bindir&#39;</span><span class="p">)</span><span class="w"></span>
@@ -655,7 +654,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-09-16 14:48            </p>
+ on 2022-09-19 07:16            </p>
         </div>
       </div>
       <br>

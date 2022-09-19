@@ -176,7 +176,7 @@ character(*), parameter :: &
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
     flag_nag_pic = " -PIC", &
-    flag_nag_check = " -C=all", &
+    flag_nag_check = " -C", &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
     flag_nag_backtrace = " -gline"
