@@ -73,6 +73,7 @@ integer,parameter            :: tfc = selected_char_kind('DEFAULT')
 character(len=:,kind=tfc),allocatable :: bname          ! baeename of NAME
 character(len=:,kind=tfc),allocatable :: tomlfile(:)
 character(len=:,kind=tfc),allocatable :: littlefile(:)
+character(len=:,kind=tfc),allocatable :: gitignorefile(:)
 
     !> TOP DIRECTORY NAME PROCESSING
     !> see if requested new directory already exists and process appropriately
@@ -100,9 +101,14 @@ character(len=:,kind=tfc),allocatable :: littlefile(:)
     bname=basename(settings%name)
 
     littlefile=[character(len=80) :: '# '//bname, 'My cool new project!']
-
+    
     ! create NAME/README.md
     call warnwrite(join_path(settings%name, 'README.md'), littlefile)
+    
+    gitignorefile=[character(len=5) :: 'build']
+
+    ! create NAME/.gitignore
+    call warnwrite(join_path(settings%name, '.gitignore'), gitignorefile)
 
     ! start building NAME/fpm.toml
     if(settings%with_full)then

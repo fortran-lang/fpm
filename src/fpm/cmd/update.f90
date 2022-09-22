@@ -2,7 +2,7 @@ module fpm_cmd_update
   use fpm_command_line, only : fpm_update_settings
   use fpm_dependency, only : dependency_tree_t, new_dependency_tree
   use fpm_error, only : error_t, fpm_stop
-  use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite
+  use fpm_filesystem, only : exists, mkdir, join_path, delete_file
   use fpm_manifest, only : package_config_t, get_package_data
   implicit none
   private
@@ -26,7 +26,6 @@ contains
 
     if (.not.exists("build")) then
       call mkdir("build")
-      call filewrite(join_path("build", ".gitignore"),["*"])
     end if
 
     cache = join_path("build", "cache.toml")
