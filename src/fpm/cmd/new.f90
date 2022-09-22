@@ -101,7 +101,7 @@ character(len=:,kind=tfc),allocatable :: gitignorefile(:)
     bname=basename(settings%name)
 
     littlefile=[character(len=80) :: '# '//bname, 'My cool new project!']
-    
+
     ! create NAME/README.md
     call warnwrite(join_path(settings%name, 'README.md'), littlefile)
     
