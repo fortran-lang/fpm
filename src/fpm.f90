@@ -115,7 +115,7 @@ subroutine build_model(model, settings, package, error)
             
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
-                    if (package%preprocess(j)%name == "cpp") then
+                    if (package%preprocess(j)%name == "cpp" .and. allocated(dependency%preprocess(j)%macros)) then
                         model%packages(i)%macros = dependency%preprocess(j)%macros
                     end if
                 end do
