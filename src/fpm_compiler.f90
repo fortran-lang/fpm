@@ -150,6 +150,9 @@ character(*), parameter :: &
     flag_pgi_warn = " -Minform=inform"
 
 character(*), parameter :: &
+    flag_ibmxl_backslash = " -qnoescape"
+
+character(*), parameter :: &
     flag_intel_backtrace = " -traceback", &
     flag_intel_warn = " -warn all", &
     flag_intel_check = " -check all", &
@@ -234,6 +237,10 @@ subroutine get_release_compile_flags(id, flags)
     case(id_nvhpc)
         flags = &
             flag_pgi_backslash
+
+    case(id_ibmxl)
+        flags = &
+            flag_ibmxl_backslash
 
     case(id_intel_classic_nix)
         flags = &
@@ -332,6 +339,9 @@ subroutine get_debug_compile_flags(id, flags)
             flag_pgi_backslash//&
             flag_pgi_check//&
             flag_pgi_traceback
+    case(id_ibmxl)
+        flags = &
+            flag_ibmxl_backslash
     case(id_intel_classic_nix)
         flags = &
             flag_intel_warn//&
