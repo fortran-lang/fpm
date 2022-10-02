@@ -30,7 +30,7 @@ use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize
-use fpm_compiler, only: get_macros
+use fpm_compiler, only: get_macros, get_version_macros
 implicit none
 
 private
@@ -803,6 +803,9 @@ subroutine resolve_target_linking(targets, model)
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
                                                             target%macros, &
                                                             target%version)
+
+            !> Get Version Macro flags.
+            target%compile_flags = target%compile_flags // get_version_macros(model%compiler%id, target%version)
  
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags

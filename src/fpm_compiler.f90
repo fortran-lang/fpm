@@ -44,7 +44,7 @@ use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_wi
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t
 implicit none
-public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
+public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros, get_version_macros
 public :: debug
 
 enum, bind(C)
@@ -431,6 +431,48 @@ subroutine set_preprocessor_flags (id, flags, package)
     end do
 
 end subroutine set_preprocessor_flags
+
+!> Extracts the PROJECT_VERSION_MAJOR, PROJECT_VERSION_MINOR & PROJECT_VERSION_PATCH macros.
+function get_version_macros(id, version) result(version_macros)
+    !> Compiler id.
+    integer(compiler_enum), intent(in) :: id
+
+    !> Version number of the target.
+    character(len=:), allocatable, intent(in) :: version
+
+    character(len=:), allocatable :: version_macros
+    character(len=:), allocatable :: macro_definition_symbol
+    character(:), allocatable :: version_parts(:)
+    integer :: i
+
+    !> Set macro defintion symbol on the basis of compiler used
+    select case(id)
+    case default
+        macro_definition_symbol = "-D"
+    case (id_intel_classic_windows, id_intel_llvm_windows)
+        macro_definition_symbol = "/D"
+    end select
+
+    !> Check if version macros are not allocated.
+    if (.not.allocated(version_macros)) then
+        version_macros = " "
+    end if
+
+
+    !> Extract the Major, Minor & Patch number from Version Number.
+    call split(version, version_parts, delimiters='.')
+
+    do i = 1, size(version_parts)
+        if (i == 1) then
+            version_macros = version_macros//macro_definition_symbol//'PROJECT_VERSION_MAJOR'//'='//version_parts(i)
+        else if (i == 2) then
+            version_macros = version_macros//' '//macro_definition_symbol//'PROJECT_VERSION_MINOR'//'='//version_parts(i)
+        else if (i == 3) then
+            version_macros = version_macros//' '//macro_definition_symbol//'PROJECT_VERSION_PATCH'//'='//version_parts(i)
+        end if
+    end do
+    
+end function get_version_macros
 
 !> This function will parse and read the macros list and 
 !> return them as defined flags.
