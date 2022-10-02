@@ -1,0 +1,5 @@
+name = "version_test"
+version = "0.1.2"
+
+[preprocess]
+[preprocess.cpp]
