@@ -1,4 +1,8 @@
-# Fortran Package Manager
+<p align="center">
+    <a href="https://fpm.fortran-lang.org/"><img src="https://raw.githubusercontent.com/fortran-lang/assets/main/fpm/logo/2-color-alt/png/full-color-alt.png" width="800"/></a>
+</p>
+
+# [Fortran Package Manager](https://fpm.fortran-lang.org/)
 
 Fortran Package Manager (fpm) is a package manager and build system for Fortran.
 Its key goal is to improve the user experience of Fortran programmers.
@@ -27,32 +31,26 @@ Fortran Package Manager is not to be confused with
 [Jordan Sissel's fpm](https://github.com/jordansissel/fpm), a more general,
 non-Fortran related package manager.
 
-## Getting started
+**Website: <https://fpm.fortran-lang.org/>**
 
-### Setting up fpm
+## [Download](https://fpm.fortran-lang.org/en/how-to/installation.html)
 
-#### Binary download
+Fpm is available on many platforms and through multiple package managers, see our Documentation
+webpage for a list of **[All Supported Installations](https://fpm.fortran-lang.org/en/how-to/installation.html)**.
 
-Binaries for the latest stable release are available [to download](https://github.com/fortran-lang/fpm/releases/latest) for Windows, MacOS, and Linux.
+The easiest installation routes are shown below.
 
-__Note:__ On Linux and MacOS, you will need to enable executable permission before you can use the binary.
+### [Conda]
 
-_e.g._ `$ chmod u+x fpm-0.6.0-linux-x86_64`
+Fpm is available on [conda-forge], to add `conda-forge` to your channels use:
 
-The binaries at the [current tag](https://github.com/fortran-lang/fpm/releases/tag/current) are updated automatically to always provide the current git version from the default branch.
-
-
-#### [Conda]
-
-Fpm is available on [conda-forge], to add conda-forge to your channels use:
-
-```
+```sh
 conda config --add channels conda-forge
 ```
 
 Fpm can be installed with:
 
-```
+```sh
 conda create -n fpm fpm
 conda activate fpm
 ```
@@ -63,51 +61,12 @@ or from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 [Conda]: https://conda.io
 [conda-forge]: https://conda-forge.org/
 
-
-#### [MSYS2]
-
-Fpm is available as MinGW package in the MSYS2 package manager,
-which supports parallelization of the target compilation.
-To install fpm with pacman use
-
-```
-pacman -S mingw-w64-x86_64-fpm
-```
-
-Afterwards fpm will be available for usage.
-Currently `i686`, `x86_64` and `ucrt-x86_64` are supported MinGW architectures for fpm.
-For more details check the package information [here](https://packages.msys2.org/base/mingw-w64-fpm).
-
-[MSYS2]: https://www.msys2.org/
-
-
-#### [Spack]
-
-Fpm is available with spack in its develop version.
-To install fpm from spack use
-
-```
-spack install fpm
-```
-
-You can add `+openmp` to enable parallelization of the target compilation in fpm.
-To use fpm in your environment load it with
-
-```
-spack load fpm
-```
-
-For more details check the package information [here](https://spack.readthedocs.io/en/latest/package_list.html#fpm).
-
-[Spack]: https://spack.io
-
-
-#### Homebrew
+### [Homebrew](https://brew.sh/)
 
 The Fortran Package Manager (fpm) is available for the [Homebrew](https://brew.sh/) package manager via an additional tap.
 To install fpm via brew, include the new tap and install using
 
-```
+```sh
 brew tap fortran-lang/fortran
 brew install fpm
 ```
@@ -117,15 +76,11 @@ Binary distributions are available for MacOS 11 (Catalina) and 12 (Big Sur) for 
 Fpm should be available and functional after those steps.
 For more details checkout the tap [here](https://github.com/fortran-lang/homebrew-fortran).
 
-#### Github Actions
+## [Get started](https://fpm.fortran-lang.org/en/tutorial/index.html)
 
-To setup *fpm* within Github actions for automated testing, you can use the [fortran-lang/setup-fpm](https://github.com/marketplace/actions/setup-fpm) action.
+**Follow our [Quickstart Tutorial](https://fpm.fortran-lang.org/en/tutorial/hello-fpm.html) to get familiar with fpm**.
 
-#### Bootstrapping on other platforms
-
-For other platforms and architectures have a look at the [bootstrapping instructions](#bootstrapping-instructions).
-
-### Creating a new project
+### Start a new project
 
 Creating a new *fpm* project is as simple as running the command
 `fpm new project_name`. This will create a new folder in your current directory
@@ -153,9 +108,9 @@ arguments can also be passed to the executable(s) or test(s) with the option
 `-- some arguments`.
 
 See additional instructions in the [Packaging guide](PACKAGING.md) or
-the [manifest reference](manifest-reference.md).
+the [manifest reference](https://fpm.fortran-lang.org/en/spec/manifest.html).
 
-
+<!-- 
 ### Bootstrapping instructions
 
 This guide explains the process of building *fpm* on a platform for the first time.
@@ -164,7 +119,7 @@ at each release.
 
 To build manually using the single source distribution, run the following code (from within the current directory)
 
-```
+```sh
 mkdir _tmp
 curl -LJ https://github.com/fortran-lang/fpm/releases/download/current/fpm.F90 > _tmp/fpm.F90
 gfortran -J _tmp _tmp/fpm.F90 -o _tmp/fpm
@@ -174,9 +129,11 @@ rm -r _tmp
 
 To automatically bootstrap using this appoach run the install script
 
-```
+```sh
 ./install.sh
-```
+``` -->
+
+## Environmental variables
 
 The table below lists the environment variables that control `fpm`'s choice of compilers, 
 compiler flags, archiver locations, and link flags, each of which can be overridden by 
