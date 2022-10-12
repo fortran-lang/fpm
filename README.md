@@ -40,6 +40,16 @@ webpage for a list of **[All Supported Installations](https://fpm.fortran-lang.o
 
 The easiest installation routes are shown below.
 
+### [Binary](https://github.com/fortran-lang/fpm/releases)
+
+Binaries for the latest stable release are available [to download](https://github.com/fortran-lang/fpm/releases/latest) for Windows, MacOS, and Linux.
+
+**Note:** On Linux and MacOS, you will need to enable executable permission before you can use the binary.
+
+_e.g._ `$ chmod u+x fpm-0.6.0-linux-x86_64`
+
+The binaries at the [current tag](https://github.com/fortran-lang/fpm/releases/tag/current) are updated automatically to always provide the current git version from the default branch.
+
 ### [Conda]
 
 Fpm is available on [conda-forge], to add `conda-forge` to your channels use:
