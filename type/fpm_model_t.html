@@ -115,6 +115,27 @@
   <h3>Contents</h3>
  
 <div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-archiver">archiver</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-build_prefix">build_prefix</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-c_compile_flags">c_compile_flags</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-compiler">compiler</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-cxx_compile_flags">cxx_compile_flags</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-deps">deps</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-external_modules">external_modules</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compile_flags">fortran_compile_flags</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_dirs">include_dirs</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_tests">include_tests</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_flags~2">link_flags</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries~3">link_libraries</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-package_name~2">package_name</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-packages">packages</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
     <a class="list-group-item" href="../type/fpm_model_t.html#src">fpm_model_t</a>
@@ -135,6 +156,27 @@
       <h3>Contents</h3>
  
 <div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-archiver">archiver</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-build_prefix">build_prefix</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-c_compile_flags">c_compile_flags</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-compiler">compiler</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-cxx_compile_flags">cxx_compile_flags</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-deps">deps</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-external_modules">external_modules</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compile_flags">fortran_compile_flags</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_dirs">include_dirs</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_tests">include_tests</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_flags~2">link_flags</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries~3">link_libraries</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-package_name~2">package_name</a>
+      <a class="list-group-item" href="../type/fpm_model_t.html#variable-packages">packages</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
     <a class="list-group-item" href="../type/fpm_model_t.html#src">fpm_model_t</a>
@@ -144,6 +186,86 @@
     </section>
     <br class="visible-xs visible-sm hidden-md">
 
+    <section>
+    <h2>Components</h2>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-archiver"></span>type(<a href='../type/archiver_t.html'>archiver_t</a>),</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>archiver</strong></td><td></td><td></td><td><p>Archiver object</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-build_prefix"></span>character,</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>build_prefix</strong></td><td></td><td></td><td><p>Base directory for build</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-c_compile_flags"></span>character,</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>c_compile_flags</strong></td><td></td><td></td><td><p>Command line flags passed to C for compilation</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-compiler"></span>type(<a href='../type/compiler_t.html'>compiler_t</a>),</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>compiler</strong></td><td></td><td></td><td><p>Compiler object</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxx_compile_flags"></span>character,</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx_compile_flags</strong></td><td></td><td></td><td><p>Command line flags passed to C++ for compilation</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-deps"></span>type(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>deps</strong></td><td></td><td></td><td><p>Project dependencies</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-external_modules"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>external_modules</strong>(:)</td><td></td><td></td><td><p>External modules used</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-fortran_compile_flags"></span>character,</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>fortran_compile_flags</strong></td><td></td><td></td><td><p>Command line flags passed to fortran for compilation</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-include_dirs"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>include_dirs</strong>(:)</td><td></td><td></td><td><p>Include directories</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-include_tests"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>include_tests</strong></td><td> =</td><td>.true.</td><td><p>Whether tests should be added to the build list</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-link_flags~2"></span>character,</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>link_flags</strong></td><td></td><td></td><td><p>Command line flags passed to the linker</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-link_libraries~3"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-package_name~2"></span>character,</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>package_name</strong></td><td></td><td></td><td><p>Name of root package</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-packages"></span>type(package_t),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>packages</strong>(:)</td><td></td><td></td><td><p>Array of packages (including the root package)</p></td>
+</tr>
+</tbody>
+</table>
+
+    </section>
+    <br>
     
     
     
@@ -214,7 +336,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-09-30 08:57            </p>
+ on 2022-10-13 11:38            </p>
         </div>
       </div>
       <br>

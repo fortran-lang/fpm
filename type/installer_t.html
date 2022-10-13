@@ -115,6 +115,22 @@
   <h3>Contents</h3>
  
 <div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../type/installer_t.html#variable-bindir">bindir</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-copy">copy</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-includedir">includedir</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-libdir">libdir</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-move">move</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-os">os</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-prefix">prefix</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-unit">unit</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-verbosity">verbosity</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#boundprocs-0">Type-Bound Procedures</a></h3></div>
   <div id="boundprocs-0" class="panel-collapse collapse">
     <div class="list-group">
@@ -147,6 +163,22 @@
       <h3>Contents</h3>
  
 <div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../type/installer_t.html#variable-bindir">bindir</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-copy">copy</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-includedir">includedir</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-libdir">libdir</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-move">move</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-os">os</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-prefix">prefix</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-unit">unit</a>
+      <a class="list-group-item" href="../type/installer_t.html#variable-verbosity">verbosity</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#boundprocs-1">Type-Bound Procedures</a></h3></div>
   <div id="boundprocs-1" class="panel-collapse collapse">
     <div class="list-group">
@@ -169,6 +201,61 @@
     </section>
     <br class="visible-xs visible-sm hidden-md">
 
+    <section>
+    <h2>Components</h2>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-bindir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>bindir</strong></td><td></td><td></td><td><p>Binary dir relative to the installation prefix</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-copy"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>copy</strong></td><td></td><td></td><td><p>Command to copy objects into the installation prefix</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-includedir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>includedir</strong></td><td></td><td></td><td><p>Include directory relative to the installation prefix</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-libdir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>libdir</strong></td><td></td><td></td><td><p>Library directory relative to the installation prefix</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-move"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>move</strong></td><td></td><td></td><td><p>Command to move objects into the installation prefix</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-os"></span>integer,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>os</strong></td><td></td><td></td><td><p>Cached operating system</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-prefix"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>prefix</strong></td><td></td><td></td><td><p>Path to installation directory</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-unit"></span>integer,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>unit</strong></td><td> =</td><td>output_unit</td><td><p>Output unit for informative printout</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbosity"></span>integer,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbosity</strong></td><td> =</td><td>1</td><td><p>Verbosity of the installer</p></td>
+</tr>
+</tbody>
+</table>
+
+    </section>
+    <br>
     
     
     
@@ -183,9 +270,14 @@
   </div>
   <ul class="list-group">
       <li class="list-group-item">
-          <h3>private subroutine install(self, source, destination, error)</h3><p>Install a generic file into a subdirectory in the installation prefix</p>
-    
-<h4>Arguments</h4>      <table class="table table-striped varlist">
+                <h3>
+        private subroutine install(self, source, destination, error)</h3>
+    <p>Install a generic file into a subdirectory in the installation prefix</p>
+
+    <h4>
+    Arguments
+    </h4>
+      <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
@@ -228,9 +320,14 @@
   </div>
   <ul class="list-group">
       <li class="list-group-item">
-          <h3>private subroutine install_executable(self, executable, error)</h3><p>Install an executable in its correct subdirectory</p>
-    
-<h4>Arguments</h4>      <table class="table table-striped varlist">
+                <h3>
+        private subroutine install_executable(self, executable, error)</h3>
+    <p>Install an executable in its correct subdirectory</p>
+
+    <h4>
+    Arguments
+    </h4>
+      <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
@@ -267,9 +364,14 @@
   </div>
   <ul class="list-group">
       <li class="list-group-item">
-          <h3>private subroutine install_header(self, header, error)</h3><p>Install a header/module in its correct subdirectory</p>
-    
-<h4>Arguments</h4>      <table class="table table-striped varlist">
+                <h3>
+        private subroutine install_header(self, header, error)</h3>
+    <p>Install a header/module in its correct subdirectory</p>
+
+    <h4>
+    Arguments
+    </h4>
+      <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
@@ -306,9 +408,14 @@
   </div>
   <ul class="list-group">
       <li class="list-group-item">
-          <h3>private subroutine install_library(self, library, error)</h3><p>Install a library in its correct subdirectory</p>
-    
-<h4>Arguments</h4>      <table class="table table-striped varlist">
+                <h3>
+        private subroutine install_library(self, library, error)</h3>
+    <p>Install a library in its correct subdirectory</p>
+
+    <h4>
+    Arguments
+    </h4>
+      <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
@@ -345,9 +452,14 @@
   </div>
   <ul class="list-group">
       <li class="list-group-item">
-          <h3>private subroutine make_dir(self, dir, error)</h3><p>Create a new directory in the prefix</p>
-    
-<h4>Arguments</h4>      <table class="table table-striped varlist">
+                <h3>
+        private subroutine make_dir(self, dir, error)</h3>
+    <p>Create a new directory in the prefix</p>
+
+    <h4>
+    Arguments
+    </h4>
+      <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
@@ -384,9 +496,14 @@
   </div>
   <ul class="list-group">
       <li class="list-group-item">
-          <h3>private subroutine run(self, command, error)</h3><p>Run an installation command</p>
-    
-<h4>Arguments</h4>      <table class="table table-striped varlist">
+                <h3>
+        private subroutine run(self, command, error)</h3>
+    <p>Run an installation command</p>
+
+    <h4>
+    Arguments
+    </h4>
+      <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
@@ -471,7 +588,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-09-30 08:57            </p>
+ on 2022-10-13 11:38            </p>
         </div>
       </div>
       <br>

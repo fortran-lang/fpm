@@ -29,7 +29,7 @@ use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
-use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize
+use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
 use fpm_compiler, only: get_macros
 implicit none
 
@@ -189,7 +189,7 @@ subroutine build_target_list(targets,model)
     !> The package model from which to construct the target list
     type(fpm_model_t), intent(inout), target :: model
 
-    integer :: i, j, n_source
+    integer :: i, j, n_source, exe_type
     character(:), allocatable :: xsuffix, exe_dir
     logical :: with_lib
 
@@ -268,7 +268,15 @@ subroutine build_target_list(targets,model)
 
                 case (FPM_UNIT_PROGRAM)
 
-                    call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_OBJECT,&
+                    if (str_ends_with(lower(sources(i)%file_name), [".c"])) then
+                        exe_type = FPM_TARGET_C_OBJECT
+                    else if (str_ends_with(lower(sources(i)%file_name), [".cpp", ".cc "])) then
+                        exe_type = FPM_TARGET_CPP_OBJECT
+                    else    ! Default to a Fortran object
+                        exe_type = FPM_TARGET_OBJECT
+                    end if
+
+                    call add_target(targets,package=model%packages(j)%name,type = exe_type,&
                                 output_name = get_object_name(sources(i)), &
                                 source = sources(i) &
                                 )

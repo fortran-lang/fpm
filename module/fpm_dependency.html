@@ -197,15 +197,15 @@ requires updating the respective dependencies as well.</p>
       <ul class="list-group">
       <li class="list-group-item">
   <ul class="list-inline">
-    <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
-    <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
-    <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
-    <li><a href='../module/fpm_git.html'>fpm_git</a></li>
-    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
-    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
     <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    <li><a href='../module/fpm_git.html'>fpm_git</a></li>
+    <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+    <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
+    <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+    <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
+    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
   </ul>
       </li>
       </ul>
@@ -294,6 +294,53 @@ requires updating the respective dependencies as well.</p>
   <div class="panel-heading codesum"><span class="anchor" id="type-dependency_node_t"></span><h3>type, public, extends(<a href='../type/dependency_config_t.html'>dependency_config_t</a>) :: <a href='../type/dependency_node_t.html'>dependency_node_t</a>  </h3></div>
   <div class="panel-body">
     <p>Dependency node in the projects dependency tree</p>
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-done"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>done</strong></td><td> =</td><td>.false.</td><td><p>Dependency is handled</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-git"></span>type(<a href='../type/git_target_t.html'>git_target_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>git</strong></td><td></td><td></td><td><p>Git descriptor</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-name~3"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>name</strong></td><td></td><td></td><td><p>Name of the dependency</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-path"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>path</strong></td><td></td><td></td><td><p>Local target</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-proj_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>proj_dir</strong></td><td></td><td></td><td><p>Installation prefix of this dependencies</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-revision"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>revision</strong></td><td></td><td></td><td><p>Checked out revision of the version control system</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-update"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>update</strong></td><td> =</td><td>.false.</td><td><p>Dependency should be updated</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-version~3"></span>type(<a href='../type/version_t.html'>version_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>version</strong></td><td></td><td></td><td><p>Actual version of this dependency</p></td>
+</tr>
+</tbody>
+</table>
+
      
      <h4>Type-Bound Procedures</h4>
       <table class="table table-striped varlist">
@@ -311,6 +358,43 @@ requires updating the respective dependencies as well.</p>
   <div class="panel-heading codesum"><span class="anchor" id="type-dependency_tree_t"></span><h3>type, public :: <a href='../type/dependency_tree_t.html'>dependency_tree_t</a>  </h3></div>
   <div class="panel-body">
     <p>Respresentation of a projects dependencies</p><a href="../type/dependency_tree_t.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-cache"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cache</strong></td><td></td><td></td><td><p>Cache file</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-dep"></span>type(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>dep</strong>(:)</td><td></td><td></td><td><p>Flattend list of all dependencies</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-dep_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>dep_dir</strong></td><td></td><td></td><td><p>Installation prefix for dependencies</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-ndep"></span>integer,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>ndep</strong></td><td> =</td><td>0</td><td><p>Number of currently registered dependencies</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-unit~2"></span>integer,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>unit</strong></td><td> =</td><td>output_unit</td><td><p>Unit for IO</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbosity~2"></span>integer,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbosity</strong></td><td> =</td><td>1</td><td><p>Verbosity of printout</p></td>
+</tr>
+</tbody>
+</table>
+
      
      <h4>Type-Bound Procedures</h4>
       <table class="table table-striped varlist">
@@ -438,7 +522,7 @@ requires updating the respective dependencies as well.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-09-30 08:57            </p>
+ on 2022-10-13 11:38            </p>
         </div>
       </div>
       <br>

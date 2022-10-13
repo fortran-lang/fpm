@@ -170,13 +170,13 @@
       <ul class="list-group">
       <li class="list-group-item">
   <ul class="list-inline">
-    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
     <li><a href='../module/fpm_os.html'>fpm_os</a></li>
+    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
     <li><a href="https://github.com/urbanjost/M_CLI2">M_CLI2</a></li>
     <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
   </ul>
       </li>
       </ul>
@@ -225,6 +225,88 @@
      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="type-fpm_build_settings"></span><h3>type, public, extends(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>) :: <a href='../type/fpm_build_settings.html'>fpm_build_settings</a>  </h3></div>
   <div class="panel-body">
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-archiver~2"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>archiver</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-build_tests"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>build_tests</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-c_compiler"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>c_compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-compiler~3"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxx_compiler"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx_compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxxflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxxflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-flag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>flag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-ldflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>ldflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-list"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>list</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-profile"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>profile</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-prune"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>prune</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-show_model"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>show_model</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
      
   </div>
 </div>
@@ -232,6 +314,43 @@
      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="type-fpm_clean_settings"></span><h3>type, public, extends(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>) :: <a href='../type/fpm_clean_settings.html'>fpm_clean_settings</a>  </h3></div>
   <div class="panel-body">
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-calling_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>calling_dir</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-clean_call"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>clean_call</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-clean_skip"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>clean_skip</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-unix"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>unix</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
      
   </div>
 </div>
@@ -239,6 +358,23 @@
      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="type-fpm_cmd_settings"></span><h3>type, public, abstract :: <a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>  </h3></div>
   <div class="panel-body">
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
      
   </div>
 </div>
@@ -246,6 +382,113 @@
      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="type-fpm_install_settings"></span><h3>type, public, extends(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>) :: <a href='../type/fpm_install_settings.html'>fpm_install_settings</a>  </h3></div>
   <div class="panel-body">
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-archiver~2"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>archiver</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-bindir~2"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>bindir</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-build_tests"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>build_tests</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-c_compiler"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>c_compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-compiler~3"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxx_compiler"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx_compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxxflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxxflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-flag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>flag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-includedir~2"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>includedir</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-ldflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>ldflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-libdir~2"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>libdir</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-list"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>list</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-no_rebuild"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>no_rebuild</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-prefix~2"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>prefix</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-profile"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>profile</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-prune"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>prune</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-show_model"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>show_model</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
      
   </div>
 </div>
@@ -253,6 +496,63 @@
      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="type-fpm_new_settings"></span><h3>type, public, extends(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>) :: <a href='../type/fpm_new_settings.html'>fpm_new_settings</a>  </h3></div>
   <div class="panel-body">
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-backfill"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>backfill</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-name~6"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>name</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_bare"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_bare</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_example"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_example</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_executable"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_executable</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_full"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_full</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_lib"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_lib</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_test"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_test</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
      
   </div>
 </div>
@@ -260,6 +560,108 @@
      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="type-fpm_run_settings"></span><h3>type, public, extends(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>) :: <a href='../type/fpm_run_settings.html'>fpm_run_settings</a>  </h3></div>
   <div class="panel-body">
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-archiver~2"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>archiver</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-args"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>args</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-build_tests"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>build_tests</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-c_compiler"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>c_compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-compiler~3"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxx_compiler"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx_compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxxflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxxflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-example~2"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>example</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-flag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>flag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-ldflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>ldflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-list"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>list</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-name~7"></span>character(len=ibug),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>name</strong>(:)</td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-profile"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>profile</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-prune"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>prune</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-runner"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>runner</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-show_model"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>show_model</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
      
   </div>
 </div>
@@ -267,6 +669,108 @@
      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="type-fpm_test_settings"></span><h3>type, public, extends(<a href='../type/fpm_run_settings.html'>fpm_run_settings</a>) :: <a href='../type/fpm_test_settings.html'>fpm_test_settings</a>  </h3></div>
   <div class="panel-body">
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-archiver~2"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>archiver</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-args"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>args</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-build_tests"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>build_tests</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-c_compiler"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>c_compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-compiler~3"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxx_compiler"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx_compiler</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxxflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxxflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-example~2"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>example</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-flag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>flag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-ldflag"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>ldflag</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-list"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>list</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-name~7"></span>character(len=ibug),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>name</strong>(:)</td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-profile"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>profile</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-prune"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>prune</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-runner"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>runner</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-show_model"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>show_model</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
      
   </div>
 </div>
@@ -275,6 +779,38 @@
   <div class="panel-heading codesum"><span class="anchor" id="type-fpm_update_settings"></span><h3>type, public, extends(<a href='../type/fpm_cmd_settings.html'>fpm_cmd_settings</a>) :: <a href='../type/fpm_update_settings.html'>fpm_update_settings</a>  </h3></div>
   <div class="panel-body">
     <p>Settings for interacting and updating with project dependencies</p>
+     <h4>Components</h4>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-clean"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>clean</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-fetch_only"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>fetch_only</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-name~8"></span>character(len=ibug),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>name</strong>(:)</td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
      
   </div>
 </div>
@@ -326,7 +862,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-09-30 08:57            </p>
+ on 2022-10-13 11:38            </p>
         </div>
       </div>
       <br>

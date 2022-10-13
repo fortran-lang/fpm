@@ -114,7 +114,23 @@
     <div id="sidebar">
   <h3>Contents</h3>
  
-<em>None</em>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-backfill">backfill</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-name~6">name</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-verbose~3">verbose</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_bare">with_bare</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_example">with_example</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_executable">with_executable</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_full">with_full</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_lib">with_lib</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_test">with_test</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-working_dir">working_dir</a>
+    </div>
+  </div>
+</div>
 
 </div>
 
@@ -128,11 +144,87 @@
     <section class="visible-xs visible-sm hidden-md">
       <h3>Contents</h3>
  
-<em>None</em>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-backfill">backfill</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-name~6">name</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-verbose~3">verbose</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_bare">with_bare</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_example">with_example</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_executable">with_executable</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_full">with_full</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_lib">with_lib</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-with_test">with_test</a>
+      <a class="list-group-item" href="../type/fpm_new_settings.html#variable-working_dir">working_dir</a>
+    </div>
+  </div>
+</div>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
 
+    <section>
+    <h2>Components</h2>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-backfill"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>backfill</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-name~6"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>name</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-verbose~3"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_bare"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_bare</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_example"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_example</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_executable"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_executable</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_full"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_full</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_lib"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_lib</strong></td><td> =</td><td>.true.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-with_test"></span>logical,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>with_test</strong></td><td> =</td><td>.false.</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-working_dir"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>working_dir</strong></td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+
+    </section>
+    <br>
     
     
     
@@ -153,7 +245,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-09-30 08:57            </p>
+ on 2022-10-13 11:38            </p>
         </div>
       </div>
       <br>

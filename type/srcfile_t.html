@@ -115,6 +115,23 @@
   <h3>Contents</h3>
  
 <div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-digest">digest</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-exe_name">exe_name</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-file_name">file_name</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-include_dependencies">include_dependencies</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-link_libraries~2">link_libraries</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_provided">modules_provided</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_used">modules_used</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-parent_modules">parent_modules</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-unit_scope">unit_scope</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-unit_type">unit_type</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
     <a class="list-group-item" href="../type/srcfile_t.html#src">srcfile_t</a>
@@ -134,6 +151,23 @@
       <h3>Contents</h3>
  
 <div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-digest">digest</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-exe_name">exe_name</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-file_name">file_name</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-include_dependencies">include_dependencies</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-link_libraries~2">link_libraries</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_provided">modules_provided</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-modules_used">modules_used</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-parent_modules">parent_modules</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-unit_scope">unit_scope</a>
+      <a class="list-group-item" href="../type/srcfile_t.html#variable-unit_type">unit_type</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
     <a class="list-group-item" href="../type/srcfile_t.html#src">srcfile_t</a>
@@ -143,6 +177,66 @@
     </section>
     <br class="visible-xs visible-sm hidden-md">
 
+    <section>
+    <h2>Components</h2>
+    <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-digest"></span>integer(kind=int64),</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>digest</strong></td><td></td><td></td><td><p>Current hash</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-exe_name"></span>character,</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>exe_name</strong></td><td></td><td></td><td><p>Name of executable for FPM_UNIT_PROGRAM</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-file_name"></span>character,</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>file_name</strong></td><td></td><td></td><td><p>File path relative to cwd</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-include_dependencies"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>include_dependencies</strong>(:)</td><td></td><td></td><td><p>Files INCLUDEd by this source file</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-link_libraries~2"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>link_libraries</strong>(:)</td><td></td><td></td><td><p>Native libraries to link against</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-modules_provided"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>modules_provided</strong>(:)</td><td></td><td></td><td><p>Modules provided by this source file (lowerstring)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-modules_used"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>modules_used</strong>(:)</td><td></td><td></td><td><p>Modules USEd by this source file (lowerstring)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-parent_modules"></span>type(<a href='../type/string_t.html'>string_t</a>),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>parent_modules</strong>(:)</td><td></td><td></td><td><p>Parent modules (submodules only)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-unit_scope"></span>integer,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>unit_scope</strong></td><td> =</td><td>FPM_SCOPE_UNKNOWN</td><td><p>Target module-use scope</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-unit_type"></span>integer,</td>
+<td>public</td>  <td></td><td>::</td>
+  <td><strong>unit_type</strong></td><td> =</td><td>FPM_UNIT_UNKNOWN</td><td><p>Type of source unit</p></td>
+</tr>
+</tbody>
+</table>
+
+    </section>
+    <br>
     
     
     
@@ -200,7 +294,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-09-30 08:57            </p>
+ on 2022-10-13 11:38            </p>
         </div>
       </div>
       <br>
