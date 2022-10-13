@@ -1,0 +1,7 @@
+name = "c_main_preprocess"
+[library]
+include-dir = ["src"]
+
+[[executable]]
+name="main-c"
+main="main.c"

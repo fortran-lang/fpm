@@ -122,6 +122,10 @@ pushd c_main
 "$fpm" run
 popd
 
+pushd c_main_preprocess
+"$fpm" build --c-flag "-DVAL"
+popd
+
 pushd app_with_c
 "$fpm" run
 popd
