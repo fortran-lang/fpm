@@ -1,0 +1,15 @@
+#: set SHOW = 2
+
+module my_mod2
+  implicit none
+
+    real, parameter :: pi = 3.1415926536  
+    real, parameter :: e = 2.7182818285 
+
+  contains
+
+    subroutine show_consts2()
+      print *, "pi = ", pi
+      if (${SHOW}$ == 1) print *, "e = ", e
+    end subroutine show_consts2
+end module my_mod2
