@@ -138,6 +138,10 @@ pushd preprocess_cpp
 "$fpm" build
 popd
 
+pushd preprocess_cpp_c
+"$fpm" run
+popd
+
 pushd preprocess_hello
 "$fpm" build
 popd
