@@ -6,7 +6,7 @@ module fpm_cmd_new
 !> This procedure read the values that were set on the command line
 !> from this type to decide what actions to take.
 !>
-!> It is virtually self-contained and so independant of the rest of the
+!> It is virtually self-contained and so independent of the rest of the
 !> application that it could function as a separate program.
 !>
 !> The "new" subcommand options currently consist of a SINGLE top
