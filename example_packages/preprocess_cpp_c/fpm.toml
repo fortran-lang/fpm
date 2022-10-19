@@ -1,8 +1,5 @@
 name = "preprocess_cpp_c"
 
-[library]
-include-dir = ["src"]
-
 [[executable]]
 name = "main"
 main = "main.c"
@@ -10,5 +7,3 @@ main = "main.c"
 [preprocess]
 [preprocess.cpp]
 macros = ["VAL"]
-suffixes = ["F90", "f90", "h", "c"]
-directories = ["src", "app"]
