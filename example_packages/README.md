@@ -27,6 +27,7 @@ the features demonstrated in each package and which versions of fpm are supporte
 | makefile_complex            | External build command (makefile); local path dependency      |            Y            |  N  |
 | preprocess_cpp              | Lib only; C preprocessing; Macro parsing                      |            N            |  Y  |
 | preprocess_cpp_c            | C App; progate macros from fpm.toml to app                    |            N            |  Y  |
+| preprocess_cpp_deps         | App; cpp preprocessor settings in local path dependency only  |            N            |  Y  |
 | preprocess_hello            | App only; Macros remain local to the package                  |            N            |  Y  |
 | preprocess_hello_dependency | Lib only; Macros not getting passed here from root            |            N            |  Y  |
 | program_with_module         | App-only; module+program in single source file                |            Y            |  Y  |
