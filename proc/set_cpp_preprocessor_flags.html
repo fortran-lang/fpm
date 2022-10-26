@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>set_preprocessor_flags &ndash; Fortran-lang/fpm</title>
+    <title>set_cpp_preprocessor_flags &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -79,7 +79,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>set_preprocessor_flags
+    <h1>set_cpp_preprocessor_flags
       <small>Subroutine</small>
     </h1>
     <div class="row">
@@ -89,14 +89,14 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.7% of total for procedures.">30 statements</a>
+    title=" 0.4% of total for procedures.">18 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm_compiler.f90"> Source File</a></li>
   </ul>
   <ol class="breadcrumb in-well text-right">
      <li><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.f90</a></li>
      <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
-     <li class="active">set_preprocessor_flags</li>
+     <li class="active">set_cpp_preprocessor_flags</li>
   </ol>
 </div>
 </div>
@@ -118,15 +118,14 @@
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
-      <a class="list-group-item" href="../proc/set_preprocessor_flags.html#variable-flag_cpp_preprocessor">flag_cpp_preprocessor</a>
-      <a class="list-group-item" href="../proc/set_preprocessor_flags.html#variable-i~2">i</a>
+      <a class="list-group-item" href="../proc/set_cpp_preprocessor_flags.html#variable-flag_cpp_preprocessor">flag_cpp_preprocessor</a>
     </div>
   </div>
 </div>
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/set_preprocessor_flags.html#src">set_preprocessor_flags</a>
+    <a class="list-group-item" href="../proc/set_cpp_preprocessor_flags.html#src">set_cpp_preprocessor_flags</a>
   </div>
 </div>
 
@@ -135,11 +134,10 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine set_preprocessor_flags(id, flags, package)</h2>
+    <h2>public pure subroutine set_cpp_preprocessor_flags(id, flags)</h2>
     
 
-    <p>Check if there is a preprocess table
-Modify the flag_cpp_preprocessor on the basis of the compiler.</p>
+    <p>Modify the flag_cpp_preprocessor on the basis of the compiler.</p>
 
     <h3>Arguments</h3>
       <table class="table table-striped varlist">
@@ -157,12 +155,6 @@ Modify the flag_cpp_preprocessor on the basis of the compiler.</p>
   <td></td>  <td>allocatable</td><td>::</td>
   <td><strong>flags</strong></td><td></td>
 </tr>
-<tr>
-  <td><span class="anchor" id="variable-package~2"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
-<td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>package</strong></td><td></td>
-</tr>
 </tbody>
 </table>
 
@@ -175,15 +167,14 @@ Modify the flag_cpp_preprocessor on the basis of the compiler.</p>
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
-      <a class="list-group-item" href="../proc/set_preprocessor_flags.html#variable-flag_cpp_preprocessor">flag_cpp_preprocessor</a>
-      <a class="list-group-item" href="../proc/set_preprocessor_flags.html#variable-i~2">i</a>
+      <a class="list-group-item" href="../proc/set_cpp_preprocessor_flags.html#variable-flag_cpp_preprocessor">flag_cpp_preprocessor</a>
     </div>
   </div>
 </div>
 <div class="panel panel-primary">
   <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
   <div class="list-group">
-    <a class="list-group-item" href="../proc/set_preprocessor_flags.html#src">set_preprocessor_flags</a>
+    <a class="list-group-item" href="../proc/set_cpp_preprocessor_flags.html#src">set_cpp_preprocessor_flags</a>
   </div>
 </div>
 
@@ -201,11 +192,6 @@ Modify the flag_cpp_preprocessor on the basis of the compiler.</p>
 <td>public,</td>  <td>allocatable</td><td>::</td>
   <td><strong>flag_cpp_preprocessor</strong></td><td></td><td></td><td></td>
 </tr>
-<tr>
-  <td><span class="anchor" id="variable-i~2"></span>integer,</td>
-<td>public</td>  <td></td><td>::</td>
-  <td><strong>i</strong></td><td></td><td></td><td></td>
-</tr>
 </tbody>
 </table>
 
@@ -221,18 +207,10 @@ Modify the flag_cpp_preprocessor on the basis of the compiler.</p>
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">set_preprocessor_flags</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">)</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><span class="k">pure subroutine </span><span class="n">set_cpp_preprocessor_flags</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">(</span><span class="n">compiler_enum</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">id</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span><span class="w"></span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">package</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flag_cpp_preprocessor</span><span class="w"></span>
-<span class="w">    </span>
-<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
-
-<span class="w">    </span><span class="c">!&gt; Check if there is a preprocess table</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">preprocess</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        return</span>
-<span class="k">    end if</span><span class="w"></span>
 
 <span class="w">    </span><span class="c">!&gt; Modify the flag_cpp_preprocessor on the basis of the compiler.</span>
 <span class="w">    </span><span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"></span>
@@ -248,16 +226,9 @@ Modify the flag_cpp_preprocessor on the basis of the compiler.</p>
 <span class="w">        </span><span class="n">flag_cpp_preprocessor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;--cpp&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="k">end select</span>
 
-<span class="k">    do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">preprocess</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;cpp&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_cpp_preprocessor</span><span class="o">//</span><span class="w"> </span><span class="n">flags</span><span class="w"></span>
-<span class="w">            </span><span class="k">exit</span>
-<span class="k">        else</span>
-<span class="k">            write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;Warning: preprocessor &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">&#39; is not supported; will ignore it&#39;</span><span class="w"></span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="k">    end do</span>
+<span class="k">    </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag_cpp_preprocessor</span><span class="o">//</span><span class="w"> </span><span class="n">flags</span><span class="w"></span>
 
-<span class="k">end subroutine </span><span class="n">set_preprocessor_flags</span><span class="w"></span>
+<span class="k">end subroutine </span><span class="n">set_cpp_preprocessor_flags</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -278,7 +249,7 @@ Modify the flag_cpp_preprocessor on the basis of the compiler.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-10-19 12:45            </p>
+ on 2022-10-26 01:44            </p>
         </div>
       </div>
       <br>

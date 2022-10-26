@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.1% of total for procedures.">140 statements</a>
+    title=" 3.2% of total for procedures.">147 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/fpm.f90"> Source File</a></li>
   </ul>
@@ -135,7 +135,7 @@
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
-  <td><span class="anchor" id="variable-model"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+  <td><span class="anchor" id="variable-model~3"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
 <td>intent(out)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>model</strong></td><td></td>
@@ -147,13 +147,13 @@
   <td><strong>settings</strong></td><td></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-package"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
+  <td><span class="anchor" id="variable-package~2"></span>type(<a href='../type/package_config_t.html'>package_config_t</a>),</td>
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>package</strong></td><td></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-error"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+  <td><span class="anchor" id="variable-error~7"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
 <td>intent(out),</td>
   <td></td>  <td>allocatable</td><td>::</td>
   <td><strong>error</strong></td><td></td>
@@ -199,6 +199,7 @@
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">package_config_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dependency</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">manifest</span><span class="p">,</span><span class="w"> </span><span class="n">lib_dir</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">cflags</span><span class="p">,</span><span class="w"> </span><span class="n">cxxflags</span><span class="p">,</span><span class="w"> </span><span class="n">ldflags</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span><span class="w"></span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_cpp</span><span class="w"></span>
 
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">duplicates_found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
 <span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">include_dir</span><span class="w"></span>
@@ -233,9 +234,7 @@
 <span class="w">        </span><span class="k">end select</span>
 <span class="k">    end if</span>
 
-<span class="k">    call </span><span class="n">set_preprocessor_flags</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">package</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">    </span><span class="n">cflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">cflag</span><span class="p">)</span><span class="w"></span>
+<span class="k">    </span><span class="n">cflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">cflag</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="n">cxxflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">cxxflag</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="n">ldflags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">ldflag</span><span class="p">)</span><span class="w"></span>
 
@@ -246,15 +245,11 @@
 <span class="w">    </span><span class="k">end if</span>
 <span class="k">    </span><span class="n">model</span><span class="p">%</span><span class="n">build_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">basename</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">fc</span><span class="p">))</span><span class="w"></span>
 
-<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="w"></span>
-<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">c_compile_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cflags</span><span class="w"></span>
-<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">cxx_compile_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cxxflags</span><span class="w"></span>
-<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="w"></span>
-
 <span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">include_tests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">%</span><span class="n">build_tests</span><span class="w"></span>
 
 <span class="w">    </span><span class="k">allocate</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="p">))</span><span class="w"></span>
 
+<span class="w">    </span><span class="n">has_cpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
 <span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="w"></span>
 <span class="w">        </span><span class="k">associate</span><span class="p">(</span><span class="n">dep</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">model</span><span class="p">%</span><span class="n">deps</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"></span>
 <span class="w">            </span><span class="n">manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">join_path</span><span class="p">(</span><span class="n">dep</span><span class="p">%</span><span class="n">proj_dir</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;fpm.toml&quot;</span><span class="p">)</span><span class="w"></span>
@@ -269,8 +264,14 @@
 <span class="w">            </span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">)</span><span class="w"></span>
-<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">package</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;cpp&quot;</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">macros</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;cpp&quot;</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">has_cpp</span><span class="p">)</span><span class="w"> </span><span class="n">has_cpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">macros</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 <span class="k">                        </span><span class="n">model</span><span class="p">%</span><span class="n">packages</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dependency</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">j</span><span class="p">)%</span><span class="n">macros</span><span class="w"></span>
+<span class="w">                        </span><span class="k">end if</span>
+<span class="k">                    else</span>
+<span class="k">                        write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;Warning: Preprocessor &#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">preprocess</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">name</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                            </span><span class="s1">&#39; is not supported; will ignore it&#39;</span><span class="w"></span>
 <span class="w">                    </span><span class="k">end if</span>
 <span class="k">                end do</span>
 <span class="k">            end if</span>
@@ -308,7 +309,13 @@
 <span class="w">            </span><span class="k">end if</span>
 <span class="k">        end associate</span>
 <span class="k">    end do</span>
-<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"></span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">has_cpp</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">set_cpp_preprocessor_flags</span><span class="p">(</span><span class="n">model</span><span class="p">%</span><span class="n">compiler</span><span class="p">%</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">fortran_compile_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flags</span><span class="w"></span>
+<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">c_compile_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cflags</span><span class="w"></span>
+<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">cxx_compile_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cxxflags</span><span class="w"></span>
+<span class="w">    </span><span class="n">model</span><span class="p">%</span><span class="n">link_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldflags</span><span class="w"></span>
 
 <span class="w">    </span><span class="c">! Add sources from executable directories</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_dir</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">package</span><span class="p">%</span><span class="n">build</span><span class="p">%</span><span class="n">auto_executables</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
@@ -408,7 +415,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-10-19 12:45            </p>
+ on 2022-10-26 01:44            </p>
         </div>
       </div>
       <br>

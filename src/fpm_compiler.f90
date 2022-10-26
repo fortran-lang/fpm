@@ -394,18 +394,10 @@ subroutine get_debug_compile_flags(id, flags)
     end select
 end subroutine get_debug_compile_flags
 
-subroutine set_preprocessor_flags (id, flags, package)
+pure subroutine set_cpp_preprocessor_flags(id, flags)
     integer(compiler_enum), intent(in) :: id
     character(len=:), allocatable, intent(inout) :: flags
-    type(package_config_t), intent(in) :: package
     character(len=:), allocatable :: flag_cpp_preprocessor
-    
-    integer :: i
-
-    !> Check if there is a preprocess table
-    if (.not.allocated(package%preprocess)) then
-        return
-    end if
 
     !> Modify the flag_cpp_preprocessor on the basis of the compiler.
     select case(id)
@@ -421,16 +413,9 @@ subroutine set_preprocessor_flags (id, flags, package)
         flag_cpp_preprocessor = "--cpp"
     end select
 
-    do i = 1, size(package%preprocess)
-        if (package%preprocess(i)%name == "cpp") then
-            flags = flag_cpp_preprocessor// flags
-            exit
-        else
-            write(stderr, '(a)') 'Warning: preprocessor ' // package%preprocess(i)%name // ' is not supported; will ignore it'
-        end if
-    end do
+    flags = flag_cpp_preprocessor// flags
 
-end subroutine set_preprocessor_flags
+end subroutine set_cpp_preprocessor_flags
 
 !> This function will parse and read the macros list and 
 !> return them as defined flags.
