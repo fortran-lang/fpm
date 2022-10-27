@@ -33,9 +33,10 @@
 !>
 !> Each of the subtables currently supports the following fields:
 !>```toml
-!>[profile.debug.gfortran.linux]
+!>[profiles.debug.gfortran.linux]
 !> flags="-Wall -g -Og"
 !> c-flags="-g O1"
+!> cxx-flags="-g O1"
 !> link-time-flags="-xlinkopt"
 !> files={"hello_world.f90"="-Wall -O3"}
 !>```
@@ -84,6 +85,9 @@ module fpm_manifest_profile
       !> C compiler flags
       character(len=:), allocatable :: c_flags
 
+      !> C++ compiler flags
+      character(len=:), allocatable :: cxx_flags
+
       !> Link time compiler flags
       character(len=:), allocatable :: link_time_flags
 
@@ -103,7 +107,8 @@ module fpm_manifest_profile
     contains
 
       !> Construct a new profile configuration from a TOML data structure
-      function new_profile(profile_name, compiler, os_type, flags, c_flags, link_time_flags, file_scope_flags, is_built_in) &
+      function new_profile(profile_name, compiler, os_type, flags, c_flags, cxx_flags, &
+                           link_time_flags, file_scope_flags, is_built_in) &
                       & result(profile)
         
         !> Name of the profile
@@ -120,6 +125,9 @@ module fpm_manifest_profile
 
         !> C compiler flags
         character(len=*), optional, intent(in) :: c_flags
+
+        !> C++ compiler flags
+        character(len=*), optional, intent(in) :: cxx_flags
 
         !> Link time compiler flags
         character(len=*), optional, intent(in) :: link_time_flags
@@ -144,6 +152,11 @@ module fpm_manifest_profile
           profile%c_flags = c_flags
         else
           profile%c_flags = ""
+        end if
+        if (present(cxx_flags)) then
+          profile%cxx_flags = cxx_flags
+        else
+          profile%cxx_flags = ""
         end if
         if (present(link_time_flags)) then
           profile%link_time_flags = link_time_flags
@@ -239,7 +252,7 @@ module fpm_manifest_profile
         !> Was called with valid operating system
         logical, intent(in) :: os_valid
 
-        character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name, file_name, file_flags, err_message
+        character(len=:), allocatable :: flags, c_flags, cxx_flags, link_time_flags, key_name, file_name, file_flags, err_message
         type(toml_table), pointer :: files
         type(toml_key), allocatable :: file_list(:)
         integer :: ikey, ifile, stat
@@ -258,6 +271,12 @@ module fpm_manifest_profile
               call get_value(table, 'c-flags', c_flags, stat=stat)
               if (stat /= toml_stat%success) then
                 call syntax_error(error, "c-flags has to be a key-value pair")
+                return
+              end if
+            else if (key_name.eq.'cxx-flags') then
+              call get_value(table, 'cxx-flags', cxx_flags, stat=stat)
+              if (stat /= toml_stat%success) then
+                call syntax_error(error, "cxx-flags has to be a key-value pair")
                 return
               end if
             else if (key_name.eq.'link-time-flags') then
@@ -324,7 +343,7 @@ module fpm_manifest_profile
         !> Was called with valid operating system
         logical, intent(in) :: os_valid
 
-        character(len=:), allocatable :: flags, c_flags, link_time_flags, key_name, file_name, file_flags, err_message
+        character(len=:), allocatable :: flags, c_flags, cxx_flags, link_time_flags, key_name, file_name, file_flags, err_message
         type(toml_table), pointer :: files
         type(toml_key), allocatable :: file_list(:)
         type(file_scope_flag), allocatable :: file_scope_flags(:)
@@ -333,6 +352,7 @@ module fpm_manifest_profile
 
         call get_value(table, 'flags', flags)
         call get_value(table, 'c-flags', c_flags)
+        call get_value(table, 'cxx-flags', cxx_flags)
         call get_value(table, 'link-time-flags', link_time_flags)
         call get_value(table, 'files', files)
         if (associated(files)) then
@@ -350,7 +370,7 @@ module fpm_manifest_profile
         end if
 
         profiles(profindex) = new_profile(profile_name, compiler_name, os_type, &
-                 & flags, c_flags, link_time_flags, file_scope_flags)
+                 & flags, c_flags, cxx_flags, link_time_flags, file_scope_flags)
         profindex = profindex + 1
       end subroutine get_flags
       
@@ -656,6 +676,8 @@ module fpm_manifest_profile
                         & " "//profiles(iprof)%flags
                 profiles(profindex)%c_flags=profiles(profindex)%c_flags// &
                         & " "//profiles(iprof)%c_flags
+                profiles(profindex)%cxx_flags=profiles(profindex)%cxx_flags// &
+                        & " "//profiles(iprof)%cxx_flags
                 profiles(profindex)%link_time_flags=profiles(profindex)%link_time_flags// &
                         & " "//profiles(iprof)%link_time_flags
               end if
@@ -861,6 +883,7 @@ module fpm_manifest_profile
         end select
         if (allocated(profile%flags)) s = s // ', flags="' // profile%flags // '"'
         if (allocated(profile%c_flags)) s = s // ', c_flags="' // profile%c_flags // '"'
+        if (allocated(profile%cxx_flags)) s = s // ', cxx_flags="' // profile%cxx_flags // '"'
         if (allocated(profile%link_time_flags)) s = s // ', link_time_flags="' // profile%link_time_flags // '"'
         if (allocated(profile%file_scope_flags)) then
           do i=1,size(profile%file_scope_flags)
