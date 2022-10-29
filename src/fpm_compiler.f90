@@ -599,7 +599,7 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
         cxx_compiler = 'icpx'
 
     case(id_flang, id_flang_new, id_f18)
-        cxx_compiler='clang'
+        cxx_compiler='clang++'
 
     case(id_ibmxl)
         cxx_compiler='xlc++'
