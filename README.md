@@ -182,11 +182,13 @@ The table below lists the environment variables that control `fpm`'s choice of c
 compiler flags, archiver locations, and link flags, each of which can be overridden by 
 passing `fpm` flags also shown in the table.
 
-| Environment Variable | Defines               | Overridden by  |
-| :------------------- | :-------------------- | :------------- |
-| `FPM_FC`             | Fortran compiler path | `--compiler`   |
-| `FPM_CC`             | C compiler path       | `--c-compiler` |
-| `FPM_FFLAGS`         | Fortran compiler flags| `--flag`       |
-| `FPM_CFLAGS`         | C compiler flags      | `--c-flag`     |
-| `FPM_AR`             | Archiver path         | `--archiver`   |
-| `FPM_LDFLAGS`        | Link flags            | `--link-flag`  |
+| Environment Variable | Defines               | Overridden by    |
+| :------------------- | :-------------------- | :--------------- |
+| `FPM_FC`             | Fortran compiler path | `--compiler`     |
+| `FPM_CC`             | C compiler path       | `--c-compiler`   |
+| `FPM_CXX`            | C++ compiler path     | `--cxx-compiler` |
+| `FPM_FFLAGS`         | Fortran compiler flags| `--flag`         |
+| `FPM_CFLAGS`         | C compiler flags      | `--c-flag`       |
+| `FPM_CXXFLAGS`       | C++ compiler flags    | `--cxx-flag`     |
+| `FPM_AR`             | Archiver path         | `--archiver`     |
+| `FPM_LDFLAGS`        | Link flags            | `--link-flag`    |
