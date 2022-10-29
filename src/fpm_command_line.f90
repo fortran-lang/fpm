@@ -148,6 +148,8 @@ character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
     '                    unless set by the environment variable FPM_FC.              ',&
     ' --c-compiler NAME  Specify the C compiler name. Automatically determined by    ',&
     '                    default unless set by the environment variable FPM_CC.      ',&
+    ' --cxx-compiler NAME  Specify the C++ compiler name. Automatically determined by',&
+    '                    default unless set by the environment variable FPM_CXX.     ',&
     ' --archiver NAME    Specify the archiver name. Automatically determined by      ',&
     '                    default unless set by the environment variable FPM_AR.      '&
     ]
@@ -162,6 +164,9 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
     '                   The default value is set by the FPM_CFLAGS environment       ',&
     '                   variable.                                                    ',&
+    ' --cxx-flag CFLAGS selects compile arguments specific for C++ source in the     ',&
+    '                   build. The default value is set by the FPM_CXXFLAGS          ',&
+    '                   environment variable.                                        ',&
     ' --link-flag LDFLAGS  select arguments passed to the linker for the build. The  ',&
     '                   default value is set by the FPM_LDFLAGS environment variable.'&
     ]
@@ -180,6 +185,12 @@ character(len=80), parameter :: help_text_environment(*) = [character(len=80) ::
     '', &
     ' FPM_CFLAGS        sets the arguments for the C compiler', &
     '                   will be overwritten by --c-flag command line option', &
+    '', &
+    ' FPM_CXX           sets the path to the C++ compiler used for the build,', &
+    '                   will be overwritten by --cxx-compiler command line option', &
+    '', &
+    ' FPM_CXXFLAGS      sets the arguments for the C++ compiler', &
+    '                   will be overwritten by --cxx-flag command line option', &
     '', &
     ' FPM_AR            sets the path to the archiver used for the build,', &
     '                   will be overwritten by --archiver command line option', &
