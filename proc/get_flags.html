@@ -89,7 +89,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.8% of total for procedures.">35 statements</a>
+    title=" 0.8% of total for procedures.">36 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/profiles.f90"> Source File</a></li>
   </ul>
@@ -119,6 +119,7 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       <a class="list-group-item" href="../proc/get_flags.html#variable-c_flags~3">c_flags</a>
+      <a class="list-group-item" href="../proc/get_flags.html#variable-cxx_flags~3">cxx_flags</a>
       <a class="list-group-item" href="../proc/get_flags.html#variable-err_message">err_message</a>
       <a class="list-group-item" href="../proc/get_flags.html#variable-file_flags">file_flags</a>
       <a class="list-group-item" href="../proc/get_flags.html#variable-file_list">file_list</a>
@@ -218,6 +219,7 @@ and files table in a given table and create new profiles</p>
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       <a class="list-group-item" href="../proc/get_flags.html#variable-c_flags~3">c_flags</a>
+      <a class="list-group-item" href="../proc/get_flags.html#variable-cxx_flags~3">cxx_flags</a>
       <a class="list-group-item" href="../proc/get_flags.html#variable-err_message">err_message</a>
       <a class="list-group-item" href="../proc/get_flags.html#variable-file_flags">file_flags</a>
       <a class="list-group-item" href="../proc/get_flags.html#variable-file_list">file_list</a>
@@ -254,6 +256,11 @@ and files table in a given table and create new profiles</p>
   <td><span class="anchor" id="variable-c_flags~3"></span>character(len=:),</td>
 <td>public,</td>  <td>allocatable</td><td>::</td>
   <td><strong>c_flags</strong></td><td></td><td></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-cxx_flags~3"></span>character(len=:),</td>
+<td>public,</td>  <td>allocatable</td><td>::</td>
+  <td><strong>cxx_flags</strong></td><td></td><td></td><td></td>
 </tr>
 <tr>
   <td><span class="anchor" id="variable-err_message"></span>character(len=:),</td>
@@ -361,7 +368,7 @@ and files table in a given table and create new profiles</p>
 <span class="w">        </span><span class="c">!&gt; Was called with valid operating system</span>
 <span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_valid</span><span class="w"></span>
 
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">c_flags</span><span class="p">,</span><span class="w"> </span><span class="n">link_time_flags</span><span class="p">,</span><span class="w"> </span><span class="n">key_name</span><span class="p">,</span><span class="w"> </span><span class="n">file_name</span><span class="p">,</span><span class="w"> </span><span class="n">file_flags</span><span class="p">,</span><span class="w"> </span><span class="n">err_message</span><span class="w"></span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">c_flags</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_flags</span><span class="p">,</span><span class="w"> </span><span class="n">link_time_flags</span><span class="p">,</span><span class="w"> </span><span class="n">key_name</span><span class="p">,</span><span class="w"> </span><span class="n">file_name</span><span class="p">,</span><span class="w"> </span><span class="n">file_flags</span><span class="p">,</span><span class="w"> </span><span class="n">err_message</span><span class="w"></span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_table</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">files</span><span class="w"></span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">toml_key</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_list</span><span class="p">(:)</span><span class="w"></span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">file_scope_flag</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">file_scope_flags</span><span class="p">(:)</span><span class="w"></span>
@@ -370,6 +377,7 @@ and files table in a given table and create new profiles</p>
 
 <span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;flags&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;c-flags&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">c_flags</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cxx-flags&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_flags</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;link-time-flags&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">link_time_flags</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;files&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">associated</span><span class="p">(</span><span class="n">files</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
@@ -387,7 +395,7 @@ and files table in a given table and create new profiles</p>
 <span class="k">        end if</span>
 
 <span class="k">        </span><span class="n">profiles</span><span class="p">(</span><span class="n">profindex</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_profile</span><span class="p">(</span><span class="n">profile_name</span><span class="p">,</span><span class="w"> </span><span class="n">compiler_name</span><span class="p">,</span><span class="w"> </span><span class="n">os_type</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">                 </span><span class="p">&amp;</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">c_flags</span><span class="p">,</span><span class="w"> </span><span class="n">link_time_flags</span><span class="p">,</span><span class="w"> </span><span class="n">file_scope_flags</span><span class="p">)</span><span class="w"></span>
+<span class="w">                 </span><span class="p">&amp;</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">c_flags</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_flags</span><span class="p">,</span><span class="w"> </span><span class="n">link_time_flags</span><span class="p">,</span><span class="w"> </span><span class="n">file_scope_flags</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="n">profindex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profindex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 <span class="w">      </span><span class="k">end subroutine </span><span class="n">get_flags</span><span class="w"></span>
 </pre></div>
@@ -410,7 +418,7 @@ and files table in a given table and create new profiles</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-10-29 09:29            </p>
+ on 2022-10-31 14:09            </p>
         </div>
       </div>
       <br>
