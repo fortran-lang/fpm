@@ -42,6 +42,7 @@ use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, u
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
 use fpm_manifest, only : package_config_t
+use fpm_os, only: get_current_directory
 use fpm_error, only: error_t
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
@@ -484,6 +485,23 @@ function get_macros(id, macros_list, version) result(macros)
         end if
 
     end do
+
+    !> add predefined variables
+    call set_predefined_macro()
+
+contains
+
+    !> append predefined variable as macro definition
+    subroutine set_predefined_macro()
+        type(error_t), allocatable :: error
+        character(len=:), allocatable :: project_root
+
+        !> add PROJECT_ROOT
+        call get_current_directory(project_root, error)
+        if (.not. allocated(project_root)) project_root = ''
+        macros = macros//' '//macro_definition_symbol//"PROJECT_ROOT="//project_root
+
+    end subroutine set_predefined_macro
 
 end function get_macros
 
