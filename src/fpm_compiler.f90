@@ -43,6 +43,8 @@ use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, u
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
 use fpm_manifest, only : package_config_t
 use fpm_error, only: error_t
+use fpm_versioning, only: version_t, new_version
+
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros, get_version_macros
 public :: debug
@@ -457,20 +459,6 @@ function get_version_macros(id, version) result(version_macros)
     if (.not.allocated(version_macros)) then
         version_macros = " "
     end if
-
-
-    !> Extract the Major, Minor & Patch number from Version Number.
-    call split(version, version_parts, delimiters='.')
-
-    do i = 1, size(version_parts)
-        if (i == 1) then
-            version_macros = version_macros//macro_definition_symbol//'PROJECT_VERSION_MAJOR'//'='//version_parts(i)
-        else if (i == 2) then
-            version_macros = version_macros//' '//macro_definition_symbol//'PROJECT_VERSION_MINOR'//'='//version_parts(i)
-        else if (i == 3) then
-            version_macros = version_macros//' '//macro_definition_symbol//'PROJECT_VERSION_PATCH'//'='//version_parts(i)
-        end if
-    end do
     
 end function get_version_macros
 
@@ -484,7 +472,10 @@ function get_macros(id, macros_list, version) result(macros)
     character(len=:), allocatable :: macros
     character(len=:), allocatable :: macro_definition_symbol
     character(:), allocatable :: valued_macros(:)
-    
+
+    type(version_t) :: version_object
+
+    call new_version(version_object, version)
 
     integer :: i
 
@@ -517,6 +508,36 @@ function get_macros(id, macros_list, version) result(macros)
 
                 !> Check if the value of macro ends with '}' character.
                 if (str_ends_with(trim(valued_macros(size(valued_macros))), "}")) then
+
+                    !> Check if the string contains "version%major as substring.
+                    if (index(valued_macros(size(valued_macros)), "version%major") /= 0) then
+                        if (len(macros) == 0) then
+                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version_object%num(1)
+                        else
+                            macros = macros//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version_object%num(1)
+                        end if
+                        cycle
+                    end if
+
+                    !> Check if the string contains "version%minor" as substring.
+                    if (index(valued_macros(size(valued_macros)), "version%minor") /= 0) then
+                        if (len(macros) == 0) then
+                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version_object%num(2)
+                        else
+                            macros = macros//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version_object%num(2)
+                        end if
+                        cycle
+                    end if
+
+                    !> Check if the string contains "version%patch" as substring.
+                    if (index(valued_macros(size(valued_macros)), "version%patch") /= 0) then
+                        if (len(macros) == 0) then
+                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version_object%num(3)
+                        else
+                            macros = macros//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version_object%num(3)
+                        end if
+                        cycle
+                    end if
 
                     !> Check if the string contains "version" as substring.
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
