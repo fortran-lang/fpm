@@ -148,25 +148,18 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in dependency "//name)
                 exit
 
-            case("git")
+            case("git", "path")
                 if (url_present) then
                     call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
                     exit
                 end if
                 call get_value(table, "git", url)
                 if (.not.allocated(url)) then
-                    call syntax_error(error, "Dependency "//name//" has invalid git source")
+                    call syntax_error(error, "Dependency "//name//" has invalid source")
                     exit
                 end if
                 url_present = .true.
-                
-            case("path")
-                if (url_present) then
-                    call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
-                    exit
-                end if
-                url_present = .true.
-                has_path = .true.
+                has_path = list(ikey)%key == 'path'
 
             case("branch", "rev", "tag")
                 if (git_target_present) then
