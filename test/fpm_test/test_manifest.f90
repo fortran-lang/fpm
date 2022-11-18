@@ -363,7 +363,7 @@ contains
         type(toml_table), pointer :: child
         integer :: stat
         type(dependency_config_t) :: dependency
-        
+
         call new_table(table)
         table%key = 'example'
         call add_table(table, 'git', child)
