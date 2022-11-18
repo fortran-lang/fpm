@@ -354,18 +354,20 @@ contains
     !> Try to create a git dependency with invalid source format
     subroutine test_dependency_invalid_git(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
+        use fpm_toml, only : new_table, add_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
+        type(toml_table), pointer :: child
         integer :: stat
         type(dependency_config_t) :: dependency
-
+        
         call new_table(table)
         table%key = 'example'
-        call set_value(table, 'git', '{ path = "../../package" }', stat)
+        call add_table(table, 'git', child)
+        call set_value(child, 'path', '../../package')
 
         call new_dependency(dependency, table, error=error)
 
