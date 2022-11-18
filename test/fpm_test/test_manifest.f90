@@ -31,6 +31,7 @@ contains
             & new_unittest("dependency-gitpath", test_dependency_gitpath, should_fail=.true.), &
             & new_unittest("dependency-nourl", test_dependency_nourl, should_fail=.true.), &
             & new_unittest("dependency-gitconflict", test_dependency_gitconflict, should_fail=.true.), &
+            & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -348,6 +349,27 @@ contains
         call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_gitconflict
+
+
+    !> Try to create a git dependency with invalid source format
+    subroutine test_dependency_invalid_git(error)
+        use fpm_manifest_dependency
+        use fpm_toml, only : new_table, toml_table, set_value
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        integer :: stat
+        type(dependency_config_t) :: dependency
+
+        call new_table(table)
+        table%key = 'example'
+        call set_value(table, 'git', '{ path = "../../package" }', stat)
+
+        call new_dependency(dependency, table, error=error)
+
+    end subroutine test_dependency_invalid_git
 
 
     !> Try to create a dependency with conflicting entries
