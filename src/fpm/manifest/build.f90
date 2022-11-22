@@ -12,6 +12,7 @@
 module fpm_manifest_build
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only : string_t
+    use fpm_module, only: module_t, string_t
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
     implicit none
     private
@@ -35,7 +36,7 @@ module fpm_manifest_build
         type(string_t), allocatable :: link(:)
 
         !> External modules to use
-        type(string_t), allocatable :: external_modules(:)
+        type(module_t), allocatable :: external_modules(:)
 
     contains
 
@@ -60,7 +61,8 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        integer :: stat
+        integer :: stat,next,i
+        type(string_t), allocatable :: external_modules(:)
 
         call check(table, error)
         if (allocated(error)) return
@@ -90,7 +92,10 @@ contains
         call get_list(table, "link", self%link, error)
         if (allocated(error)) return
 
-        call get_list(table, "external-modules", self%external_modules, error)
+        next = size(self%external_modules)
+        allocate(external_modules(next))
+        if (next>0) external_modules(:) = [(string_t(self%external_modules(i)),i=1,next)]
+        call get_list(table, "external-modules", external_modules, error)
         if (allocated(error)) return
 
     end subroutine new_build_config

@@ -39,6 +39,7 @@ use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
 use fpm_strings, only: string_t, str
+use fpm_module, only: module_t
 implicit none
 
 private
@@ -92,16 +93,16 @@ type srcfile_t
     integer :: unit_scope = FPM_SCOPE_UNKNOWN
 
     !> Modules provided by this source file (lowerstring)
-    type(string_t), allocatable :: modules_provided(:)
+    type(module_t), allocatable :: modules_provided(:)
 
     !> Type of source unit
     integer :: unit_type = FPM_UNIT_UNKNOWN
 
     !> Parent modules (submodules only)
-    type(string_t), allocatable :: parent_modules(:)
+    type(module_t), allocatable :: parent_modules(:)
 
     !>  Modules USEd by this source file (lowerstring)
-    type(string_t), allocatable :: modules_used(:)
+    type(module_t), allocatable :: modules_used(:)
 
     !> Files INCLUDEd by this source file
     type(string_t), allocatable :: include_dependencies(:)
@@ -171,7 +172,7 @@ type :: fpm_model_t
     type(string_t), allocatable :: link_libraries(:)
 
     !> External modules used
-    type(string_t), allocatable :: external_modules(:)
+    type(module_t), allocatable :: external_modules(:)
 
     !> Project dependencies
     type(dependency_tree_t) :: deps
