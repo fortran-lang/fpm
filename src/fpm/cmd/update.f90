@@ -18,7 +18,8 @@ contains
     type(dependency_tree_t) :: deps
     type(error_t), allocatable :: error
 
-    integer :: ii
+    integer :: ii,attempt
+    logical :: scratch
     character(len=:), allocatable :: cache
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
@@ -30,14 +31,28 @@ contains
     end if
 
     cache = join_path("build", "cache.toml")
-    if (settings%clean) then
-      call delete_file(cache)
-    end if
 
-    call new_dependency_tree(deps, cache=cache, &
-      verbosity=merge(2, 1, settings%verbose))
+    scratch = settings%clean
 
-    call deps%add(package, error)
+    do attempt=1,2
+
+       if (scratch) call delete_file(cache)
+
+       call new_dependency_tree(deps, cache=cache, &
+         verbosity=merge(2, 1, settings%verbose))
+
+       call deps%add(package, error)
+
+       ! If the package name has changed, force building it again from scratch
+       if (allocated(error) .and. deps%dep(1)%name/=package%name) then
+          print *, 'Package name change detected: ['//deps%dep(1)%name//'] -> ['//package%name//']'
+          scratch = .true.
+       else
+          exit
+       endif
+
+    end do
+
     call handle_error(error)
 
     if (settings%fetch_only) return
