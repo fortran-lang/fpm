@@ -27,7 +27,6 @@ module fpm_targets
 use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
-use fpm_module
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
@@ -143,7 +142,7 @@ subroutine targets_from_sources(targets,model,prune,error)
 
     !> Enable tree-shaking/pruning of module dependencies
     logical, intent(in) :: prune
-
+    
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 
@@ -236,14 +235,14 @@ subroutine build_target_list(targets,model)
                                 output_name = get_object_name(sources(i)), &
                                 macros = model%packages(j)%macros, &
                                 version = model%packages(j)%version)
-
+                                
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
                         call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
                     end if
 
-                case (FPM_UNIT_CPPSOURCE)
+                case (FPM_UNIT_CPPSOURCE) 
 
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = FPM_TARGET_CPP_OBJECT, &
@@ -380,7 +379,7 @@ subroutine collect_exe_link_dependencies(targets)
                             dep%source%unit_type /= FPM_UNIT_MODULE .and. &
                             index(dirname(dep%source%file_name), exe_source_dir) == 1) then
 
-                            call add_dependency(exe, dep)
+                            call add_dependency(exe, dep) 
 
                         end if
 
@@ -476,7 +475,7 @@ end subroutine add_dependency
 !>
 subroutine resolve_module_dependencies(targets,external_modules,error)
     type(build_target_ptr), intent(inout), target :: targets(:)
-    type(module_t), intent(in) :: external_modules(:)
+    type(string_t), intent(in) :: external_modules(:)
     type(error_t), allocatable, intent(out) :: error
 
     type(build_target_ptr) :: dep
@@ -489,12 +488,12 @@ subroutine resolve_module_dependencies(targets,external_modules,error)
 
             do j=1,size(targets(i)%ptr%source%modules_used)
 
-                if (targets(i)%ptr%source%modules_used(j) .in. targets(i)%ptr%source%modules_provided) then
+                if (targets(i)%ptr%source%modules_used(j)%s .in. targets(i)%ptr%source%modules_provided) then
                     ! Dependency satisfied in same file, skip
                     cycle
                 end if
 
-                if (targets(i)%ptr%source%modules_used(j) .in. external_modules) then
+                if (targets(i)%ptr%source%modules_used(j)%s .in. external_modules) then
                     ! Dependency satisfied in system-installed module
                     cycle
                 end if
@@ -575,13 +574,13 @@ subroutine prune_build_targets(targets, root_package)
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
 
     !> Name of root package
-    character(*), intent(in) :: root_package
+    character(*), intent(in) :: root_package 
 
     integer :: i, j, nexec
-    type(module_t), allocatable :: modules_used(:)
+    type(string_t), allocatable :: modules_used(:)
     logical :: exclude_target(size(targets))
     logical, allocatable :: exclude_from_archive(:)
-
+    
     if (size(targets) < 1) then
         return
     end if
@@ -591,7 +590,7 @@ subroutine prune_build_targets(targets, root_package)
 
     ! Enumerate modules used by executables, non-module subprograms and their dependencies
     do i=1,size(targets)
-
+            
         if (targets(i)%ptr%target_type == FPM_TARGET_EXECUTABLE) then
 
             nexec = nexec + 1
@@ -612,16 +611,16 @@ subroutine prune_build_targets(targets, root_package)
     ! If there aren't any executables, then prune
     !  based on modules used in root package
     if (nexec < 1) then
-
+        
         do i=1,size(targets)
-
+            
             if (targets(i)%ptr%package_name == root_package .and. &
                  targets(i)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
-
+    
                 call collect_used_modules(targets(i)%ptr)
-
+    
             end if
-
+            
         end do
 
     end if
@@ -642,12 +641,12 @@ subroutine prune_build_targets(targets, root_package)
 
                     do j=1,size(target%source%modules_provided)
 
-                        if (target%source%modules_provided(j) .in. modules_used) then
-
+                        if (target%source%modules_provided(j)%s .in. modules_used) then
+                            
                             exclude_target(i) = .false.
                             target%skip = .false.
 
-                        end if
+                        end if 
 
                     end do
 
@@ -658,12 +657,12 @@ subroutine prune_build_targets(targets, root_package)
                     target%skip = .true.
                     do j=1,size(target%source%parent_modules)
 
-                        if (target%source%parent_modules(j) .in. modules_used) then
-
+                        if (target%source%parent_modules(j)%s .in. modules_used) then
+                            
                             exclude_target(i) = .false.
                             target%skip = .false.
 
-                        end if
+                        end if 
 
                     end do
 
@@ -676,7 +675,7 @@ subroutine prune_build_targets(targets, root_package)
                 target%skip = .false.
             end if
 
-        end associate
+        end associate        
     end do
 
     targets = pack(targets,.not.exclude_target)
@@ -722,7 +721,7 @@ subroutine prune_build_targets(targets, root_package)
             ! Add modules from this target and from any of it's children submodules
             do j=1,size(target%source%modules_provided)
 
-                if (.not.(target%source%modules_provided(j) .in. modules_used)) then
+                if (.not.(target%source%modules_provided(j)%s .in. modules_used)) then
 
                     modules_used = [modules_used, target%source%modules_provided(j)]
 
@@ -732,7 +731,7 @@ subroutine prune_build_targets(targets, root_package)
                 do k=1,size(targets)
                     if (allocated(targets(k)%ptr%source)) then
                         if (targets(k)%ptr%source%unit_type == FPM_UNIT_SUBMODULE) then
-                            if (target%source%modules_provided(j) .in. targets(k)%ptr%source%parent_modules) then
+                            if (target%source%modules_provided(j)%s .in. targets(k)%ptr%source%parent_modules) then
                                 call collect_used_modules(targets(k)%ptr)
                             end if
                         end if
@@ -813,7 +812,7 @@ subroutine resolve_target_linking(targets, model)
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
                                                             target%macros, &
                                                             target%version)
-
+ 
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if

@@ -12,7 +12,6 @@ use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_module, only: module_t, assignment(=), operator(.in.)
 use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 
@@ -108,7 +107,7 @@ subroutine build_model(model, settings, package, error)
             model%packages(i)%name = dependency%name
             call package%version%to_string(version)
             model%packages(i)%version = version
-
+            
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
                     if (dependency%preprocess(j)%name == "cpp") then
@@ -248,7 +247,7 @@ subroutine check_modules_for_duplicates(model, duplicates_found)
     type(fpm_model_t), intent(in) :: model
     integer :: maxsize
     integer :: i,j,k,l,m,modi
-    type(module_t), allocatable :: modules(:)
+    type(string_t), allocatable :: modules(:)
     logical :: duplicates_found
     ! Initialise the size of array
     maxsize = 0
@@ -273,7 +272,7 @@ subroutine check_modules_for_duplicates(model, duplicates_found)
       do l=1,size(model%packages(k)%sources)
         if (allocated(model%packages(k)%sources(l)%modules_provided)) then
           do m=1,size(model%packages(k)%sources(l)%modules_provided)
-            if (model%packages(k)%sources(l)%modules_provided(m).in.modules(:modi-1)) then
+            if (model%packages(k)%sources(l)%modules_provided(m)%s.in.modules(:modi-1)) then
               write(stderr, *) "Warning: Module ",model%packages(k)%sources(l)%modules_provided(m)%s, &
                 " in ",model%packages(k)%sources(l)%file_name," is a duplicate"
               duplicates_found = .true.

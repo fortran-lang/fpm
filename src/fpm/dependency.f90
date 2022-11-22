@@ -472,6 +472,7 @@ contains
 
       end if
     end if
+
     if (allocated(dependency%git)) then
       call git_revision(proj_dir, revision, error)
       if (allocated(error)) return
