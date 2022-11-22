@@ -9,6 +9,7 @@ module test_module_dependencies
                 FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
+    use fpm_module, only: module_t
     use fpm_strings, only: string_t, operator(.in.)
     use fpm, only: check_modules_for_duplicates
     implicit none
@@ -52,12 +53,12 @@ contains
                             test_subdirectory_module_use), &
             & new_unittest("invalid-subdirectory-module-use", &
                             test_invalid_subdirectory_module_use, should_fail=.true.), &
-            & new_unittest("tree-shake-module", & 
+            & new_unittest("tree-shake-module", &
                             test_tree_shake_module, should_fail=.false.), &
-            & new_unittest("tree-shake-subprogram-with-module", & 
+            & new_unittest("tree-shake-subprogram-with-module", &
                             test_tree_shake_subprogram_with_module, should_fail=.false.) &
             ]
-            
+
     end subroutine collect_module_dependencies
 
 
@@ -76,12 +77,12 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])
+                                    provides=[module_t('my_mod_1')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_2')], &
-                                    uses=[string_t('my_mod_1')])
+                                    provides=[module_t('my_mod_2')], &
+                                    uses=[module_t('my_mod_1')])
 
         call targets_from_sources(targets,model,.false.,error)
         if (allocated(error)) return
@@ -147,11 +148,11 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])
+                                    provides=[module_t('my_mod_1')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=exe_scope, &
-                                    uses=[string_t('my_mod_1')])
+                                    uses=[module_t('my_mod_1')])
 
         call targets_from_sources(targets,model,.false.,error)
         if (allocated(error)) return
@@ -203,8 +204,8 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope = FPM_SCOPE_APP, &
-                                    provides=[string_t('app_mod')], &
-                                    uses=[string_t('app_mod')])
+                                    provides=[module_t('app_mod')], &
+                                    uses=[module_t('app_mod')])
 
         call targets_from_sources(targets,model,.false.,error)
         if (allocated(error)) return
@@ -258,15 +259,15 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod1.f90", &
                                     scope = exe_scope, &
-                                    provides=[string_t('app_mod1')])
+                                    provides=[module_t('app_mod1')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod2.f90", &
                                     scope = exe_scope, &
-                                    provides=[string_t('app_mod2')],uses=[string_t('app_mod1')])
+                                    provides=[module_t('app_mod2')],uses=[module_t('app_mod1')])
 
         model%packages(1)%sources(3) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=exe_scope, &
-                                    uses=[string_t('app_mod2')])
+                                    uses=[module_t('app_mod2')])
 
         call targets_from_sources(targets,model,.false.,error)
         if (allocated(error)) return
@@ -315,12 +316,12 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])
+                                    provides=[module_t('my_mod_1')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_2')], &
-                                    uses=[string_t('my_mod_3')])
+                                    provides=[module_t('my_mod_2')], &
+                                    uses=[module_t('my_mod_3')])
 
         call targets_from_sources(targets,model,.false.,error)
 
@@ -342,11 +343,11 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])
+                                    provides=[module_t('my_mod_1')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=FPM_SCOPE_APP, &
-                                    uses=[string_t('my_mod_2')])
+                                    uses=[module_t('my_mod_2')])
 
         call targets_from_sources(targets,model,.false.,error)
 
@@ -368,12 +369,12 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
-                                    provides=[string_t('app_mod')])
+                                    provides=[module_t('app_mod')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod')], &
-                                    uses=[string_t('app_mod')])
+                                    provides=[module_t('my_mod')], &
+                                    uses=[module_t('app_mod')])
 
         call targets_from_sources(targets,model,.false.,error)
 
@@ -395,11 +396,11 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/subdir/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
-                                    provides=[string_t('app_mod')])
+                                    provides=[module_t('app_mod')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=FPM_SCOPE_APP, &
-                                    uses=[string_t('app_mod')])
+                                    uses=[module_t('app_mod')])
 
         call targets_from_sources(targets,model,.false.,error)
 
@@ -417,10 +418,10 @@ contains
         allocate(model%packages(1)%sources(2))
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+                                    scope = FPM_SCOPE_LIB, provides=[module_t('my_mod_1')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_2')])
+                                    scope = FPM_SCOPE_LIB, provides=[module_t('my_mod_2')])
 
         call check_modules_for_duplicates(model, duplicates_found)
         if (duplicates_found) then
@@ -441,7 +442,7 @@ contains
         allocate(model%packages(1)%sources(1))
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1'), string_t('my_mod_1')])
+                                    scope = FPM_SCOPE_LIB, provides=[module_t('my_mod_1'), module_t('my_mod_1')])
 
         call check_modules_for_duplicates(model, duplicates_found)
         if (duplicates_found) then
@@ -462,10 +463,10 @@ contains
         allocate(model%packages(1)%sources(2))
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1_a.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+                                    scope = FPM_SCOPE_LIB, provides=[module_t('my_mod_1')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1_b.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+                                    scope = FPM_SCOPE_LIB, provides=[module_t('my_mod_1')])
 
         call check_modules_for_duplicates(model, duplicates_found)
         if (duplicates_found) then
@@ -487,10 +488,10 @@ contains
         allocate(model%packages(2)%sources(1))
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/subdir1/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+                                    scope = FPM_SCOPE_LIB, provides=[module_t('my_mod_1')])
 
         model%packages(2)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/subdir2/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+                                    scope = FPM_SCOPE_LIB, provides=[module_t('my_mod_1')])
 
         call check_modules_for_duplicates(model, duplicates_found)
         if (duplicates_found) then
@@ -517,20 +518,20 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])  ! indirectly used
+                                    provides=[module_t('my_mod_1')])  ! indirectly used
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_2')], &
-                                    uses=[string_t('my_mod_1')])      ! directly used
+                                    provides=[module_t('my_mod_2')], &
+                                    uses=[module_t('my_mod_1')])      ! directly used
 
         model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_3.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_3')])  ! unused module
+                                    provides=[module_t('my_mod_3')])  ! unused module
 
         model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=FPM_SCOPE_APP, &
-                                    uses=[string_t('my_mod_2')])
+                                    uses=[module_t('my_mod_2')])
 
         call targets_from_sources(targets,model,prune=.true.,error=error)
         if (allocated(error)) return
@@ -588,15 +589,15 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])  ! used via subprogram
+                                    provides=[module_t('my_mod_1')])  ! used via subprogram
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_SUBPROGRAM,file_name="src/my_subprogram.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    uses=[string_t('my_mod_1')])      ! subprogram (never pruned)
+                                    uses=[module_t('my_mod_1')])      ! subprogram (never pruned)
 
         model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_3.f90", &
                                     scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_3')])  ! unused module
+                                    provides=[module_t('my_mod_3')])  ! unused module
 
         model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope=FPM_SCOPE_APP)
@@ -654,11 +655,11 @@ contains
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/diff_dir/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
-                                    provides=[string_t('app_mod')])
+                                    provides=[module_t('app_mod')])
 
         model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/prog_dir/my_program.f90", &
                                     scope=FPM_SCOPE_APP, &
-                                    uses=[string_t('app_mod')])
+                                    uses=[module_t('app_mod')])
 
         call targets_from_sources(targets,model,.false.,error)
 
@@ -669,8 +670,8 @@ contains
         integer, intent(in) :: type
         character(*), intent(in) :: file_name
         integer, intent(in) :: scope
-        type(string_t), intent(in), optional :: uses(:)
-        type(string_t), intent(in), optional :: provides(:)
+        type(module_t), intent(in), optional :: uses(:)
+        type(module_t), intent(in), optional :: provides(:)
         type(srcfile_t) :: src
 
         src%file_name = file_name

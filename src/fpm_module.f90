@@ -31,11 +31,17 @@ interface assignment(=)
 end interface
 
 interface operator(.in.)
-    module procedure array_contains
+    module procedure array_contains_module
+    module procedure array_contains_string
 end interface
 
 interface string_t
     module procedure namespaced_module_string
+end interface
+
+interface module_t
+    module procedure new_from_string
+    module procedure new_from_char
 end interface
 
 contains
@@ -59,18 +65,30 @@ end function module_equals
 
 !> Check if array of type(module_t) matches a particular instance
 !!
-pure logical function array_contains(search_module,array)
+pure logical function array_contains_module(search_module,array)
     type(module_t), intent(in) :: search_module
     type(module_t), intent(in) :: array(:)
 
     integer :: i
 
-    array_contains = any([(module_equals(array(i),search_module), &
+    array_contains_module = any([(module_equals(array(i),search_module), &
                           i=1,size(array))])
 
-end function array_contains
+end function array_contains_module
 
-subroutine module_assign_char(this,s)
+!> Check if array of type(module_t) matches a particular instance
+!!
+pure logical function array_contains_string(search_module,array)
+    character(*), intent(in) :: search_module
+    type(module_t), intent(in) :: array(:)
+
+    type(module_t) :: search_module_t
+
+    search_module_t = module_t(search_module)
+    array_contains_string = array_contains_module(search_module_t,array)
+end function array_contains_string
+
+pure subroutine module_assign_char(this,s)
     type(module_t), intent(out) :: this
     character(*), intent(in) :: s
 
@@ -83,12 +101,22 @@ subroutine module_assign_char(this,s)
     this%namespace%s = ''
 end subroutine module_assign_char
 
-subroutine module_assign_string(this,s)
+pure subroutine module_assign_string(this,s)
     type(module_t), intent(out) :: this
     type(string_t), intent(in) :: s
     this%s = s%s
     this%namespace%s = ''
 end subroutine module_assign_string
 
+
+pure type(module_t) function new_from_char(s) result(this)
+    character(*), intent(in) :: s
+    this = s
+end function new_from_char
+
+pure type(module_t) function new_from_string(s) result(this)
+    type(string_t), intent(in) :: s
+    this = s
+end function new_from_string
 
 end module fpm_module

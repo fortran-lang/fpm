@@ -7,6 +7,7 @@ module test_source_parsing
                          FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                          FPM_UNIT_CPPSOURCE
     use fpm_strings, only: operator(.in.)
+    use fpm_module, only: operator(.in.)
     implicit none
     private
 
@@ -819,7 +820,7 @@ contains
             call test_failed(error,'Unexpected link_libraries - expecting unallocated')
             return
         end if
-        
+
         if (size(f_source%parent_modules) /= 0) then
             call test_failed(error,'Incorrect number of parent_modules - expecting zero')
             return
