@@ -12,7 +12,7 @@ rev = "e49f5523e4ee67db6628618864504448fb8c8939"
 
 [dependencies.M_CLI2]
 git = "https://github.com/urbanjost/M_CLI2.git"
-rev = "ea6bbffc1c2fb0885e994d37ccf0029c99b19f24"
+rev = "7264878cdb1baff7323cc48596d829ccfe7751b8"
 
 [[test]]
 name = "cli-test"
