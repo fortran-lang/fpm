@@ -81,98 +81,186 @@
   <div class="row">
     <h1>targets_from_sources
       <small>Subroutine</small>
+      
     </h1>
-    <div class="row">
-  <div class="col-lg-12">
-<div class="well well-sm">
-  <ul class="list-inline" style="margin-bottom:0px;display:inline">
-     <li><i class="fa fa-list-ol"></i>
-       <a data-toggle="tooltip"
-    data-placement="bottom" data-html="true"
-    title=" 0.3% of total for procedures.">14 statements</a>
-     </li> 
-    <li><i class="fa fa-code"></i><a href="../src/fpm_targets.f90"> Source File</a></li>
-  </ul>
-  <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></li>
-     <li><a href='../module/fpm_targets.html'>fpm_targets</a></li>
-     <li class="active">targets_from_sources</li>
-  </ol>
-</div>
-</div>
-</div>
-<script>
-  $(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-  })
-</script>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 0.3% of total for procedures.">14 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/fpm_targets.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></li>
+              <li><a href='../module/fpm_targets.html'>fpm_targets</a></li>
+          <li class="active">targets_from_sources</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    <div id="sidebar">
-  <h3>Contents</h3>
- 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/targets_from_sources.html#src">targets_from_sources</a>
-  </div>
-</div>
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="panel panel-primary">
+      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/targets_from_sources.html#src">targets_from_sources</a>
+      </div>
+    </div>
 
-</div>
+
+  </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine targets_from_sources(targets, model, prune, error)</h2>
+    <h2>public  subroutine targets_from_sources(targets, model, prune, error)  
+</h2>
     
 
     <p>High-level wrapper to generate build target information</p>
 
     <h3>Arguments</h3>
-      <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
-<tbody>
-<tr>
-  <td><span class="anchor" id="variable-targets~7"></span>type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),</td>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-targets"></span>
+              type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
+            </td>
 <td>intent(out),</td>
-  <td></td>  <td>allocatable</td><td>::</td>
-  <td><strong>targets</strong>(:)</td><td><p>The generated list of build targets</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-model~2"></span>type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>targets</strong>(:)</td>
+            <td>
+                <p>The generated list of build targets</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model"></span>
+              type(<a href='../type/fpm_model_t.html'>fpm_model_t</a>),
+            </td>
 <td>intent(inout),</td>
-  <td></td>  <td>target</td><td>::</td>
-  <td><strong>model</strong></td><td><p>The package model from which to construct the target list</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-prune~2"></span>logical,</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>model</strong></td>
+            <td>
+                <p>The package model from which to construct the target list</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-prune"></span>
+              logical,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>prune</strong></td><td><p>Enable tree-shaking/pruning of module dependencies</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-error~6"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>prune</strong></td>
+            <td>
+                <p>Enable tree-shaking/pruning of module dependencies</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
 <td>intent(out),</td>
-  <td></td>  <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td><p>Error structure</p></td>
-</tr>
-</tbody>
-</table>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error structure</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      <h3>Contents</h3>
- 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/targets_from_sources.html#src">targets_from_sources</a>
-  </div>
-</div>
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="panel panel-primary">
+      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/targets_from_sources.html#src">targets_from_sources</a>
+      </div>
+    </div>
+
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -236,7 +324,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-10-31 14:09            </p>
+ on 2022-11-24 16:01            </p>
         </div>
       </div>
       <br>

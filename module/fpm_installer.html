@@ -81,56 +81,89 @@
   <div class="row">
     <h1>fpm_installer 
     <small>Module</small>
+    
     </h1>
-    <div class="row">
-  <div class="col-lg-12">
-<div class="well well-sm">
-  <ul class="list-inline" style="margin-bottom:0px;display:inline">
-     <li><i class="fa fa-list-ol"></i>
-       <a data-toggle="tooltip"
-    data-placement="bottom" data-html="true"
-    title=" 2.5% of total for modules and submodules.">190 statements</a>
-     </li> 
-    <li><i class="fa fa-code"></i><a href="../src/installer.f90"> Source File</a></li>
-  </ul>
-  <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/installer.f90.html'>installer.f90</a></li>
-     <li class="active">fpm_installer</li>
-  </ol>
-</div>
-</div>
-</div>
-<script>
-  $(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-  })
-</script>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 2.5% of total for modules and submodules.">190 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/installer.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/installer.f90.html'>installer.f90</a></li>
+          <li class="active">fpm_installer</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    <div id="sidebar">
-  <h3>Contents</h3>
- 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-0">Derived Types</a></h3></div>
-  <div id="types-0" class="panel-collapse collapse">
-    <div class="list-group">
-      <a class="list-group-item" href="../module/fpm_installer.html#type-installer_t">installer_t</a>
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#types-0">Derived Types</a>
+        </h3>
+      </div>
+      <div id="types-0" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_installer.html#type-installer_t">installer_t</a>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
-  <div class="list-group">
-    <div id="subs-0" class="panel-collapse collapse">
-      <a class="list-group-item" href="../module/fpm_installer.html#proc-new_installer">new_installer</a>
-    </div>
-  </div>
-</div>
 
-</div>
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#subs-0">Subroutines</a>
+        </h3>
+      </div>
+      <div id="subs-0" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_installer.html#proc-new_installer">new_installer</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+
+
+  </div>
 
     </div>
     
@@ -141,17 +174,17 @@ in the installation prefix, a generic install command allows to install
 to any directory within the prefix.</p>
 <br>        <div class="panel panel-default">
       <div class="panel-heading">
-  <h3 class="panel-title">Uses</h3>
+        <h3 class="panel-title">Uses</h3>
       </div>
       <ul class="list-group">
-      <li class="list-group-item">
-  <ul class="list-inline">
-    <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
-    <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-    <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-    <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-  </ul>
-      </li>
+          <li class="list-group-item">
+            <ul class="list-inline">
+                <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+                <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+            </ul>
+          </li>
       </ul>
     </div>
 
@@ -159,24 +192,51 @@ to any directory within the prefix.</p>
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      <h3>Contents</h3>
- 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-1">Derived Types</a></h3></div>
-  <div id="types-1" class="panel-collapse collapse">
-    <div class="list-group">
-      <a class="list-group-item" href="../module/fpm_installer.html#type-installer_t">installer_t</a>
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#types-1">Derived Types</a>
+        </h3>
+      </div>
+      <div id="types-1" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_installer.html#type-installer_t">installer_t</a>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
-  <div class="list-group">
-    <div id="subs-1" class="panel-collapse collapse">
-      <a class="list-group-item" href="../module/fpm_installer.html#proc-new_installer">new_installer</a>
+
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#subs-1">Subroutines</a>
+        </h3>
+      </div>
+      <div id="subs-1" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_installer.html#proc-new_installer">new_installer</a>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+
+  
+  
+  
+  
+  
+  
+
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -188,82 +248,243 @@ to any directory within the prefix.</p>
     
     <section>
      <h2>Derived Types</h2>
-     <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="type-installer_t"></span><h3>type, public :: <a href='../type/installer_t.html'>installer_t</a>  </h3></div>
-  <div class="panel-body">
-    <p>Declaration of the installer type</p>
-     <h4>Components</h4>
-    <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Visibility</th><th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
-<tbody>
-<tr>
-  <td><span class="anchor" id="variable-bindir"></span>character(len=:),</td>
-<td>public,</td>  <td>allocatable</td><td>::</td>
-  <td><strong>bindir</strong></td><td></td><td></td><td><p>Binary dir relative to the installation prefix</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-copy"></span>character(len=:),</td>
-<td>public,</td>  <td>allocatable</td><td>::</td>
-  <td><strong>copy</strong></td><td></td><td></td><td><p>Command to copy objects into the installation prefix</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-includedir"></span>character(len=:),</td>
-<td>public,</td>  <td>allocatable</td><td>::</td>
-  <td><strong>includedir</strong></td><td></td><td></td><td><p>Include directory relative to the installation prefix</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-libdir"></span>character(len=:),</td>
-<td>public,</td>  <td>allocatable</td><td>::</td>
-  <td><strong>libdir</strong></td><td></td><td></td><td><p>Library directory relative to the installation prefix</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-move"></span>character(len=:),</td>
-<td>public,</td>  <td>allocatable</td><td>::</td>
-  <td><strong>move</strong></td><td></td><td></td><td><p>Command to move objects into the installation prefix</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-os"></span>integer,</td>
-<td>public</td>  <td></td><td>::</td>
-  <td><strong>os</strong></td><td></td><td></td><td><p>Cached operating system</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-prefix"></span>character(len=:),</td>
-<td>public,</td>  <td>allocatable</td><td>::</td>
-  <td><strong>prefix</strong></td><td></td><td></td><td><p>Path to installation directory</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-unit~2"></span>integer,</td>
-<td>public</td>  <td></td><td>::</td>
-  <td><strong>unit</strong></td><td> =</td><td>output_unit</td><td><p>Output unit for informative printout</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-verbosity~2"></span>integer,</td>
-<td>public</td>  <td></td><td>::</td>
-  <td><strong>verbosity</strong></td><td> =</td><td>1</td><td><p>Verbosity of the installer</p></td>
-</tr>
-</tbody>
-</table>
+       <div class="panel panel-default">
+    <div class="panel-heading codesum">
+      <span class="anchor" id="type-installer_t"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/installer_t.html'>installer_t</a>
+        
+      </h3>
+    </div>
+    <div class="panel-body">
+      <p>Declaration of the installer type</p>
 
-     
-     <h4>Type-Bound Procedures</h4>
-      <table class="table table-striped varlist">
-      <tbody>
-       <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-install'>install</a></strong>  </td>
-       <td><p>Install a generic file into a subdirectory in the installation prefix</p></td></tr>
-       <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-install_executable'>install_executable</a></strong>  </td>
-       <td><p>Install an executable in its correct subdirectory</p></td></tr>
-       <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-install_header'>install_header</a></strong>  </td>
-       <td><p>Install a header/module in its correct subdirectory</p></td></tr>
-       <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-install_library'>install_library</a></strong>  </td>
-       <td><p>Install a library in its correct subdirectory</p></td></tr>
-       <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-make_dir'>make_dir</a></strong>  </td>
-       <td><p>Create a new directory in the prefix, type-bound for unit testing purposes</p></td></tr>
-       <tr><td>procedure, public :: <strong><a href='../type/installer_t.html#boundprocedure-run'>run</a></strong>  </td>
-       <td><p>Run an installation command, type-bound for unit testing purposes</p></td></tr>
-       </tbody>
-       </table>
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Visibility</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+<th></th><th>Initial</th>        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bindir~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>bindir</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Binary dir relative to the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-copy~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>copy</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Command to copy objects into the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-includedir~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>includedir</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Include directory relative to the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-libdir~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>libdir</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Library directory relative to the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-move~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>move</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Command to move objects into the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-os~2"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>os</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Cached operating system</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-prefix~3"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>prefix</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Path to installation directory</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-unit~2"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>unit</strong></td>
+<td> =</td>
+                <td>output_unit</td>
+            <td>
+<p>Output unit for informative printout</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-verbosity~2"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>verbosity</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+<p>Verbosity of the installer</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>
+                    procedure
+                    ,                  public
+                  :: <strong><a href='../type/installer_t.html#boundprocedure-install'>install</a></strong>
+<small>Subroutine</small>                </td>
+                <td><p>Install a generic file into a subdirectory in the installation prefix</p></td>
+              </tr>
+              <tr>
+                <td>
+                    procedure
+                    ,                  public
+                  :: <strong><a href='../type/installer_t.html#boundprocedure-install_executable'>install_executable</a></strong>
+<small>Subroutine</small>                </td>
+                <td><p>Install an executable in its correct subdirectory</p></td>
+              </tr>
+              <tr>
+                <td>
+                    procedure
+                    ,                  public
+                  :: <strong><a href='../type/installer_t.html#boundprocedure-install_header'>install_header</a></strong>
+<small>Subroutine</small>                </td>
+                <td><p>Install a header/module in its correct subdirectory</p></td>
+              </tr>
+              <tr>
+                <td>
+                    procedure
+                    ,                  public
+                  :: <strong><a href='../type/installer_t.html#boundprocedure-install_library'>install_library</a></strong>
+<small>Subroutine</small>                </td>
+                <td><p>Install a library in its correct subdirectory</p></td>
+              </tr>
+              <tr>
+                <td>
+                    procedure
+                    ,                  public
+                  :: <strong><a href='../type/installer_t.html#boundprocedure-make_dir'>make_dir</a></strong>
+<small>Subroutine</small>                </td>
+                <td><p>Create a new directory in the prefix, type-bound for unit testing purposes</p></td>
+              </tr>
+              <tr>
+                <td>
+                    procedure
+                    ,                  public
+                  :: <strong><a href='../type/installer_t.html#boundprocedure-run'>run</a></strong>
+<small>Subroutine</small>                </td>
+                <td><p>Run an installation command, type-bound for unit testing purposes</p></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
   </div>
-</div>
 
     </section>
   <br>
@@ -272,72 +493,155 @@ to any directory within the prefix.</p>
     <section>
     <h2>Subroutines</h2>
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-new_installer"></span><h3>public subroutine <a href='../proc/new_installer.html'>new_installer</a>(self, prefix, bindir, libdir, includedir, verbosity, copy, move)</h3></div>
-  <div class="panel-body">
-       
-<p>Create a new instance of an installer</p>
-    
-<h4>Arguments</h4>      <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
-<tbody>
-<tr>
-  <td><span class="anchor" ></span>type(<a href='../type/installer_t.html'>installer_t</a>),</td>
+    <div class="panel-heading codesum"><span class="anchor" id="proc-new_installer"></span><h3>public  subroutine <a href='../proc/new_installer.html'>new_installer</a>(self, prefix, bindir, libdir, includedir, verbosity, copy, move)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Create a new instance of an installer</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/installer_t.html'>installer_t</a>),
+            </td>
 <td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>self</strong></td><td><p>Instance of the installer</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" ></span>character(len=*),</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+<p>Instance of the installer</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
 <td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>prefix</strong></td><td><p>Path to installation directory</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" ></span>character(len=*),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>prefix</strong></td>
+            <td>
+<p>Path to installation directory</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
 <td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>bindir</strong></td><td><p>Binary dir relative to the installation prefix</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" ></span>character(len=*),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bindir</strong></td>
+            <td>
+<p>Binary dir relative to the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
 <td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>libdir</strong></td><td><p>Library directory relative to the installation prefix</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" ></span>character(len=*),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>libdir</strong></td>
+            <td>
+<p>Library directory relative to the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
 <td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>includedir</strong></td><td><p>Include directory relative to the installation prefix</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" ></span>integer,</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>includedir</strong></td>
+            <td>
+<p>Include directory relative to the installation prefix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
 <td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>verbosity</strong></td><td><p>Verbosity of the installer</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" ></span>character(len=*),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>verbosity</strong></td>
+            <td>
+<p>Verbosity of the installer</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
 <td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>copy</strong></td><td><p>Copy command</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" ></span>character(len=*),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>copy</strong></td>
+            <td>
+<p>Copy command</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
 <td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>move</strong></td><td><p>Move command</p></td>
-</tr>
-</tbody>
-</table>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>move</strong></td>
+            <td>
+<p>Move command</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
 
+    </div>
   </div>
-  </div>
 
-    </section>    
+    </section>
     <br>
-    
+
+
+
     </div>
   </div>
 
@@ -353,7 +657,7 @@ to any directory within the prefix.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-10-31 14:09            </p>
+ on 2022-11-24 16:01            </p>
         </div>
       </div>
       <br>

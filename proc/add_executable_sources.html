@@ -81,52 +81,78 @@
   <div class="row">
     <h1>add_executable_sources
       <small>Subroutine</small>
+      
     </h1>
-    <div class="row">
-  <div class="col-lg-12">
-<div class="well well-sm">
-  <ul class="list-inline" style="margin-bottom:0px;display:inline">
-     <li><i class="fa fa-list-ol"></i>
-       <a data-toggle="tooltip"
-    data-placement="bottom" data-html="true"
-    title=" 1.0% of total for procedures.">44 statements</a>
-     </li> 
-    <li><i class="fa fa-code"></i><a href="../src/fpm_sources.f90"> Source File</a></li>
-  </ul>
-  <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/fpm_sources.f90.html'>fpm_sources.f90</a></li>
-     <li><a href='../module/fpm_sources.html'>fpm_sources</a></li>
-     <li class="active">add_executable_sources</li>
-  </ol>
-</div>
-</div>
-</div>
-<script>
-  $(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-  })
-</script>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 1.0% of total for procedures.">44 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/fpm_sources.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/fpm_sources.f90.html'>fpm_sources.f90</a></li>
+              <li><a href='../module/fpm_sources.html'>fpm_sources</a></li>
+          <li class="active">add_executable_sources</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    <div id="sidebar">
-  <h3>Contents</h3>
- 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/add_executable_sources.html#src">add_executable_sources</a>
-  </div>
-</div>
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="panel panel-primary">
+      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/add_executable_sources.html#src">add_executable_sources</a>
+      </div>
+    </div>
 
-</div>
+
+  </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine add_executable_sources(sources, executables, scope, auto_discover, error)</h2>
+    <h2>public  subroutine add_executable_sources(sources, executables, scope, auto_discover, error)  
+</h2>
     
 
     <p>Add to <code>sources</code> using the executable and test entries in the manifest and
@@ -134,53 +160,124 @@ applies any executable-specific overrides such as <code>executable%name</code>.
 Adds all sources (including modules) from each <code>executable%source_dir</code></p>
 
     <h3>Arguments</h3>
-      <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
-<tbody>
-<tr>
-  <td><span class="anchor" id="variable-sources~2"></span>type(<a href='../type/srcfile_t.html'>srcfile_t</a>),</td>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources~3"></span>
+              type(<a href='../type/srcfile_t.html'>srcfile_t</a>),
+            </td>
 <td>intent(inout),</td>
-  <td></td>  <td>allocatable, target</td><td>::</td>
-  <td><strong>sources</strong>(:)</td><td><p>List of <code><a href="../type/srcfile_t.html">srcfile_t</a></code> objects to append to. Allocated if not allocated</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-executables"></span>class(<a href='../type/executable_config_t.html'>executable_config_t</a>),</td>
+              <td></td>            <td>
+              allocatable, target
+            </td>
+            <td>::</td>
+            <td><strong>sources</strong>(:)</td>
+            <td>
+                <p>List of <code><a href="../type/srcfile_t.html">srcfile_t</a></code> objects to append to. Allocated if not allocated</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-executables"></span>
+              class(<a href='../type/executable_config_t.html'>executable_config_t</a>),
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>executables</strong>(:)</td><td><p>List of <code><a href="../type/executable_config_t.html">executable_config_t</a></code> entries from manifest</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-scope"></span>integer,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>executables</strong>(:)</td>
+            <td>
+                <p>List of <code><a href="../type/executable_config_t.html">executable_config_t</a></code> entries from manifest</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scope~2"></span>
+              integer,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>scope</strong></td><td><p>Scope to apply to the discovered sources: either <code>FPM_SCOPE_APP</code> or <code>FPM_SCOPE_TEST</code>, see <a href="../module/fpm_model.html">fpm_model</a></p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-auto_discover"></span>logical,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scope</strong></td>
+            <td>
+                <p>Scope to apply to the discovered sources: either <code>FPM_SCOPE_APP</code> or <code>FPM_SCOPE_TEST</code>, see <a href="../module/fpm_model.html">fpm_model</a></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-auto_discover"></span>
+              logical,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>auto_discover</strong></td><td><p>If <code>.false.</code> only executables and tests specified in the manifest are added to <code>sources</code></p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-error"></span>type(<a href='../type/error_t.html'>error_t</a>),</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>auto_discover</strong></td>
+            <td>
+                <p>If <code>.false.</code> only executables and tests specified in the manifest are added to <code>sources</code></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~3"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
 <td>intent(out),</td>
-  <td></td>  <td>allocatable</td><td>::</td>
-  <td><strong>error</strong></td><td><p>Error handling</p></td>
-</tr>
-</tbody>
-</table>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      <h3>Contents</h3>
- 
-<div class="panel panel-primary">
-  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
-  <div class="list-group">
-    <a class="list-group-item" href="../proc/add_executable_sources.html#src">add_executable_sources</a>
-  </div>
-</div>
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="panel panel-primary">
+      <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/add_executable_sources.html#src">add_executable_sources</a>
+      </div>
+    </div>
+
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -287,7 +384,7 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-10-31 14:09            </p>
+ on 2022-11-24 16:01            </p>
         </div>
       </div>
       <br>
