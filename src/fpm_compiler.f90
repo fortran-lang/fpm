@@ -439,9 +439,9 @@ function get_macros(id, macros_list, version) result(macros)
     !> Set macro defintion symbol on the basis of compiler used
     select case(id)
     case default
-        macro_definition_symbol = "-D"
+        macro_definition_symbol = " -D"
     case (id_intel_classic_windows, id_intel_llvm_windows)
-        macro_definition_symbol = "/D"
+        macro_definition_symbol = " /D"
     end select
 
     !> Check if macros are not allocated.
@@ -465,23 +465,14 @@ function get_macros(id, macros_list, version) result(macros)
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
                     
                         !> These conditions are placed in order to ensure proper spacing between the macros.
-                        if (len(macros) == 0) then
-                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
-                        else 
-                            macros = macros//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version
-                        end if
+                        macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
                         cycle
                     end if
                 end if
             end if 
         end if
          
-        !> These conditions are placed in order to ensure proper spacing between the macros.
-        if (len(macros) == 0) then
-            macros = ' '//macros//macro_definition_symbol//macros_list(i)%s
-        else 
-            macros = macros//' '//macro_definition_symbol//macros_list(i)%s
-        end if
+        macros = macros//macro_definition_symbol//macros_list(i)%s
 
     end do
 
