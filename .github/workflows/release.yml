@@ -68,6 +68,9 @@ jobs:
       run: |
         echo "OUTPUT=${{ env.OUTPUT }}" >> $GITHUB_ENV
         echo "#define FPM_BOOTSTRAP" > fpm-${{ env.VERSION }}.F90
+        # Intel compiler predefines "linux" and "unix" which causes inadvertent substitutions
+        echo "#undef linux"          >> fpm-${{ env.VERSION }}.F90
+        echo "#undef unix"           >> fpm-${{ env.VERSION }}.F90
         fpm build --compiler ./ci/single-file-gfortran.sh
       env:
         OUTPUT: fpm-${{ env.VERSION }}.F90
