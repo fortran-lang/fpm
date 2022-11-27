@@ -91,7 +91,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 1.0% of total for procedures.">44 statements</a>
+               title=" 0.8% of total for procedures.">36 statements</a>
           </li>
 
             <li id="source-file">
@@ -177,8 +177,7 @@ Split the macro name and value.</p>
 <p>Check if the value of macro starts with &lsquo;{&lsquo; character.</p>
 <p>Check if the value of macro ends with &lsquo;}&rsquo; character.</p>
 <p>Check if the string contains &ldquo;version&rdquo; as substring.</p>
-<p>These conditions are placed in order to ensure proper spacing between the macros.
-These conditions are placed in order to ensure proper spacing between the macros.</p>
+<p>These conditions are placed in order to ensure proper spacing between the macros.</p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -393,9 +392,9 @@ These conditions are placed in order to ensure proper spacing between the macros
 <span class="w">    </span><span class="c">!&gt; Set macro defintion symbol on the basis of compiler used</span>
 <span class="w">    </span><span class="k">select case</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="k">case </span><span class="n">default</span><span class="w"></span>
-<span class="w">        </span><span class="n">macro_definition_symbol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-D&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="n">macro_definition_symbol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; -D&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="n">id_intel_classic_windows</span><span class="p">,</span><span class="w"> </span><span class="n">id_intel_llvm_windows</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="n">macro_definition_symbol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/D&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="n">macro_definition_symbol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; /D&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="k">end select</span><span class="w"></span>
 
 <span class="w">    </span><span class="c">!&gt; Check if macros are not allocated.</span>
@@ -419,25 +418,16 @@ These conditions are placed in order to ensure proper spacing between the macros
 <span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">)),</span><span class="w"> </span><span class="s2">&quot;version&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
 <span class="w">                    </span>
 <span class="w">                        </span><span class="c">!&gt; These conditions are placed in order to ensure proper spacing between the macros.</span>
-<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">macros</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                            </span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">macros</span><span class="o">//</span><span class="n">macro_definition_symbol</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">//</span><span class="s1">&#39;=&#39;</span><span class="o">//</span><span class="n">version</span><span class="w"></span>
-<span class="w">                        </span><span class="k">else </span>
-<span class="k">                            </span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">macros</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">macro_definition_symbol</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">//</span><span class="s1">&#39;=&#39;</span><span class="o">//</span><span class="n">version</span><span class="w"></span>
-<span class="w">                        </span><span class="k">end if</span>
-<span class="k">                        cycle</span>
+<span class="w">                        </span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">macros</span><span class="o">//</span><span class="n">macro_definition_symbol</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">valued_macros</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">//</span><span class="s1">&#39;=&#39;</span><span class="o">//</span><span class="n">version</span><span class="w"></span>
+<span class="w">                        </span><span class="k">cycle</span>
 <span class="k">                    end if</span>
 <span class="k">                end if</span>
 <span class="k">            end if </span>
-<span class="k">        end if</span><span class="w"></span>
-<span class="w">         </span>
-<span class="w">        </span><span class="c">!&gt; These conditions are placed in order to ensure proper spacing between the macros.</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">macros</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">macros</span><span class="o">//</span><span class="n">macro_definition_symbol</span><span class="o">//</span><span class="n">macros_list</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="w"></span>
-<span class="w">        </span><span class="k">else </span>
-<span class="k">            </span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">macros</span><span class="o">//</span><span class="s1">&#39; &#39;</span><span class="o">//</span><span class="n">macro_definition_symbol</span><span class="o">//</span><span class="n">macros_list</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="w"></span>
-<span class="w">        </span><span class="k">end if</span>
+<span class="k">        end if</span>
+<span class="k">         </span>
+<span class="k">        </span><span class="n">macros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">macros</span><span class="o">//</span><span class="n">macro_definition_symbol</span><span class="o">//</span><span class="n">macros_list</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">s</span><span class="w"></span>
 
-<span class="k">    end do</span>
+<span class="w">    </span><span class="k">end do</span>
 
 <span class="k">end function </span><span class="n">get_macros</span><span class="w"></span>
 </pre></div>
@@ -460,7 +450,7 @@ These conditions are placed in order to ensure proper spacing between the macros
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-11-24 16:01            </p>
+ on 2022-11-27 12:25            </p>
         </div>
       </div>
       <br>
