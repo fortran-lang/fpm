@@ -937,9 +937,9 @@ end subroutine link
 
 
 !> Create an archive
-!> @todo An OMP critical section is added for Windows OS,
-!> which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
-!> see issue #707 and #708.
+!> @todo For Windows OS, the `delete_file` returns `iostat`, but we does not process it.
+!> This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+!> see issue #707, #708 and #808.
 subroutine make_archive(self, output, args, log_file, stat)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
@@ -951,14 +951,13 @@ subroutine make_archive(self, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
+    integer :: istat
 
     if (self%use_response_file) then
-        !$omp critical
         call write_response_file(output//".resp" , args)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
             &  verbose=self%verbose, redirect=log_file, exitstat=stat)
-        call delete_file(output//".resp")
-        !$omp end critical
+        call delete_file(output//".resp", iostat=istat)
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
             & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
@@ -976,7 +975,7 @@ subroutine write_response_file(name, argv)
 
     integer :: iarg, io
 
-    open(file=name, newunit=io)
+    open(file=name, newunit=io, status='replace')
     do iarg = 1, size(argv)
         write(io, '(a)') unix_path(argv(iarg)%s)
     end do

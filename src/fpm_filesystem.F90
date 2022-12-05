@@ -681,14 +681,17 @@ end subroutine getline
 
 
 !> delete a file by filename
-subroutine delete_file(file)
+subroutine delete_file(file, iostat)
+    !> file to delete
     character(len=*), intent(in) :: file
+    !> status of operation
+    integer, intent(out), optional :: iostat
     logical :: exist
     integer :: unit
     inquire(file=file, exist=exist)
     if (exist) then
         open(file=file, newunit=unit)
-        close(unit, status="delete")
+        close(unit, status="delete", iostat=iostat)
     end if
 end subroutine delete_file
 
