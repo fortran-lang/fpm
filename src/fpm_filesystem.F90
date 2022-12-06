@@ -687,11 +687,14 @@ subroutine delete_file(file, iostat)
     !> status of operation
     integer, intent(out), optional :: iostat
     logical :: exist
-    integer :: unit
+    integer :: unit, iostat_local
     inquire(file=file, exist=exist)
     if (exist) then
         open(file=file, newunit=unit)
-        close(unit, status="delete", iostat=iostat)
+        close(unit, status="delete", iostat=iostat_local)
+        if (present(iostat)) iostat = iostat_local
+    else
+        if (present(iostat)) iostat = 0
     end if
 end subroutine delete_file
 
