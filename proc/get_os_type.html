@@ -169,7 +169,7 @@ found on specific system types only.</p>
     <br>
       <h3>Return Value
         <small>
-          <span class="anchor" id="variable-r~2"></span>
+          <span class="anchor" id="variable-r"></span>
           integer
         </small>
       </h3>
@@ -245,15 +245,6 @@ found on specific system types only.</p>
 <span class="k">        </span><span class="n">first_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
 <span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_UNKNOWN</span><span class="w"></span>
 
-<span class="w">        </span><span class="c">! Check environment variable `OS`.</span>
-<span class="w">        </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OS&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">)</span><span class="w"></span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Windows_NT&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="w"></span>
-<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
-<span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span><span class="w"></span>
-
 <span class="w">        </span><span class="c">! Check environment variable `OSTYPE`.</span>
 <span class="w">        </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OSTYPE&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">)</span><span class="w"></span>
 
@@ -308,6 +299,15 @@ found on specific system types only.</p>
 <span class="k">            end if</span>
 <span class="k">        end if</span><span class="w"></span>
 
+<span class="w">        </span><span class="c">! Check environment variable `OS`.</span>
+<span class="w">        </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;OS&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="nb">index</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Windows_NT&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OS_WINDOWS</span><span class="w"></span>
+<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span><span class="w"></span>
+
 <span class="w">        </span><span class="c">! Linux</span>
 <span class="w">        </span><span class="k">inquire</span><span class="w"> </span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="s1">&#39;/etc/os-release&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">exist</span><span class="o">=</span><span class="n">file_exists</span><span class="p">)</span><span class="w"></span>
 
@@ -355,7 +355,7 @@ found on specific system types only.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2022-11-29 19:29            </p>
+ on 2022-12-12 19:50            </p>
         </div>
       </div>
       <br>
