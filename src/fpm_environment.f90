@@ -51,15 +51,6 @@ contains
         first_run = .false.
         r = OS_UNKNOWN
 
-        ! Check environment variable `OS`.
-        call get_environment_variable('OS', val, length, rc)
-
-        if (rc == 0 .and. length > 0 .and. index(val, 'Windows_NT') > 0) then
-            r = OS_WINDOWS
-            ret = r
-            return
-        end if
-
         ! Check environment variable `OSTYPE`.
         call get_environment_variable('OSTYPE', val, length, rc)
 
@@ -112,6 +103,15 @@ contains
                 ret = r
                 return
             end if
+        end if
+
+        ! Check environment variable `OS`.
+        call get_environment_variable('OS', val, length, rc)
+
+        if (rc == 0 .and. length > 0 .and. index(val, 'Windows_NT') > 0) then
+            r = OS_WINDOWS
+            ret = r
+            return
         end if
 
         ! Linux
