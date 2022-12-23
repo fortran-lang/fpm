@@ -41,6 +41,7 @@ implicit none
 
 private
 public :: fpm_cmd_settings, &
+          fpm_registry_settings, &
           fpm_build_settings, &
           fpm_install_settings, &
           fpm_new_settings, &
@@ -52,10 +53,19 @@ public :: fpm_cmd_settings, &
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
-    logical                      :: verbose=.true.
+    logical                       :: verbose=.true.
 end type
 
 integer,parameter :: ibug=4096
+
+type, extends(fpm_cmd_settings)   :: fpm_registry_settings
+    character(len=:), allocatable :: path
+    character(len=:), allocatable :: url
+
+contains
+    procedure :: uses_default_registry
+end type
+
 type, extends(fpm_cmd_settings)  :: fpm_new_settings
     character(len=:),allocatable :: name
     logical                      :: with_executable=.false.
@@ -1321,5 +1331,11 @@ contains
 
       val = get_env(fpm_prefix//env, default)
     end function get_fpm_env
+
+    !> The official registry is used by default when no local or custom registry was specified.
+    pure logical function uses_default_registry(self)
+        class(fpm_registry_settings), intent(in) :: self
+        uses_default_registry = .not. allocated(self%path) .and. .not. allocated(self%url)
+    end function
 
 end module fpm_command_line

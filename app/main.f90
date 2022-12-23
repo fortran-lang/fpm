@@ -2,6 +2,7 @@ program main
 use, intrinsic :: iso_fortran_env, only : error_unit, output_unit
 use fpm_command_line, only: &
         fpm_cmd_settings, &
+        fpm_registry_settings, &
         fpm_new_settings, &
         fpm_build_settings, &
         fpm_run_settings, &
@@ -21,10 +22,13 @@ use fpm_os,  only: change_directory, get_current_directory
 implicit none
 
 class(fpm_cmd_settings), allocatable :: cmd_settings
+type(fpm_registry_settings), allocatable :: registry_settings
 type(error_t), allocatable :: error
 character(len=:), allocatable :: pwd_start, pwd_working, working_dir, project_root
 
 call get_command_line_settings(cmd_settings)
+
+call get_registry(registry_settings)
 
 call get_current_directory(pwd_start, error)
 call handle_error(error)
@@ -106,6 +110,12 @@ contains
             stop 1
         end if
     end subroutine handle_error
+    
+    !> Obtain registry settings and register local or custom registry
+    !> if such was specified in the global config file.
+    subroutine get_registry(reg_settings)
+        type(fpm_registry_settings), allocatable, intent(out) :: reg_settings
+    end subroutine get_registry
 
     !> Save access to working directory in settings, in case setting have not been allocated
     subroutine get_working_dir(settings, working_dir)
