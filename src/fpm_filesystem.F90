@@ -11,8 +11,8 @@ module fpm_filesystem
     use fpm_error, only : fpm_stop
     implicit none
     private
-    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
-            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
+    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, &
+            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, set_local_prefix
     public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
     public :: is_hidden_file
     public :: read_lines, read_lines_expanded
@@ -962,5 +962,37 @@ subroutine os_delete_dir(unix, dir, echo)
     end if
 
 end subroutine os_delete_dir
+
+!> Set path prefix to the local folder. Used for installation, registry etc.
+subroutine set_local_prefix(prefix, os)
+    !> Installation prefix
+    character(len=:), allocatable :: prefix
+    !> Platform identifier
+    integer, intent(in), optional :: os
+
+    !> Default installation prefix on Unix platforms
+    character(len=*), parameter :: default_prefix_unix = "/usr/local"
+    !> Default installation prefix on Windows platforms
+    character(len=*), parameter :: default_prefix_win = "C:\"
+
+    character(len=:), allocatable :: home
+
+    if (os_is_unix(os)) then
+      call env_variable(home, "HOME")
+      if (allocated(home)) then
+        prefix = join_path(home, ".local")
+      else
+        prefix = default_prefix_unix
+      end if
+    else
+      call env_variable(home, "APPDATA")
+      if (allocated(home)) then
+        prefix = join_path(home, "local")
+      else
+        prefix = default_prefix_win
+      end if
+    end if
+
+  end subroutine set_local_prefix
 
 end module fpm_filesystem

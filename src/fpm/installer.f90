@@ -7,13 +7,11 @@ module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, os_is_unix
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, &
-    env_variable
+  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, set_local_prefix
+
   implicit none
   private
-
   public :: installer_t, new_installer
-
 
   !> Declaration of the installer type
   type :: installer_t
@@ -59,12 +57,6 @@ module fpm_installer
   !> Default name of the include subdirectory
   character(len=*), parameter :: default_includedir = "include"
 
-  !> Default name of the installation prefix on Unix platforms
-  character(len=*), parameter :: default_prefix_unix = "/usr/local"
-
-  !> Default name of the installation prefix on Windows platforms
-  character(len=*), parameter :: default_prefix_win = "C:\"
-
   !> Copy command on Unix platforms
   character(len=*), parameter :: default_copy_unix = "cp"
 
@@ -76,7 +68,6 @@ module fpm_installer
 
   !> Move command on Windows platforms
   character(len=*), parameter :: default_move_win = "move"
-
 
 contains
 
@@ -131,7 +122,7 @@ contains
     if (present(prefix)) then
       self%prefix = prefix
     else
-      call set_default_prefix(self%prefix, self%os)
+      call set_local_prefix(self%prefix, self%os)
     end if
 
     if (present(bindir)) then
@@ -153,33 +144,6 @@ contains
     end if
 
   end subroutine new_installer
-
-  !> Set the default prefix for the installation
-  subroutine set_default_prefix(prefix, os)
-    !> Installation prefix
-    character(len=:), allocatable :: prefix
-    !> Platform identifier
-    integer, intent(in), optional :: os
-
-    character(len=:), allocatable :: home
-
-    if (os_is_unix(os)) then
-      call env_variable(home, "HOME")
-      if (allocated(home)) then
-        prefix = join_path(home, ".local")
-      else
-        prefix = default_prefix_unix
-      end if
-    else
-      call env_variable(home, "APPDATA")
-      if (allocated(home)) then
-        prefix = join_path(home, "local")
-      else
-        prefix = default_prefix_win
-      end if
-    end if
-
-  end subroutine set_default_prefix
 
   !> Install an executable in its correct subdirectory
   subroutine install_executable(self, executable, error)
