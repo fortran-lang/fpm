@@ -7,7 +7,7 @@ module fpm_installer
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, os_is_unix
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, set_local_prefix
+  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, get_local_prefix
 
   implicit none
   private
@@ -122,7 +122,7 @@ contains
     if (present(prefix)) then
       self%prefix = prefix
     else
-      call set_local_prefix(self%prefix, self%os)
+      self%prefix = get_local_prefix(self%os)
     end if
 
     if (present(bindir)) then
