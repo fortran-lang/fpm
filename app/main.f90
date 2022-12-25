@@ -18,6 +18,7 @@ use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
 use fpm_cmd_update, only : cmd_update
 use fpm_os,  only: change_directory, get_current_directory
+use fpm_registry, only: get_registry
 
 implicit none
 
@@ -110,12 +111,6 @@ contains
             stop 1
         end if
     end subroutine handle_error
-    
-    !> Obtain registry settings and register local or custom registry
-    !> if such was specified in the global config file.
-    subroutine get_registry(reg_settings)
-        type(fpm_registry_settings), allocatable, intent(out) :: reg_settings
-    end subroutine get_registry
 
     !> Save access to working directory in settings, in case setting have not been allocated
     subroutine get_working_dir(settings, working_dir)
