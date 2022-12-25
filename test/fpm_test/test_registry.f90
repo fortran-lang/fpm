@@ -23,13 +23,15 @@ contains
    subroutine no_file(error)
 
       type(error_t), allocatable, intent(out) :: error
-
       type(fpm_registry_settings), allocatable :: registry_settings
+      character(len=:), allocatable :: dummy_path
 
-      call get_registry(registry_settings)
+      dummy_path = 'non_existent_path_to/config.toml'
+
+      call get_registry(registry_settings, dummy_path)
 
       if (allocated(registry_settings)) then
-         call test_failed(error, 'registry_settings should not be allocated without config file')
+         call test_failed(error, 'registry_settings should not be allocated without a config file')
       end if
 
    end subroutine no_file

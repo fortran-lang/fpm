@@ -8,12 +8,23 @@ module fpm_registry
 contains
    !> Obtain registry settings and register local or custom registry if such was specified
    !> in the global config file.
-   subroutine get_registry(reg_settings)
+   subroutine get_registry(reg_settings, path_to_config_file)
+      !> Registry settings to be obtained.
       type(fpm_registry_settings), allocatable, intent(out) :: reg_settings
-      character(len=:), allocatable :: path_to_config_file
-      path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
-      if (exists(path_to_config_file)) then
-         reg_settings%working_dir = path_to_config_file
+      !> Custom path to the config file.
+      character(len=:), allocatable, optional, intent(in) :: path_to_config_file
+      !> System-dependent default path to the config file.
+      character(len=:), allocatable :: default_path_to_config_file
+
+      if (present(path_to_config_file)) then
+         if (exists(path_to_config_file)) then
+            reg_settings%working_dir = path_to_config_file
+         end if
+      end if
+
+      default_path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
+      if (exists(default_path_to_config_file)) then
+         reg_settings%working_dir = default_path_to_config_file
       end if
    end subroutine get_registry
 
