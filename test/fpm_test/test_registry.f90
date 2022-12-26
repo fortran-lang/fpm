@@ -29,7 +29,7 @@ contains
       character(len=*), parameter :: dummy_folder = 'dummy_folder'
 
       if (is_dir(dummy_folder)) then
-         call test_failed(error, 'dummy_folder should not exist before test')
+         call test_failed(error, dummy_folder//' should not exist before test')
       end if
 
       call get_registry(registry_settings, join_path(dummy_folder, 'config.toml'))
