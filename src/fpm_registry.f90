@@ -26,7 +26,7 @@ contains
          if (exists(custom_path_to_config_file)) then
             path_to_config_file = custom_path_to_config_file
          else
-            call fatal_error(error, 'No config.toml at: "'//custom_path_to_config_file//'"')
+            call fatal_error(error, 'No config file at: "'//custom_path_to_config_file//'"')
          end if
       else
          ! Use default path to the config file if it wasn't manually set and exists.
