@@ -2,7 +2,7 @@ module test_registry
    use testsuite, only: new_unittest, unittest_t, error_t, test_failed
    use fpm_command_line, only: fpm_registry_settings
    use fpm_registry, only: get_registry
-   use fpm_filesystem, only: exists, join_path
+   use fpm_filesystem, only: is_dir, join_path
 
    implicit none
    private
@@ -28,7 +28,7 @@ contains
       type(fpm_registry_settings), allocatable :: registry_settings
       character(len=*), parameter :: dummy_folder = 'dummy_folder'
 
-      if (exists(dummy_folder)) then
+      if (is_dir(dummy_folder)) then
          call test_failed(error, 'dummy_folder should not exist before test')
       end if
 
