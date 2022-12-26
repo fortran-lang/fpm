@@ -1,6 +1,7 @@
 module fpm_registry
    use fpm_command_line, only: fpm_registry_settings
    use fpm_filesystem, only: exists, join_path, get_local_prefix
+   use fpm_error, only: error_t, fatal_error
    implicit none
    private
    public get_registry
@@ -8,9 +9,11 @@ module fpm_registry
 contains
    !> Obtain registry settings and register local or custom registry if such was specified
    !> in the global config file.
-   subroutine get_registry(reg_settings, custom_path_to_config_file)
+   subroutine get_registry(reg_settings, error, custom_path_to_config_file)
       !> Registry settings to be obtained.
       type(fpm_registry_settings), allocatable, intent(out) :: reg_settings
+      !> Error handling.
+      type(error_t), allocatable, intent(out) :: error
       !> Custom path to the config file.
       character(len=*), optional, intent(in) :: custom_path_to_config_file
       !> System-dependent default path to the config file.
@@ -22,6 +25,8 @@ contains
       if (present(custom_path_to_config_file)) then
          if (exists(custom_path_to_config_file)) then
             path_to_config_file = custom_path_to_config_file
+         else
+            call fatal_error(error, 'No config.toml at: "'//custom_path_to_config_file//'"')
          end if
       else
          ! Use default path to the config file if it wasn't manually set and exists.

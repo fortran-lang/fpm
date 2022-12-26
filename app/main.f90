@@ -29,7 +29,8 @@ character(len=:), allocatable :: pwd_start, pwd_working, working_dir, project_ro
 
 call get_command_line_settings(cmd_settings)
 
-call get_registry(registry_settings)
+call get_registry(registry_settings, error)
+call handle_error(error)
 
 call get_current_directory(pwd_start, error)
 call handle_error(error)
