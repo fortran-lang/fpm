@@ -1,6 +1,6 @@
 module fpm_registry
    use fpm_command_line, only: fpm_registry_settings
-   use fpm_filesystem, only: exists, join_path, get_local_prefix
+   use fpm_filesystem, only: exists, join_path, get_local_prefix, parent_dir
    use fpm_error, only: error_t, fatal_error
    implicit none
    private
@@ -39,7 +39,7 @@ contains
       ! Obtain registry settings from config file if it was found.
       if (allocated(path_to_config_file)) then
          allocate (reg_settings)
-         reg_settings%working_dir = path_to_config_file
+         reg_settings%working_dir = parent_dir(path_to_config_file)
       end if
 
    end subroutine get_registry_settings
