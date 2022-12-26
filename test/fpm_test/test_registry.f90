@@ -21,30 +21,19 @@ contains
       type(unittest_t), allocatable, intent(out) :: tests(:)
 
       tests = [ &
-      & new_unittest('no-tmp-folder', no_tmp_folder), &
       & new_unittest('no-file', no_file, should_fail=.true.), &
       & new_unittest('empty-file', empty_file) &
       ]
 
    end subroutine collect_registry
 
-   !> Makes sure no `tmp` folder exists, important for other tests.
-   subroutine no_tmp_folder(error)
-
-      type(error_t), allocatable, intent(out) :: error
-
-      if (is_dir(tmp_folder)) then
-         call test_failed(error, 'Folder "'//tmp_folder//'" should not exist before test')
-         return
-      end if
-
-   end subroutine no_tmp_folder
-
    !> Throw error when custom path to config file was entered but none exists.
    subroutine no_file(error)
 
       type(error_t), allocatable, intent(out) :: error
       type(fpm_registry_settings), allocatable :: registry_settings
+
+      if (is_dir(tmp_folder)) call os_delete_dir(os_is_unix(), tmp_folder)
 
       call get_registry_settings(registry_settings, error, join_path(tmp_folder, config_file_name))
 
@@ -56,6 +45,8 @@ contains
       type(error_t), allocatable, intent(out) :: error
       type(fpm_registry_settings), allocatable :: registry_settings
       character(len=:), allocatable :: path_to_config_file
+
+      if (is_dir(tmp_folder)) call os_delete_dir(os_is_unix(), tmp_folder)
 
       call mkdir(tmp_folder)
 

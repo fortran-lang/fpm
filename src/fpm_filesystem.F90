@@ -963,7 +963,7 @@ subroutine os_delete_dir(unix, dir, echo)
 
 end subroutine os_delete_dir
 
-!> Set path prefix to the local folder. Used for installation, registry etc.
+!> Determine the path prefix to the local folder. Used for installation, registry etc.
 function get_local_prefix(os) result(prefix)
     !> Installation prefix
     character(len=:), allocatable :: prefix
