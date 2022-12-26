@@ -12,7 +12,7 @@ contains
       !> Registry settings to be obtained.
       type(fpm_registry_settings), allocatable, intent(out) :: reg_settings
       !> Custom path to the config file.
-      character(len=:), allocatable, optional, intent(in) :: path_to_config_file
+      character(len=*), optional, intent(in) :: path_to_config_file
       !> System-dependent default path to the config file.
       character(len=:), allocatable :: default_path_to_config_file
 

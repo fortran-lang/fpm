@@ -2,6 +2,8 @@ module test_registry
    use testsuite, only: new_unittest, unittest_t, error_t, test_failed
    use fpm_command_line, only: fpm_registry_settings
    use fpm_registry, only: get_registry
+   use fpm_filesystem, only: exists, join_path
+
    implicit none
    private
    public collect_registry
@@ -24,11 +26,13 @@ contains
 
       type(error_t), allocatable, intent(out) :: error
       type(fpm_registry_settings), allocatable :: registry_settings
-      character(len=:), allocatable :: dummy_path
+      character(len=*), parameter :: dummy_folder = 'dummy_folder'
 
-      dummy_path = 'non_existent_path_to/config.toml'
+      if (exists(dummy_folder)) then
+         call test_failed(error, 'dummy_folder should not exist before test')
+      end if
 
-      call get_registry(registry_settings, dummy_path)
+      call get_registry(registry_settings, join_path(dummy_folder, 'config.toml'))
 
       if (allocated(registry_settings)) then
          call test_failed(error, 'registry_settings should not be allocated without a config file')
