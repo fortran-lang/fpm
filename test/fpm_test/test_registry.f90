@@ -1,7 +1,7 @@
 module test_registry
    use testsuite, only: new_unittest, unittest_t, error_t, test_failed
    use fpm_command_line, only: fpm_registry_settings
-   use fpm_registry, only: get_registry
+   use fpm_registry, only: get_registry_settings
    use fpm_filesystem, only: is_dir, join_path, mkdir, filewrite, os_delete_dir, exists
    use fpm_environment, only: os_is_unix
 
@@ -46,7 +46,7 @@ contains
       type(error_t), allocatable, intent(out) :: error
       type(fpm_registry_settings), allocatable :: registry_settings
 
-      call get_registry(registry_settings, error, join_path(tmp_folder, config_file_name))
+      call get_registry_settings(registry_settings, error, join_path(tmp_folder, config_file_name))
 
    end subroutine no_file
 
@@ -62,7 +62,7 @@ contains
       path_to_config_file = join_path(tmp_folder, config_file_name)
       call filewrite(path_to_config_file, [''])
 
-      call get_registry(registry_settings, error, path_to_config_file)
+      call get_registry_settings(registry_settings, error, path_to_config_file)
 
       call os_delete_dir(os_is_unix(), tmp_folder)
 

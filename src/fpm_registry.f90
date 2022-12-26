@@ -4,12 +4,12 @@ module fpm_registry
    use fpm_error, only: error_t, fatal_error
    implicit none
    private
-   public get_registry
+   public get_registry_settings
 
 contains
    !> Obtain registry settings and register local or custom registry if such was specified
    !> in the global config file.
-   subroutine get_registry(reg_settings, error, custom_path_to_config_file)
+   subroutine get_registry_settings(reg_settings, error, custom_path_to_config_file)
       !> Registry settings to be obtained.
       type(fpm_registry_settings), allocatable, intent(out) :: reg_settings
       !> Error handling.
@@ -42,6 +42,6 @@ contains
          reg_settings%working_dir = path_to_config_file
       end if
 
-   end subroutine get_registry
+   end subroutine get_registry_settings
 
 end module fpm_registry
