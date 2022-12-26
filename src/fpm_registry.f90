@@ -18,14 +18,17 @@ contains
 
       if (present(path_to_config_file)) then
          if (exists(path_to_config_file)) then
+            allocate (reg_settings)
             reg_settings%working_dir = path_to_config_file
+         end if
+      else
+         default_path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
+         if (exists(default_path_to_config_file)) then
+            allocate (reg_settings)
+            reg_settings%working_dir = default_path_to_config_file
          end if
       end if
 
-      default_path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
-      if (exists(default_path_to_config_file)) then
-         reg_settings%working_dir = default_path_to_config_file
-      end if
    end subroutine get_registry
 
 end module fpm_registry

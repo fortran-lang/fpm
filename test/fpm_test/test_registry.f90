@@ -2,11 +2,15 @@ module test_registry
    use testsuite, only: new_unittest, unittest_t, error_t, test_failed
    use fpm_command_line, only: fpm_registry_settings
    use fpm_registry, only: get_registry
-   use fpm_filesystem, only: is_dir, join_path
+   use fpm_filesystem, only: is_dir, join_path, mkdir, filewrite, os_delete_dir
+   use fpm_environment, only: os_is_unix
 
    implicit none
    private
    public collect_registry
+
+   character(len=*), parameter :: tmp_folder = 'tmp'
+   character(len=*), parameter :: config_file_name = 'config.toml'
 
 contains
 
@@ -17,7 +21,8 @@ contains
       type(unittest_t), allocatable, intent(out) :: tests(:)
 
       tests = [ &
-      & new_unittest('no-file', no_file) &
+      & new_unittest('no-file', no_file), &
+      & new_unittest('empty-file', empty_file) &
       ]
 
    end subroutine collect_registry
@@ -26,18 +31,46 @@ contains
 
       type(error_t), allocatable, intent(out) :: error
       type(fpm_registry_settings), allocatable :: registry_settings
-      character(len=*), parameter :: dummy_folder = 'dummy_folder'
 
-      if (is_dir(dummy_folder)) then
-         call test_failed(error, dummy_folder//' should not exist before test')
+      if (is_dir(tmp_folder)) then
+         call test_failed(error, 'Folder "'//tmp_folder//'" should not exist before test')
       end if
 
-      call get_registry(registry_settings, join_path(dummy_folder, 'config.toml'))
+      call get_registry(registry_settings, join_path(tmp_folder, config_file_name))
 
       if (allocated(registry_settings)) then
          call test_failed(error, 'registry_settings should not be allocated without a config file')
       end if
 
    end subroutine no_file
+
+   subroutine empty_file(error)
+
+      type(error_t), allocatable, intent(out) :: error
+      type(fpm_registry_settings), allocatable :: registry_settings
+      character(len=:), allocatable :: path_to_config_file
+
+      if (is_dir(tmp_folder)) then
+         call test_failed(error, 'Folder "'//tmp_folder//'" should not exist before test')
+      end if
+
+      call mkdir(tmp_folder)
+
+      path_to_config_file = join_path(tmp_folder, config_file_name)
+      call filewrite(path_to_config_file, [''])
+
+      call get_registry(registry_settings, path_to_config_file)
+
+      call os_delete_dir(os_is_unix(), tmp_folder)
+
+      if (.not. allocated(registry_settings)) then
+         call test_failed(error, 'registry_settings not allocated')
+      end if
+
+      if (.not. allocated(registry_settings%working_dir)) then
+         call test_failed(error, 'registry_settings%working_dir not allocated')
+      end if
+
+   end subroutine empty_file
 
 end module test_registry
