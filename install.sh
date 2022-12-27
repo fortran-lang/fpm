@@ -18,6 +18,15 @@ usage()
     echo ""
 }
 
+# Return value of the latest published release on GitHub, with no heading "v" (e.g., "0.7.0")
+get_latest_release()
+{
+     curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
+     grep '"tag_name":'        |                                       # Get tag line
+     sed -E 's/.*"([^"]+)".*/\1/' |                                    # Pluck JSON value
+     sed -E 's/^v//'                                                   # Remove heading "v" if present
+}
+
 PREFIX="$HOME/.local"
 
 while [ "$1" != "" ]; do
@@ -42,7 +51,8 @@ done
 
 set -u # error on use of undefined variable
 
-SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v0.6.0/fpm-0.6.0.F90"
+LATEST_RELEASE=$(get_latest_release "fortran-lang/fpm")
+SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${LATEST_RELEASE}/fpm-${LATEST_RELEASE}.F90"
 BOOTSTRAP_DIR="build/bootstrap"
 if [ -z ${FC+x} ]; then
     FC="gfortran"
