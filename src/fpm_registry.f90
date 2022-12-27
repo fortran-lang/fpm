@@ -30,7 +30,7 @@ contains
          end if
       else
          ! Use default path to the config file if it wasn't manually set and exists.
-         default_path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
+         default_path_to_config_file = join_path(get_local_prefix(), 'share', 'fpm', 'config.toml')
          if (exists(default_path_to_config_file)) then
             path_to_config_file = default_path_to_config_file
          end if
