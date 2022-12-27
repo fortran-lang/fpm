@@ -805,5 +805,4 @@ contains
 
     end function target_in
 
-
 end module test_module_dependencies

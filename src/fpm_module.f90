@@ -13,6 +13,7 @@ public :: assignment(=)
 public :: operator(==),operator(.in.)
 public :: string_t
 
+!> Type for describing a Fortran module
 type, extends(string_t) :: module_t
 
     type(string_t) :: namespace
@@ -49,8 +50,17 @@ contains
 !> Return a unique module name string
 elemental type(string_t) function namespaced_module_string(this)
     type(module_t), intent(in) :: this
+
+    integer :: ls
+
     ! Temporary: return same string
-    namespaced_module_string%s = this%s
+    if (allocated(this%s)) then
+        ls = len(this%s)
+        allocate(character(len=ls) :: namespaced_module_string%s)
+        if (ls>0) namespaced_module_string%s(1:ls) = this%s(1:ls)
+    else
+        if (allocated(namespaced_module_string%s)) deallocate(namespaced_module_string%s)
+    endif
 
 end function
 
@@ -108,10 +118,9 @@ pure subroutine module_assign_string(this,s)
     this%namespace%s = ''
 end subroutine module_assign_string
 
-
 pure type(module_t) function new_from_char(s) result(this)
     character(*), intent(in) :: s
-    this = s
+    call module_assign_char(this,s)
 end function new_from_char
 
 pure type(module_t) function new_from_string(s) result(this)

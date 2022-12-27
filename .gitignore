@@ -1,4 +1,8 @@
 build/*
 
+# CodeBlocks
+project/*
+
 # Visual Studio Code
 .vscode/
+project/fpm_module.mod

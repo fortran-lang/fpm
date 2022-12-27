@@ -92,11 +92,15 @@ contains
         call get_list(table, "link", self%link, error)
         if (allocated(error)) return
 
-        next = size(self%external_modules)
-        allocate(external_modules(next))
-        if (next>0) external_modules(:) = [(string_t(self%external_modules(i)),i=1,next)]
         call get_list(table, "external-modules", external_modules, error)
         if (allocated(error)) return
+
+        !> Resolve external modules
+        if (allocated(external_modules)) then
+           next = size(external_modules)
+           allocate(self%external_modules(next))
+           self%external_modules(:) = [(module_t(external_modules(i)%s),i=1,next)]
+        endif
 
     end subroutine new_build_config
 
