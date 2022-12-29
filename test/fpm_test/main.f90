@@ -8,6 +8,7 @@ program fpm_testing
     use test_filesystem, only : collect_filesystem
     use test_source_parsing, only : collect_source_parsing
     use test_module_dependencies, only : collect_module_dependencies
+    use test_modules, only: collect_namespace_testing
     use test_package_dependencies, only : collect_package_dependencies
     use test_backend, only: collect_backend
     use test_installer, only : collect_installer
@@ -26,6 +27,7 @@ program fpm_testing
         & new_testsuite("fpm_filesystem", collect_filesystem), &
         & new_testsuite("fpm_source_parsing", collect_source_parsing), &
         & new_testsuite("fpm_module_dependencies", collect_module_dependencies), &
+        & new_testsuite("fpm_module", collect_namespace_testing), &
         & new_testsuite("fpm_package_dependencies", collect_package_dependencies), &
         & new_testsuite("fpm_test_backend", collect_backend), &
         & new_testsuite("fpm_installer", collect_installer), &

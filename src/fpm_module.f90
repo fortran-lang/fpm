@@ -13,12 +13,16 @@ public :: assignment(=)
 public :: operator(==),operator(.in.)
 public :: string_t
 
+!> Temporary: flag to decide whether namespaces should be used
+logical,      parameter :: USE_NAMESPACES    = .true.
+character(*), parameter :: SEPARATOR         = "_FPM_"
+character(*), parameter :: DEFAULT_NAMESPACE = "default"
+
+
 !> Type for describing a Fortran module
 type, extends(string_t) :: module_t
 
     type(string_t) :: namespace
-
-    contains
 
 end type module_t
 
@@ -47,6 +51,18 @@ end interface
 
 contains
 
+!> Check if a module has a special namespace (not the default one)
+elemental logical function has_namespace(this)
+    type(module_t), intent(in) :: this
+
+    if (len(this%namespace%s)>0) then
+        has_namespace = this%namespace%s/=DEFAULT_NAMESPACE
+    else
+        has_namespace = .false.
+    end if
+
+end function has_namespace
+
 !> Return a unique module name string
 elemental type(string_t) function namespaced_module_string(this)
     type(module_t), intent(in) :: this
@@ -55,9 +71,21 @@ elemental type(string_t) function namespaced_module_string(this)
 
     ! Temporary: return same string
     if (allocated(this%s)) then
-        ls = len(this%s)
-        allocate(character(len=ls) :: namespaced_module_string%s)
-        if (ls>0) namespaced_module_string%s(1:ls) = this%s(1:ls)
+
+        if (USE_NAMESPACES .and. has_namespace(this)) then
+
+           ls = len(this%s)+len(this%namespace%s)+len(SEPARATOR)
+           allocate(character(len=ls) :: namespaced_module_string%s)
+           namespaced_module_string%s(1:ls) = this%namespace%s//SEPARATOR//this%s
+
+        else
+
+           ls = len(this%s)
+           allocate(character(len=ls) :: namespaced_module_string%s)
+           if (ls>0) namespaced_module_string%s(1:ls) = this%s(1:ls)
+
+        endif
+
     else
         if (allocated(namespaced_module_string%s)) deallocate(namespaced_module_string%s)
     endif
@@ -98,29 +126,38 @@ pure logical function array_contains_string(search_module,array)
     array_contains_string = array_contains_module(search_module_t,array)
 end function array_contains_string
 
+!> Initialize a module from a string
 pure subroutine module_assign_char(this,s)
     type(module_t), intent(out) :: this
     character(*), intent(in) :: s
 
-    integer :: lt
+    this = new_from_char(s)
 
-    lt = len_trim(s)
-    allocate(character(lt) :: this%s)
-    if (lt>0) this%s(1:lt) = s(1:lt)
-
-    this%namespace%s = ''
 end subroutine module_assign_char
 
 pure subroutine module_assign_string(this,s)
     type(module_t), intent(out) :: this
     type(string_t), intent(in) :: s
-    this%s = s%s
-    this%namespace%s = ''
+    this = new_from_char(s%s)
 end subroutine module_assign_string
 
+!> Return a module type from a namespaced string
 pure type(module_t) function new_from_char(s) result(this)
     character(*), intent(in) :: s
-    call module_assign_char(this,s)
+
+    integer :: sep
+
+    !> Parse optional namespace
+    sep = index(s,SEPARATOR)
+
+    if (sep>1) then
+        this%namespace%s = s(:sep-1)
+        this%s = s(sep+len(SEPARATOR):)
+    else
+        this%namespace%s = DEFAULT_NAMESPACE
+        this%s = s
+    end if
+
 end function new_from_char
 
 pure type(module_t) function new_from_string(s) result(this)
