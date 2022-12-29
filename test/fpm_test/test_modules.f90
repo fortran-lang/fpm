@@ -9,7 +9,7 @@ module test_modules
                 FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-    use fpm_module, only: module_t
+    use fpm_module
     use fpm_strings, only: string_t, operator(.in.)
     use fpm, only: check_modules_for_duplicates
     implicit none
@@ -33,7 +33,13 @@ contains
 
         testsuite = [ &
             & new_unittest("same-file-same-package-different-modules", &
-                           same_file_same_package_different_modules, should_fail=.false.) &
+                            same_file_same_package_different_modules, should_fail=.false.), &
+            & new_unittest("set-module-with-without-namespace", &
+                            set_module_with_without_namespace,should_fail=.false.), &
+            & new_unittest("same-module-different-namespaces", &
+                            same_module_different_namespaces,should_fail=.false.), &
+            & new_unittest("find-module-in-list", &
+                            find_module_in_list,should_fail=.false.) &
             ]
 
     end subroutine collect_namespace_testing
@@ -90,6 +96,76 @@ contains
         if (allocated(error)) return
 
     end subroutine same_file_same_package_different_modules
+
+    !> Test that modules with the same name but different namespaces are
+    subroutine set_module_with_without_namespace(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(module_t) :: mod_1,mod_2
+
+        !> Set module from name only
+        mod_1 = 'my_mod'
+        mod_2 = 'default_FPM_my_mod'
+
+        if (.not.(mod_1 == mod_2)) then
+           call test_failed(error,'Setting default namespace with/without explicit input do not match')
+           return
+        end if
+
+    end subroutine set_module_with_without_namespace
+
+    !> Test that modules with the same name but different namespaces are not equal
+    subroutine same_module_different_namespaces(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(module_t) :: mod_1,mod_2
+
+        !> Set module from name only
+        mod_1 = 'my_mod'
+        mod_2 = 'my_package_FPM_my_mod'
+
+        if (mod_1 == mod_2) then
+           call test_failed(error,'Non-default namespace not recognized comparing modules')
+           return
+        end if
+
+    end subroutine same_module_different_namespaces
+
+    !> Test that a module is found in a list that contains both namespaced and non-namespaced versions
+    subroutine find_module_in_list(error)
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(module_t), allocatable :: list(:)
+
+
+        list = [module_t('my_mod1','space1'),module_t('my_mod2','space1'),&
+                module_t('my_mod1','space2'),module_t('my_mod2','space2'),&
+                module_t('my_mod1')]
+
+        if (.not.(module_t('my_mod1').in.list)) then
+           call test_failed(error,'Cannot find default namespace module in list with it')
+           return
+        end if
+
+        if (module_t('my_mod2').in.list) then
+           call test_failed(error,'Default namespace module found in list that does not have it')
+           return
+        end if
+
+        if (module_t('my_mod1','space3').in.list) then
+           call test_failed(error,'Namespaced module found in list that does not have it')
+           return
+        end if
+
+        if (.not.(module_t('my_mod2','space2').in.list)) then
+           call test_failed(error,'Namespaced module not found in list that has it')
+           return
+        end if
+
+    end subroutine find_module_in_list
 
     !> Helper to create a new srcfile_t
     type(srcfile_t) function dummy_source(type,file_name, scope, uses, provides) result(src)

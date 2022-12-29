@@ -47,6 +47,7 @@ end interface
 interface module_t
     module procedure new_from_string
     module procedure new_from_char
+    module procedure new_from_name_and_namespace
 end interface
 
 contains
@@ -55,11 +56,12 @@ contains
 elemental logical function has_namespace(this)
     type(module_t), intent(in) :: this
 
-    if (len(this%namespace%s)>0) then
-        has_namespace = this%namespace%s/=DEFAULT_NAMESPACE
-    else
-        has_namespace = .false.
-    end if
+    has_namespace = .false.
+    if (allocated(this%namespace%s)) then
+       if (len(this%namespace%s)>0) then
+           has_namespace = this%namespace%s/=DEFAULT_NAMESPACE
+       endif
+    endif
 
 end function has_namespace
 
@@ -159,6 +161,14 @@ pure type(module_t) function new_from_char(s) result(this)
     end if
 
 end function new_from_char
+
+!> Return a module type from a namespaced string
+pure type(module_t) function new_from_name_and_namespace(name,namespace) result(this)
+    character(*), intent(in) :: name,namespace
+
+    this = new_from_char(name//SEPARATOR//namespace)
+
+end function new_from_name_and_namespace
 
 pure type(module_t) function new_from_string(s) result(this)
     type(string_t), intent(in) :: s
