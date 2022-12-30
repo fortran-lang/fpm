@@ -125,7 +125,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: name
+        character(len=:), allocatable :: name, url
         type(toml_key), allocatable :: list(:)
         logical :: url_present, git_target_present, has_path
         integer :: ikey
@@ -148,13 +148,25 @@ contains
                 call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in dependency "//name)
                 exit
 
-            case("git", "path")
+            case("git")
+                if (url_present) then
+                    call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
+                    exit
+                end if
+                call get_value(table, "git", url)
+                if (.not.allocated(url)) then
+                    call syntax_error(error, "Dependency "//name//" has invalid git source")
+                    exit
+                end if
+                url_present = .true.
+                
+            case("path")
                 if (url_present) then
                     call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
                     exit
                 end if
                 url_present = .true.
-                has_path = list(ikey)%key == 'path'
+                has_path = .true.
 
             case("branch", "rev", "tag")
                 if (git_target_present) then

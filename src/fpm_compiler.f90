@@ -150,6 +150,9 @@ character(*), parameter :: &
     flag_pgi_warn = " -Minform=inform"
 
 character(*), parameter :: &
+    flag_ibmxl_backslash = " -qnoescape"
+
+character(*), parameter :: &
     flag_intel_backtrace = " -traceback", &
     flag_intel_warn = " -warn all", &
     flag_intel_check = " -check all", &
@@ -234,6 +237,10 @@ subroutine get_release_compile_flags(id, flags)
     case(id_nvhpc)
         flags = &
             flag_pgi_backslash
+
+    case(id_ibmxl)
+        flags = &
+            flag_ibmxl_backslash
 
     case(id_intel_classic_nix)
         flags = &
@@ -332,6 +339,9 @@ subroutine get_debug_compile_flags(id, flags)
             flag_pgi_backslash//&
             flag_pgi_check//&
             flag_pgi_traceback
+    case(id_ibmxl)
+        flags = &
+            flag_ibmxl_backslash
     case(id_intel_classic_nix)
         flags = &
             flag_intel_warn//&
@@ -384,18 +394,10 @@ subroutine get_debug_compile_flags(id, flags)
     end select
 end subroutine get_debug_compile_flags
 
-subroutine set_preprocessor_flags (id, flags, package)
+pure subroutine set_cpp_preprocessor_flags(id, flags)
     integer(compiler_enum), intent(in) :: id
     character(len=:), allocatable, intent(inout) :: flags
-    type(package_config_t), intent(in) :: package
     character(len=:), allocatable :: flag_cpp_preprocessor
-    
-    integer :: i
-
-    !> Check if there is a preprocess table
-    if (.not.allocated(package%preprocess)) then
-        return
-    end if
 
     !> Modify the flag_cpp_preprocessor on the basis of the compiler.
     select case(id)
@@ -411,16 +413,9 @@ subroutine set_preprocessor_flags (id, flags, package)
         flag_cpp_preprocessor = "--cpp"
     end select
 
-    do i = 1, size(package%preprocess)
-        if (package%preprocess(i)%name == "cpp") then
-            flags = flag_cpp_preprocessor// flags
-            exit
-        else
-            write(stderr, '(a)') 'Warning: preprocessor ' // package%preprocess(i)%name // ' is not supported; will ignore it'
-        end if
-    end do
+    flags = flag_cpp_preprocessor// flags
 
-end subroutine set_preprocessor_flags
+end subroutine set_cpp_preprocessor_flags
 
 !> This function will parse and read the macros list and 
 !> return them as defined flags.
@@ -444,9 +439,9 @@ function get_macros(id, macros_list, version) result(macros)
     !> Set macro defintion symbol on the basis of compiler used
     select case(id)
     case default
-        macro_definition_symbol = "-D"
+        macro_definition_symbol = " -D"
     case (id_intel_classic_windows, id_intel_llvm_windows)
-        macro_definition_symbol = "/D"
+        macro_definition_symbol = " /D"
     end select
 
     !> Check if macros are not allocated.
@@ -470,23 +465,14 @@ function get_macros(id, macros_list, version) result(macros)
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
                     
                         !> These conditions are placed in order to ensure proper spacing between the macros.
-                        if (len(macros) == 0) then
-                            macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
-                        else 
-                            macros = macros//' '//macro_definition_symbol//trim(valued_macros(1))//'='//version
-                        end if
+                        macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
                         cycle
                     end if
                 end if
             end if 
         end if
          
-        !> These conditions are placed in order to ensure proper spacing between the macros.
-        if (len(macros) == 0) then
-            macros = ' '//macros//macro_definition_symbol//macros_list(i)%s
-        else 
-            macros = macros//' '//macro_definition_symbol//macros_list(i)%s
-        end if
+        macros = macros//macro_definition_symbol//macros_list(i)%s
 
     end do
 
@@ -604,7 +590,7 @@ subroutine get_default_cxx_compiler(f_compiler, cxx_compiler)
         cxx_compiler = 'icpx'
 
     case(id_flang, id_flang_new, id_f18)
-        cxx_compiler='clang'
+        cxx_compiler='clang++'
 
     case(id_ibmxl)
         cxx_compiler='xlc++'

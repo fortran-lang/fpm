@@ -148,6 +148,8 @@ character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
     '                    unless set by the environment variable FPM_FC.              ',&
     ' --c-compiler NAME  Specify the C compiler name. Automatically determined by    ',&
     '                    default unless set by the environment variable FPM_CC.      ',&
+    ' --cxx-compiler NAME  Specify the C++ compiler name. Automatically determined by',&
+    '                    default unless set by the environment variable FPM_CXX.     ',&
     ' --archiver NAME    Specify the archiver name. Automatically determined by      ',&
     '                    default unless set by the environment variable FPM_AR.      '&
     ]
@@ -162,6 +164,9 @@ character(len=80), parameter :: help_text_flag(*) = [character(len=80) :: &
     ' --c-flag CFLAGS   selects compile arguments specific for C source in the build.',&
     '                   The default value is set by the FPM_CFLAGS environment       ',&
     '                   variable.                                                    ',&
+    ' --cxx-flag CFLAGS selects compile arguments specific for C++ source in the     ',&
+    '                   build. The default value is set by the FPM_CXXFLAGS          ',&
+    '                   environment variable.                                        ',&
     ' --link-flag LDFLAGS  select arguments passed to the linker for the build. The  ',&
     '                   default value is set by the FPM_LDFLAGS environment variable.'&
     ]
@@ -181,6 +186,12 @@ character(len=80), parameter :: help_text_environment(*) = [character(len=80) ::
     ' FPM_CFLAGS        sets the arguments for the C compiler', &
     '                   will be overwritten by --c-flag command line option', &
     '', &
+    ' FPM_CXX           sets the path to the C++ compiler used for the build,', &
+    '                   will be overwritten by --cxx-compiler command line option', &
+    '', &
+    ' FPM_CXXFLAGS      sets the arguments for the C++ compiler', &
+    '                   will be overwritten by --cxx-flag command line option', &
+    '', &
     ' FPM_AR            sets the path to the archiver used for the build,', &
     '                   will be overwritten by --archiver command line option', &
     '', &
@@ -192,9 +203,9 @@ contains
     subroutine get_command_line_settings(cmd_settings)
         class(fpm_cmd_settings), allocatable, intent(out) :: cmd_settings
 
+        integer, parameter            :: widest = 256
         character(len=4096)           :: cmdarg
         integer                       :: i
-        integer                       :: widest
         integer                       :: os
         logical                       :: unix
         type(fpm_install_settings), allocatable :: install_settings
@@ -223,7 +234,7 @@ contains
         end select
         unix = os_is_unix(os)
         version_text = [character(len=80) :: &
-         &  'Version:     0.6.0, alpha',                               &
+         &  'Version:     0.7.0, alpha',                               &
          &  'Program:     fpm(1)',                                     &
          &  'Description: A Fortran package manager and build system', &
          &  'Home Page:   https://github.com/fortran-lang/fpm',        &
@@ -434,7 +445,6 @@ contains
             elseif(unnamed(2)=='manual')then
                 unnamed=manual
             endif
-            widest=256
             allocate(character(len=widest) :: help_text(0))
             do i=2,size(unnamed)
                 select case(unnamed(i))
@@ -507,10 +517,12 @@ contains
             call set_args(common_args // '&
             & --list F&
             &', help_list, version_text)
-            call printhelp(help_list_nodash)
             if(lget('list'))then
-               call printhelp(help_list_dash)
+                help_text = [character(widest) :: help_list_nodash, help_list_dash]
+            else
+                help_text = help_list_nodash
             endif
+            call printhelp(help_text)
 
         case('test')
             call set_args(common_args // compiler_args // run_args // ' --', &
@@ -592,23 +604,23 @@ contains
 
             if(cmdarg.ne.''.and.which('fpm-'//cmdarg).ne.'')then
                 call run('fpm-'//trim(cmdarg)//' '// get_command_arguments_quoted(),.false.)
+                stop
             else
                 call set_args('&
                 & --list F&
                 &', help_fpm, version_text)
                 ! Note: will not get here if --version or --usage or --help
                 ! is present on commandline
-                help_text=help_usage
                 if(lget('list'))then
-                   help_text=help_list_dash
+                    help_text = help_list_dash
                 elseif(len_trim(cmdarg)==0)then
                     write(stdout,'(*(a))')'Fortran Package Manager:'
                     write(stdout,'(*(a))')' '
-                    call printhelp(help_list_nodash)
+                    help_text = [character(widest) :: help_list_nodash, help_usage]
                 else
                     write(stderr,'(*(a))')'<ERROR> unknown subcommand [', &
                      & trim(cmdarg), ']'
-                    call printhelp(help_list_dash)
+                    help_text = [character(widest) :: help_list_dash, help_usage]
                 endif
                 call printhelp(help_text)
             endif
@@ -638,6 +650,7 @@ contains
 
     end subroutine check_build_vals
 
+    !> Print help text and stop
     subroutine printhelp(lines)
     character(len=:),intent(in),allocatable :: lines(:)
     integer :: iii,ii
@@ -649,6 +662,7 @@ contains
                write(stdout,'(a)')'<WARNING> *printhelp* output requested is empty'
            endif
         endif
+        stop
     end subroutine printhelp
 
     end subroutine get_command_line_settings

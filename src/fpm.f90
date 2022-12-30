@@ -7,12 +7,12 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: get_env
-use fpm_filesystem, only: is_dir, join_path, number_of_rows, list_files, exists, &
+use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
                    basename, filewrite, mkdir, run, os_delete_dir
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
-use fpm_compiler, only: new_compiler, new_archiver, set_preprocessor_flags
+use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
@@ -45,6 +45,7 @@ subroutine build_model(model, settings, package, error)
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
     character(len=:), allocatable :: version
+    logical :: has_cpp
 
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
@@ -79,8 +80,6 @@ subroutine build_model(model, settings, package, error)
         end select
     end if
 
-    call set_preprocessor_flags(model%compiler%id, flags, package)
-
     cflags = trim(settings%cflag)
     cxxflags = trim(settings%cxxflag)
     ldflags = trim(settings%ldflag)
@@ -92,15 +91,11 @@ subroutine build_model(model, settings, package, error)
     end if
     model%build_prefix = join_path("build", basename(model%compiler%fc))
 
-    model%fortran_compile_flags = flags
-    model%c_compile_flags = cflags
-    model%cxx_compile_flags = cxxflags
-    model%link_flags = ldflags
-
     model%include_tests = settings%build_tests
 
     allocate(model%packages(model%deps%ndep))
 
+    has_cpp = .false.
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))
             manifest = join_path(dep%proj_dir, "fpm.toml")
@@ -115,8 +110,14 @@ subroutine build_model(model, settings, package, error)
             
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
-                    if (package%preprocess(j)%name == "cpp") then
+                    if (dependency%preprocess(j)%name == "cpp") then
+                        if (.not. has_cpp) has_cpp = .true.
+                        if (allocated(dependency%preprocess(j)%macros)) then
                         model%packages(i)%macros = dependency%preprocess(j)%macros
+                        end if
+                    else
+                        write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
+                            ' is not supported; will ignore it'
                     end if
                 end do
             end if
@@ -155,6 +156,12 @@ subroutine build_model(model, settings, package, error)
         end associate
     end do
     if (allocated(error)) return
+
+    if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, flags)
+    model%fortran_compile_flags = flags
+    model%c_compile_flags = cflags
+    model%cxx_compile_flags = cxxflags
+    model%link_flags = ldflags
 
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then

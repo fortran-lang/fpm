@@ -1,0 +1,9 @@
+name = "preprocess_cpp_c"
+
+[[executable]]
+name = "main"
+main = "main.c"
+
+[preprocess]
+[preprocess.cpp]
+macros = ["VAL"]

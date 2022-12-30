@@ -31,6 +31,7 @@ contains
             & new_unittest("dependency-gitpath", test_dependency_gitpath, should_fail=.true.), &
             & new_unittest("dependency-nourl", test_dependency_nourl, should_fail=.true.), &
             & new_unittest("dependency-gitconflict", test_dependency_gitconflict, should_fail=.true.), &
+            & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -276,8 +277,8 @@ contains
 
         call new_table(table)
         table%key = 'example'
-        call set_value(table, 'path', '"package"', stat)
-        call set_value(table, 'tag', '"v20.1"', stat)
+        call set_value(table, 'path', 'package', stat)
+        call set_value(table, 'tag', 'v20.1', stat)
 
         call new_dependency(dependency, table, error=error)
 
@@ -298,7 +299,7 @@ contains
 
         call new_table(table)
         table%key = 'example'
-        call set_value(table, 'tag', '"v20.1"', stat)
+        call set_value(table, 'tag', 'v20.1', stat)
 
         call new_dependency(dependency, table, error=error)
 
@@ -319,8 +320,8 @@ contains
 
         call new_table(table)
         table%key = 'example'
-        call set_value(table, 'path', '"package"', stat)
-        call set_value(table, 'git', '"https://gitea.com/fortran-lang/pack"', stat)
+        call set_value(table, 'path', 'package', stat)
+        call set_value(table, 'git', 'https://gitea.com/fortran-lang/pack', stat)
 
         call new_dependency(dependency, table, error=error)
 
@@ -341,13 +342,36 @@ contains
 
         call new_table(table)
         table%key = 'example'
-        call set_value(table, 'git', '"https://gitea.com/fortran-lang/pack"', stat)
-        call set_value(table, 'branch', '"latest"', stat)
-        call set_value(table, 'tag', '"v20.1"', stat)
+        call set_value(table, 'git', 'https://gitea.com/fortran-lang/pack', stat)
+        call set_value(table, 'branch', 'latest', stat)
+        call set_value(table, 'tag', 'v20.1', stat)
 
         call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_gitconflict
+
+
+    !> Try to create a git dependency with invalid source format
+    subroutine test_dependency_invalid_git(error)
+        use fpm_manifest_dependency
+        use fpm_toml, only : new_table, add_table, toml_table, set_value
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(toml_table), pointer :: child
+        integer :: stat
+        type(dependency_config_t) :: dependency
+
+        call new_table(table)
+        table%key = 'example'
+        call add_table(table, 'git', child)
+        call set_value(child, 'path', '../../package')
+
+        call new_dependency(dependency, table, error=error)
+
+    end subroutine test_dependency_invalid_git
 
 
     !> Try to create a dependency with conflicting entries
@@ -364,7 +388,7 @@ contains
 
         call new_table(table)
         table%key = 'example'
-        call set_value(table, 'not-available', '"anywhere"', stat)
+        call set_value(table, 'not-available', 'anywhere', stat)
 
         call new_dependency(dependency, table, error=error)
 
@@ -761,23 +785,23 @@ contains
         type(package_config_t) :: package
 
         call new_table(table)
-        call set_value(table, 'name', '"example"', stat)
-        call set_value(table, 'license', '"MIT"', stat)
+        call set_value(table, 'name', 'example', stat)
+        call set_value(table, 'license', 'MIT', stat)
         call add_table(table, 'dev-dependencies', child, stat)
         call add_table(child, 'pkg1', child2, stat)
-        call set_value(child2, 'git', '"https://github.com/fortran-lang/pkg1"', stat)
+        call set_value(child2, 'git', 'https://github.com/fortran-lang/pkg1', stat)
         call add_table(child, 'pkg2', child2)
-        call set_value(child2, 'git', '"https://gitlab.com/fortran-lang/pkg2"', stat)
-        call set_value(child2, 'branch', '"devel"', stat)
+        call set_value(child2, 'git', 'https://gitlab.com/fortran-lang/pkg2', stat)
+        call set_value(child2, 'branch', 'devel', stat)
         call add_table(child, 'pkg3', child2)
-        call set_value(child2, 'git', '"https://bitbucket.org/fortran-lang/pkg3"', stat)
-        call set_value(child2, 'rev', '"9fceb02d0ae598e95dc970b74767f19372d61af8"', stat)
+        call set_value(child2, 'git', 'https://bitbucket.org/fortran-lang/pkg3', stat)
+        call set_value(child2, 'rev', '9fceb02d0ae598e95dc970b74767f19372d61af8', stat)
         call add_table(child, 'pkg4', child2)
-        call set_value(child2, 'git', '"https://gitea.com/fortran-lang/pkg4"', stat)
-        call set_value(child2, 'tag', '"v1.8.5-rc3"', stat)
+        call set_value(child2, 'git', 'https://gitea.com/fortran-lang/pkg4', stat)
+        call set_value(child2, 'tag', 'v1.8.5-rc3', stat)
         call add_array(table, 'test', children, stat)
         call add_table(children, child, stat)
-        call set_value(child, 'name', '"tester"', stat)
+        call set_value(child, 'name', 'tester', stat)
 
         call new_package(package, table, error=error)
 
@@ -860,7 +884,7 @@ contains
         type(package_config_t) :: package
 
         call new_table(table)
-        call set_value(table, 'name', '"example"', stat)
+        call set_value(table, 'name', 'example', stat)
         call add_array(table, 'executable', children, stat)
         call add_array(children, children2, stat)
 
@@ -883,7 +907,7 @@ contains
         type(package_config_t) :: package
 
         call new_table(table)
-        call set_value(table, 'name', '"example"', stat)
+        call set_value(table, 'name', 'example', stat)
         call add_array(table, 'test', children, stat)
         call add_array(children, children2, stat)
 
@@ -907,12 +931,12 @@ contains
         type(package_config_t) :: package
 
         table = toml_table()
-        call set_value(table, 'name', '"example"', stat)
+        call set_value(table, 'name', 'example', stat)
         call add_array(table, 'test', children, stat)
         call add_table(children, child, stat)
-        call set_value(child, 'name', '"prog"', stat)
+        call set_value(child, 'name', 'prog', stat)
         call add_table(children, child, stat)
-        call set_value(child, 'name', '"prog"', stat)
+        call set_value(child, 'name', 'prog', stat)
 
         call new_package(package, table, error=error)
 
@@ -933,9 +957,9 @@ contains
         type(test_config_t) :: test
 
         call new_table(table)
-        call set_value(table, 'name', '"example"', stat)
-        call set_value(table, 'source-dir', '"tests"', stat)
-        call set_value(table, 'main', '"tester.f90"', stat)
+        call set_value(table, 'name', 'example', stat)
+        call set_value(table, 'source-dir', 'tests', stat)
+        call set_value(table, 'main', 'tester.f90', stat)
         call add_table(table, 'dependencies', child, stat)
 
         call new_test(test, table, error)
@@ -1042,9 +1066,9 @@ contains
         type(example_config_t) :: example
 
         call new_table(table)
-        call set_value(table, 'name', '"example"', stat)
-        call set_value(table, 'source-dir', '"demos"', stat)
-        call set_value(table, 'main', '"demo.f90"', stat)
+        call set_value(table, 'name', 'example', stat)
+        call set_value(table, 'source-dir', 'demos', stat)
+        call set_value(table, 'main', 'demo.f90', stat)
         call add_table(table, 'dependencies', child, stat)
 
         call new_example(example, table, error)
