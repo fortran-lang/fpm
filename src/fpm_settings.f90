@@ -37,7 +37,7 @@ contains
          end if
       end if
 
-      ! Set the path to global config file if it was found.
+      ! Set the path to the global config file if it was found.
       if (allocated(path_to_config_file)) then
          allocate (global_settings)
          global_settings%path = path_to_config_file
