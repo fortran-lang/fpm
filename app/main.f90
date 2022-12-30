@@ -2,7 +2,7 @@ program main
 use, intrinsic :: iso_fortran_env, only : error_unit, output_unit
 use fpm_command_line, only: &
         fpm_cmd_settings, &
-        fpm_registry_settings, &
+        fpm_global_settings, &
         fpm_new_settings, &
         fpm_build_settings, &
         fpm_run_settings, &
@@ -18,18 +18,18 @@ use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
 use fpm_cmd_update, only : cmd_update
 use fpm_os,  only: change_directory, get_current_directory
-use fpm_registry, only: get_registry_settings
+use fpm_settings, only: get_global_settings
 
 implicit none
 
 class(fpm_cmd_settings), allocatable :: cmd_settings
-type(fpm_registry_settings), allocatable :: registry_settings
+type(fpm_global_settings), allocatable :: global_settings
 type(error_t), allocatable :: error
 character(len=:), allocatable :: pwd_start, pwd_working, working_dir, project_root
 
 call get_command_line_settings(cmd_settings)
 
-call get_registry_settings(registry_settings, error)
+call get_global_settings(global_settings, error)
 call handle_error(error)
 
 call get_current_directory(pwd_start, error)

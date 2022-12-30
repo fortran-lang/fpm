@@ -1,17 +1,17 @@
-module fpm_registry
-   use fpm_command_line, only: fpm_registry_settings
-   use fpm_filesystem, only: exists, join_path, get_local_prefix, parent_dir
+!> Manages global settings which are defined in the global config file.
+module fpm_settings
+   use fpm_command_line, only: fpm_global_settings
+   use fpm_filesystem, only: exists, join_path, get_local_prefix
    use fpm_error, only: error_t, fatal_error
    implicit none
    private
-   public get_registry_settings
+   public get_global_settings
 
 contains
-   !> Obtain registry settings and register local or custom registry if such was specified
-   !> in the global config file.
-   subroutine get_registry_settings(reg_settings, error, custom_path_to_config_file)
-      !> Registry settings to be obtained.
-      type(fpm_registry_settings), allocatable, intent(out) :: reg_settings
+   !> Obtain global settings from the global config file.
+   subroutine get_global_settings(global_settings, error, custom_path_to_config_file)
+      !> Global settings to be obtained.
+      type(fpm_global_settings), allocatable, intent(out) :: global_settings
       !> Error handling.
       type(error_t), allocatable, intent(out) :: error
       !> Custom path to the config file.
@@ -26,22 +26,23 @@ contains
          if (exists(custom_path_to_config_file)) then
             path_to_config_file = custom_path_to_config_file
          else
+            ! Throw error if specified path doesn't exist.
             call fatal_error(error, 'No config file at: "'//custom_path_to_config_file//'"')
          end if
       else
-         ! Use default path to the config file if it wasn't manually set and exists.
+         ! Use default path to the config file if it wasn't specified and exists.
          default_path_to_config_file = join_path(get_local_prefix(), 'share', 'fpm', 'config.toml')
          if (exists(default_path_to_config_file)) then
             path_to_config_file = default_path_to_config_file
          end if
       end if
 
-      ! Obtain registry settings from config file if it was found.
+      ! Set the path to global config file if it was found.
       if (allocated(path_to_config_file)) then
-         allocate (reg_settings)
-         reg_settings%working_dir = parent_dir(path_to_config_file)
+         allocate (global_settings)
+         global_settings%path = path_to_config_file
       end if
 
-   end subroutine get_registry_settings
+   end subroutine get_global_settings
 
-end module fpm_registry
+end module fpm_settings

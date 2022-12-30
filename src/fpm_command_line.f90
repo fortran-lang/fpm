@@ -41,7 +41,7 @@ implicit none
 
 private
 public :: fpm_cmd_settings, &
-          fpm_registry_settings, &
+          fpm_global_settings, &
           fpm_build_settings, &
           fpm_install_settings, &
           fpm_new_settings, &
@@ -58,10 +58,15 @@ end type
 
 integer,parameter :: ibug=4096
 
+type, extends(fpm_cmd_settings)   :: fpm_global_settings
+    !> Path to the global config file including the file name.
+    character(len=:), allocatable :: path
+    type(fpm_registry_settings), allocatable :: registry_settings
+end type
+
 type, extends(fpm_cmd_settings)   :: fpm_registry_settings
     character(len=:), allocatable :: path
     character(len=:), allocatable :: url
-
 contains
     procedure :: uses_default_registry
 end type
