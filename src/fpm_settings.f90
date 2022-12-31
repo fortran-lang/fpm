@@ -17,8 +17,6 @@ contains
       type(error_t), allocatable, intent(out) :: error
       !> Custom path to the config file.
       character(len=*), optional, intent(in) :: custom_path_to_config_file
-      !> System-dependent default path to the config file.
-      character(len=:), allocatable :: default_path_to_config_file
       !> Final path to the config file.
       character(len=:), allocatable :: path_to_config_file
 
@@ -29,24 +27,22 @@ contains
          else
             ! Throw error if specified path doesn't exist.
             call fatal_error(error, 'No config file at: "'//custom_path_to_config_file//'"')
+            return
          end if
       else
-         ! Use default path to the config file if it wasn't specified and exists.
+         ! Use default paths to the config file if it wasn't specified.
          if (os_is_unix()) then
-            default_path_to_config_file = join_path(get_local_prefix(), 'share', 'fpm', 'config.toml')
+            path_to_config_file = join_path(get_local_prefix(), 'share', 'fpm', 'config.toml')
          else
-            default_path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
+            path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
          end if
-         if (exists(default_path_to_config_file)) then
-            path_to_config_file = default_path_to_config_file
-         end if
+         ! Return quietly (not set the path) if the config file doesn't exist.
+         if (.not. exists(path_to_config_file)) return
       end if
 
-      ! Set the path to the global config file if it was found.
-      if (allocated(path_to_config_file)) then
-         allocate (global_settings)
-         global_settings%path = path_to_config_file
-      end if
+      ! Set the path to the global config file.
+      allocate (global_settings)
+      global_settings%path = path_to_config_file
 
    end subroutine get_global_settings
 
