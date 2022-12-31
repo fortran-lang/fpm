@@ -2,6 +2,7 @@
 module fpm_settings
    use fpm_command_line, only: fpm_global_settings
    use fpm_filesystem, only: exists, join_path, get_local_prefix
+   use fpm_environment, only: os_is_unix
    use fpm_error, only: error_t, fatal_error
    implicit none
    private
@@ -31,7 +32,11 @@ contains
          end if
       else
          ! Use default path to the config file if it wasn't specified and exists.
-         default_path_to_config_file = join_path(get_local_prefix(), 'share', 'fpm', 'config.toml')
+         if (os_is_unix()) then
+            default_path_to_config_file = join_path(get_local_prefix(), 'share', 'fpm', 'config.toml')
+         else
+            default_path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
+         end if
          if (exists(default_path_to_config_file)) then
             path_to_config_file = default_path_to_config_file
          end if
