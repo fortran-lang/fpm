@@ -173,7 +173,7 @@ contains
     else
       call env_variable(home, "APPDATA")
       if (allocated(home)) then
-        prefix = join_path(home, "local")
+        prefix = join_path(home, "Local")
       else
         prefix = default_prefix_win
       end if
