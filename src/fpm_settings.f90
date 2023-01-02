@@ -8,7 +8,7 @@ module fpm_settings
    use tomlf, only: toml_load
    implicit none
    private
-   public get_global_settings
+   public :: get_global_settings
 
 contains
    !> Obtain global settings from the global config file.

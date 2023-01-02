@@ -8,7 +8,7 @@ module test_settings
 
    implicit none
    private
-   public collect_settings
+   public :: collect_settings
 
    character(len=*), parameter :: tmp_folder = 'tmp'
    character(len=*), parameter :: config_file_name = 'config.toml'
