@@ -25,10 +25,10 @@ contains
       & new_unittest('no-file', no_file, should_fail=.true.), &
       & new_unittest('empty-file', empty_file), &
       & new_unittest('empty-registry-table', empty_registry_table), &
-      & new_unittest('has-non-existent-path-registry', has_non_existent_path_registry, should_fail=.true.), &
-      & new_unittest('has-existent-path-registry', has_existent_path_registry), &
-      & new_unittest('has-url-registry', has_url_registry), &
-      & new_unittest('has-both-path-and-url-registry', has_both_path_and_url_registry, should_fail=.true.) &
+      & new_unittest('has-non-existent-path-to-registry', has_non_existent_path_to_registry, should_fail=.true.), &
+      & new_unittest('has-existent-path-to-registry', has_existent_path_to_registry), &
+      & new_unittest('has-url-to-registry', has_url_to_registry), &
+      & new_unittest('has-both-path-and-url-to-registry', has_both_path_and_url_to_registry, should_fail=.true.) &
       ]
 
    end subroutine collect_settings
@@ -114,7 +114,7 @@ contains
 
    end subroutine
 
-   subroutine has_non_existent_path_registry(error)
+   subroutine has_non_existent_path_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
       character(len=:), allocatable :: path_to_config_file
@@ -128,7 +128,7 @@ contains
       call os_delete_dir(os_is_unix(), tmp_folder)
    end subroutine
 
-   subroutine has_existent_path_registry(error)
+   subroutine has_existent_path_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
       character(len=:), allocatable :: path_to_config_file
@@ -154,7 +154,7 @@ contains
       end if
    end subroutine
 
-   subroutine has_url_registry(error)
+   subroutine has_url_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
       character(len=:), allocatable :: path_to_config_file
@@ -180,7 +180,7 @@ contains
       end if
    end subroutine
 
-   subroutine has_both_path_and_url_registry(error)
+   subroutine has_both_path_and_url_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
       character(len=:), allocatable :: path_to_config_file
