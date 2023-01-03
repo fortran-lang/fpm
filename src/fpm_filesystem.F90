@@ -14,7 +14,7 @@ module fpm_filesystem
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            LINE_BUFFER_LEN, os_delete_dir, is_absolute_path
+            LINE_BUFFER_LEN, os_delete_dir
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
 #ifndef FPM_BOOTSTRAP
@@ -990,26 +990,5 @@ function get_local_prefix(os) result(prefix)
     end if
 
 end function get_local_prefix
-
-   !> Returns .true. if provided path is absolute.
-   logical function is_absolute_path(path, is_unix)
-      character(len=*), intent(in) :: path
-      logical, optional, intent(in):: is_unix
-      character(len=*), parameter :: letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-      logical :: is_unix_os
-
-      if (present(is_unix)) then
-         is_unix_os = is_unix
-      else
-         is_unix_os = os_is_unix()
-      end if
-
-      if (is_unix_os) then
-         is_absolute_path = path(1:1) == '/' .or. path(1:1) == '~'
-      else
-         is_absolute_path = index(letters, path(1:1)) /= 0 .and. path(2:2) == ':'
-      end if
-
-   end function is_absolute_path
 
 end module fpm_filesystem

@@ -5,6 +5,7 @@ module fpm_settings
    use fpm_environment, only: os_is_unix
    use fpm_error, only: error_t, fatal_error
    use fpm_toml, only: toml_table, toml_error, toml_stat, get_value
+   use fpm_os, only: get_current_directory, change_directory, get_absolute_path
    use tomlf, only: toml_load
    implicit none
    private
@@ -68,7 +69,7 @@ contains
       type(toml_table), intent(inout) :: table
       type(error_t), allocatable, intent(out) :: error
       type(toml_table), pointer :: child
-      character(:), allocatable :: path, url
+      character(:), allocatable :: path, url, abs_path
       integer :: stat
 
       call get_value(table, 'registry', child, requested=.false., stat=stat)
@@ -97,7 +98,10 @@ contains
             return
          end if
 
-         global_settings%registry_settings%path = path
+         ! Making sure that path is absolute
+         call get_absolute_path(path, abs_path, error)
+         if (allocated(error)) return
+         global_settings%registry_settings%path = abs_path
       end if
 
       call get_value(child, 'url', url, stat=stat)

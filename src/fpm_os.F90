@@ -3,7 +3,7 @@ module fpm_os
     use fpm_error, only : error_t, fatal_error
     implicit none
     private
-    public :: change_directory, get_current_directory
+    public :: change_directory, get_current_directory, get_absolute_path
 
 #ifndef _WIN32
     character(len=*), parameter :: pwd_env = "PWD"
@@ -101,5 +101,23 @@ contains
         lhs = transfer(rhs(1:ii-1), lhs)
 
     end subroutine c_f_character
+
+    !> Get absolute path from a path.
+    subroutine get_absolute_path(path, abs_path, error)
+        character(len=*), intent(in) :: path
+        character(len=:), allocatable, intent(out) :: abs_path
+        type(error_t), allocatable, intent(out) :: error
+        character(len=:), allocatable :: start_dir, target_dir
+  
+        call get_current_directory(start_dir, error)
+        if (allocated(error)) return
+        call change_directory(path, error)
+        if (allocated(error)) return
+        call get_current_directory(target_dir, error)
+        if (allocated(error)) return
+        call change_directory(start_dir, error)
+        if (allocated(error)) return
+        abs_path = target_dir
+     end subroutine get_absolute_path
 
 end module fpm_os
