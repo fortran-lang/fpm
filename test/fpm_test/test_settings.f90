@@ -168,8 +168,10 @@ contains
 
       call get_absolute_path(tmp_folder, abs_path, error)
 
+      if (allocated(error)) return
+
       path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, [character(len=80) :: '[registry]', 'path="'//abs_path//'"'])
+      call filewrite(path_to_config_file, [character(len=80) :: '[registry]', "path='"//abs_path//"'"])
 
       call get_global_settings(global_settings, error, path_to_config_file)
 
@@ -222,7 +224,7 @@ contains
       call mkdir(tmp_folder)
 
       path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, [character(len=80) :: '[registry]', 'path="./tmp"'])
+      call filewrite(path_to_config_file, [character(len=80) :: '[registry]', "path='"//join_path('.', 'tmp')//"'"])
 
       call get_global_settings(global_settings, error, path_to_config_file)
 
