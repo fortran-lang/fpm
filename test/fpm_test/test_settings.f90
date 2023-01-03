@@ -175,6 +175,8 @@ contains
 
       call os_delete_dir(os_is_unix(), tmp_folder)
 
+      if (allocated(error)) return
+
       if (.not. allocated(global_settings%registry_settings%path)) then
          call test_failed(error, 'Path not allocated')
          return
