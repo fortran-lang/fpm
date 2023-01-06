@@ -1,12 +1,12 @@
 module parent_unused
-implicit none
+  implicit none
 
-interface
+  interface
 
     module subroutine unused_sub(a)
-        integer, intent(out) :: a
+      integer, intent(out) :: a
     end subroutine unused_sub
-    
-end interface
+
+  end interface
 
 end module parent_unused

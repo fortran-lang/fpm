@@ -4,14 +4,14 @@ program check
   implicit none
 
   integer :: i, max_element
-  integer, parameter :: array(*) = [(i,i=-50,10)]
-  
-  max_element = intvec_maxval(array,size(array,1,c_size_t))
+  integer, parameter :: array(*) = [(i, i=-50, 10)]
+
+  max_element = intvec_maxval(array, size(array, 1, c_size_t))
 
   if (max_element == maxval(array)) then
-    write(*,*) ' PASSED: Max element is ',max_element
+    write (*, *) ' PASSED: Max element is ', max_element
   else
-    write(*,*) ' (!) FAILED: Incorrect max element returned'
+    write (*, *) ' (!) FAILED: Incorrect max element returned'
     stop 1
   end if
 

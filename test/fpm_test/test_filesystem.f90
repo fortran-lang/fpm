@@ -1,179 +1,172 @@
 module test_filesystem
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
-    use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
-                              join_path
-    use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
-    implicit none
-    private
+  use testsuite, only: new_unittest, unittest_t, error_t, test_failed
+  use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
+                            join_path
+  use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
+  implicit none
+  private
 
-    public :: collect_filesystem
+  public :: collect_filesystem
 
 contains
 
+  !> Collect all exported unit tests
+  subroutine collect_filesystem(testsuite)
 
-    !> Collect all exported unit tests
-    subroutine collect_filesystem(testsuite)
+    !> Collection of tests
+    type(unittest_t), allocatable, intent(out) :: testsuite(:)
 
-        !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: testsuite(:)
+    testsuite = [ &
+        & new_unittest("canon-path", test_canon_path), &
+        & new_unittest("create-delete-directory", test_mkdir_rmdir) &
+        ]
 
-        testsuite = [ &
-            & new_unittest("canon-path", test_canon_path), &
-            & new_unittest("create-delete-directory", test_mkdir_rmdir) &
-            ]
+  end subroutine collect_filesystem
 
-    end subroutine collect_filesystem
+  subroutine test_canon_path(error)
 
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    subroutine test_canon_path(error)
+    call check_string(error, &
+        & canon_path("git/project/src/origin"), "git/project/src/origin")
+    if (allocated(error)) return
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call check_string(error,  &
+        & canon_path("./project/src/origin"), "project/src/origin")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("git/project/src/origin"), "git/project/src/origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("./project/src///origin/"), "project/src/origin")
+    if (allocated(error)) return
 
-        call check_string(error,  &
-            & canon_path("./project/src/origin"), "project/src/origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("../project/./src/origin/"), "../project/src/origin")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("./project/src///origin/"), "project/src/origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("/project//src/origin/"), "/project/src/origin")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("../project/./src/origin/"), "../project/src/origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("/project/src/../origin/"), "/project/origin")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("/project//src/origin/"), "/project/src/origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("/project/src/../origin/.."), "/project")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("/project/src/../origin/"), "/project/origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("/project/src//../origin/."), "/project/origin")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("/project/src/../origin/.."), "/project")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("../project/src/./../origin/."), "../project/origin")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("/project/src//../origin/."), "/project/origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("../project/src/../../../origin/."), "../../origin")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("../project/src/./../origin/."), "../project/origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("/../.."), "/")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("../project/src/../../../origin/."), "../../origin")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("././././././/////a/b/.///././////.///c/../../../"), ".")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("/../.."), "/")
-        if (allocated(error)) return
+    call check_string(error, &
+        & canon_path("/./././././/////a/b/.///././////.///c/../../../"), "/")
+    if (allocated(error)) return
 
-        call check_string(error, &
-            & canon_path("././././././/////a/b/.///././////.///c/../../../"), ".")
-        if (allocated(error)) return
+  end subroutine test_canon_path
 
-        call check_string(error, &
-            & canon_path("/./././././/////a/b/.///././////.///c/../../../"), "/")
-        if (allocated(error)) return
+  !> Check a character variable against a reference value
+  subroutine check_string(error, actual, expected)
 
-    end subroutine test_canon_path
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    !> Actual string value
+    character(len=*), intent(in) :: actual
 
-    !> Check a character variable against a reference value
-    subroutine check_string(error, actual, expected)
+    !> Expected string value
+    character(len=*), intent(in) :: expected
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    if (actual /= expected) then
+      call test_failed(error, &
+                       "Character value mismatch "// &
+                       "expected '"//expected//"' but got '"//actual//"'")
+    end if
 
-        !> Actual string value
-        character(len=*), intent(in) :: actual
+  end subroutine check_string
 
-        !> Expected string value
-        character(len=*), intent(in) :: expected
+  subroutine test_mkdir_rmdir(error)
 
-        if (actual /= expected) then
-            call test_failed(error, &
-                "Character value mismatch "//&
-                "expected '"//expected//"' but got '"//actual//"'")
-        end if
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine check_string
+    call check_mkdir(error, join_path("tmpdir", "subdir"))
+    if (allocated(error)) return
 
+    call check_rmdir(error, "tmpdir")
+    if (allocated(error)) return
 
-    subroutine test_mkdir_rmdir(error)
+  end subroutine test_mkdir_rmdir
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  !> Create a directory and verify its existence
+  subroutine check_mkdir(error, path)
 
-        call check_mkdir(error, join_path("tmpdir","subdir"))
-        if (allocated(error)) return
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call check_rmdir(error, "tmpdir")
-        if (allocated(error)) return
+    !> Directory path
+    character(len=*), intent(in) :: path
 
-    end subroutine test_mkdir_rmdir
+    ! Directory shouldn't exist before it's created
+    if (is_dir(path)) then
+      call test_failed(error, &
+                       "Directory path "//path//" already exists before its creation")
+      return
+    end if
 
+    ! Create directory
+    call mkdir(path)
 
-    !> Create a directory and verify its existence
-    subroutine check_mkdir(error, path)
+    ! Check that directory is indeed created
+    if (.not. is_dir(path)) then
+      call test_failed(error, &
+                       "Directory path "//path//" cannot be created")
+    end if
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  end subroutine check_mkdir
 
-        !> Directory path
-        character(len=*), intent(in) :: path
+  !> Create a directory and verify its existence
+  subroutine check_rmdir(error, path)
 
-        ! Directory shouldn't exist before it's created
-        if (is_dir(path)) then
-            call test_failed(error, &
-                "Directory path "//path//" already exists before its creation")
-            return
-        end if
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        ! Create directory
-        call mkdir(path)
+    !> Directory path
+    character(len=*), intent(in) :: path
 
-        ! Check that directory is indeed created
-        if (.not.is_dir(path)) then
-            call test_failed(error, &
-                "Directory path "//path//" cannot be created")
-        end if
+    ! Directory should exist before it's deleted
+    if (.not. is_dir(path)) then
+      call test_failed(error, &
+                       "Directory path "//path//" doesn't exist before its deletion")
+      return
+    end if
 
-      end subroutine check_mkdir
+    ! Delete directory
+    call os_delete_dir(os_is_unix(), path)
 
+    ! Check that directory is indeed deleted
+    if (is_dir(path)) then
+      call test_failed(error, &
+                       "Directory path "//path//" cannot be deleted")
+    end if
 
-    !> Create a directory and verify its existence
-    subroutine check_rmdir(error, path)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        !> Directory path
-        character(len=*), intent(in) :: path
-
-        ! Directory should exist before it's deleted
-        if (.not. is_dir(path)) then
-            call test_failed(error, &
-                "Directory path "//path//" doesn't exist before its deletion")
-            return
-        end if
-
-        ! Delete directory
-        call os_delete_dir(os_is_unix(),path)
-
-        ! Check that directory is indeed deleted
-        if (is_dir(path)) then
-            call test_failed(error, &
-                "Directory path "//path//" cannot be deleted")
-        end if
-
-      end subroutine check_rmdir
-
+  end subroutine check_rmdir
 
 end module test_filesystem

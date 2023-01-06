@@ -1,6 +1,6 @@
 module app_extra_mod
-implicit none
+  implicit none
 
-character(len=5) :: greet_object = "World"
+  character(len=5) :: greet_object = "World"
 
 end module app_extra_mod

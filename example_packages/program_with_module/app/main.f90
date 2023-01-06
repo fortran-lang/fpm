@@ -1,6 +1,6 @@
 module greet_m
   implicit none
-  character(*), parameter :: greeting = 'Hello, fpm!' 
+  character(*), parameter :: greeting = 'Hello, fpm!'
 end module greet_m
 
 program program_with_module

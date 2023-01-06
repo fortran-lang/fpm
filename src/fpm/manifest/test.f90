@@ -15,164 +15,158 @@
 !>[test.dependencies]
 !>```
 module fpm_manifest_test
-    use fpm_manifest_dependency, only : dependency_config_t, new_dependencies
-    use fpm_manifest_executable, only : executable_config_t
-    use fpm_error, only : error_t, syntax_error, bad_name_error
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
-    implicit none
-    private
+  use fpm_manifest_dependency, only: dependency_config_t, new_dependencies
+  use fpm_manifest_executable, only: executable_config_t
+  use fpm_error, only: error_t, syntax_error, bad_name_error
+  use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, get_list
+  implicit none
+  private
 
-    public :: test_config_t, new_test
+  public :: test_config_t, new_test
 
+  !> Configuation meta data for an test
+  type, extends(executable_config_t) :: test_config_t
 
-    !> Configuation meta data for an test
-    type, extends(executable_config_t) :: test_config_t
+  contains
 
-    contains
+    !> Print information on this instance
+    procedure :: info
 
-        !> Print information on this instance
-        procedure :: info
-
-    end type test_config_t
-
+  end type test_config_t
 
 contains
 
+  !> Construct a new test configuration from a TOML data structure
+  subroutine new_test(self, table, error)
 
-    !> Construct a new test configuration from a TOML data structure
-    subroutine new_test(self, table, error)
+    !> Instance of the test configuration
+    type(test_config_t), intent(out) :: self
 
-        !> Instance of the test configuration
-        type(test_config_t), intent(out) :: self
+    !> Instance of the TOML data structure
+    type(toml_table), intent(inout) :: table
 
-        !> Instance of the TOML data structure
-        type(toml_table), intent(inout) :: table
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(toml_table), pointer :: child
 
-        type(toml_table), pointer :: child
+    call check(table, error)
+    if (allocated(error)) return
 
-        call check(table, error)
-        if (allocated(error)) return
+    call get_value(table, "name", self%name)
+    if (.not. allocated(self%name)) then
+      call syntax_error(error, "Could not retrieve test name")
+      return
+    end if
+    if (bad_name_error(error, 'test', self%name)) then
+      return
+    end if
+    call get_value(table, "source-dir", self%source_dir, "test")
+    call get_value(table, "main", self%main, "main.f90")
 
-        call get_value(table, "name", self%name)
-        if (.not.allocated(self%name)) then
-           call syntax_error(error, "Could not retrieve test name")
-           return
-        end if
-        if (bad_name_error(error,'test',self%name))then
-           return
-        endif
-        call get_value(table, "source-dir", self%source_dir, "test")
-        call get_value(table, "main", self%main, "main.f90")
+    call get_value(table, "dependencies", child, requested=.false.)
+    if (associated(child)) then
+      call new_dependencies(self%dependency, child, error=error)
+      if (allocated(error)) return
+    end if
 
-        call get_value(table, "dependencies", child, requested=.false.)
-        if (associated(child)) then
-            call new_dependencies(self%dependency, child, error=error)
-            if (allocated(error)) return
-        end if
+    call get_list(table, "link", self%link, error)
+    if (allocated(error)) return
 
-        call get_list(table, "link", self%link, error)
-        if (allocated(error)) return
+  end subroutine new_test
 
-    end subroutine new_test
+  !> Check local schema for allowed entries
+  subroutine check(table, error)
 
+    !> Instance of the TOML data structure
+    type(toml_table), intent(inout) :: table
 
-    !> Check local schema for allowed entries
-    subroutine check(table, error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Instance of the TOML data structure
-        type(toml_table), intent(inout) :: table
+    type(toml_key), allocatable :: list(:)
+    logical :: name_present
+    integer :: ikey
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    name_present = .false.
 
-        type(toml_key), allocatable :: list(:)
-        logical :: name_present
-        integer :: ikey
+    call table%get_keys(list)
 
-        name_present = .false.
+    if (size(list) < 1) then
+      call syntax_error(error, "Test section does not provide sufficient entries")
+      return
+    end if
 
-        call table%get_keys(list)
+    do ikey = 1, size(list)
+      select case (list(ikey)%key)
+      case default
+        call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in test entry")
+        exit
 
-        if (size(list) < 1) then
-            call syntax_error(error, "Test section does not provide sufficient entries")
-            return
-        end if
+      case ("name")
+        name_present = .true.
 
-        do ikey = 1, size(list)
-            select case(list(ikey)%key)
-            case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in test entry")
-                exit
+      case ("source-dir", "main", "dependencies", "link")
+        continue
 
-            case("name")
-                name_present = .true.
+      end select
+    end do
+    if (allocated(error)) return
 
-            case("source-dir", "main", "dependencies", "link")
-                continue
+    if (.not. name_present) then
+      call syntax_error(error, "Test name is not provided, please add a name entry")
+    end if
 
-            end select
-        end do
-        if (allocated(error)) return
+  end subroutine check
 
-        if (.not.name_present) then
-            call syntax_error(error, "Test name is not provided, please add a name entry")
-        end if
+  !> Write information on instance
+  subroutine info(self, unit, verbosity)
 
-    end subroutine check
+    !> Instance of the test configuration
+    class(test_config_t), intent(in) :: self
 
+    !> Unit for IO
+    integer, intent(in) :: unit
 
-    !> Write information on instance
-    subroutine info(self, unit, verbosity)
+    !> Verbosity of the printout
+    integer, intent(in), optional :: verbosity
 
-        !> Instance of the test configuration
-        class(test_config_t), intent(in) :: self
+    integer :: pr, ii
+    character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)', &
+        & fmti = '("#", 1x, a, t30, i0)'
 
-        !> Unit for IO
-        integer, intent(in) :: unit
+    if (present(verbosity)) then
+      pr = verbosity
+    else
+      pr = 1
+    end if
 
-        !> Verbosity of the printout
-        integer, intent(in), optional :: verbosity
+    if (pr < 1) return
 
-        integer :: pr, ii
-        character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)', &
-            & fmti = '("#", 1x, a, t30, i0)'
+    write (unit, fmt) "Test target"
+    if (allocated(self%name)) then
+      write (unit, fmt) "- name", self%name
+    end if
+    if (allocated(self%source_dir)) then
+      if (self%source_dir /= "test" .or. pr > 2) then
+        write (unit, fmt) "- source directory", self%source_dir
+      end if
+    end if
+    if (allocated(self%main)) then
+      if (self%main /= "main.f90" .or. pr > 2) then
+        write (unit, fmt) "- test source", self%main
+      end if
+    end if
 
-        if (present(verbosity)) then
-            pr = verbosity
-        else
-            pr = 1
-        end if
+    if (allocated(self%dependency)) then
+      if (size(self%dependency) > 1 .or. pr > 2) then
+        write (unit, fmti) "- dependencies", size(self%dependency)
+      end if
+      do ii = 1, size(self%dependency)
+        call self%dependency(ii)%info(unit, pr - 1)
+      end do
+    end if
 
-        if (pr < 1) return
-
-        write(unit, fmt) "Test target"
-        if (allocated(self%name)) then
-            write(unit, fmt) "- name", self%name
-        end if
-        if (allocated(self%source_dir)) then
-            if (self%source_dir /= "test" .or. pr > 2) then
-                write(unit, fmt) "- source directory", self%source_dir
-            end if
-        end if
-        if (allocated(self%main)) then
-            if (self%main /= "main.f90" .or. pr > 2) then
-                write(unit, fmt) "- test source", self%main
-            end if
-        end if
-
-        if (allocated(self%dependency)) then
-            if (size(self%dependency) > 1 .or. pr > 2) then
-                write(unit, fmti) "- dependencies", size(self%dependency)
-            end if
-            do ii = 1, size(self%dependency)
-                call self%dependency(ii)%info(unit, pr - 1)
-            end do
-        end if
-
-    end subroutine info
-
+  end subroutine info
 
 end module fpm_manifest_test

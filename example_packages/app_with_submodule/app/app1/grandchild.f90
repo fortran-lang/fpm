@@ -4,7 +4,7 @@ implicit none
 contains
 
 module procedure my_fun
-    b = 1
+b = 1
 end procedure my_fun
 
 end submodule grandchild

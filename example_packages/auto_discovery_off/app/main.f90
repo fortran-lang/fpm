@@ -1,6 +1,6 @@
 program main
-implicit none
+  implicit none
 
-print *, "This program should run."
+  print *, "This program should run."
 
 end program main

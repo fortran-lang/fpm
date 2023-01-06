@@ -1,22 +1,22 @@
 module preprocess_cpp
-   implicit none
-   private
+  implicit none
+  private
 
-   public :: say_hello
+  public :: say_hello
 contains
-   subroutine say_hello
-      print *, "Hello, preprocess_cpp!"
+  subroutine say_hello
+    print *, "Hello, preprocess_cpp!"
 #ifndef TESTMACRO
-      This breaks the build.
+    This breaks the build.
 #endif
 
 #if TESTMACRO2 != 3
-      This breaks the build.
+    This breaks the build.
 #endif
 
 #if TESTMACRO3 != 1
-      This breaks the build.
+    This breaks the build.
 #endif
 
-   end subroutine say_hello
+  end subroutine say_hello
 end module preprocess_cpp

@@ -10,17 +10,17 @@
 !> the pretty output must be suppressed to avoid control codes being output.
 
 module fpm_backend_output
-use iso_fortran_env, only: stdout=>output_unit
-use fpm_filesystem, only: basename
-use fpm_targets, only: build_target_ptr
-use fpm_backend_console, only: console_t, LINE_RESET, COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_RESET
-implicit none
+  use iso_fortran_env, only: stdout => output_unit
+  use fpm_filesystem, only: basename
+  use fpm_targets, only: build_target_ptr
+  use fpm_backend_console, only: console_t, LINE_RESET, COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_RESET
+  implicit none
 
-private
-public build_progress_t
+  private
+  public build_progress_t
 
 !> Build progress object
-type build_progress_t
+  type build_progress_t
     !> Console object for updating console lines
     type(console_t) :: console
     !> Number of completed targets
@@ -33,146 +33,146 @@ type build_progress_t
     integer, allocatable :: output_lines(:)
     !> Queue of scheduled build targets
     type(build_target_ptr), pointer :: target_queue(:)
-contains
+  contains
     !> Output 'compiling' status for build target
     procedure :: compiling_status => output_status_compiling
     !> Output 'complete' status for build target
     procedure :: completed_status => output_status_complete
     !> Output finished status for whole package
     procedure :: success => output_progress_success
-end type build_progress_t
+  end type build_progress_t
 
 !> Constructor for build_progress_t
-interface build_progress_t
+  interface build_progress_t
     procedure :: new_build_progress
-end interface build_progress_t
+  end interface build_progress_t
 
 contains
-    
-    !> Initialise a new build progress object
-    function new_build_progress(target_queue,plain_mode) result(progress)
-        !> The queue of scheduled targets
-        type(build_target_ptr), intent(in), target :: target_queue(:)
-        !> Enable 'plain' output for progress object
-        logical, intent(in), optional :: plain_mode
-        !> Progress object to initialise
-        type(build_progress_t) :: progress
 
-        progress%n_target = size(target_queue,1)
-        progress%target_queue => target_queue
-        progress%plain_mode = plain_mode
-        progress%n_complete = 0
+  !> Initialise a new build progress object
+  function new_build_progress(target_queue, plain_mode) result(progress)
+    !> The queue of scheduled targets
+    type(build_target_ptr), intent(in), target :: target_queue(:)
+    !> Enable 'plain' output for progress object
+    logical, intent(in), optional :: plain_mode
+    !> Progress object to initialise
+    type(build_progress_t) :: progress
 
-        allocate(progress%output_lines(progress%n_target))
+    progress%n_target = size(target_queue, 1)
+    progress%target_queue => target_queue
+    progress%plain_mode = plain_mode
+    progress%n_complete = 0
 
-    end function new_build_progress
+    allocate (progress%output_lines(progress%n_target))
 
-    !> Output 'compiling' status for build target and overall percentage progress
-    subroutine output_status_compiling(progress, queue_index)
-        !> Progress object
-        class(build_progress_t), intent(inout) :: progress
-        !> Index of build target in the target queue
-        integer, intent(in) :: queue_index
+  end function new_build_progress
 
-        character(:), allocatable :: target_name
-        character(100) :: output_string
-        character(7) :: overall_progress
+  !> Output 'compiling' status for build target and overall percentage progress
+  subroutine output_status_compiling(progress, queue_index)
+    !> Progress object
+    class(build_progress_t), intent(inout) :: progress
+    !> Index of build target in the target queue
+    integer, intent(in) :: queue_index
 
-        associate(target=>progress%target_queue(queue_index)%ptr)
+    character(:), allocatable :: target_name
+    character(100) :: output_string
+    character(7) :: overall_progress
 
-            if (allocated(target%source)) then
-                target_name = basename(target%source%file_name)
-            else
-                target_name = basename(target%output_file)
-            end if
+    associate (target => progress%target_queue(queue_index)%ptr)
 
-            write(overall_progress,'(A,I3,A)') '[',100*progress%n_complete/progress%n_target,'%] '
+      if (allocated(target%source)) then
+        target_name = basename(target%source%file_name)
+      else
+        target_name = basename(target%output_file)
+      end if
 
-            if (progress%plain_mode) then ! Plain output
+      write (overall_progress, '(A,I3,A)') '[', 100*progress%n_complete/progress%n_target, '%] '
 
-                !$omp critical
-                write(*,'(A7,A30)') overall_progress,target_name
-                !$omp end critical
+      if (progress%plain_mode) then ! Plain output
 
-            else ! Pretty output
-
-                write(output_string,'(A,T40,A,A)') target_name, COLOR_YELLOW//'compiling...'//COLOR_RESET
-
-                call progress%console%write_line(trim(output_string),progress%output_lines(queue_index))
-
-                call progress%console%write_line(overall_progress//'Compiling...',advance=.false.)
-
-            end if
-
-        end associate
-
-    end subroutine output_status_compiling
-
-    !> Output 'complete' status for build target and update overall percentage progress
-    subroutine output_status_complete(progress, queue_index, build_stat)
-        !> Progress object
-        class(build_progress_t), intent(inout) :: progress
-        !> Index of build target in the target queue
-        integer, intent(in) :: queue_index
-        !> Build status flag
-        integer, intent(in) :: build_stat
-
-        character(:), allocatable :: target_name
-        character(100) :: output_string
-        character(7) :: overall_progress
-
-        !$omp critical 
-        progress%n_complete = progress%n_complete + 1
+        !$omp critical
+        write (*, '(A7,A30)') overall_progress, target_name
         !$omp end critical
 
-        associate(target=>progress%target_queue(queue_index)%ptr)
+      else ! Pretty output
 
-            if (allocated(target%source)) then
-                target_name = basename(target%source%file_name)
-            else
-                target_name = basename(target%output_file)
-            end if
+        write (output_string, '(A,T40,A,A)') target_name, COLOR_YELLOW//'compiling...'//COLOR_RESET
 
-            if (build_stat == 0) then
-                write(output_string,'(A,T40,A,A)') target_name,COLOR_GREEN//'done.'//COLOR_RESET
-            else
-                write(output_string,'(A,T40,A,A)') target_name,COLOR_RED//'failed.'//COLOR_RESET
-            end if
+        call progress%console%write_line(trim(output_string), progress%output_lines(queue_index))
 
-            write(overall_progress,'(A,I3,A)') '[',100*progress%n_complete/progress%n_target,'%] '
+        call progress%console%write_line(overall_progress//'Compiling...', advance=.false.)
 
-            if (progress%plain_mode) then  ! Plain output
+      end if
 
-                !$omp critical
-                write(*,'(A7,A30,A7)') overall_progress,target_name, 'done.'
-                !$omp end critical
+    end associate
 
-            else ! Pretty output
+  end subroutine output_status_compiling
 
-                call progress%console%update_line(progress%output_lines(queue_index),trim(output_string))
+  !> Output 'complete' status for build target and update overall percentage progress
+  subroutine output_status_complete(progress, queue_index, build_stat)
+    !> Progress object
+    class(build_progress_t), intent(inout) :: progress
+    !> Index of build target in the target queue
+    integer, intent(in) :: queue_index
+    !> Build status flag
+    integer, intent(in) :: build_stat
 
-                call progress%console%write_line(overall_progress//'Compiling...',advance=.false.)
+    character(:), allocatable :: target_name
+    character(100) :: output_string
+    character(7) :: overall_progress
 
-            end if
+    !$omp critical
+    progress%n_complete = progress%n_complete + 1
+    !$omp end critical
 
-        end associate
+    associate (target => progress%target_queue(queue_index)%ptr)
 
-    end subroutine output_status_complete
+      if (allocated(target%source)) then
+        target_name = basename(target%source%file_name)
+      else
+        target_name = basename(target%output_file)
+      end if
 
-    !> Output finished status for whole package
-    subroutine output_progress_success(progress)
-        class(build_progress_t), intent(inout) :: progress
+      if (build_stat == 0) then
+        write (output_string, '(A,T40,A,A)') target_name, COLOR_GREEN//'done.'//COLOR_RESET
+      else
+        write (output_string, '(A,T40,A,A)') target_name, COLOR_RED//'failed.'//COLOR_RESET
+      end if
 
-        if (progress%plain_mode) then ! Plain output
+      write (overall_progress, '(A,I3,A)') '[', 100*progress%n_complete/progress%n_target, '%] '
 
-            write(*,'(A)') '[100%] Project compiled successfully.'
+      if (progress%plain_mode) then  ! Plain output
 
-        else ! Pretty output
+        !$omp critical
+        write (*, '(A7,A30,A7)') overall_progress, target_name, 'done.'
+        !$omp end critical
 
-            write(*,'(A)') LINE_RESET//COLOR_GREEN//'[100%] Project compiled successfully.'//COLOR_RESET
+      else ! Pretty output
 
-        end if
+        call progress%console%update_line(progress%output_lines(queue_index), trim(output_string))
 
-    end subroutine output_progress_success
+        call progress%console%write_line(overall_progress//'Compiling...', advance=.false.)
+
+      end if
+
+    end associate
+
+  end subroutine output_status_complete
+
+  !> Output finished status for whole package
+  subroutine output_progress_success(progress)
+    class(build_progress_t), intent(inout) :: progress
+
+    if (progress%plain_mode) then ! Plain output
+
+      write (*, '(A)') '[100%] Project compiled successfully.'
+
+    else ! Pretty output
+
+      write (*, '(A)') LINE_RESET//COLOR_GREEN//'[100%] Project compiled successfully.'//COLOR_RESET
+
+    end if
+
+  end subroutine output_progress_success
 
 end module fpm_backend_output

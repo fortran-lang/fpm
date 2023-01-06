@@ -1,13 +1,13 @@
 module farewell_m
-    implicit none
-    private
+  implicit none
+  private
 
-    public :: make_farewell
+  public :: make_farewell
 contains
-    function make_farewell(name) result(greeting)
-        character(len=*), intent(in) :: name
-        character(len=:), allocatable :: greeting
+  function make_farewell(name) result(greeting)
+    character(len=*), intent(in) :: name
+    character(len=:), allocatable :: greeting
 
-        greeting = "Goodbye, " // name // "!"
-    end function make_farewell
+    greeting = "Goodbye, "//name//"!"
+  end function make_farewell
 end module farewell_m

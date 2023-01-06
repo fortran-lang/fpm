@@ -1,7 +1,7 @@
 program run_tests
-    use hello_test, only: run_test
+  use hello_test, only: run_test
 
-    implicit none
+  implicit none
 
-    call run_test
+  call run_test
 end program run_tests

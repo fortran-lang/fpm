@@ -1,265 +1,254 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
-    use fpm_error, only: error_t, fatal_error
-    use fpm_filesystem, only : get_temp_filename, getline, join_path
-    implicit none
+  use fpm_error, only: error_t, fatal_error
+  use fpm_filesystem, only: get_temp_filename, getline, join_path
+  implicit none
 
-    public :: git_target_t
-    public :: git_target_default, git_target_branch, git_target_tag, &
-        & git_target_revision
-    public :: git_revision
+  public :: git_target_t
+  public :: git_target_default, git_target_branch, git_target_tag, &
+      & git_target_revision
+  public :: git_revision
 
+  !> Possible git target
+  type :: enum_descriptor
 
-    !> Possible git target
-    type :: enum_descriptor
+    !> Default target
+    integer :: default = 200
 
-        !> Default target
-        integer :: default = 200
+    !> Branch in git repository
+    integer :: branch = 201
 
-        !> Branch in git repository
-        integer :: branch = 201
+    !> Tag in git repository
+    integer :: tag = 202
 
-        !> Tag in git repository
-        integer :: tag = 202
+    !> Commit hash
+    integer :: revision = 203
 
-        !> Commit hash
-        integer :: revision = 203
+  end type enum_descriptor
 
-    end type enum_descriptor
+  !> Actual enumerator for descriptors
+  type(enum_descriptor), parameter :: git_descriptor = enum_descriptor()
 
-    !> Actual enumerator for descriptors
-    type(enum_descriptor), parameter :: git_descriptor = enum_descriptor()
+  !> Description of an git target
+  type :: git_target_t
 
+    !> Kind of the git target
+    integer, private :: descriptor = git_descriptor%default
 
-    !> Description of an git target
-    type :: git_target_t
+    !> Target URL of the git repository
+    character(len=:), allocatable :: url
 
-        !> Kind of the git target
-        integer, private :: descriptor = git_descriptor%default
+    !> Additional descriptor of the git object
+    character(len=:), allocatable :: object
 
-        !> Target URL of the git repository
-        character(len=:), allocatable :: url
+  contains
 
-        !> Additional descriptor of the git object
-        character(len=:), allocatable :: object
+    !> Fetch and checkout in local directory
+    procedure :: checkout
 
-    contains
+    !> Show information on instance
+    procedure :: info
 
-        !> Fetch and checkout in local directory
-        procedure :: checkout
-
-        !> Show information on instance
-        procedure :: info
-
-    end type git_target_t
-
+  end type git_target_t
 
 contains
 
+  !> Default target
+  function git_target_default(url) result(self)
 
-    !> Default target
-    function git_target_default(url) result(self)
+    !> Target URL of the git repository
+    character(len=*), intent(in) :: url
 
-        !> Target URL of the git repository
-        character(len=*), intent(in) :: url
+    !> New git target
+    type(git_target_t) :: self
 
-        !> New git target
-        type(git_target_t) :: self
+    self%descriptor = git_descriptor%default
+    self%url = url
 
-        self%descriptor = git_descriptor%default
-        self%url = url
+  end function git_target_default
 
-    end function git_target_default
+  !> Target a branch in the git repository
+  function git_target_branch(url, branch) result(self)
 
+    !> Target URL of the git repository
+    character(len=*), intent(in) :: url
 
-    !> Target a branch in the git repository
-    function git_target_branch(url, branch) result(self)
+    !> Name of the branch of interest
+    character(len=*), intent(in) :: branch
 
-        !> Target URL of the git repository
-        character(len=*), intent(in) :: url
+    !> New git target
+    type(git_target_t) :: self
 
-        !> Name of the branch of interest
-        character(len=*), intent(in) :: branch
+    self%descriptor = git_descriptor%branch
+    self%url = url
+    self%object = branch
 
-        !> New git target
-        type(git_target_t) :: self
+  end function git_target_branch
 
-        self%descriptor = git_descriptor%branch
-        self%url = url
-        self%object = branch
+  !> Target a specific git revision
+  function git_target_revision(url, sha1) result(self)
 
-    end function git_target_branch
+    !> Target URL of the git repository
+    character(len=*), intent(in) :: url
 
+    !> Commit hash of interest
+    character(len=*), intent(in) :: sha1
 
-    !> Target a specific git revision
-    function git_target_revision(url, sha1) result(self)
+    !> New git target
+    type(git_target_t) :: self
 
-        !> Target URL of the git repository
-        character(len=*), intent(in) :: url
+    self%descriptor = git_descriptor%revision
+    self%url = url
+    self%object = sha1
 
-        !> Commit hash of interest
-        character(len=*), intent(in) :: sha1
+  end function git_target_revision
 
-        !> New git target
-        type(git_target_t) :: self
+  !> Target a git tag
+  function git_target_tag(url, tag) result(self)
 
-        self%descriptor = git_descriptor%revision
-        self%url = url
-        self%object = sha1
+    !> Target URL of the git repository
+    character(len=*), intent(in) :: url
 
-    end function git_target_revision
+    !> Tag name of interest
+    character(len=*), intent(in) :: tag
 
+    !> New git target
+    type(git_target_t) :: self
 
-    !> Target a git tag
-    function git_target_tag(url, tag) result(self)
+    self%descriptor = git_descriptor%tag
+    self%url = url
+    self%object = tag
 
-        !> Target URL of the git repository
-        character(len=*), intent(in) :: url
+  end function git_target_tag
 
-        !> Tag name of interest
-        character(len=*), intent(in) :: tag
+  subroutine checkout(self, local_path, error)
 
-        !> New git target
-        type(git_target_t) :: self
+    !> Instance of the git target
+    class(git_target_t), intent(in) :: self
 
-        self%descriptor = git_descriptor%tag
-        self%url = url
-        self%object = tag
+    !> Local path to checkout in
+    character(*), intent(in) :: local_path
 
-    end function git_target_tag
+    !> Error
+    type(error_t), allocatable, intent(out) :: error
 
+    integer :: stat
+    character(len=:), allocatable :: object, workdir
 
-    subroutine checkout(self, local_path, error)
+    if (allocated(self%object)) then
+      object = self%object
+    else
+      object = 'HEAD'
+    end if
+    workdir = "--work-tree="//local_path//" --git-dir="//join_path(local_path, ".git")
 
-        !> Instance of the git target
-        class(git_target_t), intent(in) :: self
+    call execute_command_line("git init "//local_path, exitstat=stat)
 
-        !> Local path to checkout in
-        character(*), intent(in) :: local_path
+    if (stat /= 0) then
+      call fatal_error(error, 'Error while initiating git repository for remote dependency')
+      return
+    end if
 
-        !> Error
-        type(error_t), allocatable, intent(out) :: error
+    call execute_command_line("git "//workdir//" fetch --depth=1 "// &
+                              self%url//" "//object, exitstat=stat)
 
-        integer :: stat
-        character(len=:), allocatable :: object, workdir
+    if (stat /= 0) then
+      call fatal_error(error, 'Error while fetching git repository for remote dependency')
+      return
+    end if
 
-        if (allocated(self%object)) then
-            object = self%object
-        else
-            object = 'HEAD'
-        end if
-        workdir = "--work-tree="//local_path//" --git-dir="//join_path(local_path, ".git")
+    call execute_command_line("git "//workdir//" checkout -qf FETCH_HEAD", exitstat=stat)
 
-        call execute_command_line("git init "//local_path, exitstat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, 'Error while checking out git repository for remote dependency')
+      return
+    end if
 
-        if (stat /= 0) then
-            call fatal_error(error,'Error while initiating git repository for remote dependency')
-            return
-        end if
+  end subroutine checkout
 
-        call execute_command_line("git "//workdir//" fetch --depth=1 "// &
-                                  self%url//" "//object, exitstat=stat)
+  subroutine git_revision(local_path, object, error)
 
-        if (stat /= 0) then
-            call fatal_error(error,'Error while fetching git repository for remote dependency')
-            return
-        end if
+    !> Local path to checkout in
+    character(*), intent(in) :: local_path
 
-        call execute_command_line("git "//workdir//" checkout -qf FETCH_HEAD", exitstat=stat)
+    !> Git object reference
+    character(len=:), allocatable, intent(out) :: object
 
-        if (stat /= 0) then
-            call fatal_error(error,'Error while checking out git repository for remote dependency')
-            return
-        end if
+    !> Error
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine checkout
+    integer :: stat, unit, istart, iend
+    character(len=:), allocatable :: temp_file, line, iomsg, workdir
+    character(len=*), parameter :: hexdigits = '0123456789abcdef'
 
+    workdir = "--work-tree="//local_path//" --git-dir="//join_path(local_path, ".git")
+    allocate (temp_file, source=get_temp_filename())
+    line = "git "//workdir//" log -n 1 > "//temp_file
+    call execute_command_line(line, exitstat=stat)
 
-    subroutine git_revision(local_path, object, error)
+    if (stat /= 0) then
+      call fatal_error(error, "Error while retrieving commit information")
+      return
+    end if
 
-        !> Local path to checkout in
-        character(*), intent(in) :: local_path
+    open (file=temp_file, newunit=unit)
+    call getline(unit, line, stat, iomsg)
 
-        !> Git object reference
-        character(len=:), allocatable, intent(out) :: object
+    if (stat /= 0) then
+      call fatal_error(error, iomsg)
+      return
+    end if
+    close (unit, status="delete")
 
-        !> Error
-        type(error_t), allocatable, intent(out) :: error
+    ! Tokenize:
+    ! commit 0123456789abcdef (HEAD, ...)
+    istart = scan(line, ' ') + 1
+    iend = verify(line(istart:), hexdigits) + istart - 1
+    if (iend < istart) iend = len(line)
+    object = line(istart:iend)
 
-        integer :: stat, unit, istart, iend
-        character(len=:), allocatable :: temp_file, line, iomsg, workdir
-        character(len=*), parameter :: hexdigits = '0123456789abcdef'
+  end subroutine git_revision
 
-        workdir = "--work-tree="//local_path//" --git-dir="//join_path(local_path, ".git")
-        allocate(temp_file, source=get_temp_filename())
-        line = "git "//workdir//" log -n 1 > "//temp_file
-        call execute_command_line(line, exitstat=stat)
+  !> Show information on git target
+  subroutine info(self, unit, verbosity)
 
-        if (stat /= 0) then
-            call fatal_error(error, "Error while retrieving commit information")
-            return
-        end if
+    !> Instance of the git target
+    class(git_target_t), intent(in) :: self
 
-        open(file=temp_file, newunit=unit)
-        call getline(unit, line, stat, iomsg)
+    !> Unit for IO
+    integer, intent(in) :: unit
 
-        if (stat /= 0) then
-            call fatal_error(error, iomsg)
-            return
-        end if
-        close(unit, status="delete")
+    !> Verbosity of the printout
+    integer, intent(in), optional :: verbosity
 
-        ! Tokenize:
-        ! commit 0123456789abcdef (HEAD, ...)
-        istart = scan(line, ' ') + 1
-        iend = verify(line(istart:), hexdigits) + istart - 1
-        if (iend < istart) iend = len(line)
-        object = line(istart:iend)
+    integer :: pr
+    character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
 
-    end subroutine git_revision
+    if (present(verbosity)) then
+      pr = verbosity
+    else
+      pr = 1
+    end if
 
+    if (pr < 1) return
 
-    !> Show information on git target
-    subroutine info(self, unit, verbosity)
+    write (unit, fmt) "Git target"
+    if (allocated(self%url)) then
+      write (unit, fmt) "- URL", self%url
+    end if
+    if (allocated(self%object)) then
+      select case (self%descriptor)
+      case default
+        write (unit, fmt) "- object", self%object
+      case (git_descriptor%tag)
+        write (unit, fmt) "- tag", self%object
+      case (git_descriptor%branch)
+        write (unit, fmt) "- branch", self%object
+      case (git_descriptor%revision)
+        write (unit, fmt) "- sha1", self%object
+      end select
+    end if
 
-        !> Instance of the git target
-        class(git_target_t), intent(in) :: self
-
-        !> Unit for IO
-        integer, intent(in) :: unit
-
-        !> Verbosity of the printout
-        integer, intent(in), optional :: verbosity
-
-        integer :: pr
-        character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
-
-        if (present(verbosity)) then
-            pr = verbosity
-        else
-            pr = 1
-        end if
-
-        if (pr < 1) return
-
-        write(unit, fmt) "Git target"
-        if (allocated(self%url)) then
-            write(unit, fmt) "- URL", self%url
-        end if
-        if (allocated(self%object)) then
-            select case(self%descriptor)
-            case default
-                write(unit, fmt) "- object", self%object
-            case(git_descriptor%tag)
-                write(unit, fmt) "- tag", self%object
-            case(git_descriptor%branch)
-                write(unit, fmt) "- branch", self%object
-            case(git_descriptor%revision)
-                write(unit, fmt) "- sha1", self%object
-            end select
-        end if
-
-    end subroutine info
-
+  end subroutine info
 
 end module fpm_git

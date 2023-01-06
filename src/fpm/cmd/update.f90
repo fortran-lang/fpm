@@ -1,9 +1,9 @@
 module fpm_cmd_update
-  use fpm_command_line, only : fpm_update_settings
-  use fpm_dependency, only : dependency_tree_t, new_dependency_tree
-  use fpm_error, only : error_t, fpm_stop
-  use fpm_filesystem, only : exists, mkdir, join_path, delete_file, filewrite
-  use fpm_manifest, only : package_config_t, get_package_data
+  use fpm_command_line, only: fpm_update_settings
+  use fpm_dependency, only: dependency_tree_t, new_dependency_tree
+  use fpm_error, only: error_t, fpm_stop
+  use fpm_filesystem, only: exists, mkdir, join_path, delete_file, filewrite
+  use fpm_manifest, only: package_config_t, get_package_data
   implicit none
   private
   public :: cmd_update
@@ -24,9 +24,9 @@ contains
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
 
-    if (.not.exists("build")) then
+    if (.not. exists("build")) then
       call mkdir("build")
-      call filewrite(join_path("build", ".gitignore"),["*"])
+      call filewrite(join_path("build", ".gitignore"), ["*"])
     end if
 
     cache = join_path("build", "cache.toml")
@@ -35,7 +35,7 @@ contains
     end if
 
     call new_dependency_tree(deps, cache=cache, &
-      verbosity=merge(2, 1, settings%verbose))
+                             verbosity=merge(2, 1, settings%verbose))
 
     call deps%add(package, error)
     call handle_error(error)

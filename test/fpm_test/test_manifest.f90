@@ -1,1385 +1,1342 @@
 !> Define tests for the `fpm_manifest` modules
 module test_manifest
-    use fpm_filesystem, only: get_temp_filename
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
-        & check_string
-    use fpm_manifest
-    use fpm_manifest_profile, only: profile_config_t, find_profile
-    use fpm_strings, only: operator(.in.)
-    implicit none
-    private
+  use fpm_filesystem, only: get_temp_filename
+  use testsuite, only: new_unittest, unittest_t, error_t, test_failed, &
+      & check_string
+  use fpm_manifest
+  use fpm_manifest_profile, only: profile_config_t, find_profile
+  use fpm_strings, only: operator(.in.)
+  implicit none
+  private
 
-    public :: collect_manifest
-
+  public :: collect_manifest
 
 contains
 
+  !> Collect all exported unit tests
+  subroutine collect_manifest(testsuite)
+
+    !> Collection of tests
+    type(unittest_t), allocatable, intent(out) :: testsuite(:)
+
+    testsuite = [ &
+        & new_unittest("valid-manifest", test_valid_manifest), &
+        & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
+        & new_unittest("default-library", test_default_library), &
+        & new_unittest("default-executable", test_default_executable), &
+        & new_unittest("dependency-empty", test_dependency_empty, should_fail=.true.), &
+        & new_unittest("dependency-pathtag", test_dependency_pathtag, should_fail=.true.), &
+        & new_unittest("dependency-gitpath", test_dependency_gitpath, should_fail=.true.), &
+        & new_unittest("dependency-nourl", test_dependency_nourl, should_fail=.true.), &
+        & new_unittest("dependency-gitconflict", test_dependency_gitconflict, should_fail=.true.), &
+        & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
+        & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
+        & new_unittest("dependencies-empty", test_dependencies_empty), &
+        & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
+        & new_unittest("profiles", test_profiles), &
+        & new_unittest("profiles-keyvalue-table", test_profiles_keyvalue_table, should_fail=.true.), &
+        & new_unittest("executable-empty", test_executable_empty, should_fail=.true.), &
+        & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
+        & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
+        & new_unittest("executable-wrongkey", test_executable_wrongkey, should_fail=.true.), &
+        & new_unittest("build-config-valid", test_build_valid), &
+        & new_unittest("build-config-empty", test_build_empty), &
+        & new_unittest("build-config-invalid-values", test_build_invalid_values, should_fail=.true.), &
+        & new_unittest("library-empty", test_library_empty), &
+        & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
+        & new_unittest("package-simple", test_package_simple), &
+        & new_unittest("package-empty", test_package_empty, should_fail=.true.), &
+        & new_unittest("package-typeerror", test_package_typeerror, should_fail=.true.), &
+        & new_unittest("package-noname", test_package_noname, should_fail=.true.), &
+        & new_unittest("package-wrongexe", test_package_wrongexe, should_fail=.true.), &
+        & new_unittest("package-wrongtest", test_package_wrongtest, should_fail=.true.), &
+        & new_unittest("package-duplicate", test_package_duplicate, should_fail=.true.), &
+        & new_unittest("test-simple", test_test_simple), &
+        & new_unittest("test-empty", test_test_empty, should_fail=.true.), &
+        & new_unittest("test-typeerror", test_test_typeerror, should_fail=.true.), &
+        & new_unittest("test-noname", test_test_noname, should_fail=.true.), &
+        & new_unittest("test-wrongkey", test_test_wrongkey, should_fail=.true.), &
+        & new_unittest("link-string", test_link_string), &
+        & new_unittest("link-array", test_link_array), &
+        & new_unittest("link-error", test_invalid_link, should_fail=.true.), &
+        & new_unittest("example-simple", test_example_simple), &
+        & new_unittest("example-empty", test_example_empty, should_fail=.true.), &
+        & new_unittest("install-library", test_install_library), &
+        & new_unittest("install-empty", test_install_empty), &
+        & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.), &
+        & new_unittest("preprocess-empty", test_preprocess_empty), &
+        & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
+        & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
+        & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
+        & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.)]
+
+  end subroutine collect_manifest
+
+  !> Try to read some unnecessary obscure and convoluted but not invalid package file
+  subroutine test_valid_manifest(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(package_config_t) :: package
+    character(len=*), parameter :: manifest = 'fpm-valid-manifest.toml'
+    integer :: unit
+
+    open (file=manifest, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "example"', &
+        & '[build]', &
+        & 'auto-executables = false', &
+        & 'auto-tests = false', &
+        & '[dependencies.fpm]', &
+        & 'git = "https://github.com/fortran-lang/fpm"', &
+        & '[[executable]]', &
+        & 'name = "example-1" # comment', &
+        & 'source-dir = "prog"', &
+        & '[dependencies]', &
+        & 'toml-f.git = "git@github.com:toml-f/toml-f.git"', &
+        & '"toml..f" = { path = ".." }', &
+        & '[["executable"]]', &
+        & 'name = "example-2"', &
+        & 'source-dir = "prog"', &
+        & '[executable.dependencies]', &
+        & '[''library'']', &
+        & 'source-dir = """', &
+        & 'lib""" # comment', &
+        & '[preprocess]', &
+        & '[preprocess.cpp]', &
+        & 'suffixes = ["F90", "f90"]', &
+        & 'directories = ["src/feature1", "src/models"]', &
+        & 'macros = ["FOO", "BAR"]'
+    close (unit)
+
+    call get_package_data(package, manifest, error)
+
+    open (file=manifest, newunit=unit)
+    close (unit, status='delete')
 
-    !> Collect all exported unit tests
-    subroutine collect_manifest(testsuite)
-
-        !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: testsuite(:)
-
-        testsuite = [ &
-            & new_unittest("valid-manifest", test_valid_manifest), &
-            & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
-            & new_unittest("default-library", test_default_library), &
-            & new_unittest("default-executable", test_default_executable), &
-            & new_unittest("dependency-empty", test_dependency_empty, should_fail=.true.), &
-            & new_unittest("dependency-pathtag", test_dependency_pathtag, should_fail=.true.), &
-            & new_unittest("dependency-gitpath", test_dependency_gitpath, should_fail=.true.), &
-            & new_unittest("dependency-nourl", test_dependency_nourl, should_fail=.true.), &
-            & new_unittest("dependency-gitconflict", test_dependency_gitconflict, should_fail=.true.), &
-            & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
-            & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
-            & new_unittest("dependencies-empty", test_dependencies_empty), &
-            & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
-            & new_unittest("profiles", test_profiles), &
-            & new_unittest("profiles-keyvalue-table", test_profiles_keyvalue_table, should_fail=.true.), &
-            & new_unittest("executable-empty", test_executable_empty, should_fail=.true.), &
-            & new_unittest("executable-typeerror", test_executable_typeerror, should_fail=.true.), &
-            & new_unittest("executable-noname", test_executable_noname, should_fail=.true.), &
-            & new_unittest("executable-wrongkey", test_executable_wrongkey, should_fail=.true.), &
-            & new_unittest("build-config-valid", test_build_valid), &
-            & new_unittest("build-config-empty", test_build_empty), &
-            & new_unittest("build-config-invalid-values", test_build_invalid_values, should_fail=.true.), &
-            & new_unittest("library-empty", test_library_empty), &
-            & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
-            & new_unittest("package-simple", test_package_simple), &
-            & new_unittest("package-empty", test_package_empty, should_fail=.true.), &
-            & new_unittest("package-typeerror", test_package_typeerror, should_fail=.true.), &
-            & new_unittest("package-noname", test_package_noname, should_fail=.true.), &
-            & new_unittest("package-wrongexe", test_package_wrongexe, should_fail=.true.), &
-            & new_unittest("package-wrongtest", test_package_wrongtest, should_fail=.true.), &
-            & new_unittest("package-duplicate", test_package_duplicate, should_fail=.true.), &
-            & new_unittest("test-simple", test_test_simple), &
-            & new_unittest("test-empty", test_test_empty, should_fail=.true.), &
-            & new_unittest("test-typeerror", test_test_typeerror, should_fail=.true.), &
-            & new_unittest("test-noname", test_test_noname, should_fail=.true.), &
-            & new_unittest("test-wrongkey", test_test_wrongkey, should_fail=.true.), &
-            & new_unittest("link-string", test_link_string), &
-            & new_unittest("link-array", test_link_array), &
-            & new_unittest("link-error", test_invalid_link, should_fail=.true.), &
-            & new_unittest("example-simple", test_example_simple), &
-            & new_unittest("example-empty", test_example_empty, should_fail=.true.), &
-            & new_unittest("install-library", test_install_library), &
-            & new_unittest("install-empty", test_install_empty), &
-            & new_unittest("install-wrongkey", test_install_wrongkey, should_fail=.true.), &
-            & new_unittest("preprocess-empty", test_preprocess_empty), &
-            & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
-            & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
-            & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.)]
-
-    end subroutine collect_manifest
-
-
-    !> Try to read some unnecessary obscure and convoluted but not invalid package file
-    subroutine test_valid_manifest(error)
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(package_config_t) :: package
-        character(len=*), parameter :: manifest = 'fpm-valid-manifest.toml'
-        integer :: unit
-
-        open(file=manifest, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "example"', &
-            & '[build]', &
-            & 'auto-executables = false', &
-            & 'auto-tests = false', &
-            & '[dependencies.fpm]', &
-            & 'git = "https://github.com/fortran-lang/fpm"', &
-            & '[[executable]]', &
-            & 'name = "example-1" # comment', &
-            & 'source-dir = "prog"', &
-            & '[dependencies]', &
-            & 'toml-f.git = "git@github.com:toml-f/toml-f.git"', &
-            & '"toml..f" = { path = ".." }', &
-            & '[["executable"]]', &
-            & 'name = "example-2"', &
-            & 'source-dir = "prog"', &
-            & '[executable.dependencies]', &
-            & '[''library'']', &
-            & 'source-dir = """', &
-            & 'lib""" # comment', &
-            & '[preprocess]', &
-            & '[preprocess.cpp]', &
-            & 'suffixes = ["F90", "f90"]', &
-            & 'directories = ["src/feature1", "src/models"]', &
-            & 'macros = ["FOO", "BAR"]'
-        close(unit)
-
-        call get_package_data(package, manifest, error)
-
-        open(file=manifest, newunit=unit)
-        close(unit, status='delete')
+    if (allocated(error)) return
 
-        if (allocated(error)) return
+    if (package%name /= "example") then
+      call test_failed(error, "Package name is "//package%name//" but should be example")
+      return
+    end if
 
-        if (package%name /= "example") then
-            call test_failed(error, "Package name is "//package%name//" but should be example")
-            return
-        end if
+    if (.not. allocated(package%library)) then
+      call test_failed(error, "library is not present in package data")
+      return
+    end if
 
-        if (.not.allocated(package%library)) then
-            call test_failed(error, "library is not present in package data")
-            return
-        end if
+    if (.not. allocated(package%executable)) then
+      call test_failed(error, "executable is not present in package data")
+      return
+    end if
 
-        if (.not.allocated(package%executable)) then
-            call test_failed(error, "executable is not present in package data")
-            return
-        end if
+    if (size(package%executable) /= 2) then
+      call test_failed(error, "Number of executables in package is not two")
+      return
+    end if
 
-        if (size(package%executable) /= 2) then
-            call test_failed(error, "Number of executables in package is not two")
-            return
-        end if
+    if (.not. allocated(package%dependency)) then
+      call test_failed(error, "dependency is not present in package data")
+      return
+    end if
 
-        if (.not.allocated(package%dependency)) then
-            call test_failed(error, "dependency is not present in package data")
-            return
-        end if
+    if (size(package%dependency) /= 3) then
+      call test_failed(error, "Number of dependencies in package is not three")
+      return
+    end if
 
-        if (size(package%dependency) /= 3) then
-            call test_failed(error, "Number of dependencies in package is not three")
-            return
-        end if
+    if (allocated(package%test)) then
+      call test_failed(error, "test is present in package but not in package file")
+      return
+    end if
 
-        if (allocated(package%test)) then
-            call test_failed(error, "test is present in package but not in package file")
-            return
-        end if
+    if (.not. allocated(package%preprocess)) then
+      call test_failed(error, "Preprocessor is not present in package data")
+      return
+    end if
 
-        if (.not.allocated(package%preprocess)) then
-            call test_failed(error, "Preprocessor is not present in package data")
-            return
-        end if
+    if (size(package%preprocess) /= 1) then
+      call test_failed(error, "Number of preprocessors in package is not one")
+      return
+    end if
 
-        if (size(package%preprocess) /= 1) then
-            call test_failed(error, "Number of preprocessors in package is not one")
-            return
-        end if
+  end subroutine test_valid_manifest
 
-    end subroutine test_valid_manifest
+  !> Try to read a valid TOML document which represent an invalid package file
+  subroutine test_invalid_manifest(error)
 
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    !> Try to read a valid TOML document which represent an invalid package file
-    subroutine test_invalid_manifest(error)
+    type(package_config_t) :: package
+    character(len=*), parameter :: manifest = 'fpm-invalid-manifest.toml'
+    integer :: unit
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    open (file=manifest, newunit=unit)
+    write (unit, '(a)') &
+        & '[package]', &
+        & 'name = "example"', &
+        & 'version = "0.1.0"'
+    close (unit)
 
-        type(package_config_t) :: package
-        character(len=*), parameter :: manifest = 'fpm-invalid-manifest.toml'
-        integer :: unit
+    call get_package_data(package, manifest, error)
 
-        open(file=manifest, newunit=unit)
-        write(unit, '(a)') &
-            & '[package]', &
-            & 'name = "example"', &
-            & 'version = "0.1.0"'
-        close(unit)
+    open (file=manifest, newunit=unit)
+    close (unit, status='delete')
 
-        call get_package_data(package, manifest, error)
+  end subroutine test_invalid_manifest
 
-        open(file=manifest, newunit=unit)
-        close(unit, status='delete')
+  !> Create a default library
+  subroutine test_default_library(error)
 
-    end subroutine test_invalid_manifest
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    type(package_config_t) :: package
 
-    !> Create a default library
-    subroutine test_default_library(error)
+    allocate (package%library)
+    call default_library(package%library)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call check_string(error, package%library%source_dir, "src", &
+        & "Default library source-dir")
+    if (allocated(error)) return
 
-        type(package_config_t) :: package
+    if (.not. allocated(package%library%include_dir)) then
+      call test_failed(error, "Default include-dir list not allocated")
+      return
+    end if
 
-        allocate(package%library)
-        call default_library(package%library)
+    if (.not. ("include".in.package%library%include_dir)) then
+      call test_failed(error, "'include' not in default include-dir list")
+      return
+    end if
 
-        call check_string(error, package%library%source_dir, "src", &
-            & "Default library source-dir")
-        if (allocated(error)) return
+  end subroutine test_default_library
 
-        if (.not.allocated(package%library%include_dir)) then
-            call test_failed(error,"Default include-dir list not allocated")
-            return
-        end if
+  !> Create a default executable
+  subroutine test_default_executable(error)
 
-        if (.not.("include".in.package%library%include_dir)) then
-            call test_failed(error,"'include' not in default include-dir list")
-            return
-        end if
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine test_default_library
+    type(package_config_t) :: package
+    character(len=*), parameter :: name = "default"
 
+    allocate (package%executable(1))
+    call default_executable(package%executable(1), name)
 
-    !> Create a default executable
-    subroutine test_default_executable(error)
+    call check_string(error, package%executable(1)%source_dir, "app", &
+        & "Default executable source-dir")
+    if (allocated(error)) return
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call check_string(error, package%executable(1)%name, name, &
+        & "Default executable name")
+    if (allocated(error)) return
 
-        type(package_config_t) :: package
-        character(len=*), parameter :: name = "default"
+  end subroutine test_default_executable
 
-        allocate(package%executable(1))
-        call default_executable(package%executable(1), name)
+  !> Dependencies cannot be created from empty tables
+  subroutine test_dependency_empty(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, toml_table
 
-        call check_string(error, package%executable(1)%source_dir, "app", &
-            & "Default executable source-dir")
-        if (allocated(error)) return
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call check_string(error, package%executable(1)%name, name, &
-            & "Default executable name")
-        if (allocated(error)) return
+    type(toml_table) :: table
+    type(dependency_config_t) :: dependency
 
-    end subroutine test_default_executable
+    call new_table(table)
+    table%key = "example"
 
+    call new_dependency(dependency, table, error=error)
 
-    !> Dependencies cannot be created from empty tables
-    subroutine test_dependency_empty(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table
+  end subroutine test_dependency_empty
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  !> Try to create a dependency with conflicting entries
+  subroutine test_dependency_pathtag(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, toml_table, set_value
 
-        type(toml_table) :: table
-        type(dependency_config_t) :: dependency
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_table(table)
-        table%key = "example"
+    type(toml_table) :: table
+    integer :: stat
+    type(dependency_config_t) :: dependency
 
-        call new_dependency(dependency, table, error=error)
+    call new_table(table)
+    table%key = 'example'
+    call set_value(table, 'path', 'package', stat)
+    call set_value(table, 'tag', 'v20.1', stat)
 
-    end subroutine test_dependency_empty
+    call new_dependency(dependency, table, error=error)
 
+  end subroutine test_dependency_pathtag
 
-    !> Try to create a dependency with conflicting entries
-    subroutine test_dependency_pathtag(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
+  !> Try to create a dependency with conflicting entries
+  subroutine test_dependency_nourl(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, toml_table, set_value
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table) :: table
-        integer :: stat
-        type(dependency_config_t) :: dependency
+    type(toml_table) :: table
+    integer :: stat
+    type(dependency_config_t) :: dependency
 
-        call new_table(table)
-        table%key = 'example'
-        call set_value(table, 'path', 'package', stat)
-        call set_value(table, 'tag', 'v20.1', stat)
+    call new_table(table)
+    table%key = 'example'
+    call set_value(table, 'tag', 'v20.1', stat)
 
-        call new_dependency(dependency, table, error=error)
+    call new_dependency(dependency, table, error=error)
 
-    end subroutine test_dependency_pathtag
+  end subroutine test_dependency_nourl
 
+  !> Try to create a dependency with conflicting entries
+  subroutine test_dependency_gitpath(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, toml_table, set_value
 
-    !> Try to create a dependency with conflicting entries
-    subroutine test_dependency_nourl(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(toml_table) :: table
+    integer :: stat
+    type(dependency_config_t) :: dependency
 
-        type(toml_table) :: table
-        integer :: stat
-        type(dependency_config_t) :: dependency
+    call new_table(table)
+    table%key = 'example'
+    call set_value(table, 'path', 'package', stat)
+    call set_value(table, 'git', 'https://gitea.com/fortran-lang/pack', stat)
 
-        call new_table(table)
-        table%key = 'example'
-        call set_value(table, 'tag', 'v20.1', stat)
+    call new_dependency(dependency, table, error=error)
 
-        call new_dependency(dependency, table, error=error)
+  end subroutine test_dependency_gitpath
 
-    end subroutine test_dependency_nourl
+  !> Try to create a dependency with conflicting entries
+  subroutine test_dependency_gitconflict(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, toml_table, set_value
 
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    !> Try to create a dependency with conflicting entries
-    subroutine test_dependency_gitpath(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
+    type(toml_table) :: table
+    integer :: stat
+    type(dependency_config_t) :: dependency
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call new_table(table)
+    table%key = 'example'
+    call set_value(table, 'git', 'https://gitea.com/fortran-lang/pack', stat)
+    call set_value(table, 'branch', 'latest', stat)
+    call set_value(table, 'tag', 'v20.1', stat)
 
-        type(toml_table) :: table
-        integer :: stat
-        type(dependency_config_t) :: dependency
+    call new_dependency(dependency, table, error=error)
 
-        call new_table(table)
-        table%key = 'example'
-        call set_value(table, 'path', 'package', stat)
-        call set_value(table, 'git', 'https://gitea.com/fortran-lang/pack', stat)
+  end subroutine test_dependency_gitconflict
 
-        call new_dependency(dependency, table, error=error)
+  !> Try to create a git dependency with invalid source format
+  subroutine test_dependency_invalid_git(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, add_table, toml_table, set_value
 
-    end subroutine test_dependency_gitpath
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(dependency_config_t) :: dependency
 
-    !> Try to create a dependency with conflicting entries
-    subroutine test_dependency_gitconflict(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
+    call new_table(table)
+    table%key = 'example'
+    call add_table(table, 'git', child)
+    call set_value(child, 'path', '../../package')
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call new_dependency(dependency, table, error=error)
 
-        type(toml_table) :: table
-        integer :: stat
-        type(dependency_config_t) :: dependency
+  end subroutine test_dependency_invalid_git
 
-        call new_table(table)
-        table%key = 'example'
-        call set_value(table, 'git', 'https://gitea.com/fortran-lang/pack', stat)
-        call set_value(table, 'branch', 'latest', stat)
-        call set_value(table, 'tag', 'v20.1', stat)
+  !> Try to create a dependency with conflicting entries
+  subroutine test_dependency_wrongkey(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, toml_table, set_value
 
-        call new_dependency(dependency, table, error=error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine test_dependency_gitconflict
+    type(toml_table) :: table
+    integer :: stat
+    type(dependency_config_t) :: dependency
 
+    call new_table(table)
+    table%key = 'example'
+    call set_value(table, 'not-available', 'anywhere', stat)
 
-    !> Try to create a git dependency with invalid source format
-    subroutine test_dependency_invalid_git(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, add_table, toml_table, set_value
+    call new_dependency(dependency, table, error=error)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  end subroutine test_dependency_wrongkey
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(dependency_config_t) :: dependency
+  !> Dependency tables can be empty
+  subroutine test_dependencies_empty(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, toml_table
 
-        call new_table(table)
-        table%key = 'example'
-        call add_table(table, 'git', child)
-        call set_value(child, 'path', '../../package')
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_dependency(dependency, table, error=error)
+    type(toml_table) :: table
+    type(dependency_config_t), allocatable :: dependencies(:)
 
-    end subroutine test_dependency_invalid_git
+    call new_table(table)
 
+    call new_dependencies(dependencies, table, error=error)
+    if (allocated(error)) return
 
-    !> Try to create a dependency with conflicting entries
-    subroutine test_dependency_wrongkey(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
+    if (allocated(dependencies)) then
+      call test_failed(error, "Found dependencies in empty table")
+    end if
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  end subroutine test_dependencies_empty
 
-        type(toml_table) :: table
-        integer :: stat
-        type(dependency_config_t) :: dependency
+  !> Add a dependency as an array, which is not supported
+  subroutine test_dependencies_typeerror(error)
+    use fpm_manifest_dependency
+    use fpm_toml, only: new_table, add_array, toml_table, toml_array
 
-        call new_table(table)
-        table%key = 'example'
-        call set_value(table, 'not-available', 'anywhere', stat)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_dependency(dependency, table, error=error)
+    type(toml_table) :: table
+    type(toml_array), pointer :: children
+    integer :: stat
+    type(dependency_config_t), allocatable :: dependencies(:)
 
-    end subroutine test_dependency_wrongkey
+    call new_table(table)
+    call add_array(table, 'dep1', children, stat)
 
+    call new_dependencies(dependencies, table, error=error)
 
-    !> Dependency tables can be empty
-    subroutine test_dependencies_empty(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table
+  end subroutine test_dependencies_typeerror
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  !> Include a table of profiles in toml, check whether they are parsed correctly and stored in package
+  subroutine test_profiles(error)
 
-        type(toml_table) :: table
-        type(dependency_config_t), allocatable :: dependencies(:)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_table(table)
+    type(package_config_t) :: package
+    character(len=*), parameter :: manifest = 'fpm-profiles.toml'
+    integer :: unit
+    character(:), allocatable :: profile_name, compiler, flags
+    logical :: profile_found
+    type(profile_config_t) :: chosen_profile
 
-        call new_dependencies(dependencies, table, error=error)
-        if (allocated(error)) return
+    open (file=manifest, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "example"', &
+        & '[profiles.release.gfortran.linux]', &
+        & 'flags = "1" #release.gfortran.linux', &
+        & '[profiles.release.gfortran]', &
+        & 'flags = "2" #release.gfortran.all', &
+        & '[profiles.gfortran.linux]', &
+        & 'flags = "3" #all.gfortran.linux', &
+        & '[profiles.gfortran]', &
+        & 'flags = "4" #all.gfortran.all', &
+        & '[profiles.release.ifort]', &
+        & 'flags = "5" #release.ifort.all'
+    close (unit)
 
-        if (allocated(dependencies)) then
-            call test_failed(error, "Found dependencies in empty table")
-        end if
+    call get_package_data(package, manifest, error)
 
-    end subroutine test_dependencies_empty
+    open (file=manifest, newunit=unit)
+    close (unit, status='delete')
 
+    if (allocated(error)) return
 
-    !> Add a dependency as an array, which is not supported
-    subroutine test_dependencies_typeerror(error)
-        use fpm_manifest_dependency
-        use fpm_toml, only : new_table, add_array, toml_table, toml_array
+    profile_name = 'release'
+    compiler = 'gfortran'
+    call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+    if (.not. (chosen_profile%flags .eq. '1 3')) then
+      call test_failed(error, "Failed to append flags from profiles named 'all'")
+      return
+    end if
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    profile_name = 'release'
+    compiler = 'gfortran'
+    call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
+    if (.not. (chosen_profile%flags .eq. '2 4')) then
+      call test_failed(error, "Failed to choose profile with OS 'all'")
+      return
+    end if
 
-        type(toml_table) :: table
-        type(toml_array), pointer :: children
-        integer :: stat
-        type(dependency_config_t), allocatable :: dependencies(:)
+    profile_name = 'publish'
+    compiler = 'gfortran'
+    call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+    if (allocated(chosen_profile%flags)) then
+      call test_failed(error, "Profile named "//profile_name//" should not exist")
+      return
+    end if
 
-        call new_table(table)
-        call add_array(table, 'dep1', children, stat)
+    profile_name = 'debug'
+    compiler = 'ifort'
+    call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
+    if (.not. (chosen_profile%flags .eq. ' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
+      call test_failed(error, "Failed to load built-in profile"//flags)
+      return
+    end if
 
-        call new_dependencies(dependencies, table, error=error)
+    profile_name = 'release'
+    compiler = 'ifort'
+    call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
+    if (.not. (chosen_profile%flags .eq. '5')) then
+      call test_failed(error, "Failed to overwrite built-in profile")
+      return
+    end if
+  end subroutine test_profiles
 
-    end subroutine test_dependencies_typeerror
+  !> 'flags' is a key-value entry, test should fail as it is defined as a table
+  subroutine test_profiles_keyvalue_table(error)
 
-    !> Include a table of profiles in toml, check whether they are parsed correctly and stored in package
-    subroutine test_profiles(error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(package_config_t) :: package
+    character(len=*), parameter :: manifest = 'fpm-profiles-error.toml'
+    integer :: unit
+    character(:), allocatable :: profile_name, compiler, flags
 
-        type(package_config_t) :: package
-        character(len=*), parameter :: manifest = 'fpm-profiles.toml'
-        integer :: unit
-        character(:), allocatable :: profile_name, compiler, flags
-        logical :: profile_found
-        type(profile_config_t) :: chosen_profile
+    open (file=manifest, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "example"', &
+        & '[profiles.linux.flags]'
+    close (unit)
 
-        open(file=manifest, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "example"', &
-            & '[profiles.release.gfortran.linux]', &
-            & 'flags = "1" #release.gfortran.linux', &
-            & '[profiles.release.gfortran]', &
-            & 'flags = "2" #release.gfortran.all', &
-            & '[profiles.gfortran.linux]', &
-            & 'flags = "3" #all.gfortran.linux', &
-            & '[profiles.gfortran]', &
-            & 'flags = "4" #all.gfortran.all', &
-            & '[profiles.release.ifort]', &
-            & 'flags = "5" #release.ifort.all'
-        close(unit)
+    call get_package_data(package, manifest, error)
 
-        call get_package_data(package, manifest, error)
+    open (file=manifest, newunit=unit)
+    close (unit, status='delete')
+  end subroutine test_profiles_keyvalue_table
 
-        open(file=manifest, newunit=unit)
-        close(unit, status='delete')
+  !> Executables cannot be created from empty tables
+  subroutine test_executable_empty(error)
+    use fpm_manifest_executable
+    use fpm_toml, only: new_table, toml_table
 
-        if (allocated(error)) return
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        profile_name = 'release'
-        compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'1 3')) then
-            call test_failed(error, "Failed to append flags from profiles named 'all'")
-            return
-        end if
+    type(toml_table) :: table
+    type(executable_config_t) :: executable
 
-        profile_name = 'release'
-        compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'2 4')) then
-            call test_failed(error, "Failed to choose profile with OS 'all'")
-            return
-        end if
+    call new_table(table)
 
-        profile_name = 'publish'
-        compiler = 'gfortran'
-        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (allocated(chosen_profile%flags)) then
-            call test_failed(error, "Profile named "//profile_name//" should not exist")
-            return
-        end if
+    call new_executable(executable, table, error)
 
-        profile_name = 'debug'
-        compiler = 'ifort'
-        call find_profile(package%profiles, profile_name, compiler, 3, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.' /warn:all /check:all /error-limit:1 /Od /Z7 /assume:byterecl /traceback')) then
-            call test_failed(error, "Failed to load built-in profile"//flags)
-            return
-        end if
+  end subroutine test_executable_empty
 
-        profile_name = 'release'
-        compiler = 'ifort'
-        call find_profile(package%profiles, profile_name, compiler, 1, profile_found, chosen_profile)
-        if (.not.(chosen_profile%flags.eq.'5')) then
-            call test_failed(error, "Failed to overwrite built-in profile")
-            return
-        end if
-    end subroutine test_profiles
+  !> Pass a wrong TOML type to the name field of the executable
+  subroutine test_executable_typeerror(error)
+    use fpm_manifest_executable
+    use fpm_toml, only: new_table, add_table, toml_table
 
-    !> 'flags' is a key-value entry, test should fail as it is defined as a table
-    subroutine test_profiles_keyvalue_table(error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(executable_config_t) :: executable
 
-        type(package_config_t) :: package
-        character(len=*), parameter :: manifest = 'fpm-profiles-error.toml'
-        integer :: unit
-        character(:), allocatable :: profile_name, compiler, flags
+    call new_table(table)
+    call add_table(table, 'name', child, stat)
 
-        open(file=manifest, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "example"', &
-            & '[profiles.linux.flags]'
-        close(unit)
+    call new_executable(executable, table, error)
 
-        call get_package_data(package, manifest, error)
+  end subroutine test_executable_typeerror
 
-        open(file=manifest, newunit=unit)
-        close(unit, status='delete')
-    end subroutine test_profiles_keyvalue_table
+  !> Pass a TOML table with insufficient entries to the executable constructor
+  subroutine test_executable_noname(error)
+    use fpm_manifest_executable
+    use fpm_toml, only: new_table, add_table, toml_table
 
-    !> Executables cannot be created from empty tables
-    subroutine test_executable_empty(error)
-        use fpm_manifest_executable
-        use fpm_toml, only : new_table, toml_table
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(executable_config_t) :: executable
 
-        type(toml_table) :: table
-        type(executable_config_t) :: executable
+    call new_table(table)
+    call add_table(table, 'dependencies', child, stat)
 
-        call new_table(table)
+    call new_executable(executable, table, error)
 
-        call new_executable(executable, table, error)
+  end subroutine test_executable_noname
 
-    end subroutine test_executable_empty
+  !> Pass a TOML table with not allowed keys
+  subroutine test_executable_wrongkey(error)
+    use fpm_manifest_executable
+    use fpm_toml, only: new_table, add_table, toml_table
 
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    !> Pass a wrong TOML type to the name field of the executable
-    subroutine test_executable_typeerror(error)
-        use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(executable_config_t) :: executable
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call new_table(table)
+    call add_table(table, 'wrong-field', child, stat)
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(executable_config_t) :: executable
+    call new_executable(executable, table, error)
 
-        call new_table(table)
-        call add_table(table, 'name', child, stat)
+  end subroutine test_executable_wrongkey
 
-        call new_executable(executable, table, error)
+  !> Try to read values from the [build] table
+  subroutine test_build_valid(error)
 
-    end subroutine test_executable_typeerror
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    type(package_config_t) :: package
+    character(:), allocatable :: temp_file
+    integer :: unit
 
-    !> Pass a TOML table with insufficient entries to the executable constructor
-    subroutine test_executable_noname(error)
-        use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
+    allocate (temp_file, source=get_temp_filename())
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    open (file=temp_file, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "example"', &
+        & '[build]', &
+        & 'auto-executables = false', &
+        & 'auto-tests = false'
+    close (unit)
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(executable_config_t) :: executable
+    call get_package_data(package, temp_file, error)
 
-        call new_table(table)
-        call add_table(table, 'dependencies', child, stat)
+    if (allocated(error)) return
 
-        call new_executable(executable, table, error)
+    if (package%build%auto_executables) then
+      call test_failed(error, "Wong value of 'auto-executables' read, expecting .false.")
+      return
+    end if
 
-    end subroutine test_executable_noname
+    if (package%build%auto_tests) then
+      call test_failed(error, "Wong value of 'auto-tests' read, expecting .false.")
+      return
+    end if
 
+  end subroutine test_build_valid
 
-    !> Pass a TOML table with not allowed keys
-    subroutine test_executable_wrongkey(error)
-        use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
+  !> Try to read values from an empty [build] table
+  subroutine test_build_empty(error)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(executable_config_t) :: executable
+    type(package_config_t) :: package
+    character(:), allocatable :: temp_file
+    integer :: unit
 
-        call new_table(table)
-        call add_table(table, 'wrong-field', child, stat)
+    allocate (temp_file, source=get_temp_filename())
 
-        call new_executable(executable, table, error)
+    open (file=temp_file, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "example"', &
+        & '[build]', &
+        & '[library]'
+    close (unit)
 
-    end subroutine test_executable_wrongkey
+    call get_package_data(package, temp_file, error)
 
+    if (allocated(error)) return
 
-    !> Try to read values from the [build] table
-    subroutine test_build_valid(error)
+    if (.not. package%build%auto_executables) then
+      call test_failed(error, "Wong default value of 'auto-executables' read, expecting .true.")
+      return
+    end if
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    if (.not. package%build%auto_tests) then
+      call test_failed(error, "Wong default value of 'auto-tests' read, expecting .true.")
+      return
+    end if
 
-        type(package_config_t) :: package
-        character(:), allocatable :: temp_file
-        integer :: unit
+  end subroutine test_build_empty
 
-        allocate(temp_file, source=get_temp_filename())
+  !> Try to read values from a [build] table with invalid values
+  subroutine test_build_invalid_values(error)
 
-        open(file=temp_file, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "example"', &
-            & '[build]', &
-            & 'auto-executables = false', &
-            & 'auto-tests = false'
-        close(unit)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call get_package_data(package, temp_file, error)
+    type(package_config_t) :: package
+    character(:), allocatable :: temp_file
+    integer :: unit
 
-        if (allocated(error)) return
+    allocate (temp_file, source=get_temp_filename())
 
-        if (package%build%auto_executables) then
-            call test_failed(error, "Wong value of 'auto-executables' read, expecting .false.")
-            return
-        end if
+    open (file=temp_file, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "example"', &
+        & '[build]', &
+        & 'auto-executables = "false"'
+    close (unit)
 
-        if (package%build%auto_tests) then
-            call test_failed(error, "Wong value of 'auto-tests' read, expecting .false.")
-            return
-        end if
+    call get_package_data(package, temp_file, error)
 
-    end subroutine test_build_valid
+  end subroutine test_build_invalid_values
 
+  !> Libraries can be created from empty tables
+  subroutine test_library_empty(error)
+    use fpm_manifest_library
+    use fpm_toml, only: new_table, toml_table
 
-    !> Try to read values from an empty [build] table
-    subroutine test_build_empty(error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(toml_table) :: table
+    type(library_config_t) :: library
 
-        type(package_config_t) :: package
-        character(:), allocatable :: temp_file
-        integer :: unit
+    call new_table(table)
 
-        allocate(temp_file, source=get_temp_filename())
+    call new_library(library, table, error)
+    if (allocated(error)) return
 
-        open(file=temp_file, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "example"', &
-            & '[build]', &
-            & '[library]'
-        close(unit)
+    call check_string(error, library%source_dir, "src", &
+        & "Default library source-dir")
+    if (allocated(error)) return
 
-        call get_package_data(package, temp_file, error)
+    if (.not. allocated(library%include_dir)) then
+      call test_failed(error, "Default include-dir list not allocated")
+      return
+    end if
 
-        if (allocated(error)) return
+    if (.not. ("include".in.library%include_dir)) then
+      call test_failed(error, "'include' not in default include-dir list")
+      return
+    end if
 
-        if (.not.package%build%auto_executables) then
-            call test_failed(error, "Wong default value of 'auto-executables' read, expecting .true.")
-            return
-        end if
+  end subroutine test_library_empty
 
-        if (.not.package%build%auto_tests) then
-            call test_failed(error, "Wong default value of 'auto-tests' read, expecting .true.")
-            return
-        end if
+  !> Pass a TOML table with not allowed keys
+  subroutine test_library_wrongkey(error)
+    use fpm_manifest_library
+    use fpm_toml, only: new_table, add_table, toml_table
 
-    end subroutine test_build_empty
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(library_config_t) :: library
 
-    !> Try to read values from a [build] table with invalid values
-    subroutine test_build_invalid_values(error)
+    call new_table(table)
+    call add_table(table, 'not-allowed', child, stat)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call new_library(library, table, error)
 
-        type(package_config_t) :: package
-        character(:), allocatable :: temp_file
-        integer :: unit
+  end subroutine test_library_wrongkey
 
-        allocate(temp_file, source=get_temp_filename())
+  !> Packages cannot be created from empty tables
+  subroutine test_package_simple(error)
+    use fpm_manifest_package
+    use fpm_toml, only: new_table, add_table, add_array, set_value, &
+        & toml_table, toml_array
 
-        open(file=temp_file, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "example"', &
-            & '[build]', &
-            & 'auto-executables = "false"'
-        close(unit)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call get_package_data(package, temp_file, error)
+    type(toml_table) :: table
+    type(toml_table), pointer :: child, child2
+    type(toml_array), pointer :: children
+    integer :: stat
+    type(package_config_t) :: package
 
-    end subroutine test_build_invalid_values
+    call new_table(table)
+    call set_value(table, 'name', 'example', stat)
+    call set_value(table, 'license', 'MIT', stat)
+    call add_table(table, 'dev-dependencies', child, stat)
+    call add_table(child, 'pkg1', child2, stat)
+    call set_value(child2, 'git', 'https://github.com/fortran-lang/pkg1', stat)
+    call add_table(child, 'pkg2', child2)
+    call set_value(child2, 'git', 'https://gitlab.com/fortran-lang/pkg2', stat)
+    call set_value(child2, 'branch', 'devel', stat)
+    call add_table(child, 'pkg3', child2)
+    call set_value(child2, 'git', 'https://bitbucket.org/fortran-lang/pkg3', stat)
+    call set_value(child2, 'rev', '9fceb02d0ae598e95dc970b74767f19372d61af8', stat)
+    call add_table(child, 'pkg4', child2)
+    call set_value(child2, 'git', 'https://gitea.com/fortran-lang/pkg4', stat)
+    call set_value(child2, 'tag', 'v1.8.5-rc3', stat)
+    call add_array(table, 'test', children, stat)
+    call add_table(children, child, stat)
+    call set_value(child, 'name', 'tester', stat)
 
+    call new_package(package, table, error=error)
 
-    !> Libraries can be created from empty tables
-    subroutine test_library_empty(error)
-        use fpm_manifest_library
-        use fpm_toml, only : new_table, toml_table
+  end subroutine test_package_simple
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  !> Packages cannot be created from empty tables
+  subroutine test_package_empty(error)
+    use fpm_manifest_package
+    use fpm_toml, only: new_table, toml_table
 
-        type(toml_table) :: table
-        type(library_config_t) :: library
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_table(table)
+    type(toml_table) :: table
+    type(package_config_t) :: package
 
-        call new_library(library, table, error)
-        if (allocated(error)) return
+    call new_table(table)
 
-        call check_string(error, library%source_dir, "src", &
-            & "Default library source-dir")
-        if (allocated(error)) return
+    call new_package(package, table, error=error)
 
-        if (.not.allocated(library%include_dir)) then
-            call test_failed(error,"Default include-dir list not allocated")
-            return
-        end if
+  end subroutine test_package_empty
 
-        if (.not.("include".in.library%include_dir)) then
-            call test_failed(error,"'include' not in default include-dir list")
-            return
-        end if
+  !> Create an array in the package name, which should cause an error
+  subroutine test_package_typeerror(error)
+    use fpm_manifest_package
+    use fpm_toml, only: new_table, add_array, toml_table, toml_array
 
-    end subroutine test_library_empty
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    type(toml_table) :: table
+    type(toml_array), pointer :: child
+    integer :: stat
+    type(package_config_t) :: package
 
-    !> Pass a TOML table with not allowed keys
-    subroutine test_library_wrongkey(error)
-        use fpm_manifest_library
-        use fpm_toml, only : new_table, add_table, toml_table
+    call new_table(table)
+    call add_array(table, "name", child, stat)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call new_package(package, table, error=error)
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(library_config_t) :: library
+  end subroutine test_package_typeerror
 
-        call new_table(table)
-        call add_table(table, 'not-allowed', child, stat)
+  !> Try to create a new package without a name field
+  subroutine test_package_noname(error)
+    use fpm_manifest_package
+    use fpm_toml, only: new_table, add_table, toml_table
 
-        call new_library(library, table, error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine test_library_wrongkey
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(package_config_t) :: package
 
+    call new_table(table)
+    call add_table(table, "library", child, stat)
+    call add_table(table, "dev-dependencies", child, stat)
+    call add_table(table, "dependencies", child, stat)
 
-    !> Packages cannot be created from empty tables
-    subroutine test_package_simple(error)
-        use fpm_manifest_package
-        use fpm_toml, only : new_table, add_table, add_array, set_value, &
-            & toml_table, toml_array
+    call new_package(package, table, error=error)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  end subroutine test_package_noname
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child, child2
-        type(toml_array), pointer :: children
-        integer :: stat
-        type(package_config_t) :: package
+  !> Try to read executables from a mixed type array
+  subroutine test_package_wrongexe(error)
+    use fpm_manifest_package
+    use fpm_toml, only: new_table, set_value, add_array, toml_table, toml_array
 
-        call new_table(table)
-        call set_value(table, 'name', 'example', stat)
-        call set_value(table, 'license', 'MIT', stat)
-        call add_table(table, 'dev-dependencies', child, stat)
-        call add_table(child, 'pkg1', child2, stat)
-        call set_value(child2, 'git', 'https://github.com/fortran-lang/pkg1', stat)
-        call add_table(child, 'pkg2', child2)
-        call set_value(child2, 'git', 'https://gitlab.com/fortran-lang/pkg2', stat)
-        call set_value(child2, 'branch', 'devel', stat)
-        call add_table(child, 'pkg3', child2)
-        call set_value(child2, 'git', 'https://bitbucket.org/fortran-lang/pkg3', stat)
-        call set_value(child2, 'rev', '9fceb02d0ae598e95dc970b74767f19372d61af8', stat)
-        call add_table(child, 'pkg4', child2)
-        call set_value(child2, 'git', 'https://gitea.com/fortran-lang/pkg4', stat)
-        call set_value(child2, 'tag', 'v1.8.5-rc3', stat)
-        call add_array(table, 'test', children, stat)
-        call add_table(children, child, stat)
-        call set_value(child, 'name', 'tester', stat)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_package(package, table, error=error)
+    type(toml_table) :: table
+    type(toml_array), pointer :: children, children2
+    integer :: stat
+    type(package_config_t) :: package
 
-    end subroutine test_package_simple
+    call new_table(table)
+    call set_value(table, 'name', 'example', stat)
+    call add_array(table, 'executable', children, stat)
+    call add_array(children, children2, stat)
 
+    call new_package(package, table, error=error)
 
-    !> Packages cannot be created from empty tables
-    subroutine test_package_empty(error)
-        use fpm_manifest_package
-        use fpm_toml, only : new_table, toml_table
+  end subroutine test_package_wrongexe
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  !> Try to read tests from a mixed type array
+  subroutine test_package_wrongtest(error)
+    use fpm_manifest_package
+    use fpm_toml, only: new_table, set_value, add_array, toml_table, toml_array
 
-        type(toml_table) :: table
-        type(package_config_t) :: package
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_table(table)
+    type(toml_table) :: table
+    type(toml_array), pointer :: children, children2
+    integer :: stat
+    type(package_config_t) :: package
 
-        call new_package(package, table, error=error)
+    call new_table(table)
+    call set_value(table, 'name', 'example', stat)
+    call add_array(table, 'test', children, stat)
+    call add_array(children, children2, stat)
 
-    end subroutine test_package_empty
+    call new_package(package, table, error=error)
 
+  end subroutine test_package_wrongtest
 
-    !> Create an array in the package name, which should cause an error
-    subroutine test_package_typeerror(error)
-        use fpm_manifest_package
-        use fpm_toml, only : new_table, add_array, toml_table, toml_array
+  !> Try to read tests from a mixed type array
+  subroutine test_package_duplicate(error)
+    use fpm_manifest_package
+    use fpm_toml, only: set_value, add_table, add_array, toml_table, toml_array
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table) :: table
-        type(toml_array), pointer :: child
-        integer :: stat
-        type(package_config_t) :: package
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    type(toml_array), pointer :: children
+    integer :: stat
+    type(package_config_t) :: package
 
-        call new_table(table)
-        call add_array(table, "name", child, stat)
+    table = toml_table()
+    call set_value(table, 'name', 'example', stat)
+    call add_array(table, 'test', children, stat)
+    call add_table(children, child, stat)
+    call set_value(child, 'name', 'prog', stat)
+    call add_table(children, child, stat)
+    call set_value(child, 'name', 'prog', stat)
 
-        call new_package(package, table, error=error)
+    call new_package(package, table, error=error)
 
-    end subroutine test_package_typeerror
+  end subroutine test_package_duplicate
 
+  !> Tests cannot be created from empty tables
+  subroutine test_test_simple(error)
+    use fpm_manifest_test
+    use fpm_toml, only: new_table, set_value, add_table, toml_table
 
-    !> Try to create a new package without a name field
-    subroutine test_package_noname(error)
-        use fpm_manifest_package
-        use fpm_toml, only : new_table, add_table, toml_table
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(test_config_t) :: test
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(package_config_t) :: package
+    call new_table(table)
+    call set_value(table, 'name', 'example', stat)
+    call set_value(table, 'source-dir', 'tests', stat)
+    call set_value(table, 'main', 'tester.f90', stat)
+    call add_table(table, 'dependencies', child, stat)
 
-        call new_table(table)
-        call add_table(table, "library", child, stat)
-        call add_table(table, "dev-dependencies", child, stat)
-        call add_table(table, "dependencies", child, stat)
+    call new_test(test, table, error)
+    if (allocated(error)) return
 
-        call new_package(package, table, error=error)
+    call check_string(error, test%main, "tester.f90", "Test main")
+    if (allocated(error)) return
 
-    end subroutine test_package_noname
+  end subroutine test_test_simple
 
+  !> Tests cannot be created from empty tables
+  subroutine test_test_empty(error)
+    use fpm_manifest_test
+    use fpm_toml, only: new_table, toml_table
 
-    !> Try to read executables from a mixed type array
-    subroutine test_package_wrongexe(error)
-        use fpm_manifest_package
-        use fpm_toml, only : new_table, set_value, add_array, toml_table, toml_array
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(toml_table) :: table
+    type(test_config_t) :: test
 
-        type(toml_table) :: table
-        type(toml_array), pointer :: children, children2
-        integer :: stat
-        type(package_config_t) :: package
+    call new_table(table)
 
-        call new_table(table)
-        call set_value(table, 'name', 'example', stat)
-        call add_array(table, 'executable', children, stat)
-        call add_array(children, children2, stat)
+    call new_test(test, table, error)
 
-        call new_package(package, table, error=error)
+  end subroutine test_test_empty
 
-    end subroutine test_package_wrongexe
+  !> Pass a wrong TOML type to the name field of the test
+  subroutine test_test_typeerror(error)
+    use fpm_manifest_test
+    use fpm_toml, only: new_table, add_table, toml_table
 
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    !> Try to read tests from a mixed type array
-    subroutine test_package_wrongtest(error)
-        use fpm_manifest_package
-        use fpm_toml, only : new_table, set_value, add_array, toml_table, toml_array
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(test_config_t) :: test
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call new_table(table)
+    call add_table(table, 'name', child, stat)
 
-        type(toml_table) :: table
-        type(toml_array), pointer :: children, children2
-        integer :: stat
-        type(package_config_t) :: package
+    call new_test(test, table, error)
 
-        call new_table(table)
-        call set_value(table, 'name', 'example', stat)
-        call add_array(table, 'test', children, stat)
-        call add_array(children, children2, stat)
+  end subroutine test_test_typeerror
 
-        call new_package(package, table, error=error)
+  !> Pass a TOML table with insufficient entries to the test constructor
+  subroutine test_test_noname(error)
+    use fpm_manifest_test
+    use fpm_toml, only: new_table, add_table, toml_table
 
-    end subroutine test_package_wrongtest
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(test_config_t) :: test
 
-    !> Try to read tests from a mixed type array
-    subroutine test_package_duplicate(error)
-        use fpm_manifest_package
-        use fpm_toml, only : set_value, add_table, add_array, toml_table, toml_array
+    call new_table(table)
+    call add_table(table, 'dependencies', child, stat)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call new_test(test, table, error)
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        type(toml_array), pointer :: children
-        integer :: stat
-        type(package_config_t) :: package
+  end subroutine test_test_noname
 
-        table = toml_table()
-        call set_value(table, 'name', 'example', stat)
-        call add_array(table, 'test', children, stat)
-        call add_table(children, child, stat)
-        call set_value(child, 'name', 'prog', stat)
-        call add_table(children, child, stat)
-        call set_value(child, 'name', 'prog', stat)
+  !> Pass a TOML table with not allowed keys
+  subroutine test_test_wrongkey(error)
+    use fpm_manifest_test
+    use fpm_toml, only: new_table, add_table, toml_table
 
-        call new_package(package, table, error=error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine test_package_duplicate
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(test_config_t) :: test
 
+    call new_table(table)
+    call add_table(table, 'not-supported', child, stat)
 
-    !> Tests cannot be created from empty tables
-    subroutine test_test_simple(error)
-        use fpm_manifest_test
-        use fpm_toml, only : new_table, set_value, add_table, toml_table
+    call new_test(test, table, error)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  end subroutine test_test_wrongkey
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(test_config_t) :: test
+  !> Create a simple example entry
+  subroutine test_example_simple(error)
+    use fpm_manifest_example
+    use fpm_toml, only: new_table, set_value, add_table, toml_table
 
-        call new_table(table)
-        call set_value(table, 'name', 'example', stat)
-        call set_value(table, 'source-dir', 'tests', stat)
-        call set_value(table, 'main', 'tester.f90', stat)
-        call add_table(table, 'dependencies', child, stat)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_test(test, table, error)
-        if (allocated(error)) return
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(example_config_t) :: example
 
-        call check_string(error, test%main, "tester.f90", "Test main")
-        if (allocated(error)) return
+    call new_table(table)
+    call set_value(table, 'name', 'example', stat)
+    call set_value(table, 'source-dir', 'demos', stat)
+    call set_value(table, 'main', 'demo.f90', stat)
+    call add_table(table, 'dependencies', child, stat)
 
-    end subroutine test_test_simple
+    call new_example(example, table, error)
+    if (allocated(error)) return
 
+    call check_string(error, example%main, "demo.f90", "Example main")
+    if (allocated(error)) return
 
-    !> Tests cannot be created from empty tables
-    subroutine test_test_empty(error)
-        use fpm_manifest_test
-        use fpm_toml, only : new_table, toml_table
+  end subroutine test_example_simple
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  !> Examples cannot be created from empty tables
+  subroutine test_example_empty(error)
+    use fpm_manifest_example
+    use fpm_toml, only: new_table, toml_table
 
-        type(toml_table) :: table
-        type(test_config_t) :: test
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_table(table)
+    type(toml_table) :: table
+    type(example_config_t) :: example
 
-        call new_test(test, table, error)
+    call new_table(table)
 
-    end subroutine test_test_empty
+    call new_example(example, table, error)
 
+  end subroutine test_example_empty
 
-    !> Pass a wrong TOML type to the name field of the test
-    subroutine test_test_typeerror(error)
-        use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
+  !> Test link options
+  subroutine test_link_string(error)
+    use fpm_manifest_build
+    use fpm_toml, only: set_value, toml_table
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(test_config_t) :: test
+    type(toml_table) :: table
+    integer :: stat
+    type(build_config_t) :: build
 
-        call new_table(table)
-        call add_table(table, 'name', child, stat)
+    table = toml_table()
+    call set_value(table, "link", "z", stat=stat)
 
-        call new_test(test, table, error)
+    call new_build_config(build, table, error)
 
-    end subroutine test_test_typeerror
+  end subroutine test_link_string
 
+  !> Test link options
+  subroutine test_link_array(error)
+    use fpm_manifest_build
+    use fpm_toml, only: add_array, set_value, toml_table, toml_array
 
-    !> Pass a TOML table with insufficient entries to the test constructor
-    subroutine test_test_noname(error)
-        use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(toml_table) :: table
+    type(toml_array), pointer :: children
+    integer :: stat
+    type(build_config_t) :: build
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(test_config_t) :: test
+    table = toml_table()
+    call add_array(table, "link", children, stat=stat)
+    call set_value(children, 1, "blas", stat=stat)
+    call set_value(children, 2, "lapack", stat=stat)
 
-        call new_table(table)
-        call add_table(table, 'dependencies', child, stat)
+    call new_build_config(build, table, error)
 
-        call new_test(test, table, error)
+  end subroutine test_link_array
 
-    end subroutine test_test_noname
+  !> Test link options
+  subroutine test_invalid_link(error)
+    use fpm_manifest_build
+    use fpm_toml, only: add_table, toml_table
 
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    !> Pass a TOML table with not allowed keys
-    subroutine test_test_wrongkey(error)
-        use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(build_config_t) :: build
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    table = toml_table()
+    call add_table(table, "link", child, stat=stat)
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(test_config_t) :: test
+    call new_build_config(build, table, error)
 
-        call new_table(table)
-        call add_table(table, 'not-supported', child, stat)
+  end subroutine test_invalid_link
 
-        call new_test(test, table, error)
+  subroutine test_install_library(error)
+    use fpm_manifest_install
+    use fpm_toml, only: toml_table, set_value
 
-    end subroutine test_test_wrongkey
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    type(toml_table) :: table
+    type(install_config_t) :: install
 
-    !> Create a simple example entry
-    subroutine test_example_simple(error)
-        use fpm_manifest_example
-        use fpm_toml, only : new_table, set_value, add_table, toml_table
+    table = toml_table()
+    call set_value(table, "library", .true.)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call new_install_config(install, table, error)
+    if (allocated(error)) return
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(example_config_t) :: example
+    if (.not. install%library) then
+      call test_failed(error, "Library entry should be true")
+      return
+    end if
 
-        call new_table(table)
-        call set_value(table, 'name', 'example', stat)
-        call set_value(table, 'source-dir', 'demos', stat)
-        call set_value(table, 'main', 'demo.f90', stat)
-        call add_table(table, 'dependencies', child, stat)
+  end subroutine test_install_library
 
-        call new_example(example, table, error)
-        if (allocated(error)) return
+  subroutine test_install_empty(error)
+    use fpm_manifest_install
+    use fpm_toml, only: toml_table
 
-        call check_string(error, example%main, "demo.f90", "Example main")
-        if (allocated(error)) return
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine test_example_simple
+    type(toml_table) :: table
+    type(install_config_t) :: install
 
+    table = toml_table()
 
-    !> Examples cannot be created from empty tables
-    subroutine test_example_empty(error)
-        use fpm_manifest_example
-        use fpm_toml, only : new_table, toml_table
+    call new_install_config(install, table, error)
+    if (allocated(error)) return
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    if (install%library) then
+      call test_failed(error, "Library default should be false")
+      return
+    end if
 
-        type(toml_table) :: table
-        type(example_config_t) :: example
+  end subroutine test_install_empty
 
-        call new_table(table)
+  subroutine test_install_wrongkey(error)
+    use fpm_manifest_install
+    use fpm_toml, only: toml_table, set_value
 
-        call new_example(example, table, error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine test_example_empty
+    type(toml_table) :: table
+    type(install_config_t) :: install
 
+    table = toml_table()
+    call set_value(table, "prefix", "/some/install/path")
 
-    !> Test link options
-    subroutine test_link_string(error)
-        use fpm_manifest_build
-        use fpm_toml, only : set_value, toml_table
+    call new_install_config(install, table, error)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  end subroutine test_install_wrongkey
 
-        type(toml_table) :: table
-        integer :: stat
-        type(build_config_t) :: build
+  subroutine test_preprocess_empty(error)
+    use fpm_mainfest_preprocess
+    use fpm_toml, only: new_table, toml_table
 
-        table = toml_table()
-        call set_value(table, "link", "z", stat=stat)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_build_config(build, table, error)
+    type(toml_table) :: table
+    type(preprocess_config_t) :: preprocess
 
-    end subroutine test_link_string
+    call new_table(table)
+    table%key = "example"
 
+    call new_preprocess_config(preprocess, table, error)
 
-    !> Test link options
-    subroutine test_link_array(error)
-        use fpm_manifest_build
-        use fpm_toml, only : add_array, set_value, toml_table, toml_array
+  end subroutine test_preprocess_empty
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  !> Pass a TOML table with not allowed keys
+  subroutine test_preprocess_wrongkey(error)
+    use fpm_mainfest_preprocess
+    use fpm_toml, only: new_table, add_table, toml_table
 
-        type(toml_table) :: table
-        type(toml_array), pointer :: children
-        integer :: stat
-        type(build_config_t) :: build
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        table = toml_table()
-        call add_array(table, "link", children, stat=stat)
-        call set_value(children, 1, "blas", stat=stat)
-        call set_value(children, 2, "lapack", stat=stat)
+    type(toml_table) :: table
+    type(toml_table), pointer :: child
+    integer :: stat
+    type(preprocess_config_t) :: preprocess
 
-        call new_build_config(build, table, error)
+    call new_table(table)
+    table%key = 'example'
+    call add_table(table, 'wrong-field', child, stat)
 
-    end subroutine test_link_array
+    call new_preprocess_config(preprocess, table, error)
 
+  end subroutine test_preprocess_wrongkey
 
-    !> Test link options
-    subroutine test_invalid_link(error)
-        use fpm_manifest_build
-        use fpm_toml, only : add_table, toml_table
+  !> Preprocess table cannot be empty.
+  subroutine test_preprocessors_empty(error)
+    use fpm_mainfest_preprocess
+    use fpm_toml, only: new_table, toml_table
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(build_config_t) :: build
+    type(toml_table) :: table
+    type(preprocess_config_t), allocatable :: preprocessors(:)
 
-        table = toml_table()
-        call add_table(table, "link", child, stat=stat)
+    call new_table(table)
 
-        call new_build_config(build, table, error)
+    call new_preprocessors(preprocessors, table, error)
+    if (allocated(error)) return
 
-    end subroutine test_invalid_link
+  end subroutine test_preprocessors_empty
 
+  !> Test macro parsing function get_macros_from_manifest
+  subroutine test_macro_parsing(error)
+    use fpm_compiler, only: get_macros, compiler_enum
 
-    subroutine test_install_library(error)
-        use fpm_manifest_install
-        use fpm_toml, only : toml_table, set_value
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    character(len=:), allocatable :: flags
+    character(len=:), allocatable :: version
 
-        type(toml_table) :: table
-        type(install_config_t) :: install
+    type(package_config_t) :: package
+    character(:), allocatable :: temp_file
+    integer :: unit
+    integer(compiler_enum)  :: id
 
-        table = toml_table()
-        call set_value(table, "library", .true.)
+    allocate (temp_file, source=get_temp_filename())
 
-        call new_install_config(install, table, error)
-        if (allocated(error)) return
+    open (file=temp_file, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "example"', &
+        & 'version = "0.1.0"', &
+        & '[preprocess]', &
+        & '[preprocess.cpp]', &
+        & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
+    close (unit)
 
-        if (.not.install%library) then
-            call test_failed(error, "Library entry should be true")
-            return
-        end if
+    call get_package_data(package, temp_file, error)
 
-    end subroutine test_install_library
+    if (allocated(error)) return
 
+    call package%version%to_string(version)
 
-    subroutine test_install_empty(error)
-        use fpm_manifest_install
-        use fpm_toml, only : toml_table
+    if (get_macros(id, package%preprocess(1)%macros, version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
+      call test_failed(error, "Macros were not parsed correctly")
+    end if
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  end subroutine test_macro_parsing
 
-        type(toml_table) :: table
-        type(install_config_t) :: install
+  !> Test macro parsing of the package and its dependency.
+  subroutine test_macro_parsing_dependency(error)
+    use fpm_compiler, only: get_macros, compiler_enum
 
-        table = toml_table()
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call new_install_config(install, table, error)
-        if (allocated(error)) return
+    character(len=:), allocatable :: macrosPackage, macrosDependency
+    character(len=:), allocatable :: versionPackage, versionDependency
 
-        if (install%library) then
-            call test_failed(error, "Library default should be false")
-            return
-        end if
+    type(package_config_t) :: package, dependency
 
-    end subroutine test_install_empty
+    character(:), allocatable :: toml_file_package
+    character(:), allocatable :: toml_file_dependency
 
+    integer :: unit
+    integer(compiler_enum)  :: id
 
-    subroutine test_install_wrongkey(error)
-        use fpm_manifest_install
-        use fpm_toml, only : toml_table, set_value
+    allocate (toml_file_package, source=get_temp_filename())
+    allocate (toml_file_dependency, source=get_temp_filename())
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    open (file=toml_file_package, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "example"', &
+        & 'version = "0.1.0"', &
+        & '[dependencies]', &
+        & '[dependencies.dependency-name]', &
+        & 'git = "https://github.com/fortran-lang/dependency-name"', &
+        & '[preprocess]', &
+        & '[preprocess.cpp]', &
+        & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
+    close (unit)
 
-        type(toml_table) :: table
-        type(install_config_t) :: install
+    open (file=toml_file_dependency, newunit=unit)
+    write (unit, '(a)') &
+        & 'name = "dependency-name"', &
+        & 'version = "0.2.0"', &
+        & '[preprocess]', &
+        & '[preprocess.cpp]', &
+        & 'macros = ["FOO1", "BAR2=2", "VERSION={version}"]'
+    close (unit)
 
-        table = toml_table()
-        call set_value(table, "prefix", "/some/install/path")
+    call get_package_data(package, toml_file_package, error)
 
-        call new_install_config(install, table, error)
+    if (allocated(error)) return
 
-    end subroutine test_install_wrongkey
-    
-    subroutine test_preprocess_empty(error)
-        use fpm_mainfest_preprocess
-        use fpm_toml, only : new_table, toml_table
+    call get_package_data(dependency, toml_file_dependency, error)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    if (allocated(error)) return
 
-        type(toml_table) :: table
-        type(preprocess_config_t) :: preprocess
+    call package%version%to_string(versionPackage)
+    call dependency%version%to_string(versionDependency)
 
-        call new_table(table)
-        table%key = "example"
+    macrosPackage = get_macros(id, package%preprocess(1)%macros, versionPackage)
+    macrosDependency = get_macros(id, dependency%preprocess(1)%macros, versionDependency)
 
-        call new_preprocess_config(preprocess, table, error)
+    if (macrosPackage == macrosDependency) then
+      call test_failed(error, "Macros of package and dependency should not be equal")
+    end if
 
-    end subroutine test_preprocess_empty
-
-    !> Pass a TOML table with not allowed keys
-    subroutine test_preprocess_wrongkey(error)
-        use fpm_mainfest_preprocess
-        use fpm_toml, only : new_table, add_table, toml_table
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(toml_table) :: table
-        type(toml_table), pointer :: child
-        integer :: stat
-        type(preprocess_config_t) :: preprocess
-
-        call new_table(table)
-        table%key = 'example'
-        call add_table(table, 'wrong-field', child, stat)
-
-        call new_preprocess_config(preprocess, table, error)
-    
-    end subroutine test_preprocess_wrongkey
-
-    !> Preprocess table cannot be empty.
-    subroutine test_preprocessors_empty(error)
-        use fpm_mainfest_preprocess
-        use fpm_toml, only : new_table, toml_table
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(toml_table) :: table
-        type(preprocess_config_t), allocatable :: preprocessors(:)
-
-        call new_table(table)
-
-        call new_preprocessors(preprocessors, table, error)
-        if (allocated(error)) return
-
-    end subroutine test_preprocessors_empty
-
-    !> Test macro parsing function get_macros_from_manifest
-    subroutine test_macro_parsing(error)
-        use fpm_compiler, only: get_macros, compiler_enum
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        character(len=:), allocatable :: flags
-        character(len=:), allocatable :: version
-
-        type(package_config_t) :: package
-        character(:), allocatable :: temp_file
-        integer :: unit
-        integer(compiler_enum)  :: id
-
-        allocate(temp_file, source=get_temp_filename())
-
-        open(file=temp_file, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "example"', &
-            & 'version = "0.1.0"', &
-            & '[preprocess]', &
-            & '[preprocess.cpp]', & 
-            & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
-        close(unit) 
-
-        call get_package_data(package, temp_file, error)
-
-        if (allocated(error)) return
-
-        call package%version%to_string(version)
-
-        if (get_macros(id, package%preprocess(1)%macros, version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
-            call test_failed(error, "Macros were not parsed correctly")
-        end if
-        
-    end subroutine test_macro_parsing
-
-    !> Test macro parsing of the package and its dependency.
-    subroutine test_macro_parsing_dependency(error)
-        use fpm_compiler, only: get_macros, compiler_enum
-
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        character(len=:), allocatable :: macrosPackage, macrosDependency
-        character(len=:), allocatable :: versionPackage, versionDependency
-
-        type(package_config_t) :: package, dependency
-
-        character(:), allocatable :: toml_file_package
-        character(:), allocatable :: toml_file_dependency
-
-        integer :: unit
-        integer(compiler_enum)  :: id
-
-        allocate(toml_file_package, source=get_temp_filename())
-        allocate(toml_file_dependency, source=get_temp_filename())
-
-        open(file=toml_file_package, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "example"', &
-            & 'version = "0.1.0"', &
-            & '[dependencies]', &
-            & '[dependencies.dependency-name]', & 
-            & 'git = "https://github.com/fortran-lang/dependency-name"', &
-            & '[preprocess]', &
-            & '[preprocess.cpp]', & 
-            & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
-        close(unit)
-
-        open(file=toml_file_dependency, newunit=unit)
-        write(unit, '(a)') &
-            & 'name = "dependency-name"', &
-            & 'version = "0.2.0"', &
-            & '[preprocess]', &
-            & '[preprocess.cpp]', & 
-            & 'macros = ["FOO1", "BAR2=2", "VERSION={version}"]'
-        close(unit)
-
-        call get_package_data(package, toml_file_package, error)
-
-        if (allocated(error)) return
-
-        call get_package_data(dependency, toml_file_dependency, error)
-
-        if (allocated(error)) return
-
-        call package%version%to_string(versionPackage)
-        call dependency%version%to_string(versionDependency)
-
-        macrosPackage = get_macros(id, package%preprocess(1)%macros, versionPackage)
-        macrosDependency = get_macros(id, dependency%preprocess(1)%macros, versionDependency)
-
-        if (macrosPackage == macrosDependency) then
-            call test_failed(error, "Macros of package and dependency should not be equal")
-        end if
-        
-    end subroutine test_macro_parsing_dependency
+  end subroutine test_macro_parsing_dependency
 
 end module test_manifest

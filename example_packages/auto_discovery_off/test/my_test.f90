@@ -1,6 +1,6 @@
 program my_test
-implicit none
+  implicit none
 
-print *, "Test passed! That was easy!"
+  print *, "Test passed! That was easy!"
 
 end program my_test

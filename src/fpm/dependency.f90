@@ -55,17 +55,17 @@
 !>
 !> Currenly ignored. First come, first serve.
 module fpm_dependency
-  use, intrinsic :: iso_fortran_env, only : output_unit
-  use fpm_environment, only : get_os_type, OS_WINDOWS
-  use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path
-  use fpm_git, only : git_target_revision, git_target_default, git_revision
-  use fpm_manifest, only : package_config_t, dependency_config_t, &
-    get_package_data
-  use fpm_strings, only : string_t, operator(.in.)
-  use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
-    toml_parse, get_value, set_value, add_table
-  use fpm_versioning, only : version_t, new_version, char
+  use, intrinsic :: iso_fortran_env, only: output_unit
+  use fpm_environment, only: get_os_type, OS_WINDOWS
+  use fpm_error, only: error_t, fatal_error
+  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path
+  use fpm_git, only: git_target_revision, git_target_default, git_revision
+  use fpm_manifest, only: package_config_t, dependency_config_t, &
+                          get_package_data
+  use fpm_strings, only: string_t, operator(.in.)
+  use fpm_toml, only: toml_table, toml_key, toml_error, toml_serializer, &
+                      toml_parse, get_value, set_value, add_table
+  use fpm_versioning, only: version_t, new_version, char
   implicit none
   private
 
@@ -73,12 +73,10 @@ module fpm_dependency
   public :: dependency_node_t, new_dependency_node
   public :: resize
 
-
   !> Overloaded reallocation interface
   interface resize
     module procedure :: resize_dependency_node
   end interface resize
-
 
   !> Dependency node in the projects dependency tree
   type, extends(dependency_config_t) :: dependency_node_t
@@ -96,7 +94,6 @@ module fpm_dependency
     !> Update dependency from project manifest
     procedure :: register
   end type dependency_node_t
-
 
   !> Respresentation of a projects dependencies
   !>
@@ -239,7 +236,7 @@ contains
       if (allocated(error)) return
     end if
 
-    if (.not.exists(self%dep_dir)) then
+    if (.not. exists(self%dep_dir)) then
       call mkdir(self%dep_dir)
     end if
 
@@ -260,9 +257,9 @@ contains
     if (allocated(error)) return
 
     ! Now decent into the dependency tree, level for level
-    do while(.not.self%finished())
-       call self%resolve(root, error)
-       if (allocated(error)) exit
+    do while (.not. self%finished())
+      call self%resolve(root, error)
+      if (allocated(error)) exit
     end do
     if (allocated(error)) return
 
@@ -395,10 +392,10 @@ contains
       return
     end if
 
-    associate(dep => self%dep(id))
+    associate (dep => self%dep(id))
       if (allocated(dep%git) .and. dep%update) then
         if (self%verbosity > 1) then
-          write(self%unit, out_fmt) "Update:", dep%name
+          write (self%unit, out_fmt) "Update:", dep%name
         end if
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
@@ -409,7 +406,7 @@ contains
         dep%update = .false.
 
         ! Now decent into the dependency tree, level for level
-        do while(.not.self%finished())
+        do while (.not. self%finished())
           call self%resolve(root, error)
           if (allocated(error)) exit
         end do
@@ -464,7 +461,7 @@ contains
         proj_dir = join_path(root, dependency%path)
       else if (allocated(dependency%git)) then
         proj_dir = join_path(self%dep_dir, dependency%name)
-        fetch = .not.exists(proj_dir)
+        fetch = .not. exists(proj_dir)
         if (fetch) then
           call dependency%git%checkout(proj_dir, error)
           if (allocated(error)) return
@@ -486,7 +483,7 @@ contains
     if (allocated(error)) return
 
     if (self%verbosity > 1) then
-      write(self%unit, out_fmt) &
+      write (self%unit, out_fmt) &
         "Dep:", dependency%name, "version", char(dependency%version), &
         "at", dependency%proj_dir
     end if
@@ -567,12 +564,12 @@ contains
     self%version = package%version
     self%proj_dir = root
 
-    if (allocated(self%git).and.present(revision)) then
+    if (allocated(self%git) .and. present(revision)) then
       self%revision = revision
-      if (.not.fetch) then
+      if (.not. fetch) then
         ! git object is HEAD always allows an update
-        update = .not.allocated(self%git%object)
-        if (.not.update) then
+        update = .not. allocated(self%git%object)
+        if (.not. update) then
           ! allow update in case the revision does not match the requested object
           update = revision /= self%git%object
         end if
@@ -596,12 +593,12 @@ contains
     integer :: unit
     logical :: exist
 
-    inquire(file=file, exist=exist)
-    if (.not.exist) return
+    inquire (file=file, exist=exist)
+    if (.not. exist) return
 
-    open(file=file, newunit=unit)
+    open (file=file, newunit=unit)
     call self%load(unit, error)
-    close(unit)
+    close (unit)
   end subroutine load_from_file
 
   !> Read dependency tree from file
@@ -619,7 +616,7 @@ contains
     call toml_parse(table, unit, parse_error)
 
     if (allocated(parse_error)) then
-      allocate(error)
+      allocate (error)
       call move_alloc(parse_error%message, error%message)
       return
     end if
@@ -660,9 +657,9 @@ contains
       call get_value(ptr, "git", url)
       call get_value(ptr, "obj", obj)
       call get_value(ptr, "rev", rev)
-      if (.not.allocated(proj_dir)) cycle
+      if (.not. allocated(proj_dir)) cycle
       self%ndep = self%ndep + 1
-      associate(dep => self%dep(self%ndep))
+      associate (dep => self%dep(self%ndep))
         dep%name = list(ii)%key
         if (unix) then
           dep%proj_dir = proj_dir
@@ -671,7 +668,7 @@ contains
         end if
         dep%done = .false.
         if (allocated(version)) then
-          if (.not.allocated(dep%version)) allocate(dep%version)
+          if (.not. allocated(dep%version)) allocate (dep%version)
           call new_version(dep%version, version, error)
           if (allocated(error)) exit
         end if
@@ -709,9 +706,9 @@ contains
 
     integer :: unit
 
-    open(file=file, newunit=unit)
+    open (file=file, newunit=unit)
     call self%dump(unit, error)
-    close(unit)
+    close (unit)
     if (allocated(error)) return
 
   end subroutine dump_to_file
@@ -751,9 +748,9 @@ contains
     character(len=:), allocatable :: proj_dir
 
     do ii = 1, self%ndep
-      associate(dep => self%dep(ii))
+      associate (dep => self%dep(ii))
         call add_table(table, dep%name, ptr)
-        if (.not.associated(ptr)) then
+        if (.not. associated(ptr)) then
           call fatal_error(error, "Cannot create entry for "//dep%name)
           exit
         end if
@@ -801,12 +798,12 @@ contains
       new_size = this_size + this_size/2 + 1
     end if
 
-    allocate(var(new_size))
+    allocate (var(new_size))
 
     if (allocated(tmp)) then
       this_size = min(size(tmp, 1), size(var, 1))
       var(:this_size) = tmp(:this_size)
-      deallocate(tmp)
+      deallocate (tmp)
     end if
 
   end subroutine resize_dependency_node

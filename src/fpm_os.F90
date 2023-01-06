@@ -1,105 +1,105 @@
 module fpm_os
-    use, intrinsic :: iso_c_binding, only : c_char, c_int, c_null_char, c_ptr, c_associated
-    use fpm_error, only : error_t, fatal_error
-    implicit none
-    private
-    public :: change_directory, get_current_directory
+  use, intrinsic :: iso_c_binding, only: c_char, c_int, c_null_char, c_ptr, c_associated
+  use fpm_error, only: error_t, fatal_error
+  implicit none
+  private
+  public :: change_directory, get_current_directory
 
 #ifndef _WIN32
-    character(len=*), parameter :: pwd_env = "PWD"
+  character(len=*), parameter :: pwd_env = "PWD"
 #else
-    character(len=*), parameter :: pwd_env = "CD"
+  character(len=*), parameter :: pwd_env = "CD"
 #endif
 
-    interface
-        function chdir(path) result(stat) &
+  interface
+    function chdir(path) result(stat) &
 #ifndef _WIN32
-                bind(C, name="chdir")
+      bind(C, name="chdir")
 #else
-                bind(C, name="_chdir")
+      bind(C, name="_chdir")
 #endif
-            import :: c_char, c_int
-            character(kind=c_char, len=1), intent(in) :: path(*)
-            integer(c_int) :: stat
-        end function chdir
+      import :: c_char, c_int
+      character(kind=c_char, len=1), intent(in) :: path(*)
+      integer(c_int) :: stat
+    end function chdir
 
-        function getcwd(buf, bufsize) result(path) &
+    function getcwd(buf, bufsize) result(path) &
 #ifndef _WIN32
-                bind(C, name="getcwd")
+      bind(C, name="getcwd")
 #else
-                bind(C, name="_getcwd")
+      bind(C, name="_getcwd")
 #endif
-            import :: c_char, c_int, c_ptr
-            character(kind=c_char, len=1), intent(in) :: buf(*)
-            integer(c_int), value, intent(in) :: bufsize
-            type(c_ptr) :: path
-        end function getcwd
-    end interface
+      import :: c_char, c_int, c_ptr
+      character(kind=c_char, len=1), intent(in) :: buf(*)
+      integer(c_int), value, intent(in) :: bufsize
+      type(c_ptr) :: path
+    end function getcwd
+  end interface
 
 contains
 
-    subroutine change_directory(path, error)
-        character(len=*), intent(in) :: path
-        type(error_t), allocatable, intent(out) :: error
+  subroutine change_directory(path, error)
+    character(len=*), intent(in) :: path
+    type(error_t), allocatable, intent(out) :: error
 
-        character(kind=c_char, len=1), allocatable :: cpath(:)
-        integer :: stat
+    character(kind=c_char, len=1), allocatable :: cpath(:)
+    integer :: stat
 
-        allocate(cpath(len(path)+1))
-        call f_c_character(path, cpath, len(path)+1)
+    allocate (cpath(len(path) + 1))
+    call f_c_character(path, cpath, len(path) + 1)
 
-        stat = chdir(cpath)
+    stat = chdir(cpath)
 
-        if (stat /= 0) then
-            call fatal_error(error, "Failed to change directory to '"//path//"'")
-        end if
-    end subroutine change_directory
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to change directory to '"//path//"'")
+    end if
+  end subroutine change_directory
 
-    subroutine get_current_directory(path, error)
-        character(len=:), allocatable, intent(out) :: path
-        type(error_t), allocatable, intent(out) :: error
+  subroutine get_current_directory(path, error)
+    character(len=:), allocatable, intent(out) :: path
+    type(error_t), allocatable, intent(out) :: error
 
-        character(kind=c_char, len=1), allocatable :: cpath(:)
-        integer(c_int), parameter :: buffersize = 1000_c_int
-        type(c_ptr) :: tmp
+    character(kind=c_char, len=1), allocatable :: cpath(:)
+    integer(c_int), parameter :: buffersize = 1000_c_int
+    type(c_ptr) :: tmp
 
-        allocate(cpath(buffersize))
+    allocate (cpath(buffersize))
 
-        tmp = getcwd(cpath, buffersize)
-        if (c_associated(tmp)) then
-            call c_f_character(cpath, path)
-        else
-            call fatal_error(error, "Failed to retrieve current directory")
-        end if
+    tmp = getcwd(cpath, buffersize)
+    if (c_associated(tmp)) then
+      call c_f_character(cpath, path)
+    else
+      call fatal_error(error, "Failed to retrieve current directory")
+    end if
 
-    end subroutine get_current_directory
+  end subroutine get_current_directory
 
-    subroutine f_c_character(rhs, lhs, len)
-        character(kind=c_char), intent(out) :: lhs(*)
-        character(len=*), intent(in) :: rhs
-        integer, intent(in) :: len
-        integer :: length
-        length = min(len-1, len_trim(rhs))
+  subroutine f_c_character(rhs, lhs, len)
+    character(kind=c_char), intent(out) :: lhs(*)
+    character(len=*), intent(in) :: rhs
+    integer, intent(in) :: len
+    integer :: length
+    length = min(len - 1, len_trim(rhs))
 
-        lhs(1:length) = transfer(rhs(1:length), lhs(1:length))
-        lhs(length+1:length+1) = c_null_char
+    lhs(1:length) = transfer(rhs(1:length), lhs(1:length))
+    lhs(length + 1:length + 1) = c_null_char
 
-    end subroutine f_c_character
+  end subroutine f_c_character
 
-    subroutine c_f_character(rhs, lhs)
-        character(kind=c_char), intent(in) :: rhs(*)
-        character(len=:), allocatable, intent(out) :: lhs
+  subroutine c_f_character(rhs, lhs)
+    character(kind=c_char), intent(in) :: rhs(*)
+    character(len=:), allocatable, intent(out) :: lhs
 
-        integer :: ii
+    integer :: ii
 
-        do ii = 1, huge(ii) - 1
-            if (rhs(ii) == c_null_char) then
-                exit
-            end if
-        end do
-        allocate(character(len=ii-1) :: lhs)
-        lhs = transfer(rhs(1:ii-1), lhs)
+    do ii = 1, huge(ii) - 1
+      if (rhs(ii) == c_null_char) then
+        exit
+      end if
+    end do
+    allocate (character(len=ii - 1) :: lhs)
+    lhs = transfer(rhs(1:ii - 1), lhs)
 
-    end subroutine c_f_character
+  end subroutine c_f_character
 
 end module fpm_os

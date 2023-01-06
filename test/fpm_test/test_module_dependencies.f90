@@ -1,808 +1,791 @@
 !> Define tests for the `fpm_sources` module (module dependency checking)
 module test_module_dependencies
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
-    use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
-                            resolve_target_linking, build_target_t, build_target_ptr, &
-                            FPM_TARGET_EXECUTABLE, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE
-    use fpm_model, only: fpm_model_t, srcfile_t,  &
-                FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
-                FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
-                FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
-                FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-    use fpm_strings, only: string_t, operator(.in.)
-    use fpm, only: check_modules_for_duplicates
-    implicit none
-    private
+  use testsuite, only: new_unittest, unittest_t, error_t, test_failed
+  use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
+                         resolve_target_linking, build_target_t, build_target_ptr, &
+                         FPM_TARGET_EXECUTABLE, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE
+  use fpm_model, only: fpm_model_t, srcfile_t, &
+                       FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
+                       FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
+                       FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
+                       FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
+  use fpm_strings, only: string_t, operator(.in.)
+  use fpm, only: check_modules_for_duplicates
+  implicit none
+  private
 
-    public :: collect_module_dependencies, operator(.in.)
+  public :: collect_module_dependencies, operator(.in.)
 
-    interface operator(.in.)
-        module procedure target_in
-    end interface
+  interface operator(.in.)
+    module procedure target_in
+  end interface
 
 contains
 
+  !> Collect all exported unit tests
+  subroutine collect_module_dependencies(testsuite)
 
-    !> Collect all exported unit tests
-    subroutine collect_module_dependencies(testsuite)
+    !> Collection of tests
+    type(unittest_t), allocatable, intent(out) :: testsuite(:)
 
-        !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: testsuite(:)
+    testsuite = [ &
+        & new_unittest("library-module-use", test_library_module_use), &
+        & new_unittest("program-module-use", test_program_module_use), &
+        & new_unittest("program-with-module", test_program_with_module), &
+        & new_unittest("program-own-module-use", test_program_own_module_use), &
+        & new_unittest("missing-library-use", &
+                        test_missing_library_use, should_fail=.true.), &
+        & new_unittest("missing-program-use", &
+                        test_missing_program_use, should_fail=.true.), &
+        & new_unittest("invalid-library-use", &
+                        test_invalid_library_use, should_fail=.true.), &
+        & new_unittest("package-with-no-duplicates", &
+                        test_package_with_no_module_duplicates), &
+        & new_unittest("package-with-duplicates-in-same-source", &
+                        test_package_module_duplicates_same_source, should_fail=.true.), &
+        & new_unittest("package-with-duplicates-in-one-package", &
+                        test_package_module_duplicates_one_package, should_fail=.true.), &
+        & new_unittest("package-with-duplicates-in-two-packages", &
+                        test_package_module_duplicates_two_packages, should_fail=.true.), &
+        & new_unittest("subdirectory-module-use", &
+                        test_subdirectory_module_use), &
+        & new_unittest("invalid-subdirectory-module-use", &
+                        test_invalid_subdirectory_module_use, should_fail=.true.), &
+        & new_unittest("tree-shake-module", &
+                        test_tree_shake_module, should_fail=.false.), &
+        & new_unittest("tree-shake-subprogram-with-module", &
+                        test_tree_shake_subprogram_with_module, should_fail=.false.) &
+        ]
 
-        testsuite = [ &
-            & new_unittest("library-module-use", test_library_module_use), &
-            & new_unittest("program-module-use", test_program_module_use), &
-            & new_unittest("program-with-module", test_program_with_module), &
-            & new_unittest("program-own-module-use", test_program_own_module_use), &
-            & new_unittest("missing-library-use", &
-                            test_missing_library_use, should_fail=.true.), &
-            & new_unittest("missing-program-use", &
-                            test_missing_program_use, should_fail=.true.), &
-            & new_unittest("invalid-library-use", &
-                            test_invalid_library_use, should_fail=.true.), &
-            & new_unittest("package-with-no-duplicates", &
-                            test_package_with_no_module_duplicates), &
-            & new_unittest("package-with-duplicates-in-same-source", &
-                            test_package_module_duplicates_same_source, should_fail=.true.), &
-            & new_unittest("package-with-duplicates-in-one-package", &
-                            test_package_module_duplicates_one_package, should_fail=.true.), &
-            & new_unittest("package-with-duplicates-in-two-packages", &
-                            test_package_module_duplicates_two_packages, should_fail=.true.), &
-            & new_unittest("subdirectory-module-use", &
-                            test_subdirectory_module_use), &
-            & new_unittest("invalid-subdirectory-module-use", &
-                            test_invalid_subdirectory_module_use, should_fail=.true.), &
-            & new_unittest("tree-shake-module", & 
-                            test_tree_shake_module, should_fail=.false.), &
-            & new_unittest("tree-shake-subprogram-with-module", & 
-                            test_tree_shake_subprogram_with_module, should_fail=.false.) &
-            ]
-            
-    end subroutine collect_module_dependencies
+  end subroutine collect_module_dependencies
 
+  !> Check library module using another library module
+  subroutine test_library_module_use(error)
 
-    !> Check library module using another library module
-    subroutine test_library_module_use(error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(2))
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_1')])
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_2.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_2')], &
+                                                   uses=[string_t('my_mod_1')])
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_2')], &
-                                    uses=[string_t('my_mod_1')])
+    call targets_from_sources(targets, model, .false., error)
+    if (allocated(error)) return
 
-        call targets_from_sources(targets,model,.false.,error)
-        if (allocated(error)) return
+    if (allocated(error)) then
+      return
+    end if
+    if (size(targets) /= 3) then
+      call test_failed(error, 'Incorrect number of targets - expecting three')
+      return
+    end if
 
-        if (allocated(error)) then
-            return
-        end if
-        if (size(targets) /= 3) then
-            call test_failed(error,'Incorrect number of targets - expecting three')
-            return
-        end if
+    call check_target(targets(1)%ptr, type=FPM_TARGET_ARCHIVE, n_depends=2, &
+                      deps=[targets(2), targets(3)], &
+                      links=targets(2:3), error=error)
 
-        call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
-                          deps = [targets(2),targets(3)], &
-                          links = targets(2:3), error=error)
+    if (allocated(error)) return
 
-        if (allocated(error)) return
+    call check_target(targets(2)%ptr, type=FPM_TARGET_OBJECT, n_depends=0, &
+                      source=model%packages(1)%sources(1), error=error)
 
+    if (allocated(error)) return
 
-        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                          source=model%packages(1)%sources(1),error=error)
+    call check_target(targets(3)%ptr, type=FPM_TARGET_OBJECT, n_depends=1, &
+                      deps=[targets(2)], source=model%packages(1)%sources(2), error=error)
 
-        if (allocated(error)) return
+    if (allocated(error)) return
 
+  end subroutine test_library_module_use
 
-        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
+  !> Check a program using a library module
+  !>  Each program generates two targets: object file and executable
+  !>
+  subroutine test_program_module_use(error)
 
-        if (allocated(error)) return
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine test_library_module_use
+    call test_scope(FPM_SCOPE_APP, error)
+    if (allocated(error)) return
 
+    call test_scope(FPM_SCOPE_TEST, error)
+    if (allocated(error)) return
 
-    !> Check a program using a library module
-    !>  Each program generates two targets: object file and executable
-    !>
-    subroutine test_program_module_use(error)
+  contains
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    subroutine test_scope(exe_scope, error)
+      integer, intent(in) :: exe_scope
+      type(error_t), allocatable, intent(out) :: error
 
-        call test_scope(FPM_SCOPE_APP,error)
-        if (allocated(error)) return
+      type(fpm_model_t) :: model
+      type(build_target_ptr), allocatable :: targets(:)
+      character(:), allocatable :: scope_str
 
-        call test_scope(FPM_SCOPE_TEST,error)
-        if (allocated(error)) return
+      allocate (model%external_modules(0))
+      allocate (model%packages(1))
+      allocate (model%packages(1)%sources(2))
 
-    contains
+      scope_str = merge('FPM_SCOPE_APP ', 'FPM_SCOPE_TEST', exe_scope == FPM_SCOPE_APP)//' - '
 
-    subroutine test_scope(exe_scope,error)
-        integer, intent(in) :: exe_scope
-        type(error_t), allocatable, intent(out) :: error
+      model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1.f90", &
+                                                     scope=FPM_SCOPE_LIB, &
+                                                     provides=[string_t('my_mod_1')])
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
-        character(:), allocatable :: scope_str
+      model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM, file_name="app/my_program.f90", &
+                                                     scope=exe_scope, &
+                                                     uses=[string_t('my_mod_1')])
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+      call targets_from_sources(targets, model, .false., error)
+      if (allocated(error)) return
 
-        scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
+      if (size(targets) /= 4) then
+        call test_failed(error, scope_str//'Incorrect number of targets - expecting three')
+        return
+      end if
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])
+      call check_target(targets(1)%ptr, type=FPM_TARGET_ARCHIVE, n_depends=1, &
+                        deps=[targets(2)], links=[targets(2)], error=error)
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
-                                    scope=exe_scope, &
-                                    uses=[string_t('my_mod_1')])
+      if (allocated(error)) return
 
-        call targets_from_sources(targets,model,.false.,error)
-        if (allocated(error)) return
+      call check_target(targets(2)%ptr, type=FPM_TARGET_OBJECT, n_depends=0, &
+                        source=model%packages(1)%sources(1), error=error)
 
-        if (size(targets) /= 4) then
-            call test_failed(error,scope_str//'Incorrect number of targets - expecting three')
-            return
-        end if
+      if (allocated(error)) return
 
-        call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=1, &
-                          deps=[targets(2)],links=[targets(2)],error=error)
+      call check_target(targets(3)%ptr, type=FPM_TARGET_OBJECT, n_depends=1, &
+                        deps=[targets(2)], source=model%packages(1)%sources(2), error=error)
 
-        if (allocated(error)) return
+      if (allocated(error)) return
 
-        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                            source=model%packages(1)%sources(1),error=error)
+      call check_target(targets(4)%ptr, type=FPM_TARGET_EXECUTABLE, n_depends=2, &
+                        deps=[targets(1), targets(3)], &
+                        links=[targets(3)], error=error)
 
-        if (allocated(error)) return
-
-        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                            deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
-
-        if (allocated(error)) return
-
-        call check_target(targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=2, &
-                            deps=[targets(1),targets(3)], &
-                            links=[targets(3)], error=error)
-
-        if (allocated(error)) return
+      if (allocated(error)) return
 
     end subroutine test_scope
 
-    end subroutine test_program_module_use
+  end subroutine test_program_module_use
 
+  !> Check program with module in single source file
+  !>  (Resulting target should not include itself as a dependency)
+  subroutine test_program_with_module(error)
 
-    !> Check program with module in single source file
-    !>  (Resulting target should not include itself as a dependency)
-    subroutine test_program_with_module(error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(1))
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(1))
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_PROGRAM, file_name="app/my_program.f90", &
+                                                   scope=FPM_SCOPE_APP, &
+                                                   provides=[string_t('app_mod')], &
+                                                   uses=[string_t('app_mod')])
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
-                                    scope = FPM_SCOPE_APP, &
-                                    provides=[string_t('app_mod')], &
-                                    uses=[string_t('app_mod')])
+    call targets_from_sources(targets, model, .false., error)
+    if (allocated(error)) return
 
-        call targets_from_sources(targets,model,.false.,error)
-        if (allocated(error)) return
+    if (size(targets) /= 2) then
+      write (*, *) size(targets)
+      call test_failed(error, 'Incorrect number of targets - expecting two')
+      return
+    end if
 
-        if (size(targets) /= 2) then
-            write(*,*) size(targets)
-            call test_failed(error,'Incorrect number of targets - expecting two')
-            return
-        end if
+    call check_target(targets(1)%ptr, type=FPM_TARGET_OBJECT, n_depends=0, &
+                      source=model%packages(1)%sources(1), error=error)
 
-        call check_target(targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                          source=model%packages(1)%sources(1),error=error)
+    if (allocated(error)) return
 
-        if (allocated(error)) return
+    call check_target(targets(2)%ptr, type=FPM_TARGET_EXECUTABLE, n_depends=1, &
+                      deps=[targets(1)], links=[targets(1)], error=error)
 
-        call check_target(targets(2)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
-                          deps=[targets(1)],links=[targets(1)],error=error)
+    if (allocated(error)) return
 
-        if (allocated(error)) return
+  end subroutine test_program_with_module
 
-    end subroutine test_program_with_module
+  !> Check program using modules in same directory
+  subroutine test_program_own_module_use(error)
 
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    !> Check program using modules in same directory
-    subroutine test_program_own_module_use(error)
+    call test_scope(FPM_SCOPE_APP, error)
+    if (allocated(error)) return
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call test_scope(FPM_SCOPE_TEST, error)
+    if (allocated(error)) return
 
-        call test_scope(FPM_SCOPE_APP,error)
-        if (allocated(error)) return
+  contains
 
-        call test_scope(FPM_SCOPE_TEST,error)
-        if (allocated(error)) return
+    subroutine test_scope(exe_scope, error)
+      integer, intent(in) :: exe_scope
+      type(error_t), allocatable, intent(out) :: error
 
-    contains
+      type(fpm_model_t) :: model
+      type(build_target_ptr), allocatable :: targets(:)
+      character(:), allocatable :: scope_str
 
-    subroutine test_scope(exe_scope,error)
-        integer, intent(in) :: exe_scope
-        type(error_t), allocatable, intent(out) :: error
+      allocate (model%external_modules(0))
+      allocate (model%packages(1))
+      allocate (model%packages(1)%sources(3))
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
-        character(:), allocatable :: scope_str
+      scope_str = merge('FPM_SCOPE_APP ', 'FPM_SCOPE_TEST', exe_scope == FPM_SCOPE_APP)//' - '
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(3))
+      model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="app/app_mod1.f90", &
+                                                     scope=exe_scope, &
+                                                     provides=[string_t('app_mod1')])
 
-        scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
+      model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE, file_name="app/app_mod2.f90", &
+                                                     scope=exe_scope, &
+                                                     provides=[string_t('app_mod2')], uses=[string_t('app_mod1')])
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod1.f90", &
-                                    scope = exe_scope, &
-                                    provides=[string_t('app_mod1')])
+      model%packages(1)%sources(3) = new_test_source(FPM_UNIT_PROGRAM, file_name="app/my_program.f90", &
+                                                     scope=exe_scope, &
+                                                     uses=[string_t('app_mod2')])
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod2.f90", &
-                                    scope = exe_scope, &
-                                    provides=[string_t('app_mod2')],uses=[string_t('app_mod1')])
+      call targets_from_sources(targets, model, .false., error)
+      if (allocated(error)) return
 
-        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
-                                    scope=exe_scope, &
-                                    uses=[string_t('app_mod2')])
+      if (size(targets) /= 4) then
+        call test_failed(error, scope_str//'Incorrect number of targets - expecting three')
+        return
+      end if
 
-        call targets_from_sources(targets,model,.false.,error)
-        if (allocated(error)) return
+      call check_target(targets(1)%ptr, type=FPM_TARGET_OBJECT, n_depends=0, &
+                        source=model%packages(1)%sources(1), error=error)
 
-        if (size(targets) /= 4) then
-            call test_failed(error,scope_str//'Incorrect number of targets - expecting three')
-            return
-        end if
+      if (allocated(error)) return
 
-        call check_target(targets(1)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                          source=model%packages(1)%sources(1),error=error)
+      call check_target(targets(2)%ptr, type=FPM_TARGET_OBJECT, n_depends=1, &
+                        source=model%packages(1)%sources(2), deps=[targets(1)], error=error)
 
-        if (allocated(error)) return
+      if (allocated(error)) return
 
-        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          source=model%packages(1)%sources(2),deps=[targets(1)],error=error)
+      call check_target(targets(3)%ptr, type=FPM_TARGET_OBJECT, n_depends=1, &
+                        source=model%packages(1)%sources(3), deps=[targets(2)], error=error)
 
-        if (allocated(error)) return
+      if (allocated(error)) return
 
-        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                          source=model%packages(1)%sources(3),deps=[targets(2)],error=error)
+      call check_target(targets(4)%ptr, type=FPM_TARGET_EXECUTABLE, n_depends=1, &
+                        deps=[targets(3)], links=targets(1:3), error=error)
 
-        if (allocated(error)) return
-
-        call check_target(targets(4)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=1, &
-                           deps=[targets(3)],links=targets(1:3), error=error)
-
-        if (allocated(error)) return
+      if (allocated(error)) return
 
     end subroutine test_scope
-    end subroutine test_program_own_module_use
+  end subroutine test_program_own_module_use
 
+  !> Check missing library module dependency
+  subroutine test_missing_library_use(error)
 
-    !> Check missing library module dependency
-    subroutine test_missing_library_use(error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(2))
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_1')])
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_2.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_2')], &
+                                                   uses=[string_t('my_mod_3')])
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_2')], &
-                                    uses=[string_t('my_mod_3')])
+    call targets_from_sources(targets, model, .false., error)
 
-        call targets_from_sources(targets,model,.false.,error)
+  end subroutine test_missing_library_use
 
-    end subroutine test_missing_library_use
+  !> Check missing program module dependency
+  subroutine test_missing_program_use(error)
 
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    !> Check missing program module dependency
-    subroutine test_missing_program_use(error)
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(2))
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_1')])
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM, file_name="app/my_program.f90", &
+                                                   scope=FPM_SCOPE_APP, &
+                                                   uses=[string_t('my_mod_2')])
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])
+    call targets_from_sources(targets, model, .false., error)
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
-                                    scope=FPM_SCOPE_APP, &
-                                    uses=[string_t('my_mod_2')])
+  end subroutine test_missing_program_use
 
-        call targets_from_sources(targets,model,.false.,error)
+  !> Check library module using a non-library module
+  subroutine test_invalid_library_use(error)
 
-    end subroutine test_missing_program_use
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
 
-    !> Check library module using a non-library module
-    subroutine test_invalid_library_use(error)
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(2))
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="app/app_mod.f90", &
+                                                   scope=FPM_SCOPE_APP, &
+                                                   provides=[string_t('app_mod')])
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod')], &
+                                                   uses=[string_t('app_mod')])
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+    call targets_from_sources(targets, model, .false., error)
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod.f90", &
-                                    scope = FPM_SCOPE_APP, &
-                                    provides=[string_t('app_mod')])
+  end subroutine test_invalid_library_use
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod')], &
-                                    uses=[string_t('app_mod')])
+  !> Check program using a non-library module in a sub-directory
+  subroutine test_subdirectory_module_use(error)
 
-        call targets_from_sources(targets,model,.false.,error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-    end subroutine test_invalid_library_use
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
 
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(2))
 
-    !> Check program using a non-library module in a sub-directory
-    subroutine test_subdirectory_module_use(error)
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="app/subdir/app_mod.f90", &
+                                                   scope=FPM_SCOPE_APP, &
+                                                   provides=[string_t('app_mod')])
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM, file_name="app/my_program.f90", &
+                                                   scope=FPM_SCOPE_APP, &
+                                                   uses=[string_t('app_mod')])
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
+    call targets_from_sources(targets, model, .false., error)
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+  end subroutine test_subdirectory_module_use
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/subdir/app_mod.f90", &
-                                    scope = FPM_SCOPE_APP, &
-                                    provides=[string_t('app_mod')])
+  !> Check program with no duplicate modules
+  subroutine test_package_with_no_module_duplicates(error)
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
-                                    scope=FPM_SCOPE_APP, &
-                                    uses=[string_t('app_mod')])
+    type(error_t), allocatable, intent(out) :: error
 
-        call targets_from_sources(targets,model,.false.,error)
+    type(fpm_model_t) :: model
+    logical :: duplicates_found = .false.
 
-    end subroutine test_subdirectory_module_use
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(2))
 
-    !> Check program with no duplicate modules
-    subroutine test_package_with_no_module_duplicates(error)
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
 
-        type(error_t), allocatable, intent(out) :: error
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_2.f90", &
+                                                   scope=FPM_SCOPE_LIB, provides=[string_t('my_mod_2')])
 
-        type(fpm_model_t) :: model
-        logical :: duplicates_found = .false.
+    call check_modules_for_duplicates(model, duplicates_found)
+    if (duplicates_found) then
+      call test_failed(error, 'Duplicate modules found')
+      return
+    end if
+  end subroutine test_package_with_no_module_duplicates
 
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+  !> Check program with duplicate modules in same source file
+  subroutine test_package_module_duplicates_same_source(error)
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+    type(error_t), allocatable, intent(out) :: error
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_2')])
+    type(fpm_model_t) :: model
+    logical :: duplicates_found
 
-        call check_modules_for_duplicates(model, duplicates_found)
-        if (duplicates_found) then
-            call test_failed(error,'Duplicate modules found')
-            return
-        end if
-    end subroutine test_package_with_no_module_duplicates
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(1))
 
-    !> Check program with duplicate modules in same source file
-    subroutine test_package_module_duplicates_same_source(error)
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, provides=[string_t('my_mod_1'), string_t('my_mod_1')])
 
-        type(error_t), allocatable, intent(out) :: error
+    call check_modules_for_duplicates(model, duplicates_found)
+    if (duplicates_found) then
+      call test_failed(error, 'Duplicate modules found')
+      return
+    end if
+  end subroutine test_package_module_duplicates_same_source
 
-        type(fpm_model_t) :: model
-        logical :: duplicates_found
+  !> Check program with duplicate modules in two different source files in one package
+  subroutine test_package_module_duplicates_one_package(error)
 
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(1))
+    type(error_t), allocatable, intent(out) :: error
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1'), string_t('my_mod_1')])
+    type(fpm_model_t) :: model
+    logical :: duplicates_found
 
-        call check_modules_for_duplicates(model, duplicates_found)
-        if (duplicates_found) then
-            call test_failed(error,'Duplicate modules found')
-            return
-        end if
-    end subroutine test_package_module_duplicates_same_source
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(2))
 
-    !> Check program with duplicate modules in two different source files in one package
-    subroutine test_package_module_duplicates_one_package(error)
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1_a.f90", &
+                                                   scope=FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
 
-        type(error_t), allocatable, intent(out) :: error
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1_b.f90", &
+                                                   scope=FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
 
-        type(fpm_model_t) :: model
-        logical :: duplicates_found
+    call check_modules_for_duplicates(model, duplicates_found)
+    if (duplicates_found) then
+      call test_failed(error, 'Duplicate modules found')
+      return
+    end if
+  end subroutine test_package_module_duplicates_one_package
 
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+  !> Check program with duplicate modules in two different packages
+  subroutine test_package_module_duplicates_two_packages(error)
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1_a.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+    type(error_t), allocatable, intent(out) :: error
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1_b.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+    type(fpm_model_t) :: model
+    logical :: duplicates_found
 
-        call check_modules_for_duplicates(model, duplicates_found)
-        if (duplicates_found) then
-            call test_failed(error,'Duplicate modules found')
-            return
-        end if
-    end subroutine test_package_module_duplicates_one_package
+    allocate (model%packages(2))
+    allocate (model%packages(1)%sources(1))
+    allocate (model%packages(2)%sources(1))
 
-    !> Check program with duplicate modules in two different packages
-    subroutine test_package_module_duplicates_two_packages(error)
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/subdir1/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
 
-        type(error_t), allocatable, intent(out) :: error
+    model%packages(2)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/subdir2/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
 
-        type(fpm_model_t) :: model
-        logical :: duplicates_found
+    call check_modules_for_duplicates(model, duplicates_found)
+    if (duplicates_found) then
+      call test_failed(error, 'Duplicate modules found')
+      return
+    end if
+  end subroutine test_package_module_duplicates_two_packages
 
-        allocate(model%packages(2))
-        allocate(model%packages(1)%sources(1))
-        allocate(model%packages(2)%sources(1))
+  !> Check tree-shaking of unused modules
+  !>  Unused module should not be included in targets
+  subroutine test_tree_shake_module(error)
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/subdir1/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        model%packages(2)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/subdir2/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
+    character(:), allocatable :: scope_str
 
-        call check_modules_for_duplicates(model, duplicates_found)
-        if (duplicates_found) then
-            call test_failed(error,'Duplicate modules found')
-            return
-        end if
-    end subroutine test_package_module_duplicates_two_packages
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(4))
 
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_1')])  ! indirectly used
 
-    !> Check tree-shaking of unused modules
-    !>  Unused module should not be included in targets
-    subroutine test_tree_shake_module(error)
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_2.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_2')], &
+                                                   uses=[string_t('my_mod_1')])      ! directly used
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_3.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_3')])  ! unused module
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
-        character(:), allocatable :: scope_str
+    model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM, file_name="app/my_program.f90", &
+                                                   scope=FPM_SCOPE_APP, &
+                                                   uses=[string_t('my_mod_2')])
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(4))
+    call targets_from_sources(targets, model, prune=.true., error=error)
+    if (allocated(error)) return
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])  ! indirectly used
+    if (size(targets) /= 5) then
+      call test_failed(error, scope_str//'Incorrect number of targets - expecting five')
+      return
+    end if
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_2.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_2')], &
-                                    uses=[string_t('my_mod_1')])      ! directly used
+    call check_target(targets(1)%ptr, type=FPM_TARGET_ARCHIVE, n_depends=2, &
+                      deps=[targets(2), targets(3)], &
+                      links=[targets(2), targets(3)], error=error)
 
-        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_3.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_3')])  ! unused module
+    if (allocated(error)) return
 
-        model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
-                                    scope=FPM_SCOPE_APP, &
-                                    uses=[string_t('my_mod_2')])
+    call check_target(targets(2)%ptr, type=FPM_TARGET_OBJECT, n_depends=0, &
+                      source=model%packages(1)%sources(1), error=error)
 
-        call targets_from_sources(targets,model,prune=.true.,error=error)
-        if (allocated(error)) return
+    if (allocated(error)) return
 
-        if (size(targets) /= 5) then
-            call test_failed(error,scope_str//'Incorrect number of targets - expecting five')
-            return
-        end if
+    call check_target(targets(3)%ptr, type=FPM_TARGET_OBJECT, n_depends=1, &
+                      deps=[targets(2)], source=model%packages(1)%sources(2), error=error)
 
-        call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
-                          deps=[targets(2),targets(3)], &
-                          links=[targets(2),targets(3)],error=error)
+    if (allocated(error)) return
 
-        if (allocated(error)) return
+    call check_target(targets(4)%ptr, type=FPM_TARGET_OBJECT, n_depends=1, &
+                      deps=[targets(3)], source=model%packages(1)%sources(4), error=error)
 
-        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                            source=model%packages(1)%sources(1),error=error)
+    if (allocated(error)) return
 
-        if (allocated(error)) return
+    call check_target(targets(5)%ptr, type=FPM_TARGET_EXECUTABLE, n_depends=2, &
+                      deps=[targets(1), targets(4)], &
+                      links=[targets(4)], error=error)
 
-        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                            deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
+    if (allocated(error)) return
 
-        if (allocated(error)) return
+  end subroutine test_tree_shake_module
 
-        call check_target(targets(4)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                            deps=[targets(3)],source=model%packages(1)%sources(4),error=error)
+  !> Check tree-shaking of modules used via a subprogram source
+  !>  (Subprogram type is a source containing any non-module subroutines/functions)
+  !>  Subprograms cannot be pruned, so neither can their dependencies
+  subroutine test_tree_shake_subprogram_with_module(error)
 
-        if (allocated(error)) return
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        call check_target(targets(5)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=2, &
-                            deps=[targets(1),targets(4)], &
-                            links=[targets(4)], error=error)
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
+    character(:), allocatable :: scope_str
 
-        if (allocated(error)) return
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(4))
 
-    end subroutine test_tree_shake_module
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_1.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_1')])  ! used via subprogram
 
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_SUBPROGRAM, file_name="src/my_subprogram.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   uses=[string_t('my_mod_1')])      ! subprogram (never pruned)
 
-    !> Check tree-shaking of modules used via a subprogram source
-    !>  (Subprogram type is a source containing any non-module subroutines/functions)
-    !>  Subprograms cannot be pruned, so neither can their dependencies
-    subroutine test_tree_shake_subprogram_with_module(error)
+    model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE, file_name="src/my_mod_3.f90", &
+                                                   scope=FPM_SCOPE_LIB, &
+                                                   provides=[string_t('my_mod_3')])  ! unused module
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM, file_name="app/my_program.f90", &
+                                                   scope=FPM_SCOPE_APP)
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
-        character(:), allocatable :: scope_str
+    call targets_from_sources(targets, model, prune=.true., error=error)
+    if (allocated(error)) return
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(4))
+    if (size(targets) /= 5) then
+      call test_failed(error, scope_str//'Incorrect number of targets - expecting five')
+      return
+    end if
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_1')])  ! used via subprogram
+    call check_target(targets(1)%ptr, type=FPM_TARGET_ARCHIVE, n_depends=2, &
+                      deps=[targets(2)], &
+                      links=[targets(2), targets(3)], error=error)
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_SUBPROGRAM,file_name="src/my_subprogram.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    uses=[string_t('my_mod_1')])      ! subprogram (never pruned)
+    if (allocated(error)) return
 
-        model%packages(1)%sources(3) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_3.f90", &
-                                    scope = FPM_SCOPE_LIB, &
-                                    provides=[string_t('my_mod_3')])  ! unused module
+    call check_target(targets(2)%ptr, type=FPM_TARGET_OBJECT, n_depends=0, &
+                      source=model%packages(1)%sources(1), error=error)
 
-        model%packages(1)%sources(4) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
-                                    scope=FPM_SCOPE_APP)
+    if (allocated(error)) return
 
-        call targets_from_sources(targets,model,prune=.true.,error=error)
-        if (allocated(error)) return
+    call check_target(targets(3)%ptr, type=FPM_TARGET_OBJECT, n_depends=1, &
+                      deps=[targets(2)], source=model%packages(1)%sources(2), error=error)
 
-        if (size(targets) /= 5) then
-            call test_failed(error,scope_str//'Incorrect number of targets - expecting five')
-            return
-        end if
+    if (allocated(error)) return
 
-        call check_target(targets(1)%ptr,type=FPM_TARGET_ARCHIVE,n_depends=2, &
-                          deps=[targets(2)], &
-                          links=[targets(2),targets(3)],error=error)
+    call check_target(targets(4)%ptr, type=FPM_TARGET_OBJECT, n_depends=0, &
+                      source=model%packages(1)%sources(4), error=error)
 
-        if (allocated(error)) return
+    if (allocated(error)) return
 
-        call check_target(targets(2)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                            source=model%packages(1)%sources(1),error=error)
+    call check_target(targets(5)%ptr, type=FPM_TARGET_EXECUTABLE, n_depends=2, &
+                      deps=[targets(1), targets(4)], &
+                      links=[targets(4)], error=error)
 
-        if (allocated(error)) return
+    if (allocated(error)) return
 
-        call check_target(targets(3)%ptr,type=FPM_TARGET_OBJECT,n_depends=1, &
-                            deps=[targets(2)],source=model%packages(1)%sources(2),error=error)
+  end subroutine test_tree_shake_subprogram_with_module
 
-        if (allocated(error)) return
+  !> Check program using a non-library module in a differente sub-directory
+  subroutine test_invalid_subdirectory_module_use(error)
 
-        call check_target(targets(4)%ptr,type=FPM_TARGET_OBJECT,n_depends=0, &
-                            source=model%packages(1)%sources(4),error=error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        if (allocated(error)) return
+    type(fpm_model_t) :: model
+    type(build_target_ptr), allocatable :: targets(:)
 
-        call check_target(targets(5)%ptr,type=FPM_TARGET_EXECUTABLE,n_depends=2, &
-                            deps=[targets(1),targets(4)], &
-                            links=[targets(4)], error=error)
+    allocate (model%external_modules(0))
+    allocate (model%packages(1))
+    allocate (model%packages(1)%sources(2))
 
-        if (allocated(error)) return
+    model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE, file_name="app/diff_dir/app_mod.f90", &
+                                                   scope=FPM_SCOPE_APP, &
+                                                   provides=[string_t('app_mod')])
 
-    end subroutine test_tree_shake_subprogram_with_module
+    model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM, file_name="app/prog_dir/my_program.f90", &
+                                                   scope=FPM_SCOPE_APP, &
+                                                   uses=[string_t('app_mod')])
 
+    call targets_from_sources(targets, model, .false., error)
 
-    !> Check program using a non-library module in a differente sub-directory
-    subroutine test_invalid_subdirectory_module_use(error)
+  end subroutine test_invalid_subdirectory_module_use
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+  !> Helper to create a new srcfile_t
+  function new_test_source(type, file_name, scope, uses, provides) result(src)
+    integer, intent(in) :: type
+    character(*), intent(in) :: file_name
+    integer, intent(in) :: scope
+    type(string_t), intent(in), optional :: uses(:)
+    type(string_t), intent(in), optional :: provides(:)
+    type(srcfile_t) :: src
 
-        type(fpm_model_t) :: model
-        type(build_target_ptr), allocatable :: targets(:)
+    src%file_name = file_name
+    src%unit_scope = scope
+    src%unit_type = type
 
-        allocate(model%external_modules(0))
-        allocate(model%packages(1))
-        allocate(model%packages(1)%sources(2))
+    if (present(provides)) then
+      src%modules_provided = provides
+    else
+      allocate (src%modules_provided(0))
+    end if
 
-        model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/diff_dir/app_mod.f90", &
-                                    scope = FPM_SCOPE_APP, &
-                                    provides=[string_t('app_mod')])
+    if (present(uses)) then
+      src%modules_used = uses
+    else
+      allocate (src%modules_used(0))
+    end if
 
-        model%packages(1)%sources(2) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/prog_dir/my_program.f90", &
-                                    scope=FPM_SCOPE_APP, &
-                                    uses=[string_t('app_mod')])
+    allocate (src%include_dependencies(0))
 
-        call targets_from_sources(targets,model,.false.,error)
+  end function new_test_source
 
-    end subroutine test_invalid_subdirectory_module_use
+  !> Helper to check an expected output target
+  subroutine check_target(target, type, n_depends, deps, links, source, error)
+    type(build_target_t), intent(in) :: target
+    integer, intent(in) :: type
+    integer, intent(in) :: n_depends
+    type(srcfile_t), intent(in), optional :: source
+    type(build_target_ptr), intent(in), optional :: deps(:)
+    type(build_target_ptr), intent(in), optional :: links(:)
+    type(error_t), intent(out), allocatable :: error
 
-    !> Helper to create a new srcfile_t
-    function new_test_source(type,file_name, scope, uses, provides) result(src)
-        integer, intent(in) :: type
-        character(*), intent(in) :: file_name
-        integer, intent(in) :: scope
-        type(string_t), intent(in), optional :: uses(:)
-        type(string_t), intent(in), optional :: provides(:)
-        type(srcfile_t) :: src
+    integer :: i
 
-        src%file_name = file_name
-        src%unit_scope = scope
-        src%unit_type = type
+    if (target%target_type /= type) then
+      call test_failed(error, 'Unexpected target_type for target "'//target%output_file//'"')
+      return
+    end if
 
-        if (present(provides)) then
-            src%modules_provided = provides
-        else
-            allocate(src%modules_provided(0))
-        end if
+    if (size(target%dependencies) /= n_depends) then
+      call test_failed(error, 'Wrong number of dependencies for target "'//target%output_file//'"')
+      return
+    end if
 
-        if (present(uses)) then
-            src%modules_used = uses
-        else
-            allocate(src%modules_used(0))
-        end if
+    if (present(deps)) then
 
-        allocate(src%include_dependencies(0))
+      do i = 1, size(deps)
 
-    end function new_test_source
-
-
-    !> Helper to check an expected output target
-    subroutine check_target(target,type,n_depends,deps,links,source,error)
-        type(build_target_t), intent(in) :: target
-        integer, intent(in) :: type
-        integer, intent(in) :: n_depends
-        type(srcfile_t), intent(in), optional :: source
-        type(build_target_ptr), intent(in), optional :: deps(:)
-        type(build_target_ptr), intent(in), optional :: links(:)
-        type(error_t), intent(out), allocatable :: error
-
-        integer :: i
-
-        if (target%target_type /= type) then
-            call test_failed(error,'Unexpected target_type for target "'//target%output_file//'"')
-            return
-        end if
-
-        if (size(target%dependencies) /= n_depends) then
-            call test_failed(error,'Wrong number of dependencies for target "'//target%output_file//'"')
-            return
-        end if
-
-        if (present(deps)) then
-
-            do i=1,size(deps)
-
-                if (.not.(deps(i)%ptr .in. target%dependencies)) then
-                    call test_failed(error,'Missing dependency ('//deps(i)%ptr%output_file//&
-                                            ') for target "'//target%output_file//'"')
-                    return
-                end if
-
-            end do
-
+        if (.not. (deps(i)%ptr.in.target%dependencies)) then
+          call test_failed(error, 'Missing dependency ('//deps(i)%ptr%output_file// &
+                           ') for target "'//target%output_file//'"')
+          return
         end if
 
-        if (present(links)) then
+      end do
 
-            do i=1,size(links)
+    end if
 
-                if (.not.(links(i)%ptr%output_file .in. target%link_objects)) then
-                    call test_failed(error,'Missing object ('//links(i)%ptr%output_file//&
-                                    ') for executable "'//target%output_file//'"')
-                    return
-                end if
+    if (present(links)) then
 
-            end do
+      do i = 1, size(links)
 
-            if (size(links) > size(target%link_objects)) then
-
-                call test_failed(error,'There are missing link objects for target "'&
-                                 //target%output_file//'"')
-                return
-
-            elseif (size(links) < size(target%link_objects)) then
-
-                call test_failed(error,'There are more link objects than expected for target "'&
-                                 //target%output_file//'"')
-                return
-
-            end if
-
+        if (.not. (links(i)%ptr%output_file.in.target%link_objects)) then
+          call test_failed(error, 'Missing object ('//links(i)%ptr%output_file// &
+                           ') for executable "'//target%output_file//'"')
+          return
         end if
 
-        if (present(source)) then
+      end do
 
-            if (allocated(target%source)) then
-                if (target%source%file_name /= source%file_name) then
-                    call test_failed(error,'Incorrect source ('//target%source%file_name//') for target "'//&
-                                            target%output_file//'"'//new_line('a')//' expected "'//source%file_name//'"')
-                    return
-                end if
+      if (size(links) > size(target%link_objects)) then
 
-            else
-                call test_failed(error,'Expecting source for target "'//target%output_file//'" but none found')
-                return
-            end if
+        call test_failed(error, 'There are missing link objects for target "' &
+                         //target%output_file//'"')
+        return
 
-        else
+      elseif (size(links) < size(target%link_objects)) then
 
-            if (allocated(target%source)) then
-                call test_failed(error,'Found source ('//target%source%file_name//') for target "'//&
-                                           target%output_file//'" but none expected')
-                return
-            end if
+        call test_failed(error, 'There are more link objects than expected for target "' &
+                         //target%output_file//'"')
+        return
 
+      end if
+
+    end if
+
+    if (present(source)) then
+
+      if (allocated(target%source)) then
+        if (target%source%file_name /= source%file_name) then
+          call test_failed(error, 'Incorrect source ('//target%source%file_name//') for target "'// &
+                           target%output_file//'"'//new_line('a')//' expected "'//source%file_name//'"')
+          return
         end if
 
-    end subroutine check_target
+      else
+        call test_failed(error, 'Expecting source for target "'//target%output_file//'" but none found')
+        return
+      end if
 
+    else
 
-    !> Helper to check if a build target is in a list of build_target_ptr
-    logical function target_in(needle,haystack)
-        type(build_target_t), intent(in), target :: needle
-        type(build_target_ptr), intent(in) :: haystack(:)
+      if (allocated(target%source)) then
+        call test_failed(error, 'Found source ('//target%source%file_name//') for target "'// &
+                         target%output_file//'" but none expected')
+        return
+      end if
 
-        integer :: i
+    end if
 
-        target_in = .false.
-        do i=1,size(haystack)
+  end subroutine check_target
 
-            if (associated(haystack(i)%ptr,needle)) then
-                target_in = .true.
-                return
-            end if
+  !> Helper to check if a build target is in a list of build_target_ptr
+  logical function target_in(needle, haystack)
+    type(build_target_t), intent(in), target :: needle
+    type(build_target_ptr), intent(in) :: haystack(:)
 
-        end do
+    integer :: i
 
-    end function target_in
+    target_in = .false.
+    do i = 1, size(haystack)
 
+      if (associated(haystack(i)%ptr, needle)) then
+        target_in = .true.
+        return
+      end if
+
+    end do
+
+  end function target_in
 
 end module test_module_dependencies

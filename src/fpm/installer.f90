@@ -4,16 +4,15 @@
 !> in the installation prefix, a generic install command allows to install
 !> to any directory within the prefix.
 module fpm_installer
-  use, intrinsic :: iso_fortran_env, only : output_unit
-  use fpm_environment, only : get_os_type, os_is_unix
-  use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : join_path, mkdir, exists, unix_path, windows_path, &
-    env_variable
+  use, intrinsic :: iso_fortran_env, only: output_unit
+  use fpm_environment, only: get_os_type, os_is_unix
+  use fpm_error, only: error_t, fatal_error
+  use fpm_filesystem, only: join_path, mkdir, exists, unix_path, windows_path, &
+                            env_variable
   implicit none
   private
 
   public :: installer_t, new_installer
-
 
   !> Declaration of the installer type
   type :: installer_t
@@ -77,12 +76,11 @@ module fpm_installer
   !> Move command on Windows platforms
   character(len=*), parameter :: default_move_win = "move"
 
-
 contains
 
   !> Create a new instance of an installer
   subroutine new_installer(self, prefix, bindir, libdir, includedir, verbosity, &
-          copy, move)
+                           copy, move)
     !> Instance of the installer
     type(installer_t), intent(out) :: self
     !> Path to installation directory
@@ -191,12 +189,12 @@ contains
     type(error_t), allocatable, intent(out) :: error
     integer :: ll
 
-    if (.not.os_is_unix(self%os)) then
-        ll = len(executable)
-        if (executable(max(1, ll-3):ll) /= ".exe") then
-            call self%install(executable//".exe", self%bindir, error)
-            return
-        end if
+    if (.not. os_is_unix(self%os)) then
+      ll = len(executable)
+      if (executable(max(1, ll - 3):ll) /= ".exe") then
+        call self%install(executable//".exe", self%bindir, error)
+        return
+      end if
     end if
 
     call self%install(executable, self%bindir, error)
@@ -251,10 +249,10 @@ contains
 
     if (self%verbosity > 0) then
       if (exists(install_dest)) then
-        write(self%unit, '("# Update:", 1x, a, 1x, "->", 1x, a)') &
+        write (self%unit, '("# Update:", 1x, a, 1x, "->", 1x, a)') &
           source, install_dest
       else
-        write(self%unit, '("# Install:", 1x, a, 1x, "->", 1x, a)') &
+        write (self%unit, '("# Install:", 1x, a, 1x, "->", 1x, a)') &
           source, install_dest
       end if
     end if
@@ -278,11 +276,11 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    if (.not.exists(dir)) then
-       if (self%verbosity > 1) then
-          write(self%unit, '("# Dir:", 1x, a)') dir
-       end if
-       call mkdir(dir)
+    if (.not. exists(dir)) then
+      if (self%verbosity > 1) then
+        write (self%unit, '("# Dir:", 1x, a)') dir
+      end if
+      call mkdir(dir)
     end if
   end subroutine make_dir
 
@@ -297,7 +295,7 @@ contains
     integer :: stat
 
     if (self%verbosity > 1) then
-      write(self%unit, '("# Run:", 1x, a)') command
+      write (self%unit, '("# Run:", 1x, a)') command
     end if
     call execute_command_line(command, exitstat=stat)
 

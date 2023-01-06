@@ -3,12 +3,12 @@ module test_mod
 
   include "parameters.f90"
 
-  contains
+contains
 
   subroutine test_sub(a)
     real(dp), intent(in) :: a
 
-    write(*,*) 'a: ', a
+    write (*, *) 'a: ', a
   end subroutine test_sub
 
 end module test_mod

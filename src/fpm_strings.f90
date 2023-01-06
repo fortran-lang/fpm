@@ -31,106 +31,106 @@
 !! - [[RESIZE]]  increase the size of a **TYPE(STRING_T)** array by N elements
 !!
 module fpm_strings
-use iso_fortran_env, only: int64
-use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
-                                       & stdout=>output_unit, &
-                                       & stderr=>error_unit
-use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer, c_size_t
-implicit none
+  use iso_fortran_env, only: int64
+  use, intrinsic :: iso_fortran_env, only: stdin => input_unit,   &
+                                         & stdout => output_unit, &
+                                         & stderr => error_unit
+  use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer, c_size_t
+  implicit none
 
-private
-public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
-public :: to_fortran_name, is_fortran_name
-public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
-public :: replace, resize, str, join, glob
-public :: notabs
+  private
+  public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
+  public :: to_fortran_name, is_fortran_name
+  public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
+  public :: replace, resize, str, join, glob
+  public :: notabs
 
-type string_t
+  type string_t
     character(len=:), allocatable :: s
-end type
+  end type
 
-interface len_trim
+  interface len_trim
     module procedure :: string_len_trim
-end interface len_trim
+  end interface len_trim
 
-interface resize
-  module procedure :: resize_string
-end interface
+  interface resize
+    module procedure :: resize_string
+  end interface
 
-interface operator(.in.)
+  interface operator(.in.)
     module procedure string_array_contains
-end interface
+  end interface
 
-interface fnv_1a
+  interface fnv_1a
     procedure :: fnv_1a_char
     procedure :: fnv_1a_string_t
-end interface fnv_1a
+  end interface fnv_1a
 
-interface str_ends_with
+  interface str_ends_with
     procedure :: str_ends_with_str
     procedure :: str_ends_with_any
-end interface str_ends_with
+  end interface str_ends_with
 
-interface str
+  interface str
     module procedure str_int, str_int64, str_logical
-end interface
+  end interface
 
-interface string_t
+  interface string_t
     module procedure new_string_t
-end interface string_t
+  end interface string_t
 
-interface f_string
+  interface f_string
     module procedure f_string, f_string_cptr, f_string_cptr_n
-end interface f_string
+  end interface f_string
 
 contains
 
 !> test if a CHARACTER string ends with a specified suffix
-pure logical function str_ends_with_str(s, e) result(r)
+  pure logical function str_ends_with_str(s, e) result(r)
     character(*), intent(in) :: s, e
     integer :: n1, n2
-    n1 = len(s)-len(e)+1
+    n1 = len(s) - len(e) + 1
     n2 = len(s)
     if (n1 < 1) then
-        r = .false.
+      r = .false.
     else
-        r = (s(n1:n2) == e)
+      r = (s(n1:n2) == e)
     end if
-end function str_ends_with_str
+  end function str_ends_with_str
 
 !> test if a CHARACTER string ends with any of an array of suffixs
-pure logical function str_ends_with_any(s, e) result(r)
+  pure logical function str_ends_with_any(s, e) result(r)
     character(*), intent(in) :: s
     character(*), intent(in) :: e(:)
 
     integer :: i
 
     r = .true.
-    do i=1,size(e)
+    do i = 1, size(e)
 
-        if (str_ends_with(s,trim(e(i)))) return
+      if (str_ends_with(s, trim(e(i)))) return
 
     end do
     r = .false.
 
-end function str_ends_with_any
+  end function str_ends_with_any
 
 !> test if a CHARACTER string begins with a specified prefix
-pure logical function str_begins_with_str(s, e) result(r)
+  pure logical function str_begins_with_str(s, e) result(r)
     character(*), intent(in) :: s, e
     integer :: n1, n2
     n1 = 1
-    n2 = 1 + len(e)-1
+    n2 = 1 + len(e) - 1
     if (n2 > len(s)) then
-        r = .false.
+      r = .false.
     else
-        r = (s(n1:n2) == e)
+      r = (s(n1:n2) == e)
     end if
-end function str_begins_with_str
+  end function str_begins_with_str
 
 !> return Fortran character variable when given a C-like array of
 !! single characters terminated with a C_NULL_CHAR character
-function f_string(c_string)
+  function f_string(c_string)
     use iso_c_binding
     character(len=1), intent(in) :: c_string(:)
     character(:), allocatable :: f_string
@@ -138,48 +138,47 @@ function f_string(c_string)
     integer :: i, n
 
     i = 0
-    do while(c_string(i+1) /= C_NULL_CHAR)
+    do while (c_string(i + 1) /= C_NULL_CHAR)
       i = i + 1
     end do
     n = i
 
-    allocate(character(n) :: f_string)
-    do i=1,n
+    allocate (character(n) :: f_string)
+    do i = 1, n
       f_string(i:i) = c_string(i)
     end do
 
-end function f_string
-
+  end function f_string
 
 !> return Fortran character variable when given a null-terminated c_ptr
-function f_string_cptr(cptr) result(s)
+  function f_string_cptr(cptr) result(s)
     type(c_ptr), intent(in), value :: cptr
-    character(len=:,kind=c_char), allocatable :: s
+    character(len=:, kind=c_char), allocatable :: s
 
     interface
-        function c_strlen(s) result(r) bind(c, name="strlen")
-            import c_size_t, c_ptr
-            type(c_ptr), intent(in), value :: s
-            integer(kind=c_size_t) :: r
-        end function
+      function c_strlen(s) result(r) bind(c, name="strlen")
+        import c_size_t, c_ptr
+        type(c_ptr), intent(in), value :: s
+        integer(kind=c_size_t) :: r
+      end function
     end interface
 
     s = f_string_cptr_n(cptr, c_strlen(cptr))
-end function
+  end function
 
 !> return Fortran character variable when given a null-terminated c_ptr and its length
-function f_string_cptr_n(cptr, n) result(s)
+  function f_string_cptr_n(cptr, n) result(s)
     type(c_ptr), intent(in), value :: cptr
     integer(kind=c_size_t), intent(in) :: n
-    character(len=n,kind=c_char) :: s
-    character(len=n,kind=c_char), pointer :: sptr
+    character(len=n, kind=c_char) :: s
+    character(len=n, kind=c_char), pointer :: sptr
 
     call c_f_pointer(cptr, sptr)
     s = sptr
-end function
+  end function
 
 !> Hash a character(*) string of default kind
-pure function fnv_1a_char(input, seed) result(hash)
+  pure function fnv_1a_char(input, seed) result(hash)
     character(*), intent(in) :: input
     integer(int64), intent(in), optional :: seed
     integer(int64) :: hash
@@ -189,93 +188,91 @@ pure function fnv_1a_char(input, seed) result(hash)
     integer(int64), parameter :: FNV_PRIME_32 = 16777619_int64
 
     if (present(seed)) then
-        hash = seed
+      hash = seed
     else
-        hash = FNV_OFFSET_32
+      hash = FNV_OFFSET_32
     end if
 
-    do i=1,len(input)
-        hash = ieor(hash,iachar(input(i:i),int64)) * FNV_PRIME_32
+    do i = 1, len(input)
+      hash = ieor(hash, iachar(input(i:i), int64))*FNV_PRIME_32
     end do
 
-end function fnv_1a_char
-
+  end function fnv_1a_char
 
 !> Hash a string_t array of default kind
-pure function fnv_1a_string_t(input, seed) result(hash)
+  pure function fnv_1a_string_t(input, seed) result(hash)
     type(string_t), intent(in) :: input(:)
     integer(int64), intent(in), optional :: seed
     integer(int64) :: hash
 
     integer :: i
 
-    hash = fnv_1a(input(1)%s,seed)
+    hash = fnv_1a(input(1)%s, seed)
 
-    do i=2,size(input)
-        hash = fnv_1a(input(i)%s,hash)
+    do i = 2, size(input)
+      hash = fnv_1a(input(i)%s, hash)
     end do
 
-end function fnv_1a_string_t
+  end function fnv_1a_string_t
 
-
- !>Author: John S. Urban
+  !>Author: John S. Urban
  !!License: Public Domain
  !! Changes a string to lowercase over optional specified column range
-elemental pure function lower(str,begin,end) result (string)
+  elemental pure function lower(str, begin, end) result(string)
 
     character(*), intent(In)     :: str
     character(len(str))          :: string
-    integer,intent(in),optional  :: begin, end
+    integer, intent(in), optional  :: begin, end
     integer                      :: i
     integer                      :: ibegin, iend
     string = str
 
     ibegin = 1
-    if (present(begin))then
-        ibegin = max(ibegin,begin)
-    endif
+    if (present(begin)) then
+      ibegin = max(ibegin, begin)
+    end if
 
     iend = len_trim(str)
-    if (present(end))then
-        iend= min(iend,end)
-    endif
+    if (present(end)) then
+      iend = min(iend, end)
+    end if
 
     do i = ibegin, iend                               ! step thru each letter in the string in specified range
-        select case (str(i:i))
-        case ('A':'Z')
-            string(i:i) = char(iachar(str(i:i))+32)     ! change letter to miniscule
-        case default
-        end select
+      select case (str(i:i))
+      case ('A':'Z')
+        string(i:i) = char(iachar(str(i:i)) + 32)     ! change letter to miniscule
+      case default
+      end select
     end do
 
-end function lower
+  end function lower
 
 !> Helper function to generate a new string_t instance
 !>  (Required due to the allocatable component)
-function new_string_t(s) result(string)
+  function new_string_t(s) result(string)
     character(*), intent(in) :: s
     type(string_t) :: string
 
     string%s = s
 
-end function new_string_t
+  end function new_string_t
 
 !> Check if array of TYPE(STRING_T) matches a particular CHARACTER string
 !!
-logical function string_array_contains(search_string,array)
+  logical function string_array_contains(search_string, array)
     character(*), intent(in) :: search_string
     type(string_t), intent(in) :: array(:)
 
     integer :: i
 
-    string_array_contains = any([(array(i)%s==search_string, &
-                                   i=1,size(array))])
+    string_array_contains = any([(array(i)%s == search_string, &
+                                  i=1, size(array))])
 
-end function string_array_contains
+  end function string_array_contains
 
 !> Concatenate an array of type(string_t) into
 !>  a single CHARACTER variable
-function string_cat(strings,delim) result(cat)
+  function string_cat(strings, delim) result(cat)
     type(string_t), intent(in) :: strings(:)
     character(*), intent(in), optional :: delim
     character(:), allocatable :: cat
@@ -284,61 +281,61 @@ function string_cat(strings,delim) result(cat)
     character(:), allocatable :: delim_str
 
     if (size(strings) < 1) then
-        cat = ''
-        return
+      cat = ''
+      return
     end if
 
     if (present(delim)) then
-        delim_str = delim
+      delim_str = delim
     else
-        delim_str = ''
+      delim_str = ''
     end if
 
     cat = strings(1)%s
-    do i=2,size(strings)
+    do i = 2, size(strings)
 
-        cat = cat//delim_str//strings(i)%s
+      cat = cat//delim_str//strings(i)%s
 
     end do
 
-end function string_cat
+  end function string_cat
 
 !> Determine total trimmed length of `string_t` array
-pure function string_len_trim(strings) result(n)
+  pure function string_len_trim(strings) result(n)
     type(string_t), intent(in) :: strings(:)
     integer :: i, n
 
     n = 0
-    do i=1,size(strings)
-        n = n + len_trim(strings(i)%s)
+    do i = 1, size(strings)
+      n = n + len_trim(strings(i)%s)
     end do
 
-end function string_len_trim
+  end function string_len_trim
 
 !>Author: John S. Urban
 !!License: Public Domain
 !! parse string on delimiter characters and store tokens into an allocatable array
-subroutine split(input_line,array,delimiters,order,nulls)
+  subroutine split(input_line, array, delimiters, order, nulls)
     !! given a line of structure " par1 par2 par3 ... parn " store each par(n) into a separate variable in array.
     !!
     !! * by default adjacent delimiters in the input string do not create an empty string in the output array
     !! * no quoting of delimiters is supported
-    character(len=*),intent(in)              :: input_line  !! input string to tokenize
-    character(len=*),optional,intent(in)     :: delimiters  !! list of delimiter characters
-    character(len=*),optional,intent(in)     :: order       !! order of output array sequential|[reverse|right]
-    character(len=*),optional,intent(in)     :: nulls       !! return strings composed of delimiters or not ignore|return|ignoreend
-    character(len=:),allocatable,intent(out) :: array(:)    !! output array of tokens
+    character(len=*), intent(in)              :: input_line  !! input string to tokenize
+    character(len=*), optional, intent(in)     :: delimiters  !! list of delimiter characters
+    character(len=*), optional, intent(in)     :: order       !! order of output array sequential|[reverse|right]
+    character(len=*), optional, intent(in)     :: nulls       !! return strings composed of delimiters or not ignore|return|ignoreend
+    character(len=:), allocatable, intent(out) :: array(:)    !! output array of tokens
 
     integer                       :: n                      ! max number of strings INPUT_LINE could split into if all delimiter
-    integer,allocatable           :: ibegin(:)              ! positions in input string where tokens start
-    integer,allocatable           :: iterm(:)               ! positions in input string where tokens end
-    character(len=:),allocatable  :: dlim                   ! string containing delimiter characters
-    character(len=:),allocatable  :: ordr                   ! string containing order keyword
-    character(len=:),allocatable  :: nlls                   ! string containing nulls keyword
-    integer                       :: ii,iiii                ! loop parameters used to control print order
+    integer, allocatable           :: ibegin(:)              ! positions in input string where tokens start
+    integer, allocatable           :: iterm(:)               ! positions in input string where tokens end
+    character(len=:), allocatable  :: dlim                   ! string containing delimiter characters
+    character(len=:), allocatable  :: ordr                   ! string containing order keyword
+    character(len=:), allocatable  :: nlls                   ! string containing nulls keyword
+    integer                       :: ii, iiii                ! loop parameters used to control print order
     integer                       :: icount                 ! number of tokens found
     integer                       :: ilen                   ! length of input string with trailing spaces trimmed
-    integer                       :: i10,i20,i30            ! loop counters
+    integer                       :: i10, i20, i30            ! loop counters
     integer                       :: icol                   ! pointer into input string as it is being parsed
     integer                       :: idlim                  ! number of delimiter characters
     integer                       :: ifound                 ! where next delimiter character is found in remaining input string data
@@ -348,139 +345,139 @@ subroutine split(input_line,array,delimiters,order,nulls)
 
     ! decide on value for optional DELIMITERS parameter
     if (present(delimiters)) then                                     ! optional delimiter list was present
-        if(delimiters/='')then                                       ! if DELIMITERS was specified and not null use it
-            dlim=delimiters
-        else                                                           ! DELIMITERS was specified on call as empty string
-            dlim=' '//char(9)//char(10)//char(11)//char(12)//char(13)//char(0) ! use default delimiter when not specified
-        endif
+      if (delimiters /= '') then                                       ! if DELIMITERS was specified and not null use it
+        dlim = delimiters
+      else                                                           ! DELIMITERS was specified on call as empty string
+        dlim = ' '//char(9)//char(10)//char(11)//char(12)//char(13)//char(0) ! use default delimiter when not specified
+      end if
     else                                                              ! no delimiter value was specified
-        dlim=' '//char(9)//char(10)//char(11)//char(12)//char(13)//char(0)    ! use default delimiter when not specified
-    endif
-    idlim=len(dlim)                                                   ! dlim a lot of blanks on some machines if dlim is a big string
+      dlim = ' '//char(9)//char(10)//char(11)//char(12)//char(13)//char(0)    ! use default delimiter when not specified
+    end if
+    idlim = len(dlim)                                                   ! dlim a lot of blanks on some machines if dlim is a big string
 
-    if(present(order))then; ordr=lower(adjustl(order)); else; ordr='sequential'; endif ! decide on value for optional ORDER parameter
-    if(present(nulls))then; nlls=lower(adjustl(nulls)); else; nlls='ignore'    ; endif ! optional parameter
+    if (present(order)) then; ordr = lower(adjustl(order)); else; ordr = 'sequential'; end if ! decide on value for optional ORDER parameter
+    if (present(nulls)) then; nlls = lower(adjustl(nulls)); else; nlls = 'ignore'; end if ! optional parameter
 
-    n=len(input_line)+1                        ! max number of strings INPUT_LINE could split into if all delimiter
-    allocate(ibegin(n))                        ! allocate enough space to hold starting location of tokens if string all tokens
-    allocate(iterm(n))                         ! allocate enough space to hold ending location of tokens if string all tokens
-    ibegin(:)=1
-    iterm(:)=1
+    n = len(input_line) + 1                        ! max number of strings INPUT_LINE could split into if all delimiter
+    allocate (ibegin(n))                        ! allocate enough space to hold starting location of tokens if string all tokens
+    allocate (iterm(n))                         ! allocate enough space to hold ending location of tokens if string all tokens
+    ibegin(:) = 1
+    iterm(:) = 1
 
-    ilen=len(input_line)                                           ! ILEN is the column position of the last non-blank character
-    icount=0                                                       ! how many tokens found
-    inotnull=0                                                     ! how many tokens found not composed of delimiters
-    imax=0                                                         ! length of longest token found
+    ilen = len(input_line)                                           ! ILEN is the column position of the last non-blank character
+    icount = 0                                                       ! how many tokens found
+    inotnull = 0                                                     ! how many tokens found not composed of delimiters
+    imax = 0                                                         ! length of longest token found
 
     select case (ilen)
 
     case (0)                                                      ! command was totally blank
 
     case default                                                   ! there is at least one non-delimiter in INPUT_LINE if get here
-        icol=1                                                      ! initialize pointer into input line
-        INFINITE: do i30=1,ilen,1                                   ! store into each array element
-            ibegin(i30)=icol                                         ! assume start new token on the character
-            if(index(dlim(1:idlim),input_line(icol:icol))==0)then  ! if current character is not a delimiter
-            iterm(i30)=ilen                                       ! initially assume no more tokens
-            do i10=1,idlim                                        ! search for next delimiter
-                ifound=index(input_line(ibegin(i30):ilen),dlim(i10:i10))
-                IF(ifound>0)then
-                    iterm(i30)=min(iterm(i30),ifound+ibegin(i30)-2)
-                endif
-            enddo
-            icol=iterm(i30)+2                                     ! next place to look as found end of this token
-            inotnull=inotnull+1                                   ! increment count of number of tokens not composed of delimiters
-            else                                                     ! character is a delimiter for a null string
-            iterm(i30)=icol-1                                     ! record assumed end of string. Will be less than beginning
-            icol=icol+1                                           ! advance pointer into input string
-            endif
-            imax=max(imax,iterm(i30)-ibegin(i30)+1)
-            icount=i30                                               ! increment count of number of tokens found
-            if(icol>ilen)then                                     ! no text left
-            exit INFINITE
-            endif
-        enddo INFINITE
+      icol = 1                                                      ! initialize pointer into input line
+      INFINITE: do i30 = 1, ilen, 1                                   ! store into each array element
+        ibegin(i30) = icol                                         ! assume start new token on the character
+        if (index(dlim(1:idlim), input_line(icol:icol)) == 0) then  ! if current character is not a delimiter
+          iterm(i30) = ilen                                       ! initially assume no more tokens
+          do i10 = 1, idlim                                        ! search for next delimiter
+            ifound = index(input_line(ibegin(i30):ilen), dlim(i10:i10))
+            IF (ifound > 0) then
+              iterm(i30) = min(iterm(i30), ifound + ibegin(i30) - 2)
+            end if
+          end do
+          icol = iterm(i30) + 2                                     ! next place to look as found end of this token
+          inotnull = inotnull + 1                                   ! increment count of number of tokens not composed of delimiters
+        else                                                     ! character is a delimiter for a null string
+          iterm(i30) = icol - 1                                     ! record assumed end of string. Will be less than beginning
+          icol = icol + 1                                           ! advance pointer into input string
+        end if
+        imax = max(imax, iterm(i30) - ibegin(i30) + 1)
+        icount = i30                                               ! increment count of number of tokens found
+        if (icol > ilen) then                                     ! no text left
+          exit INFINITE
+        end if
+      end do INFINITE
 
     end select
 
     select case (trim(adjustl(nlls)))
-    case ('ignore','','ignoreend')
-        ireturn=inotnull
+    case ('ignore', '', 'ignoreend')
+      ireturn = inotnull
     case default
-        ireturn=icount
+      ireturn = icount
     end select
-    allocate(character(len=imax) :: array(ireturn))                ! allocate the array to return
+    allocate (character(len=imax) :: array(ireturn))                ! allocate the array to return
     !allocate(array(ireturn))                                       ! allocate the array to turn
 
     select case (trim(adjustl(ordr)))                              ! decide which order to store tokens
-    case ('reverse','right') ; ii=ireturn ; iiii=-1                ! last to first
-    case default             ; ii=1       ; iiii=1                 ! first to last
+    case ('reverse', 'right'); ii = ireturn; iiii = -1                ! last to first
+    case default; ii = 1; iiii = 1                 ! first to last
     end select
 
-    do i20=1,icount                                                ! fill the array with the tokens that were found
-        if(iterm(i20)<ibegin(i20))then
-            select case (trim(adjustl(nlls)))
-            case ('ignore','','ignoreend')
-            case default
-            array(ii)=' '
-            ii=ii+iiii
-            end select
-        else
-            array(ii)=input_line(ibegin(i20):iterm(i20))
-            ii=ii+iiii
-        endif
-    enddo
-end subroutine split
+    do i20 = 1, icount                                                ! fill the array with the tokens that were found
+      if (iterm(i20) < ibegin(i20)) then
+        select case (trim(adjustl(nlls)))
+        case ('ignore', '', 'ignoreend')
+        case default
+          array(ii) = ' '
+          ii = ii + iiii
+        end select
+      else
+        array(ii) = input_line(ibegin(i20):iterm(i20))
+        ii = ii + iiii
+      end if
+    end do
+  end subroutine split
 
 !> Returns string with characters in charset replaced with target_char.
-pure function replace(string, charset, target_char) result(res)
+  pure function replace(string, charset, target_char) result(res)
     character(*), intent(in) :: string
     character, intent(in) :: charset(:), target_char
     character(len(string)) :: res
     integer :: n
     res = string
     do n = 1, len(string)
-        if (any(string(n:n) == charset)) then
-            res(n:n) = target_char
-        end if
+      if (any(string(n:n) == charset)) then
+        res(n:n) = target_char
+      end if
     end do
-end function replace
+  end function replace
 
 !> increase the size of a TYPE(STRING_T) array by N elements
-subroutine resize_string(list, n)
-  !> Instance of the array to be resized
-  type(string_t), allocatable, intent(inout) :: list(:)
-  !> Dimension of the final array size
-  integer, intent(in), optional :: n
+  subroutine resize_string(list, n)
+    !> Instance of the array to be resized
+    type(string_t), allocatable, intent(inout) :: list(:)
+    !> Dimension of the final array size
+    integer, intent(in), optional :: n
 
-  type(string_t), allocatable :: tmp(:)
-  integer :: this_size, new_size, i
-  integer, parameter :: initial_size = 16
+    type(string_t), allocatable :: tmp(:)
+    integer :: this_size, new_size, i
+    integer, parameter :: initial_size = 16
 
-  if (allocated(list)) then
-    this_size = size(list, 1)
-    call move_alloc(list, tmp)
-  else
-    this_size = initial_size
-  end if
+    if (allocated(list)) then
+      this_size = size(list, 1)
+      call move_alloc(list, tmp)
+    else
+      this_size = initial_size
+    end if
 
-  if (present(n)) then
-    new_size = n
-  else
-    new_size = this_size + this_size/2 + 1
-  end if
+    if (present(n)) then
+      new_size = n
+    else
+      new_size = this_size + this_size/2 + 1
+    end if
 
-  allocate(list(new_size))
+    allocate (list(new_size))
 
-  if (allocated(tmp)) then
-    this_size = min(size(tmp, 1), size(list, 1))
-    do i = 1, this_size
-      call move_alloc(tmp(i)%s, list(i)%s)
-    end do
-    deallocate(tmp)
-  end if
+    if (allocated(tmp)) then
+      this_size = min(size(tmp, 1), size(list, 1))
+      do i = 1, this_size
+        call move_alloc(tmp(i)%s, list(i)%s)
+      end do
+      deallocate (tmp)
+    end if
 
-end subroutine resize_string
+  end subroutine resize_string
 
 !>AUTHOR: John S. Urban
 !!LICENSE: Public Domain
@@ -558,41 +555,41 @@ end subroutine resize_string
 !!   [United];[ we];[ stand,];[ divided];[ we fall.]
 !!   [United][ we][ stand,][ divided][ we fall.]
 !!   >>United>> we>> stand,>> divided>> we fall.
-pure function join(str,sep,trm,left,right,start,end) result (string)
+  pure function join(str, sep, trm, left, right, start, end) result(string)
 
 ! @(#)M_strings::join(3f): merge string array into a single CHARACTER value adding specified separators, caps, prefix and suffix
 
-character(len=*),intent(in)          :: str(:)
-character(len=*),intent(in),optional :: sep, right, left, start, end
-logical,intent(in),optional          :: trm
-character(len=:),allocatable         :: sep_local, left_local, right_local
-character(len=:),allocatable         :: string
-logical                              :: trm_local
-integer                              :: i
-   if(present(sep))then   ; sep_local=sep     ; else ; sep_local=''     ; endif
-   if(present(trm))then   ; trm_local=trm     ; else ; trm_local=.true. ; endif
-   if(present(left))then  ; left_local=left   ; else ; left_local=''    ; endif
-   if(present(right))then ; right_local=right ; else ; right_local=''   ; endif
-   string=''
-   if(size(str)==0)then
-      string=string//left_local//right_local
-   else
-      do i = 1,size(str)-1
-         if(trm_local)then
-            string=string//left_local//trim(str(i))//right_local//sep_local
-         else
-            string=string//left_local//str(i)//right_local//sep_local
-         endif
-      enddo
-      if(trm_local)then
-         string=string//left_local//trim(str(i))//right_local
+    character(len=*), intent(in)          :: str(:)
+    character(len=*), intent(in), optional :: sep, right, left, start, end
+    logical, intent(in), optional          :: trm
+    character(len=:), allocatable         :: sep_local, left_local, right_local
+    character(len=:), allocatable         :: string
+    logical                              :: trm_local
+    integer                              :: i
+    if (present(sep)) then; sep_local = sep; else; sep_local = ''; end if
+    if (present(trm)) then; trm_local = trm; else; trm_local = .true.; end if
+    if (present(left)) then; left_local = left; else; left_local = ''; end if
+    if (present(right)) then; right_local = right; else; right_local = ''; end if
+    string = ''
+    if (size(str) == 0) then
+      string = string//left_local//right_local
+    else
+      do i = 1, size(str) - 1
+        if (trm_local) then
+          string = string//left_local//trim(str(i))//right_local//sep_local
+        else
+          string = string//left_local//str(i)//right_local//sep_local
+        end if
+      end do
+      if (trm_local) then
+        string = string//left_local//trim(str(i))//right_local
       else
-         string=string//left_local//str(i)//right_local
-      endif
-   endif
-   if(present(start))string=start//string
-   if(present(end))string=string//end
-end function join
+        string = string//left_local//str(i)//right_local
+      end if
+    end if
+    if (present(start)) string = start//string
+    if (present(end)) string = string//end
+  end function join
 
 !>##AUTHOR John S. Urban
 !!##LICENSE Public Domain
@@ -825,185 +822,185 @@ end function join
 !!   The article "Matching Wildcards: An Empirical Way to Tame an Algorithm"
 !!   in Dr Dobb's Journal, By Kirk J. Krauss, October 07, 2014
 !!
-function glob(tame,wild)
+  function glob(tame, wild)
 
 ! @(#)fpm_strings::glob(3f): function compares text strings, one of which can have wildcards ('*' or '?').
 
-logical                    :: glob       !! result of test
-character(len=*)           :: tame       !! A string without wildcards to compare to the globbing expression
-character(len=*)           :: wild       !! A (potentially) corresponding string with wildcards
-character(len=len(tame)+1) :: tametext
-character(len=len(wild)+1) :: wildtext
-character(len=1),parameter :: NULL=char(0)
-integer                    :: wlen
-integer                    :: ti, wi
-integer                    :: i
-character(len=:),allocatable :: tbookmark, wbookmark
+    logical                    :: glob       !! result of test
+    character(len=*)           :: tame       !! A string without wildcards to compare to the globbing expression
+    character(len=*)           :: wild       !! A (potentially) corresponding string with wildcards
+    character(len=len(tame) + 1) :: tametext
+    character(len=len(wild) + 1) :: wildtext
+    character(len=1), parameter :: NULL = char(0)
+    integer                    :: wlen
+    integer                    :: ti, wi
+    integer                    :: i
+    character(len=:), allocatable :: tbookmark, wbookmark
 ! These two values are set when we observe a wildcard character. They
 ! represent the locations, in the two strings, from which we start once we've observed it.
-   tametext=tame//NULL
-   wildtext=wild//NULL
-   tbookmark = NULL
-   wbookmark = NULL
-   wlen=len(wild)
-   wi=1
-   ti=1
-   do                                            ! Walk the text strings one character at a time.
-      if(wildtext(wi:wi) == '*')then             ! How do you match a unique text string?
-         do i=wi,wlen                            ! Easy: unique up on it!
-            if(wildtext(wi:wi)=='*')then
-               wi=wi+1
+    tametext = tame//NULL
+    wildtext = wild//NULL
+    tbookmark = NULL
+    wbookmark = NULL
+    wlen = len(wild)
+    wi = 1
+    ti = 1
+    do                                            ! Walk the text strings one character at a time.
+      if (wildtext(wi:wi) == '*') then             ! How do you match a unique text string?
+        do i = wi, wlen                            ! Easy: unique up on it!
+          if (wildtext(wi:wi) == '*') then
+            wi = wi + 1
+          else
+            exit
+          end if
+        end do
+        if (wildtext(wi:wi) == NULL) then        ! "x" matches "*"
+          glob = .true.
+          return
+        end if
+        if (wildtext(wi:wi) /= '?') then
+          ! Fast-forward to next possible match.
+          do while (tametext(ti:ti) /= wildtext(wi:wi))
+            ti = ti + 1
+            if (tametext(ti:ti) == NULL) then
+              glob = .false.
+              return                         ! "x" doesn't match "*y*"
+            end if
+          end do
+        end if
+        wbookmark = wildtext(wi:)
+        tbookmark = tametext(ti:)
+      elseif (tametext(ti:ti) /= wildtext(wi:wi) .and. wildtext(wi:wi) /= '?') then
+        ! Got a non-match. If we've set our bookmarks, back up to one or both of them and retry.
+        if (wbookmark /= NULL) then
+          if (wildtext(wi:) /= wbookmark) then
+            wildtext = wbookmark; 
+            wlen = len_trim(wbookmark)
+            wi = 1
+            ! Don't go this far back again.
+            if (tametext(ti:ti) /= wildtext(wi:wi)) then
+              tbookmark = tbookmark(2:)
+              tametext = tbookmark
+              ti = 1
+              cycle                          ! "xy" matches "*y"
             else
-               exit
-            endif
-         enddo
-         if(wildtext(wi:wi)==NULL) then        ! "x" matches "*"
-            glob=.true.
-            return
-         endif
-         if(wildtext(wi:wi) /= '?') then
-            ! Fast-forward to next possible match.
-            do while (tametext(ti:ti) /= wildtext(wi:wi))
-               ti=ti+1
-               if (tametext(ti:ti)==NULL)then
-                  glob=.false.
-                  return                         ! "x" doesn't match "*y*"
-               endif
-            enddo
-         endif
-         wbookmark = wildtext(wi:)
-         tbookmark = tametext(ti:)
-      elseif(tametext(ti:ti) /= wildtext(wi:wi) .and. wildtext(wi:wi) /= '?') then
-         ! Got a non-match. If we've set our bookmarks, back up to one or both of them and retry.
-         if(wbookmark/=NULL) then
-            if(wildtext(wi:)/= wbookmark) then
-               wildtext = wbookmark;
-               wlen=len_trim(wbookmark)
-               wi=1
-               ! Don't go this far back again.
-               if (tametext(ti:ti) /= wildtext(wi:wi)) then
-                  tbookmark=tbookmark(2:)
-                  tametext = tbookmark
-                  ti=1
-                  cycle                          ! "xy" matches "*y"
-               else
-                  wi=wi+1
-               endif
-            endif
-            if (tametext(ti:ti)/=NULL) then
-               ti=ti+1
-               cycle                             ! "mississippi" matches "*sip*"
-            endif
-         endif
-         glob=.false.
-         return                                  ! "xy" doesn't match "x"
-      endif
-      ti=ti+1
-      wi=wi+1
-      if (tametext(ti:ti)==NULL) then          ! How do you match a tame text string?
-         if(wildtext(wi:wi)/=NULL)then
-            do while (wildtext(wi:wi) == '*')    ! The tame way: unique up on it!
-               wi=wi+1                           ! "x" matches "x*"
-               if(wildtext(wi:wi)==NULL)exit
-            enddo
-         endif
-         if (wildtext(wi:wi)==NULL)then
-            glob=.true.
-            return                               ! "x" matches "x"
-         endif
-         glob=.false.
-         return                                  ! "x" doesn't match "xy"
-      endif
-   enddo
-end function glob
+              wi = wi + 1
+            end if
+          end if
+          if (tametext(ti:ti) /= NULL) then
+            ti = ti + 1
+            cycle                             ! "mississippi" matches "*sip*"
+          end if
+        end if
+        glob = .false.
+        return                                  ! "xy" doesn't match "x"
+      end if
+      ti = ti + 1
+      wi = wi + 1
+      if (tametext(ti:ti) == NULL) then          ! How do you match a tame text string?
+        if (wildtext(wi:wi) /= NULL) then
+          do while (wildtext(wi:wi) == '*')    ! The tame way: unique up on it!
+            wi = wi + 1                           ! "x" matches "x*"
+            if (wildtext(wi:wi) == NULL) exit
+          end do
+        end if
+        if (wildtext(wi:wi) == NULL) then
+          glob = .true.
+          return                               ! "x" matches "x"
+        end if
+        glob = .false.
+        return                                  ! "x" doesn't match "xy"
+      end if
+    end do
+  end function glob
 
 !> Returns the length of the string representation of 'i'
-pure integer function str_int_len(i) result(sz)
-integer, intent(in) :: i
-integer, parameter :: MAX_STR = 100
-character(MAX_STR) :: s
+  pure integer function str_int_len(i) result(sz)
+    integer, intent(in) :: i
+    integer, parameter :: MAX_STR = 100
+    character(MAX_STR) :: s
 ! If 's' is too short (MAX_STR too small), Fortran will abort with:
 ! "Fortran runtime error: End of record"
-write(s, '(i0)') i
-sz = len_trim(s)
-end function
+    write (s, '(i0)') i
+    sz = len_trim(s)
+  end function
 
 !> Converts integer "i" to string
-pure function str_int(i) result(s)
-integer, intent(in) :: i
-character(len=str_int_len(i)) :: s
-write(s, '(i0)') i
-end function
+  pure function str_int(i) result(s)
+    integer, intent(in) :: i
+    character(len=str_int_len(i)) :: s
+    write (s, '(i0)') i
+  end function
 
 !> Returns the length of the string representation of 'i'
-pure integer function str_int64_len(i) result(sz)
-integer(int64), intent(in) :: i
-integer, parameter :: MAX_STR = 100
-character(MAX_STR) :: s
+  pure integer function str_int64_len(i) result(sz)
+    integer(int64), intent(in) :: i
+    integer, parameter :: MAX_STR = 100
+    character(MAX_STR) :: s
 ! If 's' is too short (MAX_STR too small), Fortran will abort with:
 ! "Fortran runtime error: End of record"
-write(s, '(i0)') i
-sz = len_trim(s)
-end function
+    write (s, '(i0)') i
+    sz = len_trim(s)
+  end function
 
 !> Converts integer "i" to string
-pure function str_int64(i) result(s)
-integer(int64), intent(in) :: i
-character(len=str_int64_len(i)) :: s
-write(s, '(i0)') i
-end function
+  pure function str_int64(i) result(s)
+    integer(int64), intent(in) :: i
+    character(len=str_int64_len(i)) :: s
+    write (s, '(i0)') i
+  end function
 
 !> Returns the length of the string representation of 'l'
-pure integer function str_logical_len(l) result(sz)
-logical, intent(in) :: l
-if (l) then
-    sz = 6
-else
-    sz = 7
-end if
-end function
+  pure integer function str_logical_len(l) result(sz)
+    logical, intent(in) :: l
+    if (l) then
+      sz = 6
+    else
+      sz = 7
+    end if
+  end function
 
 !> Converts logical "l" to string
-pure function str_logical(l) result(s)
-logical, intent(in) :: l
-character(len=str_logical_len(l)) :: s
-if (l) then
-    s = ".true."
-else
-    s = ".false."
-end if
-end function
+  pure function str_logical(l) result(s)
+    logical, intent(in) :: l
+    character(len=str_logical_len(l)) :: s
+    if (l) then
+      s = ".true."
+    else
+      s = ".false."
+    end if
+  end function
 
 !> Returns string with special characters replaced with an underscore.
 !! For now, only a hyphen is treated as a special character, but this can be
 !! expanded to other characters if needed.
-pure function to_fortran_name(string) result(res)
+  pure function to_fortran_name(string) result(res)
     character(*), intent(in) :: string
     character(len(string)) :: res
     character, parameter :: SPECIAL_CHARACTERS(*) = ['-']
     res = replace(string, SPECIAL_CHARACTERS, '_')
-end function to_fortran_name
+  end function to_fortran_name
 
-function is_fortran_name(line) result (lout)
+  function is_fortran_name(line) result(lout)
 ! determine if a string is a valid Fortran name ignoring trailing spaces
 ! (but not leading spaces)
-    character(len=*),parameter   :: int='0123456789'
-    character(len=*),parameter   :: lower='abcdefghijklmnopqrstuvwxyz'
-    character(len=*),parameter   :: upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    character(len=*),parameter   :: allowed=upper//lower//int//'_'
-    character(len=*),intent(in)  :: line
-    character(len=:),allocatable :: name
+    character(len=*), parameter   :: int = '0123456789'
+    character(len=*), parameter   :: lower = 'abcdefghijklmnopqrstuvwxyz'
+    character(len=*), parameter   :: upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    character(len=*), parameter   :: allowed = upper//lower//int//'_'
+    character(len=*), intent(in)  :: line
+    character(len=:), allocatable :: name
     logical                      :: lout
-        name=trim(line)
-        if(len(name)/=0)then
-            lout = .true.                                  &
-             & .and. verify(name(1:1), lower//upper) == 0  &
-             & .and. verify(name,allowed) == 0             &
-             & .and. len(name) <= 63
-        else
-            lout = .false.
-        endif
-    end function is_fortran_name
+    name = trim(line)
+    if (len(name) /= 0) then
+      lout = .true.                                  &
+       & .and. verify(name(1:1), lower//upper) == 0  &
+       & .and. verify(name, allowed) == 0             &
+       & .and. len(name) <= 63
+    else
+      lout = .false.
+    end if
+  end function is_fortran_name
 !>
 !!### NAME
 !!   notabs(3f) - [fpm_strings:NONALPHA] expand tab characters
@@ -1066,50 +1063,50 @@ function is_fortran_name(line) result (lout)
 !!
 !!### LICENSE
 !!   Public Domain
-elemental impure subroutine notabs(instr,outstr,ilen)
+  elemental impure subroutine notabs(instr, outstr, ilen)
 
 ! ident_31="@(#)fpm_strings::notabs(3f): convert tabs to spaces while maintaining columns, remove CRLF chars"
 
-character(len=*),intent(in)   :: instr        ! input line to scan for tab characters
-character(len=*),intent(out)  :: outstr       ! tab-expanded version of INSTR produced
-integer,intent(out)           :: ilen         ! column position of last character put into output string
-                                              ! that is, ILEN holds the position of the last non-blank character in OUTSTR
+    character(len=*), intent(in)   :: instr        ! input line to scan for tab characters
+    character(len=*), intent(out)  :: outstr       ! tab-expanded version of INSTR produced
+    integer, intent(out)           :: ilen         ! column position of last character put into output string
+    ! that is, ILEN holds the position of the last non-blank character in OUTSTR
 
-integer,parameter             :: tabsize=8    ! assume a tab stop is set every 8th column
-integer                       :: ipos         ! position in OUTSTR to put next character of INSTR
-integer                       :: lenin        ! length of input string trimmed of trailing spaces
-integer                       :: lenout       ! number of characters output string can hold
-integer                       :: istep        ! counter that advances thru input string INSTR one character at a time
-character(len=1)              :: c            ! character in input line being processed
-integer                       :: iade         ! ADE (ASCII Decimal Equivalent) of character being tested
+    integer, parameter             :: tabsize = 8    ! assume a tab stop is set every 8th column
+    integer                       :: ipos         ! position in OUTSTR to put next character of INSTR
+    integer                       :: lenin        ! length of input string trimmed of trailing spaces
+    integer                       :: lenout       ! number of characters output string can hold
+    integer                       :: istep        ! counter that advances thru input string INSTR one character at a time
+    character(len=1)              :: c            ! character in input line being processed
+    integer                       :: iade         ! ADE (ASCII Decimal Equivalent) of character being tested
 
-   ipos=1                                     ! where to put next character in output string OUTSTR
-   lenin=len_trim(instr( 1:len(instr) ))      ! length of INSTR trimmed of trailing spaces
-   lenout=len(outstr)                         ! number of characters output string OUTSTR can hold
-   outstr=" "                                 ! this SHOULD blank-fill string, a buggy machine required a loop to set all characters
+    ipos = 1                                     ! where to put next character in output string OUTSTR
+    lenin = len_trim(instr(1:len(instr)))      ! length of INSTR trimmed of trailing spaces
+    lenout = len(outstr)                         ! number of characters output string OUTSTR can hold
+    outstr = " "                                 ! this SHOULD blank-fill string, a buggy machine required a loop to set all characters
 
-      SCAN_LINE: do istep=1,lenin             ! look through input string one character at a time
-         c=instr(istep:istep)                 ! get next character
-         iade=ichar(c)                        ! get ADE of the character
-         EXPAND_TABS : select case (iade)     ! take different actions depending on which character was found
-         case(9)                              ! test if character is a tab and move pointer out to appropriate column
-            ipos = ipos + (tabsize - (mod(ipos-1,tabsize)))
-         case(10,13)                          ! convert carriage-return and new-line to space ,typically to handle DOS-format files
-            ipos=ipos+1
-         case default                         ! c is anything else other than a tab,newline,or return  insert it in output string
-            if(ipos > lenout)then
-               write(stderr,*)"*notabs* output string overflow"
-               exit
-            else
-               outstr(ipos:ipos)=c
-               ipos=ipos+1
-            endif
-         end select EXPAND_TABS
-      enddo SCAN_LINE
+    SCAN_LINE: do istep = 1, lenin             ! look through input string one character at a time
+      c = instr(istep:istep)                 ! get next character
+      iade = ichar(c)                        ! get ADE of the character
+      EXPAND_TABS:select case(iade)     ! take different actions depending on which character was found
+      case (9)                              ! test if character is a tab and move pointer out to appropriate column
+      ipos = ipos + (tabsize - (mod(ipos - 1, tabsize)))
+      case (10, 13)                          ! convert carriage-return and new-line to space ,typically to handle DOS-format files
+      ipos = ipos + 1
+      case default                         ! c is anything else other than a tab,newline,or return  insert it in output string
+      if (ipos > lenout) then
+        write (stderr, *) "*notabs* output string overflow"
+        exit
+      else
+        outstr(ipos:ipos) = c
+        ipos = ipos + 1
+      end if
+      end select EXPAND_TABS
+    end do SCAN_LINE
 
-      ipos=min(ipos,lenout)                   ! tabs or newline or return characters or last character might have gone too far
-      ilen=len_trim(outstr(:ipos))            ! trim trailing spaces
+    ipos = min(ipos, lenout)                   ! tabs or newline or return characters or last character might have gone too far
+    ilen = len_trim(outstr(:ipos))            ! trim trailing spaces
 
-end subroutine notabs
+  end subroutine notabs
 
 end module fpm_strings

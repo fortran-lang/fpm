@@ -15,27 +15,27 @@
 !> - `[[parse_c_source]]`
 !>
 module fpm_source_parsing
-use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
-use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, is_fortran_name
-use fpm_model, only: srcfile_t, &
-                    FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
-                    FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
-                    FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
-                    FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
-                    FPM_UNIT_CPPSOURCE
-use fpm_filesystem, only: read_lines, read_lines_expanded, exists
-implicit none
+  use fpm_error, only: error_t, file_parse_error, fatal_error, file_not_found_error
+  use fpm_strings, only: string_t, string_cat, len_trim, split, lower, str_ends_with, fnv_1a, is_fortran_name
+  use fpm_model, only: srcfile_t, &
+                       FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
+                       FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, &
+                       FPM_UNIT_CSOURCE, FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, &
+                       FPM_SCOPE_LIB, FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST, &
+                       FPM_UNIT_CPPSOURCE
+  use fpm_filesystem, only: read_lines, read_lines_expanded, exists
+  implicit none
 
-private
-public :: parse_f_source, parse_c_source
+  private
+  public :: parse_f_source, parse_c_source
 
-character(15), parameter :: INTRINSIC_MODULE_NAMES(*) =  &
-                             ['iso_c_binding  ', &
-                              'iso_fortran_env', &
-                              'ieee_arithmetic', &
-                              'ieee_exceptions', &
-                              'ieee_features  ', &
-                              'omp_lib        ']
+  character(15), parameter :: INTRINSIC_MODULE_NAMES(*) = &
+                              ['iso_c_binding  ', &
+                               'iso_fortran_env', &
+                               'ieee_arithmetic', &
+                               'ieee_exceptions', &
+                               'ieee_features  ', &
+                               'omp_lib        ']
 
 contains
 
@@ -72,7 +72,7 @@ contains
 !>    my_module
 !>```
 !>
-function parse_f_source(f_filename,error) result(f_source)
+  function parse_f_source(f_filename, error) result(f_source)
     character(*), intent(in) :: f_filename
     type(srcfile_t) :: f_source
     type(error_t), allocatable, intent(out) :: error
@@ -84,357 +84,356 @@ function parse_f_source(f_filename,error) result(f_source)
     character(:), allocatable :: temp_string, mod_name, string_parts(:)
 
     if (.not. exists(f_filename)) then
-        call file_not_found_error(error, f_filename)
-        return
+      call file_not_found_error(error, f_filename)
+      return
     end if
 
     f_source%file_name = f_filename
 
-    open(newunit=fh,file=f_filename,status='old')
+    open (newunit=fh, file=f_filename, status='old')
     file_lines = read_lines_expanded(fh)
-    close(fh)
+    close (fh)
 
     ! for efficiency in parsing make a lowercase left-adjusted copy of the file
     ! Need a copy because INCLUDE (and #include) file arguments are case-sensitive
-    file_lines_lower=file_lines
-    do i=1,size(file_lines_lower)
-       file_lines_lower(i)%s=adjustl(lower(file_lines_lower(i)%s))
-    enddo
+    file_lines_lower = file_lines
+    do i = 1, size(file_lines_lower)
+      file_lines_lower(i)%s = adjustl(lower(file_lines_lower(i)%s))
+    end do
 
     ! fnv_1a can only be applied to non-zero-length arrays
     if (len_trim(file_lines_lower) > 0) f_source%digest = fnv_1a(file_lines)
 
-    do pass = 1,2
-        n_use = 0
-        n_include = 0
-        n_mod = 0
-        n_parent = 0
-        inside_module = .false.
-        inside_interface = .false.
-        file_loop: do i=1,size(file_lines_lower)
-
-            ! Skip comment lines and preprocessor directives
-            if (index(file_lines_lower(i)%s,'!') == 1 .or. &
-                index(file_lines_lower(i)%s,'#') == 1 .or. &
-                len_trim(file_lines_lower(i)%s) < 1) then
-                cycle
-            end if
-
-            ! Detect exported C-API via bind(C)
-            if (.not.inside_interface .and. &
-                parse_subsequence(file_lines_lower(i)%s,'bind','(','c')) then
-                
-                do j=i,1,-1
-
-                    if (index(file_lines_lower(j)%s,'function') > 0 .or. &
-                        index(file_lines_lower(j)%s,'subroutine') > 0) then
-                        f_source%unit_type = FPM_UNIT_SUBPROGRAM
-                        exit
-                    end if
-
-                    if (j>1) then
-
-                        ic = index(file_lines_lower(j-1)%s,'!')
-                        if (ic < 1) then
-                            ic = len(file_lines_lower(j-1)%s)
-                        end if
-
-                        temp_string = trim(file_lines_lower(j-1)%s(1:ic))
-                        if (index(temp_string,'&') /= len(temp_string)) then
-                            exit
-                        end if
-
-                    end if
-
-                end do
-
-            end if
-
-            ! Skip lines that are continued: not statements
-            if (i > 1) then
-                ic = index(file_lines_lower(i-1)%s,'!')
-                if (ic < 1) then
-                    ic = len(file_lines_lower(i-1)%s)
-                end if
-                temp_string = trim(file_lines_lower(i-1)%s(1:ic))
-                if (len(temp_string) > 0 .and. index(temp_string,'&') == len(temp_string)) then
-                    cycle
-                end if
-            end if
-
-            ! Detect beginning of interface block
-            if (index(file_lines_lower(i)%s,'interface') == 1) then
-
-                inside_interface = .true.
-                cycle
-
-            end if
-
-            ! Detect end of interface block
-            if (parse_sequence(file_lines_lower(i)%s,'end','interface')) then
-
-                inside_interface = .false.
-                cycle
-
-            end if
-
-            ! Process 'USE' statements
-            if (index(file_lines_lower(i)%s,'use ') == 1 .or. &
-                index(file_lines_lower(i)%s,'use::') == 1) then
-
-                if (index(file_lines_lower(i)%s,'::') > 0) then
-
-                    temp_string = split_n(file_lines_lower(i)%s,delims=':',n=2,stat=stat)
-                    if (stat /= 0) then
-                        call file_parse_error(error,f_filename, &
-                                'unable to find used module name',i, &
-                                file_lines_lower(i)%s,index(file_lines_lower(i)%s,'::'))
-                        return
-                    end if
-
-                    mod_name = split_n(temp_string,delims=' ,',n=1,stat=stat)
-                    if (stat /= 0) then
-                        call file_parse_error(error,f_filename, &
-                                 'unable to find used module name',i, &
-                                 file_lines_lower(i)%s)
-                        return
-                    end if
-
-                else
-
-                    mod_name = split_n(file_lines_lower(i)%s,n=2,delims=' ,',stat=stat)
-                    if (stat /= 0) then
-                        call file_parse_error(error,f_filename, &
-                                'unable to find used module name',i, &
-                                file_lines_lower(i)%s)
-                        return
-                    end if
-
-                end if
-
-                if (.not.is_fortran_name(mod_name)) then
-                    cycle
-                end if
-
-                if (any([(index(mod_name,trim(INTRINSIC_MODULE_NAMES(j)))>0, &
-                            j=1,size(INTRINSIC_MODULE_NAMES))])) then
-                    cycle
-                end if
-
-                n_use = n_use + 1
-
-                if (pass == 2) then
-
-                    f_source%modules_used(n_use)%s = mod_name
-
-                end if
-
-                cycle
-
-            end if
-
-            ! Process 'INCLUDE' statements
-            ic = index(file_lines_lower(i)%s,'include')
-            if ( ic == 1 ) then
-                ic = index(lower(file_lines(i)%s),'include')
-                if (index(adjustl(file_lines(i)%s(ic+7:)),'"') == 1 .or. &
-                    index(adjustl(file_lines(i)%s(ic+7:)),"'") == 1 ) then
-
-                    n_include = n_include + 1
-
-                    if (pass == 2) then
-                        f_source%include_dependencies(n_include)%s = &
-                         & split_n(file_lines(i)%s,n=2,delims="'"//'"',stat=stat)
-                        if (stat /= 0) then
-                            call file_parse_error(error,f_filename, &
-                                  'unable to find include file name',i, &
-                                  file_lines(i)%s)
-                            return
-                        end if
-                    end if
-
-                    cycle
-
-                end if
-            end if
-
-            ! Extract name of module if is module
-            if (index(file_lines_lower(i)%s,'module ') == 1) then
-
-                ! Remove any trailing comments
-                ic = index(file_lines_lower(i)%s,'!')-1
-                if (ic < 1) then
-                    ic = len(file_lines_lower(i)%s)
-                end if
-                temp_string = trim(file_lines_lower(i)%s(1:ic))
-
-                ! R1405 module-stmt := "MODULE" module-name
-                ! module-stmt has two space-delimited parts only
-                ! (no line continuations)
-                call split(temp_string,string_parts,' ')
-                if (size(string_parts) /= 2) then
-                    cycle
-                end if
-
-                mod_name = trim(adjustl(string_parts(2)))
-                if (scan(mod_name,'=(&')>0 ) then
-                    ! Ignore these cases:
-                    ! module <something>&
-                    ! module =*
-                    ! module (i)
-                    cycle
-                end if
-
-                if (.not.is_fortran_name(mod_name)) then
-                    call file_parse_error(error,f_filename, &
-                          'empty or invalid name for module',i, &
-                          file_lines_lower(i)%s, index(file_lines_lower(i)%s,mod_name))
-                    return
-                end if
-
-                n_mod = n_mod + 1
-
-                if (pass == 2) then
-                    f_source%modules_provided(n_mod) = string_t(mod_name)
-                end if
-
-                if (f_source%unit_type == FPM_UNIT_UNKNOWN) then
-                    f_source%unit_type = FPM_UNIT_MODULE
-                end if
-
-                if (.not.inside_module) then    
-                    inside_module = .true.
-                else
-                    ! Must have missed an end module statement (can't assume a pure module)
-                    if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
-                        f_source%unit_type = FPM_UNIT_SUBPROGRAM
-                    end if
-                end if
-
-                cycle
-
-            end if
-
-            ! Extract name of submodule if is submodule
-            if (index(file_lines_lower(i)%s,'submodule') == 1) then
-
-                mod_name = split_n(file_lines_lower(i)%s,n=3,delims='()',stat=stat)
-                if (stat /= 0) then
-                    call file_parse_error(error,f_filename, &
-                          'unable to get submodule name',i, &
-                          file_lines_lower(i)%s)
-                    return
-                end if
-                if (.not.is_fortran_name(mod_name)) then
-                    call file_parse_error(error,f_filename, &
-                          'empty or invalid name for submodule',i, &
-                          file_lines_lower(i)%s, index(file_lines_lower(i)%s,mod_name))
-                    return
-                end if
-
-                n_mod = n_mod + 1
-
-                temp_string = split_n(file_lines_lower(i)%s,n=2,delims='()',stat=stat)
-                if (stat /= 0) then
-                    call file_parse_error(error,f_filename, &
-                          'unable to get submodule ancestry',i, &
-                          file_lines_lower(i)%s)
-                    return
-                end if
-                
-                if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
-                    f_source%unit_type = FPM_UNIT_SUBMODULE
-                end if
-
-                n_use = n_use + 1
-
-                inside_module = .true.
-
-                n_parent = n_parent + 1
-
-                if (pass == 2) then
-
-                    if (index(temp_string,':') > 0) then
-
-                        temp_string = temp_string(index(temp_string,':')+1:)
-
-                    end if
-
-                    if (.not.is_fortran_name(temp_string)) then
-                        call file_parse_error(error,f_filename, &
-                          'empty or invalid name for submodule parent',i, &
-                          file_lines_lower(i)%s, index(file_lines_lower(i)%s,temp_string))
-                        return
-                    end if
-
-                    f_source%modules_used(n_use)%s = temp_string
-                    f_source%parent_modules(n_parent)%s = temp_string
-                    f_source%modules_provided(n_mod)%s = mod_name
-
-                end if
-
-                cycle
-
-            end if
-
-            ! Detect if contains a program
-            !  (no modules allowed after program def)
-            if (index(file_lines_lower(i)%s,'program ') == 1) then
-
-                temp_string = split_n(file_lines_lower(i)%s,n=2,delims=' ',stat=stat)
-                if (stat == 0) then
-
-                    if (scan(temp_string,'=(')>0 ) then
-                        ! Ignore:
-                        ! program =*
-                        ! program (i) =*
-                        cycle
-                    end if
-
-                end if
-
-                f_source%unit_type = FPM_UNIT_PROGRAM
-
-                cycle
-
-            end if
-
-            ! Parse end module statement
-            !  (to check for code outside of modules)
-            if (parse_sequence(file_lines_lower(i)%s,'end','module') .or. &
-                parse_sequence(file_lines_lower(i)%s,'end','submodule')) then
-                
-                inside_module = .false.
-                cycle
-
-            end if
-
-            ! Any statements not yet parsed are assumed to be other code statements
-            if (.not.inside_module .and. f_source%unit_type /= FPM_UNIT_PROGRAM) then
-
-                f_source%unit_type = FPM_UNIT_SUBPROGRAM
-
-            end if
-
-        end do file_loop
-
-        ! If unable to parse end of module statement, then can't assume pure module
-        !  (there could be non-module subprograms present)
-        if (inside_module .and. f_source%unit_type == FPM_UNIT_MODULE) then
-            f_source%unit_type = FPM_UNIT_SUBPROGRAM
+    do pass = 1, 2
+      n_use = 0
+      n_include = 0
+      n_mod = 0
+      n_parent = 0
+      inside_module = .false.
+      inside_interface = .false.
+      file_loop: do i = 1, size(file_lines_lower)
+
+        ! Skip comment lines and preprocessor directives
+        if (index(file_lines_lower(i)%s, '!') == 1 .or. &
+            index(file_lines_lower(i)%s, '#') == 1 .or. &
+            len_trim(file_lines_lower(i)%s) < 1) then
+          cycle
         end if
 
-        if (pass == 1) then
-            allocate(f_source%modules_used(n_use))
-            allocate(f_source%include_dependencies(n_include))
-            allocate(f_source%modules_provided(n_mod))
-            allocate(f_source%parent_modules(n_parent))
+        ! Detect exported C-API via bind(C)
+        if (.not. inside_interface .and. &
+            parse_subsequence(file_lines_lower(i)%s, 'bind', '(', 'c')) then
+
+          do j = i, 1, -1
+
+            if (index(file_lines_lower(j)%s, 'function') > 0 .or. &
+                index(file_lines_lower(j)%s, 'subroutine') > 0) then
+              f_source%unit_type = FPM_UNIT_SUBPROGRAM
+              exit
+            end if
+
+            if (j > 1) then
+
+              ic = index(file_lines_lower(j - 1)%s, '!')
+              if (ic < 1) then
+                ic = len(file_lines_lower(j - 1)%s)
+              end if
+
+              temp_string = trim(file_lines_lower(j - 1)%s(1:ic))
+              if (index(temp_string, '&') /= len(temp_string)) then
+                exit
+              end if
+
+            end if
+
+          end do
+
         end if
+
+        ! Skip lines that are continued: not statements
+        if (i > 1) then
+          ic = index(file_lines_lower(i - 1)%s, '!')
+          if (ic < 1) then
+            ic = len(file_lines_lower(i - 1)%s)
+          end if
+          temp_string = trim(file_lines_lower(i - 1)%s(1:ic))
+          if (len(temp_string) > 0 .and. index(temp_string, '&') == len(temp_string)) then
+            cycle
+          end if
+        end if
+
+        ! Detect beginning of interface block
+        if (index(file_lines_lower(i)%s, 'interface') == 1) then
+
+          inside_interface = .true.
+          cycle
+
+        end if
+
+        ! Detect end of interface block
+        if (parse_sequence(file_lines_lower(i)%s, 'end', 'interface')) then
+
+          inside_interface = .false.
+          cycle
+
+        end if
+
+        ! Process 'USE' statements
+        if (index(file_lines_lower(i)%s, 'use ') == 1 .or. &
+            index(file_lines_lower(i)%s, 'use::') == 1) then
+
+          if (index(file_lines_lower(i)%s, '::') > 0) then
+
+            temp_string = split_n(file_lines_lower(i)%s, delims=':', n=2, stat=stat)
+            if (stat /= 0) then
+              call file_parse_error(error, f_filename, &
+                                    'unable to find used module name', i, &
+                                    file_lines_lower(i)%s, index(file_lines_lower(i)%s, '::'))
+              return
+            end if
+
+            mod_name = split_n(temp_string, delims=' ,', n=1, stat=stat)
+            if (stat /= 0) then
+              call file_parse_error(error, f_filename, &
+                                    'unable to find used module name', i, &
+                                    file_lines_lower(i)%s)
+              return
+            end if
+
+          else
+
+            mod_name = split_n(file_lines_lower(i)%s, n=2, delims=' ,', stat=stat)
+            if (stat /= 0) then
+              call file_parse_error(error, f_filename, &
+                                    'unable to find used module name', i, &
+                                    file_lines_lower(i)%s)
+              return
+            end if
+
+          end if
+
+          if (.not. is_fortran_name(mod_name)) then
+            cycle
+          end if
+
+          if (any([(index(mod_name, trim(INTRINSIC_MODULE_NAMES(j))) > 0, &
+                    j=1, size(INTRINSIC_MODULE_NAMES))])) then
+            cycle
+          end if
+
+          n_use = n_use + 1
+
+          if (pass == 2) then
+
+            f_source%modules_used(n_use)%s = mod_name
+
+          end if
+
+          cycle
+
+        end if
+
+        ! Process 'INCLUDE' statements
+        ic = index(file_lines_lower(i)%s, 'include')
+        if (ic == 1) then
+          ic = index(lower(file_lines(i)%s), 'include')
+          if (index(adjustl(file_lines(i)%s(ic + 7:)), '"') == 1 .or. &
+              index(adjustl(file_lines(i)%s(ic + 7:)), "'") == 1) then
+
+            n_include = n_include + 1
+
+            if (pass == 2) then
+              f_source%include_dependencies(n_include)%s = &
+               & split_n(file_lines(i)%s, n=2, delims="'"//'"', stat=stat)
+              if (stat /= 0) then
+                call file_parse_error(error, f_filename, &
+                                      'unable to find include file name', i, &
+                                      file_lines(i)%s)
+                return
+              end if
+            end if
+
+            cycle
+
+          end if
+        end if
+
+        ! Extract name of module if is module
+        if (index(file_lines_lower(i)%s, 'module ') == 1) then
+
+          ! Remove any trailing comments
+          ic = index(file_lines_lower(i)%s, '!') - 1
+          if (ic < 1) then
+            ic = len(file_lines_lower(i)%s)
+          end if
+          temp_string = trim(file_lines_lower(i)%s(1:ic))
+
+          ! R1405 module-stmt := "MODULE" module-name
+          ! module-stmt has two space-delimited parts only
+          ! (no line continuations)
+          call split(temp_string, string_parts, ' ')
+          if (size(string_parts) /= 2) then
+            cycle
+          end if
+
+          mod_name = trim(adjustl(string_parts(2)))
+          if (scan(mod_name, '=(&') > 0) then
+            ! Ignore these cases:
+            ! module <something>&
+            ! module =*
+            ! module (i)
+            cycle
+          end if
+
+          if (.not. is_fortran_name(mod_name)) then
+            call file_parse_error(error, f_filename, &
+                                  'empty or invalid name for module', i, &
+                                  file_lines_lower(i)%s, index(file_lines_lower(i)%s, mod_name))
+            return
+          end if
+
+          n_mod = n_mod + 1
+
+          if (pass == 2) then
+            f_source%modules_provided(n_mod) = string_t(mod_name)
+          end if
+
+          if (f_source%unit_type == FPM_UNIT_UNKNOWN) then
+            f_source%unit_type = FPM_UNIT_MODULE
+          end if
+
+          if (.not. inside_module) then
+            inside_module = .true.
+          else
+            ! Must have missed an end module statement (can't assume a pure module)
+            if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+              f_source%unit_type = FPM_UNIT_SUBPROGRAM
+            end if
+          end if
+
+          cycle
+
+        end if
+
+        ! Extract name of submodule if is submodule
+        if (index(file_lines_lower(i)%s, 'submodule') == 1) then
+
+          mod_name = split_n(file_lines_lower(i)%s, n=3, delims='()', stat=stat)
+          if (stat /= 0) then
+            call file_parse_error(error, f_filename, &
+                                  'unable to get submodule name', i, &
+                                  file_lines_lower(i)%s)
+            return
+          end if
+          if (.not. is_fortran_name(mod_name)) then
+            call file_parse_error(error, f_filename, &
+                                  'empty or invalid name for submodule', i, &
+                                  file_lines_lower(i)%s, index(file_lines_lower(i)%s, mod_name))
+            return
+          end if
+
+          n_mod = n_mod + 1
+
+          temp_string = split_n(file_lines_lower(i)%s, n=2, delims='()', stat=stat)
+          if (stat /= 0) then
+            call file_parse_error(error, f_filename, &
+                                  'unable to get submodule ancestry', i, &
+                                  file_lines_lower(i)%s)
+            return
+          end if
+
+          if (f_source%unit_type /= FPM_UNIT_PROGRAM) then
+            f_source%unit_type = FPM_UNIT_SUBMODULE
+          end if
+
+          n_use = n_use + 1
+
+          inside_module = .true.
+
+          n_parent = n_parent + 1
+
+          if (pass == 2) then
+
+            if (index(temp_string, ':') > 0) then
+
+              temp_string = temp_string(index(temp_string, ':') + 1:)
+
+            end if
+
+            if (.not. is_fortran_name(temp_string)) then
+              call file_parse_error(error, f_filename, &
+                                    'empty or invalid name for submodule parent', i, &
+                                    file_lines_lower(i)%s, index(file_lines_lower(i)%s, temp_string))
+              return
+            end if
+
+            f_source%modules_used(n_use)%s = temp_string
+            f_source%parent_modules(n_parent)%s = temp_string
+            f_source%modules_provided(n_mod)%s = mod_name
+
+          end if
+
+          cycle
+
+        end if
+
+        ! Detect if contains a program
+        !  (no modules allowed after program def)
+        if (index(file_lines_lower(i)%s, 'program ') == 1) then
+
+          temp_string = split_n(file_lines_lower(i)%s, n=2, delims=' ', stat=stat)
+          if (stat == 0) then
+
+            if (scan(temp_string, '=(') > 0) then
+              ! Ignore:
+              ! program =*
+              ! program (i) =*
+              cycle
+            end if
+
+          end if
+
+          f_source%unit_type = FPM_UNIT_PROGRAM
+
+          cycle
+
+        end if
+
+        ! Parse end module statement
+        !  (to check for code outside of modules)
+        if (parse_sequence(file_lines_lower(i)%s, 'end', 'module') .or. &
+            parse_sequence(file_lines_lower(i)%s, 'end', 'submodule')) then
+
+          inside_module = .false.
+          cycle
+
+        end if
+
+        ! Any statements not yet parsed are assumed to be other code statements
+        if (.not. inside_module .and. f_source%unit_type /= FPM_UNIT_PROGRAM) then
+
+          f_source%unit_type = FPM_UNIT_SUBPROGRAM
+
+        end if
+
+      end do file_loop
+
+      ! If unable to parse end of module statement, then can't assume pure module
+      !  (there could be non-module subprograms present)
+      if (inside_module .and. f_source%unit_type == FPM_UNIT_MODULE) then
+        f_source%unit_type = FPM_UNIT_SUBPROGRAM
+      end if
+
+      if (pass == 1) then
+        allocate (f_source%modules_used(n_use))
+        allocate (f_source%include_dependencies(n_include))
+        allocate (f_source%modules_provided(n_mod))
+        allocate (f_source%parent_modules(n_parent))
+      end if
 
     end do
 
-end function parse_f_source
-
+  end function parse_f_source
 
 !> Parsing of c, cpp source files
 !>
@@ -442,7 +441,7 @@ end function parse_f_source
 !>
 !> - `#include` preprocessor statement
 !>
-function parse_c_source(c_filename,error) result(c_source)
+  function parse_c_source(c_filename, error) result(c_source)
     character(*), intent(in) :: c_filename
     type(srcfile_t) :: c_source
     type(error_t), allocatable, intent(out) :: error
@@ -454,68 +453,68 @@ function parse_c_source(c_filename,error) result(c_source)
 
     if (str_ends_with(lower(c_filename), ".c")) then
 
-        c_source%unit_type = FPM_UNIT_CSOURCE
+      c_source%unit_type = FPM_UNIT_CSOURCE
 
     else if (str_ends_with(lower(c_filename), ".h")) then
 
-        c_source%unit_type = FPM_UNIT_CHEADER
+      c_source%unit_type = FPM_UNIT_CHEADER
 
-    else if (str_ends_with(lower(c_filename), ".cpp")) then 
+    else if (str_ends_with(lower(c_filename), ".cpp")) then
 
-        c_source%unit_type = FPM_UNIT_CPPSOURCE
+      c_source%unit_type = FPM_UNIT_CPPSOURCE
 
     end if
 
-    allocate(c_source%modules_used(0))
-    allocate(c_source%modules_provided(0))
-    allocate(c_source%parent_modules(0))
+    allocate (c_source%modules_used(0))
+    allocate (c_source%modules_provided(0))
+    allocate (c_source%parent_modules(0))
 
-    open(newunit=fh,file=c_filename,status='old')
+    open (newunit=fh, file=c_filename, status='old')
     file_lines = read_lines(fh)
-    close(fh)
+    close (fh)
 
     ! Ignore empty files, returned as FPM_UNIT_UNKNOWN
     if (len_trim(file_lines) < 1) then
-        c_source%unit_type = FPM_UNIT_UNKNOWN
-        return
+      c_source%unit_type = FPM_UNIT_UNKNOWN
+      return
     end if
 
     c_source%digest = fnv_1a(file_lines)
 
-    do pass = 1,2
-        n_include = 0
-        file_loop: do i=1,size(file_lines)
+    do pass = 1, 2
+      n_include = 0
+      file_loop: do i = 1, size(file_lines)
 
-            ! Process 'INCLUDE' statements
-            if (index(adjustl(lower(file_lines(i)%s)),'#include') == 1 .and. &
-                index(file_lines(i)%s,'"') > 0) then
+        ! Process 'INCLUDE' statements
+        if (index(adjustl(lower(file_lines(i)%s)), '#include') == 1 .and. &
+            index(file_lines(i)%s, '"') > 0) then
 
-                n_include = n_include + 1
+          n_include = n_include + 1
 
-                if (pass == 2) then
+          if (pass == 2) then
 
-                    c_source%include_dependencies(n_include)%s = &
-                     &   split_n(file_lines(i)%s,n=2,delims='"',stat=stat)
-                    if (stat /= 0) then
-                        call file_parse_error(error,c_filename, &
-                            'unable to get c include file',i, &
-                            file_lines(i)%s,index(file_lines(i)%s,'"'))
-                        return
-                    end if
-
-                end if
-
+            c_source%include_dependencies(n_include)%s = &
+             &   split_n(file_lines(i)%s, n=2, delims='"', stat=stat)
+            if (stat /= 0) then
+              call file_parse_error(error, c_filename, &
+                                    'unable to get c include file', i, &
+                                    file_lines(i)%s, index(file_lines(i)%s, '"'))
+              return
             end if
 
-        end do file_loop
+          end if
 
-        if (pass == 1) then
-            allocate(c_source%include_dependencies(n_include))
         end if
+
+      end do file_loop
+
+      if (pass == 1) then
+        allocate (c_source%include_dependencies(n_include))
+      end if
 
     end do
 
-end function parse_c_source
+  end function parse_c_source
 
 !> Split a string on one or more delimeters
 !>  and return the nth substring if it exists
@@ -526,7 +525,7 @@ end function parse_c_source
 !> stat = 1 on return if the index
 !>  is not found
 !>
-function split_n(string,delims,n,stat) result(substring)
+  function split_n(string, delims, n, stat) result(substring)
 
     character(*), intent(in) :: string
     character(*), intent(in) :: delims
@@ -537,32 +536,31 @@ function split_n(string,delims,n,stat) result(substring)
     integer :: i
     character(:), allocatable :: string_parts(:)
 
-    call split(string,string_parts,delims)
+    call split(string, string_parts, delims)
 
-    if (n<1) then
-        i = size(string_parts) + n
-        if (i < 1) then
-            stat = 1
-            return
-        end if
-    else
-        i = n
-    end if
-
-    if (i>size(string_parts)) then
+    if (n < 1) then
+      i = size(string_parts) + n
+      if (i < 1) then
         stat = 1
         return
+      end if
+    else
+      i = n
+    end if
+
+    if (i > size(string_parts)) then
+      stat = 1
+      return
     end if
 
     substring = trim(adjustl(string_parts(i)))
     stat = 0
 
-end function split_n
-
+  end function split_n
 
 !> Parse a subsequence of blank-separated tokens within a string
 !>  (see parse_sequence)
-function parse_subsequence(string,t1,t2,t3,t4) result(found)
+  function parse_subsequence(string, t1, t2, t3, t4) result(found)
     character(*), intent(in) :: string
     character(*), intent(in) :: t1
     character(*), intent(in), optional :: t2, t3, t4
@@ -573,29 +571,29 @@ function parse_subsequence(string,t1,t2,t3,t4) result(found)
     found = .false.
     offset = 1
 
-    do 
+    do
 
-        i = index(string(offset:),t1)
+      i = index(string(offset:), t1)
 
-        if (i == 0) return
+      if (i == 0) return
 
-        offset = offset + i - 1
+      offset = offset + i - 1
 
-        found = parse_sequence(string(offset:),t1,t2,t3,t4)
+      found = parse_sequence(string(offset:), t1, t2, t3, t4)
 
-        if (found) return
+      if (found) return
 
-        offset = offset + len(t1)
+      offset = offset + len(t1)
 
-        if (offset > len(string)) return
+      if (offset > len(string)) return
 
     end do
 
-end function parse_subsequence
+  end function parse_subsequence
 
 !> Helper utility to parse sequences of tokens
 !> that may be optionally separated by zero or more spaces
-function parse_sequence(string,t1,t2,t3,t4) result(found)
+  function parse_sequence(string, t1, t2, t3, t4) result(found)
     character(*), intent(in) :: string
     character(*), intent(in) :: t1
     character(*), intent(in), optional :: t2, t3, t4
@@ -608,50 +606,50 @@ function parse_sequence(string,t1,t2,t3,t4) result(found)
     found = .false.
     pos = 1
 
-    do token_n=1,4
+    do token_n = 1, 4
 
-        do while (pos <= n)
-            if (string(pos:pos) /= ' ') then
-                exit
-            end if
-            pos = pos + 1
-        end do
-
-        select case(token_n)
-        case(1)
-            incr = len(t1)
-            if (pos+incr-1>n) return
-            match = string(pos:pos+incr-1) == t1
-        case(2)
-            if (.not.present(t2)) exit
-            incr = len(t2)
-            if (pos+incr-1>n) return
-            match = string(pos:pos+incr-1) == t2
-        case(3)
-            if (.not.present(t3)) exit
-            incr = len(t3)
-            if (pos+incr-1>n) return
-            match = string(pos:pos+incr-1) == t3
-        case(4)
-            if (.not.present(t4)) exit
-            incr = len(t4)
-            if (pos+incr-1>n) return
-            match = string(pos:pos+incr-1) == t4
-        case default
-            exit
-        end select
-
-        if (.not.match) then
-            return
+      do while (pos <= n)
+        if (string(pos:pos) /= ' ') then
+          exit
         end if
+        pos = pos + 1
+      end do
 
-        pos = pos + incr
+      select case (token_n)
+      case (1)
+        incr = len(t1)
+        if (pos + incr - 1 > n) return
+        match = string(pos:pos + incr - 1) == t1
+      case (2)
+        if (.not. present(t2)) exit
+        incr = len(t2)
+        if (pos + incr - 1 > n) return
+        match = string(pos:pos + incr - 1) == t2
+      case (3)
+        if (.not. present(t3)) exit
+        incr = len(t3)
+        if (pos + incr - 1 > n) return
+        match = string(pos:pos + incr - 1) == t3
+      case (4)
+        if (.not. present(t4)) exit
+        incr = len(t4)
+        if (pos + incr - 1 > n) return
+        match = string(pos:pos + incr - 1) == t4
+      case default
+        exit
+      end select
+
+      if (.not. match) then
+        return
+      end if
+
+      pos = pos + incr
 
     end do
 
     found = .true.
 
-end function parse_sequence
+  end function parse_sequence
 
 end module fpm_source_parsing
 

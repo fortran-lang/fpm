@@ -13,12 +13,10 @@ module wrapped_gemv
   integer, parameter :: sp = selected_real_kind(6)
   integer, parameter :: dp = selected_real_kind(15)
 
-
   interface gemv
     module procedure :: wrap_sgemv
     module procedure :: wrap_dgemv
   end interface gemv
-
 
   interface blas_gemv
     subroutine sgemv(trans, m, n, alpha, a, lda, x, incx, beta, y, incy)
@@ -51,9 +49,7 @@ module wrapped_gemv
     end subroutine dgemv
   end interface blas_gemv
 
-
 contains
-
 
   subroutine wrap_sgemv(amat, xvec, yvec, alpha, beta, trans)
     real(sp), intent(in) :: amat(:, :)
@@ -88,7 +84,6 @@ contains
     call blas_gemv(tra, m, n, a, amat, lda, xvec, incx, b, yvec, incy)
   end subroutine wrap_sgemv
 
-
   subroutine wrap_dgemv(amat, xvec, yvec, alpha, beta, trans)
     real(dp), intent(in) :: amat(:, :)
     real(dp), intent(in) :: xvec(:)
@@ -121,6 +116,5 @@ contains
     n = size(amat, 2)
     call blas_gemv(tra, m, n, a, amat, lda, xvec, incx, b, yvec, incy)
   end subroutine wrap_dgemv
-
 
 end module wrapped_gemv

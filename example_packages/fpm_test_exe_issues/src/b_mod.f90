@@ -1,10 +1,10 @@
 module b_mod
-    implicit none
+  implicit none
 
 contains
 
-    subroutine hello_world()
-        print *, "Hello world!"
-    end subroutine
+  subroutine hello_world()
+    print *, "Hello world!"
+  end subroutine
 
 end module

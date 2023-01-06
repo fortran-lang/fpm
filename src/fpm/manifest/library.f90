@@ -9,134 +9,128 @@
 !>build-script = "file"
 !>```
 module fpm_manifest_library
-    use fpm_error, only : error_t, syntax_error
-    use fpm_strings, only: string_t, string_cat
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
-    implicit none
-    private
+  use fpm_error, only: error_t, syntax_error
+  use fpm_strings, only: string_t, string_cat
+  use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, get_list
+  implicit none
+  private
 
-    public :: library_config_t, new_library
+  public :: library_config_t, new_library
 
+  !> Configuration meta data for a library
+  type :: library_config_t
 
-    !> Configuration meta data for a library
-    type :: library_config_t
+    !> Source path prefix
+    character(len=:), allocatable :: source_dir
 
-        !> Source path prefix
-        character(len=:), allocatable :: source_dir
+    !> Include path prefix
+    type(string_t), allocatable :: include_dir(:)
 
-        !> Include path prefix
-        type(string_t), allocatable :: include_dir(:)
+    !> Alternative build script to be invoked
+    character(len=:), allocatable :: build_script
 
-        !> Alternative build script to be invoked
-        character(len=:), allocatable :: build_script
+  contains
 
-    contains
+    !> Print information on this instance
+    procedure :: info
 
-        !> Print information on this instance
-        procedure :: info
-
-    end type library_config_t
-
+  end type library_config_t
 
 contains
 
+  !> Construct a new library configuration from a TOML data structure
+  subroutine new_library(self, table, error)
 
-    !> Construct a new library configuration from a TOML data structure
-    subroutine new_library(self, table, error)
+    !> Instance of the library configuration
+    type(library_config_t), intent(out) :: self
 
-        !> Instance of the library configuration
-        type(library_config_t), intent(out) :: self
+    !> Instance of the TOML data structure
+    type(toml_table), intent(inout) :: table
 
-        !> Instance of the TOML data structure
-        type(toml_table), intent(inout) :: table
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call check(table, error)
+    if (allocated(error)) return
 
-        call check(table, error)
-        if (allocated(error)) return
+    call get_value(table, "source-dir", self%source_dir, "src")
+    call get_value(table, "build-script", self%build_script)
 
-        call get_value(table, "source-dir", self%source_dir, "src")
-        call get_value(table, "build-script", self%build_script)
+    call get_list(table, "include-dir", self%include_dir, error)
+    if (allocated(error)) return
 
-        call get_list(table, "include-dir", self%include_dir, error)
-        if (allocated(error)) return
+    ! Set default value of include-dir if not found in manifest
+    if (.not. allocated(self%include_dir)) then
+      self%include_dir = [string_t("include")]
+    end if
 
-        ! Set default value of include-dir if not found in manifest
-        if (.not.allocated(self%include_dir)) then
-            self%include_dir = [string_t("include")]
-        end if
+  end subroutine new_library
 
-    end subroutine new_library
+  !> Check local schema for allowed entries
+  subroutine check(table, error)
 
+    !> Instance of the TOML data structure
+    type(toml_table), intent(inout) :: table
 
-    !> Check local schema for allowed entries
-    subroutine check(table, error)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
 
-        !> Instance of the TOML data structure
-        type(toml_table), intent(inout) :: table
+    type(toml_key), allocatable :: list(:)
+    integer :: ikey
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+    call table%get_keys(list)
 
-        type(toml_key), allocatable :: list(:)
-        integer :: ikey
+    ! table can be empty
+    if (size(list) < 1) return
 
-        call table%get_keys(list)
+    do ikey = 1, size(list)
+      select case (list(ikey)%key)
+      case default
+        call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
+        exit
 
-        ! table can be empty
-        if (size(list) < 1) return
+      case ("source-dir", "include-dir", "build-script")
+        continue
 
-        do ikey = 1, size(list)
-            select case(list(ikey)%key)
-            case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in library")
-                exit
+      end select
+    end do
 
-            case("source-dir", "include-dir", "build-script")
-                continue
+  end subroutine check
 
-            end select
-        end do
+  !> Write information on instance
+  subroutine info(self, unit, verbosity)
 
-    end subroutine check
+    !> Instance of the library configuration
+    class(library_config_t), intent(in) :: self
 
+    !> Unit for IO
+    integer, intent(in) :: unit
 
-    !> Write information on instance
-    subroutine info(self, unit, verbosity)
+    !> Verbosity of the printout
+    integer, intent(in), optional :: verbosity
 
-        !> Instance of the library configuration
-        class(library_config_t), intent(in) :: self
+    integer :: pr
+    character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
 
-        !> Unit for IO
-        integer, intent(in) :: unit
+    if (present(verbosity)) then
+      pr = verbosity
+    else
+      pr = 1
+    end if
 
-        !> Verbosity of the printout
-        integer, intent(in), optional :: verbosity
+    if (pr < 1) return
 
-        integer :: pr
-        character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
+    write (unit, fmt) "Library target"
+    if (allocated(self%source_dir)) then
+      write (unit, fmt) "- source directory", self%source_dir
+    end if
+    if (allocated(self%include_dir)) then
+      write (unit, fmt) "- include directory", string_cat(self%include_dir, ",")
+    end if
+    if (allocated(self%build_script)) then
+      write (unit, fmt) "- custom build", self%build_script
+    end if
 
-        if (present(verbosity)) then
-            pr = verbosity
-        else
-            pr = 1
-        end if
-
-        if (pr < 1) return
-
-        write(unit, fmt) "Library target"
-        if (allocated(self%source_dir)) then
-            write(unit, fmt) "- source directory", self%source_dir
-        end if
-        if (allocated(self%include_dir)) then
-            write(unit, fmt) "- include directory", string_cat(self%include_dir,",")
-        end if
-        if (allocated(self%build_script)) then
-            write(unit, fmt) "- custom build", self%build_script
-        end if
-
-    end subroutine info
-
+  end subroutine info
 
 end module fpm_manifest_library

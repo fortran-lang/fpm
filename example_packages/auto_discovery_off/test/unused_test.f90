@@ -1,7 +1,7 @@
 program unused_test
-implicit none
+  implicit none
 
-print *, "This program should NOT run."
+  print *, "This program should NOT run."
 
 end program unused_test
 

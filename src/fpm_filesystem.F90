@@ -1,87 +1,85 @@
 !> This module contains general routines for interacting with the file system
 !!
 module fpm_filesystem
-    use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, stdout=>output_unit, stderr=>error_unit
-    use fpm_environment, only: get_os_type, &
-                               OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                               OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
-    use fpm_environment, only: separator, get_env, os_is_unix
-    use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
-    use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
-    use fpm_error, only : fpm_stop
-    implicit none
-    private
-    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
+  use, intrinsic :: iso_fortran_env, only: stdin => input_unit, stdout => output_unit, stderr => error_unit
+  use fpm_environment, only: get_os_type, &
+                             OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
+  use fpm_environment, only: separator, get_env, os_is_unix
+  use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
+  use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
+  use fpm_error, only: fpm_stop
+  implicit none
+  private
+  public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
-    public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
-    public :: is_hidden_file
-    public :: read_lines, read_lines_expanded
-    public :: which, run, LINE_BUFFER_LEN
-    public :: os_delete_dir
+  public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
+  public :: is_hidden_file
+  public :: read_lines, read_lines_expanded
+  public :: which, run, LINE_BUFFER_LEN
+  public :: os_delete_dir
 
-    integer, parameter :: LINE_BUFFER_LEN = 1000
+  integer, parameter :: LINE_BUFFER_LEN = 1000
 
 #ifndef FPM_BOOTSTRAP
-    interface
-        function c_opendir(dir) result(r) bind(c, name="c_opendir")
-            import c_char, c_ptr
-            character(kind=c_char), intent(in) :: dir(*)
-            type(c_ptr) :: r
-        end function c_opendir
+  interface
+    function c_opendir(dir) result(r) bind(c, name="c_opendir")
+      import c_char, c_ptr
+      character(kind=c_char), intent(in) :: dir(*)
+      type(c_ptr) :: r
+    end function c_opendir
 
-        function c_readdir(dir) result(r) bind(c, name="c_readdir")
-            import c_ptr
-            type(c_ptr), intent(in), value :: dir
-            type(c_ptr) :: r
-        end function c_readdir
+    function c_readdir(dir) result(r) bind(c, name="c_readdir")
+      import c_ptr
+      type(c_ptr), intent(in), value :: dir
+      type(c_ptr) :: r
+    end function c_readdir
 
-        function c_closedir(dir) result(r) bind(c, name="closedir")
-            import c_ptr, c_int
-            type(c_ptr), intent(in), value :: dir
-            integer(kind=c_int) :: r
-        end function c_closedir
+    function c_closedir(dir) result(r) bind(c, name="closedir")
+      import c_ptr, c_int
+      type(c_ptr), intent(in), value :: dir
+      integer(kind=c_int) :: r
+    end function c_closedir
 
-        function c_get_d_name(dir) result(r) bind(c, name="get_d_name")
-            import c_ptr
-            type(c_ptr), intent(in), value :: dir
-            type(c_ptr) :: r
-        end function c_get_d_name
+    function c_get_d_name(dir) result(r) bind(c, name="get_d_name")
+      import c_ptr
+      type(c_ptr), intent(in), value :: dir
+      type(c_ptr) :: r
+    end function c_get_d_name
 
-        function c_is_dir(path) result(r) bind(c, name="c_is_dir")
-            import c_char, c_int
-            character(kind=c_char), intent(in) :: path(*)
-            integer(kind=c_int) :: r
-        end function c_is_dir
-    end interface
+    function c_is_dir(path) result(r) bind(c, name="c_is_dir")
+      import c_char, c_int
+      character(kind=c_char), intent(in) :: path(*)
+      integer(kind=c_int) :: r
+    end function c_is_dir
+  end interface
 #endif
 
 contains
 
-
 !> return value of environment variable
-subroutine env_variable(var, name)
-   character(len=:), allocatable, intent(out) :: var
-   character(len=*), intent(in) :: name
-   integer :: length, stat
+  subroutine env_variable(var, name)
+    character(len=:), allocatable, intent(out) :: var
+    character(len=*), intent(in) :: name
+    integer :: length, stat
 
-   call get_environment_variable(name, length=length, status=stat)
-   if (stat /= 0) return
+    call get_environment_variable(name, length=length, status=stat)
+    if (stat /= 0) return
 
-   allocate(character(len=length) :: var)
+    allocate (character(len=length) :: var)
 
-   if (length > 0) then
+    if (length > 0) then
       call get_environment_variable(name, var, status=stat)
       if (stat /= 0) then
-         deallocate(var)
-         return
+        deallocate (var)
+        return
       end if
-   end if
+    end if
 
-end subroutine env_variable
-
+  end subroutine env_variable
 
 !> Extract filename from path with/without suffix
-function basename(path,suffix) result (base)
+  function basename(path, suffix) result(base)
 
     character(*), intent(In) :: path
     logical, intent(in), optional :: suffix
@@ -90,27 +88,26 @@ function basename(path,suffix) result (base)
     character(:), allocatable :: file_parts(:)
     logical :: with_suffix
 
-    if (.not.present(suffix)) then
-        with_suffix = .true.
+    if (.not. present(suffix)) then
+      with_suffix = .true.
     else
-        with_suffix = suffix
+      with_suffix = suffix
     end if
 
-    call split(path,file_parts,delimiters='\/')
-    if(size(file_parts)>0)then
-       base = trim(file_parts(size(file_parts)))
+    call split(path, file_parts, delimiters='\/')
+    if (size(file_parts) > 0) then
+      base = trim(file_parts(size(file_parts)))
     else
-       base = ''
-    endif
-    if(.not.with_suffix)then
-        call split(base,file_parts,delimiters='.')
-        if(size(file_parts)>=2)then
-           base = trim(file_parts(size(file_parts)-1))
-        endif
-    endif
+      base = ''
+    end if
+    if (.not. with_suffix) then
+      call split(base, file_parts, delimiters='.')
+      if (size(file_parts) >= 2) then
+        base = trim(file_parts(size(file_parts) - 1))
+      end if
+    end if
 
-end function basename
-
+  end function basename
 
 !> Canonicalize path for comparison
 !! * Handles path string redundancies
@@ -119,7 +116,7 @@ end function basename
 !! To be replaced by realpath/_fullname in stdlib_os
 !!
 !! FIXME: Lot's of ugly hacks following here
-function canon_path(path)
+  function canon_path(path)
     character(len=*), intent(in) :: path
     character(len=:), allocatable :: canon_path
     character(len=:), allocatable :: nixpath
@@ -134,135 +131,133 @@ function canon_path(path)
     iend = 0
     absolute = nixpath(1:1) == "/"
     if (absolute) then
-        canon_path = "/"
+      canon_path = "/"
     else
-        canon_path = ""
+      canon_path = ""
     end if
 
-    do while(iend < len(nixpath))
-        call next(nixpath, istart, iend, is_path)
-        if (is_path) then
-            select case(nixpath(istart:iend))
-            case(".", "") ! always drop empty paths
-            case("..")
-                if (nn > 0) then
-                    last = scan(canon_path(:len(canon_path)-1), "/", back=.true.)
-                    canon_path = canon_path(:last)
-                    nn = nn - 1
-                else
-                    if (.not. absolute) then
-                        canon_path = canon_path // nixpath(istart:iend) // "/"
-                    end if
-                end if
-            case default
-                nn = nn + 1
-                canon_path = canon_path // nixpath(istart:iend) // "/"
-            end select
-        end if
+    do while (iend < len(nixpath))
+      call next(nixpath, istart, iend, is_path)
+      if (is_path) then
+        select case (nixpath(istart:iend))
+        case (".", "") ! always drop empty paths
+        case ("..")
+          if (nn > 0) then
+            last = scan(canon_path(:len(canon_path) - 1), "/", back=.true.)
+            canon_path = canon_path(:last)
+            nn = nn - 1
+          else
+            if (.not. absolute) then
+              canon_path = canon_path//nixpath(istart:iend)//"/"
+            end if
+          end if
+        case default
+          nn = nn + 1
+          canon_path = canon_path//nixpath(istart:iend)//"/"
+        end select
+      end if
     end do
 
     if (len(canon_path) == 0) canon_path = "."
     if (len(canon_path) > 1 .and. canon_path(len(canon_path):) == "/") then
-        canon_path = canon_path(:len(canon_path)-1)
+      canon_path = canon_path(:len(canon_path) - 1)
     end if
 
-contains
+  contains
 
     subroutine next(string, istart, iend, is_path)
-        character(len=*), intent(in) :: string
-        integer, intent(inout) :: istart
-        integer, intent(inout) :: iend
-        logical, intent(inout) :: is_path
+      character(len=*), intent(in) :: string
+      integer, intent(inout) :: istart
+      integer, intent(inout) :: iend
+      logical, intent(inout) :: is_path
 
-        integer :: ii, nn
-        character :: tok
+      integer :: ii, nn
+      character :: tok
 
-        nn = len(string)
+      nn = len(string)
 
-        if (iend >= nn) then
-            istart = nn
-            iend = nn
-            return
-        end if
+      if (iend >= nn) then
+        istart = nn
+        iend = nn
+        return
+      end if
 
-        ii = min(iend + 1, nn)
-        tok = string(ii:ii)
+      ii = min(iend + 1, nn)
+      tok = string(ii:ii)
 
-        is_path = tok /= '/'
+      is_path = tok /= '/'
 
-        if (.not.is_path) then
-            is_path = .false.
-            istart = ii
-            iend = ii
-            return
-        end if
-
+      if (.not. is_path) then
+        is_path = .false.
         istart = ii
-        do ii = min(iend + 1, nn), nn
-            tok = string(ii:ii)
-            select case(tok)
-            case('/')
-                exit
-            case default
-                iend = ii
-                cycle
-            end select
-        end do
+        iend = ii
+        return
+      end if
+
+      istart = ii
+      do ii = min(iend + 1, nn), nn
+        tok = string(ii:ii)
+        select case (tok)
+        case ('/')
+          exit
+        case default
+          iend = ii
+          cycle
+        end select
+      end do
 
     end subroutine next
-end function canon_path
-
+  end function canon_path
 
 !> Extract dirname from path
-function dirname(path) result (dir)
+  function dirname(path) result(dir)
     character(*), intent(in) :: path
     character(:), allocatable :: dir
 
-    dir = path(1:scan(path,'/\',back=.true.))
+    dir = path(1:scan(path, '/\', back=.true.))
 
-end function dirname
+  end function dirname
 
 !> Extract dirname from path
-function parent_dir(path) result (dir)
+  function parent_dir(path) result(dir)
     character(*), intent(in) :: path
     character(:), allocatable :: dir
 
-    dir = path(1:scan(path,'/\',back=.true.)-1)
+    dir = path(1:scan(path, '/\', back=.true.) - 1)
 
-end function parent_dir
-
+  end function parent_dir
 
 !> test if a name matches an existing directory path
-logical function is_dir(dir)
+  logical function is_dir(dir)
     character(*), intent(in) :: dir
     integer :: stat
 
     select case (get_os_type())
 
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-        call execute_command_line("test -d " // dir , exitstat=stat)
+      call execute_command_line("test -d "//dir, exitstat=stat)
 
     case (OS_WINDOWS)
-        call execute_command_line('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', exitstat=stat)
+      call execute_command_line('cmd /c "if not exist '//windows_path(dir)//'\ exit /B 1"', exitstat=stat)
 
     end select
 
     is_dir = (stat == 0)
 
-end function is_dir
+  end function is_dir
 
 !> test if a file is hidden
-logical function is_hidden_file(file_basename) result(r)
+  logical function is_hidden_file(file_basename) result(r)
     character(*), intent(in) :: file_basename
     if (len(file_basename) <= 2) then
-        r = .false.
+      r = .false.
     else
-        r = str_begins_with_str(file_basename, '.')
+      r = str_begins_with_str(file_basename, '.')
     end if
-end function is_hidden_file
+  end function is_hidden_file
 
 !> Construct path by joining strings with os file separator
-function join_path(a1,a2,a3,a4,a5) result(path)
+  function join_path(a1, a2, a3, a4, a5) result(path)
 
     character(len=*), intent(in)           :: a1, a2
     character(len=*), intent(in), optional :: a3, a4, a5
@@ -273,62 +268,61 @@ function join_path(a1,a2,a3,a4,a5) result(path)
     !$omp threadprivate(has_cache, cache)
 
     if (has_cache) then
-        filesep = cache
+      filesep = cache
     else
-        select case (get_os_type())
-            case default
-                filesep = '/'
-            case (OS_WINDOWS)
-                filesep = '\'
-        end select
+      select case (get_os_type())
+      case default
+        filesep = '/'
+      case (OS_WINDOWS)
+        filesep = '\'
+      end select
 
-        cache = filesep
-        has_cache = .true.
+      cache = filesep
+      has_cache = .true.
     end if
 
     if (a1 == "") then
-        path = a2
+      path = a2
     else
-        path = a1 // filesep // a2
+      path = a1//filesep//a2
     end if
 
     if (present(a3)) then
-        path = path // filesep // a3
+      path = path//filesep//a3
     else
-        return
+      return
     end if
 
     if (present(a4)) then
-        path = path // filesep // a4
+      path = path//filesep//a4
     else
-        return
+      return
     end if
 
     if (present(a5)) then
-        path = path // filesep // a5
+      path = path//filesep//a5
     else
-        return
+      return
     end if
 
-end function join_path
-
+  end function join_path
 
 !> Determine number or rows in a file given a LUN
-integer function number_of_rows(s) result(nrows)
-    integer,intent(in)::s
+  integer function number_of_rows(s) result(nrows)
+    integer, intent(in)::s
     integer :: ios
-    rewind(s)
+    rewind (s)
     nrows = 0
     do
-        read(s, *, iostat=ios)
-        if (ios /= 0) exit
-        nrows = nrows + 1
+      read (s, *, iostat=ios)
+      if (ios /= 0) exit
+      nrows = nrows + 1
     end do
-    rewind(s)
-end function number_of_rows
+    rewind (s)
+  end function number_of_rows
 
 !> read lines into an array of TYPE(STRING_T) variables expanding tabs
-function read_lines_expanded(fh) result(lines)
+  function read_lines_expanded(fh) result(lines)
     integer, intent(in) :: fh
     type(string_t), allocatable :: lines(:)
 
@@ -336,68 +330,68 @@ function read_lines_expanded(fh) result(lines)
     integer :: ilen
     character(LINE_BUFFER_LEN) :: line_buffer_read, line_buffer_expanded
 
-    allocate(lines(number_of_rows(fh)))
+    allocate (lines(number_of_rows(fh)))
     do i = 1, size(lines)
-        read(fh, '(A)') line_buffer_read
-        call notabs(line_buffer_read, line_buffer_expanded, ilen)
-        lines(i)%s = trim(line_buffer_expanded)
+      read (fh, '(A)') line_buffer_read
+      call notabs(line_buffer_read, line_buffer_expanded, ilen)
+      lines(i)%s = trim(line_buffer_expanded)
     end do
 
-end function read_lines_expanded
+  end function read_lines_expanded
 
 !> read lines into an array of TYPE(STRING_T) variables
-function read_lines(fh) result(lines)
+  function read_lines(fh) result(lines)
     integer, intent(in) :: fh
     type(string_t), allocatable :: lines(:)
 
     integer :: i
     character(LINE_BUFFER_LEN) :: line_buffer
 
-    allocate(lines(number_of_rows(fh)))
+    allocate (lines(number_of_rows(fh)))
     do i = 1, size(lines)
-        read(fh, '(A)') line_buffer
-        lines(i)%s = trim(line_buffer)
+      read (fh, '(A)') line_buffer
+      lines(i)%s = trim(line_buffer)
     end do
 
-end function read_lines
+  end function read_lines
 
 !> Create a directory. Create subdirectories as needed
-subroutine mkdir(dir, echo)
+  subroutine mkdir(dir, echo)
     character(len=*), intent(in) :: dir
     logical, intent(in), optional :: echo
 
     integer :: stat
     logical :: echo_local
 
-    if(present(echo))then
-        echo_local=echo
-      else
-        echo_local=.true.
+    if (present(echo)) then
+      echo_local = echo
+    else
+      echo_local = .true.
     end if
 
     if (is_dir(dir)) return
 
     select case (get_os_type())
-        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-            call execute_command_line('mkdir -p ' // dir, exitstat=stat)
+    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
+      call execute_command_line('mkdir -p '//dir, exitstat=stat)
 
-            if (echo_local) then
-                write (*, *) '+ mkdir -p ' // dir
-            end if
+      if (echo_local) then
+        write (*, *) '+ mkdir -p '//dir
+      end if
 
-        case (OS_WINDOWS)
-            call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
+    case (OS_WINDOWS)
+      call execute_command_line("mkdir "//windows_path(dir), exitstat=stat)
 
-            if (echo_local) then
-                write (*, *) '+ mkdir ' // windows_path(dir)
-            end if
+      if (echo_local) then
+        write (*, *) '+ mkdir '//windows_path(dir)
+      end if
 
     end select
 
     if (stat /= 0) then
-        call fpm_stop(1, '*mkdir*:directory creation failed')
+      call fpm_stop(1, '*mkdir*:directory creation failed')
     end if
-end subroutine mkdir
+  end subroutine mkdir
 
 #ifndef FPM_BOOTSTRAP
 !> Get file & directory names in directory `dir` using iso_c_binding.
@@ -405,7 +399,7 @@ end subroutine mkdir
 !!  - File/directory names return are relative to cwd, ie. preprended with `dir`
 !!  - Includes files starting with `.` except current directory and parent directory
 !!
-recursive subroutine list_files(dir, files, recurse)
+  recursive subroutine list_files(dir, files, recurse)
     character(len=*), intent(in) :: dir
     type(string_t), allocatable, intent(out) :: files(:)
     logical, intent(in), optional :: recurse
@@ -416,75 +410,75 @@ recursive subroutine list_files(dir, files, recurse)
 
     type(c_ptr) :: dir_handle
     type(c_ptr) :: dir_entry_c
-    character(len=:,kind=c_char), allocatable :: fortran_name
+    character(len=:, kind=c_char), allocatable :: fortran_name
     character(len=:), allocatable :: string_fortran
     integer, parameter :: N_MAX = 256
     type(string_t) :: files_tmp(N_MAX)
     integer(kind=c_int) :: r
 
     if (c_is_dir(dir(1:len_trim(dir))//c_null_char) == 0) then
-        allocate (files(0))
-        return
+      allocate (files(0))
+      return
     end if
 
     dir_handle = c_opendir(dir(1:len_trim(dir))//c_null_char)
     if (.not. c_associated(dir_handle)) then
-        print *, 'c_opendir() failed'
-        error stop
+      print *, 'c_opendir() failed'
+      error stop
     end if
 
     i = 0
-    allocate(files(0))
+    allocate (files(0))
 
     do
-        dir_entry_c = c_readdir(dir_handle)
-        if (.not. c_associated(dir_entry_c)) then
-            exit
-        else
-            string_fortran = f_string(c_get_d_name(dir_entry_c))
+      dir_entry_c = c_readdir(dir_handle)
+      if (.not. c_associated(dir_entry_c)) then
+        exit
+      else
+        string_fortran = f_string(c_get_d_name(dir_entry_c))
 
-            if ((string_fortran == '.' .or. string_fortran == '..')) then
-                cycle
-            end if
-
-            i = i + 1
-
-            if (i > N_MAX) then
-                files = [files, files_tmp]
-                i = 1
-            end if
-
-            files_tmp(i)%s = join_path(dir, string_fortran)
+        if ((string_fortran == '.' .or. string_fortran == '..')) then
+          cycle
         end if
+
+        i = i + 1
+
+        if (i > N_MAX) then
+          files = [files, files_tmp]
+          i = 1
+        end if
+
+        files_tmp(i)%s = join_path(dir, string_fortran)
+      end if
     end do
 
     r = c_closedir(dir_handle)
 
     if (r /= 0) then
-        print *, 'c_closedir() failed'
-        error stop
+      print *, 'c_closedir() failed'
+      error stop
     end if
 
     if (i > 0) then
-        files = [files, files_tmp(1:i)]
+      files = [files, files_tmp(1:i)]
     end if
 
     if (present(recurse)) then
-        if (recurse) then
+      if (recurse) then
 
-            allocate(sub_dir_files(0))
+        allocate (sub_dir_files(0))
 
-            do i=1,size(files)
-                if (c_is_dir(files(i)%s//c_null_char) /= 0) then
-                    call list_files(files(i)%s, dir_files, recurse=.true.)
-                    sub_dir_files = [sub_dir_files, dir_files]
-                end if
-            end do
+        do i = 1, size(files)
+          if (c_is_dir(files(i)%s//c_null_char) /= 0) then
+            call list_files(files(i)%s, dir_files, recurse=.true.)
+            sub_dir_files = [sub_dir_files, dir_files]
+          end if
+        end do
 
-            files = [files, sub_dir_files]
-        end if
+        files = [files, sub_dir_files]
+      end if
     end if
-end subroutine list_files
+  end subroutine list_files
 
 #else
 !> Get file & directory names in directory `dir`.
@@ -492,7 +486,7 @@ end subroutine list_files
 !!  - File/directory names return are relative to cwd, ie. preprended with `dir`
 !!  - Includes files starting with `.` except current directory and parent directory
 !!
-recursive subroutine list_files(dir, files, recurse)
+  recursive subroutine list_files(dir, files, recurse)
     character(len=*), intent(in) :: dir
     type(string_t), allocatable, intent(out) :: files(:)
     logical, intent(in), optional :: recurse
@@ -503,70 +497,68 @@ recursive subroutine list_files(dir, files, recurse)
     type(string_t), allocatable :: sub_dir_files(:)
 
     if (.not. is_dir(dir)) then
-        allocate (files(0))
-        return
+      allocate (files(0))
+      return
     end if
 
     allocate (temp_file, source=get_temp_filename())
 
     select case (get_os_type())
-        case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-            call execute_command_line('ls -A ' // dir // ' > ' // temp_file, &
-                                      exitstat=stat)
-        case (OS_WINDOWS)
-            call execute_command_line('dir /b ' // windows_path(dir) // ' > ' // temp_file, &
-                                      exitstat=stat)
+    case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
+      call execute_command_line('ls -A '//dir//' > '//temp_file, &
+                                exitstat=stat)
+    case (OS_WINDOWS)
+      call execute_command_line('dir /b '//windows_path(dir)//' > '//temp_file, &
+                                exitstat=stat)
     end select
 
     if (stat /= 0) then
-        call fpm_stop(2,'*list_files*:directory listing failed')
+      call fpm_stop(2, '*list_files*:directory listing failed')
     end if
 
     open (newunit=fh, file=temp_file, status='old')
     files = read_lines(fh)
-    close(fh,status="delete")
+    close (fh, status="delete")
 
-    do i=1,size(files)
-        files(i)%s = join_path(dir,files(i)%s)
+    do i = 1, size(files)
+      files(i)%s = join_path(dir, files(i)%s)
     end do
 
     if (present(recurse)) then
-        if (recurse) then
+      if (recurse) then
 
-            allocate(sub_dir_files(0))
+        allocate (sub_dir_files(0))
 
-            do i=1,size(files)
-                if (is_dir(files(i)%s)) then
+        do i = 1, size(files)
+          if (is_dir(files(i)%s)) then
 
-                    call list_files(files(i)%s, dir_files, recurse=.true.)
-                    sub_dir_files = [sub_dir_files, dir_files]
+            call list_files(files(i)%s, dir_files, recurse=.true.)
+            sub_dir_files = [sub_dir_files, dir_files]
 
-                end if
-            end do
+          end if
+        end do
 
-            files = [files, sub_dir_files]
+        files = [files, sub_dir_files]
 
-        end if
+      end if
     end if
 
-end subroutine list_files
+  end subroutine list_files
 
 #endif
 
-
 !> test if pathname already exists
-logical function exists(filename) result(r)
+  logical function exists(filename) result(r)
     character(len=*), intent(in) :: filename
-    inquire(file=filename, exist=r)
-end function
-
+    inquire (file=filename, exist=r)
+  end function
 
 !> Get a unused temporary filename
 !!  Calls posix 'tempnam' - not recommended, but
 !!   we have no security concerns for this application
 !!   and use here is temporary.
 !! Works with MinGW
-function get_temp_filename() result(tempfile)
+  function get_temp_filename() result(tempfile)
     !
     use iso_c_binding, only: c_ptr, C_NULL_PTR, c_f_pointer
     character(:), allocatable :: tempfile
@@ -576,32 +568,31 @@ function get_temp_filename() result(tempfile)
 
     interface
 
-        function c_tempnam(dir,pfx) result(tmp) bind(c,name="tempnam")
-            import
-            type(c_ptr), intent(in), value :: dir
-            type(c_ptr), intent(in), value :: pfx
-            type(c_ptr) :: tmp
-        end function c_tempnam
+      function c_tempnam(dir, pfx) result(tmp) bind(c, name="tempnam")
+        import
+        type(c_ptr), intent(in), value :: dir
+        type(c_ptr), intent(in), value :: pfx
+        type(c_ptr) :: tmp
+      end function c_tempnam
 
-        subroutine c_free(ptr) BIND(C,name="free")
-            import
-            type(c_ptr), value :: ptr
-        end subroutine c_free
+      subroutine c_free(ptr) BIND(C, name="free")
+        import
+        type(c_ptr), value :: ptr
+      end subroutine c_free
 
     end interface
 
     c_tempfile_ptr = c_tempnam(C_NULL_PTR, C_NULL_PTR)
-    call c_f_pointer(c_tempfile_ptr,c_tempfile,[LINE_BUFFER_LEN])
+    call c_f_pointer(c_tempfile_ptr, c_tempfile, [LINE_BUFFER_LEN])
 
     tempfile = f_string(c_tempfile)
 
     call c_free(c_tempfile_ptr)
 
-end function get_temp_filename
-
+  end function get_temp_filename
 
 !> Replace file system separators for windows
-function windows_path(path) result(winpath)
+  function windows_path(path) result(winpath)
 
     character(*), intent(in) :: path
     character(:), allocatable :: winpath
@@ -610,17 +601,16 @@ function windows_path(path) result(winpath)
 
     winpath = path
 
-    idx = index(winpath,'/')
-    do while(idx > 0)
-        winpath(idx:idx) = '\'
-        idx = index(winpath,'/')
+    idx = index(winpath, '/')
+    do while (idx > 0)
+      winpath(idx:idx) = '\'
+      idx = index(winpath, '/')
     end do
 
-end function windows_path
-
+  end function windows_path
 
 !> Replace file system separators for unix
-function unix_path(path) result(nixpath)
+  function unix_path(path) result(nixpath)
 
     character(*), intent(in) :: path
     character(:), allocatable :: nixpath
@@ -629,17 +619,16 @@ function unix_path(path) result(nixpath)
 
     nixpath = path
 
-    idx = index(nixpath,'\')
-    do while(idx > 0)
-        nixpath(idx:idx) = '/'
-        idx = index(nixpath,'\')
+    idx = index(nixpath, '\')
+    do while (idx > 0)
+      nixpath(idx:idx) = '/'
+      idx = index(nixpath, '\')
     end do
 
-end function unix_path
-
+  end function unix_path
 
 !> read a line of arbitrary length into a CHARACTER variable from the specified LUN
-subroutine getline(unit, line, iostat, iomsg)
+  subroutine getline(unit, line, iostat, iomsg)
 
     !> Formatted IO unit
     integer, intent(in) :: unit
@@ -658,132 +647,131 @@ subroutine getline(unit, line, iostat, iomsg)
     integer :: size
     integer :: stat
 
-    allocate(character(len=0) :: line)
+    allocate (character(len=0) :: line)
     do
-        read(unit, '(a)', advance='no', iostat=stat, iomsg=msg, size=size) &
-            & buffer
-        if (stat > 0) exit
-        line = line // buffer(:size)
-        if (stat < 0) then
-            if (is_iostat_eor(stat)) then
-                stat = 0
-            end if
-            exit
+      read (unit, '(a)', advance='no', iostat=stat, iomsg=msg, size=size) &
+          & buffer
+      if (stat > 0) exit
+      line = line//buffer(:size)
+      if (stat < 0) then
+        if (is_iostat_eor(stat)) then
+          stat = 0
         end if
+        exit
+      end if
     end do
 
     if (stat /= 0) then
-        if (present(iomsg)) iomsg = trim(msg)
+      if (present(iomsg)) iomsg = trim(msg)
     end if
     iostat = stat
 
-end subroutine getline
-
+  end subroutine getline
 
 !> delete a file by filename
-subroutine delete_file(file)
+  subroutine delete_file(file)
     character(len=*), intent(in) :: file
     logical :: exist
     integer :: unit
-    inquire(file=file, exist=exist)
+    inquire (file=file, exist=exist)
     if (exist) then
-        open(file=file, newunit=unit)
-        close(unit, status="delete")
+      open (file=file, newunit=unit)
+      close (unit, status="delete")
     end if
-end subroutine delete_file
+  end subroutine delete_file
 
 !> write trimmed character data to a file if it does not exist
-subroutine warnwrite(fname,data)
-character(len=*),intent(in) :: fname
-character(len=*),intent(in) :: data(:)
+  subroutine warnwrite(fname, data)
+    character(len=*), intent(in) :: fname
+    character(len=*), intent(in) :: data(:)
 
-    if(.not.exists(fname))then
-        call filewrite(fname,data)
+    if (.not. exists(fname)) then
+      call filewrite(fname, data)
     else
-        write(stderr,'(*(g0,1x))')'<INFO>  ',fname,&
-        & 'already exists. Not overwriting'
-    endif
+      write (stderr, '(*(g0,1x))') '<INFO>  ', fname,&
+      & 'already exists. Not overwriting'
+    end if
 
-end subroutine warnwrite
+  end subroutine warnwrite
 
 !> procedure to open filename as a sequential "text" file
-subroutine fileopen(filename,lun,ier)
+  subroutine fileopen(filename, lun, ier)
 
-character(len=*),intent(in)   :: filename
-integer,intent(out)           :: lun
-integer,intent(out),optional  :: ier
-integer                       :: ios
-character(len=256)            :: message
+    character(len=*), intent(in)   :: filename
+    integer, intent(out)           :: lun
+    integer, intent(out), optional  :: ier
+    integer                       :: ios
+    character(len=256)            :: message
 
-    message=' '
-    ios=0
-    if(filename/=' ')then
-        open(file=filename, &
-        & newunit=lun, &
-        & form='formatted', &    ! FORM    = FORMATTED | UNFORMATTED
-        & access='sequential', & ! ACCESS  = SEQUENTIAL| DIRECT | STREAM
-        & action='write', &      ! ACTION  = READ|WRITE| READWRITE
-        & position='rewind', &   ! POSITION= ASIS      | REWIND | APPEND
-        & status='new', &        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN
-        & iostat=ios, &
-        & iomsg=message)
+    message = ' '
+    ios = 0
+    if (filename /= ' ') then
+      open (file=filename, &
+      & newunit=lun, &
+      & form='formatted', &    ! FORM    = FORMATTED | UNFORMATTED
+      & access='sequential', & ! ACCESS  = SEQUENTIAL| DIRECT | STREAM
+      & action='write', &      ! ACTION  = READ|WRITE| READWRITE
+      & position='rewind', &   ! POSITION= ASIS      | REWIND | APPEND
+      & status='new', &        ! STATUS  = NEW| REPLACE| OLD| SCRATCH| UNKNOWN
+      & iostat=ios, &
+      & iomsg=message)
     else
-        lun=stdout
-        ios=0
-    endif
-    if(ios/=0)then
-        lun=-1
-        if(present(ier))then
-           ier=ios
-        else
-           call fpm_stop(3,'*fileopen*:'//filename//':'//trim(message))
-        endif
-    endif
+      lun = stdout
+      ios = 0
+    end if
+    if (ios /= 0) then
+      lun = -1
+      if (present(ier)) then
+        ier = ios
+      else
+        call fpm_stop(3, '*fileopen*:'//filename//':'//trim(message))
+      end if
+    end if
 
-end subroutine fileopen
+  end subroutine fileopen
 
 !> simple close of a LUN.  On error show message and stop (by default)
-subroutine fileclose(lun,ier)
-integer,intent(in)    :: lun
-integer,intent(out),optional :: ier
-character(len=256)    :: message
-integer               :: ios
-    if(lun/=-1)then
-        close(unit=lun,iostat=ios,iomsg=message)
-        if(ios/=0)then
-            if(present(ier))then
-               ier=ios
-            else
-               call fpm_stop(4,'*fileclose*:'//trim(message))
-            endif
-        endif
-    endif
-end subroutine fileclose
+  subroutine fileclose(lun, ier)
+    integer, intent(in)    :: lun
+    integer, intent(out), optional :: ier
+    character(len=256)    :: message
+    integer               :: ios
+    if (lun /= -1) then
+      close (unit=lun, iostat=ios, iomsg=message)
+      if (ios /= 0) then
+        if (present(ier)) then
+          ier = ios
+        else
+          call fpm_stop(4, '*fileclose*:'//trim(message))
+        end if
+      end if
+    end if
+  end subroutine fileclose
 
 !> procedure to write filedata to file filename
-subroutine filewrite(filename,filedata)
+  subroutine filewrite(filename, filedata)
 
-character(len=*),intent(in)           :: filename
-character(len=*),intent(in)           :: filedata(:)
-integer                               :: lun, i, ios
-character(len=256)                    :: message
-    call fileopen(filename,lun)
-    if(lun/=-1)then ! program currently stops on error on open, but might
-                      ! want it to continue so -1 (unallowed LUN) indicates error
-       ! write file
-       do i=1,size(filedata)
-           write(lun,'(a)',iostat=ios,iomsg=message)trim(filedata(i))
-           if(ios/=0)then
-               call fpm_stop(5,'*filewrite*:'//filename//':'//trim(message))
-           endif
-       enddo
-    endif
+    character(len=*), intent(in)           :: filename
+    character(len=*), intent(in)           :: filedata(:)
+    integer                               :: lun, i, ios
+    character(len=256)                    :: message
+    call fileopen(filename, lun)
+    if (lun /= -1) then ! program currently stops on error on open, but might
+      ! want it to continue so -1 (unallowed LUN) indicates error
+      ! write file
+      do i = 1, size(filedata)
+        write (lun, '(a)', iostat=ios, iomsg=message) trim(filedata(i))
+        if (ios /= 0) then
+          call fpm_stop(5, '*filewrite*:'//filename//':'//trim(message))
+        end if
+      end do
+    end if
     ! close file
     call fileclose(lun)
 
-end subroutine filewrite
+  end subroutine filewrite
 
-function which(command) result(pathname)
+  function which(command) result(pathname)
 !>
 !!##NAME
 !!     which(3f) - [M_io:ENVIRONMENT] given a command name find the pathname by searching
@@ -826,48 +814,48 @@ function which(command) result(pathname)
 !!##LICENSE
 !!    Public Domain
 
-character(len=*),intent(in)     :: command
-character(len=:),allocatable    :: pathname, checkon, paths(:), exts(:)
-integer                         :: i, j
-   pathname=''
-   call split(get_env('PATH'),paths,delimiters=merge(';',':',separator()=='\'))
-   SEARCH: do i=1,size(paths)
-      checkon=trim(join_path(trim(paths(i)),command))
-      select case(separator())
-      case('/')
-         if(exists(checkon))then
-            pathname=checkon
+    character(len=*), intent(in)     :: command
+    character(len=:), allocatable    :: pathname, checkon, paths(:), exts(:)
+    integer                         :: i, j
+    pathname = ''
+    call split(get_env('PATH'), paths, delimiters=merge(';', ':', separator() == '\'))
+    SEARCH: do i = 1, size(paths)
+      checkon = trim(join_path(trim(paths(i)), command))
+      select case (separator())
+      case ('/')
+        if (exists(checkon)) then
+          pathname = checkon
+          exit SEARCH
+        end if
+      case ('\')
+        if (exists(checkon)) then
+          pathname = checkon
+          exit SEARCH
+        end if
+        if (exists(checkon//'.bat')) then
+          pathname = checkon//'.bat'
+          exit SEARCH
+        end if
+        if (exists(checkon//'.exe')) then
+          pathname = checkon//'.exe'
+          exit SEARCH
+        end if
+        call split(get_env('PATHEXT'), exts, delimiters=';')
+        do j = 1, size(exts)
+          if (exists(checkon//'.'//trim(exts(j)))) then
+            pathname = checkon//'.'//trim(exts(j))
             exit SEARCH
-         endif
-      case('\')
-         if(exists(checkon))then
-            pathname=checkon
-            exit SEARCH
-         endif
-         if(exists(checkon//'.bat'))then
-            pathname=checkon//'.bat'
-            exit SEARCH
-         endif
-         if(exists(checkon//'.exe'))then
-            pathname=checkon//'.exe'
-            exit SEARCH
-         endif
-         call split(get_env('PATHEXT'),exts,delimiters=';')
-         do j=1,size(exts)
-            if(exists(checkon//'.'//trim(exts(j))))then
-               pathname=checkon//'.'//trim(exts(j))
-               exit SEARCH
-            endif
-         enddo
+          end if
+        end do
       end select
-   enddo SEARCH
-end function which
+    end do SEARCH
+  end function which
 
 !> echo command string and pass it to the system for execution
-subroutine run(cmd,echo,exitstat,verbose,redirect)
+  subroutine run(cmd, echo, exitstat, verbose, redirect)
     character(len=*), intent(in) :: cmd
-    logical,intent(in),optional  :: echo
-    integer, intent(out),optional  :: exitstat
+    logical, intent(in), optional  :: echo
+    integer, intent(out), optional  :: exitstat
     logical, intent(in), optional :: verbose
     character(*), intent(in), optional :: redirect
 
@@ -876,91 +864,90 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     character(:), allocatable :: line
     integer :: stat, fh, ios
 
-
-    if(present(echo))then
-       echo_local=echo
+    if (present(echo)) then
+      echo_local = echo
     else
-       echo_local=.true.
+      echo_local = .true.
     end if
 
-    if(present(verbose))then
-        verbose_local=verbose
+    if (present(verbose)) then
+      verbose_local = verbose
     else
-        verbose_local=.true.
+      verbose_local = .true.
     end if
 
     if (present(redirect)) then
-        redirect_str =  ">"//redirect//" 2>&1"
+      redirect_str = ">"//redirect//" 2>&1"
     else
-        if(verbose_local)then
-            ! No redirection but verbose output
-            redirect_str = ""
+      if (verbose_local) then
+        ! No redirection but verbose output
+        redirect_str = ""
+      else
+        ! No redirection and non-verbose output
+        if (os_is_unix()) then
+          redirect_str = ">/dev/null 2>&1"
         else
-            ! No redirection and non-verbose output
-            if (os_is_unix()) then
-                redirect_str = ">/dev/null 2>&1"
-            else
-                redirect_str = ">NUL 2>&1"
-            end if
+          redirect_str = ">NUL 2>&1"
         end if
+      end if
     end if
 
-    if(echo_local) print *, '+ ', cmd
+    if (echo_local) print *, '+ ', cmd
 
     call execute_command_line(cmd//redirect_str, exitstat=stat)
 
-    if (verbose_local.and.present(redirect)) then
+    if (verbose_local .and. present(redirect)) then
 
-        open(newunit=fh,file=redirect,status='old')
-        do
-            call getline(fh, line, ios)
-            if (ios /= 0) exit
-            write(*,'(A)') trim(line)
-        end do
-        close(fh)
+      open (newunit=fh, file=redirect, status='old')
+      do
+        call getline(fh, line, ios)
+        if (ios /= 0) exit
+        write (*, '(A)') trim(line)
+      end do
+      close (fh)
 
     end if
 
     if (present(exitstat)) then
-        exitstat = stat
+      exitstat = stat
     else
-        if (stat /= 0) then
-            call fpm_stop(1,'*run*:Command failed')
-        end if
+      if (stat /= 0) then
+        call fpm_stop(1, '*run*:Command failed')
+      end if
     end if
 
-end subroutine run
+  end subroutine run
 
 !> Delete directory using system OS remove directory commands
-subroutine os_delete_dir(unix, dir, echo)
+  subroutine os_delete_dir(unix, dir, echo)
     logical, intent(in) :: unix
     character(len=*), intent(in) :: dir
     logical, intent(in), optional :: echo
 
     logical :: echo_local
 
-    if(present(echo))then
-        echo_local=echo
-      else
-        echo_local=.true.
+    if (present(echo)) then
+      echo_local = echo
+    else
+      echo_local = .true.
     end if
 
     if (unix) then
-        call run('rm -rf ' // dir, .false.)
+      call run('rm -rf '//dir, .false.)
 
-        if (echo_local) then
-          write (*, *) '+ rm -rf ' // dir
-        end if
+      if (echo_local) then
+        write (*, *) '+ rm -rf '//dir
+      end if
 
     else
-        call run('rmdir /s/q ' // dir, .false.)
+      call run('rmdir /s/q '//dir, .false.)
 
-        if (echo_local) then
-          write (*, *) '+ rmdir /s/q ' // dir
-        end if
+      if (echo_local) then
+        write (*, *) '+ rmdir /s/q '//dir
+      end if
 
     end if
 
-end subroutine os_delete_dir
+  end subroutine os_delete_dir
 
 end module fpm_filesystem

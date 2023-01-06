@@ -1,5 +1,4 @@
 module app_mod
-implicit none
-
+  implicit none
 
 end module app_mod

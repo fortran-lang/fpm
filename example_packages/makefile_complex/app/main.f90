@@ -1,7 +1,7 @@
 program makefile_complex
-    use wrapper_mod, only: do_stuff
+  use wrapper_mod, only: do_stuff
 
-    implicit none
+  implicit none
 
-    call do_stuff
+  call do_stuff
 end program makefile_complex

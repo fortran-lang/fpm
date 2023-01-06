@@ -1,17 +1,17 @@
 module fpm_cmd_install
-  use, intrinsic :: iso_fortran_env, only : output_unit
-  use fpm, only : build_model
-  use fpm_backend, only : build_package
-  use fpm_command_line, only : fpm_install_settings
-  use fpm_error, only : error_t, fatal_error, fpm_stop
-  use fpm_filesystem, only : join_path, list_files
-  use fpm_installer, only : installer_t, new_installer
-  use fpm_manifest, only : package_config_t, get_package_data
-  use fpm_model, only : fpm_model_t, FPM_SCOPE_APP
+  use, intrinsic :: iso_fortran_env, only: output_unit
+  use fpm, only: build_model
+  use fpm_backend, only: build_package
+  use fpm_command_line, only: fpm_install_settings
+  use fpm_error, only: error_t, fatal_error, fpm_stop
+  use fpm_filesystem, only: join_path, list_files
+  use fpm_installer, only: installer_t, new_installer
+  use fpm_manifest, only: package_config_t, get_package_data
+  use fpm_model, only: fpm_model_t, FPM_SCOPE_APP
   use fpm_targets, only: targets_from_sources, build_target_t, &
                          build_target_ptr, FPM_TARGET_EXECUTABLE, &
                          filter_library_targets, filter_executable_targets, filter_modules
-  use fpm_strings, only : string_t, resize
+  use fpm_strings, only: string_t, resize
   implicit none
   private
 
@@ -42,8 +42,8 @@ contains
     call handle_error(error)
 
     installable = (allocated(package%library) .and. package%install%library) &
-      .or. allocated(package%executable)
-    if (.not.installable) then
+                  .or. allocated(package%executable)
+    if (.not. installable) then
       call fatal_error(error, "Project does not contain any installable targets")
       call handle_error(error)
     end if
@@ -53,14 +53,14 @@ contains
       return
     end if
 
-    if (.not.settings%no_rebuild) then
-      call build_package(targets,model,verbose=settings%verbose)
+    if (.not. settings%no_rebuild) then
+      call build_package(targets, model, verbose=settings%verbose)
     end if
 
     call new_installer(installer, prefix=settings%prefix, &
-      bindir=settings%bindir, libdir=settings%libdir, &
-      includedir=settings%includedir, &
-      verbosity=merge(2, 1, settings%verbose))
+                       bindir=settings%bindir, libdir=settings%libdir, &
+                       includedir=settings%includedir, &
+                       verbosity=merge(2, 1, settings%verbose))
 
     if (allocated(package%library) .and. package%install%library) then
       call filter_library_targets(targets, list)
@@ -91,7 +91,7 @@ contains
     character(len=:), allocatable :: lib
     type(string_t), allocatable :: install_target(:), temp(:)
 
-    allocate(install_target(0))
+    allocate (install_target(0))
 
     call filter_library_targets(targets, temp)
     install_target = [install_target, temp]
@@ -101,10 +101,10 @@ contains
 
     ntargets = size(install_target)
 
-    write(unit, '("#", *(1x, g0))') &
+    write (unit, '("#", *(1x, g0))') &
       "total number of installable targets:", ntargets
     do ii = 1, ntargets
-      write(unit, '("-", *(1x, g0))') install_target(ii)%s
+      write (unit, '("-", *(1x, g0))') install_target(ii)%s
     end do
 
   end subroutine install_info
@@ -146,7 +146,7 @@ contains
     type(build_target_t), intent(in) :: target_ptr
     logical :: is_exe
     is_exe = target_ptr%target_type == FPM_TARGET_EXECUTABLE .and. &
-      allocated(target_ptr%dependencies)
+             allocated(target_ptr%dependencies)
     if (is_exe) then
       is_exe = target_ptr%dependencies(1)%ptr%source%unit_scope == FPM_SCOPE_APP
     end if
@@ -155,7 +155,7 @@ contains
   subroutine handle_error(error)
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      call fpm_stop(1,error%message)
+      call fpm_stop(1, error%message)
     end if
   end subroutine handle_error
 

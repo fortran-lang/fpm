@@ -6,8 +6,8 @@
 !>library = bool
 !>```
 module fpm_manifest_install
-  use fpm_error, only : error_t, fatal_error, syntax_error
-  use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+  use fpm_error, only: error_t, fatal_error, syntax_error
+  use fpm_toml, only: toml_table, toml_key, toml_stat, get_value
   implicit none
   private
 
@@ -47,7 +47,6 @@ contains
 
   end subroutine new_install_config
 
-
   !> Check local schema for allowed entries
   subroutine check(table, error)
 
@@ -64,11 +63,11 @@ contains
     if (size(list) < 1) return
 
     do ikey = 1, size(list)
-      select case(list(ikey)%key)
+      select case (list(ikey)%key)
       case default
         call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in install table")
         exit
-      case("library")
+      case ("library")
         continue
       end select
     end do
@@ -99,8 +98,8 @@ contains
 
     if (pr < 1) return
 
-    write(unit, fmt) "Install configuration"
-    write(unit, fmt) " - library install", &
+    write (unit, fmt) "Install configuration"
+    write (unit, fmt) " - library install", &
       & trim(merge("enabled ", "disabled", self%library))
 
   end subroutine info
