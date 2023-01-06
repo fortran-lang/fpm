@@ -1,7 +1,7 @@
 !> Manages global settings which are defined in the global config file.
 module fpm_settings
    use fpm_command_line, only: fpm_global_settings
-   use fpm_filesystem, only: exists, join_path, get_local_prefix
+   use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path, canon_path
    use fpm_environment, only: os_is_unix
    use fpm_error, only: error_t, fatal_error
    use fpm_toml, only: toml_table, toml_error, toml_stat, get_value
@@ -13,46 +13,66 @@ module fpm_settings
 
 contains
    !> Obtain global settings from the global config file.
-   subroutine get_global_settings(global_settings, error, custom_path_to_config_file)
+   subroutine get_global_settings(global_settings, error)
       !> Global settings to be obtained.
-      type(fpm_global_settings), allocatable, intent(out) :: global_settings
+      type(fpm_global_settings), allocatable, intent(inout) :: global_settings
       !> Error reading config file.
       type(error_t), allocatable, intent(out) :: error
-      !> Custom path to the config file.
-      character(len=*), optional, intent(in) :: custom_path_to_config_file
-      !> Final path to the config file.
-      character(len=:), allocatable :: path_to_config_file
+      !> Absolute path to the config file.
+      character(len=:), allocatable :: abs_path_to_config
       !> TOML table to be filled with global config settings.
       type(toml_table), allocatable :: table
       !> Error parsing to TOML table.
       type(toml_error), allocatable :: parse_error
 
+      if (.not. allocated(global_settings)) allocate (global_settings)
+
       ! Use custom path to the config file if it was specified.
-      if (present(custom_path_to_config_file)) then
-         if (exists(custom_path_to_config_file)) then
-            path_to_config_file = custom_path_to_config_file
-         else
-            ! Throw error if specified path doesn't exist.
-            call fatal_error(error, 'No config file at: "'//custom_path_to_config_file//'"')
+      if (allocated(global_settings%path_to_folder) .and. allocated(global_settings%file_name)) then
+         ! Throw error if folder doesn't exist.
+         if (.not. exists(global_settings%path_to_folder)) then
+            call fatal_error(error, 'Folder not found: "'//global_settings%path_to_folder//'"')
             return
          end if
-      else
-         ! Use default paths to the config file if it wasn't specified.
-         if (os_is_unix()) then
-            path_to_config_file = join_path(get_local_prefix(), 'share', 'fpm', 'config.toml')
-         else
-            path_to_config_file = join_path(get_local_prefix(), 'fpm', 'config.toml')
+
+         ! Throw error if file doesn't exist.
+         if (.not. exists(global_settings%full_path())) then
+            call fatal_error(error, 'File not found: "'//global_settings%full_path()//'"')
+            return
          end if
-         ! Return quietly (not set the path) if the config file doesn't exist.
-         if (.not. exists(path_to_config_file)) return
+
+         ! Make sure that the path to the global config file is absolute.
+         call get_absolute_path(global_settings%path_to_folder, abs_path_to_config, error)
+         if (allocated(error)) return
+
+         global_settings%path_to_folder = abs_path_to_config
+      else
+         ! Use default path if it wasn't specified.
+         if (os_is_unix()) then
+            global_settings%path_to_folder = join_path(get_local_prefix(), 'share', 'fpm')
+         else
+            global_settings%path_to_folder = join_path(get_local_prefix(), 'fpm')
+         end if
+
+         ! Use default file name.
+         global_settings%file_name = 'config.toml'
+
+         ! Deallocate and return if path doesn't exist.
+         if (.not. exists(global_settings%path_to_folder)) then
+            deallocate (global_settings%path_to_folder)
+            deallocate (global_settings%file_name)
+            return
+         end if
+
+         ! Deallocate name and return if the config file doesn't exist.
+         if (.not. exists(global_settings%full_path())) then
+            deallocate (global_settings%file_name)
+            return
+         end if
       end if
 
-      ! Set the path to the global config file.
-      allocate (global_settings)
-      global_settings%path = path_to_config_file
-
       ! Load into TOML table.
-      call toml_load(table, path_to_config_file, error=parse_error)
+      call toml_load(table, global_settings%full_path(), error=parse_error)
 
       if (allocated(parse_error)) then
          allocate (error)
@@ -60,6 +80,7 @@ contains
          return
       end if
 
+      ! Read registry subtable.
       call get_registry_settings(global_settings, table, error)
 
    end subroutine get_global_settings
@@ -76,7 +97,7 @@ contains
 
       if (stat /= toml_stat%success) then
          call fatal_error(error, 'Error reading registry from config file "'// &
-                          global_settings%path//'"')
+                          global_settings%full_path()//'"')
          return
       end if
 
@@ -93,14 +114,17 @@ contains
       end if
 
       if (allocated(path)) then
-         if (.not. exists(path)) then
-            call fatal_error(error, "Path to registry doesn't exist:"//'"'//path//'"')
+         if (is_absolute_path(path)) then
+            abs_path = path
+         else
+            abs_path = canon_path(join_path(global_settings%path_to_folder, path))
+         end if
+
+         if (.not. exists(abs_path)) then
+            call fatal_error(error, "No registry at: '"//abs_path//"'")
             return
          end if
 
-         ! Making sure that path is absolute
-         call get_absolute_path(path, abs_path, error)
-         if (allocated(error)) return
          global_settings%registry_settings%path = abs_path
       end if
 
@@ -114,7 +138,7 @@ contains
       if (allocated(url)) then
          ! Throw error when both path and url were provided.
          if (allocated(path)) then
-            call fatal_error(error, 'Do not provide both path and url to registry')
+            call fatal_error(error, 'Do not provide both path and url to the registry')
             return
          end if
 

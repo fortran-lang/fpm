@@ -1,7 +1,7 @@
 module test_filesystem
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
-                              join_path
+                              join_path, is_absolute_path
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     implicit none
     private
@@ -19,7 +19,8 @@ contains
 
         tests = [ &
             & new_unittest("canon-path", test_canon_path), &
-            & new_unittest("create-delete-directory", test_mkdir_rmdir) &
+            & new_unittest("create-delete-directory", test_mkdir_rmdir), &
+            & new_unittest("test-is-absolute-path", test_is_absolute_path) &
             ]
 
     end subroutine collect_filesystem
@@ -174,5 +175,85 @@ contains
         end if
 
     end subroutine check_rmdir
+
+    subroutine test_is_absolute_path(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        if (is_absolute_path('.', is_unix=.true.)) then
+            call test_failed(error, "Relative path '.' isn't absolute")
+            return
+        end if
+
+        if (is_absolute_path('abc', is_unix=.true.)) then
+           call test_failed(error, "Relative path 'abc' isn't absolute")
+           return
+        end if
+
+        if (.not. is_absolute_path('/', is_unix=.true.)) then
+            call test_failed(error, "Path '/' is absolute")
+            return
+        end if
+
+        if (.not. is_absolute_path('/abc', is_unix=.true.)) then
+            call test_failed(error, "Path '/abc' is absolute")
+            return
+        end if
+
+        if (.not. is_absolute_path('~/', is_unix=.true.)) then
+            call test_failed(error, "Path '~/' is absolute")
+            return
+        end if
+
+        if (.not. is_absolute_path('~/', is_unix=.true.)) then
+            call test_failed(error, "Path '~/' is absolute")
+            return
+        end if
+
+        if (is_absolute_path('abc', is_unix=.false.)) then
+            call test_failed(error, "Relative path 'abc' isn't absolute")
+            return
+        end if
+
+        if (is_absolute_path('..', is_unix=.false.)) then
+            call test_failed(error, "Relative path '..' isn't absolute")
+            return
+        end if
+
+        if (is_absolute_path('abc', is_unix=.false.)) then
+            call test_failed(error, "Relative path 'abc' isn't absolute")
+            return
+        end if
+
+        if (is_absolute_path('/', is_unix=.false.)) then
+            call test_failed(error, "Path '/' isn't absolute on Windows")
+            return
+        end if
+
+        if (is_absolute_path('c/', is_unix=.false.)) then
+            call test_failed(error, "Path 'c/' isn't absolute")
+            return
+        end if
+
+        if (.not. is_absolute_path('C:', is_unix=.false.)) then
+            call test_failed(error, "Path 'C:' is absolute")
+            return
+        end if
+
+        if (.not. is_absolute_path('x:', is_unix=.false.)) then
+            call test_failed(error, "Path 'x:' is absolute")
+            return
+        end if
+
+        if (.not. is_absolute_path('x:xyz', is_unix=.false.)) then
+            call test_failed(error, "Path 'x:xyz' is absolute")
+            return
+        end if
+
+        if (is_absolute_path('1:', is_unix=.false.)) then
+            call test_failed(error, "Path '1:' isn't absolute")
+            return
+        end if
+
+    end subroutine test_is_absolute_path
 
 end module test_filesystem

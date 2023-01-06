@@ -102,22 +102,21 @@ contains
 
     end subroutine c_f_character
 
-    !> Get absolute path from a path.
-    subroutine get_absolute_path(path, abs_path, error)
-        character(len=*), intent(in) :: path
+    !> Determine the absolute from the relative path.
+    subroutine get_absolute_path(rel_path, abs_path, error)
+        character(len=*), intent(in) :: rel_path
         character(len=:), allocatable, intent(out) :: abs_path
         type(error_t), allocatable, intent(out) :: error
-        character(len=:), allocatable :: start_dir, target_dir
+        character(len=:), allocatable :: start_dir
   
         call get_current_directory(start_dir, error)
         if (allocated(error)) return
-        call change_directory(path, error)
+        call change_directory(rel_path, error)
         if (allocated(error)) return
-        call get_current_directory(target_dir, error)
+        call get_current_directory(abs_path, error)
         if (allocated(error)) return
         call change_directory(start_dir, error)
         if (allocated(error)) return
-        abs_path = target_dir
      end subroutine get_absolute_path
 
 end module fpm_os

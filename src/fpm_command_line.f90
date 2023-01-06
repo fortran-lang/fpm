@@ -29,7 +29,7 @@ use fpm_environment,  only : get_os_type, get_env, os_is_unix, &
 use M_CLI2,           only : set_args, lget, sget, unnamed, remaining, specified
 use M_CLI2,           only : get_subcommand, CLI_RESPONSE_FILE
 use fpm_strings,      only : lower, split, to_fortran_name, is_fortran_name
-use fpm_filesystem,   only : basename, canon_path, which, run
+use fpm_filesystem,   only : basename, canon_path, which, run, join_path
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
 use fpm_os,           only : get_current_directory
@@ -59,9 +59,13 @@ end type
 integer,parameter :: ibug=4096
 
 type, extends(fpm_cmd_settings)   :: fpm_global_settings
-    !> Path to the global config file including the file name.
-    character(len=:), allocatable :: path
+    !> Path to the global config file excluding the file name.
+    character(len=:), allocatable :: path_to_folder
+    !> Name of the global config file. The default is `config.toml`.
+    character(len=:), allocatable :: file_name
     type(fpm_registry_settings), allocatable :: registry_settings
+contains
+    procedure :: full_path    
 end type
 
 type, extends(fpm_cmd_settings)   :: fpm_registry_settings
@@ -1337,9 +1341,18 @@ contains
       val = get_env(fpm_prefix//env, default)
     end function get_fpm_env
 
+    !> The full path to the global config file.
+    function full_path(self) result(result)
+        class(fpm_global_settings), intent(in) :: self
+        character(len=:), allocatable :: result
+
+        result = join_path(self%path_to_folder, self%file_name)
+    end function
+
     !> The official registry is used by default when no local or custom registry was specified.
     pure logical function uses_default_registry(self)
         class(fpm_registry_settings), intent(in) :: self
+
         uses_default_registry = .not. allocated(self%path) .and. .not. allocated(self%url)
     end function
 

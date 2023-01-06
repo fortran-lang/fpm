@@ -23,6 +23,7 @@ contains
       type(unittest_t), allocatable, intent(out) :: tests(:)
 
       tests = [ &
+      & new_unittest('no-folder', no_folder, should_fail=.true.), &
       & new_unittest('no-file', no_file, should_fail=.true.), &
       & new_unittest('empty-file', empty_file), &
       & new_unittest('empty-registry-table', empty_registry_table), &
@@ -41,65 +42,73 @@ contains
       if (is_dir(tmp_folder)) call os_delete_dir(os_is_unix(), tmp_folder)
    end
 
-   !> Throw error when custom path to config file was entered but none exists.
-   subroutine no_file(error)
+   subroutine setup_global_settings(global_settings)
+      type(fpm_global_settings), allocatable, intent(out) :: global_settings
 
+      allocate (global_settings)
+      global_settings%path_to_folder = tmp_folder
+      global_settings%file_name = config_file_name
+   end subroutine
+
+   !> Throw error when custom path to config file was entered but no folder exists.
+   subroutine no_folder(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
 
       call delete_tmp_folder()
-      call get_global_settings(global_settings, error, join_path(tmp_folder, config_file_name))
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
+   end subroutine no_folder
 
+   !> Throw error when custom path to config file was entered but no file exists.
+   subroutine no_file(error)
+      type(error_t), allocatable, intent(out) :: error
+      type(fpm_global_settings), allocatable :: global_settings
+
+      call delete_tmp_folder()
+      call mkdir(tmp_folder)
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
    end subroutine no_file
 
    !> Config file exists and working directory is set.
    subroutine empty_file(error)
-
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file
 
       call delete_tmp_folder()
       call mkdir(tmp_folder)
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, [''])
+      call filewrite(join_path(tmp_folder, config_file_name), [''])
 
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
 
       call os_delete_dir(os_is_unix(), tmp_folder)
 
-      if (.not. allocated(global_settings)) then
-         call test_failed(error, 'global_settings not allocated')
-         return
-      end if
-
-      if (.not. allocated(global_settings%path)) then
-         call test_failed(error, 'global_settings%path not allocated')
-         return
-      end if
+      if (allocated(error)) return
 
       if (allocated(global_settings%registry_settings)) then
          call test_failed(error, 'global_settings%registry_settings should not be allocated')
          return
       end if
-
    end subroutine empty_file
 
    subroutine empty_registry_table(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file
 
       call delete_tmp_folder()
       call mkdir(tmp_folder)
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, ['[registry]'])
+      call filewrite(join_path(tmp_folder, config_file_name), ['[registry]'])
 
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
 
       call os_delete_dir(os_is_unix(), tmp_folder)
+
+      if (allocated(error)) return
 
       if (.not. allocated(global_settings%registry_settings)) then
          call test_failed(error, 'global_settings%registry_settings not allocated')
@@ -115,37 +124,38 @@ contains
          call test_failed(error, "Url shouldn't be allocated")
          return
       end if
-
    end subroutine
 
    subroutine has_non_existent_path_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file
 
       call delete_tmp_folder()
       call mkdir(tmp_folder)
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, ['[registry]', 'path="abc"'])
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'path="abc"'])
+
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
       call os_delete_dir(os_is_unix(), tmp_folder)
    end subroutine
 
    subroutine has_existent_path_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file
 
       call delete_tmp_folder()
       call mkdir(tmp_folder)
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, ['[registry]', 'path="tmp"'])
+      call filewrite(join_path(tmp_folder, config_file_name), &
+                     [character(len=10) :: '[registry]', 'path="."'])
 
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
 
       call os_delete_dir(os_is_unix(), tmp_folder)
+
+      if (allocated(error)) return
 
       if (.not. allocated(global_settings%registry_settings%path)) then
          call test_failed(error, 'Path not allocated')
@@ -156,12 +166,13 @@ contains
          call test_failed(error, "Url shouldn't be allocated")
          return
       end if
+
    end subroutine
 
    subroutine absolute_path_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file, abs_path
+      character(len=:), allocatable :: abs_path
 
       call delete_tmp_folder()
       call mkdir(tmp_folder)
@@ -170,10 +181,11 @@ contains
 
       if (allocated(error)) return
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, [character(len=80) :: '[registry]', "path='"//abs_path//"'"])
+      call filewrite(join_path(tmp_folder, config_file_name), &
+                     [character(len=80) :: '[registry]', "path='"//abs_path//"'"])
 
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
 
       call os_delete_dir(os_is_unix(), tmp_folder)
 
@@ -193,15 +205,15 @@ contains
    subroutine relative_path_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file, abs_path
+      character(len=:), allocatable :: abs_path
 
       call delete_tmp_folder()
-      call mkdir(tmp_folder)
+      call mkdir(join_path(tmp_folder, 'abc'))
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, ['[registry]', 'path="tmp"'])
+      call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'path="abc"'])
 
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
 
       call get_absolute_path(tmp_folder, abs_path, error)
 
@@ -209,7 +221,7 @@ contains
 
       if (allocated(error)) return
 
-      if (global_settings%registry_settings%path /= abs_path) then
+      if (global_settings%registry_settings%path /= join_path(abs_path, 'abc')) then
          call test_failed(error, "Path not set correctly: '"//global_settings%registry_settings%path//"'")
          return
       end if
@@ -218,15 +230,16 @@ contains
    subroutine canonical_path_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file, abs_path
+      character(len=:), allocatable :: abs_path
 
       call delete_tmp_folder()
       call mkdir(tmp_folder)
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, [character(len=80) :: '[registry]', "path='"//join_path('.', 'tmp')//"'"])
+      call filewrite(join_path(tmp_folder, config_file_name), &
+                     [character(len=20) :: '[registry]', "path='"//join_path('..', 'tmp')//"'"])
 
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
 
       call get_absolute_path(tmp_folder, abs_path, error)
 
@@ -243,20 +256,20 @@ contains
    subroutine has_url_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file
 
       call delete_tmp_folder()
       call mkdir(tmp_folder)
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, ['[registry]', 'url="http"'])
+      call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'url="http"'])
 
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
 
       call os_delete_dir(os_is_unix(), tmp_folder)
 
       if (allocated(global_settings%registry_settings%path)) then
-         call test_failed(error, "Path shouldn't be allocated")
+         call test_failed(error, "Path shouldn't be allocated: '" &
+                          //global_settings%registry_settings%path//"'")
          return
       end if
 
@@ -269,14 +282,15 @@ contains
    subroutine has_both_path_and_url_to_registry(error)
       type(error_t), allocatable, intent(out) :: error
       type(fpm_global_settings), allocatable :: global_settings
-      character(len=:), allocatable :: path_to_config_file
 
       call delete_tmp_folder()
       call mkdir(tmp_folder)
 
-      path_to_config_file = join_path(tmp_folder, config_file_name)
-      call filewrite(path_to_config_file, ['[registry]', 'path="tmp"', 'url="http"'])
-      call get_global_settings(global_settings, error, path_to_config_file)
+      call filewrite(join_path(tmp_folder, config_file_name), &
+                     [character(len=10) :: '[registry]', 'path="."', 'url="http"'])
+
+      call setup_global_settings(global_settings)
+      call get_global_settings(global_settings, error)
       call os_delete_dir(os_is_unix(), tmp_folder)
    end subroutine
 
