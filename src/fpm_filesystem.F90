@@ -1007,7 +1007,12 @@ end function get_local_prefix
       if (is_unix_os) then
          is_absolute_path = path(1:1) == '/' .or. path(1:1) == '~'
       else
-         is_absolute_path = len(path) > 1 .and. index(letters, path(1:1)) /= 0 .and. path(2:2) == ':'
+         if (len(path) < 2) then
+            is_absolute_path = .false.
+            return
+         end if
+
+         is_absolute_path = index(letters, path(1:1)) /= 0 .and. path(2:2) == ':'
       end if
 
    end function is_absolute_path

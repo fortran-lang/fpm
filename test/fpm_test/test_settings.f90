@@ -217,6 +217,9 @@ contains
 
       call get_absolute_path(tmp_folder, abs_path, error)
 
+      print *, abs_path
+      print *, join_path(abs_path, 'abc')
+
       call os_delete_dir(os_is_unix(), tmp_folder)
 
       if (allocated(error)) return
