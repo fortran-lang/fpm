@@ -1,7 +1,7 @@
 !> Manages global settings which are defined in the global config file.
 module fpm_settings
    use fpm_command_line, only: fpm_global_settings
-   use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path, canon_path
+   use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path
    use fpm_environment, only: os_is_unix
    use fpm_error, only: error_t, fatal_error
    use fpm_toml, only: toml_table, toml_error, toml_stat, get_value
@@ -90,7 +90,7 @@ contains
       type(toml_table), intent(inout) :: table
       type(error_t), allocatable, intent(out) :: error
       type(toml_table), pointer :: child
-      character(:), allocatable :: path, url, abs_path
+      character(:), allocatable :: path, url
       integer :: stat
 
       call get_value(table, 'registry', child, requested=.false., stat=stat)
@@ -112,20 +112,21 @@ contains
          call fatal_error(error, 'Error parsing path to registry: "'//path//'"')
          return
       end if
-
       if (allocated(path)) then
          if (is_absolute_path(path)) then
-            abs_path = path
+            if (.not. exists(path)) then
+               call fatal_error(error, "No registry at: '"//path//"'")
+               return
+            end if
+
+            global_settings%registry_settings%path = path
          else
-            abs_path = canon_path(join_path(global_settings%path_to_folder, path))
+            ! Get canonical path, which works both on Unix and Windows.
+            call get_absolute_path(join_path(global_settings%path_to_folder, path), &
+                                   global_settings%registry_settings%path, error)
+            if (allocated(error)) return
          end if
 
-         if (.not. exists(abs_path)) then
-            call fatal_error(error, "No registry at: '"//abs_path//"'")
-            return
-         end if
-
-         global_settings%registry_settings%path = abs_path
       end if
 
       call get_value(child, 'url', url, stat=stat)
