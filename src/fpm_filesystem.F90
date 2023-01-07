@@ -992,6 +992,8 @@ end subroutine os_delete_dir
     end function get_local_prefix
 
     !> Returns .true. if provided path is absolute.
+    !>
+    !> `~` not treated as absolute.
     logical function is_absolute_path(path, is_unix)
         character(len=*), intent(in) :: path
         logical, optional, intent(in):: is_unix
@@ -1005,7 +1007,7 @@ end subroutine os_delete_dir
         end if
 
         if (is_unix_os) then
-            is_absolute_path = path(1:1) == '/' .or. path(1:1) == '~'
+            is_absolute_path = path(1:1) == '/'
         else
             if (len(path) < 2) then
                 is_absolute_path = .false.
