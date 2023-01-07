@@ -2,7 +2,6 @@ program main
 use, intrinsic :: iso_fortran_env, only : error_unit, output_unit
 use fpm_command_line, only: &
         fpm_cmd_settings, &
-        fpm_global_settings, &
         fpm_new_settings, &
         fpm_build_settings, &
         fpm_run_settings, &
@@ -18,7 +17,7 @@ use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
 use fpm_cmd_update, only : cmd_update
 use fpm_os,  only: change_directory, get_current_directory
-use fpm_settings, only: get_global_settings
+use fpm_settings, only: fpm_global_settings, get_global_settings
 
 implicit none
 

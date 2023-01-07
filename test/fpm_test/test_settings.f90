@@ -1,7 +1,6 @@
 module test_settings
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
-    use fpm_command_line, only: fpm_global_settings
-    use fpm_settings, only: get_global_settings
+    use fpm_settings, only: fpm_global_settings, get_global_settings
     use fpm_filesystem, only: is_dir, join_path, mkdir, filewrite, os_delete_dir, exists
     use fpm_environment, only: os_is_unix
     use fpm_toml, only: new_table

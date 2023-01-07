@@ -1,6 +1,5 @@
 !> Manages global settings which are defined in the global config file.
 module fpm_settings
-    use fpm_command_line, only: fpm_global_settings
     use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path
     use fpm_environment, only: os_is_unix
     use fpm_error, only: error_t, fatal_error
@@ -9,7 +8,24 @@ module fpm_settings
     use tomlf, only: toml_load
     implicit none
     private
-    public :: get_global_settings
+    public :: fpm_global_settings, get_global_settings
+
+    type :: fpm_global_settings
+        !> Path to the global config file excluding the file name.
+        character(len=:), allocatable :: path_to_folder
+        !> Name of the global config file. The default is `config.toml`.
+        character(len=:), allocatable :: file_name
+        type(fpm_registry_settings), allocatable :: registry_settings
+    contains
+        procedure :: full_path
+    end type
+
+    type :: fpm_registry_settings
+        character(len=:), allocatable :: path
+        character(len=:), allocatable :: url
+    contains
+        procedure :: uses_default_registry
+    end type
 
 contains
     !> Obtain global settings from the global config file.
@@ -147,5 +163,20 @@ contains
         end if
 
     end subroutine get_registry_settings
+
+    !> The full path to the global config file.
+    function full_path(self) result(result)
+        class(fpm_global_settings), intent(in) :: self
+        character(len=:), allocatable :: result
+
+        result = join_path(self%path_to_folder, self%file_name)
+    end function
+
+    !> The official registry is used by default when no local or custom registry was specified.
+    pure logical function uses_default_registry(self)
+        class(fpm_registry_settings), intent(in) :: self
+
+        uses_default_registry = .not. allocated(self%path) .and. .not. allocated(self%url)
+    end function
 
 end module fpm_settings
