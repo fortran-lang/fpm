@@ -33,10 +33,10 @@ non-Fortran related package manager.
 
 **Website: <https://fpm.fortran-lang.org/>**
 
-## [Download](https://fpm.fortran-lang.org/en/how-to/installation.html)
+## [Download](https://fpm.fortran-lang.org/en/install/index.html)
 
 Fpm is available on many platforms and through multiple package managers, see our Documentation
-webpage for a list of **[All Supported Installations](https://fpm.fortran-lang.org/en/how-to/installation.html)**.
+webpage for a list of **[All Supported Installations](https://fpm.fortran-lang.org/en/install/index.html)**.
 
 The easiest installation routes are shown below.
 
