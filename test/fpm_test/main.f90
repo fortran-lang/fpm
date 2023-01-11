@@ -13,6 +13,8 @@ program fpm_testing
     use test_installer, only : collect_installer
     use test_versioning, only : collect_versioning
     use test_settings, only : collect_settings
+    use test_os, only: collect_os
+
     implicit none
     integer :: stat, is
     character(len=:), allocatable :: suite_name, test_name
@@ -31,7 +33,8 @@ program fpm_testing
         & new_testsuite("fpm_test_backend", collect_backend), &
         & new_testsuite("fpm_installer", collect_installer), &
         & new_testsuite("fpm_versioning", collect_versioning), &
-        & new_testsuite("fpm_settings", collect_settings) &
+        ! & new_testsuite("fpm_settings", collect_settings), &
+        & new_testsuite("fpm_os", collect_os) &
         & ]
 
     call get_argument(1, suite_name)

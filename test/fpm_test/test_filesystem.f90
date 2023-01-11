@@ -1,7 +1,7 @@
 module test_filesystem
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
-                              join_path, is_absolute_path
+                              join_path, is_absolute_path, get_home
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
     implicit none
     private
@@ -19,7 +19,8 @@ contains
         tests = [ &
             & new_unittest("canon-path", test_canon_path), &
             & new_unittest("create-delete-directory", test_mkdir_rmdir), &
-            & new_unittest("test-is-absolute-path", test_is_absolute_path) &
+            & new_unittest("test-is-absolute-path", test_is_absolute_path), &
+            & new_unittest("test-get-home", test_get_home) &
             ]
 
     end subroutine collect_filesystem
@@ -266,5 +267,27 @@ contains
         end if
 
     end subroutine test_is_absolute_path
+
+    subroutine test_get_home(error)
+        type(error_t), allocatable, intent(out) :: error
+        character(len=:), allocatable :: home
+        character(len=*), parameter :: letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+        call get_home(home, error)
+        if (allocated(error)) return
+
+        if (os_is_unix()) then
+            if (home(1:1) /= '/') then
+                call test_failed(error, "This doesn't seem to be the correct home path: '"//home//"'")
+                return
+            end if
+        else
+            if (index(letters, home(1:1)) == 0 .or. home(2:2) /= ':') then
+                call test_failed(error, "This doesn't seem to be the correct home path: '"//home//"'")
+                return
+            end if
+        end if
+
+    end subroutine test_get_home
 
 end module test_filesystem

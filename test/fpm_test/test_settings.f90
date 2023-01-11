@@ -190,6 +190,11 @@ contains
 
         if (allocated(error)) return
 
+        if (.not. allocated(global_settings%registry_settings)) then
+            call test_failed(error, 'Registry settings not allocated')
+            return
+        end if
+
         if (.not. allocated(global_settings%registry_settings%path)) then
             call test_failed(error, 'Path not allocated')
             return
@@ -220,6 +225,11 @@ contains
 
         if (allocated(error)) return
 
+        if (.not. allocated(global_settings%registry_settings)) then
+            call test_failed(error, 'Registry settings not allocated')
+            return
+        end if
+
         if (global_settings%registry_settings%path /= join_path(abs_path, 'abc')) then
             call test_failed(error, "Path not set correctly: '"//global_settings%registry_settings%path//"'")
             return
@@ -246,6 +256,11 @@ contains
 
         if (allocated(error)) return
 
+        if (.not. allocated(global_settings%registry_settings)) then
+            call test_failed(error, 'Registry settings not allocated')
+            return
+        end if
+
         if (global_settings%registry_settings%path /= abs_path) then
             call test_failed(error, "Path not set correctly: '"//global_settings%registry_settings%path//"'")
             return
@@ -266,6 +281,11 @@ contains
 
         call os_delete_dir(os_is_unix(), tmp_folder)
 
+        if (.not. allocated(global_settings%registry_settings)) then
+            call test_failed(error, 'Registry settings not allocated')
+            return
+        end if
+
         if (allocated(global_settings%registry_settings%path)) then
             call test_failed(error, "Path shouldn't be allocated: '" &
                              //global_settings%registry_settings%path//"'")
@@ -273,7 +293,7 @@ contains
         end if
 
         if (.not. allocated(global_settings%registry_settings%url)) then
-            call test_failed(error, "Url not allocated")
+            call test_failed(error, 'Url not allocated')
             return
         end if
     end subroutine

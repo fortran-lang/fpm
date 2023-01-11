@@ -8,13 +8,13 @@ module fpm_filesystem
     use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
-    use fpm_error, only : fpm_stop
+    use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
     private
     public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
             mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
             filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
-            LINE_BUFFER_LEN, os_delete_dir, is_absolute_path
+            LINE_BUFFER_LEN, os_delete_dir, is_absolute_path, env_variable, get_home
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
 #ifndef FPM_BOOTSTRAP
@@ -1018,5 +1018,25 @@ end subroutine os_delete_dir
         end if
 
     end function is_absolute_path
+
+    !> Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.
+    subroutine get_home(home, error)
+        character(len=:), allocatable, intent(out) :: home
+        type(error_t), allocatable, intent(out) :: error
+
+        if (os_is_unix()) then
+            call env_variable(home, 'HOME')
+            if (.not. allocated(home)) then
+                call fatal_error(error, "Couldn't retrieve 'HOME' variable")
+                return
+            end if
+        else
+            call env_variable(home, 'USERPROFILE')
+            if (.not. allocated(home)) then
+                call fatal_error(error, "Couldn't retrieve '%USERPROFILE%' variable")
+                return
+            end if
+        end if
+    end subroutine get_home
 
 end module fpm_filesystem
