@@ -29,6 +29,7 @@ implicit none
 private
 public :: cmd_build, cmd_run, cmd_clean
 public :: build_model, check_modules_for_duplicates
+public :: is_valid_module_name
 
 contains
 
@@ -532,6 +533,26 @@ subroutine cmd_run(settings,test)
     end subroutine compact_list
 
 end subroutine cmd_run
+
+!> Check that a module name fits the current naming rules
+logical function is_valid_module_name(module_name,package_name,enforce_module_names) result(valid)
+    use fpm_strings, only: is_fortran_name,str_begins_with_str
+    type(string_t), intent(in) :: module_name
+    type(string_t), intent(in) :: package_name
+    logical       , intent(in) :: enforce_module_names
+
+    if (enforce_module_names) then
+        !> Enforcing: check that the module name begins with the package name
+        valid = is_fortran_name(package_name%s) .and. &
+                is_fortran_name(module_name%s)  .and. &
+                str_begins_with_str(module_name%s,package_name%s)
+
+    else
+        !> No enforcing: just check that there are no invalid characters
+        valid = is_fortran_name(module_name%s)
+    end if
+
+end function is_valid_module_name
 
 subroutine delete_skip(unix)
     !> delete directories in the build folder, skipping dependencies

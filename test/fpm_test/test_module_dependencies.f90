@@ -10,7 +10,7 @@ module test_module_dependencies
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
     use fpm_strings, only: string_t, operator(.in.)
-    use fpm, only: check_modules_for_duplicates
+    use fpm, only: check_modules_for_duplicates, is_valid_module_name
     implicit none
     private
 
@@ -52,12 +52,14 @@ contains
                             test_subdirectory_module_use), &
             & new_unittest("invalid-subdirectory-module-use", &
                             test_invalid_subdirectory_module_use, should_fail=.true.), &
-            & new_unittest("tree-shake-module", & 
+            & new_unittest("tree-shake-module", &
                             test_tree_shake_module, should_fail=.false.), &
-            & new_unittest("tree-shake-subprogram-with-module", & 
-                            test_tree_shake_subprogram_with_module, should_fail=.false.) &
+            & new_unittest("tree-shake-subprogram-with-module", &
+                            test_tree_shake_subprogram_with_module, should_fail=.false.), &
+            & new_unittest("valid-enforced-module-names", &
+                            check_valid_enforced_module_names, should_fail=.false.) &
             ]
-            
+
     end subroutine collect_module_dependencies
 
 
@@ -784,6 +786,43 @@ contains
 
     end subroutine check_target
 
+    !> Check several module names whose name is valid and begins with the package name
+    subroutine check_valid_enforced_module_names(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i,j
+        type(string_t)               :: package,modules
+        logical,           parameter :: enforcing(2) = [.false.,.true.]
+        character(*),      parameter :: package_name = 'my_pkg'
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            'my_pkg_mod_1', &
+                                                            'my_pkgmod_1', &
+                                                            'my_pkg____mod_1', &
+                                                            'my_pkg', &
+                                                            'my_pkg_mod_1', &
+                                                            'my_pkg_my_pkg' ]
+
+
+        package = string_t(package_name)
+
+        do i=1,size(module_names)
+
+            modules = string_t(module_names(i))
+
+            !> All these names are valid both with and without enforcing
+            do j=1,2
+                if (.not.is_valid_module_name(modules,package,enforcing(j))) then
+                    call test_failed(error,'Valid dummy module name ['//modules%s//'] of package ['// &
+                                     package%s//'] unexpectedly fails naming check (enforcing='// &
+                                     merge('T','F',enforcing(j))//').')
+                    return
+                endif
+            end do
+        end do
+
+    end subroutine check_valid_enforced_module_names
 
     !> Helper to check if a build target is in a list of build_target_ptr
     logical function target_in(needle,haystack)
