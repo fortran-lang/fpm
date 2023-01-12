@@ -235,7 +235,11 @@ subroutine build_model(model, settings, package, error)
         write(*,*)'<INFO> CXX COMPILER OPTIONS: ', model%cxx_compile_flags
         write(*,*)'<INFO> LINKER OPTIONS:  ', model%link_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
-     end if
+    end if
+
+    ! Check for invalid module names
+    call check_module_names(model, error)
+    if (allocated(error)) return
 
     ! Check for duplicate modules
     call check_modules_for_duplicates(model, duplicates_found)
@@ -287,6 +291,70 @@ subroutine check_modules_for_duplicates(model, duplicates_found)
       end do
     end do
 end subroutine check_modules_for_duplicates
+
+! Check names of all modules in this package and its dependencies
+subroutine check_module_names(model, error)
+    type(fpm_model_t), intent(in) :: model
+    type(error_t), allocatable, intent(out) :: error
+    integer :: i,j,k,l,m
+    logical :: valid,errors_found
+    type(string_t) :: package_name,module_name
+
+    errors_found = .false.
+
+    ! Loop through modules provided by each source file of every package
+    ! Add it to the array if it is not already there
+    ! Otherwise print out warning about duplicates
+    do k=1,size(model%packages)
+
+        package_name = string_t(model%packages(k)%name)
+
+        do l=1,size(model%packages(k)%sources)
+            if (allocated(model%packages(k)%sources(l)%modules_provided)) then
+                do m=1,size(model%packages(k)%sources(l)%modules_provided)
+
+                    module_name = model%packages(k)%sources(l)%modules_provided(m)
+
+                    valid = is_valid_module_name(module_name, &
+                                             package_name, &
+                                             model%enforce_module_names)
+
+                    if (.not.valid) then
+
+                        write(stderr, *) "Warning: Module ",module_name%s, &
+                                         " in ",model%packages(k)%sources(l)%file_name,&
+                                         " does not match its package name."
+
+                        if (model%enforce_module_names) then
+
+                            write(stderr, *) "Warning: Module ",module_name%s, &
+                                             " in ",model%packages(k)%sources(l)%file_name, &
+                                             " does not match its package name."
+                            write(stderr, *) "         Hint: Try disabling name enforcing with --no-module-names . "
+
+                        else
+
+                            write(stderr, *) "Warning: Module ",module_name%s, &
+                                             " in ",model%packages(k)%sources(l)%file_name, &
+                                             " has an invalid Fortran name. "
+
+                        end if
+
+                        errors_found = .true.
+
+                    end if
+                end do
+            end if
+        end do
+    end do
+
+    if (errors_found) then
+        call fatal_error(error,"The package contains invalid module names. "// &
+                               "Naming conventions "//merge('are','not',model%enforce_module_names)// &
+                               " being requested.")
+    end if
+
+end subroutine check_module_names
 
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
