@@ -143,10 +143,10 @@ character(len=80), parameter :: help_text_build_common(*) = [character(len=80) :
     '                   If --flag is not specified the "debug" flags are the         ',&
     '                   default.                                                     ',&
     ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   ',&
-    ' --no-module-names Disable enforcing module naming conventions. If specified    ',&
+    ' --no-module-names Disable enforcing module naming conventions. If specified,   ',&
     '                   modules in the package and its dependencies will only be     ',&
-    '                   checked for duplicates; otherwise, all modules are enforced  ',&
-    '                   to begin with their package name.                            '&
+    '                   checked for duplicates; otherwise, all module names are      ',&
+    '                   enforced to begin with their package name.                   '&
     ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
