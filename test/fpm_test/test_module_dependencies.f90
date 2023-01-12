@@ -58,6 +58,8 @@ contains
                             test_tree_shake_subprogram_with_module, should_fail=.false.), &
             & new_unittest("valid-enforced-module-names", &
                             check_valid_enforced_module_names, should_fail=.false.), &
+            & new_unittest("valid-enforced-module-names-dashed", &
+                            check_valid_enforced_module_names_dashed, should_fail=.false.), &
             & new_unittest("invalid-enforced-module-names", &
                             check_invalid_enforced_module_names, should_fail=.false.), &
             & new_unittest("invalid-module-names", &
@@ -827,6 +829,44 @@ contains
         end do
 
     end subroutine check_valid_enforced_module_names
+
+    !> Check several module names whose name is valid and begins with the package name
+    subroutine check_valid_enforced_module_names_dashed(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i,j
+        type(string_t)               :: package,modules
+        logical,           parameter :: enforcing(2) = [.false.,.true.]
+        character(*),      parameter :: package_name = 'my-pkg'
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            'my_pkg_mod_1', &
+                                                            'my_pkgmod_1', &
+                                                            'my_pkg____mod_1', &
+                                                            'my_pkg', &
+                                                            'my_pkg_mod_1', &
+                                                            'my_pkg_my_pkg' ]
+
+
+        package = string_t(package_name)
+
+        do i=1,size(module_names)
+
+            modules = string_t(module_names(i))
+
+            !> All these names are valid both with and without enforcing
+            do j=1,2
+                if (.not.is_valid_module_name(modules,package,enforcing(j))) then
+                    call test_failed(error,'Valid dummy module name ['//modules%s//'] of package ['// &
+                                     package%s//'] unexpectedly fails naming check (enforcing='// &
+                                     merge('T','F',enforcing(j))//').')
+                    return
+                endif
+            end do
+        end do
+
+    end subroutine check_valid_enforced_module_names_dashed
 
     !> Check several module names whose name is invalid
     subroutine check_invalid_enforced_module_names(error)
