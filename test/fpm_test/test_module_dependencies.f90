@@ -57,7 +57,11 @@ contains
             & new_unittest("tree-shake-subprogram-with-module", &
                             test_tree_shake_subprogram_with_module, should_fail=.false.), &
             & new_unittest("valid-enforced-module-names", &
-                            check_valid_enforced_module_names, should_fail=.false.) &
+                            check_valid_enforced_module_names, should_fail=.false.), &
+            & new_unittest("invalid-enforced-module-names", &
+                            check_invalid_enforced_module_names, should_fail=.false.), &
+            & new_unittest("invalid-module-names", &
+                            check_invalid_module_names, should_fail=.false.) &
             ]
 
     end subroutine collect_module_dependencies
@@ -823,6 +827,79 @@ contains
         end do
 
     end subroutine check_valid_enforced_module_names
+
+    !> Check several module names whose name is invalid
+    subroutine check_invalid_enforced_module_names(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i
+        type(string_t)               :: package,modules
+        character(*),      parameter :: package_name = 'my_pkg'
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            'mod_1', &
+                                                            'my_pkmod_1', &
+                                                            'my_mod_1', &
+                                                            'pkg_mod_1', &
+                                                            'y_pkg_mod_1', &
+                                                            '_my_pkg_mod_1' ]
+
+
+        package = string_t(package_name)
+
+        !> All these cases should report an invalid name
+        do i=1,size(module_names)
+
+            modules = string_t(module_names(i))
+
+            if (is_valid_module_name(modules,package,.true.)) then
+                call test_failed(error,'Invalid dummy module name ['//modules%s//'] of package ['// &
+                                 package%s//'] unexpectedly passes naming check (enforcing=F).')
+                return
+            end if
+
+        end do
+
+    end subroutine check_invalid_enforced_module_names
+
+    !> Check module names whose name does not name the convention:
+    !> - Begin with a literal
+    !> - len(name)<=63
+    !> - Contains literals, numbers, or underscores only
+    subroutine check_invalid_module_names(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i
+        type(string_t) :: modules,package
+
+        !> Examples taken from Metcalf/Reid/Cohen
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            '1a', &
+                                                            'a thing', &
+                                                            '$sign', &
+                                                            '_begin_with_underscore', &
+                                                            'contains-dashes', &
+                                                            'and/other?symbols@2' ]
+
+        package = string_t("")
+
+        !> All these cases should report an invalid name
+        do i=1,size(module_names)
+
+            modules = string_t(module_names(i))
+
+            if (is_valid_module_name(modules,package,.false.)) then
+                call test_failed(error,'Invalid Fortran module name ['//modules%s//'] ' &
+                                 //' unexpectedly passes naming check.')
+                return
+            end if
+
+        end do
+
+    end subroutine check_invalid_module_names
 
     !> Helper to check if a build target is in a list of build_target_ptr
     logical function target_in(needle,haystack)
