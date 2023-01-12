@@ -92,6 +92,7 @@ subroutine build_model(model, settings, package, error)
     model%build_prefix = join_path("build", basename(model%compiler%fc))
 
     model%include_tests = settings%build_tests
+    model%enforce_module_names = settings%enforce_module_names
 
     allocate(model%packages(model%deps%ndep))
 
@@ -107,7 +108,7 @@ subroutine build_model(model, settings, package, error)
             model%packages(i)%name = dependency%name
             call package%version%to_string(version)
             model%packages(i)%version = version
-            
+
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
                     if (dependency%preprocess(j)%name == "cpp") then

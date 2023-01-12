@@ -179,6 +179,9 @@ type :: fpm_model_t
     !> Whether tests should be added to the build list
     logical :: include_tests = .true.
 
+    !> Whether module names should be prefixed with the package name
+    logical :: enforce_module_names = .true.
+
 end type fpm_model_t
 
 contains
@@ -343,6 +346,10 @@ function info_model(model) result(s)
     ! TODO: print `dependency_tree_t` properly, which should become part of the
     !       model, not imported from another file
     s = s // ", deps=dependency_tree_t(...)"
+
+    ! Print module naming convention
+    s = s // ', enforce_module_names="' // merge('T','F',model%enforce_module_names) // '"'
+
     !end type fpm_model_t
     s = s // ")"
 end function info_model
