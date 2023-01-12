@@ -1,6 +1,6 @@
 module fpm
 use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, &
-                      lower, str_ends_with
+                      lower, str_ends_with, is_fortran_name, str_begins_with_str
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings, &
@@ -536,7 +536,6 @@ end subroutine cmd_run
 
 !> Check that a module name fits the current naming rules
 logical function is_valid_module_name(module_name,package_name,enforce_module_names) result(valid)
-    use fpm_strings, only: is_fortran_name,str_begins_with_str
     type(string_t), intent(in) :: module_name
     type(string_t), intent(in) :: package_name
     logical       , intent(in) :: enforce_module_names
