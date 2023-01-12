@@ -321,20 +321,15 @@ subroutine check_module_names(model, error)
 
                     if (.not.valid) then
 
-                        write(stderr, *) "Warning: Module ",module_name%s, &
-                                         " in ",model%packages(k)%sources(l)%file_name,&
-                                         " does not match its package name."
-
                         if (model%enforce_module_names) then
 
-                            write(stderr, *) "Warning: Module ",module_name%s, &
+                            write(stderr, *) "ERROR: Module ",module_name%s, &
                                              " in ",model%packages(k)%sources(l)%file_name, &
-                                             " does not match its package name."
-                            write(stderr, *) "         Hint: Try disabling name enforcing with --no-module-names . "
+                                             " does not match its package name ("//package_name%s//")."
 
                         else
 
-                            write(stderr, *) "Warning: Module ",module_name%s, &
+                            write(stderr, *) "ERROR: Module ",module_name%s, &
                                              " in ",model%packages(k)%sources(l)%file_name, &
                                              " has an invalid Fortran name. "
 
@@ -349,6 +344,10 @@ subroutine check_module_names(model, error)
     end do
 
     if (errors_found) then
+
+        if (model%enforce_module_names) &
+            write(stderr, *) "       Hint: Try disabling name enforcing with --no-module-names . "
+
         call fatal_error(error,"The package contains invalid module names. "// &
                                "Naming conventions "//merge('are','not',model%enforce_module_names)// &
                                " being requested.")
