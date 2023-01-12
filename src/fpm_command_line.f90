@@ -72,6 +72,8 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: show_model=.false.
     logical                      :: build_tests=.false.
     logical                      :: prune=.true.
+    !> Request all module names in package and dependencies to begin with their package name
+    logical                      :: enforce_module_names=.true.
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: c_compiler
     character(len=:),allocatable :: cxx_compiler
@@ -140,7 +142,11 @@ character(len=80), parameter :: help_text_build_common(*) = [character(len=80) :
     '                   high optimization and "debug" for full debug options.        ',&
     '                   If --flag is not specified the "debug" flags are the         ',&
     '                   default.                                                     ',&
-    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   '&
+    ' --no-prune        Disable tree-shaking/pruning of unused module dependencies   ',&
+    ' --no-module-names Disable enforcing module naming conventions. If specified    ',&
+    '                   modules in the package and its dependencies will only be     ',&
+    '                   checked for duplicates; otherwise, all modules are enforced  ',&
+    '                   to begin with their package name.                            '&
     ]
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_compiler(*) = [character(len=80) :: &
@@ -257,6 +263,7 @@ contains
         compiler_args = &
           ' --profile " "' // &
           ' --no-prune F' // &
+          ' --no-module-names F' // &
           ' --compiler "'//get_fpm_env(fc_env, fc_default)//'"' // &
           ' --c-compiler "'//get_fpm_env(cc_env, cc_default)//'"' // &
           ' --cxx-compiler "'//get_fpm_env(cxx_env, cxx_default)//'"' // &
@@ -311,6 +318,7 @@ contains
             & args=remaining,&
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
+            & enforce_module_names=.not.lget('no-module-names'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
@@ -342,6 +350,7 @@ contains
             cmd_settings=fpm_build_settings(  &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
+            & enforce_module_names=.not.lget('no-module-names'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
@@ -497,6 +506,7 @@ contains
                 list=lget('list'), &
                 profile=val_profile,&
                 prune=.not.lget('no-prune'), &
+                enforce_module_names=.not.lget('no-module-names'), &
                 compiler=val_compiler, &
                 c_compiler=c_compiler, &
                 cxx_compiler=cxx_compiler, &
@@ -557,6 +567,7 @@ contains
             & args=remaining, &
             & profile=val_profile, &
             & prune=.not.lget('no-prune'), &
+            & enforce_module_names=.not.lget('no-module-names'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
             & cxx_compiler=cxx_compiler, &
@@ -690,7 +701,7 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests] [--no-prune]                                                   ', &
+   '       [--tests] [--no-prune] [--no-module-names]                               ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
@@ -811,15 +822,16 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests] [--no-prune]                                                ', &
+    '          [--tests] [--no-prune] [--no-module-names]                            ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
     '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
     '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
     '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME]                 ', &
-    '        [--no-prune] [-- ARGS]                                                  ', &
+    '        [--no-prune] [--no-module-names] [-- ARGS]                              ', &
     '    test [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list]         ', &
-    '         [--runner "CMD"] [--compiler COMPILER_NAME] [--no-prune] [-- ARGS]     ', &
+    '         [--runner "CMD"] [--compiler COMPILER_NAME] [--no-prune]               ', &
+    '         [--no-module-names] [-- ARGS]                                          ', &
     '    help [NAME(s)]                                                              ', &
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
