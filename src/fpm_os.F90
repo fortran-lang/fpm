@@ -41,7 +41,7 @@ module fpm_os
 
         !> Unix only. For Windows, use `fullpath`.
         function realpath(path, resolved_path) result(ptr) &
-            bind(C, name="_realpath")
+            bind(C, name="realpath")
             import :: c_ptr, c_char
             character(kind=c_char, len=1), intent(in) :: path(*)
             character(kind=c_char, len=1), intent(out) :: resolved_path(*)
@@ -145,11 +145,11 @@ contains
 
         allocate (cpath(buffersize))
 
-        if (os_is_unix()) then
-            ptr = realpath(appended_path, cpath)
-        else
-            ptr = fullpath(cpath, appended_path, buffersize)
-        end if
+#ifndef _WIN32
+        ptr = realpath(appended_path, cpath)
+#else
+        ptr = fullpath(cpath, appended_path, buffersize)
+#endif
 
         if (c_associated(ptr)) then
             call c_f_character(cpath, real_path)
