@@ -91,6 +91,7 @@ contains
             & '[build]', &
             & 'auto-executables = false', &
             & 'auto-tests = false', &
+            & 'module-naming = false', &
             & '[dependencies.fpm]', &
             & 'git = "https://github.com/fortran-lang/fpm"', &
             & '[[executable]]', &
@@ -635,7 +636,8 @@ contains
             & 'name = "example"', &
             & '[build]', &
             & 'auto-executables = false', &
-            & 'auto-tests = false'
+            & 'auto-tests = false ', &
+            & 'module-naming = true '
         close(unit)
 
         call get_package_data(package, temp_file, error)
@@ -649,6 +651,11 @@ contains
 
         if (package%build%auto_tests) then
             call test_failed(error, "Wong value of 'auto-tests' read, expecting .false.")
+            return
+        end if
+
+        if (.not.package%build%module_naming) then
+            call test_failed(error, "Wong value of 'module-naming' read, expecting .true.")
             return
         end if
 
@@ -685,6 +692,11 @@ contains
 
         if (.not.package%build%auto_tests) then
             call test_failed(error, "Wong default value of 'auto-tests' read, expecting .true.")
+            return
+        end if
+
+        if (package%build%module_naming) then
+            call test_failed(error, "Wong default value of 'module-naming' read, expecting .false.")
             return
         end if
 
@@ -1225,7 +1237,7 @@ contains
         call new_install_config(install, table, error)
 
     end subroutine test_install_wrongkey
-    
+
     subroutine test_preprocess_empty(error)
         use fpm_mainfest_preprocess
         use fpm_toml, only : new_table, toml_table
@@ -1261,7 +1273,7 @@ contains
         call add_table(table, 'wrong-field', child, stat)
 
         call new_preprocess_config(preprocess, table, error)
-    
+
     end subroutine test_preprocess_wrongkey
 
     !> Preprocess table cannot be empty.
@@ -1304,9 +1316,9 @@ contains
             & 'name = "example"', &
             & 'version = "0.1.0"', &
             & '[preprocess]', &
-            & '[preprocess.cpp]', & 
+            & '[preprocess.cpp]', &
             & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
-        close(unit) 
+        close(unit)
 
         call get_package_data(package, temp_file, error)
 
@@ -1317,7 +1329,7 @@ contains
         if (get_macros(id, package%preprocess(1)%macros, version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
             call test_failed(error, "Macros were not parsed correctly")
         end if
-        
+
     end subroutine test_macro_parsing
 
     !> Test macro parsing of the package and its dependency.
@@ -1346,10 +1358,10 @@ contains
             & 'name = "example"', &
             & 'version = "0.1.0"', &
             & '[dependencies]', &
-            & '[dependencies.dependency-name]', & 
+            & '[dependencies.dependency-name]', &
             & 'git = "https://github.com/fortran-lang/dependency-name"', &
             & '[preprocess]', &
-            & '[preprocess.cpp]', & 
+            & '[preprocess.cpp]', &
             & 'macros = ["FOO", "BAR=2", "VERSION={version}"]'
         close(unit)
 
@@ -1358,7 +1370,7 @@ contains
             & 'name = "dependency-name"', &
             & 'version = "0.2.0"', &
             & '[preprocess]', &
-            & '[preprocess.cpp]', & 
+            & '[preprocess.cpp]', &
             & 'macros = ["FOO1", "BAR2=2", "VERSION={version}"]'
         close(unit)
 
@@ -1379,7 +1391,7 @@ contains
         if (macrosPackage == macrosDependency) then
             call test_failed(error, "Macros of package and dependency should not be equal")
         end if
-        
+
     end subroutine test_macro_parsing_dependency
 
 end module test_manifest
