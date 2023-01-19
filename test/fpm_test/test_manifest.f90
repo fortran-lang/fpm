@@ -362,7 +362,7 @@ contains
 
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
+
         type(dependency_config_t) :: dependency
 
         call new_table(table)
@@ -524,7 +524,6 @@ contains
         type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-profiles-error.toml'
         integer :: unit
-        character(:), allocatable :: profile_name, compiler, flags
 
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
@@ -1301,7 +1300,6 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: flags
         character(len=:), allocatable :: version
 
         type(package_config_t) :: package
