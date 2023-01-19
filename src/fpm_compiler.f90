@@ -214,7 +214,7 @@ subroutine get_release_compile_flags(id, flags)
     if (os_is_unix()) then
         flag_gnu_win32 = ""
     else
-        flag_gnu_win32 = " -D_WIN32"
+        flag_gnu_win32 = " -cpp -D_WIN32"
     end if
 
     select case(id)
@@ -316,9 +316,9 @@ subroutine get_debug_compile_flags(id, flags)
     character(len=:), allocatable :: flag_gnu_win32
 
     if (os_is_unix()) then
-        flag_gnu_win32 = "abc"
+        flag_gnu_win32 = ""
     else
-        flag_gnu_win32 = " -D_WIN32"
+        flag_gnu_win32 = " -cpp -D_WIN32"
     end if
 
     select case(id)
