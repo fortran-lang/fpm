@@ -321,6 +321,10 @@ subroutine get_debug_compile_flags(id, flags)
         flag_gnu_win32 = " -D_WIN32"
     end if
 
+    print *, 'hey'
+    print *, flag_gnu_win32
+    print *, id
+
     select case(id)
     case default
         flags = ""
