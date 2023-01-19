@@ -46,7 +46,7 @@ module fpm_manifest_profile
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     use fpm_strings, only: lower
     use fpm_environment, only: get_os_type, OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_WINDOWS, &
-                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD
+                             OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD, os_is_unix
     use fpm_filesystem, only: join_path
     implicit none
     public :: profile_config_t, new_profile, new_profiles, get_default_profiles, &
@@ -693,6 +693,13 @@ module fpm_manifest_profile
         type(error_t), allocatable, intent(out) :: error
 
         type(profile_config_t), allocatable :: default_profiles(:)
+        character(len=:), allocatable :: flag_gnu_win32
+
+        if (os_is_unix()) then
+          flag_gnu_win32 = ''
+        else
+          flag_gnu_win32 = ' -cpp -D_WIN32'
+        end if
 
         default_profiles = [ &
               & new_profile('release', &
@@ -703,7 +710,8 @@ module fpm_manifest_profile
               & new_profile('release', &
                 & 'gfortran', &
                 & OS_ALL, &
-                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single', &
+                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single'//&
+                flag_gnu_win32, &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 & 'f95', &
@@ -759,7 +767,7 @@ module fpm_manifest_profile
                 & 'gfortran', &
                 & OS_ALL, &
                 & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -fbacktrace -fcoarray=single', &
+                          & -fcheck=array-temps -fbacktrace -fcoarray=single'//flag_gnu_win32, &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'f95', &
