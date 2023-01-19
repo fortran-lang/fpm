@@ -180,7 +180,7 @@ type :: fpm_model_t
     logical :: include_tests = .true.
 
     !> Whether module names should be prefixed with the package name
-    logical :: enforce_module_names = .true.
+    logical :: enforce_module_names = .false.
 
 end type fpm_model_t
 

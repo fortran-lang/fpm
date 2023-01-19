@@ -94,7 +94,6 @@ subroutine build_model(model, settings, package, error)
     model%build_prefix = join_path("build", basename(model%compiler%fc))
 
     model%include_tests = settings%build_tests
-    model%enforce_module_names = settings%enforce_module_names
 
     allocate(model%packages(model%deps%ndep))
 
@@ -347,7 +346,7 @@ subroutine check_module_names(model, error)
     if (errors_found) then
 
         if (model%enforce_module_names) &
-            write(stderr, *) "       Hint: Try disabling name enforcing with --no-module-names . "
+            write(stderr, *) "       Hint: Try disabling name enforcing in the manifest. "
 
         call fatal_error(error,"The package contains invalid module names. "// &
                                "Naming conventions "//merge('are','not',model%enforce_module_names)// &
