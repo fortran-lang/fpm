@@ -31,6 +31,9 @@ module fpm_manifest_build
         !> Automatic discovery of tests
         logical :: auto_tests
 
+        !> Enforcing of package module names
+        logical :: module_naming = .false.
+
         !> Libraries to link against
         type(string_t), allocatable :: link(:)
 
@@ -86,6 +89,12 @@ contains
             return
         end if
 
+        call get_value(table, "module-naming", self%module_naming, .false., stat=stat)
+
+        if (stat /= toml_stat%success) then
+            call fatal_error(error,"Error while reading value for 'module-naming' in fpm.toml, expecting logical")
+            return
+        end if
 
         call get_list(table, "link", self%link, error)
         if (allocated(error)) return
@@ -117,6 +126,9 @@ contains
             select case(list(ikey)%key)
 
             case("auto-executables", "auto-examples", "auto-tests", "link", "external-modules")
+                continue
+
+            case ("module-naming")
                 continue
 
             case default
@@ -156,6 +168,7 @@ contains
         write(unit, fmt) " - auto-discovery (apps) ", merge("enabled ", "disabled", self%auto_executables)
         write(unit, fmt) " - auto-discovery (examples) ", merge("enabled ", "disabled", self%auto_examples)
         write(unit, fmt) " - auto-discovery (tests) ", merge("enabled ", "disabled", self%auto_tests)
+        write(unit, fmt) " - enforce module naming ", merge("enabled ", "disabled", self%module_naming)
         if (allocated(self%link)) then
             write(unit, fmt) " - link against"
             do ilink = 1, size(self%link)
