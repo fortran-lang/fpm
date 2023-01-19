@@ -37,8 +37,7 @@ use fpm_environment, only: &
         OS_SOLARIS, &
         OS_FREEBSD, &
         OS_OPENBSD, &
-        OS_UNKNOWN, &
-        os_is_unix
+        OS_UNKNOWN
 use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, unix_path, &
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
@@ -209,14 +208,6 @@ subroutine get_release_compile_flags(id, flags)
     integer(compiler_enum), intent(in) :: id
     character(len=:), allocatable, intent(out) :: flags
 
-    character(len=:), allocatable :: flag_gnu_win32
-
-    if (os_is_unix()) then
-        flag_gnu_win32 = ''
-    else
-        flag_gnu_win32 = ' -cpp -D_WIN32'
-    end if
-
     select case(id)
     case default
         flags = ""
@@ -233,8 +224,7 @@ subroutine get_release_compile_flags(id, flags)
             flag_gnu_external//&
             flag_gnu_pic//&
             flag_gnu_limit//&
-            flag_gnu_coarray//&
-            flag_gnu_win32
+            flag_gnu_coarray
 
     case(id_f95)
         flags = &
@@ -313,14 +303,6 @@ subroutine get_debug_compile_flags(id, flags)
     integer(compiler_enum), intent(in) :: id
     character(len=:), allocatable, intent(out) :: flags
 
-    character(len=:), allocatable :: flag_gnu_win32
-
-    if (os_is_unix()) then
-        flag_gnu_win32 = ''
-    else
-        flag_gnu_win32 = ' -cpp -D_WIN32'
-    end if
-
     select case(id)
     case default
         flags = ""
@@ -340,8 +322,7 @@ subroutine get_debug_compile_flags(id, flags)
             flag_gnu_debug//&
             flag_gnu_check//&
             flag_gnu_backtrace//&
-            flag_gnu_coarray//&
-            flag_gnu_win32
+            flag_gnu_coarray
     case(id_f95)
         flags = &
             flag_gnu_warn//&
