@@ -316,14 +316,10 @@ subroutine get_debug_compile_flags(id, flags)
     character(len=:), allocatable :: flag_gnu_win32
 
     if (os_is_unix()) then
-        flag_gnu_win32 = ""
+        flag_gnu_win32 = "abc"
     else
         flag_gnu_win32 = " -D_WIN32"
     end if
-
-    print *, 'hey'
-    print *, flag_gnu_win32
-    print *, id
 
     select case(id)
     case default
