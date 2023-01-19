@@ -1,6 +1,7 @@
 module fpm
 use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, &
-                      lower, str_ends_with, is_fortran_name, str_begins_with_str
+                      lower, str_ends_with, is_fortran_name, str_begins_with_str, &
+                      to_fortran_name
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings, &
@@ -601,22 +602,52 @@ subroutine cmd_run(settings,test)
 
 end subroutine cmd_run
 
-!> Check that a module name fits the current naming rules
+!> Check that a module name fits the current naming rules:
+!> 1) It must be a valid FORTRAN name (<=63 chars, begin with letter, "_" is only allowed non-alphanumeric)
+!> 2) It must begin with the package name
+!> 3) If longer, package name must be followed by default separator plus at least one char
 logical function is_valid_module_name(module_name,package_name,enforce_module_names) result(valid)
-    use fpm_strings, only: to_fortran_name
+
     type(string_t), intent(in) :: module_name
     type(string_t), intent(in) :: package_name
     logical       , intent(in) :: enforce_module_names
 
-    if (enforce_module_names) then
-        !> Enforcing: check that the module name begins with the package name
-        valid = is_fortran_name(to_fortran_name(package_name%s)) .and. &
-                is_fortran_name(module_name%s)  .and. &
-                str_begins_with_str(module_name%s,to_fortran_name(package_name%s))
+    !> Default package__module separator: two underscores
+    character(*), parameter :: SEP = "__"
 
-    else
-        !> No enforcing: just check that there are no invalid characters
-        valid = is_fortran_name(module_name%s)
+    character(len=:), allocatable :: fortranized_pkg
+    logical :: is_same,has_separator,same_beginning
+    integer :: lpkg,lmod,lsep
+
+    !> Basic check: check the name is Fortran-compliant
+    valid = is_fortran_name(module_name%s)
+
+    !> FPM package enforcing: check that the module name begins with the package name
+    if (valid .and. enforce_module_names) then
+
+        fortranized_pkg = to_fortran_name(package_name%s)
+
+        !> Query string lengths
+        lpkg  = len_trim(fortranized_pkg)
+        lmod  = len_trim(module_name%s)
+        lsep  = len_trim(SEP)
+
+        same_beginning = str_begins_with_str(module_name%s,fortranized_pkg)
+
+        is_same = lpkg==lmod .and. same_beginning
+
+        if (lmod>=lpkg+lsep) then
+           has_separator = str_begins_with_str(module_name%s(lpkg+1:lpkg+lsep),SEP)
+        else
+           has_separator = .false.
+        endif
+
+        !> 2) It must begin with the package name.
+        !> 3) It can be equal to the package name, or, if longer, must be followed by the
+        !     default separator plus at least one character
+        valid = is_fortran_name(fortranized_pkg) .and. &
+                (is_same .or. (lmod>lpkg+lsep .and. has_separator))
+
     end if
 
 end function is_valid_module_name

@@ -803,12 +803,12 @@ contains
         logical,           parameter :: enforcing(2) = [.false.,.true.]
         character(*),      parameter :: package_name = 'my_pkg'
         character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
-                                                            'my_pkg_mod_1', &
-                                                            'my_pkgmod_1', &
+                                                            'my_pkg__mod_1', &
+                                                            'my_pkg___mod_1', &
                                                             'my_pkg____mod_1', &
                                                             'my_pkg', &
-                                                            'my_pkg_mod_1', &
-                                                            'my_pkg_my_pkg' ]
+                                                            'my_pkg__1', &
+                                                            'my_pkg__my_pkg' ]
 
 
         package = string_t(package_name)
@@ -841,19 +841,19 @@ contains
         logical,           parameter :: enforcing(2) = [.false.,.true.]
         character(*),      parameter :: package_name = 'my-pkg'
         character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
-                                                            'my_pkg_mod_1', &
-                                                            'my_pkgmod_1', &
+                                                            'my_pkg__mod_1', &
+                                                            'my_pkg___mod_1', &
                                                             'my_pkg____mod_1', &
                                                             'my_pkg', &
-                                                            'my_pkg_mod_1', &
-                                                            'my_pkg_my_pkg' ]
+                                                            'my_pkg__1', &
+                                                            'my_pkg__my_pkg' ]
 
 
         package = string_t(package_name)
 
         do i=1,size(module_names)
 
-            modules = string_t(module_names(i))
+            modules = string_t(trim(module_names(i)))
 
             !> All these names are valid both with and without enforcing
             do j=1,2
@@ -883,7 +883,10 @@ contains
                                                             'my_mod_1', &
                                                             'pkg_mod_1', &
                                                             'y_pkg_mod_1', &
-                                                            '_my_pkg_mod_1' ]
+                                                            '_my_pkg_mod_1', &
+                                                            'my_pkgmy_mod', &
+                                                            'my_pkg_', &
+                                                            'my_pkg__' ]
 
 
         package = string_t(package_name)
@@ -891,11 +894,11 @@ contains
         !> All these cases should report an invalid name
         do i=1,size(module_names)
 
-            modules = string_t(module_names(i))
+            modules = string_t(trim(module_names(i)))
 
             if (is_valid_module_name(modules,package,.true.)) then
                 call test_failed(error,'Invalid dummy module name ['//modules%s//'] of package ['// &
-                                 package%s//'] unexpectedly passes naming check (enforcing=F).')
+                                 package%s//'] unexpectedly passes naming check (enforcing=T).')
                 return
             end if
 
