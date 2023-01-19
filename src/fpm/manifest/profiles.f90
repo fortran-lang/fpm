@@ -703,7 +703,7 @@ module fpm_manifest_profile
               & new_profile('release', &
                 & 'gfortran', &
                 & OS_ALL, &
-                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=singleabd', &
+                & flags=' -O3 -Wimplicit-interface -fPIC -fmax-errors=1 -funroll-loops -fcoarray=single', &
                 & is_built_in=.true.), &
               & new_profile('release', &
                 & 'f95', &
@@ -759,7 +759,7 @@ module fpm_manifest_profile
                 & 'gfortran', &
                 & OS_ALL, &
                 & flags = ' -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds&
-                          & -fcheck=array-temps -fbacktrace -fcoarray=singleabe', &
+                          & -fcheck=array-temps -fbacktrace -fcoarray=single', &
                 & is_built_in=.true.), &
               & new_profile('debug', &
                 & 'f95', &

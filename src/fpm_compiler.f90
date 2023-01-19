@@ -132,7 +132,7 @@ interface debug
 end interface debug
 
 character(*), parameter :: &
-    flag_gnu_coarray = " -fcoarray=singleabc", &
+    flag_gnu_coarray = " -fcoarray=single", &
     flag_gnu_backtrace = " -fbacktrace", &
     flag_gnu_opt = " -O3 -funroll-loops", &
     flag_gnu_debug = " -g", &
