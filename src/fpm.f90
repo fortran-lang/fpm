@@ -627,9 +627,6 @@ logical function is_valid_module_name(module_name,package_name,enforce_module_na
 
         fortranized_pkg = to_fortran_name(package_name%s)
 
-
-
-
         !> Query string lengths
         lpkg  = len_trim(fortranized_pkg)
         lmod  = len_trim(module_name%s)
