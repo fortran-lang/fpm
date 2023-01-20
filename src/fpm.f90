@@ -627,6 +627,9 @@ logical function is_valid_module_name(module_name,package_name,enforce_module_na
 
         fortranized_pkg = to_fortran_name(package_name%s)
 
+
+
+
         !> Query string lengths
         lpkg  = len_trim(fortranized_pkg)
         lmod  = len_trim(module_name%s)
@@ -645,7 +648,9 @@ logical function is_valid_module_name(module_name,package_name,enforce_module_na
         !> 2) It must begin with the package name.
         !> 3) It can be equal to the package name, or, if longer, must be followed by the
         !     default separator plus at least one character
+        !> 4) Package name must not end with an underscore
         valid = is_fortran_name(fortranized_pkg) .and. &
+                fortranized_pkg(lpkg:lpkg)/='_' .and. &
                 (is_same .or. (lmod>lpkg+lsep .and. has_separator))
 
     end if
