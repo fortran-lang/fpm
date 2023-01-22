@@ -146,7 +146,7 @@ contains
 
             call get_absolute_path(home_path, result, error)
 
-            if (result /= home_drive) then
+            if (result /= home_path) then
                 call test_failed(error, "Result '"//result//"' doesn't equal input value: '"//home_path//"'")
                 return
             end if
