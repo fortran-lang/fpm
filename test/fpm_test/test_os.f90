@@ -131,6 +131,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
         character(len=:), allocatable :: result
         character(len=:), allocatable :: home_drive
+        character(len=:), allocatable :: home_path
 
         if (os_is_unix()) then
             call get_absolute_path('/', result, error)
@@ -141,12 +142,12 @@ contains
             end if
         else
             call env_variable(home_drive, 'HOMEDRIVE')
-            home_drive = home_drive//'\'
+            home_path = home_drive//'\'
 
-            call get_absolute_path(home_drive, result, error)
+            call get_absolute_path(home_path, result, error)
 
             if (result /= home_drive) then
-                call test_failed(error, "Result '"//result//"' doesn't equal input value: '"//home_drive//"'")
+                call test_failed(error, "Result '"//result//"' doesn't equal input value: '"//home_path//"'")
                 return
             end if
         end if
