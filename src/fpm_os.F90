@@ -39,24 +39,15 @@ module fpm_os
             type(c_ptr) :: path
         end function getcwd_
 
-        !> Unix only. For Windows, use `fullpath`.
-        function realpath(path, resolved_path) result(ptr) &
-            bind(C, name="realpath")
-            import :: c_ptr, c_char
-            character(kind=c_char, len=1), intent(in) :: path(*)
-            character(kind=c_char, len=1), intent(out) :: resolved_path(*)
-            type(c_ptr) :: ptr
-        end function realpath
-
-        !> Windows only, use `realpath` on Unix.
-        function fullpath(resolved_path, path, maxLength) result(ptr) &
-            bind(C, name="_fullpath")
+        !> Determine the absolute, canonicalized path for a given path.
+        function realpath(path, resolved_path, maxLength) result(ptr) &
+            bind(C, name="get_realpath")
             import :: c_ptr, c_char, c_int
-            character(kind=c_char, len=1), intent(out) :: resolved_path(*)
             character(kind=c_char, len=1), intent(in) :: path(*)
+            character(kind=c_char, len=1), intent(out) :: resolved_path(*)
             integer(c_int), value, intent(in) :: maxLength
             type(c_ptr) :: ptr
-        end function fullpath
+        end function realpath
     end interface
 
 contains
@@ -145,11 +136,7 @@ contains
 
         allocate (cpath(buffersize))
 
-#ifndef _WIN32
-        ptr = realpath(appended_path, cpath)
-#else
-        ptr = fullpath(cpath, appended_path, buffersize)
-#endif
+        ptr = realpath(appended_path, cpath, buffersize)
 
         if (c_associated(ptr)) then
             call c_f_character(cpath, real_path)

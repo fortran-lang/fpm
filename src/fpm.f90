@@ -16,8 +16,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
-use fpm_targets, only: targets_from_sources, &
-                        resolve_target_linking, build_target_t, build_target_ptr, &
+use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only : error_t, fatal_error, fpm_stop
