@@ -5,7 +5,7 @@
 /// @param resolved_path
 /// @param maxLength
 /// @return
-int get_realpath(char* path, char* resolved_path, int maxLength) {
+int get_fullpath(char* path, char* resolved_path, int maxLength) {
 // Checking macro in C because it doesn't work with gfortran on Windows, even
 // when exported manually.
 #ifndef _WIN32

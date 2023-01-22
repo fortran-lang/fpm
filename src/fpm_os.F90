@@ -41,7 +41,7 @@ module fpm_os
 
         !> Determine the absolute, canonicalized path for a given path.
         function realpath(path, resolved_path, maxLength) result(ptr) &
-            bind(C, name="get_realpath")
+            bind(C, name="get_fullpath")
             import :: c_ptr, c_char, c_int
             character(kind=c_char, len=1), intent(in) :: path(*)
             character(kind=c_char, len=1), intent(out) :: resolved_path(*)
