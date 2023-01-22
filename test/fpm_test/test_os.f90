@@ -141,6 +141,8 @@ contains
             end if
         else
             call env_variable(home_drive, 'HOMEDRIVE')
+            home_drive = home_drive//'\'
+
             call get_absolute_path(home_drive, result, error)
 
             if (result /= home_drive) then
