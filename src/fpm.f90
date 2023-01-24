@@ -31,10 +31,8 @@ public :: build_model, check_modules_for_duplicates
 
 contains
 
-
+!> Constructs a valid fpm model from command line settings and the toml manifest.
 subroutine build_model(model, settings, package, error)
-    ! Constructs a valid fpm model from command line settings and toml manifest
-    !
     type(fpm_model_t), intent(out) :: model
     type(fpm_build_settings), intent(in) :: settings
     type(package_config_t), intent(in) :: package
@@ -42,10 +40,8 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
-    character(len=:), allocatable :: version
+    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags, version
     logical :: has_cpp
-
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
 
@@ -221,7 +217,6 @@ subroutine build_model(model, settings, package, error)
 
     endif
 
-
     if (settings%verbose) then
         write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix
         write(*,*)'<INFO> COMPILER:  ',model%compiler%fc
@@ -287,6 +282,7 @@ end subroutine check_modules_for_duplicates
 
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
+
 type(package_config_t) :: package
 type(fpm_model_t) :: model
 type(build_target_ptr), allocatable :: targets(:)

@@ -44,6 +44,15 @@ module fpm_manifest_dependency
         !> Local target
         character(len=:), allocatable :: path
 
+        !> Namespace which the dependency belongs to.
+        !> Enables multiple dependencies with the same name.
+        !> Required for dependencies that are obtained via the official registry.
+        character(len=:), allocatable :: namespace
+
+        !> The specified version of the dependency.
+        !> The latest version is used if not specified.
+        character(len=:), allocatable :: version
+
         !> Git descriptor
         type(git_target_t), allocatable :: git
 
@@ -138,31 +147,31 @@ contains
         call table%get_keys(list)
 
         if (size(list) < 1) then
-            call syntax_error(error, "Dependency "//name//" does not provide sufficient entries")
+            call syntax_error(error, "Dependency '"//name//"' does not provide sufficient entries")
             return
         end if
 
         do ikey = 1, size(list)
             select case(list(ikey)%key)
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in dependency "//name)
+                call syntax_error(error, "Key '"//list(ikey)%key//"' is not allowed in dependency '"//name//"'")
                 exit
-
+            
             case("git")
                 if (url_present) then
-                    call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
+                    call syntax_error(error, "Dependency '"//name//"' cannot have both git and path entries")
                     exit
                 end if
                 call get_value(table, "git", url)
                 if (.not.allocated(url)) then
-                    call syntax_error(error, "Dependency "//name//" has invalid git source")
+                    call syntax_error(error, "Dependency '"//name//"' has invalid git source")
                     exit
                 end if
                 url_present = .true.
                 
             case("path")
                 if (url_present) then
-                    call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
+                    call syntax_error(error, "Dependency '"//name//"' cannot have both git and path entries")
                     exit
                 end if
                 url_present = .true.
@@ -170,7 +179,7 @@ contains
 
             case("branch", "rev", "tag")
                 if (git_target_present) then
-                    call syntax_error(error, "Dependency "//name//" can only have one of branch, rev or tag present")
+                    call syntax_error(error, "Dependency '"//name//"' can only have one of branch, rev or tag present")
                     exit
                 end if
                 git_target_present = .true.
@@ -180,12 +189,13 @@ contains
         if (allocated(error)) return
 
         if (.not.url_present) then
-            call syntax_error(error, "Dependency "//name//" does not provide a method to actually retrieve itself")
+            call syntax_error(error, "Dependency '"//name//"' does not provide a method to actually retrieve itself")
             return
         end if
 
         if (has_path .and. git_target_present) then
-            call syntax_error(error, "Dependency "//name//" uses a local path, therefore no git identifiers are allowed")
+            call syntax_error(error, "Dependency '"//name//"' uses a local path, therefore no git identifiers are allowed")
+            return
         end if
 
     end subroutine check
