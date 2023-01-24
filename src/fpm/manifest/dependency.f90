@@ -134,7 +134,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: name, url
+        character(len=:), allocatable :: name, value
         type(toml_key), allocatable :: list(:)
         integer :: ikey
 
@@ -162,6 +162,13 @@ contains
                 call syntax_error(error, "Key '"//list(ikey)%key//"' is not allowed in dependency '"//name//"'")
                 return
             end if
+
+            ! Check if value can be mapped or else show error message with the error location
+            call get_value(table, list(ikey)%key, value)
+            if (.not. allocated(value)) then
+                call syntax_error(error, "Dependency '"//name//"' has invalid '"//list(ikey)%key//"' entry")
+                return
+            end if
         end do
 
         if (table%has_key("path") .and. table%has_key("git")) then
@@ -185,14 +192,6 @@ contains
             table%has_key("tag") .or. table%has_key("rev"))) then
             call syntax_error(error, "Dependency '"//name//"' has git identifier but no git entry")
             return
-        end if
-
-        if (table%has_key("git")) then
-            call get_value(table, "git", url)
-            if (.not. allocated(url)) then
-                call syntax_error(error, "Dependency '"//name//"' has invalid git source")
-                return
-            end if
         end if
 
     end subroutine check
