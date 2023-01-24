@@ -51,7 +51,7 @@ module fpm_manifest_dependency
 
         !> The specified version of the dependency.
         !> The latest version is used if not specified.
-        character(len=:), allocatable :: version
+        character(len=:), allocatable :: vers
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
