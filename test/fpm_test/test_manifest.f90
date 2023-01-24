@@ -29,6 +29,7 @@ contains
             & new_unittest("dependency-gitconflict", test_dependency_gitconflict, should_fail=.true.), &
             & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
             & new_unittest("dependency-no-namespace", test_dependency_no_namespace, should_fail=.true.), &
+            & new_unittest("dependency-redundant-vers", test_dependency_redundant_vers, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -351,7 +352,7 @@ contains
     !> Try to create a git dependency with invalid source format
     subroutine test_dependency_invalid_git(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, add_table, toml_table, set_value
+        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -370,7 +371,7 @@ contains
     !> Namespace is necessary if a dependency is not a git or path dependency
     subroutine test_dependency_no_namespace(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, add_table, toml_table, set_value
+        use fpm_toml, only : new_table, toml_table, set_value
 
         type(error_t), allocatable, intent(out) :: error
 
@@ -384,6 +385,25 @@ contains
         call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_no_namespace
+
+    !> Do not specify version with a git or path dependency
+    subroutine test_dependency_redundant_vers(error)
+        use fpm_manifest_dependency
+        use fpm_toml, only : new_table, toml_table, set_value
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_config_t) :: dependency
+
+        call new_table(table)
+        table%key = 'example'
+        call set_value(table, 'vers', '0.0.0')
+        call set_value(table, 'path', 'abc')
+
+        call new_dependency(dependency, table, error=error)
+
+    end subroutine test_dependency_redundant_vers
 
 
     !> Try to create a dependency with conflicting entries

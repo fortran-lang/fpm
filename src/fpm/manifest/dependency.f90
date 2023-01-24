@@ -202,6 +202,11 @@ contains
             return
         end if
 
+        if (table%has_key('vers') .and. (table%has_key('path') .or. table%has_key('git'))) then
+            call syntax_error(error, "Dependency '"//name//"' cannot have both vers and git/path entries")
+            return
+        end if
+
     end subroutine check
 
     !> Construct new dependency array from a TOML data structure
