@@ -1,27 +1,23 @@
 !> Define tests for the `fpm_manifest` modules
 module test_manifest
     use fpm_filesystem, only: get_temp_filename
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
-        & check_string
+    use testsuite, only : new_unittest, unittest_t, error_t, test_failed, check_string
     use fpm_manifest
     use fpm_manifest_profile, only: profile_config_t, find_profile
     use fpm_strings, only: operator(.in.)
     implicit none
     private
-
     public :: collect_manifest
-
 
 contains
 
-
     !> Collect all exported unit tests
-    subroutine collect_manifest(testsuite)
+    subroutine collect_manifest(tests)
 
         !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: testsuite(:)
+        type(unittest_t), allocatable, intent(out) :: tests(:)
 
-        testsuite = [ &
+        tests = [ &
             & new_unittest("valid-manifest", test_valid_manifest), &
             & new_unittest("invalid-manifest", test_invalid_manifest, should_fail=.true.), &
             & new_unittest("default-library", test_default_library), &
@@ -361,7 +357,6 @@ contains
 
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
         type(dependency_config_t) :: dependency
 
         call new_table(table)
@@ -523,7 +518,6 @@ contains
         type(package_config_t) :: package
         character(len=*), parameter :: manifest = 'fpm-profiles-error.toml'
         integer :: unit
-        character(:), allocatable :: profile_name, compiler, flags
 
         open(file=manifest, newunit=unit)
         write(unit, '(a)') &
@@ -1289,7 +1283,6 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: flags
         character(len=:), allocatable :: version
 
         type(package_config_t) :: package
