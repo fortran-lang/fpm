@@ -134,9 +134,9 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: name, value
+        character(len=:), allocatable :: name, value, valid_keys_string
         type(toml_key), allocatable :: list(:)
-        integer :: ikey
+        integer :: ikey, ivalid
 
         !> List of allowed keys for the dependency table
         character(*), dimension(*), parameter :: valid_keys = [character(24) ::&
@@ -159,7 +159,13 @@ contains
 
         do ikey = 1, size(list)
             if (.not. any(list(ikey)%key == valid_keys)) then
-                call syntax_error(error, "Key '"//list(ikey)%key//"' is not allowed in dependency '"//name//"'")
+                ! Create nicer error message
+                valid_keys_string = new_line('a')//new_line('a')
+                do ivalid = 1, size(valid_keys)
+                    valid_keys_string = valid_keys_string//trim(valid_keys(ivalid))//new_line('a')
+                end do
+                call syntax_error(error, "Key '"//list(ikey)%key//"' not allowed in dependency '"//&
+                name//"'."//new_line('a')//new_line('a')//'Valid keys: '//valid_keys_string)
                 return
             end if
 
