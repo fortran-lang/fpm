@@ -136,12 +136,18 @@ contains
 
         character(len=:), allocatable :: name, url
         type(toml_key), allocatable :: list(:)
-        logical :: url_present, git_target_present, has_path
         integer :: ikey
 
-        has_path = .false.
-        url_present = .false.
-        git_target_present = .false.
+        !> List of allowed keys for the dependency table
+        character(*), dimension(*), parameter :: valid_keys = [character(24) ::&
+            & "namespace",&
+              "vers",&
+              "path",&
+              "git",&
+              "tag",&
+              "branch",&
+              "rev" &
+            & ]
 
         call table%get_key(name)
         call table%get_keys(list)
@@ -152,54 +158,44 @@ contains
         end if
 
         do ikey = 1, size(list)
-            select case(list(ikey)%key)
-            case default
+            if (.not. any(list(ikey)%key == valid_keys)) then
                 call syntax_error(error, "Key '"//list(ikey)%key//"' is not allowed in dependency '"//name//"'")
-                exit
-            
-            case("git")
-                if (url_present) then
-                    call syntax_error(error, "Dependency '"//name//"' cannot have both git and path entries")
-                    exit
-                end if
-                call get_value(table, "git", url)
-                if (.not.allocated(url)) then
-                    call syntax_error(error, "Dependency '"//name//"' has invalid git source")
-                    exit
-                end if
-                url_present = .true.
-                
-            case("path")
-                if (url_present) then
-                    call syntax_error(error, "Dependency '"//name//"' cannot have both git and path entries")
-                    exit
-                end if
-                url_present = .true.
-                has_path = .true.
-
-            case("branch", "rev", "tag")
-                if (git_target_present) then
-                    call syntax_error(error, "Dependency '"//name//"' can only have one of branch, rev or tag present")
-                    exit
-                end if
-                git_target_present = .true.
-
-            end select
+                return
+            end if
         end do
-        if (allocated(error)) return
 
-        if (.not.url_present) then
+        if (table%has_key("path") .and. table%has_key("git")) then
+            call syntax_error(error, "Dependency '"//name//"' cannot have both git and path entries")
+            return
+        end if
+        
+        if ((table%has_key("branch") .and. table%has_key("rev")) .or.&
+        (table%has_key("branch") .and. table%has_key("tag")) .or.&
+        (table%has_key("rev") .and. table%has_key("tag"))) then
+            call syntax_error(error, "Dependency '"//name//"' can only have one of branch, rev or tag present")
+            return
+        end if
+        
+        if (.not. table%has_key("path") .and. .not. table%has_key("git")) then
             call syntax_error(error, "Dependency '"//name//"' does not provide a method to actually retrieve itself")
             return
         end if
 
-        if (has_path .and. git_target_present) then
-            call syntax_error(error, "Dependency '"//name//"' uses a local path, therefore no git identifiers are allowed")
+        if (.not. table%has_key("git") .and. (table%has_key("branch") .or.&
+            table%has_key("tag") .or. table%has_key("rev"))) then
+            call syntax_error(error, "Dependency '"//name//"' has git identifier but no git entry")
             return
         end if
 
-    end subroutine check
+        if (table%has_key("git")) then
+            call get_value(table, "git", url)
+            if (.not. allocated(url)) then
+                call syntax_error(error, "Dependency '"//name//"' has invalid git source")
+                return
+            end if
+        end if
 
+    end subroutine check
 
     !> Construct new dependency array from a TOML data structure
     subroutine new_dependencies(deps, table, root, error)
