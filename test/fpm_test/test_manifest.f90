@@ -28,6 +28,7 @@ contains
             & new_unittest("dependency-nourl", test_dependency_nourl, should_fail=.true.), &
             & new_unittest("dependency-gitconflict", test_dependency_gitconflict, should_fail=.true.), &
             & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
+            & new_unittest("dependency-no-namespace", test_dependency_no_namespace, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -356,17 +357,33 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(toml_table) :: table
-        type(toml_table), pointer :: child
         type(dependency_config_t) :: dependency
 
         call new_table(table)
         table%key = 'example'
-        call add_table(table, 'git', child)
-        call set_value(child, 'path', '../../package')
+        call set_value(table, 'git', 123) ! Not a string
 
         call new_dependency(dependency, table, error=error)
 
     end subroutine test_dependency_invalid_git
+
+    !> Namespace is necessary if a dependency is not a git or path dependency
+    subroutine test_dependency_no_namespace(error)
+        use fpm_manifest_dependency
+        use fpm_toml, only : new_table, add_table, toml_table, set_value
+
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_config_t) :: dependency
+
+        call new_table(table)
+        table%key = 'example'
+        call set_value(table, 'vers', 'abc')
+
+        call new_dependency(dependency, table, error=error)
+
+    end subroutine test_dependency_no_namespace
 
 
     !> Try to create a dependency with conflicting entries

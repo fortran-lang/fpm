@@ -159,7 +159,7 @@ contains
 
         do ikey = 1, size(list)
             if (.not. any(list(ikey)%key == valid_keys)) then
-                ! Create nicer error message
+                ! Improve error message
                 valid_keys_string = new_line('a')//new_line('a')
                 do ivalid = 1, size(valid_keys)
                     valid_keys_string = valid_keys_string//trim(valid_keys(ivalid))//new_line('a')
@@ -189,14 +189,16 @@ contains
             return
         end if
         
-        if (.not. table%has_key("path") .and. .not. table%has_key("git")) then
-            call syntax_error(error, "Dependency '"//name//"' does not provide a method to actually retrieve itself")
+        if ((table%has_key("branch") .or. table%has_key("tag") .or. table%has_key("rev"))&
+            .and. .not. table%has_key("git")) then
+            call syntax_error(error, "Dependency '"//name//"' has git identifier but no git url")
             return
         end if
-
-        if (.not. table%has_key("git") .and. (table%has_key("branch") .or.&
-            table%has_key("tag") .or. table%has_key("rev"))) then
-            call syntax_error(error, "Dependency '"//name//"' has git identifier but no git entry")
+        
+        if (.not. table%has_key("path") .and. .not. table%has_key("git")&
+            .and. .not. table%has_key("namespace")) then
+            call syntax_error(error, "Please provide a 'namespace' for dependency '"//name//&
+            "' if it is not a local path or git repository")
             return
         end if
 
