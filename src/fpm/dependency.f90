@@ -453,20 +453,16 @@ contains
 
     if (dependency%done) return
 
-    fetch = .false.
     if (allocated(dependency%proj_dir)) then
       proj_dir = dependency%proj_dir
-    else
-      if (allocated(dependency%path)) then
-        proj_dir = join_path(root, dependency%path)
-      else if (allocated(dependency%git)) then
-        proj_dir = join_path(self%dep_dir, dependency%name)
-        fetch = .not.exists(proj_dir)
-        if (fetch) then
-          call dependency%git%checkout(proj_dir, error)
-          if (allocated(error)) return
-        end if
-
+    else if (allocated(dependency%path)) then
+      proj_dir = join_path(root, dependency%path)
+    else if (allocated(dependency%git)) then
+      proj_dir = join_path(self%dep_dir, dependency%name)
+      fetch = .not. exists(proj_dir)
+      if (fetch) then
+        call dependency%git%checkout(proj_dir, error)
+        if (allocated(error)) return
       end if
     end if
 
