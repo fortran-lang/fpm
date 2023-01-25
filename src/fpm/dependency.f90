@@ -131,12 +131,14 @@ module fpm_dependency
     generic :: resolve => resolve_dependencies, resolve_dependency
     !> Resolve dependencies
     procedure, private :: resolve_dependencies
-    !> Resolve dependencies
+    !> Resolve dependency
     procedure, private :: resolve_dependency
+    !> True if entity can be found
+    generic :: has => has_dependency
+    !> True if dependency is part of the tree
+    procedure, private :: has_dependency
     !> Find a dependency in the tree
-    generic :: find => find_dependency, find_name
-    !> Find a dependency from an dependency configuration
-    procedure, private :: find_dependency
+    generic :: find => find_name
     !> Find a dependency by its name
     procedure, private :: find_name
     !> Depedendncy resolution finished
@@ -232,7 +234,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     type(dependency_config_t) :: dependency
-    character(len=:), allocatable :: root
+    character(len=*), parameter :: root = '.'
 
     if (allocated(self%cache)) then
       call self%load(self%cache, error)
@@ -242,8 +244,6 @@ contains
     if (.not.exists(self%dep_dir)) then
       call mkdir(self%dep_dir)
     end if
-
-    root = "."
 
     ! Create this project as the first dependency node (depth 0)
     dependency%name = package%name
@@ -365,10 +365,7 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: id
-
-    id = self%find(dependency)
-    if (id == 0) then
+    if (.not. self%has(dependency)) then
       self%ndep = self%ndep + 1
       call new_dependency_node(self%dep(self%ndep), dependency)
     end if
@@ -496,18 +493,16 @@ contains
 
   end subroutine resolve_dependency
 
-  !> Find a dependency in the dependency tree
-  pure function find_dependency(self, dependency) result(pos)
+  !> True if dependency is part of the tree
+  pure logical function has_dependency(self, dependency)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(in) :: self
-    !> Dependency configuration to add
+    !> Dependency configuration to check
     class(dependency_config_t), intent(in) :: dependency
-    !> Index of the dependency
-    integer :: pos
 
-    pos = self%find(dependency%name)
+    has_dependency = self%find(dependency%name) /= 0
 
-  end function find_dependency
+  end function has_dependency
 
   !> Find a dependency in the dependency tree
   pure function find_name(self, name) result(pos)
