@@ -82,45 +82,50 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: url, obj
+        character(len=:), allocatable :: uri, value
 
         call check(table, error)
         if (allocated(error)) return
 
         call table%get_key(self%name)
+        call get_value(table, "namespace", self%namespace)
 
-        call get_value(table, "path", url)
-        if (allocated(url)) then
-            if (get_os_type() == OS_WINDOWS) url = windows_path(url)
-            if (present(root)) url = root//url  ! Relative to the fpm.toml it’s written in
-            call move_alloc(url, self%path)
-        else
-            call get_value(table, "git", url)
-
-            call get_value(table, "tag", obj)
-            if (allocated(obj)) then
-                self%git = git_target_tag(url, obj)
-            end if
-
-            if (.not.allocated(self%git)) then
-                call get_value(table, "branch", obj)
-                if (allocated(obj)) then
-                    self%git = git_target_branch(url, obj)
-                end if
-            end if
-
-            if (.not.allocated(self%git)) then
-                call get_value(table, "rev", obj)
-                if (allocated(obj)) then
-                    self%git = git_target_revision(url, obj)
-                end if
-            end if
-
-            if (.not.allocated(self%git)) then
-                self%git = git_target_default(url)
-            end if
-
+        call get_value(table, "path", uri)
+        if (allocated(uri)) then
+            if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
+            if (present(root)) uri = root//uri  ! Relative to the fpm.toml it’s written in
+            call move_alloc(uri, self%path)
+            return
         end if
+
+        call get_value(table, "git", uri)
+        if (allocated(uri)) then
+            call get_value(table, "tag", value)
+            if (allocated(value)) then
+                self%git = git_target_tag(uri, value)
+            end if
+
+            if (.not.allocated(self%git)) then
+                call get_value(table, "branch", value)
+                if (allocated(value)) then
+                    self%git = git_target_branch(uri, value)
+                end if
+            end if
+
+            if (.not.allocated(self%git)) then
+                call get_value(table, "rev", value)
+                if (allocated(value)) then
+                    self%git = git_target_revision(uri, value)
+                end if
+            end if
+
+            if (.not.allocated(self%git)) then
+                self%git = git_target_default(uri)
+            end if
+            return
+        end if
+
+        call get_value(table, "vers", self%vers)
 
     end subroutine new_dependency
 
