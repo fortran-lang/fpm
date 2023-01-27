@@ -12,12 +12,12 @@ module fpm_settings
 
     type :: fpm_global_settings
         !> Path to the global config file excluding the file name.
-        character(len=:), allocatable :: path_to_folder
+        character(len=:), allocatable :: path_to_config_folder
         !> Name of the global config file. The default is `config.toml`.
-        character(len=:), allocatable :: file_name
+        character(len=:), allocatable :: config_file_name
         type(fpm_registry_settings), allocatable :: registry_settings
     contains
-        procedure :: full_path
+        procedure :: has_custom_location, full_path
     end type
 
     type :: fpm_registry_settings
@@ -31,7 +31,7 @@ contains
     !> Obtain global settings from the global config file.
     subroutine get_global_settings(global_settings, error)
         !> Global settings to be obtained.
-        type(fpm_global_settings), allocatable, intent(inout) :: global_settings
+        type(fpm_global_settings), intent(inout) :: global_settings
         !> Error reading config file.
         type(error_t), allocatable, intent(out) :: error
         !> Absolute path to the config file.
@@ -41,13 +41,11 @@ contains
         !> Error parsing to TOML table.
         type(toml_error), allocatable :: parse_error
 
-        if (.not. allocated(global_settings)) allocate (global_settings)
-
         ! Use custom path to the config file if it was specified.
-        if (allocated(global_settings%path_to_folder) .and. allocated(global_settings%file_name)) then
+        if (global_settings%has_custom_location()) then
             ! Throw error if folder doesn't exist.
-            if (.not. exists(global_settings%path_to_folder)) then
-                call fatal_error(error, 'Folder not found: "'//global_settings%path_to_folder//'"')
+            if (.not. exists(global_settings%path_to_config_folder)) then
+                call fatal_error(error, 'Folder not found: "'//global_settings%path_to_config_folder//'"')
                 return
             end if
 
@@ -58,33 +56,25 @@ contains
             end if
 
             ! Make sure that the path to the global config file is absolute.
-            call get_absolute_path(global_settings%path_to_folder, abs_path_to_config, error)
+            call get_absolute_path(global_settings%path_to_config_folder, abs_path_to_config, error)
             if (allocated(error)) return
 
-            global_settings%path_to_folder = abs_path_to_config
+            global_settings%path_to_config_folder = abs_path_to_config
         else
             ! Use default path if it wasn't specified.
             if (os_is_unix()) then
-                global_settings%path_to_folder = join_path(get_local_prefix(), 'share', 'fpm')
+                global_settings%path_to_config_folder = join_path(get_local_prefix(), 'share', 'fpm')
             else
-                global_settings%path_to_folder = join_path(get_local_prefix(), 'fpm')
+                global_settings%path_to_config_folder = join_path(get_local_prefix(), 'fpm')
             end if
 
             ! Use default file name.
-            global_settings%file_name = 'config.toml'
+            global_settings%config_file_name = 'config.toml'
 
-            ! Deallocate and return if path doesn't exist.
-            if (.not. exists(global_settings%path_to_folder)) then
-                deallocate (global_settings%path_to_folder)
-                deallocate (global_settings%file_name)
-                return
-            end if
+            ! Return if path or file doesn't exist.
+            if (.not. exists(global_settings%path_to_config_folder) &
+                .or. .not. exists(global_settings%full_path())) return
 
-            ! Deallocate name and return if the config file doesn't exist.
-            if (.not. exists(global_settings%full_path())) then
-                deallocate (global_settings%file_name)
-                return
-            end if
         end if
 
         ! Load into TOML table.
@@ -101,6 +91,7 @@ contains
 
     end subroutine get_global_settings
 
+    !> Get settings from the [registry] table in the global config file.
     subroutine get_registry_settings(global_settings, table, error)
         type(fpm_global_settings), intent(inout) :: global_settings
         type(toml_table), intent(inout) :: table
@@ -131,14 +122,13 @@ contains
 
         if (allocated(path)) then
             ! Relative path, join path to the global config file with the path to the registry.
-            call get_absolute_path(join_path(global_settings%path_to_folder, path), &
+            call get_absolute_path(join_path(global_settings%path_to_config_folder, path), &
                                    global_settings%registry_settings%path, error)
             if (allocated(error)) return
 
             ! Check if the new path to the registry exists.
             if (.not. exists(global_settings%registry_settings%path)) then
                 call fatal_error(error, "No registry at: '"//global_settings%registry_settings%path//"'")
-                deallocate (global_settings%registry_settings%path)
                 return
             end if
 
@@ -163,12 +153,19 @@ contains
 
     end subroutine get_registry_settings
 
+    !> True if the global config file is not at the default location.
+    pure logical function has_custom_location(self)
+        class(fpm_global_settings), intent(in) :: self
+
+        has_custom_location = allocated(self%path_to_config_folder) .and. allocated(self%config_file_name)
+    end function
+
     !> The full path to the global config file.
     function full_path(self) result(result)
         class(fpm_global_settings), intent(in) :: self
         character(len=:), allocatable :: result
 
-        result = join_path(self%path_to_folder, self%file_name)
+        result = join_path(self%path_to_config_folder, self%config_file_name)
     end function
 
     !> The official registry is used by default when no local or custom registry was specified.
