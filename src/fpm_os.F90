@@ -5,7 +5,7 @@ module fpm_os
     use fpm_error, only: error_t, fatal_error
     implicit none
     private
-    public :: change_directory, get_current_directory, get_absolute_path
+    public :: change_directory, get_current_directory, get_absolute_path, convert_to_absolute_path
 
     integer(c_int), parameter :: buffersize = 1000_c_int
 
@@ -161,7 +161,7 @@ contains
     end subroutine get_realpath
 
     !> Determine the canonical, absolute path for the given path.
-    !> It contains expansion of the home folder (~).
+    !> Expands home folder (~) on both Unix and Windows.
     subroutine get_absolute_path(path, absolute_path, error)
         character(len=*), intent(in) :: path
         character(len=:), allocatable, intent(out) :: absolute_path
@@ -212,6 +212,17 @@ contains
             call get_realpath(path, absolute_path, error)
         end if
 
+    end subroutine
+
+    !> Converts a path to an absolute, canonical path.
+    subroutine convert_to_absolute_path(path, error)
+        character(len=*), intent(inout) :: path
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: absolute_path
+
+        call get_absolute_path(path, absolute_path, error)
+        path = absolute_path
     end subroutine
 
 end module fpm_os

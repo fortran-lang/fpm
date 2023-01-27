@@ -66,6 +66,7 @@ module fpm_dependency
   use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
     toml_parse, get_value, set_value, add_table
   use fpm_versioning, only : version_t, new_version, char
+  use fpm_settings, only: fpm_global_settings, get_global_settings
   implicit none
   private
 
@@ -448,6 +449,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     type(package_config_t) :: package
+    type(fpm_global_settings) :: global_settings
     character(len=:), allocatable :: manifest, proj_dir, revision
     logical :: fetch
 
@@ -464,6 +466,16 @@ contains
         call dependency%git%checkout(proj_dir, error)
         if (allocated(error)) return
       end if
+    else
+      call get_global_settings(global_settings, error)
+      ! proj_dir = global_settings%registry%path
+      ! Get global settings
+      ! Path is defined in config.toml
+      ! Make sure local registry (folder) exists
+      ! Make sure it has namespace folders
+      ! Make directories for dependencies
+      ! proj_dir = is the goal
+      ! Record added date and throw out oldest one if we are exceeding limit
     end if
 
     if (allocated(dependency%git)) then

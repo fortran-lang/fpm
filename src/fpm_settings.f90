@@ -4,7 +4,7 @@ module fpm_settings
     use fpm_environment, only: os_is_unix
     use fpm_error, only: error_t, fatal_error
     use fpm_toml, only: toml_table, toml_error, toml_stat, get_value
-    use fpm_os, only: get_current_directory, change_directory, get_absolute_path
+    use fpm_os, only: get_current_directory, change_directory, get_absolute_path, convert_to_absolute_path
     use tomlf, only: toml_load
     implicit none
     private
@@ -34,8 +34,6 @@ contains
         type(fpm_global_settings), intent(inout) :: global_settings
         !> Error reading config file.
         type(error_t), allocatable, intent(out) :: error
-        !> Absolute path to the config file.
-        character(len=:), allocatable :: abs_path_to_config
         !> TOML table to be filled with global config settings.
         type(toml_table), allocatable :: table
         !> Error parsing to TOML table.
@@ -56,10 +54,8 @@ contains
             end if
 
             ! Make sure that the path to the global config file is absolute.
-            call get_absolute_path(global_settings%path_to_config_folder, abs_path_to_config, error)
+            call convert_to_absolute_path(global_settings%path_to_config_folder, error)
             if (allocated(error)) return
-
-            global_settings%path_to_config_folder = abs_path_to_config
         else
             ! Use default path if it wasn't specified.
             if (os_is_unix()) then
