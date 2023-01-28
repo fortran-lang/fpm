@@ -1,10 +1,11 @@
 !> Manages global settings which are defined in the global config file.
 module fpm_settings
-    use fpm_filesystem, only: exists, join_path, get_local_prefix
+    use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path
     use fpm_environment, only: os_is_unix
     use fpm_error, only: error_t, fatal_error
     use fpm_toml, only: toml_table, toml_error, toml_stat, get_value
-    use fpm_os, only: get_current_directory, change_directory, get_absolute_path, convert_to_absolute_path
+    use fpm_os, only: get_current_directory, change_directory, get_absolute_path, &
+                      convert_to_absolute_path
     use tomlf, only: toml_load
     implicit none
     private
@@ -117,17 +118,20 @@ contains
         end if
 
         if (allocated(path)) then
-            ! Relative path, join path to the global config file with the path to the registry.
-            call get_absolute_path(join_path(global_settings%path_to_config_folder, path), &
-                                   global_settings%registry_settings%path, error)
-            if (allocated(error)) return
+            if (is_absolute_path(path)) then
+                global_settings%registry_settings%path = path
+            else
+                ! Get canonical, absolute path on both Unix and Windows.
+                call get_absolute_path(join_path(global_settings%path_to_config_folder, path), &
+                                       global_settings%registry_settings%path, error)
+                if (allocated(error)) return
 
-            ! Check if the new path to the registry exists.
-            if (.not. exists(global_settings%registry_settings%path)) then
-                call fatal_error(error, "No registry at: '"//global_settings%registry_settings%path//"'")
-                return
+                ! Check if the path to the registry exists.
+                if (.not. exists(global_settings%registry_settings%path)) then
+                    call fatal_error(error, "No registry at: '"//global_settings%registry_settings%path//"'")
+                    return
+                end if
             end if
-
         end if
 
         call get_value(child, 'url', url, stat=stat)
