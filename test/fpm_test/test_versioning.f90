@@ -322,15 +322,13 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         character(len=*), parameter :: str_in = "20.1.100"
-        character(len=:), allocatable :: str_out
         type(version_t) :: version
 
         call new_version(version, str_in, error)
         if (allocated(error)) return
-        call version%to_string(str_out)
 
-        if (str_in /= str_out) then
-           call test_failed(error, "Expected "//str_in//" but got "//str_out)
+        if (str_in /= version%s()) then
+           call test_failed(error, "Expected "//str_in//" but got "//version%s())
         end if
 
     end subroutine test_valid_string

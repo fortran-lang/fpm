@@ -45,8 +45,8 @@ contains
         type(fpm_global_settings), allocatable, intent(out) :: global_settings
 
         allocate (global_settings)
-        global_settings%path_to_folder = tmp_folder
-        global_settings%file_name = config_file_name
+        global_settings%path_to_config_folder = tmp_folder
+        global_settings%config_file_name = config_file_name
     end subroutine
 
     !> Throw error when custom path to config file was entered but no folder exists.

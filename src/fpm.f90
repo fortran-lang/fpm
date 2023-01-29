@@ -40,7 +40,7 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags, version
+    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
     logical :: has_cpp
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
@@ -100,8 +100,7 @@ subroutine build_model(model, settings, package, error)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
-            call package%version%to_string(version)
-            model%packages(i)%version = version
+            model%packages(i)%version = package%version%s()
             
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)

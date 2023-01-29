@@ -1320,8 +1320,6 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: version
-
         type(package_config_t) :: package
         character(:), allocatable :: temp_file
         integer :: unit
@@ -1342,9 +1340,7 @@ contains
 
         if (allocated(error)) return
 
-        call package%version%to_string(version)
-
-        if (get_macros(id, package%preprocess(1)%macros, version) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
+        if (get_macros(id, package%preprocess(1)%macros, package%version%s()) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
             call test_failed(error, "Macros were not parsed correctly")
         end if
         
@@ -1358,7 +1354,6 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         character(len=:), allocatable :: macrosPackage, macrosDependency
-        character(len=:), allocatable :: versionPackage, versionDependency
 
         type(package_config_t) :: package, dependency
 
@@ -1400,11 +1395,8 @@ contains
 
         if (allocated(error)) return
 
-        call package%version%to_string(versionPackage)
-        call dependency%version%to_string(versionDependency)
-
-        macrosPackage = get_macros(id, package%preprocess(1)%macros, versionPackage)
-        macrosDependency = get_macros(id, dependency%preprocess(1)%macros, versionDependency)
+        macrosPackage = get_macros(id, package%preprocess(1)%macros, package%version%s())
+        macrosDependency = get_macros(id, dependency%preprocess(1)%macros, dependency%version%s())
 
         if (macrosPackage == macrosDependency) then
             call test_failed(error, "Macros of package and dependency should not be equal")

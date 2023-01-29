@@ -4,7 +4,7 @@ module fpm_versioning
     implicit none
     private
 
-    public :: version_t, new_version, char
+    public :: version_t, new_version
 
 
     type :: version_t
@@ -38,18 +38,13 @@ module fpm_versioning
         procedure, private :: match
 
         !> Create a printable string from a version data type
-        procedure :: to_string
+        procedure :: s
 
     end type version_t
 
 
     !> Arbitrary internal limit of the version parser
     integer, parameter :: max_limit = 3
-
-
-    interface char
-        module procedure :: as_string
-    end interface char
 
 
     interface new_version
@@ -220,13 +215,13 @@ contains
     end subroutine token_error
 
 
-    subroutine to_string(self, string)
+    pure function s(self) result(string)
 
         !> Version number
         class(version_t), intent(in) :: self
 
         !> Character representation of the version
-        character(len=:), allocatable, intent(out) :: string
+        character(len=:), allocatable :: string
 
         integer, parameter :: buffersize = 64
         character(len=buffersize) :: buffer
@@ -246,20 +241,7 @@ contains
             string = '0'
         end if
 
-    end subroutine to_string
-
-
-    function as_string(self) result(string)
-
-        !> Version number
-        class(version_t), intent(in) :: self
-
-        !> Character representation of the version
-        character(len=:), allocatable :: string
-
-        call self%to_string(string)
-
-    end function as_string
+    end function s
 
 
     !> Check to version numbers for equality
