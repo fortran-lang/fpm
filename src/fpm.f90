@@ -292,17 +292,17 @@ integer :: i
 
 call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
-    call fpm_stop(1,'*cmd_build*:package error:'//error%message)
+    call fpm_stop(1,'*cmd_build* Package error: '//error%message)
 end if
 
 call build_model(model, settings, package, error)
 if (allocated(error)) then
-    call fpm_stop(1,'*cmd_build*:model error:'//error%message)
+    call fpm_stop(1,'*cmd_build* Model error: '//error%message)
 end if
 
 call targets_from_sources(targets, model, settings%prune, error)
 if (allocated(error)) then
-    call fpm_stop(1,'*cmd_build*:target error:'//error%message)
+    call fpm_stop(1,'*cmd_build* Target error: '//error%message)
 end if
 
 if(settings%list)then
@@ -338,17 +338,17 @@ subroutine cmd_run(settings,test)
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
-        call fpm_stop(1, '*cmd_run*:package error:'//error%message)
+        call fpm_stop(1, '*cmd_run* Package error: '//error%message)
     end if
 
     call build_model(model, settings%fpm_build_settings, package, error)
     if (allocated(error)) then
-        call fpm_stop(1, '*cmd_run*:model error:'//error%message)
+        call fpm_stop(1, '*cmd_run* Model error: '//error%message)
     end if
 
     call targets_from_sources(targets, model, settings%prune, error)
     if (allocated(error)) then
-        call fpm_stop(1, '*cmd_run*:targets error:'//error%message)
+        call fpm_stop(1, '*cmd_run* Targets error: '//error%message)
     end if
 
     if (test) then

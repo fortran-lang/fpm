@@ -174,7 +174,7 @@ contains
                 return
             end if
 
-            ! Check if value can be mapped or else show error message with the error location
+            ! Check if value can be mapped or else (wrong type) show error message with the error location
             call get_value(table, list(ikey)%key, value)
             if (.not. allocated(value)) then
                 call syntax_error(error, "Dependency '"//name//"' has invalid '"//list(ikey)%key//"' entry")
