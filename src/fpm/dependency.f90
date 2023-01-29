@@ -65,7 +65,7 @@ module fpm_dependency
   use fpm_strings, only : string_t, operator(.in.)
   use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
     toml_parse, get_value, set_value, add_table
-  use fpm_versioning, only : version_t, new_version, char
+  use fpm_versioning, only : version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings
   implicit none
   private
@@ -492,7 +492,7 @@ contains
 
     if (self%verbosity > 1) then
       write(self%unit, out_fmt) &
-        "Dep:", dependency%name, "version", char(dependency%version), &
+        "Dep:", dependency%name, "version", dependency%version%s(), &
         "at", dependency%proj_dir
     end if
 
@@ -761,7 +761,7 @@ contains
           exit
         end if
         if (allocated(dep%version)) then
-          call set_value(ptr, "version", char(dep%version))
+          call set_value(ptr, "version", dep%version%s())
         end if
         proj_dir = canon_path(dep%proj_dir)
         call set_value(ptr, "proj-dir", proj_dir)
