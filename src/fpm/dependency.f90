@@ -58,7 +58,7 @@ module fpm_dependency
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, OS_WINDOWS
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path
+  use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename
   use fpm_git, only : git_target_revision, git_target_default, git_revision
   use fpm_manifest, only : package_config_t, dependency_config_t, &
     get_package_data
@@ -449,7 +449,6 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     type(package_config_t) :: package
-    type(fpm_global_settings) :: global_settings
     character(len=:), allocatable :: manifest, proj_dir, revision
     logical :: fetch
 
@@ -467,15 +466,8 @@ contains
         if (allocated(error)) return
       end if
     else
-      call get_global_settings(global_settings, error)
-      ! proj_dir = global_settings%registry%path
-      ! Get global settings
-      ! Path is defined in config.toml
-      ! Make sure local registry (folder) exists
-      ! Make sure it has namespace folders
-      ! Make directories for dependencies
-      ! proj_dir = is the goal
-      ! Record added date and throw out oldest one if we are exceeding limit
+      call get_from_registry(dependency, proj_dir, error)
+      if (allocated(error)) return
     end if
 
     if (allocated(dependency%git)) then
@@ -500,6 +492,128 @@ contains
     if (allocated(error)) return
 
   end subroutine resolve_dependency
+
+    !> Get a dependency from a registry. It can be local, a custom url registry
+    !> or the default registry.
+    subroutine get_from_registry(dep, target_dir, error)
+
+        !> Instance of the dependency configuration.
+        class(dependency_config_t), intent(in) :: dep
+
+        !> The target directory of the dependency.
+        character(:), allocatable, intent(out) :: target_dir
+
+        !> Error handling.
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_global_settings) :: global_settings
+
+        call get_global_settings(global_settings, error)
+        if (allocated(error)) return
+        ! Registry settings found in the global config file.
+        if (allocated(global_settings%registry_settings)) then
+            ! A Path to the local registry was specified.
+            if (allocated(global_settings%registry_settings%path)) then
+                ! The local registry now acts as the cache.
+                call get_from_registry_cache(dep, target_dir, global_settings%registry_settings%path, error)
+                if (allocated(error)) return
+            ! Use the registry from a custom url.
+            else if (allocated(global_settings%registry_settings%url)) then
+                ! Collect existing versions from the cache.
+                ! Get new versions from the registry, sending existing versions.
+                ! Put them in the cache, build cache if necessary.
+                ! Use default location for the cache.
+                call get_from_registry_cache(dep, target_dir,&
+                    join_path(global_settings%path_to_config_folder, 'dependencies'), error)
+                if (allocated(error)) return
+            end if
+        else
+          ! Collect existing versions from the cache.
+          ! Get new versions from the registry, sending existing versions.
+          ! Put them in the cache, build cache if necessary.
+          ! Use default location for the cache.
+          call get_from_registry_cache(dep, target_dir,&
+              join_path(global_settings%path_to_config_folder, 'dependencies'), error)
+          if (allocated(error)) return
+        end if
+
+    end subroutine get_from_registry
+
+    !> Get the dependency from the registry cache.
+    subroutine get_from_registry_cache(dep, target_dir, cache_path, error)
+
+        !> Instance of the dependency configuration.
+        class(dependency_config_t), intent(in) :: dep
+
+        !> The target directory to download the dependency to.
+        character(:), allocatable, intent(out) :: target_dir
+
+        !> The path to the registry cache.
+        character(*), intent(in) :: cache_path
+
+        !> Error handling.
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: path_to_name
+        type(string_t), allocatable :: files(:)
+        type(version_t), allocatable :: versions(:)
+        type(version_t) :: version
+        integer :: i
+
+        path_to_name = join_path(cache_path, dep%namespace, dep%name)
+
+        if (.not. exists(path_to_name)) then
+          call fatal_error(error, "Dependency '"//dep%name//"' not found in path '"//path_to_name//"'")
+          return
+        end if
+
+        ! Returns absolute paths.
+        call list_files(path_to_name, files)
+        if (size(files) == 0) then
+          call fatal_error(error, "No dependencies found in '"//path_to_name//"'")
+          return
+        end if
+
+        ! Version requested, find it in the cache.
+        if (allocated(dep%vers)) then
+          do i = 1, size(files)
+            ! Identify directory that matches the version number.
+            if (files(i)%s == join_path(path_to_name, dep%vers)) then
+              if (.not. is_dir(files(i)%s)) then
+                call fatal_error(error, "'"//files(i)%s//"' is not a directory")
+                return
+              end if
+              target_dir = files(i)%s
+              return
+            end if
+          end do
+          call fatal_error(error, "Version '"//dep%vers//"' not found in '"//path_to_name//"'")
+          return
+        end if
+
+        ! No version requested, get the latest version.
+        do i = 1, size(files)
+          if (is_dir(files(i)%s)) then
+            ! Generate list of versions for semantic versioning.
+            call new_version(version, basename(files(i)%s), error)
+            if (allocated(error)) return
+            versions = [versions, version]
+          end if
+        end do
+
+        if (size(versions) == 0) then
+          call fatal_error(error, "No versions found in '"//path_to_name//"'")
+          return
+        end if
+
+        ! Get the latest version.
+        version = versions(1)
+        do i = 1, size(versions)
+          if (versions(i) > version) version = versions(i)
+        end do
+
+        target_dir = join_path(path_to_name, version%s())
+    end subroutine get_from_registry_cache
 
   !> True if dependency is part of the tree
   pure logical function has_dependency(self, dependency)
