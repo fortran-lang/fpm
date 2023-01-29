@@ -567,7 +567,6 @@ contains
           return
         end if
 
-        ! Returns absolute paths.
         call list_files(path_to_name, files)
         if (size(files) == 0) then
           call fatal_error(error, "No dependencies found in '"//path_to_name//"'")
@@ -578,11 +577,7 @@ contains
         if (allocated(dep%vers)) then
           do i = 1, size(files)
             ! Identify directory that matches the version number.
-            if (files(i)%s == join_path(path_to_name, dep%vers)) then
-              if (.not. is_dir(files(i)%s)) then
-                call fatal_error(error, "'"//files(i)%s//"' is not a directory")
-                return
-              end if
+            if (files(i)%s == join_path(path_to_name, dep%vers) .and. is_dir(files(i)%s)) then
               target_dir = files(i)%s
               return
             end if
@@ -591,10 +586,9 @@ contains
           return
         end if
 
-        ! No version requested, get the latest version.
+        ! No version requested, generate list of available versions.
         do i = 1, size(files)
           if (is_dir(files(i)%s)) then
-            ! Generate list of versions for semantic versioning.
             call new_version(version, basename(files(i)%s), error)
             if (allocated(error)) return
             versions = [versions, version]
@@ -606,7 +600,7 @@ contains
           return
         end if
 
-        ! Get the latest version.
+        ! Find the latest version.
         version = versions(1)
         do i = 1, size(versions)
           if (versions(i) > version) version = versions(i)
