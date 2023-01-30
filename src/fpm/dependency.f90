@@ -64,7 +64,7 @@ module fpm_dependency
     get_package_data
   use fpm_strings, only : string_t, operator(.in.)
   use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
-    toml_parse, get_value, set_value, add_table
+    toml_parse, get_value, set_value, add_table, toml_load, toml_stat
   use fpm_versioning, only : version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings
   implicit none
@@ -607,7 +607,46 @@ contains
         end do
 
         target_dir = join_path(path_to_name, version%s())
-    end subroutine get_from_registry_cache
+      end subroutine get_from_registry_cache
+      
+      !> Checks if the directory name matches the package version.
+      subroutine check_version(dir_path, error)
+
+        !> Absolute path to the package-containing directory.
+        character(*), intent(in) :: dir_path
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+        type(toml_error), allocatable :: parse_error
+        integer :: stat
+        character(:), allocatable :: version
+
+        call toml_load(table, join_path(dir_path, 'fpm.toml'), error=parse_error)
+
+        if (allocated(parse_error)) then
+            allocate (error)
+            call move_alloc(parse_error%message, error%message)
+            return
+        end if
+
+        call get_value(table, 'version', version, stat=stat)
+
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, 'Error reading version number from "' &
+            //join_path(dir_path, 'fpm.toml')//'"')
+            return
+        end if
+
+        if (version /= basename(dir_path)) then
+            call fatal_error(error, "Directory name '"//basename(dir_path) &
+            //"' does not match version number '"//version//" ' in package '"// &
+            dir_path//"'")
+            return 
+        end if
+        
+      end subroutine check_version
 
   !> True if dependency is part of the tree
   pure logical function has_dependency(self, dependency)

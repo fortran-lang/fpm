@@ -3,10 +3,9 @@ module fpm_settings
     use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path
     use fpm_environment, only: os_is_unix
     use fpm_error, only: error_t, fatal_error
-    use fpm_toml, only: toml_table, toml_error, toml_stat, get_value
+    use fpm_toml, only: toml_table, toml_error, toml_stat, get_value, toml_load
     use fpm_os, only: get_current_directory, change_directory, get_absolute_path, &
                       convert_to_absolute_path
-    use tomlf, only: toml_load
     implicit none
     private
     public :: fpm_global_settings, get_global_settings
