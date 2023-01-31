@@ -42,9 +42,8 @@ contains
     end
 
     subroutine setup_global_settings(global_settings)
-        type(fpm_global_settings), allocatable, intent(out) :: global_settings
+        type(fpm_global_settings), intent(out) :: global_settings
 
-        allocate (global_settings)
         global_settings%path_to_config_folder = tmp_folder
         global_settings%config_file_name = config_file_name
     end subroutine
@@ -52,9 +51,9 @@ contains
     !> Throw error when custom path to config file was entered but no folder exists.
     subroutine no_folder(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call setup_global_settings(global_settings)
         call get_global_settings(global_settings, error)
     end subroutine no_folder
@@ -62,9 +61,9 @@ contains
     !> Throw error when custom path to config file was entered but no file exists.
     subroutine no_file(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
         call setup_global_settings(global_settings)
         call get_global_settings(global_settings, error)
@@ -73,9 +72,9 @@ contains
     !> Config file exists and working directory is set.
     subroutine empty_file(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), [''])
@@ -95,7 +94,7 @@ contains
 
     subroutine empty_registry_table(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
 
         call delete_tmp_folder()
         call mkdir(tmp_folder)
@@ -127,7 +126,7 @@ contains
 
     subroutine has_non_existent_path_to_registry(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
 
         call delete_tmp_folder()
         call mkdir(tmp_folder)
@@ -141,7 +140,7 @@ contains
 
     subroutine has_existent_path_to_registry(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
 
         call delete_tmp_folder()
         call mkdir(tmp_folder)
@@ -170,7 +169,7 @@ contains
 
     subroutine absolute_path_to_registry(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
         character(len=:), allocatable :: abs_path
 
         call delete_tmp_folder()
@@ -208,7 +207,7 @@ contains
 
     subroutine relative_path_to_registry(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
         character(len=:), allocatable :: abs_path
 
         call delete_tmp_folder()
@@ -238,7 +237,7 @@ contains
 
     subroutine canonical_path_to_registry(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
         character(len=:), allocatable :: abs_path
 
         call delete_tmp_folder()
@@ -269,7 +268,7 @@ contains
 
     subroutine has_url_to_registry(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
 
         call delete_tmp_folder()
         call mkdir(tmp_folder)
@@ -300,7 +299,7 @@ contains
 
     subroutine has_both_path_and_url_to_registry(error)
         type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings), allocatable :: global_settings
+        type(fpm_global_settings) :: global_settings
 
         call delete_tmp_folder()
         call mkdir(tmp_folder)

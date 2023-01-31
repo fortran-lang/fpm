@@ -22,8 +22,18 @@ module fpm_settings
     end type
 
     type :: fpm_registry_settings
+        !> The path to the local registry. If allocated, the local registry
+        !> will be used instead of the remote registry and replaces the
+        !> local cache.
         character(len=:), allocatable :: path
+        !> The URL to the remote registry. Can be used to get packages
+        !> from the official or a custom registry.
         character(len=:), allocatable :: url
+        !> The path to the cache folder. If not specified, the default cache
+        !> folders are `~/.local/share/fpm/dependencies` on Unix and
+        !> `%APPDATA%\local\fpm\dependencies` on Windows.
+        !> Cannot be used together with `path`.
+        character(len=:), allocatable :: cache_path
     contains
         procedure :: uses_default_registry
     end type
@@ -94,7 +104,7 @@ contains
         type(toml_table), intent(inout) :: table
         type(error_t), allocatable, intent(out) :: error
         type(toml_table), pointer :: child
-        character(:), allocatable :: path, url
+        character(:), allocatable :: path, url, cache_path
         integer :: stat
 
         call get_value(table, 'registry', child, requested=.false., stat=stat)
@@ -113,7 +123,7 @@ contains
         call get_value(child, 'path', path, stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, 'Error parsing path to registry: "'//path//'"')
+            call fatal_error(error, 'Error reading registry path: "'//path//'"')
             return
         end if
 
@@ -128,7 +138,8 @@ contains
 
                 ! Check if the path to the registry exists.
                 if (.not. exists(global_settings%registry_settings%path)) then
-                    call fatal_error(error, "No registry at: '"//global_settings%registry_settings%path//"'")
+                    call fatal_error(error, "Directory '"//global_settings%registry_settings%path// &
+                                     "' does not exist")
                     return
                 end if
             end if
@@ -137,7 +148,7 @@ contains
         call get_value(child, 'url', url, stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, 'Error parsing url to registry: "'//url//'"')
+            call fatal_error(error, 'Error reading registry url: "'//url//'"')
             return
         end if
 
@@ -151,6 +162,29 @@ contains
             global_settings%registry_settings%url = url
         end if
 
+        call get_value(child, 'cache_path', cache_path, stat=stat)
+
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, 'Error reading path to registry cache: "'//cache_path//'"')
+            return
+        end if
+
+        if (allocated(cache_path)) then
+            ! Throw error when both path and cache_path were provided.
+            if (allocated(path)) then
+                call fatal_error(error, 'Do not provide both path and cache_path')
+                return
+            end if
+
+            if (is_absolute_path(cache_path)) then
+                global_settings%registry_settings%cache_path = cache_path
+            else
+                ! Get canonical, absolute path on both Unix and Windows.
+                call get_absolute_path(join_path(global_settings%path_to_config_folder, cache_path), &
+                                       global_settings%registry_settings%cache_path, error)
+                if (allocated(error)) return
+            end if
+        end if
     end subroutine get_registry_settings
 
     !> True if the global config file is not at the default location.
