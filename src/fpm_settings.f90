@@ -15,6 +15,7 @@ module fpm_settings
         character(len=:), allocatable :: path_to_config_folder
         !> Name of the global config file. The default is `config.toml`.
         character(len=:), allocatable :: config_file_name
+        !> Registry configs.
         type(fpm_registry_settings), allocatable :: registry_settings
     contains
         procedure :: has_custom_location, full_path

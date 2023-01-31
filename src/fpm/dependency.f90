@@ -510,36 +510,22 @@ contains
 
         call get_global_settings(global_settings, error)
         if (allocated(error)) return
+
         ! Registry settings found in the global config file.
         if (allocated(global_settings%registry_settings)) then
-            ! A Path to the local registry was specified.
-            if (allocated(global_settings%registry_settings%path)) then
-                ! The local registry now acts as the cache.
-                call get_from_registry_cache(dep, target_dir, global_settings%registry_settings%path, error)
-                if (allocated(error)) return
-            ! Use the registry from a custom url.
-            else if (allocated(global_settings%registry_settings%url)) then
-                ! Collect existing versions from the cache.
-                ! Get new versions from the registry, sending existing versions.
-                ! Put them in the cache, build cache if necessary.
-                ! Use default location for the cache.
-                call get_from_registry_cache(dep, target_dir,&
-                    join_path(global_settings%path_to_config_folder, 'dependencies'), error)
-                if (allocated(error)) return
-            end if
-        else
-          ! Collect existing versions from the cache.
-          ! Get new versions from the registry, sending existing versions.
-          ! Put them in the cache, build cache if necessary.
-          ! Use default location for the cache.
-          call get_from_registry_cache(dep, target_dir,&
-              join_path(global_settings%path_to_config_folder, 'dependencies'), error)
-          if (allocated(error)) return
+          if (allocated(global_settings%registry_settings%path)) then
+            ! The registry cache acts as the local registry.
+            call get_from_registry_cache(dep, target_dir, global_settings%registry_settings%path, error)
+            return
+          end if
         end if
+
+        call get_from_registry_url(dep, target_dir, global_settings, error)
 
     end subroutine get_from_registry
 
     !> Get the dependency from the registry cache.
+    !> Throw error if the package isn't found.
     subroutine get_from_registry_cache(dep, target_dir, cache_path, error)
 
         !> Instance of the dependency configuration.
@@ -647,6 +633,27 @@ contains
         end if
         
       end subroutine check_version
+
+    !> Get dependency from a registry via url.
+    subroutine get_from_registry_url(dep, target_dir, global_settings, error)
+
+        !> Instance of the dependency configuration.
+        class(dependency_config_t), intent(in) :: dep
+
+        !> The target directory to download the dependency to.
+        character(:), allocatable, intent(out) :: target_dir
+
+        !> Global config settings.
+        type(fpm_global_settings), intent(in) :: global_settings
+
+        !> Error handling.
+        type(error_t), allocatable, intent(out) :: error
+
+        ! Collect existing versions from the cache.
+        ! Get new versions from the registry, sending existing versions.
+        ! Put them in the cache, build cache if necessary.
+        ! Use default location for the cache.
+    end subroutine get_from_registry_url
 
   !> True if dependency is part of the tree
   pure logical function has_dependency(self, dependency)
