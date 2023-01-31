@@ -136,7 +136,7 @@ contains
         type(c_ptr) :: ptr
 
         if (.not. exists(path)) then
-            call fatal_error(error, "Path '"//path//"' does not exist")
+            call fatal_error(error, "Cannot get real path. Path '"//path//"' does not exist")
             return
         end if
 

@@ -1,6 +1,6 @@
 !> Manages global settings which are defined in the global config file.
 module fpm_settings
-    use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path
+    use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path, mkdir
     use fpm_environment, only: os_is_unix
     use fpm_error, only: error_t, fatal_error
     use fpm_toml, only: toml_table, toml_error, toml_stat, get_value, toml_load
@@ -172,13 +172,17 @@ contains
         if (allocated(cache_path)) then
             ! Throw error when both path and cache_path were provided.
             if (allocated(path)) then
-                call fatal_error(error, 'Do not provide both path and cache_path')
+                call fatal_error(error, "Do not provide both 'path' and 'cache_path'")
                 return
             end if
 
             if (is_absolute_path(cache_path)) then
+                if (.not. exists(cache_path)) call mkdir(cache_path)
                 global_settings%registry_settings%cache_path = cache_path
             else
+                if (.not. exists(join_path(global_settings%path_to_config_folder, cache_path))) then
+                    call mkdir(join_path(global_settings%path_to_config_folder, cache_path))
+                end if
                 ! Get canonical, absolute path on both Unix and Windows.
                 call get_absolute_path(join_path(global_settings%path_to_config_folder, cache_path), &
                                        global_settings%registry_settings%cache_path, error)
