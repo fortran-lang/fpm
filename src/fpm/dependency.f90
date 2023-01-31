@@ -493,8 +493,8 @@ contains
 
   end subroutine resolve_dependency
 
-    !> Get a dependency from a registry. It can be local, a custom url registry
-    !> or the default registry.
+    !> Get a dependency from the registry. The registry can be local, custom
+    !> (reached via url) or the official one.
     subroutine get_from_registry(dep, target_dir, error)
 
         !> Instance of the dependency configuration.
@@ -563,12 +563,12 @@ contains
         if (allocated(dep%vers)) then
           do i = 1, size(files)
             ! Identify directory that matches the version number.
-            if (files(i)%s == join_path(path_to_name, dep%vers) .and. is_dir(files(i)%s)) then
+            if (files(i)%s == join_path(path_to_name, dep%vers%s()) .and. is_dir(files(i)%s)) then
               target_dir = files(i)%s
               return
             end if
           end do
-          call fatal_error(error, "Version '"//dep%vers//"' not found in '"//path_to_name//"'")
+          call fatal_error(error, "Version '"//dep%vers%s()//"' not found in '"//path_to_name//"'")
           return
         end if
 
@@ -649,10 +649,25 @@ contains
         !> Error handling.
         type(error_t), allocatable, intent(out) :: error
 
+        type(string_t), allocatable :: files(:)
+        type(version_t), allocatable :: versions(:), version
+        integer :: i
+
         ! Collect existing versions from the cache.
+        call list_files(global_settings%registry_settings%cache_path, files)
+
+        if (size(files) > 0) then
+          do i = 1, size(files)
+            if (.not. is_dir(files(i)%s)) cycle
+
+            call new_version(version, basename(files(i)%s), error)
+            if (allocated(error)) return
+
+            versions = [versions, version]
+          end do
+        end if
         ! Get new versions from the registry, sending existing versions.
-        ! Put them in the cache, build cache if necessary.
-        ! Use default location for the cache.
+        ! Put them in the cache.
     end subroutine get_from_registry_url
 
   !> True if dependency is part of the tree

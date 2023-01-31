@@ -29,6 +29,7 @@ module fpm_manifest_dependency
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     use fpm_filesystem, only: windows_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
+    use fpm_versioning, only : version_t, new_version
     implicit none
     private
 
@@ -51,7 +52,7 @@ module fpm_manifest_dependency
 
         !> The specified version of the dependency.
         !> The latest version is used if not specified.
-        character(len=:), allocatable :: vers
+        type(version_t), allocatable :: vers
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
@@ -82,7 +83,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: uri, value
+        character(len=:), allocatable :: uri, value, version
 
         call check(table, error)
         if (allocated(error)) return
@@ -125,7 +126,12 @@ contains
             return
         end if
 
-        call get_value(table, "vers", self%vers)
+        call get_value(table, 'vers', version)
+
+        if (allocated(version)) then
+            call new_version(self%vers, version, error)
+            if (allocated(error)) return
+        end if
 
     end subroutine new_dependency
 
