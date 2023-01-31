@@ -123,7 +123,7 @@ pure logical function str_begins_with_str(s, e, case_sensitive) result(r)
     logical :: lower_case
 
     ! Check if case sensitive
-    if (present(caseSensitive)) then
+    if (present(case_sensitive)) then
         lower_case = .not.case_sensitive
     else
         lower_case = .false.
