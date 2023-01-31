@@ -116,13 +116,25 @@ pure logical function str_ends_with_any(s, e) result(r)
 end function str_ends_with_any
 
 !> test if a CHARACTER string begins with a specified prefix
-pure logical function str_begins_with_str(s, e) result(r)
+pure logical function str_begins_with_str(s, e, case_sensitive) result(r)
     character(*), intent(in) :: s, e
+    logical, optional, intent(in) :: case_sensitive ! Default option: case sensitive
     integer :: n1, n2
+    logical :: lower_case
+
+    ! Check if case sensitive
+    if (present(caseSensitive)) then
+        lower_case = .not.case_sensitive
+    else
+        lower_case = .false.
+    end if
+
     n1 = 1
     n2 = 1 + len(e)-1
     if (n2 > len(s)) then
         r = .false.
+    elseif (lower_case) then
+        r = lower(s,n1,n2) == lower(e)
     else
         r = (s(n1:n2) == e)
     end if

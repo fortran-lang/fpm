@@ -317,8 +317,8 @@ subroutine check_module_names(model, error)
                     module_name = model%packages(k)%sources(l)%modules_provided(m)
 
                     valid = is_valid_module_name(module_name, &
-                                             package_name, &
-                                             model%enforce_module_names)
+                                                 package_name, &
+                                                 model%enforce_module_names)
 
                     if (.not.valid) then
 
@@ -632,7 +632,7 @@ logical function is_valid_module_name(module_name,package_name,enforce_module_na
         lmod  = len_trim(module_name%s)
         lsep  = len_trim(SEP)
 
-        same_beginning = str_begins_with_str(module_name%s,fortranized_pkg)
+        same_beginning = str_begins_with_str(module_name%s,fortranized_pkg,caseSensitive=.false.)
 
         is_same = lpkg==lmod .and. same_beginning
 
