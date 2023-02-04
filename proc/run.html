@@ -91,7 +91,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 1.1% of total for procedures.">52 statements</a>
+               title=" 1.4% of total for procedures.">64 statements</a>
           </li>
 
             <li id="source-file">
@@ -294,15 +294,16 @@
     <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">echo</span><span class="p">,</span><span class="n">exitstat</span><span class="p">,</span><span class="n">verbose</span><span class="p">,</span><span class="n">redirect</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmd</span><span class="w"></span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">echo</span><span class="w"></span>
-<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="k">optional</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">exitstat</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exitstat</span><span class="w"></span>
 <span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbose</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">redirect</span><span class="w"></span>
 
+<span class="w">    </span><span class="kt">integer</span><span class="w">            </span><span class="kd">::</span><span class="w"> </span><span class="n">cmdstat</span><span class="w"></span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cmdmsg</span><span class="p">,</span><span class="w"> </span><span class="n">iomsg</span><span class="w"></span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">echo_local</span><span class="p">,</span><span class="w"> </span><span class="n">verbose_local</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">redirect_str</span><span class="w"></span>
 <span class="w">    </span><span class="kt">character</span><span class="p">(:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">line</span><span class="w"></span>
-<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">ios</span><span class="w"></span>
-
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span><span class="p">,</span><span class="w"> </span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="w"></span>
 
 <span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">echo</span><span class="p">))</span><span class="k">then</span>
 <span class="k">       </span><span class="n">echo_local</span><span class="o">=</span><span class="n">echo</span><span class="w"></span>
@@ -317,33 +318,44 @@
 <span class="w">    </span><span class="k">end if</span>
 
 <span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">redirect</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">        </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="s2">&quot;&gt;&quot;</span><span class="o">//</span><span class="n">redirect</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="k">else</span>
+<span class="k">        if</span><span class="p">(</span><span class="n">redirect</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
+<span class="k">           </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="s2">&quot;&gt;&quot;</span><span class="o">//</span><span class="n">redirect</span><span class="o">//</span><span class="s2">&quot; 2&gt;&amp;1&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="k">endif</span>
+<span class="k">    else</span>
 <span class="k">        if</span><span class="p">(</span><span class="n">verbose_local</span><span class="p">)</span><span class="k">then</span><span class="w"></span>
 <span class="w">            </span><span class="c">! No redirection but verbose output</span>
 <span class="w">            </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
 <span class="w">        </span><span class="k">else</span><span class="w"></span>
 <span class="w">            </span><span class="c">! No redirection and non-verbose output</span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">os_is_unix</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
-<span class="k">                </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;/dev/null 2&gt;&amp;1&quot;</span><span class="w"></span>
+<span class="k">                </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &gt;/dev/null 2&gt;&amp;1&quot;</span><span class="w"></span>
 <span class="w">            </span><span class="k">else</span>
-<span class="k">                </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;NUL 2&gt;&amp;1&quot;</span><span class="w"></span>
+<span class="k">                </span><span class="n">redirect_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot; &gt;NUL 2&gt;&amp;1&quot;</span><span class="w"></span>
 <span class="w">            </span><span class="k">end if</span>
 <span class="k">        end if</span>
 <span class="k">    end if</span>
 
-<span class="k">    if</span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span><span class="w"></span>
+<span class="k">    if</span><span class="p">(</span><span class="n">echo_local</span><span class="p">)</span><span class="w"> </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;+ &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span><span class="w"> </span><span class="c">!//redirect_str</span>
 
-<span class="w">    </span><span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="n">cmd</span><span class="o">//</span><span class="n">redirect_str</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">call </span><span class="nb">execute_command_line</span><span class="p">(</span><span class="n">cmd</span><span class="o">//</span><span class="n">redirect_str</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">,</span><span class="n">cmdstat</span><span class="o">=</span><span class="n">cmdstat</span><span class="p">,</span><span class="n">cmdmsg</span><span class="o">=</span><span class="n">cmdmsg</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">cmdstat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<span class="k">        write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="s1">&#39;&lt;ERROR&gt;:failed command &#39;</span><span class="o">//</span><span class="n">cmd</span><span class="o">//</span><span class="n">redirect_str</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;*run*:&#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">cmdmsg</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="k">endif</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose_local</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">redirect</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">verbose_local</span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="nb">present</span><span class="p">(</span><span class="n">redirect</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
 
-<span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">redirect</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">do</span>
-<span class="k">            call </span><span class="n">getline</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="n">ios</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ios</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
-<span class="k">            write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">end do</span>
+<span class="k">        open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">redirect</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="n">iostat</span><span class="p">,</span><span class="n">iomsg</span><span class="o">=</span><span class="n">iomsg</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">iostat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<span class="k">           do</span>
+<span class="k">               call </span><span class="n">getline</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iostat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
+<span class="k">               write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="w"></span>
+<span class="w">           </span><span class="k">end do</span>
+<span class="k">        else</span>
+<span class="k">           write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(A)&#39;</span><span class="p">)</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">iomsg</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">endif</span>
+
 <span class="k">        close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span><span class="w"></span>
 
 <span class="w">    </span><span class="k">end if</span>
@@ -377,7 +389,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-01-10 07:05            </p>
+ on 2023-02-04 19:58            </p>
         </div>
       </div>
       <br>

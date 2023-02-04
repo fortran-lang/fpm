@@ -240,10 +240,12 @@ logical function is_dir(dir)
     select case (get_os_type())
 
     case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-        call execute_command_line("test -d " // dir , exitstat=stat)
+        call run( "test -d " // dir , &
+                & exitstat=stat,echo=.false.,verbose=.false.)
 
     case (OS_WINDOWS)
-        call execute_command_line('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', exitstat=stat)
+        call run('cmd /c "if not exist ' // windows_path(dir) // '\ exit /B 1"', &
+                & exitstat=stat,echo=.false.,verbose=.false.)
 
     end select
 
@@ -367,30 +369,16 @@ subroutine mkdir(dir, echo)
     logical, intent(in), optional :: echo
 
     integer :: stat
-    logical :: echo_local
-
-    if(present(echo))then
-        echo_local=echo
-      else
-        echo_local=.true.
-    end if
 
     if (is_dir(dir)) return
 
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-            call execute_command_line('mkdir -p ' // dir, exitstat=stat)
-
-            if (echo_local) then
-                write (*, *) '+ mkdir -p ' // dir
-            end if
+            call run('mkdir -p ' // dir, exitstat=stat,echo=echo,verbose=.false.)
 
         case (OS_WINDOWS)
-            call execute_command_line("mkdir " // windows_path(dir), exitstat=stat)
-
-            if (echo_local) then
-                write (*, *) '+ mkdir ' // windows_path(dir)
-            end if
+            call run("mkdir " // windows_path(dir), &
+                    & echo=echo, exitstat=stat,verbose=.false.)
 
     end select
 
@@ -511,11 +499,11 @@ recursive subroutine list_files(dir, files, recurse)
 
     select case (get_os_type())
         case (OS_UNKNOWN, OS_LINUX, OS_MACOS, OS_CYGWIN, OS_SOLARIS, OS_FREEBSD, OS_OPENBSD)
-            call execute_command_line('ls -A ' // dir // ' > ' // temp_file, &
-                                      exitstat=stat)
+            call run('ls -A ' // dir , &
+                    & redirect=temp_file, exitstat=stat,echo=.false.,verbose=.false.)
         case (OS_WINDOWS)
-            call execute_command_line('dir /b ' // windows_path(dir) // ' > ' // temp_file, &
-                                      exitstat=stat)
+            call run('dir /b ' // windows_path(dir), &
+                    & redirect=temp_file, exitstat=stat,echo=.false.,verbose=.false.)
     end select
 
     if (stat /= 0) then
@@ -864,18 +852,20 @@ integer                         :: i, j
 end function which
 
 !> echo command string and pass it to the system for execution
+!call run(cmd,echo=.false.,exitstat=exitstat,verbose=.false.,redirect='')
 subroutine run(cmd,echo,exitstat,verbose,redirect)
     character(len=*), intent(in) :: cmd
     logical,intent(in),optional  :: echo
-    integer, intent(out),optional  :: exitstat
+    integer, intent(out),optional :: exitstat
     logical, intent(in), optional :: verbose
     character(*), intent(in), optional :: redirect
 
+    integer            :: cmdstat
+    character(len=256) :: cmdmsg, iomsg
     logical :: echo_local, verbose_local
     character(:), allocatable :: redirect_str
     character(:), allocatable :: line
-    integer :: stat, fh, ios
-
+    integer :: stat, fh, iostat
 
     if(present(echo))then
        echo_local=echo
@@ -890,7 +880,9 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
     end if
 
     if (present(redirect)) then
-        redirect_str =  ">"//redirect//" 2>&1"
+        if(redirect /= '')then
+           redirect_str =  ">"//redirect//" 2>&1"
+        endif
     else
         if(verbose_local)then
             ! No redirection but verbose output
@@ -898,25 +890,34 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
         else
             ! No redirection and non-verbose output
             if (os_is_unix()) then
-                redirect_str = ">/dev/null 2>&1"
+                redirect_str = " >/dev/null 2>&1"
             else
-                redirect_str = ">NUL 2>&1"
+                redirect_str = " >NUL 2>&1"
             end if
         end if
     end if
 
-    if(echo_local) print *, '+ ', cmd
+    if(echo_local) print *, '+ ', cmd !//redirect_str
 
-    call execute_command_line(cmd//redirect_str, exitstat=stat)
+    call execute_command_line(cmd//redirect_str, exitstat=stat,cmdstat=cmdstat,cmdmsg=cmdmsg)
+    if(cmdstat /= 0)then
+        write(*,'(a)')'<ERROR>:failed command '//cmd//redirect_str
+        call fpm_stop(1,'*run*:'//trim(cmdmsg))
+    endif
 
     if (verbose_local.and.present(redirect)) then
 
-        open(newunit=fh,file=redirect,status='old')
-        do
-            call getline(fh, line, ios)
-            if (ios /= 0) exit
-            write(*,'(A)') trim(line)
-        end do
+        open(newunit=fh,file=redirect,status='old',iostat=iostat,iomsg=iomsg)
+        if(iostat == 0)then
+           do
+               call getline(fh, line, iostat)
+               if (iostat /= 0) exit
+               write(*,'(A)') trim(line)
+           end do
+        else
+           write(*,'(A)') trim(iomsg)
+        endif
+
         close(fh)
 
     end if
@@ -937,28 +938,10 @@ subroutine os_delete_dir(unix, dir, echo)
     character(len=*), intent(in) :: dir
     logical, intent(in), optional :: echo
 
-    logical :: echo_local
-
-    if(present(echo))then
-        echo_local=echo
-      else
-        echo_local=.true.
-    end if
-
     if (unix) then
-        call run('rm -rf ' // dir, .false.)
-
-        if (echo_local) then
-          write (*, *) '+ rm -rf ' // dir
-        end if
-
+        call run('rm -rf ' // dir, echo=echo,verbose=.false.)
     else
-        call run('rmdir /s/q ' // dir, .false.)
-
-        if (echo_local) then
-          write (*, *) '+ rmdir /s/q ' // dir
-        end if
-
+        call run('rmdir /s/q ' // dir, echo=echo,verbose=.false.)
     end if
 
 end subroutine os_delete_dir

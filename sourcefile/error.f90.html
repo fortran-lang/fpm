@@ -91,7 +91,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 1.2% of total for source files.">90 statements</a>
+               title=" 1.2% of total for source files.">94 statements</a>
           </li>
 
             <li id="source-file">
@@ -376,17 +376,21 @@
 <a id="ln-166" name="ln-166" href="#ln-166"></a><span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">value</span><span class="w"></span>
 <a id="ln-167" name="ln-167" href="#ln-167"></a><span class="w">        </span><span class="c">!&gt; Error message</span>
 <a id="ln-168" name="ln-168" href="#ln-168"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">message</span><span class="w"></span>
-<a id="ln-169" name="ln-169" href="#ln-169"></a><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">message</span><span class="o">/=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-170" name="ln-170" href="#ln-170"></a><span class="k">           if</span><span class="p">(</span><span class="k">value</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
-<a id="ln-171" name="ln-171" href="#ln-171"></a><span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;ERROR&gt;&quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
-<a id="ln-172" name="ln-172" href="#ln-172"></a><span class="w">           </span><span class="k">else</span>
-<a id="ln-173" name="ln-173" href="#ln-173"></a><span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;INFO&gt; &quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
-<a id="ln-174" name="ln-174" href="#ln-174"></a><span class="w">           </span><span class="k">endif</span>
-<a id="ln-175" name="ln-175" href="#ln-175"></a><span class="k">        endif</span>
-<a id="ln-176" name="ln-176" href="#ln-176"></a><span class="k">        stop value</span>
-<a id="ln-177" name="ln-177" href="#ln-177"></a><span class="k">    end subroutine </span><span class="n">fpm_stop</span><span class="w"></span>
-<a id="ln-178" name="ln-178" href="#ln-178"></a>
-<a id="ln-179" name="ln-179" href="#ln-179"></a><span class="k">end module </span><span class="n">fpm_error</span><span class="w"></span>
+<a id="ln-169" name="ln-169" href="#ln-169"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iostat</span><span class="w"></span>
+<a id="ln-170" name="ln-170" href="#ln-170"></a><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">message</span><span class="o">/=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-171" name="ln-171" href="#ln-171"></a><span class="k">           </span><span class="nb">flush</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="n">iostat</span><span class="p">)</span><span class="w"></span>
+<a id="ln-172" name="ln-172" href="#ln-172"></a><span class="w">           </span><span class="nb">flush</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="n">iostat</span><span class="p">)</span><span class="w"></span>
+<a id="ln-173" name="ln-173" href="#ln-173"></a><span class="w">           </span><span class="k">if</span><span class="p">(</span><span class="k">value</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="k">then</span>
+<a id="ln-174" name="ln-174" href="#ln-174"></a><span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;ERROR&gt;&quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<a id="ln-175" name="ln-175" href="#ln-175"></a><span class="w">           </span><span class="k">else</span>
+<a id="ln-176" name="ln-176" href="#ln-176"></a><span class="k">              write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s1">&#39;(&quot;&lt;INFO&gt; &quot;,a)&#39;</span><span class="p">)</span><span class="nb">trim</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<a id="ln-177" name="ln-177" href="#ln-177"></a><span class="w">           </span><span class="k">endif</span>
+<a id="ln-178" name="ln-178" href="#ln-178"></a><span class="k">           </span><span class="nb">flush</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span><span class="n">iostat</span><span class="o">=</span><span class="n">iostat</span><span class="p">)</span><span class="w"></span>
+<a id="ln-179" name="ln-179" href="#ln-179"></a><span class="w">        </span><span class="k">endif</span>
+<a id="ln-180" name="ln-180" href="#ln-180"></a><span class="k">        stop value</span>
+<a id="ln-181" name="ln-181" href="#ln-181"></a><span class="k">    end subroutine </span><span class="n">fpm_stop</span><span class="w"></span>
+<a id="ln-182" name="ln-182" href="#ln-182"></a>
+<a id="ln-183" name="ln-183" href="#ln-183"></a><span class="k">end module </span><span class="n">fpm_error</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -405,7 +409,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-01-10 07:05            </p>
+ on 2023-02-04 19:58            </p>
         </div>
       </div>
       <br>
