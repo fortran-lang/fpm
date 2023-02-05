@@ -33,7 +33,7 @@ program fpm_testing
         & new_testsuite("fpm_test_backend", collect_backend), &
         & new_testsuite("fpm_installer", collect_installer), &
         & new_testsuite("fpm_versioning", collect_versioning), &
-        ! & new_testsuite("fpm_settings", collect_settings), &
+        & new_testsuite("fpm_settings", collect_settings), &
         & new_testsuite("fpm_os", collect_os) &
         & ]
 

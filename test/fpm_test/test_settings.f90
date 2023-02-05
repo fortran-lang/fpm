@@ -4,7 +4,7 @@ module test_settings
     use fpm_filesystem, only: is_dir, join_path, mkdir, filewrite, os_delete_dir, exists
     use fpm_environment, only: os_is_unix
     use fpm_toml, only: new_table
-    use fpm_os, only: get_absolute_path
+    use fpm_os, only: get_absolute_path, get_current_directory
 
     implicit none
     private
@@ -41,10 +41,16 @@ contains
         if (is_dir(tmp_folder)) call os_delete_dir(os_is_unix(), tmp_folder)
     end
 
-    subroutine setup_global_settings(global_settings)
+    subroutine setup_global_settings(global_settings, error)
         type(fpm_global_settings), intent(out) :: global_settings
+        type(error_t), allocatable, intent(out) :: error
 
-        global_settings%path_to_config_folder = tmp_folder
+        character(:), allocatable :: cwd
+
+        call get_current_directory(cwd, error)
+        if (allocated(error)) return
+
+        global_settings%path_to_config_folder = join_path(cwd, tmp_folder)
         global_settings%config_file_name = config_file_name
     end subroutine
 
@@ -54,7 +60,8 @@ contains
         type(fpm_global_settings) :: global_settings
 
         call delete_tmp_folder
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
         call get_global_settings(global_settings, error)
     end subroutine no_folder
 
@@ -65,7 +72,10 @@ contains
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
-        call setup_global_settings(global_settings)
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
     end subroutine no_file
 
@@ -73,13 +83,16 @@ contains
     subroutine empty_file(error)
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
+        character(:), allocatable :: cwd
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), [''])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
 
         call os_delete_dir(os_is_unix(), tmp_folder)
@@ -101,7 +114,9 @@ contains
 
         call filewrite(join_path(tmp_folder, config_file_name), ['[registry]'])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
 
         call os_delete_dir(os_is_unix(), tmp_folder)
@@ -133,7 +148,9 @@ contains
 
         call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'path="abc"'])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
         call os_delete_dir(os_is_unix(), tmp_folder)
     end subroutine
@@ -148,7 +165,9 @@ contains
         call filewrite(join_path(tmp_folder, config_file_name), &
                        [character(len=10) :: '[registry]', 'path="."'])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
 
         call os_delete_dir(os_is_unix(), tmp_folder)
@@ -182,7 +201,9 @@ contains
         call filewrite(join_path(tmp_folder, config_file_name), &
                        [character(len=80) :: '[registry]', "path='"//abs_path//"'"])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
 
         call os_delete_dir(os_is_unix(), tmp_folder)
@@ -215,7 +236,9 @@ contains
 
         call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'path="abc"'])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
 
         call get_absolute_path(tmp_folder, abs_path, error)
@@ -246,7 +269,9 @@ contains
         call filewrite(join_path(tmp_folder, config_file_name), &
                        [character(len=20) :: '[registry]', "path='"//join_path('..', 'tmp')//"'"])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
 
         call get_absolute_path(tmp_folder, abs_path, error)
@@ -275,7 +300,9 @@ contains
 
         call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'url="http"'])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
 
         call os_delete_dir(os_is_unix(), tmp_folder)
@@ -307,7 +334,9 @@ contains
         call filewrite(join_path(tmp_folder, config_file_name), &
                        [character(len=10) :: '[registry]', 'path="."', 'url="http"'])
 
-        call setup_global_settings(global_settings)
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
         call os_delete_dir(os_is_unix(), tmp_folder)
     end subroutine
