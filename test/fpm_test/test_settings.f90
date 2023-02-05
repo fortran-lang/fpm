@@ -83,7 +83,6 @@ contains
     subroutine empty_file(error)
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
-        character(:), allocatable :: cwd
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
