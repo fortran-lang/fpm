@@ -85,21 +85,21 @@ contains
         !> Command line argument
         character(len=:), allocatable, intent(out) :: arg
 
-        integer :: length, stat
+        integer :: length, arg_stat
 
-        call get_command_argument(idx, length=length, status=stat)
-        if (stat /= 0) then
+        call get_command_argument(idx, length=length, status=arg_stat)
+        if (arg_stat /= 0) then
             return
         endif
 
-        allocate(character(len=length) :: arg, stat=stat)
-        if (stat /= 0) then
+        allocate(character(len=length) :: arg, stat=arg_stat)
+        if (arg_stat /= 0) then
             return
         endif
 
         if (length > 0) then
-            call get_command_argument(idx, arg, status=stat)
-            if (stat /= 0) then
+            call get_command_argument(idx, arg, status=arg_stat)
+            if (arg_stat /= 0) then
                 deallocate(arg)
                 return
             end if
