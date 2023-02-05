@@ -108,7 +108,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), ['[registry]'])
@@ -142,7 +142,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'path="abc"'])
@@ -158,7 +158,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), &
@@ -190,7 +190,7 @@ contains
         type(fpm_global_settings) :: global_settings
         character(len=:), allocatable :: abs_path
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call get_absolute_path(tmp_folder, abs_path, error)
@@ -230,7 +230,7 @@ contains
         type(fpm_global_settings) :: global_settings
         character(len=:), allocatable :: abs_path
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(join_path(tmp_folder, 'abc'))
 
         call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'path="abc"'])
@@ -262,7 +262,7 @@ contains
         type(fpm_global_settings) :: global_settings
         character(len=:), allocatable :: abs_path
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), &
@@ -294,7 +294,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'url="http"'])
@@ -327,7 +327,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
 
-        call delete_tmp_folder()
+        call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), &

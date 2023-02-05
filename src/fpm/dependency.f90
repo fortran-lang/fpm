@@ -493,146 +493,147 @@ contains
 
   end subroutine resolve_dependency
 
-    !> Get a dependency from the registry. The registry can be local, custom
-    !> (reached via url) or the official one.
-    subroutine get_from_registry(dep, target_dir, error)
+  !> Get a dependency from the registry. Whether the dependency is fetched
+  !> from a local, a custom remote or the official registry is determined
+  !> by the global configuration settings.
+  subroutine get_from_registry(dep, target_dir, error)
 
-        !> Instance of the dependency configuration.
-        class(dependency_config_t), intent(in) :: dep
+      !> Instance of the dependency configuration.
+      class(dependency_config_t), intent(in) :: dep
 
-        !> The target directory of the dependency.
-        character(:), allocatable, intent(out) :: target_dir
+      !> The target directory of the dependency.
+      character(:), allocatable, intent(out) :: target_dir
 
-        !> Error handling.
-        type(error_t), allocatable, intent(out) :: error
+      !> Error handling.
+      type(error_t), allocatable, intent(out) :: error
 
-        type(fpm_global_settings) :: global_settings
+      type(fpm_global_settings) :: global_settings
 
-        call get_global_settings(global_settings, error)
-        if (allocated(error)) return
+      call get_global_settings(global_settings, error)
+      if (allocated(error)) return
 
-        ! Registry settings found in the global config file.
-        if (allocated(global_settings%registry_settings)) then
-          if (allocated(global_settings%registry_settings%path)) then
-            ! The registry cache acts as the local registry.
-            call get_from_registry_cache(dep, target_dir, global_settings%registry_settings%path, error)
-            return
-          end if
+      ! Registry settings found in the global config file.
+      if (allocated(global_settings%registry_settings)) then
+        if (allocated(global_settings%registry_settings%path)) then
+          ! The registry cache acts as the local registry.
+          call get_from_registry_cache(dep, target_dir, global_settings%registry_settings%path, error)
+           return
         end if
+      end if
 
-        call get_from_registry_url(dep, target_dir, global_settings, error)
+      call get_from_registry_url(dep, target_dir, global_settings, error)
 
-    end subroutine get_from_registry
+  end subroutine get_from_registry
 
-    !> Get the dependency from the registry cache.
-    !> Throw error if the package isn't found.
-    subroutine get_from_registry_cache(dep, target_dir, cache_path, error)
+  !> Get the dependency from the registry cache.
+  !> Throw error if the package isn't found.
+  subroutine get_from_registry_cache(dep, target_dir, cache_path, error)
 
-        !> Instance of the dependency configuration.
-        class(dependency_config_t), intent(in) :: dep
+      !> Instance of the dependency configuration.
+      class(dependency_config_t), intent(in) :: dep
 
-        !> The target directory to download the dependency to.
-        character(:), allocatable, intent(out) :: target_dir
+      !> The target directory to download the dependency to.
+      character(:), allocatable, intent(out) :: target_dir
 
-        !> The path to the registry cache.
-        character(*), intent(in) :: cache_path
+      !> The path to the registry cache.
+      character(*), intent(in) :: cache_path
 
-        !> Error handling.
-        type(error_t), allocatable, intent(out) :: error
+      !> Error handling.
+      type(error_t), allocatable, intent(out) :: error
 
-        character(:), allocatable :: path_to_name
-        type(string_t), allocatable :: files(:)
-        type(version_t), allocatable :: versions(:)
-        type(version_t) :: version
-        integer :: i
+      character(:), allocatable :: path_to_name
+      type(string_t), allocatable :: files(:)
+      type(version_t), allocatable :: versions(:)
+      type(version_t) :: version
+      integer :: i
 
-        path_to_name = join_path(cache_path, dep%namespace, dep%name)
+      path_to_name = join_path(cache_path, dep%namespace, dep%name)
 
-        if (.not. exists(path_to_name)) then
-          call fatal_error(error, "Dependency '"//dep%name//"' not found in path '"//path_to_name//"'")
-          return
-        end if
+      if (.not. exists(path_to_name)) then
+        call fatal_error(error, "Dependency '"//dep%name//"' not found in path '"//path_to_name//"'")
+        return
+      end if
 
-        call list_files(path_to_name, files)
-        if (size(files) == 0) then
-          call fatal_error(error, "No dependencies found in '"//path_to_name//"'")
-          return
-        end if
+      call list_files(path_to_name, files)
+      if (size(files) == 0) then
+        call fatal_error(error, "No dependencies found in '"//path_to_name//"'")
+        return
+      end if
 
-        ! Version requested, find it in the cache.
-        if (allocated(dep%vers)) then
-          do i = 1, size(files)
-            ! Identify directory that matches the version number.
-            if (files(i)%s == join_path(path_to_name, dep%vers%s()) .and. is_dir(files(i)%s)) then
-              target_dir = files(i)%s
-              return
-            end if
-          end do
-          call fatal_error(error, "Version '"//dep%vers%s()//"' not found in '"//path_to_name//"'")
-          return
-        end if
-
-        ! No version requested, generate list of available versions.
+      ! Version requested, find it in the cache.
+      if (allocated(dep%vers)) then
         do i = 1, size(files)
-          if (is_dir(files(i)%s)) then
-            call new_version(version, basename(files(i)%s), error)
-            if (allocated(error)) return
-            versions = [versions, version]
+          ! Identify directory that matches the version number.
+          if (files(i)%s == join_path(path_to_name, dep%vers%s()) .and. is_dir(files(i)%s)) then
+            target_dir = files(i)%s
+            return
           end if
         end do
+        call fatal_error(error, "Version '"//dep%vers%s()//"' not found in '"//path_to_name//"'")
+        return
+      end if
 
-        if (size(versions) == 0) then
-          call fatal_error(error, "No versions found in '"//path_to_name//"'")
-          return
+      ! No version requested, generate list of available versions.
+      do i = 1, size(files)
+        if (is_dir(files(i)%s)) then
+          call new_version(version, basename(files(i)%s), error)
+          if (allocated(error)) return
+          versions = [versions, version]
         end if
+      end do
 
-        ! Find the latest version.
-        version = versions(1)
-        do i = 1, size(versions)
-          if (versions(i) > version) version = versions(i)
-        end do
+      if (size(versions) == 0) then
+        call fatal_error(error, "No versions found in '"//path_to_name//"'")
+        return
+      end if
 
-        target_dir = join_path(path_to_name, version%s())
-      end subroutine get_from_registry_cache
+      ! Find the latest version.
+      version = versions(1)
+      do i = 1, size(versions)
+        if (versions(i) > version) version = versions(i)
+      end do
+
+      target_dir = join_path(path_to_name, version%s())
+    end subroutine get_from_registry_cache
       
-      !> Checks if the directory name matches the package version.
-      subroutine check_version(dir_path, error)
+    !> Checks if the directory name matches the package version.
+    subroutine check_version(dir_path, error)
 
-        !> Absolute path to the package-containing directory.
-        character(*), intent(in) :: dir_path
+      !> Absolute path to the package-containing directory.
+      character(*), intent(in) :: dir_path
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
+      !> Error handling
+      type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table), allocatable :: table
-        type(toml_error), allocatable :: parse_error
-        integer :: stat
-        character(:), allocatable :: version
+      type(toml_table), allocatable :: table
+      type(toml_error), allocatable :: parse_error
+      integer :: stat
+      character(:), allocatable :: version
 
-        call toml_load(table, join_path(dir_path, 'fpm.toml'), error=parse_error)
+      call toml_load(table, join_path(dir_path, 'fpm.toml'), error=parse_error)
 
-        if (allocated(parse_error)) then
-            allocate (error)
-            call move_alloc(parse_error%message, error%message)
-            return
-        end if
+      if (allocated(parse_error)) then
+          allocate (error)
+          call move_alloc(parse_error%message, error%message)
+          return
+      end if
 
-        call get_value(table, 'version', version, stat=stat)
+      call get_value(table, 'version', version, stat=stat)
 
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, 'Error reading version number from "' &
-            //join_path(dir_path, 'fpm.toml')//'"')
-            return
-        end if
+      if (stat /= toml_stat%success) then
+          call fatal_error(error, 'Error reading version number from "' &
+          //join_path(dir_path, 'fpm.toml')//'"')
+          return
+      end if
 
-        if (version /= basename(dir_path)) then
-            call fatal_error(error, "Directory name '"//basename(dir_path) &
-            //"' does not match version number '"//version//" ' in package '"// &
-            dir_path//"'")
-            return 
-        end if
+      if (version /= basename(dir_path)) then
+          call fatal_error(error, "Directory name '"//basename(dir_path) &
+          //"' does not match version number '"//version//" ' in package '"// &
+          dir_path//"'")
+          return
+      end if
         
-      end subroutine check_version
+    end subroutine check_version
 
     !> Get dependency from a registry via url.
     subroutine get_from_registry_url(dep, target_dir, global_settings, error)
