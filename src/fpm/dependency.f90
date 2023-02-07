@@ -95,7 +95,7 @@ module fpm_dependency
     logical :: update = .false.
   contains
     !> Update dependency from project manifest
-    procedure :: register
+    procedure :: register, get_from_registry, get_from_local_registry, get_from_remote_registry
   end type dependency_node_t
 
 
@@ -466,7 +466,7 @@ contains
         if (allocated(error)) return
       end if
     else
-      call get_from_registry(dependency, proj_dir, error)
+      call dependency%get_from_registry(proj_dir, error)
       if (allocated(error)) return
     end if
 
@@ -496,10 +496,10 @@ contains
   !> Get a dependency from the registry. Whether the dependency is fetched
   !> from a local, a custom remote or the official registry is determined
   !> by the global configuration settings.
-  subroutine get_from_registry(dep, target_dir, error)
+  subroutine get_from_registry(self, target_dir, error, global_settings)
 
       !> Instance of the dependency configuration.
-      class(dependency_config_t), intent(in) :: dep
+      class(dependency_node_t), intent(in) :: self
 
       !> The target directory of the dependency.
       character(:), allocatable, intent(out) :: target_dir
@@ -517,21 +517,20 @@ contains
       if (allocated(global_settings%registry_settings)) then
         if (allocated(global_settings%registry_settings%path)) then
           ! The registry cache acts as the local registry.
-          call get_from_registry_cache(dep, target_dir, global_settings%registry_settings%path, error)
-           return
+          call self%get_from_local_registry(target_dir, global_settings%registry_settings%path, error)
+          return
         end if
       end if
 
-      call get_from_registry_url(dep, target_dir, global_settings, error)
+      call self%get_from_remote_registry(target_dir, global_settings, error)
 
   end subroutine get_from_registry
 
-  !> Get the dependency from the registry cache.
-  !> Throw error if the package isn't found.
-  subroutine get_from_registry_cache(dep, target_dir, cache_path, error)
+  !> Get the dependency from a local registry.
+  subroutine get_from_local_registry(self, target_dir, cache_path, error)
 
       !> Instance of the dependency configuration.
-      class(dependency_config_t), intent(in) :: dep
+      class(dependency_node_t), intent(in) :: self
 
       !> The target directory to download the dependency to.
       character(:), allocatable, intent(out) :: target_dir
@@ -548,33 +547,35 @@ contains
       type(version_t) :: version
       integer :: i
 
-      path_to_name = join_path(cache_path, dep%namespace, dep%name)
+      path_to_name = join_path(cache_path, self%namespace, self%name)
 
       if (.not. exists(path_to_name)) then
-        call fatal_error(error, "Dependency '"//dep%name//"' not found in path '"//path_to_name//"'")
+        call fatal_error(error, "Dependency resolution of '"//self%name// &
+        & "': Directory '"//path_to_name//"' doesn't exist.")
         return
       end if
 
       call list_files(path_to_name, files)
       if (size(files) == 0) then
-        call fatal_error(error, "No dependencies found in '"//path_to_name//"'")
+        call fatal_error(error, "No versions of '"//self%name//"' found in '"//path_to_name//"'.")
         return
       end if
 
       ! Version requested, find it in the cache.
-      if (allocated(dep%vers)) then
+      if (allocated(self%vers)) then
         do i = 1, size(files)
           ! Identify directory that matches the version number.
-          if (files(i)%s == join_path(path_to_name, dep%vers%s()) .and. is_dir(files(i)%s)) then
+          if (files(i)%s == join_path(path_to_name, self%vers%s()) .and. is_dir(files(i)%s)) then
             target_dir = files(i)%s
             return
           end if
         end do
-        call fatal_error(error, "Version '"//dep%vers%s()//"' not found in '"//path_to_name//"'")
+        call fatal_error(error, "Version '"//self%vers%s()//"' not found in '"//path_to_name//"'")
         return
       end if
 
       ! No version requested, generate list of available versions.
+      allocate (versions(0))
       do i = 1, size(files)
         if (is_dir(files(i)%s)) then
           call new_version(version, basename(files(i)%s), error)
@@ -595,7 +596,7 @@ contains
       end do
 
       target_dir = join_path(path_to_name, version%s())
-    end subroutine get_from_registry_cache
+    end subroutine get_from_local_registry
       
     !> Checks if the directory name matches the package version.
     subroutine check_version(dir_path, error)
@@ -636,11 +637,11 @@ contains
         
     end subroutine check_version
 
-    !> Get dependency from a registry via url.
-    subroutine get_from_registry_url(dep, target_dir, global_settings, error)
+    !> Get the dependency from a remote registry.
+    subroutine get_from_remote_registry(self, target_dir, global_settings, error)
 
         !> Instance of the dependency configuration.
-        class(dependency_config_t), intent(in) :: dep
+        class(dependency_node_t), intent(in) :: self
 
         !> The target directory to download the dependency to.
         character(:), allocatable, intent(out) :: target_dir
@@ -670,7 +671,7 @@ contains
         end if
         ! Get new versions from the registry, sending existing versions.
         ! Put them in the cache.
-    end subroutine get_from_registry_url
+    end subroutine get_from_remote_registry
 
   !> True if dependency is part of the tree
   pure logical function has_dependency(self, dependency)

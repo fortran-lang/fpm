@@ -1,39 +1,50 @@
 !> Define tests for the `fpm_dependency` module
 module test_package_dependencies
     use fpm_filesystem, only: get_temp_filename
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
+    use testsuite, only: new_unittest, unittest_t, error_t, test_failed
+    use fpm_filesystem, only: is_dir, join_path, filewrite, mkdir, os_delete_dir
+    use fpm_environment, only: os_is_unix
+    use fpm_os, only: get_current_directory
     use fpm_dependency
-    use fpm_manifest
     use fpm_manifest_dependency
     use fpm_toml
+    use fpm_settings, only: fpm_global_settings
+
     implicit none
     private
 
     public :: collect_package_dependencies
+
+    character(*), parameter :: tmp_folder = 'tmp'
+    character(*), parameter :: config_file_name = 'config.toml'
 
     type, extends(dependency_tree_t) :: mock_dependency_tree_t
     contains
         procedure :: resolve_dependency => resolve_dependency_once
     end type mock_dependency_tree_t
 
-
 contains
 
-
     !> Collect all exported unit tests
-    subroutine collect_package_dependencies(testsuite)
+    subroutine collect_package_dependencies(tests)
 
         !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: testsuite(:)
+        type(unittest_t), allocatable, intent(out) :: tests(:)
 
-        testsuite = [ &
+        tests = [ &
             & new_unittest("cache-load-dump", test_cache_load_dump), &
             & new_unittest("cache-dump-load", test_cache_dump_load), &
             & new_unittest("status-after-load", test_status), &
-            & new_unittest("add-dependencies", test_add_dependencies)]
+            & new_unittest("add-dependencies", test_add_dependencies), &
+            & new_unittest("registry-dir-not-found", test_registry_dir_not_found, should_fail=.true.), &
+            & new_unittest("no-versions-in-registry", test_no_versions_in_registry, should_fail=.true.), &
+            & new_unittest("version-not-found-in-registry", test_version_not_found_in_registry, should_fail=.true.), &
+            & new_unittest("version-found-in-registry", test_version_found_in_registry), &
+            & new_unittest("test-no-dir-in-registry", test_no_dir_in_registry, should_fail=.true.), &
+            & new_unittest("test-newest-version-in-registry", test_newest_version_in_registry) &
+            & ]
 
     end subroutine collect_package_dependencies
-
 
     !> Round trip of the dependency cache from a dependency tree to a TOML document
     !> to a dependency tree
@@ -210,6 +221,259 @@ contains
 
     end subroutine test_add_dependencies
 
+    subroutine test_registry_dir_not_found(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_node_t) :: node
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: target_dir
+
+        call new_table(table)
+        table%key = 'test-dep'
+        call set_value(table, 'namespace', 'test-org')
+
+        call new_dependency(node%dependency_config_t, table, error=error)
+        if (allocated(error)) return
+
+        call delete_tmp_folder
+        call mkdir(join_path(tmp_folder, 'cache'))
+
+        call filewrite(join_path(tmp_folder, config_file_name), &
+        & [character(len=12) :: '[registry]', 'path="cache"'])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call node%get_from_registry(target_dir, error, global_settings)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call delete_tmp_folder
+
+    end subroutine test_registry_dir_not_found
+
+    subroutine test_no_versions_in_registry(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_node_t) :: node
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: target_dir
+
+        call new_table(table)
+        table%key = 'test-dep'
+        call set_value(table, 'namespace', 'test-org')
+
+        call new_dependency(node%dependency_config_t, table, error=error)
+        if (allocated(error)) return
+
+        call delete_tmp_folder
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep'))
+
+        call filewrite(join_path(tmp_folder, config_file_name), &
+        & [character(len=12) :: '[registry]', 'path="cache"'])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call node%get_from_registry(target_dir, error, global_settings)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call delete_tmp_folder
+
+    end subroutine test_no_versions_in_registry
+
+    subroutine test_version_not_found_in_registry(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_node_t) :: node
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: target_dir
+
+        call new_table(table)
+        table%key = 'test-dep'
+        call set_value(table, 'namespace', 'test-org')
+        call set_value(table, 'vers', '0.1.0')
+
+        call new_dependency(node%dependency_config_t, table, error=error)
+        if (allocated(error)) return
+
+        call delete_tmp_folder
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.0.9'))
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.1'))
+
+        call filewrite(join_path(tmp_folder, config_file_name), &
+        & [character(len=12) :: '[registry]', 'path="cache"'])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call node%get_from_registry(target_dir, error, global_settings)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call delete_tmp_folder
+
+    end subroutine test_version_not_found_in_registry
+
+    subroutine test_version_found_in_registry(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_node_t) :: node
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: target_dir, cwd
+
+        call new_table(table)
+        table%key = 'test-dep'
+        call set_value(table, 'namespace', 'test-org')
+        call set_value(table, 'vers', '0.1.0')
+
+        call new_dependency(node%dependency_config_t, table, error=error)
+        if (allocated(error)) return
+
+        call delete_tmp_folder
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.0.0'))
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.0'))
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.2.0'))
+
+        call filewrite(join_path(tmp_folder, config_file_name), &
+        & [character(len=12) :: '[registry]', 'path="cache"'])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call node%get_from_registry(target_dir, error, global_settings)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call get_current_directory(cwd, error)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        if (target_dir /= join_path(cwd, join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.0'))) then
+            call test_failed(error, 'target_dir not set correctly')
+            call delete_tmp_folder
+            return
+        end if
+
+        call delete_tmp_folder
+
+    end subroutine test_version_found_in_registry
+
+    subroutine test_no_dir_in_registry(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_node_t) :: node
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: target_dir
+
+        call new_table(table)
+        table%key = 'test-dep'
+        call set_value(table, 'namespace', 'test-org')
+
+        call new_dependency(node%dependency_config_t, table, error=error)
+        if (allocated(error)) return
+
+        call delete_tmp_folder
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep'))
+        call filewrite(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', 'abc'), ['abc'])
+
+        call filewrite(join_path(tmp_folder, config_file_name), &
+        & [character(len=12) :: '[registry]', 'path="cache"'])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call node%get_from_registry(target_dir, error, global_settings)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call delete_tmp_folder
+
+    end subroutine test_no_dir_in_registry
+
+    subroutine test_newest_version_in_registry(error)
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+        type(dependency_node_t) :: node
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: target_dir, cwd
+
+        call new_table(table)
+        table%key = 'test-dep'
+        call set_value(table, 'namespace', 'test-org')
+
+        call new_dependency(node%dependency_config_t, table, error=error)
+        if (allocated(error)) return
+
+        call delete_tmp_folder
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.0.0'))
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '1.3.0'))
+        call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '1.2.1'))
+
+        call filewrite(join_path(tmp_folder, config_file_name), &
+        & [character(len=12) :: '[registry]', 'path="cache"'])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call node%get_from_registry(target_dir, error, global_settings)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        call get_current_directory(cwd, error)
+        if (allocated(error)) then
+            call delete_tmp_folder
+            return
+        end if
+
+        if (target_dir /= join_path(cwd, join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '1.3.0'))) then
+            call test_failed(error, 'target_dir not set correctly')
+            call delete_tmp_folder
+            return
+        end if
+
+        call delete_tmp_folder
+
+    end subroutine test_newest_version_in_registry
 
     !> Resolve a single dependency node
     subroutine resolve_dependency_once(self, dependency, root, error)
@@ -230,5 +494,21 @@ contains
 
     end subroutine resolve_dependency_once
 
+    subroutine delete_tmp_folder
+        if (is_dir(tmp_folder)) call os_delete_dir(os_is_unix(), tmp_folder)
+    end
+
+    subroutine setup_global_settings(global_settings, error)
+        type(fpm_global_settings), intent(out) :: global_settings
+        type(error_t), allocatable, intent(out) :: error
+
+        character(:), allocatable :: cwd
+
+        call get_current_directory(cwd, error)
+        if (allocated(error)) return
+
+        global_settings%path_to_config_folder = join_path(cwd, tmp_folder)
+        global_settings%config_file_name = config_file_name
+    end subroutine
 
 end module test_package_dependencies
