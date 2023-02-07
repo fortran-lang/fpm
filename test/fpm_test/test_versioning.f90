@@ -262,6 +262,52 @@ contains
            return
         end if
 
+        call new_version(v1, [1, 2, 3])
+        call new_version(v2, [2, 0, 0])
+
+        if (v1 > v2) then
+            call test_failed(error, "Version comparison failed (gt)")
+            return
+        end if
+
+        if (v1 >= v2) then
+            call test_failed(error, "Version comparison failed (ge)")
+            return
+        end if
+
+        if (v2 < v1) then
+            call test_failed(error, "Version comparison failed (lt)")
+            return
+        end if
+
+        if (v2 <= v1) then
+            call test_failed(error, "Version comparison failed (le)")
+            return
+        end if
+
+        call new_version(v1, [1, 2, 3])
+        call new_version(v2, [1, 0, 4])
+
+        if (v2 > v1) then
+            call test_failed(error, "Version comparison failed (gt)")
+            return
+        end if
+
+        if (v2 >= v1) then
+            call test_failed(error, "Version comparison failed (ge)")
+            return
+        end if
+
+        if (v1 < v2) then
+            call test_failed(error, "Version comparison failed (lt)")
+            return
+        end if
+
+        if (v1 <= v2) then
+            call test_failed(error, "Version comparison failed (le)")
+            return
+        end if
+
     end subroutine test_valid_compare
 
 

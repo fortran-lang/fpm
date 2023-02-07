@@ -299,16 +299,17 @@ contains
         integer :: ii
 
         do ii = 1, min(size(lhs%num), size(rhs%num))
-            is_greater = lhs%num(ii) > rhs%num(ii)
-            if (is_greater) exit
+            if (lhs%num(ii) /= rhs%num(ii)) then
+                is_greater = lhs%num(ii) > rhs%num(ii)
+                return
+            end if
         end do
-        if (is_greater) return
 
         is_greater = size(lhs%num) > size(rhs%num)
         if (is_greater) then
             do ii = size(rhs%num) + 1, size(lhs%num)
                 is_greater = lhs%num(ii) > 0
-                if (is_greater) exit
+                if (is_greater) return
             end do
         end if
 
