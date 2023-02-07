@@ -29,7 +29,7 @@ module fpm_manifest_dependency
     use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys
     use fpm_filesystem, only: windows_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
-    use fpm_versioning, only: version_t
+    use fpm_versioning, only: version_t, new_version
     implicit none
     private
 
