@@ -23,13 +23,13 @@
 !> Resolving a dependency will result in obtaining a new package configuration
 !> data for the respective project.
 module fpm_manifest_dependency
-    use fpm_error, only : error_t, syntax_error
-    use fpm_git, only : git_target_t, git_target_tag, git_target_branch, &
+    use fpm_error, only: error_t, syntax_error
+    use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys
     use fpm_filesystem, only: windows_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
-    use fpm_versioning, only : version_t, new_version
+    use fpm_versioning, only: version_t
     implicit none
     private
 
@@ -123,9 +123,10 @@ contains
             return
         end if
 
-        call get_value(table, 'vers', version)
+        call get_value(table, "vers", version)
 
         if (allocated(version)) then
+            if (.not. allocated(self%vers)) allocate (self%vers)
             call new_version(self%vers, version, error)
             if (allocated(error)) return
         end if
@@ -141,18 +142,17 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: name, value, valid_keys_string
+        character(len=:), allocatable :: name
         type(toml_key), allocatable :: list(:)
-        integer :: ikey, ivalid
 
-        !> List of allowed keys for the dependency table
-        character(*), dimension(*), parameter :: valid_keys = [character(24) ::&
-            & "namespace",&
-              "vers",&
-              "path",&
-              "git",&
-              "tag",&
-              "branch",&
+        !> List of valid keys for the dependency table.
+        character(*), dimension(*), parameter :: valid_keys = [character(24) :: &
+            & "namespace", &
+              "vers", &
+              "path", &
+              "git", &
+              "tag", &
+              "branch", &
               "rev" &
             & ]
 
@@ -164,25 +164,8 @@ contains
             return
         end if
 
-        do ikey = 1, size(list)
-            if (.not. any(list(ikey)%key == valid_keys)) then
-                ! Improve error message
-                valid_keys_string = new_line('a')//new_line('a')
-                do ivalid = 1, size(valid_keys)
-                    valid_keys_string = valid_keys_string//trim(valid_keys(ivalid))//new_line('a')
-                end do
-                call syntax_error(error, "Key '"//list(ikey)%key//"' not allowed in dependency '"//&
-                name//"'."//new_line('a')//new_line('a')//'Valid keys: '//valid_keys_string)
-                return
-            end if
-
-            ! Check if value can be mapped or else (wrong type) show error message with the error location
-            call get_value(table, list(ikey)%key, value)
-            if (.not. allocated(value)) then
-                call syntax_error(error, "Dependency '"//name//"' has invalid '"//list(ikey)%key//"' entry")
-                return
-            end if
-        end do
+        call check_keys(table, valid_keys, error)
+        if (allocated(error)) return
 
         if (table%has_key("path") .and. table%has_key("git")) then
             call syntax_error(error, "Dependency '"//name//"' cannot have both git and path entries")

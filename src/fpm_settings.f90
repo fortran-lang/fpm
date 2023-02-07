@@ -3,7 +3,7 @@ module fpm_settings
     use fpm_filesystem, only: exists, join_path, get_local_prefix, is_absolute_path, mkdir
     use fpm_environment, only: os_is_unix
     use fpm_error, only: error_t, fatal_error
-    use fpm_toml, only: toml_table, toml_error, toml_stat, get_value, toml_load
+    use fpm_toml, only: toml_table, toml_error, toml_stat, get_value, toml_load, check_keys
     use fpm_os, only: get_current_directory, change_directory, get_absolute_path, &
                       convert_to_absolute_path
     implicit none
@@ -105,16 +105,26 @@ contains
         character(:), allocatable :: path, url, cache_path
         integer :: stat
 
+        !> List of valid keys for the dependency table.
+        character(*), dimension(*), parameter :: valid_keys = [character(10) :: &
+            & 'path', &
+            & 'url', &
+            & 'cache_path' &
+            & ]
+
         call get_value(table, 'registry', child, requested=.false., stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, 'Error reading registry from config file "'// &
-                             global_settings%full_path()//'"')
+            call fatal_error(error, "Error reading registry from config file '"// &
+            & global_settings%full_path()//"'.")
             return
         end if
 
         ! Quietly return if no registry table was found.
         if (.not. associated(child)) return
+
+        call check_keys(child, valid_keys, error)
+        if (allocated(error)) return
 
         allocate (global_settings%registry_settings)
 

@@ -26,6 +26,8 @@ contains
         & new_unittest('no-file', no_file, should_fail=.true.), &
         & new_unittest('empty-file', empty_file), &
         & new_unittest('empty-registry-table', empty_registry_table), &
+        & new_unittest('wrong-key', wrong_key, should_fail=.true.), &
+        & new_unittest('wrong-type', wrong_type, should_fail=.true.), &
         & new_unittest('has-non-existent-path-to-registry', has_non_existent_path_to_registry, should_fail=.true.), &
         & new_unittest('has-existent-path-to-registry', has_existent_path_to_registry), &
         & new_unittest('absolute-path-to-registry', absolute_path_to_registry), &
@@ -136,6 +138,38 @@ contains
             call test_failed(error, "Url shouldn't be allocated")
             return
         end if
+    end subroutine
+
+    subroutine wrong_key(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+
+        call delete_tmp_folder
+        call mkdir(tmp_folder)
+
+        call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'abcd="abc"']) ! Invalid key
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+        call os_delete_dir(os_is_unix(), tmp_folder)
+    end subroutine
+
+    subroutine wrong_type(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+
+        call delete_tmp_folder
+        call mkdir(tmp_folder)
+
+        call filewrite(join_path(tmp_folder, config_file_name), ['[registry]', 'path=12345']) ! Value not a string
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+        call os_delete_dir(os_is_unix(), tmp_folder)
     end subroutine
 
     subroutine has_non_existent_path_to_registry(error)

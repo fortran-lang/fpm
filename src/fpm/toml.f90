@@ -23,11 +23,9 @@ module fpm_toml
 
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
-              toml_error, toml_serializer, toml_parse, toml_load
-
+              toml_error, toml_serializer, toml_parse, toml_load, check_keys
 
 contains
-
 
     !> Process the configuration file to a TOML data structure
     subroutine read_package_file(table, manifest, error)
@@ -109,5 +107,49 @@ contains
 
     end subroutine get_list
 
+    !> Check if table contains only keys that are part of the list. If a key is
+    !> found that is not part of the list, an error is allocated.
+    subroutine check_keys(table, valid_keys, error)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> List of keys to check.
+        character(len=*), intent(in) :: valid_keys(:)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_key), allocatable :: keys(:)
+        character(:), allocatable :: name, value, valid_keys_string
+        integer :: ikey, ivalid
+
+        call table%get_key(name)
+        call table%get_keys(keys)
+
+        do ikey = 1, size(keys)
+            if (.not. any(keys(ikey)%key == valid_keys)) then
+                ! Generate error message
+                valid_keys_string = new_line('a')//new_line('a')
+                do ivalid = 1, size(valid_keys)
+                    valid_keys_string = valid_keys_string//trim(valid_keys(ivalid))//new_line('a')
+                end do
+                allocate (error)
+                error%message = "Key '"//keys(ikey)%key//"' not allowed in the '"// &
+                & name//"' table."//new_line('a')//new_line('a')//'Valid keys: '//valid_keys_string
+                return
+            end if
+
+            ! Check if value can be mapped or else (wrong type) show error message with the error location.
+            ! Right now, it can only be mapped to a string, but this can be extended in the future.
+            call get_value(table, keys(ikey)%key, value)
+            if (.not. allocated(value)) then
+                allocate (error)
+                error%message = "'"//name//"' has an invalid '"//keys(ikey)%key//"' entry."
+                return
+            end if
+        end do
+
+    end subroutine check_keys
 
 end module fpm_toml
