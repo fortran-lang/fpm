@@ -12,12 +12,12 @@ contains
 
 
     !> Collect all exported unit tests
-    subroutine collect_versioning(testsuite)
+    subroutine collect_versioning(tests)
 
         !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: testsuite(:)
+        type(unittest_t), allocatable, intent(out) :: tests(:)
 
-        testsuite = [ &
+        tests = [ &
             & new_unittest("valid-version", test_valid_version), &
             & new_unittest("valid-equals", test_valid_equals), &
             & new_unittest("valid-notequals", test_valid_notequals), &
@@ -306,6 +306,52 @@ contains
         if (v1 <= v2) then
             call test_failed(error, "Version comparison failed (le)")
             return
+        end if
+
+        call new_version(v1, [1, 0, 8])
+        call new_version(v2, [1])
+
+        if (.not. v1 > v2) then
+           call test_failed(error, "Version comparison failed (gt)")
+           return
+        end if
+
+        if (.not. v1 >= v2) then
+           call test_failed(error, "Version comparison failed (ge)")
+           return
+        end if
+
+        if (.not. v2 < v1) then
+           call test_failed(error, "Version comparison failed (lt)")
+           return
+        end if
+
+        if (.not. v2 <= v1) then
+           call test_failed(error, "Version comparison failed (le)")
+           return
+        end if
+
+        call new_version(v1, [1])
+        call new_version(v2, [1, 0, 8])
+
+        if (v1 > v2) then
+           call test_failed(error, "Version comparison failed (gt)")
+           return
+        end if
+
+        if (v1 >= v2) then
+           call test_failed(error, "Version comparison failed (ge)")
+           return
+        end if
+
+        if (v2 < v1) then
+           call test_failed(error, "Version comparison failed (lt)")
+           return
+        end if
+
+        if (v2 <= v1) then
+           call test_failed(error, "Version comparison failed (le)")
+           return
         end if
 
     end subroutine test_valid_compare
