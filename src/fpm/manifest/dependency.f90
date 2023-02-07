@@ -35,7 +35,6 @@ module fpm_manifest_dependency
 
     public :: dependency_config_t, new_dependency, new_dependencies
 
-
     !> Configuration meta data for a dependency
     type :: dependency_config_t
 
@@ -64,9 +63,7 @@ module fpm_manifest_dependency
 
     end type dependency_config_t
 
-
 contains
-
 
     !> Construct a new dependency configuration from a TOML data structure
     subroutine new_dependency(self, table, root, error)
@@ -106,21 +103,21 @@ contains
                 self%git = git_target_tag(uri, value)
             end if
 
-            if (.not.allocated(self%git)) then
+            if (.not. allocated(self%git)) then
                 call get_value(table, "branch", value)
                 if (allocated(value)) then
                     self%git = git_target_branch(uri, value)
                 end if
             end if
 
-            if (.not.allocated(self%git)) then
+            if (.not. allocated(self%git)) then
                 call get_value(table, "rev", value)
                 if (allocated(value)) then
                     self%git = git_target_revision(uri, value)
                 end if
             end if
 
-            if (.not.allocated(self%git)) then
+            if (.not. allocated(self%git)) then
                 self%git = git_target_default(uri)
             end if
             return
@@ -134,7 +131,6 @@ contains
         end if
 
     end subroutine new_dependency
-
 
     !> Check local schema for allowed entries
     subroutine check(table, error)
@@ -192,24 +188,24 @@ contains
             call syntax_error(error, "Dependency '"//name//"' cannot have both git and path entries")
             return
         end if
-        
-        if ((table%has_key("branch") .and. table%has_key("rev")) .or.&
-        (table%has_key("branch") .and. table%has_key("tag")) .or.&
-        (table%has_key("rev") .and. table%has_key("tag"))) then
+
+        if ((table%has_key("branch") .and. table%has_key("rev")) .or. &
+            (table%has_key("branch") .and. table%has_key("tag")) .or. &
+            (table%has_key("rev") .and. table%has_key("tag"))) then
             call syntax_error(error, "Dependency '"//name//"' can only have one of branch, rev or tag present")
             return
         end if
-        
-        if ((table%has_key("branch") .or. table%has_key("tag") .or. table%has_key("rev"))&
+
+        if ((table%has_key("branch") .or. table%has_key("tag") .or. table%has_key("rev")) &
             .and. .not. table%has_key("git")) then
             call syntax_error(error, "Dependency '"//name//"' has git identifier but no git url")
             return
         end if
-        
-        if (.not. table%has_key("path") .and. .not. table%has_key("git")&
+
+        if (.not. table%has_key("path") .and. .not. table%has_key("git") &
             .and. .not. table%has_key("namespace")) then
-            call syntax_error(error, "Please provide a 'namespace' for dependency '"//name//&
-            "' if it is not a local path or git repository")
+            call syntax_error(error, "Please provide a 'namespace' for dependency '"//name// &
+            & "' if it is not a local path or git repository")
             return
         end if
 
@@ -243,7 +239,7 @@ contains
         ! An empty table is okay
         if (size(list) < 1) return
 
-        allocate(deps(size(list)))
+        allocate (deps(size(list)))
         do idep = 1, size(list)
             call get_value(table, list(idep)%key, node, stat=stat)
             if (stat /= toml_stat%success) then
@@ -255,7 +251,6 @@ contains
         end do
 
     end subroutine new_dependencies
-
 
     !> Write information on instance
     subroutine info(self, unit, verbosity)
@@ -278,22 +273,21 @@ contains
             pr = 1
         end if
 
-        write(unit, fmt) "Dependency"
+        write (unit, fmt) "Dependency"
         if (allocated(self%name)) then
-            write(unit, fmt) "- name", self%name
+            write (unit, fmt) "- name", self%name
         end if
 
         if (allocated(self%git)) then
-            write(unit, fmt) "- kind", "git"
+            write (unit, fmt) "- kind", "git"
             call self%git%info(unit, pr - 1)
         end if
 
         if (allocated(self%path)) then
-            write(unit, fmt) "- kind", "local"
-            write(unit, fmt) "- path", self%path
+            write (unit, fmt) "- kind", "local"
+            write (unit, fmt) "- path", self%path
         end if
 
     end subroutine info
-
 
 end module fpm_manifest_dependency

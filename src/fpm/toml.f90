@@ -13,9 +13,9 @@
 !> For more details on the library used see the
 !> [TOML-Fortran](https://toml-f.github.io/toml-f) developer pages.
 module fpm_toml
-    use fpm_error, only : error_t, fatal_error, file_not_found_error
-    use fpm_strings, only : string_t
-    use tomlf, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
+    use fpm_error, only: error_t, fatal_error, file_not_found_error
+    use fpm_strings, only: string_t
+    use tomlf, only: toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
         & toml_serializer, len, toml_load
     implicit none
@@ -45,25 +45,24 @@ contains
         integer :: unit
         logical :: exist
 
-        inquire(file=manifest, exist=exist)
+        inquire (file=manifest, exist=exist)
 
-        if (.not.exist) then
+        if (.not. exist) then
             call file_not_found_error(error, manifest)
             return
         end if
 
-        open(file=manifest, newunit=unit)
+        open (file=manifest, newunit=unit)
         call toml_parse(table, unit, parse_error)
-        close(unit)
+        close (unit)
 
         if (allocated(parse_error)) then
-            allocate(error)
+            allocate (error)
             call move_alloc(parse_error%message, error%message)
             return
         end if
 
     end subroutine read_package_file
-
 
     subroutine get_list(table, key, list, error)
 
@@ -86,7 +85,7 @@ contains
         call get_value(table, key, children, requested=.false.)
         if (associated(children)) then
             nlist = len(children)
-            allocate(list(nlist))
+            allocate (list(nlist))
             do ilist = 1, nlist
                 call get_value(children, ilist, str, stat=stat)
                 if (stat /= toml_stat%success) then
@@ -103,7 +102,7 @@ contains
                 return
             end if
             if (allocated(str)) then
-                allocate(list(1))
+                allocate (list(1))
                 call move_alloc(str, list(1)%s)
             end if
         end if

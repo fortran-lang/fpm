@@ -52,13 +52,13 @@ contains
         if (global_settings%has_custom_location()) then
             ! Throw error if folder doesn't exist.
             if (.not. exists(global_settings%path_to_config_folder)) then
-                call fatal_error(error, 'Folder not found: "'//global_settings%path_to_config_folder//'"')
+                call fatal_error(error, "Folder not found: '"//global_settings%path_to_config_folder//"'.")
                 return
             end if
 
             ! Throw error if file doesn't exist.
             if (.not. exists(global_settings%full_path())) then
-                call fatal_error(error, 'File not found: "'//global_settings%full_path()//'"')
+                call fatal_error(error, "File not found: '"//global_settings%full_path()//"'.")
                 return
             end if
 
@@ -100,6 +100,7 @@ contains
         type(fpm_global_settings), intent(inout) :: global_settings
         type(toml_table), intent(inout) :: table
         type(error_t), allocatable, intent(out) :: error
+
         type(toml_table), pointer :: child
         character(:), allocatable :: path, url, cache_path
         integer :: stat
@@ -120,7 +121,7 @@ contains
         call get_value(child, 'path', path, stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, 'Error reading registry path: "'//path//'"')
+            call fatal_error(error, "Error reading registry path: '"//path//"'.")
             return
         end if
 
@@ -130,13 +131,13 @@ contains
             else
                 ! Get canonical, absolute path on both Unix and Windows.
                 call get_absolute_path(join_path(global_settings%path_to_config_folder, path), &
-                                       global_settings%registry_settings%path, error)
+                & global_settings%registry_settings%path, error)
                 if (allocated(error)) return
 
                 ! Check if the path to the registry exists.
                 if (.not. exists(global_settings%registry_settings%path)) then
                     call fatal_error(error, "Directory '"//global_settings%registry_settings%path// &
-                                     "' does not exist")
+                    & "' doesn't exist.")
                     return
                 end if
             end if
@@ -145,14 +146,14 @@ contains
         call get_value(child, 'url', url, stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, 'Error reading registry url: "'//url//'"')
+            call fatal_error(error, "Error reading registry url: '"//url//"'.")
             return
         end if
 
         if (allocated(url)) then
             ! Throw error when both path and url were provided.
             if (allocated(path)) then
-                call fatal_error(error, 'Do not provide both path and url to the registry')
+                call fatal_error(error, 'Do not provide both path and url to the registry.')
                 return
             end if
 
@@ -162,14 +163,14 @@ contains
         call get_value(child, 'cache_path', cache_path, stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, 'Error reading path to registry cache: "'//cache_path//'"')
+            call fatal_error(error, "Error reading path to registry cache: '"//cache_path//"'.")
             return
         end if
 
         if (allocated(cache_path)) then
             ! Throw error when both path and cache_path were provided.
             if (allocated(path)) then
-                call fatal_error(error, "Do not provide both 'path' and 'cache_path'")
+                call fatal_error(error, "Do not provide both 'path' and 'cache_path'.")
                 return
             end if
 

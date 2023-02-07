@@ -349,7 +349,7 @@ contains
     end subroutine test_dependency_gitconflict
 
 
-    !> Try to create a git dependency with invalid source format
+    !> Try to create a git dependency with an invalid source format.
     subroutine test_dependency_invalid_git(error)
         use fpm_manifest_dependency
         use fpm_toml, only : new_table, toml_table, set_value

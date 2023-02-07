@@ -507,7 +507,8 @@ contains
       !> Error handling.
       type(error_t), allocatable, intent(out) :: error
 
-      type(fpm_global_settings) :: global_settings
+      !> Global configuration settings.
+      type(fpm_global_settings), optional, intent(inout) :: global_settings
 
       call get_global_settings(global_settings, error)
       if (allocated(error)) return

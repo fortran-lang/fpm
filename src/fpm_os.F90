@@ -136,7 +136,7 @@ contains
         type(c_ptr) :: ptr
 
         if (.not. exists(path)) then
-            call fatal_error(error, "Cannot get real path. Path '"//path//"' does not exist")
+            call fatal_error(error, "Cannot determine absolute path. Path '"//path//"' does not exist.")
             return
         end if
 
@@ -155,7 +155,7 @@ contains
         if (c_associated(ptr)) then
             call c_f_character(cpath, real_path)
         else
-            call fatal_error(error, "Failed to retrieve real path for '"//path//"'")
+            call fatal_error(error, "Failed to retrieve absolute path for '"//path//"'.")
         end if
 
     end subroutine get_realpath

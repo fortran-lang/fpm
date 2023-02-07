@@ -59,15 +59,15 @@ contains
         dep%path = "fpm-tmp3-dir"
         call new_dependency_node(deps%dep(3), dep, proj_dir=dep%path)
 
-        open(newunit=unit, status='scratch')
+        open (newunit=unit, status='scratch')
         call deps%dump(unit, error)
-        if (.not.allocated(error)) then
-            rewind(unit)
+        if (.not. allocated(error)) then
+            rewind (unit)
 
             call new_dependency_tree(deps)
             call resize(deps%dep, 2)
             call deps%load(unit, error)
-            close(unit)
+            close (unit)
         end if
         if (allocated(error)) return
 
@@ -77,7 +77,6 @@ contains
         end if
 
     end subroutine test_cache_dump_load
-
 
     !> Round trip of the dependency cache from a TOML data structure to
     !> a dependency tree to a TOML data structure
@@ -131,7 +130,6 @@ contains
 
     end subroutine test_cache_load_dump
 
-
     subroutine test_status(error)
 
         !> Error handling
@@ -160,7 +158,6 @@ contains
         end if
 
     end subroutine test_status
-
 
     subroutine test_add_dependencies(error)
 
@@ -206,7 +203,7 @@ contains
         call deps%resolve(".", error)
         if (allocated(error)) return
 
-        if (.not.deps%finished()) then
+        if (.not. deps%finished()) then
             call test_failed(error, "Mocked dependency tree must resolve in one step")
             return
         end if
