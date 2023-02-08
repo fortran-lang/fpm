@@ -850,10 +850,6 @@ contains
           call new_version(dep%version, version, error)
           if (allocated(error)) exit
         end if
-        if (allocated(version)) then
-          call new_version(dep%version, version, error)
-          if (allocated(error)) exit
-        end if
         if (allocated(url)) then
           if (allocated(obj)) then
             dep%git = git_target_revision(url, obj)
