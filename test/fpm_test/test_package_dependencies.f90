@@ -306,7 +306,7 @@ contains
         call new_table(table)
         table%key = 'test-dep'
         call set_value(table, 'namespace', 'test-org')
-        call set_value(table, 'vers', '0.1.0')
+        call set_value(table, 'v', '0.1.0')
 
         call new_dependency(node%dependency_config_t, table, error=error)
         if (allocated(error)) return
@@ -345,7 +345,7 @@ contains
         call new_table(table)
         table%key = 'test-dep'
         call set_value(table, 'namespace', 'test-org')
-        call set_value(table, 'vers', '0.1.0')
+        call set_value(table, 'v', '0.1.0')
 
         call new_dependency(node%dependency_config_t, table, error=error)
         if (allocated(error)) return

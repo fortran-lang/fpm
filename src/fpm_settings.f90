@@ -193,7 +193,7 @@ contains
                 end if
                 ! Get canonical, absolute path on both Unix and Windows.
                 call get_absolute_path(join_path(global_settings%path_to_config_folder, cache_path), &
-                                       global_settings%registry_settings%cache_path, error)
+                & global_settings%registry_settings%cache_path, error)
                 if (allocated(error)) return
             end if
             ! Both path and cache_path not allocated, use default location for cache_path.

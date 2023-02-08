@@ -516,7 +516,6 @@ contains
       ! Registry settings found in the global config file.
       if (allocated(global_settings%registry_settings)) then
         if (allocated(global_settings%registry_settings%path)) then
-          ! The registry cache acts as the local registry.
           call self%get_from_local_registry(target_dir, global_settings%registry_settings%path, error)
           return
         end if
@@ -527,7 +526,7 @@ contains
   end subroutine get_from_registry
 
   !> Get the dependency from a local registry.
-  subroutine get_from_local_registry(self, target_dir, cache_path, error)
+  subroutine get_from_local_registry(self, target_dir, registry_path, error)
 
       !> Instance of the dependency configuration.
       class(dependency_node_t), intent(in) :: self
@@ -535,8 +534,8 @@ contains
       !> The target directory to download the dependency to.
       character(:), allocatable, intent(out) :: target_dir
 
-      !> The path to the registry cache.
-      character(*), intent(in) :: cache_path
+      !> The path to the local registry.
+      character(*), intent(in) :: registry_path
 
       !> Error handling.
       type(error_t), allocatable, intent(out) :: error
@@ -547,7 +546,7 @@ contains
       type(version_t) :: version
       integer :: i
 
-      path_to_name = join_path(cache_path, self%namespace, self%name)
+      path_to_name = join_path(registry_path, self%namespace, self%name)
 
       if (.not. exists(path_to_name)) then
         call fatal_error(error, "Dependency resolution of '"//self%name// &
@@ -562,15 +561,15 @@ contains
       end if
 
       ! Version requested, find it in the cache.
-      if (allocated(self%vers)) then
+      if (allocated(self%requested_version)) then
         do i = 1, size(files)
           ! Identify directory that matches the version number.
-          if (files(i)%s == join_path(path_to_name, self%vers%s()) .and. is_dir(files(i)%s)) then
+          if (files(i)%s == join_path(path_to_name, self%requested_version%s()) .and. is_dir(files(i)%s)) then
             target_dir = files(i)%s
             return
           end if
         end do
-        call fatal_error(error, "Version '"//self%vers%s()//"' not found in '"//path_to_name//"'")
+        call fatal_error(error, "Version '"//self%requested_version%s()//"' not found in '"//path_to_name//"'")
         return
       end if
 

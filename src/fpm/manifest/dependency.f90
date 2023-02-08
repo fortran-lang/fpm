@@ -49,9 +49,9 @@ module fpm_manifest_dependency
         !> Required for dependencies that are obtained via the official registry.
         character(len=:), allocatable :: namespace
 
-        !> The specified version of the dependency.
+        !> The requested version of the dependency.
         !> The latest version is used if not specified.
-        type(version_t), allocatable :: vers
+        type(version_t), allocatable :: requested_version
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
@@ -80,7 +80,7 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: uri, value, version
+        character(len=:), allocatable :: uri, value, requested_version
 
         call check(table, error)
         if (allocated(error)) return
@@ -123,11 +123,11 @@ contains
             return
         end if
 
-        call get_value(table, "vers", version)
+        call get_value(table, "v", requested_version)
 
-        if (allocated(version)) then
-            if (.not. allocated(self%vers)) allocate (self%vers)
-            call new_version(self%vers, version, error)
+        if (allocated(requested_version)) then
+            if (.not. allocated(self%requested_version)) allocate (self%requested_version)
+            call new_version(self%requested_version, requested_version, error)
             if (allocated(error)) return
         end if
 
@@ -148,7 +148,7 @@ contains
         !> List of valid keys for the dependency table.
         character(*), dimension(*), parameter :: valid_keys = [character(24) :: &
             & "namespace", &
-              "vers", &
+              "v", &
               "path", &
               "git", &
               "tag", &
@@ -192,7 +192,7 @@ contains
             return
         end if
 
-        if (table%has_key('vers') .and. (table%has_key('path') .or. table%has_key('git'))) then
+        if (table%has_key('v') .and. (table%has_key('path') .or. table%has_key('git'))) then
             call syntax_error(error, "Dependency '"//name//"' cannot have both vers and git/path entries")
             return
         end if

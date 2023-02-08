@@ -380,7 +380,7 @@ contains
 
         call new_table(table)
         table%key = 'example'
-        call set_value(table, 'vers', 'abc')
+        call set_value(table, 'v', 'abc')
 
         call new_dependency(dependency, table, error=error)
 
@@ -398,7 +398,7 @@ contains
 
         call new_table(table)
         table%key = 'example'
-        call set_value(table, 'vers', '0.0.0')
+        call set_value(table, 'v', '0.0.0')
         call set_value(table, 'path', 'abc')
 
         call new_dependency(dependency, table, error=error)

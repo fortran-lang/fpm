@@ -196,7 +196,7 @@ contains
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), &
-                       [character(len=10) :: '[registry]', 'path="."'])
+        & [character(len=10) :: '[registry]', 'path="."'])
 
         call setup_global_settings(global_settings, error)
         if (allocated(error)) return
@@ -300,7 +300,7 @@ contains
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), &
-                       [character(len=20) :: '[registry]', "path='"//join_path('..', 'tmp')//"'"])
+        & [character(len=20) :: '[registry]', "path='"//join_path('..', 'tmp')//"'"])
 
         call setup_global_settings(global_settings, error)
         if (allocated(error)) return
@@ -347,7 +347,7 @@ contains
 
         if (allocated(global_settings%registry_settings%path)) then
             call test_failed(error, "Path shouldn't be allocated: '" &
-                             //global_settings%registry_settings%path//"'")
+            & //global_settings%registry_settings%path//"'")
             return
         end if
 
