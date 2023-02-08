@@ -34,7 +34,12 @@ contains
         & new_unittest('relative-path-to-registry', relative_path_to_registry), &
         & new_unittest('canonical-path-to-registry', canonical_path_to_registry), &
         & new_unittest('has-url-to-registry', has_url_to_registry), &
-        & new_unittest('has-both-path-and-url-to-registry', has_both_path_and_url_to_registry, should_fail=.true.) &
+        & new_unittest('has-both-path-and-url-to-registry', has_both_path_and_url_to_registry, should_fail=.true.), &
+        & new_unittest('has-both-path-and-cache-path', has_both_path_and_cache_path, should_fail=.true.), &
+        & new_unittest('abs-cache-path-no-dir', abs_cache_path_no_dir), &
+        & new_unittest('abs-cache-path-has-dir', abs_cache_path_has_dir), &
+        & new_unittest('rel-cache-path-no-dir', rel_cache_path_no_dir), &
+        & new_unittest('rel-cache-path-has-dir', rel_cache_path_has_dir) &
         ]
 
     end subroutine collect_settings
@@ -223,16 +228,17 @@ contains
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
         character(len=:), allocatable :: abs_path
+        character(len=:), allocatable :: file_content
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
 
         call get_absolute_path(tmp_folder, abs_path, error)
-
         if (allocated(error)) return
 
-        call filewrite(join_path(tmp_folder, config_file_name), &
-                       [character(len=80) :: '[registry]', "path='"//abs_path//"'"])
+        file_content = '[registry]'//new_line('a')//"path='"//abs_path//"'"
+
+        call filewrite(join_path(tmp_folder, config_file_name), [file_content])
 
         call setup_global_settings(global_settings, error)
         if (allocated(error)) return
@@ -355,6 +361,11 @@ contains
             call test_failed(error, 'Url not allocated')
             return
         end if
+
+        if (global_settings%registry_settings%url /= 'http') then
+            call test_failed(error, 'Failed to parse url')
+            return
+        end if
     end subroutine
 
     subroutine has_both_path_and_url_to_registry(error)
@@ -365,12 +376,185 @@ contains
         call mkdir(tmp_folder)
 
         call filewrite(join_path(tmp_folder, config_file_name), &
-                       [character(len=10) :: '[registry]', 'path="."', 'url="http"'])
+        & [character(len=10) :: '[registry]', 'path="."', 'url="http"'])
 
         call setup_global_settings(global_settings, error)
         if (allocated(error)) return
 
         call get_global_settings(global_settings, error)
+        call os_delete_dir(os_is_unix(), tmp_folder)
+    end subroutine
+
+    subroutine has_both_path_and_cache_path(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+
+        call delete_tmp_folder
+        call mkdir(tmp_folder)
+
+        call filewrite(join_path(tmp_folder, config_file_name), &
+        & [character(len=18) :: '[registry]', 'path="."', 'cache_path="cache"'])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+        call os_delete_dir(os_is_unix(), tmp_folder)
+    end subroutine
+
+    ! Custom cache location defined via absolute path but directory doesn't exist. Create it.
+    subroutine abs_cache_path_no_dir(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: file_content
+        character(len=:), allocatable :: abs_path
+        character(len=:), allocatable :: abs_path_to_cache
+
+        call delete_tmp_folder
+        call mkdir(tmp_folder)
+
+        call get_absolute_path(tmp_folder, abs_path, error)
+        if (allocated(error)) return
+
+        abs_path_to_cache = join_path(abs_path, 'cache')
+
+        file_content = '[registry]'//new_line('a')//"cache_path='"//abs_path_to_cache//"'"
+        call filewrite(join_path(tmp_folder, config_file_name), [file_content])
+
+        if (exists(abs_path_to_cache)) then
+            call test_failed(error, "Cache directory '"// &
+            & abs_path_to_cache//"' already exists.")
+            return
+        end if
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+
+        if (.not. exists(abs_path_to_cache)) then
+            call test_failed(error, "Cache directory '"//abs_path_to_cache//"' not created.")
+            return
+        end if
+
+        if (global_settings%registry_settings%cache_path /= abs_path_to_cache) then
+            call test_failed(error, "Cache path '"//abs_path_to_cache//"' not registered.")
+            return
+        end if
+
+        call os_delete_dir(os_is_unix(), tmp_folder)
+    end subroutine
+
+    ! Custom cache location defined via absolute path for existing directory.
+    subroutine abs_cache_path_has_dir(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: file_content
+        character(len=:), allocatable :: abs_path
+
+        call delete_tmp_folder
+        call mkdir(join_path(tmp_folder, 'cache'))
+
+        call get_absolute_path(join_path(tmp_folder, 'cache'), abs_path, error)
+        if (allocated(error)) return
+
+        file_content = '[registry]'//new_line('a')//"cache_path='"//abs_path//"'"
+        call filewrite(join_path(tmp_folder, config_file_name), [file_content])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+
+        if (.not. exists(abs_path)) then
+            call test_failed(error, "Cache directory '"//abs_path//"' not created.")
+            return
+        end if
+
+        if (global_settings%registry_settings%cache_path /= abs_path) then
+            call test_failed(error, "Cache path '"//abs_path//"' not registered.")
+            return
+        end if
+
+        call os_delete_dir(os_is_unix(), tmp_folder)
+    end subroutine
+
+    ! Custom cache location defined via relative path but directory doesn't exist. Create it.
+    subroutine rel_cache_path_no_dir(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: file_content
+        character(:), allocatable :: cache_path
+        character(:), allocatable :: abs_path
+
+        call delete_tmp_folder
+        call mkdir(tmp_folder)
+
+        cache_path = join_path(tmp_folder, 'cache')
+
+        file_content = '[registry]'//new_line('a')//'cache_path="cache"'
+        call filewrite(join_path(tmp_folder, config_file_name), [file_content])
+
+        if (exists(cache_path)) then
+            call test_failed(error, "Cache directory '"//cache_path//"' already exists.")
+            return
+        end if
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+
+        if (.not. exists(cache_path)) then
+            call test_failed(error, "Cache directory '"//cache_path//"' not created.")
+            return
+        end if
+
+        call get_absolute_path(cache_path, abs_path, error)
+        if (allocated(error)) return
+
+        if (global_settings%registry_settings%cache_path /= abs_path) then
+            call test_failed(error, "Cache path '"//cache_path//"' not registered.")
+            return
+        end if
+
+        call os_delete_dir(os_is_unix(), tmp_folder)
+    end subroutine
+
+    ! Custom cache location defined via relative path for existing directory.
+    subroutine rel_cache_path_has_dir(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+        character(len=:), allocatable :: file_content
+        character(len=:), allocatable :: cache_path
+        character(len=:), allocatable :: abs_path
+
+        call delete_tmp_folder
+
+        cache_path = join_path(tmp_folder, 'cache')
+        call mkdir(cache_path)
+
+        file_content = '[registry]'//new_line('a')//'cache_path="cache"'
+        call filewrite(join_path(tmp_folder, config_file_name), [file_content])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+
+        if (.not. exists(cache_path)) then
+            call test_failed(error, "Cache directory '"//cache_path//"' not created.")
+            return
+        end if
+
+        call get_absolute_path(cache_path, abs_path, error)
+        if (allocated(error)) return
+
+        if (global_settings%registry_settings%cache_path /= abs_path) then
+            call test_failed(error, "Cache path '"//cache_path//"' not registered.")
+            return
+        end if
+
         call os_delete_dir(os_is_unix(), tmp_folder)
     end subroutine
 

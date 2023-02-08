@@ -76,9 +76,8 @@ contains
             ! Use default file name.
             global_settings%config_file_name = 'config.toml'
 
-            ! Return if path or file doesn't exist.
-            if (.not. exists(global_settings%path_to_config_folder) &
-                .or. .not. exists(global_settings%full_path())) return
+            ! Return if config file doesn't exist.
+            if (.not. exists(global_settings%full_path())) return
         end if
 
         ! Load into TOML table.
@@ -196,11 +195,6 @@ contains
                 & global_settings%registry_settings%cache_path, error)
                 if (allocated(error)) return
             end if
-            ! Both path and cache_path not allocated, use default location for cache_path.
-        else if (.not. allocated(path)) then
-            cache_path = join_path(global_settings%path_to_config_folder, 'dependencies')
-            global_settings%registry_settings%cache_path = cache_path
-            if (.not. exists(cache_path)) call mkdir(cache_path)
         end if
     end subroutine get_registry_settings
 
