@@ -1,7 +1,7 @@
 module test_settings
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
     use fpm_settings, only: fpm_global_settings, get_global_settings
-    use fpm_filesystem, only: is_dir, join_path, mkdir, filewrite, os_delete_dir, exists
+    use fpm_filesystem, only: is_dir, join_path, mkdir, filewrite, os_delete_dir, exists, get_local_prefix
     use fpm_environment, only: os_is_unix
     use fpm_toml, only: new_table
     use fpm_os, only: get_absolute_path, get_current_directory
@@ -25,6 +25,8 @@ contains
         & new_unittest('no-folder', no_folder, should_fail=.true.), &
         & new_unittest('no-file', no_file, should_fail=.true.), &
         & new_unittest('empty-file', empty_file), &
+        & new_unittest('default-config-settings', default_config_settings), &
+        & new_unittest('error-reading-table', error_reading_table, should_fail=.true.), &
         & new_unittest('empty-registry-table', empty_registry_table), &
         & new_unittest('wrong-key', wrong_key, should_fail=.true.), &
         & new_unittest('wrong-type', wrong_type, should_fail=.true.), &
@@ -86,10 +88,12 @@ contains
         call get_global_settings(global_settings, error)
     end subroutine no_file
 
-    !> Config file exists and working directory is set.
+    !> Config file exists and the path to that file is set.
     subroutine empty_file(error)
         type(error_t), allocatable, intent(out) :: error
         type(fpm_global_settings) :: global_settings
+
+        character(:), allocatable :: cwd
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -105,11 +109,72 @@ contains
 
         if (allocated(error)) return
 
+        call get_current_directory(cwd, error)
+        if (allocated(error)) return
+
+        if (global_settings%path_to_config_folder /= join_path(cwd, tmp_folder)) then
+            call test_failed(error, "global_settings%path_to_config_folder not set correctly :'" &
+            & //global_settings%path_to_config_folder//"'")
+            return
+        end if
+
         if (allocated(global_settings%registry_settings)) then
             call test_failed(error, 'global_settings%registry_settings should not be allocated')
             return
         end if
     end subroutine empty_file
+
+    !> No custom path and config file specified, use default path and file name.
+    subroutine default_config_settings(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+
+        character(:), allocatable :: default_path
+
+        call delete_tmp_folder
+
+        call get_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        if (os_is_unix()) then
+            default_path = join_path(get_local_prefix(), 'share', 'fpm')
+        else
+            default_path = join_path(get_local_prefix(), 'fpm')
+        end if
+
+        if (global_settings%path_to_config_folder /= default_path) then
+            call test_failed(error, "Path to config folder not set correctly :'"//global_settings%config_file_name//"'")
+            return
+        end if
+
+        if (global_settings%config_file_name /= 'config.toml') then
+            call test_failed(error, "Config file name not set correctly :'"//global_settings%config_file_name//"'")
+            return
+        end if
+    end subroutine default_config_settings
+
+    !> Invalid TOML file.
+    subroutine error_reading_table(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+
+        call delete_tmp_folder
+        call mkdir(tmp_folder)
+
+        call filewrite(join_path(tmp_folder, config_file_name), ['['])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+
+        call delete_tmp_folder
+
+        if (allocated(global_settings%registry_settings)) then
+            call test_failed(error, 'Registry settings should not be allocated')
+            return
+        end if
+    end subroutine error_reading_table
 
     subroutine empty_registry_table(error)
         type(error_t), allocatable, intent(out) :: error
