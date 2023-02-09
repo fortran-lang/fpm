@@ -799,7 +799,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: i,j
-        type(string_t)               :: package,modules
+        type(string_t)               :: package,modules,prefix
         logical,           parameter :: enforcing(2) = [.false.,.true.]
         character(*),      parameter :: package_name = 'my_pkg'
         character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
@@ -812,6 +812,7 @@ contains
 
 
         package = string_t(package_name)
+        prefix = string_t("") ! Prefix not used
 
         do i=1,size(module_names)
 
@@ -819,7 +820,7 @@ contains
 
             !> All these names are valid both with and without enforcing
             do j=1,2
-                if (.not.is_valid_module_name(modules,package,enforcing(j))) then
+                if (.not.is_valid_module_name(modules,package,prefix,enforcing(j))) then
                     call test_failed(error,'Valid dummy module name ['//modules%s//'] of package ['// &
                                      package%s//'] unexpectedly fails naming check (enforcing='// &
                                      merge('T','F',enforcing(j))//').')
@@ -837,7 +838,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: i,j
-        type(string_t)               :: package,modules
+        type(string_t)               :: package,modules,prefix
         logical,           parameter :: enforcing(2) = [.false.,.true.]
         character(*),      parameter :: package_name = 'my-pkg'
         character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
@@ -850,6 +851,7 @@ contains
 
 
         package = string_t(package_name)
+        prefix = string_t("") ! Prefix not used
 
         do i=1,size(module_names)
 
@@ -857,7 +859,7 @@ contains
 
             !> All these names are valid both with and without enforcing
             do j=1,2
-                if (.not.is_valid_module_name(modules,package,enforcing(j))) then
+                if (.not.is_valid_module_name(modules,package,prefix,enforcing(j))) then
                     call test_failed(error,'Valid dummy module name ['//modules%s//'] of package ['// &
                                      package%s//'] unexpectedly fails naming check (enforcing='// &
                                      merge('T','F',enforcing(j))//').')
@@ -875,7 +877,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: i
-        type(string_t)               :: package,modules
+        type(string_t)               :: package,modules,prefix
         character(*),      parameter :: package_name = 'my_pkg'
         character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
                                                             'mod_1', &
@@ -890,13 +892,14 @@ contains
 
 
         package = string_t(package_name)
+        prefix = string_t("") ! Prefix not used
 
         !> All these cases should report an invalid name
         do i=1,size(module_names)
 
             modules = string_t(trim(module_names(i)))
 
-            if (is_valid_module_name(modules,package,.true.)) then
+            if (is_valid_module_name(modules,package,prefix,.true.)) then
                 call test_failed(error,'Invalid dummy module name ['//modules%s//'] of package ['// &
                                  package%s//'] unexpectedly passes naming check (enforcing=T).')
                 return
@@ -916,7 +919,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: i
-        type(string_t) :: modules,package
+        type(string_t) :: modules,package,prefix
 
         !> Examples taken from Metcalf/Reid/Cohen
         character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
@@ -928,13 +931,14 @@ contains
                                                             'and/other?symbols@2' ]
 
         package = string_t("")
+        prefix = string_t("") ! Prefix not used
 
         !> All these cases should report an invalid name
         do i=1,size(module_names)
 
             modules = string_t(module_names(i))
 
-            if (is_valid_module_name(modules,package,.false.)) then
+            if (is_valid_module_name(modules,package,prefix,.false.)) then
                 call test_failed(error,'Invalid Fortran module name ['//modules%s//'] ' &
                                  //' unexpectedly passes naming check.')
                 return

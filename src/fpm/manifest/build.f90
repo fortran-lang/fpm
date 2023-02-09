@@ -18,6 +18,8 @@ module fpm_manifest_build
 
     public :: build_config_t, new_build_config
 
+    public :: is_valid_module_prefix
+
 
     !> Configuration data for build
     type :: build_config_t

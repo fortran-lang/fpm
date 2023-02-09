@@ -51,6 +51,7 @@ end type
 
 interface len_trim
     module procedure :: string_len_trim
+    module procedure :: strings_len_trim
 end interface len_trim
 
 interface resize
@@ -134,7 +135,7 @@ pure logical function str_begins_with_str(s, e, case_sensitive) result(r)
     if (n2 > len(s)) then
         r = .false.
     elseif (lower_case) then
-        r = lower(s,n1,n2) == lower(e)
+        r = lower(s(n1:n2)) == lower(e)
     else
         r = (s(n1:n2) == e)
     end if
@@ -316,7 +317,7 @@ function string_cat(strings,delim) result(cat)
 end function string_cat
 
 !> Determine total trimmed length of `string_t` array
-pure function string_len_trim(strings) result(n)
+pure function strings_len_trim(strings) result(n)
     type(string_t), intent(in) :: strings(:)
     integer :: i, n
 
@@ -324,6 +325,18 @@ pure function string_len_trim(strings) result(n)
     do i=1,size(strings)
         n = n + len_trim(strings(i)%s)
     end do
+
+end function strings_len_trim
+
+!> Determine total trimmed length of `string_t` array
+elemental integer function string_len_trim(string) result(n)
+    type(string_t), intent(in) :: string
+
+    if (allocated(string%s)) then
+        n = len_trim(string%s)
+    else
+        n = 0
+    end if
 
 end function string_len_trim
 
