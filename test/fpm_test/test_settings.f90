@@ -101,7 +101,7 @@ contains
 
         call get_global_settings(global_settings, error)
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
 
         if (allocated(error)) return
 
@@ -125,7 +125,7 @@ contains
 
         call get_global_settings(global_settings, error)
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
 
         if (allocated(error)) return
 
@@ -158,7 +158,7 @@ contains
         if (allocated(error)) return
 
         call get_global_settings(global_settings, error)
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
     subroutine wrong_type(error)
@@ -174,7 +174,7 @@ contains
         if (allocated(error)) return
 
         call get_global_settings(global_settings, error)
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
     subroutine has_non_existent_path_to_registry(error)
@@ -190,7 +190,7 @@ contains
         if (allocated(error)) return
 
         call get_global_settings(global_settings, error)
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
     subroutine has_existent_path_to_registry(error)
@@ -208,7 +208,7 @@ contains
 
         call get_global_settings(global_settings, error)
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
 
         if (allocated(error)) return
 
@@ -245,7 +245,7 @@ contains
 
         call get_global_settings(global_settings, error)
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
 
         if (allocated(error)) return
 
@@ -282,7 +282,7 @@ contains
 
         call get_absolute_path(tmp_folder, abs_path, error)
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
 
         if (allocated(error)) return
 
@@ -315,7 +315,7 @@ contains
 
         call get_absolute_path(tmp_folder, abs_path, error)
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
 
         if (allocated(error)) return
 
@@ -344,7 +344,7 @@ contains
 
         call get_global_settings(global_settings, error)
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
 
         if (.not. allocated(global_settings%registry_settings)) then
             call test_failed(error, 'Registry settings not allocated')
@@ -382,7 +382,7 @@ contains
         if (allocated(error)) return
 
         call get_global_settings(global_settings, error)
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
     subroutine has_both_path_and_cache_path(error)
@@ -399,7 +399,7 @@ contains
         if (allocated(error)) return
 
         call get_global_settings(global_settings, error)
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
     ! Custom cache location defined via absolute path but directory doesn't exist. Create it.
@@ -442,7 +442,7 @@ contains
             return
         end if
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
     ! Custom cache location defined via absolute path for existing directory.
@@ -476,7 +476,7 @@ contains
             return
         end if
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
     ! Custom cache location defined via relative path but directory doesn't exist. Create it.
@@ -518,7 +518,7 @@ contains
             return
         end if
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
     ! Custom cache location defined via relative path for existing directory.
@@ -555,7 +555,7 @@ contains
             return
         end if
 
-        call os_delete_dir(os_is_unix(), tmp_folder)
+        call delete_tmp_folder
     end subroutine
 
 end module test_settings
