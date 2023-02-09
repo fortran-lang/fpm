@@ -11,7 +11,7 @@
 !>```
 module fpm_manifest_build
     use fpm_error, only : error_t, syntax_error, fatal_error
-    use fpm_strings, only : string_t
+    use fpm_strings, only : string_t, len_trim
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
     implicit none
     private
@@ -33,6 +33,9 @@ module fpm_manifest_build
 
         !> Enforcing of package module names
         logical :: module_naming = .false.
+
+        !> Custom module name prefix
+        type(string_t) :: module_prefix
 
         !> Libraries to link against
         type(string_t), allocatable :: link(:)
@@ -89,11 +92,34 @@ contains
             return
         end if
 
+        !> Module naming: fist, attempt boolean value first
         call get_value(table, "module-naming", self%module_naming, .false., stat=stat)
 
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'module-naming' in fpm.toml, expecting logical")
-            return
+        if (stat == toml_stat%success) then
+
+            ! Boolean value found. Set no custom prefix. This also falls back to
+            ! key not provided
+            self%module_prefix = string_t("")
+
+        else
+
+            !> Value found, but not a boolean. Attempt to read a prefix string
+            call get_value(table, "module-naming", self%module_prefix%s)
+
+            if (.not.allocated(self%module_prefix%s)) then
+               call syntax_error(error,"Could not read value for 'module-naming' in fpm.toml, expecting logical or a string")
+               return
+            end if
+
+            if (.not.is_valid_module_prefix(self%module_prefix)) then
+               call syntax_error(error,"Invalid custom module name prefix for in fpm.toml: <"//self%module_prefix%s// &
+                            ">, expecting a valid alphanumeric string")
+               return
+            end if
+
+            ! Set module naming to ON
+            self%module_naming = .true.
+
         end if
 
         call get_list(table, "link", self%link, error)
@@ -103,6 +129,33 @@ contains
         if (allocated(error)) return
 
     end subroutine new_build_config
+
+    !> Check that a custom module prefix fits the current naming rules:
+    !> 1) Only alphanumeric characters (no spaces, dashes, underscores or other characters)
+    !> 2) Does not begin with a number (Fortran-compatible syntax)
+    logical function is_valid_module_prefix(module_prefix) result(valid)
+
+        type(string_t), intent(in) :: module_prefix
+
+        character(len=*),parameter :: num='0123456789'
+        character(len=*),parameter :: lower='abcdefghijklmnopqrstuvwxyz'
+        character(len=*),parameter :: upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        character(len=*),parameter :: alpha  =upper//lower
+        character(len=*),parameter :: allowed=alpha//num
+
+        integer :: i
+        character(len=:),allocatable :: name
+
+        name = trim(module_prefix%s)
+
+        if (len(name)>0 .and. len(name)<=63) then
+            valid = verify(name(1:1), alpha) == 0 .and. &
+                    verify(name,allowed)     == 0
+        else
+            valid = .false.
+        endif
+
+    end function is_valid_module_prefix
 
 
     !> Check local schema for allowed entries
