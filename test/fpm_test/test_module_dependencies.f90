@@ -65,7 +65,9 @@ contains
             & new_unittest("invalid-module-names", &
                             check_invalid_module_names, should_fail=.false.), &
             & new_unittest("custom-module-prefixes", &
-                            check_valid_custom_prefix, should_fail=.false.) &
+                            check_valid_custom_prefix, should_fail=.false.), &
+            & new_unittest("custom-prefixed-module-names", &
+                            check_custom_prefixed_modules, should_fail=.false.) &
             ]
 
     end subroutine collect_module_dependencies
@@ -1002,6 +1004,67 @@ contains
         end do
 
     end subroutine check_valid_custom_prefix
+
+    !> Check several module prefixes that are valid
+    subroutine check_custom_prefixed_modules(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i
+        type(string_t)              :: prefix,modules,package
+        character(len=*), parameter :: custom_prefix = 'mp123'
+        character(len=*), parameter :: package_name  = 'my-package'
+
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            'mp123', &
+                                                            'mp123_utils', &
+                                                            'mp123__utils', &
+                                                            'mp123_test', &
+                                                            'mp123_my_module_name',&
+                                                            'my_package__utils',&
+                                                            'my_package',&
+                                                            'my_package__123']
+
+        character(len=80), parameter :: invalid_names(*) = [ character(len=80) :: &
+                                                              'utils', &
+                                                              'mp_123_utils', &
+                                                              'mypackage__utils', &
+                                                              'my_package_utils', &
+                                                              'my_package_test']
+
+        prefix = string_t(custom_prefix)
+        package = string_t(package_name)
+
+        ! All valid
+        do i=1,size(module_names)
+
+            modules = string_t(module_names(i))
+
+            !> All these names are valid both with and without enforcing
+            if (.not.is_valid_module_name(modules,package,prefix,.true.)) then
+                call test_failed(error,'Valid prefixed module ['//modules%s//'] ' //&
+                                       ' from package ['//package%s//'] with prefix ['//&
+                                       prefix%s//'] unexpectedly fails naming check.')
+                return
+            endif
+        end do
+
+        ! All invalid
+        do i=1,size(invalid_names)
+
+            modules = string_t(invalid_names(i))
+
+            !> All these names are valid both with and without enforcing
+            if (is_valid_module_name(modules,package,prefix,.true.)) then
+                call test_failed(error,'Invalid prefixed module ['//modules%s//'] ' //&
+                                       ' from package ['//package%s//'] with prefix ['//&
+                                       prefix%s//'] unexpectedly passed naming check.')
+                return
+            endif
+        end do
+
+    end subroutine check_custom_prefixed_modules
 
     !> Helper to check if a build target is in a list of build_target_ptr
     logical function target_in(needle,haystack)
