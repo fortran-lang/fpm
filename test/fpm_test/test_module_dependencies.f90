@@ -9,7 +9,7 @@ module test_module_dependencies
                 FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-    use fpm_strings, only: string_t, operator(.in.), is_valid_module_name
+    use fpm_strings, only: string_t, operator(.in.), is_valid_module_name, is_valid_module_prefix
     use fpm, only: check_modules_for_duplicates
     implicit none
     private
@@ -63,7 +63,9 @@ contains
             & new_unittest("invalid-enforced-module-names", &
                             check_invalid_enforced_module_names, should_fail=.false.), &
             & new_unittest("invalid-module-names", &
-                            check_invalid_module_names, should_fail=.false.) &
+                            check_invalid_module_names, should_fail=.false.), &
+            & new_unittest("custom-module-prefixes", &
+                            check_valid_custom_prefix, should_fail=.false.) &
             ]
 
     end subroutine collect_module_dependencies
@@ -947,6 +949,59 @@ contains
         end do
 
     end subroutine check_invalid_module_names
+
+    !> Check several module prefixes that are valid
+    subroutine check_valid_custom_prefix(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i
+        type(string_t)               :: prefix
+        character(len=80), parameter :: valid_prefixes(*) = [ character(len=80) :: &
+                                                              'm', &
+                                                              'mp', &
+                                                              'mypkg', &
+                                                              'mypkg123', &
+                                                              'mypackage', &
+                                                              'tomlf' ]
+
+        character(len=80), parameter :: invalid_prefixes(*) = [ character(len=80) :: &
+                                                               'm_', &
+                                                               'm-p', &
+                                                               'my_pkg', &
+                                                               'my-pkg123', &
+                                                               'my package', &
+                                                               'toml-f', &
+                                                               '123pkg', &
+                                                               'mypkg_' ]
+        ! All valid
+        do i=1,size(valid_prefixes)
+
+            prefix = string_t(valid_prefixes(i))
+
+            !> All these names are valid both with and without enforcing
+            if (.not.is_valid_module_prefix(prefix)) then
+                call test_failed(error,'Valid dummy module prefix ['//prefix%s//'] '//&
+                                       ' unexpectedly fails naming check.')
+                return
+            endif
+        end do
+
+        ! All invalid
+        do i=1,size(invalid_prefixes)
+
+            prefix = string_t(invalid_prefixes(i))
+
+            !> All these names are valid both with and without enforcing
+            if (is_valid_module_prefix(prefix)) then
+                call test_failed(error,'Invalid dummy module prefix ['//prefix%s//'] '//&
+                                       ' unexpectedly passed naming check.')
+                return
+            endif
+        end do
+
+    end subroutine check_valid_custom_prefix
 
     !> Helper to check if a build target is in a list of build_target_ptr
     logical function target_in(needle,haystack)
