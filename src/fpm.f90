@@ -322,6 +322,12 @@ subroutine check_module_names(model, error)
             package_prefix = string_t("")
         end if
 
+        ! Warn the user if some of the dependencies have loose naming
+        if (model%enforce_module_names .and. .not.model%packages(k)%enforce_module_names) then
+           write(stderr, *) "Warning: Dependency ",package_name%s // &
+                            " does not enforce module naming, but project does. "
+        end if
+
         do l=1,size(model%packages(k)%sources)
             if (allocated(model%packages(k)%sources(l)%modules_provided)) then
                 do m=1,size(model%packages(k)%sources(l)%modules_provided)

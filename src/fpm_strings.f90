@@ -47,7 +47,8 @@ public :: notabs
 
 !> Module naming
 public :: is_valid_module_name, is_valid_module_prefix, &
-          has_valid_custom_prefix, has_valid_standard_prefix
+          has_valid_custom_prefix, has_valid_standard_prefix, &
+          module_prefix_template, module_prefix_type
 
 type string_t
     character(len=:), allocatable :: s
@@ -1089,6 +1090,35 @@ logical function is_valid_module_prefix(module_prefix) result(valid)
     endif
 
 end function is_valid_module_prefix
+
+
+type(string_t) function module_prefix_template(project_name,custom_prefix) result(prefix)
+    type(string_t), intent(in) :: project_name
+    type(string_t), intent(in) :: custom_prefix
+
+    if (is_valid_module_prefix(custom_prefix)) then
+
+        prefix = string_t(trim(custom_prefix%s)//"_")
+
+    else
+
+        prefix = string_t(to_fortran_name(project_name%s)//"__")
+
+    end if
+
+end function module_prefix_template
+
+type(string_t) function module_prefix_type(project_name,custom_prefix) result(ptype)
+    type(string_t), intent(in) :: project_name
+    type(string_t), intent(in) :: custom_prefix
+
+    if (is_valid_module_prefix(custom_prefix)) then
+        ptype = string_t("custom")
+    else
+        ptype = string_t("default")
+    end if
+
+end function module_prefix_type
 
 !> Check that a module name is prefixed with a custom prefix:
 !> 1) It must be a valid FORTRAN name subset (<=63 chars, begin with letter, only alphanumeric allowed)
