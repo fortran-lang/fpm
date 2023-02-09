@@ -45,6 +45,10 @@ public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
 public :: notabs
 
+!> Module naming
+public :: is_valid_module_name, is_valid_module_prefix, &
+          has_valid_custom_prefix, has_valid_standard_prefix
+
 type string_t
     character(len=:), allocatable :: s
 end type
@@ -1028,7 +1032,163 @@ function is_fortran_name(line) result (lout)
         else
             lout = .false.
         endif
-    end function is_fortran_name
+end function is_fortran_name
+
+!> Check that a module name fits the current naming rules:
+!> 1) It must be a valid FORTRAN name (<=63 chars, begin with letter, "_" is only allowed non-alphanumeric)
+!> 2) It must begin with the package name
+!> 3) If longer, package name must be followed by default separator plus at least one char
+logical function is_valid_module_name(module_name,package_name,custom_prefix,enforce_module_names) result(valid)
+
+    type(string_t), intent(in) :: module_name
+    type(string_t), intent(in) :: package_name
+    type(string_t), intent(in) :: custom_prefix
+    logical       , intent(in) :: enforce_module_names
+
+
+    !> Basic check: check the name is Fortran-compliant
+    valid = is_fortran_name(module_name%s); if (.not.valid) return
+
+    !> FPM package enforcing: check that the module name begins with the package name
+    if (enforce_module_names) then
+
+        ! Default prefixing is always valid
+        valid = has_valid_standard_prefix(module_name,package_name)
+
+        ! If a custom prefix was validated, it provides additional naming options
+        ! Because they never overlap with the default prefix, the former is always an option
+        if (len_trim(custom_prefix)>0 .and. .not.valid) &
+            valid = has_valid_custom_prefix(module_name,custom_prefix)
+
+    end if
+
+end function is_valid_module_name
+
+!> Check that a custom module prefix fits the current naming rules:
+!> 1) Only alphanumeric characters (no spaces, dashes, underscores or other characters)
+!> 2) Does not begin with a number (Fortran-compatible syntax)
+logical function is_valid_module_prefix(module_prefix) result(valid)
+
+    type(string_t), intent(in) :: module_prefix
+
+    character(len=*),parameter :: num='0123456789'
+    character(len=*),parameter :: lower='abcdefghijklmnopqrstuvwxyz'
+    character(len=*),parameter :: upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    character(len=*),parameter :: alpha  =upper//lower
+    character(len=*),parameter :: allowed=alpha//num
+
+    character(len=:),allocatable :: name
+
+    name = trim(module_prefix%s)
+
+    if (len(name)>0 .and. len(name)<=63) then
+        valid = verify(name(1:1), alpha) == 0 .and. &
+                verify(name,allowed)     == 0
+    else
+        valid = .false.
+    endif
+
+end function is_valid_module_prefix
+
+!> Check that a module name is prefixed with a custom prefix:
+!> 1) It must be a valid FORTRAN name subset (<=63 chars, begin with letter, only alphanumeric allowed)
+!> 2) It must begin with the prefix
+!> 3) If longer, package name must be followed by default separator ("_") plus at least one char
+logical function has_valid_custom_prefix(module_name,custom_prefix) result(valid)
+
+    type(string_t), intent(in) :: module_name
+    type(string_t), intent(in) :: custom_prefix
+
+    !> custom_module separator: single underscore
+    character(*), parameter :: SEP = "_"
+
+    logical :: is_same,has_separator,same_beginning
+    integer :: lpkg,lmod,lsep
+
+    !> Basic check: check that both names are individually valid
+    valid = is_fortran_name(module_name%s) .and. &
+            is_valid_module_prefix(custom_prefix)
+
+    !> FPM package enforcing: check that the module name begins with the custom prefix
+    if (valid) then
+
+        !> Query string lengths
+        lpkg  = len_trim(custom_prefix)
+        lmod  = len_trim(module_name)
+        lsep  = len_trim(SEP)
+
+        same_beginning = str_begins_with_str(module_name%s,custom_prefix%s,case_sensitive=.false.)
+
+        is_same = lpkg==lmod .and. same_beginning
+
+        if (lmod>=lpkg+lsep) then
+           has_separator = str_begins_with_str(module_name%s(lpkg+1:lpkg+lsep),SEP)
+        else
+           has_separator = .false.
+        endif
+
+        !> 2) It must begin with the package name.
+        !> 3) It can be equal to the package name, or, if longer, must be followed by the
+        !     default separator plus at least one character
+        !> 4) Package name must not end with an underscore
+        valid = same_beginning .and. (is_same .or. (lmod>lpkg+lsep .and. has_separator))
+
+    end if
+
+end function has_valid_custom_prefix
+
+
+!> Check that a module name is prefixed with the default package prefix:
+!> 1) It must be a valid FORTRAN name (<=63 chars, begin with letter, "_" is only allowed non-alphanumeric)
+!> 2) It must begin with the package name
+!> 3) If longer, package name must be followed by default separator plus at least one char
+logical function has_valid_standard_prefix(module_name,package_name) result(valid)
+
+    type(string_t), intent(in) :: module_name
+    type(string_t), intent(in) :: package_name
+
+    !> Default package__module separator: two underscores
+    character(*), parameter :: SEP = "__"
+
+    character(len=:), allocatable :: fortranized_pkg
+    logical :: is_same,has_separator,same_beginning
+    integer :: lpkg,lmod,lsep
+
+    !> Basic check: check the name is Fortran-compliant
+    valid = is_fortran_name(module_name%s)
+
+    !> FPM package enforcing: check that the module name begins with the package name
+    if (valid) then
+
+        fortranized_pkg = to_fortran_name(package_name%s)
+
+        !> Query string lengths
+        lpkg  = len_trim(fortranized_pkg)
+        lmod  = len_trim(module_name)
+        lsep  = len_trim(SEP)
+
+        same_beginning = str_begins_with_str(module_name%s,fortranized_pkg,case_sensitive=.false.)
+
+        is_same = lpkg==lmod .and. same_beginning
+
+        if (lmod>=lpkg+lsep) then
+           has_separator = str_begins_with_str(module_name%s(lpkg+1:lpkg+lsep),SEP)
+        else
+           has_separator = .false.
+        endif
+
+        !> 2) It must begin with the package name.
+        !> 3) It can be equal to the package name, or, if longer, must be followed by the
+        !     default separator plus at least one character
+        !> 4) Package name must not end with an underscore
+        valid = is_fortran_name(fortranized_pkg) .and. &
+                fortranized_pkg(lpkg:lpkg)/='_' .and. &
+                (same_beginning .and. (is_same .or. (lmod>lpkg+lsep .and. has_separator)))
+
+    end if
+
+end function has_valid_standard_prefix
+
 !>
 !!### NAME
 !!   notabs(3f) - [fpm_strings:NONALPHA] expand tab characters

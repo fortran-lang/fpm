@@ -11,15 +11,12 @@
 !>```
 module fpm_manifest_build
     use fpm_error, only : error_t, syntax_error, fatal_error
-    use fpm_strings, only : string_t, len_trim
+    use fpm_strings, only : string_t, len_trim, is_valid_module_prefix
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
     implicit none
     private
 
     public :: build_config_t, new_build_config
-
-    public :: is_valid_module_prefix
-
 
     !> Configuration data for build
     type :: build_config_t
@@ -131,34 +128,6 @@ contains
         if (allocated(error)) return
 
     end subroutine new_build_config
-
-    !> Check that a custom module prefix fits the current naming rules:
-    !> 1) Only alphanumeric characters (no spaces, dashes, underscores or other characters)
-    !> 2) Does not begin with a number (Fortran-compatible syntax)
-    logical function is_valid_module_prefix(module_prefix) result(valid)
-
-        type(string_t), intent(in) :: module_prefix
-
-        character(len=*),parameter :: num='0123456789'
-        character(len=*),parameter :: lower='abcdefghijklmnopqrstuvwxyz'
-        character(len=*),parameter :: upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        character(len=*),parameter :: alpha  =upper//lower
-        character(len=*),parameter :: allowed=alpha//num
-
-        integer :: i
-        character(len=:),allocatable :: name
-
-        name = trim(module_prefix%s)
-
-        if (len(name)>0 .and. len(name)<=63) then
-            valid = verify(name(1:1), alpha) == 0 .and. &
-                    verify(name,allowed)     == 0
-        else
-            valid = .false.
-        endif
-
-    end function is_valid_module_prefix
-
 
     !> Check local schema for allowed entries
     subroutine check(table, error)

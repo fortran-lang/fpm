@@ -9,8 +9,8 @@ module test_module_dependencies
                 FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-    use fpm_strings, only: string_t, operator(.in.)
-    use fpm, only: check_modules_for_duplicates, is_valid_module_name
+    use fpm_strings, only: string_t, operator(.in.), is_valid_module_name
+    use fpm, only: check_modules_for_duplicates
     implicit none
     private
 
