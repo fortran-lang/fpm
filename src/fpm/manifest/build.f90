@@ -32,8 +32,6 @@ module fpm_manifest_build
 
         !> Enforcing of package module names
         logical :: module_naming = .false.
-
-        !> Custom module name prefix
         type(string_t) :: module_prefix
 
         !> Libraries to link against

@@ -38,7 +38,7 @@ module fpm_model
 use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
-use fpm_strings, only: string_t, str
+use fpm_strings, only: string_t, str, len_trim
 implicit none
 
 private
@@ -130,6 +130,10 @@ type package_t
     !> Package version number.
     character(:), allocatable :: version
 
+    !> Module naming conventions
+    logical :: enforce_module_names
+    type(string_t) :: module_prefix
+
 end type package_t
 
 
@@ -181,6 +185,7 @@ type :: fpm_model_t
 
     !> Whether module names should be prefixed with the package name
     logical :: enforce_module_names = .false.
+    type(string_t) :: module_prefix
 
 end type fpm_model_t
 
@@ -202,6 +207,14 @@ function info_package(p) result(s)
         if (i < size(p%sources)) s = s // ", "
     end do
     s = s // "]"
+
+    ! Print module naming convention
+    s = s // ', enforce_module_names="' // merge('T','F',p%enforce_module_names) // '"'
+
+    ! Print custom prefix
+    if (p%enforce_module_names .and. len_trim(p%module_prefix)>0) &
+    s = s // ', custom_prefix="' // p%module_prefix%s // '"'
+
     s = s // ")"
 
 end function info_package
@@ -349,6 +362,10 @@ function info_model(model) result(s)
 
     ! Print module naming convention
     s = s // ', enforce_module_names="' // merge('T','F',model%enforce_module_names) // '"'
+
+    ! Print custom prefix
+    if (model%enforce_module_names .and. len_trim(model%module_prefix)>0) &
+    s = s // ', custom_prefix="' // model%module_prefix%s // '"'
 
     !end type fpm_model_t
     s = s // ")"

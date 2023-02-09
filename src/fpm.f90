@@ -1,7 +1,7 @@
 module fpm
 use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, &
                       lower, str_ends_with, is_fortran_name, str_begins_with_str, &
-                      is_valid_module_name
+                      is_valid_module_name, len_trim
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings, &
@@ -94,6 +94,7 @@ subroutine build_model(model, settings, package, error)
 
     model%include_tests = settings%build_tests
     model%enforce_module_names = package%build%module_naming
+    model%module_prefix = package%build%module_prefix
 
     allocate(model%packages(model%deps%ndep))
 
@@ -155,6 +156,11 @@ subroutine build_model(model, settings, package, error)
             if (allocated(dependency%build%external_modules)) then
                 model%external_modules = [model%external_modules, dependency%build%external_modules]
             end if
+
+            ! Copy naming conventions from this dependency's manifest
+            model%packages(i)%enforce_module_names = dependency%build%module_naming
+            model%packages(i)%module_prefix        = dependency%build%module_prefix
+
         end associate
     end do
     if (allocated(error)) return
@@ -309,8 +315,12 @@ subroutine check_module_names(model, error)
 
         package_name = string_t(model%packages(k)%name)
 
-        ! Custom prefix is not currently active
-        package_prefix = string_t("")
+        ! Custom prefix is taken from each dependency's manifest
+        if (model%packages(k)%enforce_module_names) then
+            package_prefix = model%packages(k)%module_prefix
+        else
+            package_prefix = string_t("")
+        end if
 
         do l=1,size(model%packages(k)%sources)
             if (allocated(model%packages(k)%sources(l)%modules_provided)) then
@@ -327,9 +337,19 @@ subroutine check_module_names(model, error)
 
                         if (model%enforce_module_names) then
 
+                            if (len_trim(package_prefix)>0) then
+
+                            write(stderr, *) "ERROR: Module ",module_name%s, &
+                                             " in ",model%packages(k)%sources(l)%file_name, &
+                                             " does not match its package name ("//package_name%s// &
+                                             ") or custom prefix ("//package_prefix%s//")."
+                            else
+
                             write(stderr, *) "ERROR: Module ",module_name%s, &
                                              " in ",model%packages(k)%sources(l)%file_name, &
                                              " does not match its package name ("//package_name%s//")."
+
+                            endif
 
                         else
 
