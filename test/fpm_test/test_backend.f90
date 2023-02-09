@@ -1,7 +1,7 @@
 !> Define tests for the `fpm_backend` module (build scheduling)
-module test_backend
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
-    use test_module_dependencies, only: operator(.in.)
+module fpm_test_backend
+    use fpm_testsuite, only : new_unittest, unittest_t, error_t, test_failed
+    use fpm_test_module_dependencies, only: operator(.in.)
     use fpm_filesystem, only: exists, mkdir, get_temp_filename
     use fpm_targets, only: build_target_t, build_target_ptr, &
                             FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE, &
@@ -355,4 +355,4 @@ contains
     end function new_test_package
 
 
-end module test_backend
+end module fpm_test_backend

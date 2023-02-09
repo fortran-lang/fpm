@@ -1,7 +1,7 @@
 !> Define tests for the `fpm_manifest` modules
-module test_manifest
+module fpm_test_manifest
     use fpm_filesystem, only: get_temp_filename
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
+    use fpm_testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_manifest
     use fpm_manifest_profile, only: profile_config_t, find_profile
@@ -1392,4 +1392,4 @@ contains
 
     end subroutine test_macro_parsing_dependency
 
-end module test_manifest
+end module fpm_test_manifest

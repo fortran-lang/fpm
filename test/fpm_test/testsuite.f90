@@ -1,5 +1,5 @@
 !> Define some procedures to automate collecting and launching of tests
-module testsuite
+module fpm_testsuite
     use fpm_error, only : error_t, test_failed => fatal_error
     implicit none
     private
@@ -283,4 +283,4 @@ contains
     end subroutine check_string
 
 
-end module testsuite
+end module fpm_testsuite

@@ -1,6 +1,6 @@
 !> Define tests for the `fpm_toml` modules
-module test_toml
-    use testsuite, only : new_unittest, unittest_t, error_t
+module fpm_test_toml
+    use fpm_testsuite, only : new_unittest, unittest_t, error_t
     use fpm_toml
     implicit none
     private
@@ -104,4 +104,4 @@ contains
     end subroutine test_missing_file
 
 
-end module test_toml
+end module fpm_test_toml

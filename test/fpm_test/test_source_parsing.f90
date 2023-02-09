@@ -1,6 +1,6 @@
 !> Define tests for the `fpm_sources` module (parsing routines)
-module test_source_parsing
-    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
+module fpm_test_source_parsing
+    use fpm_testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: get_temp_filename
     use fpm_source_parsing, only: parse_f_source, parse_c_source
     use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
@@ -819,7 +819,7 @@ contains
             call test_failed(error,'Unexpected link_libraries - expecting unallocated')
             return
         end if
-        
+
         if (size(f_source%parent_modules) /= 0) then
             call test_failed(error,'Incorrect number of parent_modules - expecting zero')
             return
@@ -947,4 +947,4 @@ contains
 
 
 
-end module test_source_parsing
+end module fpm_test_source_parsing
