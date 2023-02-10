@@ -111,7 +111,7 @@ contains
     !> Get settings from the [registry] table in the global config file.
     subroutine get_registry_settings(global_settings, table, error)
         type(fpm_global_settings), intent(inout) :: global_settings
-        type(toml_table), target, intent(inout) :: table
+        type(toml_table), intent(inout) :: table
         type(error_t), allocatable, intent(out) :: error
 
         character(:), allocatable :: path, url, cache_path
