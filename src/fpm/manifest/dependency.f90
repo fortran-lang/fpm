@@ -193,7 +193,7 @@ contains
         end if
 
         if (table%has_key('v') .and. (table%has_key('path') .or. table%has_key('git'))) then
-            call syntax_error(error, "Dependency '"//name//"' cannot have both vers and git/path entries")
+            call syntax_error(error, "Dependency '"//name//"' cannot have both v and git/path entries")
             return
         end if
 

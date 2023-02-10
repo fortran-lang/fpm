@@ -29,7 +29,7 @@ contains
             & new_unittest("dependency-gitconflict", test_dependency_gitconflict, should_fail=.true.), &
             & new_unittest("dependency-invalid-git", test_dependency_invalid_git, should_fail=.true.), &
             & new_unittest("dependency-no-namespace", test_dependency_no_namespace, should_fail=.true.), &
-            & new_unittest("dependency-redundant-vers", test_dependency_redundant_vers, should_fail=.true.), &
+            & new_unittest("dependency-redundant-v", test_dependency_redundant_v, should_fail=.true.), &
             & new_unittest("dependency-wrongkey", test_dependency_wrongkey, should_fail=.true.), &
             & new_unittest("dependencies-empty", test_dependencies_empty), &
             & new_unittest("dependencies-typeerror", test_dependencies_typeerror, should_fail=.true.), &
@@ -387,7 +387,7 @@ contains
     end subroutine test_dependency_no_namespace
 
     !> Do not specify version with a git or path dependency
-    subroutine test_dependency_redundant_vers(error)
+    subroutine test_dependency_redundant_v(error)
         use fpm_manifest_dependency
         use fpm_toml, only : new_table, toml_table, set_value
 
@@ -403,7 +403,7 @@ contains
 
         call new_dependency(dependency, table, error=error)
 
-    end subroutine test_dependency_redundant_vers
+    end subroutine test_dependency_redundant_v
 
 
     !> Try to create a dependency with conflicting entries
