@@ -450,6 +450,7 @@ contains
 
     type(package_config_t) :: package
     character(len=:), allocatable :: manifest, proj_dir, revision
+    type(fpm_global_settings) :: global_settings
     logical :: fetch
 
     if (dependency%done) return
@@ -466,7 +467,9 @@ contains
         if (allocated(error)) return
       end if
     else
-      call dependency%get_from_registry(proj_dir, error)
+      call get_global_settings(global_settings, error)
+      if (allocated(error)) return
+      call dependency%get_from_registry(proj_dir, global_settings, error)
       if (allocated(error)) return
     end if
 
@@ -496,7 +499,7 @@ contains
   !> Get a dependency from the registry. Whether the dependency is fetched
   !> from a local, a custom remote or the official registry is determined
   !> by the global configuration settings.
-  subroutine get_from_registry(self, target_dir, error, global_settings)
+  subroutine get_from_registry(self, target_dir, global_settings, error)
 
       !> Instance of the dependency configuration.
       class(dependency_node_t), intent(in) :: self
@@ -504,19 +507,37 @@ contains
       !> The target directory of the dependency.
       character(:), allocatable, intent(out) :: target_dir
 
+      !> Global configuration settings.
+      type(fpm_global_settings), intent(inout) :: global_settings
+      
       !> Error handling.
       type(error_t), allocatable, intent(out) :: error
-
-      !> Global configuration settings.
-      type(fpm_global_settings), optional, intent(inout) :: global_settings
-
-      call get_global_settings(global_settings, error)
-      if (allocated(error)) return
 
       ! Registry settings found in the global config file.
       if (allocated(global_settings%registry_settings)) then
         if (allocated(global_settings%registry_settings%path)) then
           call self%get_from_local_registry(target_dir, global_settings%registry_settings%path, error)
+          return
+        end if
+      else
+        allocate (global_settings%registry_settings)
+      end if
+
+      if (.not. allocated(global_settings%registry_settings%cache_path)) then
+        ! Use default cache path if it wasn't set in the global config file.
+        global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder, 'dependencies')
+      end if
+
+      if (.not. exists(global_settings%registry_settings%cache_path)) then
+        call mkdir(global_settings%registry_settings%cache_path)
+      end if
+
+      ! Check cache before downloading from remote registry when a specific version was requested.
+      if (allocated(self%requested_version)) then
+        if (exists(join_path(global_settings%registry_settings%cache_path, self%namespace, &
+        & self%name, self%requested_version%s()))) then
+          target_dir = join_path(global_settings%registry_settings%cache_path, self%namespace, &
+          & self%name, self%requested_version%s())
           return
         end if
       end if
@@ -652,24 +673,25 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(string_t), allocatable :: files(:)
-        type(version_t), allocatable :: versions(:), version
+        type(version_t), allocatable :: versions(:)
+        type(version_t) :: version
         integer :: i
 
         ! Collect existing versions from the cache.
-        call list_files(global_settings%registry_settings%cache_path, files)
+        call list_files(join_path(global_settings%registry_settings%cache_path, self%namespace, self%name), files)
 
         if (size(files) > 0) then
+          allocate (versions(0))
           do i = 1, size(files)
-            if (.not. is_dir(files(i)%s)) cycle
-
-            call new_version(version, basename(files(i)%s), error)
-            if (allocated(error)) return
-
-            versions = [versions, version]
+            if (is_dir(files(i)%s)) then
+              call new_version(version, basename(files(i)%s), error)
+              if (allocated(error)) return
+              versions = [versions, version]
+            end if
           end do
         end if
-        ! Get new versions from the registry, sending existing versions.
-        ! Put them in the cache.
+        ! Send version to registry and receive requested package.
+        ! Put it in the cache.
     end subroutine get_from_remote_registry
 
   !> True if dependency is part of the tree

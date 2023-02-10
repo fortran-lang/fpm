@@ -182,10 +182,9 @@ contains
         type(fpm_global_settings) :: global_settings
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
+        call add_table(table, 'registry', child)
 
         call get_registry_settings(child, global_settings, error)
         if (allocated(error)) return
@@ -211,11 +210,10 @@ contains
         type(fpm_global_settings) :: global_settings
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'invalid_key', 'abc', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'invalid_key', 'abc')
 
         call get_registry_settings(child, global_settings, error)
     end subroutine
@@ -225,11 +223,10 @@ contains
         type(fpm_global_settings) :: global_settings
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'path', 42, stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'path', 42)
 
         call get_registry_settings(child, global_settings, error)
     end subroutine
@@ -239,11 +236,10 @@ contains
         type(fpm_global_settings) :: global_settings
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'path', 'nonexistent_path', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'path', 'nonexistent_path')
 
         call get_registry_settings(child, global_settings, error)
     end subroutine
@@ -254,7 +250,6 @@ contains
         type(toml_table) :: table
         type(toml_table), pointer :: child
         character(:), allocatable :: cwd
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -263,8 +258,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'path', '.', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'path', '.')
 
         call get_registry_settings(child, global_settings, error)
 
@@ -296,7 +291,6 @@ contains
         character(len=:), allocatable :: abs_path
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -308,8 +302,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'path', abs_path, stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'path', abs_path)
 
         call get_registry_settings(child, global_settings, error)
 
@@ -339,7 +333,6 @@ contains
         character(len=:), allocatable :: abs_path
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(join_path(tmp_folder, 'abc'))
@@ -348,8 +341,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'path', 'abc', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'path', 'abc')
 
         call get_registry_settings(child, global_settings, error)
 
@@ -409,7 +402,6 @@ contains
         character(len=:), allocatable :: abs_path
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -418,8 +410,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'path', join_path('..', tmp_folder), stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'path', join_path('..', tmp_folder))
 
         call get_registry_settings(child, global_settings, error)
 
@@ -445,7 +437,6 @@ contains
         type(fpm_global_settings) :: global_settings
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -454,8 +445,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'url', 'http', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'url', 'http')
 
         call get_registry_settings(child, global_settings, error)
 
@@ -488,7 +479,6 @@ contains
         type(fpm_global_settings) :: global_settings
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -497,9 +487,9 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'path', '.', stat)
-        call set_value(child, 'url', 'http', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'path', '.')
+        call set_value(child, 'url', 'http')
 
         call get_registry_settings(child, global_settings, error)
 
@@ -511,7 +501,6 @@ contains
         type(fpm_global_settings) :: global_settings
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -520,9 +509,9 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'path', '.', stat)
-        call set_value(child, 'cache_path', 'cache', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'path', '.')
+        call set_value(child, 'cache_path', 'cache')
 
         call get_registry_settings(child, global_settings, error)
 
@@ -536,7 +525,6 @@ contains
         character(len=:), allocatable :: abs_path, abs_path_to_cache
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -550,8 +538,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'cache_path', abs_path_to_cache, stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'cache_path', abs_path_to_cache)
 
         call get_registry_settings(child, global_settings, error)
 
@@ -575,7 +563,6 @@ contains
         character(len=:), allocatable :: abs_path
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(join_path(tmp_folder, 'cache'))
@@ -587,8 +574,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'cache_path', abs_path, stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'cache_path', abs_path)
 
         call get_registry_settings(child, global_settings, error)
 
@@ -612,7 +599,6 @@ contains
         character(:), allocatable :: cache_path, abs_path
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
         call mkdir(tmp_folder)
@@ -621,8 +607,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'cache_path', 'cache', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'cache_path', 'cache')
 
         call get_registry_settings(child, global_settings, error)
 
@@ -651,7 +637,6 @@ contains
         character(len=:), allocatable :: cache_path, abs_path
         type(toml_table) :: table
         type(toml_table), pointer :: child
-        integer :: stat
 
         call delete_tmp_folder
 
@@ -662,8 +647,8 @@ contains
         if (allocated(error)) return
 
         call new_table(table)
-        call add_table(table, 'registry', child, stat)
-        call set_value(child, 'cache_path', 'cache', stat)
+        call add_table(table, 'registry', child)
+        call set_value(child, 'cache_path', 'cache')
 
         call get_registry_settings(child, global_settings, error)
 
