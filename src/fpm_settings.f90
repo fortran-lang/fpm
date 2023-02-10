@@ -111,7 +111,7 @@ contains
     !> Read registry settings from the global config file.
     subroutine get_registry_settings(table, global_settings, error)
         !> The [registry] subtable from the global config file.
-        type(toml_table), intent(inout) :: table
+        type(toml_table), target, intent(inout) :: table
         !> The global settings which can be filled with the registry settings.
         type(fpm_global_settings), intent(inout) :: global_settings
         !> Error handling.
