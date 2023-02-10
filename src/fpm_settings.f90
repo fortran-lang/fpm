@@ -8,7 +8,7 @@ module fpm_settings
                       convert_to_absolute_path
     implicit none
     private
-    public :: fpm_global_settings, get_global_settings
+    public :: fpm_global_settings, get_global_settings, get_registry_settings
 
     type :: fpm_global_settings
         !> Path to the global config file excluding the file name.
@@ -47,6 +47,9 @@ contains
         type(toml_table), allocatable :: table
         !> Error parsing to TOML table.
         type(toml_error), allocatable :: parse_error
+
+        type(toml_table), pointer :: registry_table
+        integer :: stat
 
         ! Use custom path to the config file if it was specified.
         if (global_settings%has_custom_location()) then
@@ -89,18 +92,28 @@ contains
             return
         end if
 
-        ! Read registry subtable.
-        call get_registry_settings(global_settings, table, error)
+        call get_value(table, 'registry', registry_table, requested=.false., stat=stat)
+
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, "Error reading registry from config file '"// &
+            & global_settings%full_path()//"'.")
+            return
+        end if
+
+        ! A registry table was found.
+        if (associated(registry_table)) then
+            call get_registry_settings(global_settings, registry_table, error)
+            return
+        end if
 
     end subroutine get_global_settings
 
     !> Get settings from the [registry] table in the global config file.
     subroutine get_registry_settings(global_settings, table, error)
         type(fpm_global_settings), intent(inout) :: global_settings
-        type(toml_table), intent(inout) :: table
+        type(toml_table), pointer, intent(in) :: table
         type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table), pointer :: child
         character(:), allocatable :: path, url, cache_path
         integer :: stat
 
@@ -111,23 +124,12 @@ contains
             & 'cache_path' &
             & ]
 
-        call get_value(table, 'registry', child, requested=.false., stat=stat)
-
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Error reading registry from config file '"// &
-            & global_settings%full_path()//"'.")
-            return
-        end if
-
-        ! Quietly return if no registry table was found.
-        if (.not. associated(child)) return
-
-        call check_keys(child, valid_keys, error)
+        call check_keys(table, valid_keys, error)
         if (allocated(error)) return
 
         allocate (global_settings%registry_settings)
 
-        call get_value(child, 'path', path, stat=stat)
+        call get_value(table, 'path', path, stat=stat)
 
         if (stat /= toml_stat%success) then
             call fatal_error(error, "Error reading registry path: '"//path//"'.")
@@ -152,7 +154,7 @@ contains
             end if
         end if
 
-        call get_value(child, 'url', url, stat=stat)
+        call get_value(table, 'url', url, stat=stat)
 
         if (stat /= toml_stat%success) then
             call fatal_error(error, "Error reading registry url: '"//url//"'.")
@@ -169,7 +171,7 @@ contains
             global_settings%registry_settings%url = url
         end if
 
-        call get_value(child, 'cache_path', cache_path, stat=stat)
+        call get_value(table, 'cache_path', cache_path, stat=stat)
 
         if (stat /= toml_stat%success) then
             call fatal_error(error, "Error reading path to registry cache: '"//cache_path//"'.")
