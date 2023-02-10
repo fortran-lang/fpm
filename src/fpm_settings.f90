@@ -102,16 +102,19 @@ contains
 
         ! A registry table was found.
         if (associated(registry_table)) then
-            call get_registry_settings(global_settings, registry_table, error)
+            call get_registry_settings(registry_table, global_settings, error)
             return
         end if
 
     end subroutine get_global_settings
 
-    !> Get settings from the [registry] table in the global config file.
-    subroutine get_registry_settings(global_settings, table, error)
-        type(fpm_global_settings), intent(inout) :: global_settings
+    !> Read registry settings from the global config file.
+    subroutine get_registry_settings(table, global_settings, error)
+        !> The [registry] subtable from the global config file.
         type(toml_table), intent(inout) :: table
+        !> The global settings which can be filled with the registry settings.
+        type(fpm_global_settings), intent(inout) :: global_settings
+        !> Error handling.
         type(error_t), allocatable, intent(out) :: error
 
         character(:), allocatable :: path, url, cache_path

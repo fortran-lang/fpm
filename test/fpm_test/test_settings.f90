@@ -187,7 +187,7 @@ contains
         call new_table(table)
         call add_table(table, 'registry', child, stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
         if (allocated(error)) return
 
         if (.not. allocated(global_settings%registry_settings)) then
@@ -217,7 +217,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'invalid_key', 'abc', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
     end subroutine
 
     subroutine invalid_type(error)
@@ -231,7 +231,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'path', 42, stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
     end subroutine
 
     subroutine has_non_existent_path_to_registry(error)
@@ -245,7 +245,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'path', 'nonexistent_path', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
     end subroutine
 
     subroutine has_existent_path_to_registry(error)
@@ -266,7 +266,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'path', '.', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         if (.not. allocated(global_settings%registry_settings%path)) then
             call test_failed(error, 'Path not allocated')
@@ -311,7 +311,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'path', abs_path, stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         call delete_tmp_folder
 
@@ -351,7 +351,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'path', 'abc', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         call get_absolute_path(tmp_folder, abs_path, error)
 
@@ -421,7 +421,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'path', join_path('..', tmp_folder), stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         call get_absolute_path(tmp_folder, abs_path, error)
 
@@ -457,7 +457,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'url', 'http', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         call delete_tmp_folder
 
@@ -501,7 +501,7 @@ contains
         call set_value(child, 'path', '.', stat)
         call set_value(child, 'url', 'http', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         call delete_tmp_folder
     end subroutine
@@ -524,7 +524,7 @@ contains
         call set_value(child, 'path', '.', stat)
         call set_value(child, 'cache_path', 'cache', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         call delete_tmp_folder
     end subroutine
@@ -553,7 +553,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'cache_path', abs_path_to_cache, stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         if (.not. exists(abs_path_to_cache)) then
             call test_failed(error, "Cache directory '"//abs_path_to_cache//"' not created.")
@@ -590,7 +590,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'cache_path', abs_path, stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         if (.not. exists(abs_path)) then
             call test_failed(error, "Cache directory '"//abs_path//"' not created.")
@@ -624,7 +624,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'cache_path', 'cache', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         cache_path = join_path(tmp_folder, 'cache')
 
@@ -665,7 +665,7 @@ contains
         call add_table(table, 'registry', child, stat)
         call set_value(child, 'cache_path', 'cache', stat)
 
-        call get_registry_settings(global_settings, child, error)
+        call get_registry_settings(child, global_settings, error)
 
         if (.not. exists(cache_path)) then
             call test_failed(error, "Cache directory '"//cache_path//"' not created.")
