@@ -1,8 +1,7 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
     use fpm_error, only: error_t, fatal_error
-    use fpm_filesystem, only : get_temp_filename, getline, join_path, exists
-    use fpm_os, only : get_current_directory, change_directory
+    use fpm_filesystem, only : get_temp_filename, getline, join_path
     implicit none
 
     public :: git_target_t
@@ -142,7 +141,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: stat
-        character(len=:), allocatable :: object, workdir, cwd
+        character(len=:), allocatable :: object, workdir
 
         if (allocated(self%object)) then
             object = self%object
@@ -158,7 +157,7 @@ contains
             return
         end if
 
-        call execute_command_line("git "//workdir//" fetch --depth=1 "// &
+        call execute_command_line("git "//workdir//" fetch --depth=1 --recursive "// &
                                   self%url//" "//object, exitstat=stat)
 
         if (stat /= 0) then
@@ -172,21 +171,6 @@ contains
             call fatal_error(error,'Error while checking out git repository for remote dependency')
             return
         end if
-
-        ! cd into the git_dir, update existing submodules and cd back
-        call get_current_directory(cwd, error)
-        if (allocated(error)) return
-        call change_directory(local_path, error)
-        if (allocated(error)) return
-        if (exists(".gitmodules")) then
-            call execute_command_line("git submodule update --init --recursive", exitstat=stat)
-            if (stat /= 0) then
-                call fatal_error(error,'Error while updating git submodules for remote dependency')
-                return
-            end if
-        end if
-        call change_directory(cwd, error)
-        if (allocated(error)) return
 
     end subroutine checkout
 
