@@ -937,7 +937,7 @@ end subroutine link
 
 
 !> Create an archive
-!> @todo For Windows OS, the `delete_file` returns `iostat`, but we does not process it.
+!> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.
 !> This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
 !> see issue #707, #708 and #808.
 subroutine make_archive(self, output, args, log_file, stat)
@@ -951,17 +951,33 @@ subroutine make_archive(self, output, args, log_file, stat)
     character(len=*), intent(in) :: log_file
     !> Status flag
     integer, intent(out) :: stat
-    integer :: istat
 
     if (self%use_response_file) then
         call write_response_file(output//".resp" , args)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
             &  verbose=self%verbose, redirect=log_file, exitstat=stat)
-        call delete_file(output//".resp", iostat=istat)
+#if defined(_WIN32) && defined(__GFORTRAN__)
+        call delete_file_win32(output//".resp")
+#else
+        call delete_file(output//".resp")
+#endif
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
             & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     end if
+#if defined(_WIN32) && defined(__GFORTRAN__)
+    contains
+        subroutine delete_file_win32(file)
+            character(len=*), intent(in) :: file
+            logical :: exist
+            integer :: unit, iostat
+            inquire(file=file, exist=exist)
+            if (exist) then
+                open(file=file, newunit=unit)
+                close(unit, status='delete', iostat=iostat)
+            end if
+        end subroutine delete_file_win32
+#endif
 end subroutine make_archive
 
 
