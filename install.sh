@@ -21,7 +21,6 @@ usage()
 # Return value of the latest published release on GitHub, with no heading "v" (e.g., "0.7.0")
 get_latest_release()
 {
-
      # Check if curl is installed
     if command -v curl > /dev/null 2>&1; then
        curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
@@ -37,7 +36,6 @@ get_latest_release()
        # Fallback to a known working version
        echo "0.6.0"
     fi
-
 }
 
 PREFIX="$HOME/.local"

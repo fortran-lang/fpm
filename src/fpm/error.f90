@@ -166,12 +166,16 @@ contains
         integer, intent(in) :: value
         !> Error message
         character(len=*), intent(in) :: message
+        integer :: iostat
         if(message/='')then
+           flush(unit=stderr,iostat=iostat)
+           flush(unit=stdout,iostat=iostat)
            if(value>0)then
               write(stderr,'("<ERROR>",a)')trim(message)
            else
               write(stderr,'("<INFO> ",a)')trim(message)
            endif
+           flush(unit=stderr,iostat=iostat)
         endif
         stop value
     end subroutine fpm_stop
