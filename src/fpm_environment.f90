@@ -41,7 +41,7 @@ contains
         logical           :: file_exists
         logical, save     :: first_run = .true.
         integer, save     :: ret = OS_UNKNOWN
-        !omp threadprivate(ret, first_run)
+        !$omp threadprivate(ret, first_run)
 
         if (.not. first_run) then
             r = ret
