@@ -956,16 +956,13 @@ subroutine make_archive(self, output, args, log_file, stat)
         call write_response_file(output//".resp" , args)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
             &  verbose=self%verbose, redirect=log_file, exitstat=stat)
-#if defined(_WIN32) && defined(__GFORTRAN__)
         call delete_file_win32(output//".resp")
-#else
-        call delete_file(output//".resp")
-#endif
+
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
             & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     end if
-#if defined(_WIN32) && defined(__GFORTRAN__)
+
     contains
         subroutine delete_file_win32(file)
             character(len=*), intent(in) :: file
@@ -977,7 +974,6 @@ subroutine make_archive(self, output, args, log_file, stat)
                 close(unit, status='delete', iostat=iostat)
             end if
         end subroutine delete_file_win32
-#endif
 end subroutine make_archive
 
 
