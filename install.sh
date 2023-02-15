@@ -18,24 +18,26 @@ usage()
     echo ""
 }
 
+# Return a download command
+get_fetch_command()
+{
+    if command -v curl > /dev/null 2>&1; then
+        echo "curl -L"
+    elif command -v wget > /dev/null 2>&1; then
+        echo "wget -O -"
+    else
+        echo "No download mechanism found. Install curl or wget first."
+        return 1
+    fi
+}
+
 # Return value of the latest published release on GitHub, with no heading "v" (e.g., "0.7.0")
 get_latest_release()
 {
-     # Check if curl is installed
-    if command -v curl > /dev/null 2>&1; then
-       curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
-       grep '"tag_name":'        |                                       # Get tag line
-       sed -E 's/.*"([^"]+)".*/\1/' |                                    # Pluck JSON value
-       sed -E 's/^v//'                                                   # Remove heading "v" if present
-    elif command -v wget > /dev/null 2>&1; then
-       wget -q -O- "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
-       grep '"tag_name":'        |                                       # Get tag line
-       sed -E 's/.*"([^"]+)".*/\1/' |                                    # Pluck JSON value
-       sed -E 's/^v//'                                                   # Remove heading "v" if present
-    else
-       # Fallback to a known working version
-       echo "0.6.0"
-    fi
+     $2 "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
+     grep '"tag_name":'        |                            # Get tag line
+     sed -E 's/.*"([^"]+)".*/\1/' |                         # Pluck JSON value
+     sed -E 's/^v//'                                        # Remove heading "v" if present
 }
 
 PREFIX="$HOME/.local"
@@ -62,7 +64,14 @@ done
 
 set -u # error on use of undefined variable
 
-LATEST_RELEASE=$(get_latest_release "fortran-lang/fpm")
+# Get download command
+FETCH=$(get_fetch_command)
+if [ $? -ne 0 ]; then
+  echo "No download mechanism found. Install curl or wget first."
+  exit 1
+fi
+
+LATEST_RELEASE=$(get_latest_release "fortran-lang/fpm" $FETCH)
 SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${LATEST_RELEASE}/fpm-${LATEST_RELEASE}.F90"
 BOOTSTRAP_DIR="build/bootstrap"
 
@@ -74,15 +83,6 @@ if [ -z ${FFLAGS+x} ]; then
 fi
 
 mkdir -p $BOOTSTRAP_DIR
-
-if command -v curl > /dev/null 2>&1; then
-    FETCH="curl -L"
-elif command -v wget > /dev/null 2>&1; then
-    FETCH="wget -O -"
-else
-    echo "No download mechanism found. Install curl or wget first."
-    exit 1
-fi
 
 $FETCH $SOURCE_URL > $BOOTSTRAP_DIR/fpm.F90
 
