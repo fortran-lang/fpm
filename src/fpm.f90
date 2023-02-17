@@ -303,7 +303,7 @@ subroutine check_module_names(model, error)
     type(fpm_model_t), intent(in) :: model
     type(error_t), allocatable, intent(out) :: error
     integer :: i,j,k,l,m
-    logical :: valid,errors_found
+    logical :: valid,errors_found,enforce_this_file
     type(string_t) :: package_name,module_name,package_prefix
 
     errors_found = .false.
@@ -334,14 +334,18 @@ subroutine check_module_names(model, error)
 
                     module_name = model%packages(k)%sources(l)%modules_provided(m)
 
+                    ! Module naming is not enforced in test modules
+                    enforce_this_file =  model%enforce_module_names .and. &
+                                         model%packages(k)%sources(l)%unit_scope/=FPM_SCOPE_TEST
+
                     valid = is_valid_module_name(module_name, &
                                                  package_name, &
                                                  package_prefix, &
-                                                 model%enforce_module_names)
+                                                 enforce_this_file)
 
                     if (.not.valid) then
 
-                        if (model%enforce_module_names) then
+                        if (enforce_this_file) then
 
                             if (len_trim(package_prefix)>0) then
 
