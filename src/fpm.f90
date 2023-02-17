@@ -329,14 +329,16 @@ subroutine check_module_names(model, error)
         end if
 
         do l=1,size(model%packages(k)%sources)
+
+            ! Module naming is not enforced in test modules
+            enforce_this_file =  model%enforce_module_names .and. &
+                                 model%packages(k)%sources(l)%unit_scope/=FPM_SCOPE_TEST
+
             if (allocated(model%packages(k)%sources(l)%modules_provided)) then
+
                 do m=1,size(model%packages(k)%sources(l)%modules_provided)
 
                     module_name = model%packages(k)%sources(l)%modules_provided(m)
-
-                    ! Module naming is not enforced in test modules
-                    enforce_this_file =  model%enforce_module_names .and. &
-                                         model%packages(k)%sources(l)%unit_scope/=FPM_SCOPE_TEST
 
                     valid = is_valid_module_name(module_name, &
                                                  package_name, &
