@@ -1,5 +1,5 @@
-module fpm_test_filesystem
-    use fpm_testsuite, only : new_unittest, unittest_t, error_t, test_failed
+module test_filesystem
+    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_filesystem, only: canon_path, is_dir, mkdir, os_delete_dir, &
                               join_path
     use fpm_environment, only: OS_WINDOWS, get_os_type, os_is_unix
@@ -176,4 +176,4 @@ contains
       end subroutine check_rmdir
 
 
-end module fpm_test_filesystem
+end module test_filesystem

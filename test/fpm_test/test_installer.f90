@@ -2,8 +2,8 @@
 !>
 !> The tests here setup a mock environment to allow testing for Unix and Windows
 !> platforms at the same time.
-module fpm_test_installer
-    use fpm_testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
+module test_installer
+    use testsuite, only : new_unittest, unittest_t, error_t, test_failed, &
         & check_string
     use fpm_environment, only : OS_WINDOWS, OS_LINUX
     use fpm_filesystem, only : join_path
@@ -165,4 +165,4 @@ contains
         call check_string(error, self%expected_run, command, "run")
     end subroutine run
 
-end module fpm_test_installer
+end module test_installer

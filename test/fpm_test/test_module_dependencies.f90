@@ -1,6 +1,6 @@
 !> Define tests for the `fpm_sources` module (module dependency checking)
-module fpm_test_module_dependencies
-    use fpm_testsuite, only : new_unittest, unittest_t, error_t, test_failed
+module test_module_dependencies
+    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_targets, only: targets_from_sources, resolve_module_dependencies, &
                             resolve_target_linking, build_target_t, build_target_ptr, &
                             FPM_TARGET_EXECUTABLE, FPM_TARGET_OBJECT, FPM_TARGET_ARCHIVE
@@ -1086,4 +1086,4 @@ contains
     end function target_in
 
 
-end module fpm_test_module_dependencies
+end module test_module_dependencies

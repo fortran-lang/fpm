@@ -1,7 +1,7 @@
 !> Define tests for the `fpm_dependency` module
-module fpm_test_package_dependencies
+module test_package_dependencies
     use fpm_filesystem, only: get_temp_filename
-    use fpm_testsuite, only : new_unittest, unittest_t, error_t, test_failed
+    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_dependency
     use fpm_manifest
     use fpm_manifest_dependency
@@ -234,4 +234,4 @@ contains
     end subroutine resolve_dependency_once
 
 
-end module fpm_test_package_dependencies
+end module test_package_dependencies

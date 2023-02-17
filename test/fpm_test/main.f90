@@ -1,17 +1,17 @@
 !> Driver for unit testing
 program fpm_testing
     use, intrinsic :: iso_fortran_env, only : error_unit
-    use fpm_testsuite, only : run_testsuite, new_testsuite, testsuite_t, &
+    use testsuite, only : run_testsuite, new_testsuite, testsuite_t, &
         & select_suite, run_selected
-    use fpm_test_toml, only : collect_toml
-    use fpm_test_manifest, only : collect_manifest
-    use fpm_test_filesystem, only : collect_filesystem
-    use fpm_test_source_parsing, only : collect_source_parsing
-    use fpm_test_module_dependencies, only : collect_module_dependencies
-    use fpm_test_package_dependencies, only : collect_package_dependencies
-    use fpm_test_backend, only: collect_backend
-    use fpm_test_installer, only : collect_installer
-    use fpm_test_versioning, only : collect_versioning
+    use test_toml, only : collect_toml
+    use test_manifest, only : collect_manifest
+    use test_filesystem, only : collect_filesystem
+    use test_source_parsing, only : collect_source_parsing
+    use test_module_dependencies, only : collect_module_dependencies
+    use test_package_dependencies, only : collect_package_dependencies
+    use test_backend, only: collect_backend
+    use test_installer, only : collect_installer
+    use test_versioning, only : collect_versioning
     implicit none
     integer :: stat, is
     character(len=:), allocatable :: suite_name, test_name

@@ -1,6 +1,6 @@
 !> Test implementation of version data type
-module fpm_test_versioning
-    use fpm_testsuite, only : new_unittest, unittest_t, error_t, test_failed
+module test_versioning
+    use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_versioning
     implicit none
     private
@@ -401,4 +401,4 @@ contains
     end subroutine test_invalid_overflow
 
 
-end module fpm_test_versioning
+end module test_versioning
