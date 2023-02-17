@@ -60,6 +60,16 @@ subroutine build_model(model, settings, package, error)
     call model%deps%add(package, error)
     if (allocated(error)) return
 
+    do i = 1, model%deps%ndep
+
+       if (model%deps%dep(i)%update) then
+            print *, ' Updating model dependency ',model%deps%dep(i)%name,' ...'
+            call model%deps%update(model%deps%dep(i)%name,error)
+            if (allocated(error)) return
+       end if
+
+    end do
+
     ! build/ directory should now exist
     if (.not.exists("build/.gitignore")) then
       call filewrite(join_path("build", ".gitignore"),["*"])
@@ -107,7 +117,7 @@ subroutine build_model(model, settings, package, error)
             model%packages(i)%name = dependency%name
             call package%version%to_string(version)
             model%packages(i)%version = version
-            
+
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
                     if (dependency%preprocess(j)%name == "cpp") then

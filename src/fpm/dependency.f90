@@ -191,7 +191,7 @@ contains
   end subroutine new_dependency_tree
 
   !> Create a new dependency node from a configuration
-  pure subroutine new_dependency_node(self, dependency, version, proj_dir, update)
+   subroutine new_dependency_node(self, dependency, version, proj_dir, update)
     !> Instance of the dependency node
     type(dependency_node_t), intent(out) :: self
     !> Dependency configuration data
@@ -216,6 +216,8 @@ contains
     if (present(update)) then
       self%update = update
     end if
+
+    print *, 'new node from self=',self%name,' dep=',dependency%name, 'update=',update
 
   end subroutine new_dependency_node
 
@@ -357,7 +359,7 @@ contains
   end subroutine add_dependencies
 
   !> Add a single dependency to the dependency tree
-  pure subroutine add_dependency(self, dependency, error)
+   subroutine add_dependency(self, dependency, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Dependency configuration to add
@@ -400,6 +402,7 @@ contains
         if (self%verbosity > 1) then
           write(self%unit, out_fmt) "Update:", dep%name
         end if
+        write(self%unit, out_fmt) "Update:", dep%name
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
         if (allocated(error)) return
@@ -453,6 +456,8 @@ contains
     type(package_config_t) :: package
     character(len=:), allocatable :: manifest, proj_dir, revision
     logical :: fetch
+
+    print *, 'resolving dependency ',dependency%name,': done=',dependency%done,' update=',dependency%update
 
     if (dependency%done) return
 
@@ -557,6 +562,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     logical :: update
+    character(:), allocatable :: sver,pver
 
     update = .false.
     if (self%name /= package%name) then
@@ -564,10 +570,26 @@ contains
         & "' found, but expected '"//self%name//"' instead")
     end if
 
+    ! If this is the package node, always request an update of
+    ! the cache whenever its version changes
+    is_package: if (self%name==package%name .and. self%path==".") then
+
+       if (self%version/=package%version) update = .true.
+
+    end if is_package
+
+    call self%version%to_string(sver)
+    call package%version%to_string(pver)
+    print *, 'self%version=',sver,' package version = ',pver
+
     self%version = package%version
+
+    print *, 'self%proj_dir=',self%proj_dir,' package dir = ',root
+
     self%proj_dir = root
 
     if (allocated(self%git).and.present(revision)) then
+      print *, 'self revision = ',self%revision,' revision = ',revision,' fetch = ',fetch
       self%revision = revision
       if (.not.fetch) then
         ! git object is HEAD always allows an update
@@ -581,6 +603,8 @@ contains
 
     self%update = update
     self%done = .true.
+
+    print *, 'dep = ',self%name,' update=',update
 
   end subroutine register
 
