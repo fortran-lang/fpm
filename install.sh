@@ -68,14 +68,14 @@ set -u # error on use of undefined variable
 FETCH=$(get_fetch_command)
 if [ $? -ne 0 ]; then
   echo "No download mechanism found. Install curl or wget first."
-  exit 1
+  exit 2
 fi
 
 LATEST_RELEASE=$(get_latest_release "fortran-lang/fpm" "$FETCH")
 
 if [ -z "$LATEST_RELEASE" ]; then
   echo "Could not fetch the latest release from GitHub. Install curl or wget, and ensure network connectivity."
-  exit 1
+  exit 3
 fi
 
 SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${LATEST_RELEASE}/fpm-${LATEST_RELEASE}.F90"
