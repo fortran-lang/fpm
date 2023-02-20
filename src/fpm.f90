@@ -60,6 +60,7 @@ subroutine build_model(model, settings, package, error)
     call model%deps%add(package, error)
     if (allocated(error)) return
 
+    ! Update dependencies where needed
     do i = 1, model%deps%ndep
 
        if (model%deps%dep(i)%update) then
