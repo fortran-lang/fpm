@@ -59,9 +59,10 @@ module fpm_dependency
   use fpm_environment, only : get_os_type, OS_WINDOWS
   use fpm_error, only : error_t, fatal_error
   use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path
-  use fpm_git, only : git_target_revision, git_target_default, git_revision
+  use fpm_git, only : git_target_revision, git_target_default, git_revision, operator(==)
   use fpm_manifest, only : package_config_t, dependency_config_t, &
     get_package_data
+  use fpm_manifest_dependency, only: manifest_has_changed
   use fpm_strings, only : string_t, operator(.in.)
   use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
     toml_parse, get_value, set_value, add_table
@@ -217,8 +218,6 @@ contains
       self%update = update
     end if
 
-    print *, 'new node from self=',self%name,' dep=',dependency%name, 'update=',update
-
   end subroutine new_dependency_node
 
   !> Add project dependencies, each depth level after each other.
@@ -368,12 +367,33 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     integer :: id
+    logical :: needs_update
+    type(dependency_node_t) :: new_dep
 
     id = self%find(dependency)
-    if (id == 0) then
+
+    exists: if (id > 0) then
+
+      !> A dependency with this same name is already in the dependency tree.
+
+      !> check if it needs to be updated
+      call new_dependency_node(new_dep, dependency)
+      needs_update = dependency_has_changed(self%dep(id), new_dep)
+
+      !> Ensure an update is requested whenever the dependency has changed
+      if (needs_update) then
+         write(self%unit, out_fmt) "Update needed:", dependency%name
+         call new_dependency_node(self%dep(id), dependency, update=.true.)
+      endif
+
+    else exists
+
+      !> New dependency: add from scratch
       self%ndep = self%ndep + 1
       call new_dependency_node(self%dep(self%ndep), dependency)
-    end if
+
+    end if exists
+
 
   end subroutine add_dependency
 
@@ -456,8 +476,6 @@ contains
     type(package_config_t) :: package
     character(len=:), allocatable :: manifest, proj_dir, revision
     logical :: fetch
-
-    print *, 'resolving dependency ',dependency%name,': done=',dependency%done,' update=',dependency%update
 
     if (dependency%done) return
 
@@ -562,7 +580,6 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     logical :: update
-    character(:), allocatable :: sver,pver
 
     update = .false.
     if (self%name /= package%name) then
@@ -570,26 +587,10 @@ contains
         & "' found, but expected '"//self%name//"' instead")
     end if
 
-    ! If this is the package node, always request an update of
-    ! the cache whenever its version changes
-    is_package: if (self%name==package%name .and. self%path==".") then
-
-       if (self%version/=package%version) update = .true.
-
-    end if is_package
-
-    call self%version%to_string(sver)
-    call package%version%to_string(pver)
-    print *, 'self%version=',sver,' package version = ',pver
-
     self%version = package%version
-
-    print *, 'self%proj_dir=',self%proj_dir,' package dir = ',root
-
     self%proj_dir = root
 
     if (allocated(self%git).and.present(revision)) then
-      print *, 'self revision = ',self%revision,' revision = ',revision,' fetch = ',fetch
       self%revision = revision
       if (.not.fetch) then
         ! git object is HEAD always allows an update
@@ -603,8 +604,6 @@ contains
 
     self%update = update
     self%done = .true.
-
-    print *, 'dep = ',self%name,' update=',update
 
   end subroutine register
 
@@ -834,5 +833,33 @@ contains
     end if
 
   end subroutine resize_dependency_node
+
+  !> Check if a dependency node has changed
+  logical function dependency_has_changed(this,that) result(has_changed)
+     !> Two instances of the same dependency to be compared
+     type(dependency_node_t), intent(in) :: this,that
+
+     has_changed = .true.
+
+     !> All the following entities must be equal for the dependency to not have changed
+     if (manifest_has_changed(this, that)) return
+
+     !> For now, only perform the following checks if both are available. A dependency in cache.toml
+     !> will always have this metadata; a dependency from fpm.toml which has not been fetched yet
+     !> may not have it
+     if (allocated(this%version) .and. allocated(that%version)) then
+        if (this%version/=that%version) return
+     endif
+     if (allocated(this%revision) .and. allocated(that%revision)) then
+        if (this%revision/=that%revision) return
+     endif
+     if (allocated(this%proj_dir) .and. allocated(that%proj_dir)) then
+        if (this%proj_dir/=that%proj_dir) return
+     endif
+
+     !> All checks passed: the two dependencies have no differences
+     has_changed = .false.
+
+  end function dependency_has_changed
 
 end module fpm_dependency

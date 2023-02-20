@@ -8,6 +8,7 @@ module fpm_git
     public :: git_target_default, git_target_branch, git_target_tag, &
         & git_target_revision
     public :: git_revision
+    public :: operator(==)
 
 
     !> Possible git target
@@ -53,6 +54,10 @@ module fpm_git
 
     end type git_target_t
 
+
+    interface operator(==)
+        module procedure git_target_eq
+    end interface
 
 contains
 
@@ -127,6 +132,18 @@ contains
         self%object = tag
 
     end function git_target_tag
+
+    !> Check that two git targets are equal
+    logical function git_target_eq(this,that) result(is_equal)
+
+        !> Two input git targets
+        type(git_target_t), intent(in) :: this,that
+
+        is_equal = this%descriptor == that%descriptor .and. &
+                   this%url        == that%url        .and. &
+                   this%object     == that%object
+
+    end function git_target_eq
 
 
     subroutine checkout(self, local_path, error)

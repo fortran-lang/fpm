@@ -63,7 +63,6 @@ subroutine build_model(model, settings, package, error)
     do i = 1, model%deps%ndep
 
        if (model%deps%dep(i)%update) then
-            print *, ' Updating model dependency ',model%deps%dep(i)%name,' ...'
             call model%deps%update(model%deps%dep(i)%name,error)
             if (allocated(error)) return
        end if
