@@ -71,7 +71,13 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-LATEST_RELEASE=$(get_latest_release "fortran-lang/fpm" $FETCH)
+LATEST_RELEASE=$(get_latest_release "fortran-lang/fpm" "$FETCH")
+
+if [ -z "$LATEST_RELEASE" ]; then
+  echo "Could not fetch the latest release from GitHub. Install curl or wget, and ensure network connectivity."
+  exit 1
+fi
+
 SOURCE_URL="https://github.com/fortran-lang/fpm/releases/download/v${LATEST_RELEASE}/fpm-${LATEST_RELEASE}.F90"
 BOOTSTRAP_DIR="build/bootstrap"
 
