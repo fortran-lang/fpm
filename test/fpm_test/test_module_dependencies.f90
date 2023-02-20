@@ -52,12 +52,12 @@ contains
                             test_subdirectory_module_use), &
             & new_unittest("invalid-subdirectory-module-use", &
                             test_invalid_subdirectory_module_use, should_fail=.true.), &
-            & new_unittest("tree-shake-module", & 
+            & new_unittest("tree-shake-module", &
                             test_tree_shake_module, should_fail=.false.), &
-            & new_unittest("tree-shake-subprogram-with-module", & 
+            & new_unittest("tree-shake-subprogram-with-module", &
                             test_tree_shake_subprogram_with_module, should_fail=.false.) &
             ]
-            
+
     end subroutine collect_module_dependencies
 
 
@@ -73,6 +73,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
@@ -143,6 +147,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
 
+        model%package_name = "test_scope"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
@@ -201,6 +209,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(1))
 
+        model%package_name = "test_program_with_module"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')], &
@@ -253,6 +265,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(3))
+
+        model%package_name = "test_scope"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
 
@@ -313,6 +329,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
 
+        model%package_name = "test_missing_library_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
@@ -340,6 +360,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
 
+        model%package_name = "test_missing_program_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
@@ -365,6 +389,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test_invalid_library_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
@@ -393,6 +421,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
 
+        model%package_name = "test_subdirectory_module_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/subdir/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')])
@@ -415,6 +447,10 @@ contains
 
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test_package_with_no_module_duplicates"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
@@ -440,6 +476,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(1))
 
+        model%package_name = "test_package_module_duplicates_same_source"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1'), string_t('my_mod_1')])
 
@@ -460,6 +500,10 @@ contains
 
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test_package_module_duplicates_one_package"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1_a.f90", &
                                     scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
@@ -485,6 +529,11 @@ contains
         allocate(model%packages(2))
         allocate(model%packages(1)%sources(1))
         allocate(model%packages(2)%sources(1))
+
+        model%package_name = "test_package_module_duplicates_two_packages"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+        model%packages(2)%name = "package2"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/subdir1/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
@@ -514,6 +563,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(4))
+
+        model%package_name = "test_tree_shake_module"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
@@ -586,6 +639,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(4))
 
+        model%package_name = "test_tree_shake_subprogram_with_module"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])  ! used via subprogram
@@ -651,6 +708,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test_invalid_subdirectory_module_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/diff_dir/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
