@@ -10,6 +10,8 @@ module fpm_settings
     private
     public :: fpm_global_settings, get_global_settings, get_registry_settings
 
+    character(*), parameter :: official_registry_base_url = 'https://minhdao.pythonanywhere.com'
+
     type :: fpm_global_settings
         !> Path to the global config file excluding the file name.
         character(len=:), allocatable :: path_to_config_folder
@@ -98,6 +100,12 @@ contains
         ! A registry table was found.
         if (associated(registry_table)) then
             call get_registry_settings(registry_table, global_settings, error); return
+        else
+            ! No registry table was found, use default settings for url and cache_path.
+            allocate (global_settings%registry_settings)
+            global_settings%registry_settings%url = official_registry_base_url
+            global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder, &
+            & 'dependencies'); return
         end if
 
     end subroutine get_global_settings
@@ -160,8 +168,9 @@ contains
             if (allocated(path)) then
                 call fatal_error(error, 'Do not provide both path and url to the registry.'); return
             end if
-
             global_settings%registry_settings%url = url
+        else if (.not. allocated(path)) then
+            global_settings%registry_settings%url = official_registry_base_url
         end if
 
         call get_value(table, 'cache_path', cache_path, stat=stat)
@@ -180,14 +189,15 @@ contains
                 if (.not. exists(cache_path)) call mkdir(cache_path)
                 global_settings%registry_settings%cache_path = cache_path
             else
-                if (.not. exists(join_path(global_settings%path_to_config_folder, cache_path))) then
-                    call mkdir(join_path(global_settings%path_to_config_folder, cache_path))
-                end if
+                cache_path = join_path(global_settings%path_to_config_folder, cache_path)
+                if (.not. exists(cache_path)) call mkdir(cache_path)
                 ! Get canonical, absolute path on both Unix and Windows.
-                call get_absolute_path(join_path(global_settings%path_to_config_folder, cache_path), &
-                & global_settings%registry_settings%cache_path, error)
+                call get_absolute_path(cache_path, global_settings%registry_settings%cache_path, error)
                 if (allocated(error)) return
             end if
+        else if (.not. allocated(path)) then
+            global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder, &
+            & 'dependencies')
         end if
     end subroutine get_registry_settings
 

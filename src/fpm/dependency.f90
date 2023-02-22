@@ -517,30 +517,19 @@ contains
     type(json_core) :: json
     type(json_value), pointer :: j_obj, j_arr
     logical :: is_found
-    character(*), parameter :: official_registry_base_url = 'https://minhdao.pythonanywhere.com'
 
-    if (allocated(global_settings%registry_settings)) then
-      ! Use local registry if it was specified in the global config file.
-      if (allocated(global_settings%registry_settings%path)) then
-        call self%get_from_local_registry(target_dir, global_settings%registry_settings%path, error); return
-      end if
-      ! Use custom cache location if it was specified in the global config file.
-      if (allocated(global_settings%registry_settings%cache_path)) then
-        cache_path = global_settings%registry_settings%cache_path
-      end if
-    end if
-
-    ! Use default cache path if it wasn't specified in the global config file.
-    if (.not. allocated(cache_path)) then
-      cache_path = join_path(global_settings%path_to_config_folder, 'dependencies')
+    ! Use local registry if it was specified in the global config file.
+    if (allocated(global_settings%registry_settings%path)) then
+      call self%get_from_local_registry(target_dir, global_settings%registry_settings%path, error); return
     end if
 
     ! Include namespace and package name in the cache path.
-    cache_path = join_path(cache_path, self%namespace, self%name)
+    cache_path = join_path(global_settings%registry_settings%cache_path, self%namespace, self%name)
 
     ! Check cache before downloading from the remote registry if a specific version was requested.
     if (allocated(self%requested_version)) then
       if (exists(join_path(cache_path, self%requested_version%s(), 'fpm.toml'))) then
+        print *, "Using cached version of '", join_path(self%namespace, self%name, self%requested_version%s()), "'"
         target_dir = cache_path; return
       end if
     end if
@@ -552,23 +541,13 @@ contains
       call fatal_error(error, "'tar' not installed."); return
     end if
 
-    ! Use custom registry url if it was specified in the global config file.
-    if (allocated(global_settings%registry_settings)) then
-      if (allocated(global_settings%registry_settings%url)) then
-        target_url = global_settings%registry_settings%url
-      end if
-    end if
-
-    ! If no custom registry url was specified, use the official registry.
-    if (.not. allocated(target_url)) target_url = official_registry_base_url
-
     ! Include namespace and package name in the target url.
-    target_url = target_url//'/packages/'//self%namespace//'/'//self%name
-    
+    target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
+
     ! Define location of the temporary folder and file.
     tmp_path = join_path(global_settings%path_to_config_folder, 'tmp')
-    if (.not. exists(tmp_path)) call mkdir(tmp_path)
     tmp_file = join_path(tmp_path, 'package_data.tmp')
+    if (.not. exists(tmp_path)) call mkdir(tmp_path)
     open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
 
     if (stat /= 0) then
@@ -580,8 +559,8 @@ contains
 
     ! Get package info from the registry and save it to a temporary file.
     if (allocated (self%requested_version)) then
-      print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
-      call execute_command_line('curl '//target_url//'/'//self%requested_version%s()//'-s -o '//tmp_file, exitstat=stat)
+      print *, "Downloading package data for '"//join_path(self%namespace, self%name, self%requested_version%s())//"' ..."
+      call execute_command_line('curl '//target_url//'/'//self%requested_version%s()//' -s -o '//tmp_file, exitstat=stat)
     else
       ! Collect cached versions to send them to the registry for version resolution.
       call json%create_object(j_obj, '')
@@ -602,7 +581,7 @@ contains
 
       call json%serialize(j_obj, versions)
 
-      print *, "Downloading '"//join_path(self%namespace, self%name)//"' ..."
+      print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
       call execute_command_line('curl -X POST '//target_url//' -o '//tmp_file// ' -s -d "'//versions//'"', exitstat=stat)
 
       call json%destroy(j_obj)
@@ -669,7 +648,8 @@ contains
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
 
-    call execute_command_line('curl '//target_url//' -o '//tmp_file, exitstat=stat)      
+    print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
+    call execute_command_line('curl '//target_url//' -s -o '//tmp_file, exitstat=stat)      
 
     if (stat /= 0) then
       call fatal_error(error, "Failed to download package '"//join_path(self%namespace, self%name)//"' from '"// &
