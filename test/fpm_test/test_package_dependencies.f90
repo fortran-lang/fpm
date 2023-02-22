@@ -634,12 +634,6 @@ contains
             return
         end if
 
-        if (.not. exists(global_settings%registry_settings%cache_path)) then
-            call test_failed(error, 'Folder does not exist: '//global_settings%registry_settings%cache_path//"'")
-            call delete_tmp_folder
-            return
-        end if
-
         call delete_tmp_folder
 
     end subroutine check_default_cache_path_no_dir

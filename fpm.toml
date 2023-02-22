@@ -14,6 +14,10 @@ rev = "aee54c5a480d623af99828c76df0447a15ce90dc"
 git = "https://github.com/urbanjost/M_CLI2.git"
 rev = "7264878cdb1baff7323cc48596d829ccfe7751b8"
 
+[dependencies.json-fortran]
+git = "https://github.com/jacobwilliams/json-fortran.git"
+rev = "3ab8f98209871875325c6985dd0e50085d1c82c2"
+
 [[test]]
 name = "cli-test"
 source-dir = "test/cli_test"

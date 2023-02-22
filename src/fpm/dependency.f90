@@ -58,7 +58,7 @@ module fpm_dependency
   use, intrinsic :: iso_fortran_env, only : output_unit
   use fpm_environment, only : get_os_type, OS_WINDOWS
   use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename
+  use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, which
   use fpm_git, only : git_target_revision, git_target_default, git_revision
   use fpm_manifest, only : package_config_t, dependency_config_t, &
     get_package_data
@@ -67,19 +67,16 @@ module fpm_dependency
     toml_parse, get_value, set_value, add_table, toml_load, toml_stat
   use fpm_versioning, only : version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings
+  use json_module
   implicit none
   private
 
-  public :: dependency_tree_t, new_dependency_tree
-  public :: dependency_node_t, new_dependency_node
-  public :: resize
-
+  public :: dependency_tree_t, new_dependency_tree, dependency_node_t, new_dependency_node, resize
 
   !> Overloaded reallocation interface
   interface resize
     module procedure :: resize_dependency_node
   end interface resize
-
 
   !> Dependency node in the projects dependency tree
   type, extends(dependency_config_t) :: dependency_node_t
@@ -94,10 +91,9 @@ module fpm_dependency
     !> Dependency should be updated
     logical :: update = .false.
   contains
-    !> Update dependency from project manifest
-    procedure :: register, get_from_registry, get_from_local_registry, get_from_remote_registry
+    procedure :: register, get_from_registry
+    procedure, private :: get_from_local_registry
   end type dependency_node_t
-
 
   !> Respresentation of a projects dependencies
   !>
@@ -501,48 +497,201 @@ contains
   !> by the global configuration settings.
   subroutine get_from_registry(self, target_dir, global_settings, error)
 
-      !> Instance of the dependency configuration.
-      class(dependency_node_t), intent(in) :: self
+    !> Instance of the dependency configuration.
+    class(dependency_node_t), intent(in) :: self
 
-      !> The target directory of the dependency.
-      character(:), allocatable, intent(out) :: target_dir
+    !> The target directory of the dependency.
+    character(:), allocatable, intent(out) :: target_dir
 
-      !> Global configuration settings.
-      type(fpm_global_settings), intent(inout) :: global_settings
+    !> Global configuration settings.
+    type(fpm_global_settings), intent(in) :: global_settings
       
-      !> Error handling.
-      type(error_t), allocatable, intent(out) :: error
+    !> Error handling.
+    type(error_t), allocatable, intent(out) :: error
 
-      ! Registry settings found in the global config file.
-      if (allocated(global_settings%registry_settings)) then
-        if (allocated(global_settings%registry_settings%path)) then
-          call self%get_from_local_registry(target_dir, global_settings%registry_settings%path, error)
-          return
-        end if
-      else
-        allocate (global_settings%registry_settings)
+    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, versions, status_code, downloaded_version
+    type(string_t), allocatable :: files(:)
+    type(version_t) :: version
+    integer :: i, stat, unit
+    type(json_file) :: j_pkg
+    type(json_core) :: json
+    type(json_value), pointer :: j_obj, j_arr
+    logical :: is_found
+    character(*), parameter :: official_registry_base_url = 'https://minhdao.pythonanywhere.com'
+
+    if (allocated(global_settings%registry_settings)) then
+      ! Use local registry if it was specified in the global config file.
+      if (allocated(global_settings%registry_settings%path)) then
+        call self%get_from_local_registry(target_dir, global_settings%registry_settings%path, error); return
+      end if
+      ! Use custom cache location if it was specified in the global config file.
+      if (allocated(global_settings%registry_settings%cache_path)) then
+        cache_path = global_settings%registry_settings%cache_path
+      end if
+    end if
+
+    ! Use default cache path if it wasn't specified in the global config file.
+    if (.not. allocated(cache_path)) then
+      cache_path = join_path(global_settings%path_to_config_folder, 'dependencies')
+    end if
+
+    ! Include namespace and package name in the cache path.
+    cache_path = join_path(cache_path, self%namespace, self%name)
+
+    ! Check cache before downloading from the remote registry if a specific version was requested.
+    if (allocated(self%requested_version)) then
+      if (exists(join_path(cache_path, self%requested_version%s(), 'fpm.toml'))) then
+        target_dir = cache_path; return
+      end if
+    end if
+
+    ! Check if required programs are installed.
+    if (which('curl') == '') then
+      call fatal_error(error, "'curl' not installed."); return
+    else if (which('tar') == '') then
+      call fatal_error(error, "'tar' not installed."); return
+    end if
+
+    ! Use custom registry url if it was specified in the global config file.
+    if (allocated(global_settings%registry_settings)) then
+      if (allocated(global_settings%registry_settings%url)) then
+        target_url = global_settings%registry_settings%url
+      end if
+    end if
+
+    ! If no custom registry url was specified, use the official registry.
+    if (.not. allocated(target_url)) target_url = official_registry_base_url
+
+    ! Include namespace and package name in the target url.
+    target_url = target_url//'/packages/'//self%namespace//'/'//self%name
+    
+    ! Define location of the temporary folder and file.
+    tmp_path = join_path(global_settings%path_to_config_folder, 'tmp')
+    if (.not. exists(tmp_path)) call mkdir(tmp_path)
+    tmp_file = join_path(tmp_path, 'package_data.tmp')
+    open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
+
+    if (stat /= 0) then
+      call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
+    end if
+
+    ! Make sure the cache path exists.
+    if (.not. exists(cache_path)) call mkdir(cache_path)
+
+    ! Get package info from the registry and save it to a temporary file.
+    if (allocated (self%requested_version)) then
+      print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
+      call execute_command_line('curl '//target_url//'/'//self%requested_version%s()//'-s -o '//tmp_file, exitstat=stat)
+    else
+      ! Collect cached versions to send them to the registry for version resolution.
+      call json%create_object(j_obj, '')
+      call json%create_array(j_arr, 'cached_versions')
+      call json%add(j_obj, j_arr)
+
+      call list_files(cache_path, files)
+
+      if (size(files) > 0) then
+        do i = 1, size(files)
+          if (is_dir(files(i)%s) .and. exists(join_path(files(i)%s, 'fpm.toml'))) then
+            call new_version(version, basename(files(i)%s), error)
+            if (allocated(error)) return
+            call json%add(j_arr, '', version%s())
+          end if
+        end do
       end if
 
-      if (.not. allocated(global_settings%registry_settings%cache_path)) then
-        ! Use default cache path if it wasn't set in the global config file.
-        global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder, 'dependencies')
-      end if
+      call json%serialize(j_obj, versions)
 
-      if (.not. exists(global_settings%registry_settings%cache_path)) then
-        call mkdir(global_settings%registry_settings%cache_path)
-      end if
+      print *, "Downloading '"//join_path(self%namespace, self%name)//"' ..."
+      call execute_command_line('curl -X POST '//target_url//' -o '//tmp_file// ' -s -d "'//versions//'"', exitstat=stat)
 
-      ! Check cache before downloading from remote registry when a specific version was requested.
-      if (allocated(self%requested_version)) then
-        if (exists(join_path(global_settings%registry_settings%cache_path, self%namespace, &
-        & self%name, self%requested_version%s()))) then
-          target_dir = join_path(global_settings%registry_settings%cache_path, self%namespace, &
-          & self%name, self%requested_version%s())
-          return
-        end if
-      end if
+      call json%destroy(j_obj)
+    end if
 
-      call self%get_from_remote_registry(target_dir, global_settings, error)
+    if (stat /= 0) then
+      call fatal_error(error, "Error loading package '"//join_path(self%namespace, self%name)// &
+      & "' from the remote registry.")
+      close (unit, status='delete'); return
+    end if
+
+    call j_pkg%initialize()
+    call j_pkg%load_file(tmp_file)
+
+    close (unit, status='delete')
+
+    if (j_pkg%failed()) then
+      call fatal_error(error, "Error reading package data of '"//join_path(self%namespace, self%name)//"'.")
+      call j_pkg%destroy(); return
+    end if
+
+    call j_pkg%get('code', status_code, is_found)
+
+    if (.not. is_found) then
+      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No status code.")
+      call j_pkg%destroy(); return
+    end if
+
+    if (status_code /= '200') then
+      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': " &
+      & //"Status code '"//status_code//"'.")
+      call j_pkg%destroy(); return
+    end if
+
+    ! Get download link and version of the package.
+    call j_pkg%get('tar', target_url, is_found)
+
+    if (.not. is_found) then
+      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No download link.")
+      call j_pkg%destroy(); return
+    end if
+
+    ! Get version of the package.
+    call j_pkg%get('version', downloaded_version, is_found)
+
+    if (.not. is_found) then
+      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No version.")
+      call j_pkg%destroy(); return
+    end if
+
+    call new_version(version, downloaded_version, error)
+
+    if (allocated(error)) then
+      call fatal_error(error, "Version not valid: '"//downloaded_version//"'.")
+      call j_pkg%destroy(); return
+    end if
+
+    call j_pkg%destroy()
+
+    ! Open new temporary file for downloading the actual package.
+    open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
+
+    if (stat /= 0) then
+      call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
+    end if
+
+    call execute_command_line('curl '//target_url//' -o '//tmp_file, exitstat=stat)      
+
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to download package '"//join_path(self%namespace, self%name)//"' from '"// &
+      & target_url//"'.")
+      close (unit, status='delete'); return
+    end if
+
+    ! Include version number in the cache path.
+    cache_path = join_path(cache_path, version%s())
+    if (.not. exists(cache_path)) call mkdir(cache_path)
+    
+    ! Unpack the downloaded package to the right location including its version number.
+    call execute_command_line('tar -zxf '//tmp_file//' -C '//cache_path, exitstat=stat)
+    
+    if (stat /= 0) then
+      call fatal_error(error, "Unpacking failed for '"//join_path(self%namespace, self%name)//"'.")
+      close (unit, status='delete'); return
+    end if
+    
+    close (unit, status='delete')
+
+    target_dir = cache_path
 
   end subroutine get_from_registry
 
@@ -617,7 +766,7 @@ contains
 
       target_dir = join_path(path_to_name, version%s())
     end subroutine get_from_local_registry
-      
+
     !> Checks if the directory name matches the package version.
     subroutine check_version(dir_path, error)
 
@@ -656,43 +805,6 @@ contains
       end if
         
     end subroutine check_version
-
-    !> Get the dependency from a remote registry.
-    subroutine get_from_remote_registry(self, target_dir, global_settings, error)
-
-        !> Instance of the dependency configuration.
-        class(dependency_node_t), intent(in) :: self
-
-        !> The target directory to download the dependency to.
-        character(:), allocatable, intent(out) :: target_dir
-
-        !> Global config settings.
-        type(fpm_global_settings), intent(in) :: global_settings
-
-        !> Error handling.
-        type(error_t), allocatable, intent(out) :: error
-
-        type(string_t), allocatable :: files(:)
-        type(version_t), allocatable :: versions(:)
-        type(version_t) :: version
-        integer :: i
-
-        ! Collect existing versions from the cache.
-        call list_files(join_path(global_settings%registry_settings%cache_path, self%namespace, self%name), files)
-
-        if (size(files) > 0) then
-          allocate (versions(0))
-          do i = 1, size(files)
-            if (is_dir(files(i)%s)) then
-              call new_version(version, basename(files(i)%s), error)
-              if (allocated(error)) return
-              versions = [versions, version]
-            end if
-          end do
-        end if
-        ! Send version to registry and receive requested package.
-        ! Put it in the cache.
-    end subroutine get_from_remote_registry
 
   !> True if dependency is part of the tree
   pure logical function has_dependency(self, dependency)

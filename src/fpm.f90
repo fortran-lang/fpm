@@ -478,7 +478,7 @@ subroutine cmd_run(settings,test)
                     write(stderr,'(*(g0:,1x))') '<ERROR> Execution failed for object "',basename(executables(i)%s),'"'
                 end if
             end do
-            call fpm_stop(1,'*cmd_run*:stopping due to failed executions')
+            call fpm_stop(1,'*cmd_run*: Stopping due to failed executions')
         end if
 
     endif

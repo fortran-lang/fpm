@@ -55,14 +55,12 @@ contains
         if (global_settings%has_custom_location()) then
             ! Throw error if folder doesn't exist.
             if (.not. exists(global_settings%path_to_config_folder)) then
-                call fatal_error(error, "Folder not found: '"//global_settings%path_to_config_folder//"'.")
-                return
+                call fatal_error(error, "Folder not found: '"//global_settings%path_to_config_folder//"'."); return
             end if
 
-            ! Throw error if file doesn't exist.
+            ! Throw error if the file doesn't exist.
             if (.not. exists(global_settings%full_path())) then
-                call fatal_error(error, "File not found: '"//global_settings%full_path()//"'.")
-                return
+                call fatal_error(error, "File not found: '"//global_settings%full_path()//"'."); return
             end if
 
             ! Make sure that the path to the global config file is absolute.
@@ -87,23 +85,19 @@ contains
         call toml_load(table, global_settings%full_path(), error=parse_error)
 
         if (allocated(parse_error)) then
-            allocate (error)
-            call move_alloc(parse_error%message, error%message)
-            return
+            allocate (error); call move_alloc(parse_error%message, error%message); return
         end if
 
         call get_value(table, 'registry', registry_table, requested=.false., stat=stat)
 
         if (stat /= toml_stat%success) then
             call fatal_error(error, "Error reading registry from config file '"// &
-            & global_settings%full_path()//"'.")
-            return
+            & global_settings%full_path()//"'."); return
         end if
 
         ! A registry table was found.
         if (associated(registry_table)) then
-            call get_registry_settings(registry_table, global_settings, error)
-            return
+            call get_registry_settings(registry_table, global_settings, error); return
         end if
 
     end subroutine get_global_settings
@@ -135,8 +129,7 @@ contains
         call get_value(table, 'path', path, stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, "Error reading registry path: '"//path//"'.")
-            return
+            call fatal_error(error, "Error reading registry path: '"//path//"'."); return
         end if
 
         if (allocated(path)) then
@@ -151,8 +144,7 @@ contains
                 ! Check if the path to the registry exists.
                 if (.not. exists(global_settings%registry_settings%path)) then
                     call fatal_error(error, "Directory '"//global_settings%registry_settings%path// &
-                    & "' doesn't exist.")
-                    return
+                    & "' doesn't exist."); return
                 end if
             end if
         end if
@@ -160,15 +152,13 @@ contains
         call get_value(table, 'url', url, stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, "Error reading registry url: '"//url//"'.")
-            return
+            call fatal_error(error, "Error reading registry url: '"//url//"'."); return
         end if
 
         if (allocated(url)) then
             ! Throw error when both path and url were provided.
             if (allocated(path)) then
-                call fatal_error(error, 'Do not provide both path and url to the registry.')
-                return
+                call fatal_error(error, 'Do not provide both path and url to the registry.'); return
             end if
 
             global_settings%registry_settings%url = url
@@ -177,15 +167,13 @@ contains
         call get_value(table, 'cache_path', cache_path, stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error, "Error reading path to registry cache: '"//cache_path//"'.")
-            return
+            call fatal_error(error, "Error reading path to registry cache: '"//cache_path//"'."); return
         end if
 
         if (allocated(cache_path)) then
             ! Throw error when both path and cache_path were provided.
             if (allocated(path)) then
-                call fatal_error(error, "Do not provide both 'path' and 'cache_path'.")
-                return
+                call fatal_error(error, "Do not provide both 'path' and 'cache_path'."); return
             end if
 
             if (is_absolute_path(cache_path)) then

@@ -145,7 +145,7 @@ contains
 
         allocate (cpath(buffersize))
 
-! Using gfortran, _WIN32 is currently not correctly exported on Windows
+! The _WIN32 macro is currently not exported using gfortran.
 #if defined(FPM_BOOTSTRAP) && !defined(_WIN32)
         ptr = realpath(appended_path, cpath)
 #else
