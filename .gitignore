@@ -4,4 +4,5 @@ build/*
 .vscode/
 
 # CodeBlocks
-project/*
+project/
+
