@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>fpm_compiler.f90 &ndash; Fortran-lang/fpm</title>
+    <title>fpm_compiler.F90 &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -79,7 +79,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>fpm_compiler.f90
+    <h1>fpm_compiler.F90
       <small>Source File</small>
       
     </h1>
@@ -91,16 +91,16 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 6.6% of total for source files.">513 statements</a>
+               title=" 6.8% of total for source files.">524 statements</a>
           </li>
 
             <li id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_compiler.f90"> Source File</a>
+              <a href="../src/fpm_compiler.F90"> Source File</a>
             </li>
         </ul>
         <ol class="breadcrumb in-well text-right">
-          <li class="active">fpm_compiler.f90</li>
+          <li class="active">fpm_compiler.F90</li>
         </ol>
       </div>
     </div>
@@ -150,7 +150,7 @@
     <div class="panel panel-primary">
       <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../sourcefile/fpm_compiler.f90.html#src">fpm_compiler.f90</a>
+        <a class="list-group-item" href="../sourcefile/fpm_compiler.f90.html#src">fpm_compiler.F90</a>
       </div>
     </div>
 
@@ -198,7 +198,7 @@
     <div class="panel panel-primary">
       <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../sourcefile/fpm_compiler.f90.html#src">fpm_compiler.f90</a>
+        <a class="list-group-item" href="../sourcefile/fpm_compiler.f90.html#src">fpm_compiler.F90</a>
       </div>
     </div>
 
@@ -1147,9 +1147,9 @@
 <a id="ln-937" name="ln-937" href="#ln-937"></a>
 <a id="ln-938" name="ln-938" href="#ln-938"></a>
 <a id="ln-939" name="ln-939" href="#ln-939"></a><span class="c">!&gt; Create an archive</span>
-<a id="ln-940" name="ln-940" href="#ln-940"></a><span class="c">!&gt; @todo An OMP critical section is added for Windows OS,</span>
-<a id="ln-941" name="ln-941" href="#ln-941"></a><span class="c">!&gt; which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,</span>
-<a id="ln-942" name="ln-942" href="#ln-942"></a><span class="c">!&gt; see issue #707 and #708.</span>
+<a id="ln-940" name="ln-940" href="#ln-940"></a><span class="c">!&gt; @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.</span>
+<a id="ln-941" name="ln-941" href="#ln-941"></a><span class="c">!&gt; This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,</span>
+<a id="ln-942" name="ln-942" href="#ln-942"></a><span class="c">!&gt; see issue #707, #708 and #808.</span>
 <a id="ln-943" name="ln-943" href="#ln-943"></a><span class="k">subroutine </span><span class="n">make_archive</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
 <a id="ln-944" name="ln-944" href="#ln-944"></a><span class="w">    </span><span class="c">!&gt; Instance of the archiver object</span>
 <a id="ln-945" name="ln-945" href="#ln-945"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
@@ -1162,61 +1162,72 @@
 <a id="ln-952" name="ln-952" href="#ln-952"></a><span class="w">    </span><span class="c">!&gt; Status flag</span>
 <a id="ln-953" name="ln-953" href="#ln-953"></a><span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
 <a id="ln-954" name="ln-954" href="#ln-954"></a>
-<a id="ln-955" name="ln-955" href="#ln-955"></a><span class="nb">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
-<a id="ln-956" name="ln-956" href="#ln-956"></a><span class="w">        </span><span class="c">!$omp critical</span>
-<a id="ln-957" name="ln-957" href="#ln-957"></a><span class="w">        </span><span class="k">call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"></span>
-<a id="ln-958" name="ln-958" href="#ln-958"></a><span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; @&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<a id="ln-959" name="ln-959" href="#ln-959"></a><span class="w">            </span><span class="p">&amp;</span><span class="w">  </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<a id="ln-960" name="ln-960" href="#ln-960"></a><span class="w">        </span><span class="k">call </span><span class="n">delete_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span><span class="w"></span>
-<a id="ln-961" name="ln-961" href="#ln-961"></a><span class="w">        </span><span class="c">!$omp end critical</span>
-<a id="ln-962" name="ln-962" href="#ln-962"></a><span class="w">    </span><span class="k">else</span>
-<a id="ln-963" name="ln-963" href="#ln-963"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<a id="ln-964" name="ln-964" href="#ln-964"></a><span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<a id="ln-965" name="ln-965" href="#ln-965"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-966" name="ln-966" href="#ln-966"></a><span class="k">end subroutine </span><span class="n">make_archive</span><span class="w"></span>
-<a id="ln-967" name="ln-967" href="#ln-967"></a>
-<a id="ln-968" name="ln-968" href="#ln-968"></a>
-<a id="ln-969" name="ln-969" href="#ln-969"></a><span class="c">!&gt; Response files allow to read command line options from files.</span>
-<a id="ln-970" name="ln-970" href="#ln-970"></a><span class="c">!&gt; Whitespace is used to separate the arguments, we will use newlines</span>
-<a id="ln-971" name="ln-971" href="#ln-971"></a><span class="c">!&gt; as separator to create readable response files which can be inspected</span>
-<a id="ln-972" name="ln-972" href="#ln-972"></a><span class="c">!&gt; in case of errors.</span>
-<a id="ln-973" name="ln-973" href="#ln-973"></a><span class="k">subroutine </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"></span>
-<a id="ln-974" name="ln-974" href="#ln-974"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w"></span>
-<a id="ln-975" name="ln-975" href="#ln-975"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">argv</span><span class="p">(:)</span><span class="w"></span>
-<a id="ln-976" name="ln-976" href="#ln-976"></a>
-<a id="ln-977" name="ln-977" href="#ln-977"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iarg</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="w"></span>
+<a id="ln-955" name="ln-955" href="#ln-955"></a><span class="nb">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-956" name="ln-956" href="#ln-956"></a><span class="k">        call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<a id="ln-957" name="ln-957" href="#ln-957"></a><span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; @&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-958" name="ln-958" href="#ln-958"></a><span class="w">            </span><span class="p">&amp;</span><span class="w">  </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<a id="ln-959" name="ln-959" href="#ln-959"></a><span class="w">        </span><span class="k">call </span><span class="n">delete_file_win32</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span><span class="w"></span>
+<a id="ln-960" name="ln-960" href="#ln-960"></a>
+<a id="ln-961" name="ln-961" href="#ln-961"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-962" name="ln-962" href="#ln-962"></a><span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-963" name="ln-963" href="#ln-963"></a><span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+<a id="ln-964" name="ln-964" href="#ln-964"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-965" name="ln-965" href="#ln-965"></a>
+<a id="ln-966" name="ln-966" href="#ln-966"></a><span class="k">    contains</span>
+<a id="ln-967" name="ln-967" href="#ln-967"></a><span class="k">        subroutine </span><span class="n">delete_file_win32</span><span class="p">(</span><span class="k">file</span><span class="p">)</span><span class="w"></span>
+<a id="ln-968" name="ln-968" href="#ln-968"></a><span class="w">            </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">file</span>
+<a id="ln-969" name="ln-969" href="#ln-969"></a><span class="k">            </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exist</span><span class="w"></span>
+<a id="ln-970" name="ln-970" href="#ln-970"></a><span class="w">            </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="w"></span>
+<a id="ln-971" name="ln-971" href="#ln-971"></a><span class="w">            </span><span class="k">inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span><span class="w"> </span><span class="n">exist</span><span class="o">=</span><span class="n">exist</span><span class="p">)</span><span class="w"></span>
+<a id="ln-972" name="ln-972" href="#ln-972"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exist</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-973" name="ln-973" href="#ln-973"></a><span class="k">                open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span><span class="w"> </span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span><span class="w"></span>
+<a id="ln-974" name="ln-974" href="#ln-974"></a><span class="w">                </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="n">iostat</span><span class="p">)</span><span class="w"></span>
+<a id="ln-975" name="ln-975" href="#ln-975"></a><span class="w">            </span><span class="k">end if</span>
+<a id="ln-976" name="ln-976" href="#ln-976"></a><span class="k">        end subroutine </span><span class="n">delete_file_win32</span><span class="w"></span>
+<a id="ln-977" name="ln-977" href="#ln-977"></a><span class="k">end subroutine </span><span class="n">make_archive</span><span class="w"></span>
 <a id="ln-978" name="ln-978" href="#ln-978"></a>
-<a id="ln-979" name="ln-979" href="#ln-979"></a><span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">)</span><span class="w"></span>
-<a id="ln-980" name="ln-980" href="#ln-980"></a><span class="w">    </span><span class="k">do </span><span class="n">iarg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span><span class="w"></span>
-<a id="ln-981" name="ln-981" href="#ln-981"></a><span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">unix_path</span><span class="p">(</span><span class="n">argv</span><span class="p">(</span><span class="n">iarg</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
-<a id="ln-982" name="ln-982" href="#ln-982"></a><span class="w">    </span><span class="k">end do</span>
-<a id="ln-983" name="ln-983" href="#ln-983"></a><span class="k">    close</span><span class="p">(</span><span class="n">io</span><span class="p">)</span><span class="w"></span>
-<a id="ln-984" name="ln-984" href="#ln-984"></a><span class="k">end subroutine </span><span class="n">write_response_file</span><span class="w"></span>
-<a id="ln-985" name="ln-985" href="#ln-985"></a>
-<a id="ln-986" name="ln-986" href="#ln-986"></a>
-<a id="ln-987" name="ln-987" href="#ln-987"></a><span class="c">!&gt; String representation of a compiler object</span>
-<a id="ln-988" name="ln-988" href="#ln-988"></a><span class="k">pure function </span><span class="n">debug_compiler</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span><span class="w"></span>
-<a id="ln-989" name="ln-989" href="#ln-989"></a><span class="w">    </span><span class="c">!&gt; Instance of the compiler object</span>
-<a id="ln-990" name="ln-990" href="#ln-990"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
-<a id="ln-991" name="ln-991" href="#ln-991"></a><span class="w">    </span><span class="c">!&gt; Representation as string</span>
-<a id="ln-992" name="ln-992" href="#ln-992"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">repr</span><span class="w"></span>
-<a id="ln-993" name="ln-993" href="#ln-993"></a>
-<a id="ln-994" name="ln-994" href="#ln-994"></a><span class="w">    </span><span class="n">repr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;fc=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="o">//</span><span class="s1">&#39;&quot;, cc=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="w"></span>
-<a id="ln-995" name="ln-995" href="#ln-995"></a><span class="k">end function </span><span class="n">debug_compiler</span><span class="w"></span>
+<a id="ln-979" name="ln-979" href="#ln-979"></a>
+<a id="ln-980" name="ln-980" href="#ln-980"></a><span class="c">!&gt; Response files allow to read command line options from files.</span>
+<a id="ln-981" name="ln-981" href="#ln-981"></a><span class="c">!&gt; Whitespace is used to separate the arguments, we will use newlines</span>
+<a id="ln-982" name="ln-982" href="#ln-982"></a><span class="c">!&gt; as separator to create readable response files which can be inspected</span>
+<a id="ln-983" name="ln-983" href="#ln-983"></a><span class="c">!&gt; in case of errors.</span>
+<a id="ln-984" name="ln-984" href="#ln-984"></a><span class="k">subroutine </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"></span>
+<a id="ln-985" name="ln-985" href="#ln-985"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w"></span>
+<a id="ln-986" name="ln-986" href="#ln-986"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">argv</span><span class="p">(:)</span><span class="w"></span>
+<a id="ln-987" name="ln-987" href="#ln-987"></a>
+<a id="ln-988" name="ln-988" href="#ln-988"></a><span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iarg</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="w"></span>
+<a id="ln-989" name="ln-989" href="#ln-989"></a>
+<a id="ln-990" name="ln-990" href="#ln-990"></a><span class="w">    </span><span class="k">open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">newunit</span><span class="o">=</span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;replace&#39;</span><span class="p">)</span><span class="w"></span>
+<a id="ln-991" name="ln-991" href="#ln-991"></a><span class="w">    </span><span class="k">do </span><span class="n">iarg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span><span class="w"></span>
+<a id="ln-992" name="ln-992" href="#ln-992"></a><span class="w">        </span><span class="k">write</span><span class="p">(</span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">unix_path</span><span class="p">(</span><span class="n">argv</span><span class="p">(</span><span class="n">iarg</span><span class="p">)%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+<a id="ln-993" name="ln-993" href="#ln-993"></a><span class="w">    </span><span class="k">end do</span>
+<a id="ln-994" name="ln-994" href="#ln-994"></a><span class="k">    close</span><span class="p">(</span><span class="n">io</span><span class="p">)</span><span class="w"></span>
+<a id="ln-995" name="ln-995" href="#ln-995"></a><span class="k">end subroutine </span><span class="n">write_response_file</span><span class="w"></span>
 <a id="ln-996" name="ln-996" href="#ln-996"></a>
 <a id="ln-997" name="ln-997" href="#ln-997"></a>
-<a id="ln-998" name="ln-998" href="#ln-998"></a><span class="c">!&gt; String representation of an archiver object</span>
-<a id="ln-999" name="ln-999" href="#ln-999"></a><span class="k">pure function </span><span class="n">debug_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span><span class="w"></span>
-<a id="ln-1000" name="ln-1000" href="#ln-1000"></a><span class="w">    </span><span class="c">!&gt; Instance of the archiver object</span>
-<a id="ln-1001" name="ln-1001" href="#ln-1001"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<a id="ln-998" name="ln-998" href="#ln-998"></a><span class="c">!&gt; String representation of a compiler object</span>
+<a id="ln-999" name="ln-999" href="#ln-999"></a><span class="k">pure function </span><span class="n">debug_compiler</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1000" name="ln-1000" href="#ln-1000"></a><span class="w">    </span><span class="c">!&gt; Instance of the compiler object</span>
+<a id="ln-1001" name="ln-1001" href="#ln-1001"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">compiler_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
 <a id="ln-1002" name="ln-1002" href="#ln-1002"></a><span class="w">    </span><span class="c">!&gt; Representation as string</span>
 <a id="ln-1003" name="ln-1003" href="#ln-1003"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">repr</span><span class="w"></span>
 <a id="ln-1004" name="ln-1004" href="#ln-1004"></a>
-<a id="ln-1005" name="ln-1005" href="#ln-1005"></a><span class="w">    </span><span class="n">repr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;ar=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="w"></span>
-<a id="ln-1006" name="ln-1006" href="#ln-1006"></a><span class="k">end function </span><span class="n">debug_archiver</span><span class="w"></span>
+<a id="ln-1005" name="ln-1005" href="#ln-1005"></a><span class="w">    </span><span class="n">repr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;fc=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">fc</span><span class="o">//</span><span class="s1">&#39;&quot;, cc=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">cc</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="w"></span>
+<a id="ln-1006" name="ln-1006" href="#ln-1006"></a><span class="k">end function </span><span class="n">debug_compiler</span><span class="w"></span>
 <a id="ln-1007" name="ln-1007" href="#ln-1007"></a>
 <a id="ln-1008" name="ln-1008" href="#ln-1008"></a>
-<a id="ln-1009" name="ln-1009" href="#ln-1009"></a><span class="k">end module </span><span class="n">fpm_compiler</span><span class="w"></span>
+<a id="ln-1009" name="ln-1009" href="#ln-1009"></a><span class="c">!&gt; String representation of an archiver object</span>
+<a id="ln-1010" name="ln-1010" href="#ln-1010"></a><span class="k">pure function </span><span class="n">debug_archiver</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">repr</span><span class="p">)</span><span class="w"></span>
+<a id="ln-1011" name="ln-1011" href="#ln-1011"></a><span class="w">    </span><span class="c">!&gt; Instance of the archiver object</span>
+<a id="ln-1012" name="ln-1012" href="#ln-1012"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">archiver_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<a id="ln-1013" name="ln-1013" href="#ln-1013"></a><span class="w">    </span><span class="c">!&gt; Representation as string</span>
+<a id="ln-1014" name="ln-1014" href="#ln-1014"></a><span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">repr</span><span class="w"></span>
+<a id="ln-1015" name="ln-1015" href="#ln-1015"></a>
+<a id="ln-1016" name="ln-1016" href="#ln-1016"></a><span class="w">    </span><span class="n">repr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;ar=&quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="o">//</span><span class="s1">&#39;&quot;&#39;</span><span class="w"></span>
+<a id="ln-1017" name="ln-1017" href="#ln-1017"></a><span class="k">end function </span><span class="n">debug_archiver</span><span class="w"></span>
+<a id="ln-1018" name="ln-1018" href="#ln-1018"></a>
+<a id="ln-1019" name="ln-1019" href="#ln-1019"></a>
+<a id="ln-1020" name="ln-1020" href="#ln-1020"></a><span class="k">end module </span><span class="n">fpm_compiler</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -1235,7 +1246,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-02-22 19:09            </p>
+ on 2023-02-22 19:11            </p>
         </div>
       </div>
       <br>

@@ -91,16 +91,16 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.3% of total for procedures.">14 statements</a>
+               title=" 0.6% of total for procedures.">25 statements</a>
           </li>
 
             <li id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_compiler.f90"> Source File</a>
+              <a href="../src/fpm_compiler.F90"> Source File</a>
             </li>
         </ul>
         <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.f90</a></li>
+              <li><a href='../sourcefile/fpm_compiler.f90.html'>fpm_compiler.F90</a></li>
               <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
           <li class="active">make_archive</li>
         </ol>
@@ -131,7 +131,19 @@
   
   
   
-  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#subs-0">Subroutines</a>
+        </h3>
+      </div>
+      <div id="subs-0" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../proc/make_archive.html#proc-delete_file_win32">delete_file_win32</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -156,9 +168,9 @@
     
 
     <p>Create an archive
-</p><div class="alert alert-success" role="alert"><h4>Todo</h4><p>An OMP critical section is added for Windows OS,
-which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
-see issue #707 and #708.</p></div>
+</p><div class="alert alert-success" role="alert"><h4>Todo</h4><p>For Windows OS, use the local <code>delete_file_win32</code> in stead of <code>delete_file</code>.
+This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+see issue #707, #708 and #808.</p></div>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -265,7 +277,19 @@ see issue #707 and #708.</p></div>
   
   
   
-  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#subs-1">Subroutines</a>
+        </h3>
+      </div>
+      <div id="subs-1" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../proc/make_archive.html#proc-delete_file_win32">delete_file_win32</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -291,6 +315,49 @@ see issue #707 and #708.</p></div>
     
 
 
+    <section>
+    <h2>Subroutines</h2>
+      <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-delete_file_win32"></span><h3> subroutine delete_file_win32(file)  
+</h3></div>
+    <div class="panel-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+    </section>    
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
@@ -306,17 +373,28 @@ see issue #707 and #708.</p></div>
 <span class="w">    </span><span class="c">!&gt; Status flag</span>
 <span class="w">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">stat</span>
 
-<span class="nb">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
-<span class="w">        </span><span class="c">!$omp critical</span>
-<span class="w">        </span><span class="k">call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<span class="nb">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">use_response_file</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        call </span><span class="n">write_response_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; @&quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w">  </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">call </span><span class="n">delete_file</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="c">!$omp end critical</span>
+<span class="w">        </span><span class="k">call </span><span class="n">delete_file_win32</span><span class="p">(</span><span class="n">output</span><span class="o">//</span><span class="s2">&quot;.resp&quot;</span><span class="p">)</span><span class="w"></span>
+
 <span class="w">    </span><span class="k">else</span>
 <span class="k">        call </span><span class="n">run</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">ar</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">string_cat</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot; &quot;</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">echo</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">redirect</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span><span class="w"> </span><span class="n">exitstat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    contains</span>
+<span class="k">        subroutine </span><span class="n">delete_file_win32</span><span class="p">(</span><span class="k">file</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">file</span>
+<span class="k">            </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exist</span><span class="w"></span>
+<span class="w">            </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="w"></span>
+<span class="w">            </span><span class="k">inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span><span class="w"> </span><span class="n">exist</span><span class="o">=</span><span class="n">exist</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exist</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                open</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="k">file</span><span class="p">,</span><span class="w"> </span><span class="n">newunit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">close</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">iostat</span><span class="o">=</span><span class="n">iostat</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">        end subroutine </span><span class="n">delete_file_win32</span><span class="w"></span>
 <span class="k">end subroutine </span><span class="n">make_archive</span><span class="w"></span>
 </pre></div>
 
@@ -338,7 +416,7 @@ see issue #707 and #708.</p></div>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-02-22 19:09            </p>
+ on 2023-02-22 19:11            </p>
         </div>
       </div>
       <br>
