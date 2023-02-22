@@ -91,7 +91,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.6% of total for procedures.">27 statements</a>
+               title=" 0.9% of total for procedures.">42 statements</a>
           </li>
 
             <li id="source-file">
@@ -156,6 +156,8 @@
     
 
     <p>Construct a new build configuration from a TOML data structure</p>
+<p>Module naming: fist, attempt boolean value first</p>
+<p>Value found, but not a boolean. Attempt to read a prefix string</p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -296,8 +298,37 @@
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
 <span class="k">            call </span><span class="n">fatal_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">&quot;Error while reading value for &#39;auto-examples&#39; in fpm.toml, expecting logical&quot;</span><span class="p">)</span><span class="w"></span>
 <span class="w">            </span><span class="k">return</span>
-<span class="k">        end if</span>
+<span class="k">        end if</span><span class="w"></span>
 
+<span class="w">        </span><span class="c">!&gt; Module naming: fist, attempt boolean value first</span>
+<span class="w">        </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;module-naming&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">module_naming</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="nb">stat</span><span class="o">=</span><span class="nb">stat</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">stat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">toml_stat</span><span class="p">%</span><span class="n">success</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+
+<span class="w">            </span><span class="c">! Boolean value found. Set no custom prefix. This also falls back to</span>
+<span class="w">            </span><span class="c">! key not provided</span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">module_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">string_t</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">else</span><span class="w"></span>
+
+<span class="w">            </span><span class="c">!&gt; Value found, but not a boolean. Attempt to read a prefix string</span>
+<span class="w">            </span><span class="k">call </span><span class="n">get_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;module-naming&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">module_prefix</span><span class="p">%</span><span class="n">s</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">module_prefix</span><span class="p">%</span><span class="n">s</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">               call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">&quot;Could not read value for &#39;module-naming&#39; in fpm.toml, expecting logical or a string&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="k">return</span>
+<span class="k">            end if</span>
+
+<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">is_valid_module_prefix</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">module_prefix</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">               call </span><span class="n">syntax_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span><span class="s2">&quot;Invalid custom module name prefix for in fpm.toml: &lt;&quot;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">module_prefix</span><span class="p">%</span><span class="n">s</span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                            </span><span class="s2">&quot;&gt;, expecting a valid alphanumeric string&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">               </span><span class="k">return</span>
+<span class="k">            end if</span><span class="w"></span>
+
+<span class="w">            </span><span class="c">! Set module naming to ON</span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">module_naming</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">end if</span>
 
 <span class="k">        call </span><span class="n">get_list</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;link&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="nb">link</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
@@ -326,7 +357,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-02-22 19:11            </p>
+ on 2023-02-22 19:14            </p>
         </div>
       </div>
       <br>

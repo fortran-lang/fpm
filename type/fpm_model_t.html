@@ -91,7 +91,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 4.7% of total for derived types.</p>Including implementation: 16 statements,  0.8% of total for derived types.">16 statements</a>
+               title="<p> 5.2% of total for derived types.</p>Including implementation: 18 statements,  0.9% of total for derived types.">18 statements</a>
           </li>
 
             <li id="source-file">
@@ -134,12 +134,14 @@
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-compiler">compiler</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-cxx_compile_flags">cxx_compile_flags</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-deps">deps</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-enforce_module_names~2">enforce_module_names</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-external_modules">external_modules</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compile_flags">fortran_compile_flags</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_dirs">include_dirs</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_tests">include_tests</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_flags">link_flags</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries~2">link_libraries</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-module_prefix">module_prefix</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-package_name">package_name</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-packages">packages</a>
         </div>
@@ -198,12 +200,14 @@
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-compiler">compiler</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-cxx_compile_flags">cxx_compile_flags</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-deps">deps</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-enforce_module_names~2">enforce_module_names</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-external_modules">external_modules</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-fortran_compile_flags">fortran_compile_flags</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_dirs">include_dirs</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-include_tests">include_tests</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_flags">link_flags</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-link_libraries~2">link_libraries</a>
+            <a class="list-group-item" href="../type/fpm_model_t.html#variable-module_prefix">module_prefix</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-package_name">package_name</a>
             <a class="list-group-item" href="../type/fpm_model_t.html#variable-packages">packages</a>
         </div>
@@ -354,6 +358,23 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-enforce_module_names~2"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enforce_module_names</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+                <p>Whether module names should be prefixed with the package name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-external_modules"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
@@ -456,6 +477,23 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-module_prefix"></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>module_prefix</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-package_name"></span>
               character,
             </td>
@@ -543,6 +581,10 @@
 <span class="w">    </span><span class="c">!&gt; Whether tests should be added to the build list</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">include_tests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
 
+<span class="w">    </span><span class="c">!&gt; Whether module names should be prefixed with the package name</span>
+<span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">enforce_module_names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">module_prefix</span><span class="w"></span>
+
 <span class="k">end type </span><span class="n">fpm_model_t</span><span class="w"></span>
 </pre></div>
 
@@ -563,7 +605,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-02-22 19:11            </p>
+ on 2023-02-22 19:14            </p>
         </div>
       </div>
       <br>

@@ -91,7 +91,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 7.5% of total for modules and submodules.">571 statements</a>
+               title=" 8.7% of total for modules and submodules.">679 statements</a>
           </li>
 
             <li id="source-file">
@@ -169,9 +169,15 @@
         <div class="list-group">
             <a class="list-group-item" href="../module/fpm_strings.html#proc-f_string">f_string</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-glob">glob</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-has_valid_custom_prefix">has_valid_custom_prefix</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-has_valid_standard_prefix">has_valid_standard_prefix</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-is_fortran_name">is_fortran_name</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-is_valid_module_name">is_valid_module_name</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-is_valid_module_prefix">is_valid_module_prefix</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-join">join</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-lower">lower</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-module_prefix_template">module_prefix_template</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-module_prefix_type">module_prefix_type</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-replace">replace</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-str_begins_with_str">str_begins_with_str</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-string_array_contains">string_array_contains</a>
@@ -251,6 +257,7 @@
 <li><a href="../proc/replace.html">replace</a>  Returns string with characters in charset replaced with target_char.</li>
 <li><a href="../interface/resize~2.html">resize</a>  increase the size of a <strong>TYPE(STRING_T)</strong> array by N elements</li>
 </ul>
+<p>Module naming</p>
 <br>        <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">Uses</h3>
@@ -258,8 +265,8 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
                 <li><a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a></li>
+                <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
             </ul>
           </li>
       </ul>
@@ -321,9 +328,15 @@
         <div class="list-group">
             <a class="list-group-item" href="../module/fpm_strings.html#proc-f_string">f_string</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-glob">glob</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-has_valid_custom_prefix">has_valid_custom_prefix</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-has_valid_standard_prefix">has_valid_standard_prefix</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-is_fortran_name">is_fortran_name</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-is_valid_module_name">is_valid_module_name</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-is_valid_module_prefix">is_valid_module_prefix</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-join">join</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-lower">lower</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-module_prefix_template">module_prefix_template</a>
+            <a class="list-group-item" href="../module/fpm_strings.html#proc-module_prefix_type">module_prefix_type</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-replace">replace</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-str_begins_with_str">str_begins_with_str</a>
             <a class="list-group-item" href="../module/fpm_strings.html#proc-string_array_contains">string_array_contains</a>
@@ -498,7 +511,50 @@
     <ul class="list-group">
           <li class="list-group-item">
                 <h3>
-    private pure function string_len_trim(strings) result(n)  
+    private elemental function string_len_trim(string) result(n)  
+
+    </h3>
+  <p>Determine total trimmed length of <code>string_t</code> array</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>string</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+          <li class="list-group-item">
+                <h3>
+    private pure function strings_len_trim(strings) result(n)  
 
     </h3>
   <p>Determine total trimmed length of <code>string_t</code> array</p>
@@ -1180,6 +1236,132 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
       <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-has_valid_custom_prefix"></span><h3>public  function <a href='../proc/has_valid_custom_prefix.html'>has_valid_custom_prefix</a>(module_name, custom_prefix) result(valid)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Check that a module name is prefixed with a custom prefix:
+1) It must be a valid FORTRAN name subset (&lt;=63 chars, begin with letter, only alphanumeric allowed)
+2) It must begin with the prefix
+3) If longer, package name must be followed by default separator (&ldquo;_&rdquo;) plus at least one char</p><a href="../proc/has_valid_custom_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>module_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>custom_prefix</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+      <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-has_valid_standard_prefix"></span><h3>public  function <a href='../proc/has_valid_standard_prefix.html'>has_valid_standard_prefix</a>(module_name, package_name) result(valid)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Check that a module name is prefixed with the default package prefix:
+1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
+2) It must begin with the package name
+3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>module_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>package_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+      <div class="panel panel-default">
     <div class="panel-heading codesum"><span class="anchor" id="proc-is_fortran_name"></span><h3>public  function <a href='../proc/is_fortran_name.html'>is_fortran_name</a>(line) result(lout)  
 </h3></div>
     <div class="panel-body">
@@ -1208,6 +1390,146 @@ single characters terminated with a C_NULL_CHAR character</p>
             </td>
             <td>::</td>
             <td><strong>line</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+      <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-is_valid_module_name"></span><h3>public  function <a href='../proc/is_valid_module_name.html'>is_valid_module_name</a>(module_name, package_name, custom_prefix, enforce_module_names) result(valid)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Check that a module name fits the current naming rules:
+1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
+2) It must begin with the package name
+3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/is_valid_module_name.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>module_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>package_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>custom_prefix</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enforce_module_names</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+      <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-is_valid_module_prefix"></span><h3>public  function <a href='../proc/is_valid_module_prefix.html'>is_valid_module_prefix</a>(module_prefix) result(valid)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Check that a custom module prefix fits the current naming rules:
+1) Only alphanumeric characters (no spaces, dashes, underscores or other characters)
+2) Does not begin with a number (Fortran-compatible syntax)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>module_prefix</strong></td>
             <td>
 
             </td>
@@ -1446,6 +1768,126 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
       <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-module_prefix_template"></span><h3>public  function <a href='../proc/module_prefix_template.html'>module_prefix_template</a>(project_name, custom_prefix) result(prefix)  
+</h3></div>
+    <div class="panel-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>project_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>custom_prefix</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/string_t.html'>string_t</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+      <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-module_prefix_type"></span><h3>public  function <a href='../proc/module_prefix_type.html'>module_prefix_type</a>(project_name, custom_prefix) result(ptype)  
+</h3></div>
+    <div class="panel-body">
+          
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>project_name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/string_t.html'>string_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>custom_prefix</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/string_t.html'>string_t</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+      <div class="panel panel-default">
     <div class="panel-heading codesum"><span class="anchor" id="proc-replace"></span><h3>public pure function <a href='../proc/replace.html'>replace</a>(string, charset, target_char) result(res)  
 </h3></div>
     <div class="panel-body">
@@ -1521,7 +1963,7 @@ single characters terminated with a C_NULL_CHAR character</p>
   </div>
 
       <div class="panel panel-default">
-    <div class="panel-heading codesum"><span class="anchor" id="proc-str_begins_with_str"></span><h3>public pure function <a href='../proc/str_begins_with_str.html'>str_begins_with_str</a>(s, e) result(r)  
+    <div class="panel-heading codesum"><span class="anchor" id="proc-str_begins_with_str"></span><h3>public pure function <a href='../proc/str_begins_with_str.html'>str_begins_with_str</a>(s, e, case_sensitive) result(r)  
 </h3></div>
     <div class="panel-body">
           
@@ -1564,6 +2006,21 @@ single characters terminated with a C_NULL_CHAR character</p>
             </td>
             <td>::</td>
             <td><strong>e</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>case_sensitive</strong></td>
             <td>
 
             </td>
@@ -1949,7 +2406,7 @@ expanded to other characters if needed.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-02-22 19:11            </p>
+ on 2023-02-22 19:14            </p>
         </div>
       </div>
       <br>

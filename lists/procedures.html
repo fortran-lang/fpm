@@ -185,6 +185,14 @@ Works with MinGW</p></td></tr>
    contain wildcard characters.</p><a href="../proc/glob.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/handle_error~2.html'>handle_error</a></td><td><a href='../program/main.html'>main</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/has_manifest.html'>has_manifest</a></td><td><a href='../program/main.html'>main</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/has_valid_custom_prefix.html'>has_valid_custom_prefix</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Check that a module name is prefixed with a custom prefix:
+1) It must be a valid FORTRAN name subset (&lt;=63 chars, begin with letter, only alphanumeric allowed)
+2) It must begin with the prefix
+3) If longer, package name must be followed by default separator (&ldquo;_&rdquo;) plus at least one char</p><a href="../proc/has_valid_custom_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
+			   <tr><td><a href='../proc/has_valid_standard_prefix.html'>has_valid_standard_prefix</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Check that a module name is prefixed with the default package prefix:
+1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
+2) It must begin with the package name
+3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/has_valid_standard_prefix.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/info.html'>info</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td><p>Show information on git target</p></td></tr>
 			   <tr><td><a href='../proc/info~9.html'>info</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Write information on instance</p></td></tr>
 			   <tr><td><a href='../proc/info_profile.html'>info_profile</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Function</td><td><p>Print a representation of profile_config_t</p></td></tr>
@@ -192,6 +200,13 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/is_fortran_name.html'>is_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/is_hidden_file.html'>is_hidden_file</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if a file is hidden</p></td></tr>
 			   <tr><td><a href='../proc/is_unknown.html'>is_unknown</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/is_valid_module_name.html'>is_valid_module_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Check that a module name fits the current naming rules:
+1) It must be a valid FORTRAN name (&lt;=63 chars, begin with letter, &ldquo;_&rdquo; is only allowed non-alphanumeric)
+2) It must begin with the package name
+3) If longer, package name must be followed by default separator plus at least one char</p><a href="../proc/is_valid_module_name.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
+			   <tr><td><a href='../proc/is_valid_module_prefix.html'>is_valid_module_prefix</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>Check that a custom module prefix fits the current naming rules:
+1) Only alphanumeric characters (no spaces, dashes, underscores or other characters)
+2) Does not begin with a number (Fortran-compatible syntax)</p></td></tr>
 			   <tr><td><a href='../proc/join.html'>join</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td><p>JOIN(3f) appends the elements of a CHARACTER array into a single
    CHARACTER variable, with elements 1 to N joined from left to right.
    By default each element is trimmed of trailing spaces and the
@@ -205,8 +220,10 @@ Works with MinGW</p></td></tr>
 </p><a href="../proc/make_archive.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/match_os_type.html'>match_os_type</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Match os_type enum to a lowercase string with name of OS</p></td></tr>
 			   <tr><td><a href='../proc/mkdir.html'>mkdir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Create a directory. Create subdirectories as needed</p></td></tr>
+			   <tr><td><a href='../proc/module_prefix_template.html'>module_prefix_template</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/module_prefix_type.html'>module_prefix_type</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/new_archiver.html'>new_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new archiver instance</p></td></tr>
-			   <tr><td><a href='../proc/new_build_config.html'>new_build_config</a></td><td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td><td>Subroutine</td><td><p>Construct a new build configuration from a TOML data structure</p></td></tr>
+			   <tr><td><a href='../proc/new_build_config.html'>new_build_config</a></td><td><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></td><td>Subroutine</td><td><p>Construct a new build configuration from a TOML data structure</p><a href="../proc/new_build_config.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/new_compiler.html'>new_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Create new compiler instance</p></td></tr>
 			   <tr><td><a href='../proc/new_dependencies.html'>new_dependencies</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct new dependency array from a TOML data structure</p></td></tr>
 			   <tr><td><a href='../proc/new_dependency.html'>new_dependency</a></td><td><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></td><td>Subroutine</td><td><p>Construct a new dependency configuration from a TOML data structure</p></td></tr>
@@ -296,7 +313,7 @@ in case of errors.</p></td></tr>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-02-22 19:11            </p>
+ on 2023-02-22 19:14            </p>
         </div>
       </div>
       <br>
