@@ -937,9 +937,9 @@ end subroutine link
 
 
 !> Create an archive
-!> @todo An OMP critical section is added for Windows OS,
-!> which may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
-!> see issue #707 and #708.
+!> @todo For Windows OS, use the local `delete_file_win32` in stead of `delete_file`.
+!> This may be related to a bug in Mingw64-openmp and is expected to be resolved in the future,
+!> see issue #707, #708 and #808.
 subroutine make_archive(self, output, args, log_file, stat)
     !> Instance of the archiver object
     class(archiver_t), intent(in) :: self
@@ -953,16 +953,27 @@ subroutine make_archive(self, output, args, log_file, stat)
     integer, intent(out) :: stat
 
     if (self%use_response_file) then
-        !$omp critical
         call write_response_file(output//".resp" , args)
         call run(self%ar // output // " @" // output//".resp", echo=self%echo, &
             &  verbose=self%verbose, redirect=log_file, exitstat=stat)
-        call delete_file(output//".resp")
-        !$omp end critical
+        call delete_file_win32(output//".resp")
+
     else
         call run(self%ar // output // " " // string_cat(args, " "), &
             & echo=self%echo, verbose=self%verbose, redirect=log_file, exitstat=stat)
     end if
+
+    contains
+        subroutine delete_file_win32(file)
+            character(len=*), intent(in) :: file
+            logical :: exist
+            integer :: unit, iostat
+            inquire(file=file, exist=exist)
+            if (exist) then
+                open(file=file, newunit=unit)
+                close(unit, status='delete', iostat=iostat)
+            end if
+        end subroutine delete_file_win32
 end subroutine make_archive
 
 
@@ -976,7 +987,7 @@ subroutine write_response_file(name, argv)
 
     integer :: iarg, io
 
-    open(file=name, newunit=io)
+    open(file=name, newunit=io, status='replace')
     do iarg = 1, size(argv)
         write(io, '(a)') unix_path(argv(iarg)%s)
     end do
