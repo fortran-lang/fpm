@@ -1,6 +1,6 @@
 module test_settings
     use testsuite, only: new_unittest, unittest_t, error_t, test_failed
-    use fpm_settings, only: fpm_global_settings, get_global_settings, get_registry_settings
+    use fpm_settings, only: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
     use fpm_filesystem, only: is_dir, join_path, mkdir, filewrite, os_delete_dir, exists, get_local_prefix
     use fpm_environment, only: os_is_unix
     use fpm_toml, only: toml_table, new_table, add_table, set_value
@@ -49,7 +49,7 @@ contains
 
     subroutine delete_tmp_folder
         if (is_dir(tmp_folder)) call os_delete_dir(os_is_unix(), tmp_folder)
-    end
+    end subroutine
 
     subroutine setup_global_settings(global_settings, error)
         type(fpm_global_settings), intent(out) :: global_settings
@@ -70,8 +70,10 @@ contains
         type(fpm_global_settings) :: global_settings
 
         call delete_tmp_folder
+
         call setup_global_settings(global_settings, error)
         if (allocated(error)) return
+
         call get_global_settings(global_settings, error)
     end subroutine
 
@@ -87,42 +89,6 @@ contains
         if (allocated(error)) return
 
         call get_global_settings(global_settings, error)
-    end subroutine
-
-    !> Config file exists and the path to that file is set.
-    subroutine empty_file(error)
-        type(error_t), allocatable, intent(out) :: error
-        type(fpm_global_settings) :: global_settings
-
-        character(:), allocatable :: cwd
-
-        call delete_tmp_folder
-        call mkdir(tmp_folder)
-
-        call filewrite(join_path(tmp_folder, config_file_name), [''])
-
-        call setup_global_settings(global_settings, error)
-        if (allocated(error)) return
-
-        call get_global_settings(global_settings, error)
-
-        call delete_tmp_folder
-
-        if (allocated(error)) return
-
-        call get_current_directory(cwd, error)
-        if (allocated(error)) return
-
-        if (global_settings%path_to_config_folder /= join_path(cwd, tmp_folder)) then
-            call test_failed(error, "global_settings%path_to_config_folder not set correctly :'" &
-            & //global_settings%path_to_config_folder//"'")
-            return
-        end if
-
-        if (allocated(global_settings%registry_settings)) then
-            call test_failed(error, 'global_settings%registry_settings should not be allocated')
-            return
-        end if
     end subroutine
 
     !> No custom path and config file specified, use default path and file name.
@@ -154,6 +120,49 @@ contains
         end if
     end subroutine
 
+    !> Config file exists and the path to that file is set.
+    subroutine empty_file(error)
+        type(error_t), allocatable, intent(out) :: error
+        type(fpm_global_settings) :: global_settings
+
+        character(:), allocatable :: cwd
+
+        call delete_tmp_folder
+        call mkdir(tmp_folder)
+
+        call filewrite(join_path(tmp_folder, config_file_name), [''])
+
+        call setup_global_settings(global_settings, error)
+        if (allocated(error)) return
+
+        call get_global_settings(global_settings, error)
+
+        call delete_tmp_folder
+
+        if (allocated(error)) return
+
+        call get_current_directory(cwd, error)
+        if (allocated(error)) return
+
+        if (global_settings%path_to_config_folder /= join_path(cwd, tmp_folder)) then
+            call test_failed(error, "global_settings%path_to_config_folder not set correctly :'" &
+            & //global_settings%path_to_config_folder//"'"); return
+        end if
+
+        if (.not. allocated(global_settings%registry_settings)) then
+            call test_failed(error, 'global_settings%registry_settings not be allocated'); return
+        end if
+
+        if (global_settings%registry_settings%url /= official_registry_base_url) then
+            call test_failed(error, 'Wrong default url'); return
+        end if
+
+        if (global_settings%registry_settings%cache_path /= join_path(global_settings%path_to_config_folder, &
+        & 'dependencies')) then
+            call test_failed(error, 'Wrong default cache_path'); return
+        end if
+    end subroutine
+
     !> Invalid TOML file.
     subroutine error_reading_table(error)
         type(error_t), allocatable, intent(out) :: error
@@ -172,8 +181,7 @@ contains
         call delete_tmp_folder
 
         if (allocated(global_settings%registry_settings)) then
-            call test_failed(error, 'Registry settings should not be allocated')
-            return
+            call test_failed(error, 'Registry settings should not be allocated'); return
         end if
     end subroutine
 
@@ -190,18 +198,15 @@ contains
         if (allocated(error)) return
 
         if (.not. allocated(global_settings%registry_settings)) then
-            call test_failed(error, 'Registry settings not allocated')
-            return
+            call test_failed(error, 'Registry settings not allocated'); return
         end if
 
         if (allocated(global_settings%registry_settings%path)) then
-            call test_failed(error, "Path shouldn't be allocated")
-            return
+            call test_failed(error, "Path shouldn't be allocated"); return
         end if
 
-        if (allocated(global_settings%registry_settings%url)) then
-            call test_failed(error, "Url shouldn't be allocated")
-            return
+        if (global_settings%registry_settings%url /= official_registry_base_url) then
+            call test_failed(error, "Url not be allocated"); return
         end if
     end subroutine
 

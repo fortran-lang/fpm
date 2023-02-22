@@ -8,7 +8,7 @@ module fpm_settings
                       convert_to_absolute_path
     implicit none
     private
-    public :: fpm_global_settings, get_global_settings, get_registry_settings
+    public :: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
 
     character(*), parameter :: official_registry_base_url = 'https://minhdao.pythonanywhere.com'
 
