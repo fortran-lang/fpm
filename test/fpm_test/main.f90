@@ -1,8 +1,7 @@
 !> Driver for unit testing
 program fpm_testing
     use, intrinsic :: iso_fortran_env, only : error_unit
-    use testsuite, only : run_testsuite, new_testsuite, testsuite_t, &
-        & select_suite, run_selected
+    use testsuite, only : run_testsuite, new_testsuite, testsuite_t, select_suite, run_selected
     use test_toml, only : collect_toml
     use test_manifest, only : collect_manifest
     use test_filesystem, only : collect_filesystem

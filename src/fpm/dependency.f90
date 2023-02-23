@@ -528,7 +528,8 @@ contains
 
     ! Check cache before downloading from the remote registry if a specific version was requested.
     if (allocated(self%requested_version)) then
-      if (exists(join_path(cache_path, self%requested_version%s(), 'fpm.toml'))) then
+      cache_path = join_path(cache_path, self%requested_version%s())
+      if (exists(join_path(cache_path, 'fpm.toml'))) then
         print *, "Using cached version of '", join_path(self%namespace, self%name, self%requested_version%s()), "'"
         target_dir = cache_path; return
       end if
@@ -700,14 +701,12 @@ contains
 
       if (.not. exists(path_to_name)) then
         call fatal_error(error, "Dependency resolution of '"//self%name// &
-        & "': Directory '"//path_to_name//"' doesn't exist.")
-        return
+        & "': Directory '"//path_to_name//"' doesn't exist."); return
       end if
 
       call list_files(path_to_name, files)
       if (size(files) == 0) then
-        call fatal_error(error, "No versions of '"//self%name//"' found in '"//path_to_name//"'.")
-        return
+        call fatal_error(error, "No versions of '"//self%name//"' found in '"//path_to_name//"'."); return
       end if
 
       ! Version requested, find it in the cache.
@@ -715,8 +714,7 @@ contains
         do i = 1, size(files)
           ! Identify directory that matches the version number.
           if (files(i)%s == join_path(path_to_name, self%requested_version%s()) .and. is_dir(files(i)%s)) then
-            target_dir = files(i)%s
-            return
+            target_dir = files(i)%s; return
           end if
         end do
         call fatal_error(error, "Version '"//self%requested_version%s()//"' not found in '"//path_to_name//"'")
@@ -734,8 +732,7 @@ contains
       end do
 
       if (size(versions) == 0) then
-        call fatal_error(error, "No versions found in '"//path_to_name//"'")
-        return
+        call fatal_error(error, "No versions found in '"//path_to_name//"'"); return
       end if
 
       ! Find the latest version.
