@@ -592,7 +592,6 @@ contains
         call json%destroy(j_obj)
       end if
 
-
     end if
 
     if (stat /= 0) then
