@@ -563,29 +563,36 @@ contains
       print *, "Downloading package data for '"//join_path(self%namespace, self%name, self%requested_version%s())//"' ..."
       call execute_command_line('curl '//target_url//'/'//self%requested_version%s()//' -s -o '//tmp_file, exitstat=stat)
     else
-      ! Collect cached versions to send them to the registry for version resolution.
-      call json%create_object(j_obj, '')
-      call json%create_array(j_arr, 'cached_versions')
-      call json%add(j_obj, j_arr)
-
       call list_files(cache_path, files)
+      
+      if (size(files) == 0) then
+        ! No cached versions found, just download the latest version.
+        print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
+        call execute_command_line('curl '//target_url//' -s -o '//tmp_file, exitstat=stat)
+      else
+        ! Cached versions found, send them to the registry for version resolution.
+        call json%create_object(j_obj, '')
+        call json%create_array(j_arr, 'cached_versions')
+        call json%add(j_obj, j_arr)
 
-      if (size(files) > 0) then
         do i = 1, size(files)
-          if (is_dir(files(i)%s) .and. exists(join_path(files(i)%s, 'fpm.toml'))) then
+          ! Verify these are fpm packages.
+          if (exists(join_path(files(i)%s, 'fpm.toml'))) then
             call new_version(version, basename(files(i)%s), error)
             if (allocated(error)) return
             call json%add(j_arr, '', version%s())
           end if
         end do
+
+        call json%serialize(j_obj, versions)
+
+        print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
+        call execute_command_line('curl -X POST '//target_url//' -o '//tmp_file// ' -s -d "'//versions//'"', exitstat=stat)
+  
+        call json%destroy(j_obj)
       end if
 
-      call json%serialize(j_obj, versions)
 
-      print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
-      call execute_command_line('curl -X POST '//target_url//' -o '//tmp_file// ' -s -d "'//versions//'"', exitstat=stat)
-
-      call json%destroy(j_obj)
     end if
 
     if (stat /= 0) then
