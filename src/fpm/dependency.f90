@@ -536,8 +536,8 @@ contains
     end if
 
     ! Check if required programs are installed.
-    if (which('curl') == '') then
-      call fatal_error(error, "'curl' not installed."); return
+    if (which('curl') == '' .and. which('wget') == '') then
+      call fatal_error(error, "Neither 'curl' nor 'wget' installed."); return
     else if (which('tar') == '') then
       call fatal_error(error, "'tar' not installed."); return
     end if
@@ -561,14 +561,22 @@ contains
     ! Get package info from the registry and save it to a temporary file.
     if (allocated (self%requested_version)) then
       print *, "Downloading package data for '"//join_path(self%namespace, self%name, self%requested_version%s())//"' ..."
-      call execute_command_line('curl '//target_url//'/'//self%requested_version%s()//' -s -o '//tmp_file, exitstat=stat)
+      if (which('curl') /= '') then
+        call execute_command_line('curl '//target_url//'/'//self%requested_version%s()//' -s -o '//tmp_file, exitstat=stat)
+      else
+        call execute_command_line('wget '//target_url//'/'//self%requested_version%s()//' -q -O '//tmp_file, exitstat=stat)
+      end if
     else
       call list_files(cache_path, files)
       
       if (size(files) == 0) then
         ! No cached versions found, just download the latest version.
         print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
-        call execute_command_line('curl '//target_url//' -s -o '//tmp_file, exitstat=stat)
+        if (which('curl') /= '') then
+          call execute_command_line('curl '//target_url//' -s -o '//tmp_file, exitstat=stat)
+        else
+          call execute_command_line('wget '//target_url//' -q -O '//tmp_file, exitstat=stat)
+        end if
       else
         ! Cached versions found, send them to the registry for version resolution.
         call json%create_object(j_obj, '')
@@ -587,7 +595,11 @@ contains
         call json%serialize(j_obj, versions)
 
         print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
-        call execute_command_line('curl -X POST '//target_url//' -o '//tmp_file// ' -s -d "'//versions//'"', exitstat=stat)
+        if (which('curl') /= '') then
+          call execute_command_line('curl -X POST '//target_url//' -o '//tmp_file// ' -s -d "'//versions//'"', exitstat=stat)
+        else
+          call execute_command_line('wget '//target_url//' -q -O '//tmp_file// ' --post-data="'//versions//'"', exitstat=stat)
+        end if
   
         call json%destroy(j_obj)
       end if
