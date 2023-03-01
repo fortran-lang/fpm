@@ -9,7 +9,7 @@ module test_module_dependencies
                 FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
                 FPM_UNIT_CHEADER, FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, &
                 FPM_SCOPE_DEP, FPM_SCOPE_APP, FPM_SCOPE_TEST
-    use fpm_strings, only: string_t, operator(.in.)
+    use fpm_strings, only: string_t, operator(.in.), is_valid_module_name, is_valid_module_prefix
     use fpm, only: check_modules_for_duplicates
     implicit none
     private
@@ -52,12 +52,24 @@ contains
                             test_subdirectory_module_use), &
             & new_unittest("invalid-subdirectory-module-use", &
                             test_invalid_subdirectory_module_use, should_fail=.true.), &
-            & new_unittest("tree-shake-module", & 
+            & new_unittest("tree-shake-module", &
                             test_tree_shake_module, should_fail=.false.), &
-            & new_unittest("tree-shake-subprogram-with-module", & 
-                            test_tree_shake_subprogram_with_module, should_fail=.false.) &
+            & new_unittest("tree-shake-subprogram-with-module", &
+                            test_tree_shake_subprogram_with_module, should_fail=.false.), &
+            & new_unittest("valid-enforced-module-names", &
+                            check_valid_enforced_module_names, should_fail=.false.), &
+            & new_unittest("valid-enforced-module-names-dashed", &
+                            check_valid_enforced_module_names_dashed, should_fail=.false.), &
+            & new_unittest("invalid-enforced-module-names", &
+                            check_invalid_enforced_module_names, should_fail=.false.), &
+            & new_unittest("invalid-module-names", &
+                            check_invalid_module_names, should_fail=.false.), &
+            & new_unittest("custom-module-prefixes", &
+                            check_valid_custom_prefix, should_fail=.false.), &
+            & new_unittest("custom-prefixed-module-names", &
+                            check_custom_prefixed_modules, should_fail=.false.) &
             ]
-            
+
     end subroutine collect_module_dependencies
 
 
@@ -73,6 +85,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
@@ -143,6 +159,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
 
+        model%package_name = "test_scope"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
@@ -201,6 +221,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(1))
 
+        model%package_name = "test_program_with_module"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_PROGRAM,file_name="app/my_program.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')], &
@@ -253,6 +277,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(3))
+
+        model%package_name = "test_scope"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         scope_str = merge('FPM_SCOPE_APP ','FPM_SCOPE_TEST',exe_scope==FPM_SCOPE_APP)//' - '
 
@@ -313,6 +341,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
 
+        model%package_name = "test_missing_library_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
@@ -340,6 +372,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
 
+        model%package_name = "test_missing_program_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])
@@ -365,6 +401,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test_invalid_library_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
@@ -393,6 +433,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
 
+        model%package_name = "test_subdirectory_module_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/subdir/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
                                     provides=[string_t('app_mod')])
@@ -415,6 +459,10 @@ contains
 
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test_package_with_no_module_duplicates"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
@@ -440,6 +488,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(1))
 
+        model%package_name = "test_package_module_duplicates_same_source"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1'), string_t('my_mod_1')])
 
@@ -460,6 +512,10 @@ contains
 
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test_package_module_duplicates_one_package"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1_a.f90", &
                                     scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
@@ -485,6 +541,11 @@ contains
         allocate(model%packages(2))
         allocate(model%packages(1)%sources(1))
         allocate(model%packages(2)%sources(1))
+
+        model%package_name = "test_package_module_duplicates_two_packages"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+        model%packages(2)%name = "package2"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/subdir1/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, provides=[string_t('my_mod_1')])
@@ -514,6 +575,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(4))
+
+        model%package_name = "test_tree_shake_module"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
@@ -586,6 +651,10 @@ contains
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(4))
 
+        model%package_name = "test_tree_shake_subprogram_with_module"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
+
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="src/my_mod_1.f90", &
                                     scope = FPM_SCOPE_LIB, &
                                     provides=[string_t('my_mod_1')])  ! used via subprogram
@@ -651,6 +720,10 @@ contains
         allocate(model%external_modules(0))
         allocate(model%packages(1))
         allocate(model%packages(1)%sources(2))
+
+        model%package_name = "test_invalid_subdirectory_module_use"
+        model%build_prefix = ""
+        model%packages(1)%name = "package1"
 
         model%packages(1)%sources(1) = new_test_source(FPM_UNIT_MODULE,file_name="app/diff_dir/app_mod.f90", &
                                     scope = FPM_SCOPE_APP, &
@@ -784,6 +857,275 @@ contains
 
     end subroutine check_target
 
+    !> Check several module names whose name is valid and begins with the package name
+    subroutine check_valid_enforced_module_names(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i,j
+        type(string_t)               :: package,modules,prefix
+        logical,           parameter :: enforcing(2) = [.false.,.true.]
+        character(*),      parameter :: package_name = 'my_pkg'
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            'my_pkg__mod_1', &
+                                                            'my_pkg___mod_1', &
+                                                            'my_pkg____mod_1', &
+                                                            'my_pkg', &
+                                                            'my_pkg__1', &
+                                                            'my_pkg__my_pkg' ]
+
+
+        package = string_t(package_name)
+        prefix = string_t("") ! Prefix not used
+
+        do i=1,size(module_names)
+
+            modules = string_t(module_names(i))
+
+            !> All these names are valid both with and without enforcing
+            do j=1,2
+                if (.not.is_valid_module_name(modules,package,prefix,enforcing(j))) then
+                    call test_failed(error,'Valid dummy module name ['//modules%s//'] of package ['// &
+                                     package%s//'] unexpectedly fails naming check (enforcing='// &
+                                     merge('T','F',enforcing(j))//').')
+                    return
+                endif
+            end do
+        end do
+
+    end subroutine check_valid_enforced_module_names
+
+    !> Check several module names whose name is valid and begins with the package name
+    subroutine check_valid_enforced_module_names_dashed(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i,j
+        type(string_t)               :: package,modules,prefix
+        logical,           parameter :: enforcing(2) = [.false.,.true.]
+        character(*),      parameter :: package_name = 'my-pkg'
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            'my_pkg__mod_1', &
+                                                            'my_pkg___mod_1', &
+                                                            'my_pkg____mod_1', &
+                                                            'my_pkg', &
+                                                            'my_pkg__1', &
+                                                            'my_pkg__my_pkg' ]
+
+
+        package = string_t(package_name)
+        prefix = string_t("") ! Prefix not used
+
+        do i=1,size(module_names)
+
+            modules = string_t(trim(module_names(i)))
+
+            !> All these names are valid both with and without enforcing
+            do j=1,2
+                if (.not.is_valid_module_name(modules,package,prefix,enforcing(j))) then
+                    call test_failed(error,'Valid dummy module name ['//modules%s//'] of package ['// &
+                                     package%s//'] unexpectedly fails naming check (enforcing='// &
+                                     merge('T','F',enforcing(j))//').')
+                    return
+                endif
+            end do
+        end do
+
+    end subroutine check_valid_enforced_module_names_dashed
+
+    !> Check several module names whose name is invalid
+    subroutine check_invalid_enforced_module_names(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i
+        type(string_t)               :: package,modules,prefix
+        character(*),      parameter :: package_name = 'my_pkg'
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            'mod_1', &
+                                                            'my_pkmod_1', &
+                                                            'my_mod_1', &
+                                                            'pkg_mod_1', &
+                                                            'y_pkg_mod_1', &
+                                                            '_my_pkg_mod_1', &
+                                                            'my_pkgmy_mod', &
+                                                            'my_pkg_', &
+                                                            'my_pkg__' ]
+
+
+        package = string_t(package_name)
+        prefix = string_t("") ! Prefix not used
+
+        !> All these cases should report an invalid name
+        do i=1,size(module_names)
+
+            modules = string_t(trim(module_names(i)))
+
+            if (is_valid_module_name(modules,package,prefix,.true.)) then
+                call test_failed(error,'Invalid dummy module name ['//modules%s//'] of package ['// &
+                                 package%s//'] unexpectedly passes naming check (enforcing=T).')
+                return
+            end if
+
+        end do
+
+    end subroutine check_invalid_enforced_module_names
+
+    !> Check module names whose name does not name the convention:
+    !> - Begin with a literal
+    !> - len(name)<=63
+    !> - Contains literals, numbers, or underscores only
+    subroutine check_invalid_module_names(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i
+        type(string_t) :: modules,package,prefix
+
+        !> Examples taken from Metcalf/Reid/Cohen
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            '1a', &
+                                                            'a thing', &
+                                                            '$sign', &
+                                                            '_begin_with_underscore', &
+                                                            'contains-dashes', &
+                                                            'and/other?symbols@2' ]
+
+        package = string_t("")
+        prefix = string_t("") ! Prefix not used
+
+        !> All these cases should report an invalid name
+        do i=1,size(module_names)
+
+            modules = string_t(module_names(i))
+
+            if (is_valid_module_name(modules,package,prefix,.false.)) then
+                call test_failed(error,'Invalid Fortran module name ['//modules%s//'] ' &
+                                 //' unexpectedly passes naming check.')
+                return
+            end if
+
+        end do
+
+    end subroutine check_invalid_module_names
+
+    !> Check several module prefixes that are valid
+    subroutine check_valid_custom_prefix(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i
+        type(string_t)               :: prefix
+        character(len=80), parameter :: valid_prefixes(*) = [ character(len=80) :: &
+                                                              'm', &
+                                                              'mp', &
+                                                              'mypkg', &
+                                                              'mypkg123', &
+                                                              'mypackage', &
+                                                              'tomlf' ]
+
+        character(len=80), parameter :: invalid_prefixes(*) = [ character(len=80) :: &
+                                                               'm_', &
+                                                               'm-p', &
+                                                               'my_pkg', &
+                                                               'my-pkg123', &
+                                                               'my package', &
+                                                               'toml-f', &
+                                                               '123pkg', &
+                                                               'mypkg_' ]
+        ! All valid
+        do i=1,size(valid_prefixes)
+
+            prefix = string_t(valid_prefixes(i))
+
+            !> All these names are valid both with and without enforcing
+            if (.not.is_valid_module_prefix(prefix)) then
+                call test_failed(error,'Valid dummy module prefix ['//prefix%s//'] '//&
+                                       ' unexpectedly fails naming check.')
+                return
+            endif
+        end do
+
+        ! All invalid
+        do i=1,size(invalid_prefixes)
+
+            prefix = string_t(invalid_prefixes(i))
+
+            !> All these names are valid both with and without enforcing
+            if (is_valid_module_prefix(prefix)) then
+                call test_failed(error,'Invalid dummy module prefix ['//prefix%s//'] '//&
+                                       ' unexpectedly passed naming check.')
+                return
+            endif
+        end do
+
+    end subroutine check_valid_custom_prefix
+
+    !> Check several module prefixes that are valid
+    subroutine check_custom_prefixed_modules(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: i
+        type(string_t)              :: prefix,modules,package
+        character(len=*), parameter :: custom_prefix = 'mp123'
+        character(len=*), parameter :: package_name  = 'my-package'
+
+        character(len=80), parameter :: module_names(*) = [ character(len=80) :: &
+                                                            'mp123', &
+                                                            'mp123_utils', &
+                                                            'mp123__utils', &
+                                                            'mp123_test', &
+                                                            'mp123_my_module_name',&
+                                                            'my_package__utils',&
+                                                            'my_package',&
+                                                            'my_package__123']
+
+        character(len=80), parameter :: invalid_names(*) = [ character(len=80) :: &
+                                                              'utils', &
+                                                              'mp_123_utils', &
+                                                              'mypackage__utils', &
+                                                              'my_package_utils', &
+                                                              'my_package_test']
+
+        prefix = string_t(custom_prefix)
+        package = string_t(package_name)
+
+        ! All valid
+        do i=1,size(module_names)
+
+            modules = string_t(module_names(i))
+
+            !> All these names are valid both with and without enforcing
+            if (.not.is_valid_module_name(modules,package,prefix,.true.)) then
+                call test_failed(error,'Valid prefixed module ['//modules%s//'] ' //&
+                                       ' from package ['//package%s//'] with prefix ['//&
+                                       prefix%s//'] unexpectedly fails naming check.')
+                return
+            endif
+        end do
+
+        ! All invalid
+        do i=1,size(invalid_names)
+
+            modules = string_t(invalid_names(i))
+
+            !> All these names are valid both with and without enforcing
+            if (is_valid_module_name(modules,package,prefix,.true.)) then
+                call test_failed(error,'Invalid prefixed module ['//modules%s//'] ' //&
+                                       ' from package ['//package%s//'] with prefix ['//&
+                                       prefix%s//'] unexpectedly passed naming check.')
+                return
+            endif
+        end do
+
+    end subroutine check_custom_prefixed_modules
 
     !> Helper to check if a build target is in a list of build_target_ptr
     logical function target_in(needle,haystack)

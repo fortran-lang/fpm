@@ -1,6 +1,7 @@
 module fpm
 use fpm_strings, only: string_t, operator(.in.), glob, join, string_cat, &
-                      lower, str_ends_with
+                      lower, str_ends_with, is_fortran_name, str_begins_with_str, &
+                      is_valid_module_name, len_trim
 use fpm_backend, only: build_package
 use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings, &
@@ -96,6 +97,8 @@ subroutine build_model(model, settings, package, error)
     model%build_prefix = join_path("build", basename(model%compiler%fc))
 
     model%include_tests = settings%build_tests
+    model%enforce_module_names = package%build%module_naming
+    model%module_prefix = package%build%module_prefix
 
     allocate(model%packages(model%deps%ndep))
 
@@ -157,6 +160,11 @@ subroutine build_model(model, settings, package, error)
             if (allocated(dependency%build%external_modules)) then
                 model%external_modules = [model%external_modules, dependency%build%external_modules]
             end if
+
+            ! Copy naming conventions from this dependency's manifest
+            model%packages(i)%enforce_module_names = dependency%build%module_naming
+            model%packages(i)%module_prefix        = dependency%build%module_prefix
+
         end associate
     end do
     if (allocated(error)) return
@@ -237,7 +245,11 @@ subroutine build_model(model, settings, package, error)
         write(*,*)'<INFO> CXX COMPILER OPTIONS: ', model%cxx_compile_flags
         write(*,*)'<INFO> LINKER OPTIONS:  ', model%link_flags
         write(*,*)'<INFO> INCLUDE DIRECTORIES:  [', string_cat(model%include_dirs,','),']'
-     end if
+    end if
+
+    ! Check for invalid module names
+    call check_module_names(model, error)
+    if (allocated(error)) return
 
     ! Check for duplicate modules
     call check_modules_for_duplicates(model, duplicates_found)
@@ -289,6 +301,99 @@ subroutine check_modules_for_duplicates(model, duplicates_found)
       end do
     end do
 end subroutine check_modules_for_duplicates
+
+! Check names of all modules in this package and its dependencies
+subroutine check_module_names(model, error)
+    type(fpm_model_t), intent(in) :: model
+    type(error_t), allocatable, intent(out) :: error
+    integer :: i,j,k,l,m
+    logical :: valid,errors_found,enforce_this_file
+    type(string_t) :: package_name,module_name,package_prefix
+
+    errors_found = .false.
+
+    ! Loop through modules provided by each source file of every package
+    ! Add it to the array if it is not already there
+    ! Otherwise print out warning about duplicates
+    do k=1,size(model%packages)
+
+        package_name = string_t(model%packages(k)%name)
+
+        ! Custom prefix is taken from each dependency's manifest
+        if (model%packages(k)%enforce_module_names) then
+            package_prefix = model%packages(k)%module_prefix
+        else
+            package_prefix = string_t("")
+        end if
+
+        ! Warn the user if some of the dependencies have loose naming
+        if (model%enforce_module_names .and. .not.model%packages(k)%enforce_module_names) then
+           write(stderr, *) "Warning: Dependency ",package_name%s // &
+                            " does not enforce module naming, but project does. "
+        end if
+
+        do l=1,size(model%packages(k)%sources)
+
+            ! Module naming is not enforced in test modules
+            enforce_this_file =  model%enforce_module_names .and. &
+                                 model%packages(k)%sources(l)%unit_scope/=FPM_SCOPE_TEST
+
+            if (allocated(model%packages(k)%sources(l)%modules_provided)) then
+
+                do m=1,size(model%packages(k)%sources(l)%modules_provided)
+
+                    module_name = model%packages(k)%sources(l)%modules_provided(m)
+
+                    valid = is_valid_module_name(module_name, &
+                                                 package_name, &
+                                                 package_prefix, &
+                                                 enforce_this_file)
+
+                    if (.not.valid) then
+
+                        if (enforce_this_file) then
+
+                            if (len_trim(package_prefix)>0) then
+
+                            write(stderr, *) "ERROR: Module ",module_name%s, &
+                                             " in ",model%packages(k)%sources(l)%file_name, &
+                                             " does not match its package name ("//package_name%s// &
+                                             ") or custom prefix ("//package_prefix%s//")."
+                            else
+
+                            write(stderr, *) "ERROR: Module ",module_name%s, &
+                                             " in ",model%packages(k)%sources(l)%file_name, &
+                                             " does not match its package name ("//package_name%s//")."
+
+                            endif
+
+                        else
+
+                            write(stderr, *) "ERROR: Module ",module_name%s, &
+                                             " in ",model%packages(k)%sources(l)%file_name, &
+                                             " has an invalid Fortran name. "
+
+                        end if
+
+                        errors_found = .true.
+
+                    end if
+                end do
+            end if
+        end do
+    end do
+
+    if (errors_found) then
+
+        if (model%enforce_module_names) &
+            write(stderr, *) "       Hint: Try disabling module naming in the manifest: [build] module-naming=false . "
+
+        call fatal_error(error,"The package contains invalid module names. "// &
+                               "Naming conventions "//merge('are','not',model%enforce_module_names)// &
+                               " being requested.")
+    end if
+
+end subroutine check_module_names
 
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
