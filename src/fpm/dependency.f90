@@ -55,18 +55,19 @@
 !>
 !> Currenly ignored. First come, first serve.
 module fpm_dependency
-  use, intrinsic :: iso_fortran_env, only : output_unit
-  use fpm_environment, only : get_os_type, OS_WINDOWS
-  use fpm_error, only : error_t, fatal_error
-  use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, which
-  use fpm_git, only : git_target_revision, git_target_default, git_revision
-  use fpm_manifest, only : package_config_t, dependency_config_t, &
-    get_package_data
-  use fpm_strings, only : string_t, operator(.in.)
-  use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
-    toml_parse, get_value, set_value, add_table, toml_load, toml_stat
-  use fpm_versioning, only : version_t, new_version
+  use, intrinsic :: iso_fortran_env, only: output_unit
+  use fpm_environment, only: get_os_type, OS_WINDOWS
+  use fpm_error, only: error_t, fatal_error
+  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, which
+  use fpm_git, only: git_target_revision, git_target_default, git_revision
+  use fpm_manifest, only: package_config_t, dependency_config_t, &
+                          get_package_data
+  use fpm_strings, only: string_t, operator(.in.)
+  use fpm_toml, only: toml_table, toml_key, toml_error, toml_serializer, &
+                      toml_parse, get_value, set_value, add_table, toml_load, toml_stat
+  use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings
+  use fpm_downloader, only: downloader_t
   use json_module
   implicit none
   private
@@ -238,7 +239,7 @@ contains
       if (allocated(error)) return
     end if
 
-    if (.not.exists(self%dep_dir)) then
+    if (.not. exists(self%dep_dir)) then
       call mkdir(self%dep_dir)
     end if
 
@@ -257,9 +258,9 @@ contains
     if (allocated(error)) return
 
     ! Now decent into the dependency tree, level for level
-    do while(.not.self%finished())
-       call self%resolve(root, error)
-       if (allocated(error)) exit
+    do while (.not. self%finished())
+      call self%resolve(root, error)
+      if (allocated(error)) exit
     end do
     if (allocated(error)) return
 
@@ -389,10 +390,10 @@ contains
       return
     end if
 
-    associate(dep => self%dep(id))
+    associate (dep => self%dep(id))
       if (allocated(dep%git) .and. dep%update) then
         if (self%verbosity > 1) then
-          write(self%unit, out_fmt) "Update:", dep%name
+          write (self%unit, out_fmt) "Update:", dep%name
         end if
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
@@ -403,7 +404,7 @@ contains
         dep%update = .false.
 
         ! Now decent into the dependency tree, level for level
-        do while(.not.self%finished())
+        do while (.not. self%finished())
           call self%resolve(root, error)
           if (allocated(error)) exit
         end do
@@ -482,7 +483,7 @@ contains
     if (allocated(error)) return
 
     if (self%verbosity > 1) then
-      write(self%unit, out_fmt) &
+      write (self%unit, out_fmt) &
         "Dep:", dependency%name, "version", dependency%version%s(), &
         "at", dependency%proj_dir
     end if
@@ -495,7 +496,7 @@ contains
   !> Get a dependency from the registry. Whether the dependency is fetched
   !> from a local, a custom remote or the official registry is determined
   !> by the global configuration settings.
-  subroutine get_from_registry(self, target_dir, global_settings, error)
+  subroutine get_from_registry(self, target_dir, global_settings, error, downloader)
 
     !> Instance of the dependency configuration.
     class(dependency_node_t), intent(in) :: self
@@ -505,17 +506,17 @@ contains
 
     !> Global configuration settings.
     type(fpm_global_settings), intent(in) :: global_settings
-      
+
     !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
-    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, versions, status_code, downloaded_version
-    type(string_t), allocatable :: files(:)
+    !> Downloader instance.
+    type(downloader_t), optional, intent(in) :: downloader
+
+    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, status_code, downloaded_version
     type(version_t) :: version
-    integer :: i, stat, unit
+    integer :: stat, unit
     type(json_file) :: j_pkg
-    type(json_core) :: json
-    type(json_value), pointer :: j_obj, j_arr
     logical :: is_found
 
     ! Use local registry if it was specified in the global config file.
@@ -553,39 +554,12 @@ contains
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
 
-    ! Get package info from the registry and save it to a temporary file.
-    if (allocated (self%requested_version)) then
+    if (allocated(self%requested_version)) then
       ! Request specific version.
-      call download_from_registry(target_url//'/'//self%requested_version%s(), tmp_file, error)
+      call downloader%get(target_url//'/'//self%requested_version%s(), tmp_file, error)
     else
-      if (.not. exists(cache_path)) then
-        ! No cached versions found, no need to send further data for version resolution.
-        call download_from_registry(target_url, tmp_file, error)
-      else
-        call list_files(cache_path, files)
-        if (size(files) == 0) then
-          ! Zero cached versions found, no need to send further data for version resolution.
-          call download_from_registry(target_url, tmp_file, error)
-        else
-          ! Cached versions found, collect and send them to the registry for version resolution.
-          call json%create_object(j_obj, '')
-          call json%create_array(j_arr, 'cached_versions')
-          call json%add(j_obj, j_arr)
-
-          do i = 1, size(files)
-            ! Verify these are fpm packages.
-            if (exists(join_path(files(i)%s, 'fpm.toml'))) then
-              call new_version(version, basename(files(i)%s), error)
-              if (allocated(error)) return
-              call json%add(j_arr, '', version%s())
-            end if
-          end do
-
-          call json%serialize(j_obj, versions)
-          call download_from_registry(target_url, tmp_file, error, versions)
-          call json%destroy(j_obj)
-        end if
-      end if
+      ! Request latest version.
+      call downloader%get(target_url, tmp_file, error)
     end if
 
     if (allocated(error)) then
@@ -648,7 +622,7 @@ contains
     end if
 
     print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
-    call execute_command_line('curl '//target_url//' -s -o '//tmp_file, exitstat=stat)      
+    call downloader%get(target_url, tmp_file, error)
 
     if (stat /= 0) then
       call fatal_error(error, "Failed to download package '"//join_path(self%namespace, self%name)//"' from '"// &
@@ -659,16 +633,13 @@ contains
     ! Include version number in the cache path.
     cache_path = join_path(cache_path, version%s())
     if (.not. exists(cache_path)) call mkdir(cache_path)
-    
+
     ! Unpack the downloaded package to the right location including its version number.
-    call execute_command_line('tar -zxf '//tmp_file//' -C '//cache_path, exitstat=stat)
-    
-    if (stat /= 0) then
-      call fatal_error(error, "Unpacking failed for '"//join_path(self%namespace, self%name)//"'.")
-      close (unit, status='delete'); return
-    end if
-    
+    call downloader%unpack(tmp_file, cache_path, error)
+
     close (unit, status='delete')
+
+    if (allocated(error)) return
 
     target_dir = cache_path
 
@@ -677,143 +648,70 @@ contains
   !> Get the dependency from a local registry.
   subroutine get_from_local_registry(self, target_dir, registry_path, error)
 
-      !> Instance of the dependency configuration.
-      class(dependency_node_t), intent(in) :: self
+    !> Instance of the dependency configuration.
+    class(dependency_node_t), intent(in) :: self
 
-      !> The target directory to download the dependency to.
-      character(:), allocatable, intent(out) :: target_dir
+    !> The target directory to download the dependency to.
+    character(:), allocatable, intent(out) :: target_dir
 
-      !> The path to the local registry.
-      character(*), intent(in) :: registry_path
+    !> The path to the local registry.
+    character(*), intent(in) :: registry_path
 
-      !> Error handling.
-      type(error_t), allocatable, intent(out) :: error
+    !> Error handling.
+    type(error_t), allocatable, intent(out) :: error
 
-      character(:), allocatable :: path_to_name
-      type(string_t), allocatable :: files(:)
-      type(version_t), allocatable :: versions(:)
-      type(version_t) :: version
-      integer :: i
+    character(:), allocatable :: path_to_name
+    type(string_t), allocatable :: files(:)
+    type(version_t), allocatable :: versions(:)
+    type(version_t) :: version
+    integer :: i
 
-      path_to_name = join_path(registry_path, self%namespace, self%name)
+    path_to_name = join_path(registry_path, self%namespace, self%name)
 
-      if (.not. exists(path_to_name)) then
-        call fatal_error(error, "Dependency resolution of '"//self%name// &
-        & "': Directory '"//path_to_name//"' doesn't exist."); return
-      end if
+    if (.not. exists(path_to_name)) then
+      call fatal_error(error, "Dependency resolution of '"//self%name// &
+      & "': Directory '"//path_to_name//"' doesn't exist."); return
+    end if
 
-      call list_files(path_to_name, files)
-      if (size(files) == 0) then
-        call fatal_error(error, "No versions of '"//self%name//"' found in '"//path_to_name//"'."); return
-      end if
+    call list_files(path_to_name, files)
+    if (size(files) == 0) then
+      call fatal_error(error, "No versions of '"//self%name//"' found in '"//path_to_name//"'."); return
+    end if
 
-      ! Version requested, find it in the cache.
-      if (allocated(self%requested_version)) then
-        do i = 1, size(files)
-          ! Identify directory that matches the version number.
-          if (files(i)%s == join_path(path_to_name, self%requested_version%s()) .and. is_dir(files(i)%s)) then
-            target_dir = files(i)%s; return
-          end if
-        end do
-        call fatal_error(error, "Version '"//self%requested_version%s()//"' not found in '"//path_to_name//"'")
-        return
-      end if
-
-      ! No version requested, generate list of available versions.
-      allocate (versions(0))
+    ! Version requested, find it in the cache.
+    if (allocated(self%requested_version)) then
       do i = 1, size(files)
-        if (is_dir(files(i)%s)) then
-          call new_version(version, basename(files(i)%s), error)
-          if (allocated(error)) return
-          versions = [versions, version]
+        ! Identify directory that matches the version number.
+        if (files(i)%s == join_path(path_to_name, self%requested_version%s()) .and. is_dir(files(i)%s)) then
+          target_dir = files(i)%s; return
         end if
       end do
+      call fatal_error(error, "Version '"//self%requested_version%s()//"' not found in '"//path_to_name//"'")
+      return
+    end if
 
-      if (size(versions) == 0) then
-        call fatal_error(error, "No versions found in '"//path_to_name//"'"); return
+    ! No version requested, generate list of available versions.
+    allocate (versions(0))
+    do i = 1, size(files)
+      if (is_dir(files(i)%s)) then
+        call new_version(version, basename(files(i)%s), error)
+        if (allocated(error)) return
+        versions = [versions, version]
       end if
+    end do
 
-      ! Find the latest version.
-      version = versions(1)
-      do i = 1, size(versions)
-        if (versions(i) > version) version = versions(i)
-      end do
+    if (size(versions) == 0) then
+      call fatal_error(error, "No versions found in '"//path_to_name//"'"); return
+    end if
 
-      target_dir = join_path(path_to_name, version%s())
-    end subroutine get_from_local_registry
+    ! Find the latest version.
+    version = versions(1)
+    do i = 1, size(versions)
+      if (versions(i) > version) version = versions(i)
+    end do
 
-    subroutine download_from_registry(url, tmp_file, error, post_data)
-      character(*), intent(in) :: url
-      character(*), intent(in) :: tmp_file
-      type(error_t), allocatable, intent(out) :: error
-      character(*), optional, intent(in) :: post_data
-      
-      character(:), allocatable :: extra_args
-      integer :: stat
-
-      if (which('curl') /= '') then
-        if (present(post_data)) then
-          extra_args = ' -X POST -d "'//post_data//'"'
-        else
-          extra_args = ''
-        end if
-        print *, "Downloading package data from '"//url//"' ..."
-        call execute_command_line('curl '//url//' -s -o '//tmp_file//extra_args, exitstat=stat)
-      else if (which('wget') /= '') then
-        if (present(post_data)) then
-          extra_args = ' --post-data="'//post_data//'"'
-        else
-          extra_args = ''
-        end if
-        print *, "Downloading package data from '"//url//"' ..."
-        call execute_command_line('wget '//url//' -q -O '//tmp_file//extra_args, exitstat=stat)
-      else
-        call fatal_error(error, "Neither 'curl' nor 'wget' installed."); return
-      end if
-
-      if (stat /= 0) then
-        call fatal_error(error, "Error downloading package from '"//url//"'."); return
-      end if
-    end subroutine download_from_registry
-
-    !> Checks if the directory name matches the package version.
-    subroutine check_version(dir_path, error)
-
-      !> Absolute path to the package-containing directory.
-      character(*), intent(in) :: dir_path
-
-      !> Error handling
-      type(error_t), allocatable, intent(out) :: error
-
-      type(toml_table), allocatable :: table
-      type(toml_error), allocatable :: parse_error
-      integer :: stat
-      character(:), allocatable :: version
-
-      call toml_load(table, join_path(dir_path, 'fpm.toml'), error=parse_error)
-
-      if (allocated(parse_error)) then
-          allocate (error)
-          call move_alloc(parse_error%message, error%message)
-          return
-      end if
-
-      call get_value(table, 'version', version, stat=stat)
-
-      if (stat /= toml_stat%success) then
-          call fatal_error(error, 'Error reading version number from "' &
-          //join_path(dir_path, 'fpm.toml')//'"')
-          return
-      end if
-
-      if (version /= basename(dir_path)) then
-          call fatal_error(error, "Directory name '"//basename(dir_path) &
-          //"' does not match version number '"//version//" ' in package '"// &
-          dir_path//"'")
-          return
-      end if
-        
-    end subroutine check_version
+    target_dir = join_path(path_to_name, version%s())
+  end subroutine get_from_local_registry
 
   !> True if dependency is part of the tree
   pure logical function has_dependency(self, dependency)
@@ -884,12 +782,12 @@ contains
     self%version = package%version
     self%proj_dir = root
 
-    if (allocated(self%git).and.present(revision)) then
+    if (allocated(self%git) .and. present(revision)) then
       self%revision = revision
-      if (.not.fetch) then
+      if (.not. fetch) then
         ! git object is HEAD always allows an update
-        update = .not.allocated(self%git%object)
-        if (.not.update) then
+        update = .not. allocated(self%git%object)
+        if (.not. update) then
           ! allow update in case the revision does not match the requested object
           update = revision /= self%git%object
         end if
@@ -913,12 +811,12 @@ contains
     integer :: unit
     logical :: exist
 
-    inquire(file=file, exist=exist)
-    if (.not.exist) return
+    inquire (file=file, exist=exist)
+    if (.not. exist) return
 
-    open(file=file, newunit=unit)
+    open (file=file, newunit=unit)
     call self%load(unit, error)
-    close(unit)
+    close (unit)
   end subroutine load_from_file
 
   !> Read dependency tree from file
@@ -936,7 +834,7 @@ contains
     call toml_parse(table, unit, parse_error)
 
     if (allocated(parse_error)) then
-      allocate(error)
+      allocate (error)
       call move_alloc(parse_error%message, error%message)
       return
     end if
@@ -977,9 +875,9 @@ contains
       call get_value(ptr, "git", url)
       call get_value(ptr, "obj", obj)
       call get_value(ptr, "rev", rev)
-      if (.not.allocated(proj_dir)) cycle
+      if (.not. allocated(proj_dir)) cycle
       self%ndep = self%ndep + 1
-      associate(dep => self%dep(self%ndep))
+      associate (dep => self%dep(self%ndep))
         dep%name = list(ii)%key
         if (unix) then
           dep%proj_dir = proj_dir
@@ -988,7 +886,7 @@ contains
         end if
         dep%done = .false.
         if (allocated(version)) then
-          if (.not.allocated(dep%version)) allocate(dep%version)
+          if (.not. allocated(dep%version)) allocate (dep%version)
           call new_version(dep%version, version, error)
           if (allocated(error)) exit
         end if
@@ -1022,9 +920,9 @@ contains
 
     integer :: unit
 
-    open(file=file, newunit=unit)
+    open (file=file, newunit=unit)
     call self%dump(unit, error)
-    close(unit)
+    close (unit)
     if (allocated(error)) return
 
   end subroutine dump_to_file
@@ -1064,9 +962,9 @@ contains
     character(len=:), allocatable :: proj_dir
 
     do ii = 1, self%ndep
-      associate(dep => self%dep(ii))
+      associate (dep => self%dep(ii))
         call add_table(table, dep%name, ptr)
-        if (.not.associated(ptr)) then
+        if (.not. associated(ptr)) then
           call fatal_error(error, "Cannot create entry for "//dep%name)
           exit
         end if
@@ -1114,12 +1012,12 @@ contains
       new_size = this_size + this_size/2 + 1
     end if
 
-    allocate(var(new_size))
+    allocate (var(new_size))
 
     if (allocated(tmp)) then
       this_size = min(size(tmp, 1), size(var, 1))
       var(:this_size) = tmp(:this_size)
-      deallocate(tmp)
+      deallocate (tmp)
     end if
 
   end subroutine resize_dependency_node
