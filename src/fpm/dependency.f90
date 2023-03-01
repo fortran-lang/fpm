@@ -96,6 +96,8 @@ module fpm_dependency
   contains
     !> Update dependency from project manifest
     procedure :: register
+    !> Print information on this instance
+    procedure :: info
   end type dependency_node_t
 
 
@@ -223,6 +225,49 @@ contains
     end if
 
   end subroutine new_dependency_node
+
+  !> Write information on instance
+  subroutine info(self, unit, verbosity)
+
+    !> Instance of the dependency configuration
+    class(dependency_node_t), intent(in) :: self
+
+    !> Unit for IO
+    integer, intent(in) :: unit
+
+    !> Verbosity of the printout
+    integer, intent(in), optional :: verbosity
+
+    integer :: pr
+    character(:), allocatable :: ver
+    character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
+
+    if (present(verbosity)) then
+        pr = verbosity
+    else
+        pr = 1
+    end if
+
+    !> Call base object info
+    call self%dependency_config_t%info(unit,pr)
+
+    if (allocated(self%version)) then
+        call self%version%to_string(ver)
+        write(unit, fmt) "- version", ver
+    end if
+
+    if (allocated(self%proj_dir)) then
+        write(unit, fmt) "- dir", self%proj_dir
+    end if
+
+    if (allocated(self%revision)) then
+        write(unit, fmt) "- revision", self%revision
+    end if
+
+    write(unit, fmt) "- done", merge('YES','NO ',self%done)
+    write(unit, fmt) "- update", merge('YES','NO ',self%update)
+
+  end subroutine info
 
   !> Add project dependencies, each depth level after each other.
   !>
