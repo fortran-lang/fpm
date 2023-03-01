@@ -58,7 +58,7 @@ module fpm_dependency
   use, intrinsic :: iso_fortran_env, only: output_unit
   use fpm_environment, only: get_os_type, OS_WINDOWS
   use fpm_error, only: error_t, fatal_error
-  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, which
+  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename
   use fpm_git, only: git_target_revision, git_target_default, git_revision
   use fpm_manifest, only: package_config_t, dependency_config_t, &
                           get_package_data
@@ -536,11 +536,6 @@ contains
       end if
     end if
 
-    ! Check if tar is installed.
-    if (which('tar') == '') then
-      call fatal_error(error, "'tar' not installed."); return
-    end if
-
     ! Include namespace and package name in the target url.
     target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
 
@@ -624,9 +619,7 @@ contains
     print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
     call downloader%get(target_url, tmp_file, error)
 
-    if (stat /= 0) then
-      call fatal_error(error, "Failed to download package '"//join_path(self%namespace, self%name)//"' from '"// &
-      & target_url//"'.")
+    if (allocated(error)) then
       close (unit, status='delete'); return
     end if
 
@@ -634,7 +627,7 @@ contains
     cache_path = join_path(cache_path, version%s())
     if (.not. exists(cache_path)) call mkdir(cache_path)
 
-    ! Unpack the downloaded package to the right location including its version number.
+    ! Unpack the downloaded package to the final location.
     call downloader%unpack(tmp_file, cache_path, error)
 
     close (unit, status='delete')
