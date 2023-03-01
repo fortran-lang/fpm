@@ -819,7 +819,7 @@ contains
             call test_failed(error,'Unexpected link_libraries - expecting unallocated')
             return
         end if
-        
+
         if (size(f_source%parent_modules) /= 0) then
             call test_failed(error,'Incorrect number of parent_modules - expecting zero')
             return

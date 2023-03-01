@@ -2,3 +2,7 @@ build/*
 
 # Visual Studio Code
 .vscode/
+
+# CodeBlocks
+project/
+
