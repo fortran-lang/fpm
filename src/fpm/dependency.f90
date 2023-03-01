@@ -119,7 +119,7 @@ module fpm_dependency
   contains
     !> Overload procedure to add new dependencies to the tree
     generic :: add => add_project, add_project_dependencies, add_dependencies, &
-      add_dependency
+      add_dependency, add_dependency_node
     !> Main entry point to add a project
     procedure, private :: add_project
     !> Add a project and its dependencies to the dependency tree
@@ -128,6 +128,8 @@ module fpm_dependency
     procedure, private :: add_dependencies
     !> Add a single dependency to the dependency tree
     procedure, private :: add_dependency
+    !> Add a single dependency node to the dependency tree
+    procedure, private :: add_dependency_node
     !> Resolve dependencies
     generic :: resolve => resolve_dependencies, resolve_dependency
     !> Resolve dependencies
@@ -359,6 +361,45 @@ contains
 
   end subroutine add_dependencies
 
+  !> Add a single dependency node to the dependency tree
+  !> Dependency nodes contain additional information (version, git, revision)
+   subroutine add_dependency_node(self, dependency, error)
+    !> Instance of the dependency tree
+    class(dependency_tree_t), intent(inout) :: self
+    !> Dependency configuration to add
+    type(dependency_node_t), intent(in) :: dependency
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: id
+    logical :: needs_update
+
+    id = self%find(dependency)
+
+    exists: if (id > 0) then
+
+      !> A dependency with this same name is already in the dependency tree.
+
+      !> check if it needs to be updated
+      needs_update = dependency_has_changed(self%dep(id), dependency)
+
+      !> Ensure an update is requested whenever the dependency has changed
+      if (needs_update) then
+         write(self%unit, out_fmt) "Dependency change detected:", dependency%name
+         self%dep(id) = dependency
+         self%dep(id)%update = .true.
+      endif
+
+    else exists
+
+      !> New dependency: add from scratch
+      self%ndep = self%ndep + 1
+      self%dep(self%ndep) = dependency
+
+    end if exists
+
+  end subroutine add_dependency_node
+
   !> Add a single dependency to the dependency tree
    subroutine add_dependency(self, dependency, error)
     !> Instance of the dependency tree
@@ -368,34 +409,10 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: id
-    logical :: needs_update
-    type(dependency_node_t) :: new_dep
+    type(dependency_node_t) :: node
 
-    id = self%find(dependency)
-
-    exists: if (id > 0) then
-
-      !> A dependency with this same name is already in the dependency tree.
-
-      !> check if it needs to be updated
-      call new_dependency_node(new_dep, dependency)
-      needs_update = dependency_has_changed(self%dep(id), new_dep)
-
-      !> Ensure an update is requested whenever the dependency has changed
-      if (needs_update) then
-         write(self%unit, out_fmt) "Dependency change detected:", dependency%name
-         call new_dependency_node(self%dep(id), dependency, update=.true.)
-      endif
-
-    else exists
-
-      !> New dependency: add from scratch
-      self%ndep = self%ndep + 1
-      call new_dependency_node(self%dep(self%ndep), dependency)
-
-    end if exists
-
+    call new_dependency_node(node, dependency)
+    call add_dependency_node(self, node, error)
 
   end subroutine add_dependency
 
