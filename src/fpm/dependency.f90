@@ -535,10 +535,8 @@ contains
       end if
     end if
 
-    ! Check if required programs are installed.
-    if (which('curl') == '' .and. which('wget') == '') then
-      call fatal_error(error, "Neither 'curl' nor 'wget' installed."); return
-    else if (which('tar') == '') then
+    ! Check if tar is installed.
+    if (which('tar') == '') then
       call fatal_error(error, "'tar' not installed."); return
     end if
 
@@ -555,60 +553,41 @@ contains
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
 
-    ! Make sure the cache path exists.
-    if (.not. exists(cache_path)) call mkdir(cache_path)
-
     ! Get package info from the registry and save it to a temporary file.
     if (allocated (self%requested_version)) then
-      print *, "Downloading package data for '"//join_path(self%namespace, self%name, self%requested_version%s())//"' ..."
-      if (which('curl') /= '') then
-        call execute_command_line('curl '//target_url//'/'//self%requested_version%s()//' -s -o '//tmp_file, exitstat=stat)
-      else
-        call execute_command_line('wget '//target_url//'/'//self%requested_version%s()//' -q -O '//tmp_file, exitstat=stat)
-      end if
+      ! Request specific version.
+      call download_from_registry(target_url//'/'//self%requested_version%s(), tmp_file, error)
     else
-      call list_files(cache_path, files)
-      
-      if (size(files) == 0) then
-        ! No cached versions found, just download the latest version.
-        print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
-        if (which('curl') /= '') then
-          call execute_command_line('curl '//target_url//' -s -o '//tmp_file, exitstat=stat)
+      if (exists(cache_path)) then
+        call list_files(cache_path, files)
+        if (size(files) == 0) then
+          ! Zero cached versions found, no need to send further data for version resolution.
+          call download_from_registry(target_url, tmp_file, error)
         else
-          call execute_command_line('wget '//target_url//' -q -O '//tmp_file, exitstat=stat)
+          ! Cached versions found, collect and send them to the registry for version resolution.
+          call json%create_object(j_obj, '')
+          call json%create_array(j_arr, 'cached_versions')
+          call json%add(j_obj, j_arr)
+
+          do i = 1, size(files)
+            ! Verify these are fpm packages.
+            if (exists(join_path(files(i)%s, 'fpm.toml'))) then
+              call new_version(version, basename(files(i)%s), error)
+              if (allocated(error)) return
+              call json%add(j_arr, '', version%s())
+            end if
+          end do
+
+          call json%serialize(j_obj, versions)
+          call download_from_registry(target_url, tmp_file, error, versions)
+          call json%destroy(j_obj)
         end if
       else
-        ! Cached versions found, send them to the registry for version resolution.
-        call json%create_object(j_obj, '')
-        call json%create_array(j_arr, 'cached_versions')
-        call json%add(j_obj, j_arr)
-
-        do i = 1, size(files)
-          ! Verify these are fpm packages.
-          if (exists(join_path(files(i)%s, 'fpm.toml'))) then
-            call new_version(version, basename(files(i)%s), error)
-            if (allocated(error)) return
-            call json%add(j_arr, '', version%s())
-          end if
-        end do
-
-        call json%serialize(j_obj, versions)
-
-        print *, "Downloading package data for '"//join_path(self%namespace, self%name)//"' ..."
-        if (which('curl') /= '') then
-          call execute_command_line('curl -X POST '//target_url//' -o '//tmp_file// ' -s -d "'//versions//'"', exitstat=stat)
-        else
-          call execute_command_line('wget '//target_url//' -q -O '//tmp_file// ' --post-data="'//versions//'"', exitstat=stat)
-        end if
-  
-        call json%destroy(j_obj)
+        call download_from_registry(target_url, tmp_file, error)
       end if
-
     end if
 
-    if (stat /= 0) then
-      call fatal_error(error, "Error loading package '"//join_path(self%namespace, self%name)// &
-      & "' from the remote registry.")
+    if (allocated(error)) then
       close (unit, status='delete'); return
     end if
 
@@ -761,6 +740,40 @@ contains
 
       target_dir = join_path(path_to_name, version%s())
     end subroutine get_from_local_registry
+
+    subroutine download_from_registry(url, tmp_file, error, post_data)
+      character(*), intent(in) :: url
+      character(*), intent(in) :: tmp_file
+      type(error_t), allocatable, intent(out) :: error
+      character(*), optional, intent(in) :: post_data
+      
+      character(:), allocatable :: extra_args
+      integer :: stat
+
+      if (which('curl') /= '') then
+        if (present(post_data)) then
+          extra_args = ' -X POST -d "'//post_data//'"'
+        else
+          extra_args = ''
+        end if
+        print *, "Downloading package data from '"//url//"' ..."
+        call execute_command_line('curl '//url//' -s -o '//tmp_file//extra_args, exitstat=stat)
+      else if (which('wget') /= '') then
+        if (present(post_data)) then
+          extra_args = ' --post-data="'//post_data//'"'
+        else
+          extra_args = ''
+        end if
+        print *, "Downloading package data from '"//url//"' ..."
+        call execute_command_line('wget '//url//' -q -O '//tmp_file//extra_args, exitstat=stat)
+      else
+        call fatal_error(error, "Neither 'curl' nor 'wget' installed."); return
+      end if
+
+      if (stat /= 0) then
+        call fatal_error(error, "Error downloading package from '"//url//"'."); return
+      end if
+    end subroutine download_from_registry
 
     !> Checks if the directory name matches the package version.
     subroutine check_version(dir_path, error)
