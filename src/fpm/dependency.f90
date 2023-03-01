@@ -558,7 +558,10 @@ contains
       ! Request specific version.
       call download_from_registry(target_url//'/'//self%requested_version%s(), tmp_file, error)
     else
-      if (exists(cache_path)) then
+      if (.not. exists(cache_path)) then
+        ! No cached versions found, no need to send further data for version resolution.
+        call download_from_registry(target_url, tmp_file, error)
+      else
         call list_files(cache_path, files)
         if (size(files) == 0) then
           ! Zero cached versions found, no need to send further data for version resolution.
@@ -582,8 +585,6 @@ contains
           call download_from_registry(target_url, tmp_file, error, versions)
           call json%destroy(j_obj)
         end if
-      else
-        call download_from_registry(target_url, tmp_file, error)
       end if
     end if
 
