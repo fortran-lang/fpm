@@ -159,9 +159,11 @@ module fpm_dependency
     !> Write dependency tree to TOML data structure
     procedure, private :: dump_to_toml
     !> Update dependency tree
-    generic :: update => update_dependency
+    generic :: update => update_dependency,update_tree
     !> Update a list of dependencies
     procedure, private :: update_dependency
+    !> Update all dependencies in the tree
+    procedure, private :: update_tree
   end type dependency_tree_t
 
   !> Common output format for writing to the command line
@@ -382,7 +384,7 @@ contains
 
       !> Ensure an update is requested whenever the dependency has changed
       if (needs_update) then
-         write(self%unit, out_fmt) "Update needed:", dependency%name
+         write(self%unit, out_fmt) "Dependency change detected:", dependency%name
          call new_dependency_node(self%dep(id), dependency, update=.true.)
       endif
 
@@ -441,6 +443,23 @@ contains
     end associate
 
   end subroutine update_dependency
+
+  !> Update whole dependency tree
+  subroutine update_tree(self, error)
+    !> Instance of the dependency tree
+    class(dependency_tree_t), intent(inout) :: self
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: i
+
+    ! Update dependencies where needed
+    do i = 1, self%ndep
+       call self%update(self%dep(i)%name,error)
+       if (allocated(error)) return
+    end do
+
+  end subroutine update_tree
 
   !> Resolve all dependencies in the tree
   subroutine resolve_dependencies(self, root, error)

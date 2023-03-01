@@ -61,14 +61,8 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     ! Update dependencies where needed
-    do i = 1, model%deps%ndep
-
-       if (model%deps%dep(i)%update) then
-            call model%deps%update(model%deps%dep(i)%name,error)
-            if (allocated(error)) return
-       end if
-
-    end do
+    call model%deps%update(error)
+    if (allocated(error)) return
 
     ! build/ directory should now exist
     if (.not.exists("build/.gitignore")) then
