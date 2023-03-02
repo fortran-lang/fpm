@@ -139,7 +139,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: i, j
+    integer :: i, j, k
 
     type(string_t), allocatable :: exe_dirs(:)
     type(srcfile_t) :: exe_source
@@ -161,16 +161,22 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
         !  and apply any overrides
         do j=1,size(sources)
 
-            if (basename(sources(j)%file_name,suffix=.true.) == executables(i)%main .and.&
-                 canon_path(dirname(sources(j)%file_name)) == &
-                 canon_path(executables(i)%source_dir) ) then
+            if (basename(sources(j)%file_name,suffix=.true.) == executables(i)%main) then
 
-                sources(j)%exe_name = executables(i)%name
-                if (allocated(executables(i)%link)) then
-                    sources(j)%link_libraries = executables(i)%link
-                end if
-                sources(j)%unit_type = FPM_UNIT_PROGRAM
-                cycle exe_loop
+                do k=1,size(executables(i)%source_dir)
+
+                    if (canon_path(dirname(sources(j)%file_name)) == &
+                        canon_path(executables(i)%source_dir(k)%s) ) then
+
+                        sources(j)%exe_name = executables(i)%name
+                        if (allocated(executables(i)%link)) then
+                            sources(j)%link_libraries = executables(i)%link
+                        end if
+                        sources(j)%unit_type = FPM_UNIT_PROGRAM
+                        cycle exe_loop
+
+                    endif
+                end do
 
             end if
 
@@ -178,7 +184,14 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
 
         ! Add if not already discovered (auto_discovery off)
         associate(exe => executables(i))
-            exe_source = parse_source(join_path(exe%source_dir,exe%main),error)
+
+            ! Search in all dirs
+            do j=1,size(exe%source_dir)
+               exe_source = parse_source(join_path(exe%source_dir(j)%s,exe%main),error)
+               if (.not.allocated(error)) exit
+            end do
+            if (allocated(error)) return
+
             exe_source%exe_name = exe%name
             if (allocated(exe%link)) then
                 exe_source%link_libraries = exe%link
@@ -207,7 +220,7 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
 
     type(string_t) :: dirs_temp(size(executables))
 
-    integer :: i, n
+    integer :: i, j, n
 
     n = 0
 
@@ -216,12 +229,15 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
     enddo
 
     do i=1,size(executables)
-        if (.not.(executables(i)%source_dir .in. dirs_temp)) then
+        if (.not.allocated(executables(i)%source_dir)) cycle
+        do j=1,size(executables(i)%source_dir)
+            if (.not.(executables(i)%source_dir(j)%s .in. dirs_temp)) then
 
-            n = n + 1
-            dirs_temp(n)%s = executables(i)%source_dir
+                n = n + 1
+                dirs_temp(n) = executables(i)%source_dir(j)
 
-        end if
+            end if
+        end do
     end do
 
     if (.not.allocated(exe_dirs)) then

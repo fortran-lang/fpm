@@ -240,7 +240,7 @@ contains
         allocate(package%executable(1))
         call default_executable(package%executable(1), name)
 
-        call check_string(error, package%executable(1)%source_dir, "app", &
+        call check_string(error, package%executable(1)%source_dir(1)%s, "app", &
             & "Default executable source-dir")
         if (allocated(error)) return
 

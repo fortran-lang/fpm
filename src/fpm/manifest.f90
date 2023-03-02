@@ -52,7 +52,7 @@ contains
         character(len=*), intent(in) :: name
 
         self%name = name
-        self%source_dir = "app"
+        self%source_dir = [string_t("app")]
         self%main = "main.f90"
 
     end subroutine default_executable
@@ -67,7 +67,7 @@ contains
         character(len=*), intent(in) :: name
 
         self%name = name // "-demo"
-        self%source_dir = "example"
+        self%source_dir = [string_t("example")]
         self%main = "main.f90"
 
     end subroutine default_example
@@ -82,7 +82,7 @@ contains
         character(len=*), intent(in) :: name
 
         self%name = name // "-test"
-        self%source_dir = "test"
+        self%source_dir = [string_t("test")]
         self%main = "main.f90"
 
     end subroutine default_test

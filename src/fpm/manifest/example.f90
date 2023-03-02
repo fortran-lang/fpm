@@ -19,6 +19,7 @@ module fpm_manifest_example
     use fpm_manifest_executable, only : executable_config_t
     use fpm_error, only : error_t, syntax_error, bad_name_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
+    use fpm_strings, only : string_t, string_cat
     implicit none
     private
 
@@ -64,7 +65,15 @@ contains
         if (bad_name_error(error,'example',self%name))then
            return
         endif
-        call get_value(table, "source-dir", self%source_dir, "example")
+
+        call get_list(table, "source-dir", self%source_dir, error)
+        if (allocated(error)) return
+
+        ! Set default value of source-dir if not found in manifest
+        if (.not.allocated(self%source_dir)) then
+            self%source_dir = [string_t("example")]
+        end if
+
         call get_value(table, "main", self%main, "main.f90")
 
         call get_value(table, "dependencies", child, requested=.false.)
@@ -153,8 +162,8 @@ contains
             write(unit, fmt) "- name", self%name
         end if
         if (allocated(self%source_dir)) then
-            if (self%source_dir /= "example" .or. pr > 2) then
-                write(unit, fmt) "- source directory", self%source_dir
+            if (self%source_dir(1)%s /= "example" .or. size(self%source_dir)/=1 .or. pr > 2) then
+                write(unit, fmt) "- source directory", string_cat(self%source_dir,",")
             end if
         end if
         if (allocated(self%main)) then
