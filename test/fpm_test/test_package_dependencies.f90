@@ -523,8 +523,8 @@ contains
     type(mock_downloader_t) :: mock_downloader
 
     call new_table(table)
-    table%key = 'version-f'
-    call set_value(table, 'namespace', 'minhdao')
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
 
     call new_dependency(node%dependency_config_t, table, error=error)
     if (allocated(error)) return
@@ -630,8 +630,8 @@ contains
     type(mock_downloader_t) :: mock_downloader
 
     call new_table(table)
-    table%key = 'version-f'
-    call set_value(table, 'namespace', 'minhdao')
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
     call set_value(table, 'v', '0.1.0')
 
     call new_dependency(node%dependency_config_t, table, error=error)
@@ -673,8 +673,8 @@ contains
     type(mock_downloader_t) :: mock_downloader
 
     call new_table(table)
-    table%key = 'version-f'
-    call set_value(table, 'namespace', 'minhdao')
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
     call set_value(table, 'v', '0.1.0')
 
     call new_dependency(node%dependency_config_t, table, error=error)
