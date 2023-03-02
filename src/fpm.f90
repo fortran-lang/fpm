@@ -130,12 +130,14 @@ subroutine build_model(model, settings, package, error)
             if (allocated(dependency%library)) then
 
                 if (allocated(dependency%library%source_dir)) then
-                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
-                    if (is_dir(lib_dir)) then
-                        call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                            error=error)
-                        if (allocated(error)) exit
-                    end if
+                    do j=1,size(dependency%library%source_dir)
+                        lib_dir = join_path(dep%proj_dir, dependency%library%source_dir(j)%s)
+                        if (is_dir(lib_dir)) then
+                            call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
+                                error=error)
+                            if (allocated(error)) exit
+                        end if
+                    end do
                 end if
 
                 if (allocated(dependency%library%include_dir)) then

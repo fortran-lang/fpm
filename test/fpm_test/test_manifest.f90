@@ -205,9 +205,15 @@ contains
         allocate(package%library)
         call default_library(package%library)
 
-        call check_string(error, package%library%source_dir, "src", &
-            & "Default library source-dir")
-        if (allocated(error)) return
+        if (.not.allocated(package%library%source_dir)) then
+            call test_failed(error,"Default source-dir list not allocated")
+            return
+        end if
+
+        if (.not.("src".in.package%library%source_dir)) then
+            call test_failed(error,"'src' not in default source-dir list")
+            return
+        end if
 
         if (.not.allocated(package%library%include_dir)) then
             call test_failed(error,"Default include-dir list not allocated")
@@ -742,9 +748,15 @@ contains
         call new_library(library, table, error)
         if (allocated(error)) return
 
-        call check_string(error, library%source_dir, "src", &
-            & "Default library source-dir")
-        if (allocated(error)) return
+        if (.not.allocated(library%source_dir)) then
+            call test_failed(error,"Default source-dir list not allocated")
+            return
+        end if
+
+        if (.not.("src".in.library%source_dir)) then
+            call test_failed(error,"'src' not in default source-dir list")
+            return
+        end if
 
         if (.not.allocated(library%include_dir)) then
             call test_failed(error,"Default include-dir list not allocated")

@@ -36,7 +36,7 @@ contains
         !> Instance of the library meta data
         type(library_config_t), intent(out) :: self
 
-        self%source_dir = "src"
+        self%source_dir = [string_t("src")]
         self%include_dir = [string_t("include")]
 
     end subroutine default_library
