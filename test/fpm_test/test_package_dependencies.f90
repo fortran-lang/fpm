@@ -9,6 +9,7 @@ module test_package_dependencies
   use fpm_manifest_dependency
   use fpm_toml
   use fpm_settings, only: fpm_global_settings, get_registry_settings
+  use fpm_downloader, only: downloader_t
 
   implicit none
   private
@@ -20,8 +21,13 @@ module test_package_dependencies
 
   type, extends(dependency_tree_t) :: mock_dependency_tree_t
   contains
-    procedure :: resolve_dependency => resolve_dependency_once
+    procedure, private :: resolve_dependency => resolve_dependency_once
   end type mock_dependency_tree_t
+
+  type, extends(downloader_t) :: mock_downloader_t
+  contains
+    procedure, nopass :: get => get_mock_package, unpack => unpack_mock_package
+  end type mock_downloader_t
 
 contains
 
@@ -514,6 +520,7 @@ contains
     type(fpm_global_settings) :: global_settings
     character(len=:), allocatable :: target_dir
     type(toml_table), pointer :: child
+    type(mock_downloader_t) :: mock_downloader
 
     call new_table(table)
     table%key = 'version-f'
@@ -538,7 +545,7 @@ contains
       call delete_tmp_folder; return
     end if
 
-    call node%get_from_registry(target_dir, global_settings, error)
+    call node%get_from_registry(target_dir, global_settings, error, mock_downloader)
     if (allocated(error)) then
       call delete_tmp_folder; return
     end if
@@ -620,6 +627,7 @@ contains
     type(fpm_global_settings) :: global_settings
     character(len=:), allocatable :: target_dir
     type(toml_table), pointer :: child
+    type(mock_downloader_t) :: mock_downloader
 
     call new_table(table)
     table%key = 'version-f'
@@ -645,7 +653,7 @@ contains
       call delete_tmp_folder; return
     end if
 
-    call node%get_from_registry(target_dir, global_settings, error)
+    call node%get_from_registry(target_dir, global_settings, error, mock_downloader)
     if (allocated(error)) then
       call delete_tmp_folder; return
     end if
@@ -662,6 +670,7 @@ contains
     type(fpm_global_settings) :: global_settings
     character(len=:), allocatable :: target_dir
     type(toml_table), pointer :: child
+    type(mock_downloader_t) :: mock_downloader
 
     call new_table(table)
     table%key = 'version-f'
@@ -688,7 +697,7 @@ contains
       call delete_tmp_folder; return
     end if
 
-    call node%get_from_registry(target_dir, global_settings, error)
+    call node%get_from_registry(target_dir, global_settings, error, mock_downloader)
     if (allocated(error)) then
       call delete_tmp_folder; return
     end if
@@ -732,6 +741,35 @@ contains
 
     global_settings%path_to_config_folder = join_path(cwd, tmp_folder)
     global_settings%config_file_name = config_file_name
-  end subroutine
+  end
+
+  subroutine get_mock_package(url, tmp_file, error)
+    character(*), intent(in) :: url
+    character(*), intent(in) :: tmp_file
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: stat
+
+    call execute_command_line("echo '"//'{"code": 200, "version": "0.1.0", "tar": "abc"}'// &
+    & "' > "//tmp_file, exitstat=stat)
+
+    if (stat /= 0) then
+      call test_failed(error, "Failed to create mock package"); return
+    end if
+  end
+
+  subroutine unpack_mock_package(tmp_file, destination, error)
+    character(*), intent(in) :: tmp_file
+    character(*), intent(in) :: destination
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: stat
+
+    call execute_command_line('cp '//tmp_file//' '//destination, exitstat=stat)
+
+    if (stat /= 0) then
+      call test_failed(error, "Failed to create mock package"); return
+    end if
+  end
 
 end module test_package_dependencies

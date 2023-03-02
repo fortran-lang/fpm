@@ -511,7 +511,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     !> Downloader instance.
-    type(downloader_t), optional, intent(in) :: downloader
+    class(downloader_t), optional, intent(in) :: downloader
 
     character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, status_code, downloaded_version
     type(version_t) :: version
