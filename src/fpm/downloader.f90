@@ -1,6 +1,7 @@
 module fpm_downloader
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: which
+  use json_module, only: json_file
 
   implicit none
   private
@@ -10,13 +11,27 @@ module fpm_downloader
   !> This type could be entirely avoided but it is quite practical because it can be mocked for testing.
   type downloader_t
   contains
-    procedure, nopass :: get, unpack
+    procedure, nopass :: get_pkg_data, get_file, unpack
   end type
 
 contains
 
   !> Perform an http get request and save output to file.
-  subroutine get(url, tmp_file, error)
+  subroutine get_pkg_data(url, tmp_file, json, error)
+    character(*), intent(in) :: url
+    character(*), intent(in) :: tmp_file
+    type(json_file), intent(out) :: json
+    type(error_t), allocatable, intent(out) :: error
+
+    call json%initialize()
+
+    call get_file(url, tmp_file, error)
+    if (allocated(error)) return
+
+    call json%load_file(tmp_file)
+  end
+
+  subroutine get_file(url, tmp_file, error)
     character(*), intent(in) :: url
     character(*), intent(in) :: tmp_file
     type(error_t), allocatable, intent(out) :: error

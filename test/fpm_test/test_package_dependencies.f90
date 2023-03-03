@@ -10,6 +10,7 @@ module test_package_dependencies
   use fpm_toml
   use fpm_settings, only: fpm_global_settings, get_registry_settings
   use fpm_downloader, only: downloader_t
+  use json_module, only: json_file, json_value, json_core
 
   implicit none
   private
@@ -26,7 +27,7 @@ module test_package_dependencies
 
   type, extends(downloader_t) :: mock_downloader_t
   contains
-    procedure, nopass :: get => get_mock_package, unpack => unpack_mock_package
+    procedure, nopass :: get_pkg_data, get_file, unpack => unpack_mock_package
   end type mock_downloader_t
 
 contains
@@ -743,19 +744,26 @@ contains
     global_settings%config_file_name = config_file_name
   end
 
-  subroutine get_mock_package(url, tmp_file, error)
+  subroutine get_pkg_data(url, tmp_file, json, error)
+    character(*), intent(in) :: url
+    character(*), intent(in) :: tmp_file
+    type(json_file), intent(out) :: json
+    type(error_t), allocatable, intent(out) :: error
+
+    type(json_core) :: core
+    type(json_value), pointer :: p
+
+    call core%create_object(p, '')
+    call core%add(p, 'code', '200')
+    call core%add(p, 'version', '0.0.1')
+    call core%add(p, 'tar', 'abc')
+    call json%json_file_add(p)
+  end
+
+  subroutine get_file(url, tmp_file, error)
     character(*), intent(in) :: url
     character(*), intent(in) :: tmp_file
     type(error_t), allocatable, intent(out) :: error
-
-    integer :: stat
-
-    call execute_command_line("echo '"//'{"code": 200, "version": "0.1.0", "tar": "abc"}'// &
-    & "' > "//tmp_file, exitstat=stat)
-
-    if (stat /= 0) then
-      call test_failed(error, "Failed to create mock package"); return
-    end if
   end
 
   subroutine unpack_mock_package(tmp_file, destination, error)

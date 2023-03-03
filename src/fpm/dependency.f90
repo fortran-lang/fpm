@@ -68,7 +68,7 @@ module fpm_dependency
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings
   use fpm_downloader, only: downloader_t
-  use json_module
+  use json_module, only: json_file
   implicit none
   private
 
@@ -551,20 +551,17 @@ contains
 
     if (allocated(self%requested_version)) then
       ! Request specific version.
-      call downloader%get(target_url//'/'//self%requested_version%s(), tmp_file, error)
+      call downloader%get_pkg_data(target_url//'/'//self%requested_version%s(), tmp_file, j_pkg, error)
     else
       ! Request latest version.
-      call downloader%get(target_url, tmp_file, error)
+      call downloader%get_pkg_data(target_url, tmp_file, j_pkg, error)
     end if
-
-    if (allocated(error)) then
-      close (unit, status='delete'); return
-    end if
-
-    call j_pkg%initialize()
-    call j_pkg%load_file(tmp_file)
 
     close (unit, status='delete')
+
+    if (allocated(error)) then
+      call j_pkg%destroy(); return
+    end if
 
     if (j_pkg%failed()) then
       call fatal_error(error, "Error reading package data of '"//join_path(self%namespace, self%name)//"'.")
@@ -617,7 +614,7 @@ contains
     end if
 
     print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
-    call downloader%get(target_url, tmp_file, error)
+    call downloader%get_file(target_url, tmp_file, error)
 
     if (allocated(error)) then
       close (unit, status='delete'); return
