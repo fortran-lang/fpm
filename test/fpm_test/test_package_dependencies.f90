@@ -10,7 +10,7 @@ module test_package_dependencies
   use fpm_toml
   use fpm_settings, only: fpm_global_settings, get_registry_settings
   use fpm_downloader, only: downloader_t
-  use json_module, only: json_file, json_value, json_core
+  use json_module
 
   implicit none
   private

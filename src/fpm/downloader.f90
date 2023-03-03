@@ -1,7 +1,7 @@
 module fpm_downloader
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: which
-  use json_module, only: json_file
+  use json_module
 
   implicit none
   private
