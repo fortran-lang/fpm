@@ -84,6 +84,8 @@ contains
         type(toml_array), pointer :: children
         character(len=:), allocatable :: str
 
+        if (.not.table%has_key(key)) return
+
         call get_value(table, key, children, requested=.false.)
         if (associated(children)) then
             nlist = len(children)
