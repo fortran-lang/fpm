@@ -68,7 +68,7 @@ module fpm_dependency
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings
   use fpm_downloader, only: downloader_t
-  use json_module
+  use json_module, only: json_file
   implicit none
   private
 
