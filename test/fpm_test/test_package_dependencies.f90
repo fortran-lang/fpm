@@ -747,10 +747,15 @@ contains
   subroutine get_pkg_data(url, tmp_file, json, error)
     character(*), intent(in) :: url
     character(*), intent(in) :: tmp_file
-    class(json_value), allocatable, intent(out) :: json
+    type(json_object), intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
 
-    call json_loads(json, '{"code": 200, "version": "0.0.1", "tar": "abc"}')
+    class(json_value), allocatable :: raw
+    type(json_object), pointer :: ptr
+
+    call json_loads(raw, '{"code": 200, "version": "0.0.1", "tar": "abc"}')
+    ptr => cast_to_object(raw)
+    json = ptr
   end
 
   subroutine get_file(url, tmp_file, error)

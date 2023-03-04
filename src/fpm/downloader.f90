@@ -1,7 +1,7 @@
 module fpm_downloader
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: which
-  use jonquil, only: json_value, json_error, json_load
+  use jonquil, only: json_object, json_value, json_error, json_load, cast_to_object
 
   implicit none
   private
@@ -20,18 +20,27 @@ contains
   subroutine get_pkg_data(url, tmp_file, json, error)
     character(*), intent(in) :: url
     character(*), intent(in) :: tmp_file
-    class(json_value), allocatable, intent(out) :: json
+    type(json_object), intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
 
-    class(json_error), allocatable :: j_error
+    class(json_value), allocatable :: raw
+    type(json_object), pointer :: ptr
+    type(json_error), allocatable :: j_error
 
     call get_file(url, tmp_file, error)
     if (allocated(error)) return
 
-    call json_load(json, tmp_file, error=j_error)
+    call json_load(raw, tmp_file, error=j_error)
     if (allocated(j_error)) then
       allocate (error); call move_alloc(j_error%message, error%message); call json%destroy(); return
     end if
+
+    ptr => cast_to_object(raw)
+    if (.not. associated(ptr)) then
+      call fatal_error(error, "Error parsing JSON from '"//url//"'."); return
+    end if
+
+    json = ptr
   end
 
   subroutine get_file(url, tmp_file, error)

@@ -68,7 +68,7 @@ module fpm_dependency
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings
   use fpm_downloader, only: downloader_t
-  use jonquil, only: json_object, json_value, cast_to_object
+  use jonquil, only: json_object
   implicit none
   private
 
@@ -516,8 +516,7 @@ contains
     character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, downloaded_version, code_str
     type(version_t) :: version
     integer :: stat, unit, code
-    class(json_value), allocatable :: j_value
-    type(json_object), pointer :: json
+    type(json_object) :: json
 
     ! Use local registry if it was specified in the global config file.
     if (allocated(global_settings%registry_settings%path)) then
@@ -551,19 +550,14 @@ contains
 
     if (allocated(self%requested_version)) then
       ! Request specific version.
-      call downloader%get_pkg_data(target_url//'/'//self%requested_version%s(), tmp_file, j_value, error)
+      call downloader%get_pkg_data(target_url//'/'//self%requested_version%s(), tmp_file, json, error)
     else
       ! Request latest version.
-      call downloader%get_pkg_data(target_url, tmp_file, j_value, error)
+      call downloader%get_pkg_data(target_url, tmp_file, json, error)
     end if
 
     close (unit, status='delete')
     if (allocated(error)) return
-
-    json => cast_to_object(j_value)
-    if (.not. associated(json)) then
-      call fatal_error(error, "Error parsing JSON from '"//target_url//"'."); return
-    end if
 
     if (.not. json%has_key('code')) then
       call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No status code."); return
