@@ -69,6 +69,7 @@ module fpm_dependency
   use fpm_settings, only: fpm_global_settings, get_global_settings
   use fpm_downloader, only: downloader_t
   use jonquil, only: json_object
+  use fpm_strings, only: str
   implicit none
   private
 
@@ -513,9 +514,9 @@ contains
     !> Downloader instance.
     class(downloader_t), optional, intent(in) :: downloader
 
-    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, downloaded_version, code_str
+    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, downloaded_version
     type(version_t) :: version
-    integer :: stat, unit, code
+    integer :: stat, unit
     type(json_object) :: json
 
     ! Use local registry if it was specified in the global config file.
@@ -543,7 +544,6 @@ contains
     tmp_file = join_path(tmp_path, 'package_data.tmp')
     if (.not. exists(tmp_path)) call mkdir(tmp_path)
     open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
-
     if (stat /= 0) then
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
@@ -559,57 +559,34 @@ contains
     close (unit, status='delete')
     if (allocated(error)) return
 
-    if (.not. json%has_key('code')) then
-      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No status code."); return
-    end if
-
-    call get_value(json, 'code', code, stat=stat)
-
-    if (code /= 200 .or. stat /= 0) then
-      allocate (character(int(log10(real(code))) + 1) :: code_str)
-      write (code_str, '(I0)') code
-      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': " &
-      & //"Status code '"//code_str//"'."); return
-    end if
-
-    if (.not. json%has_key('tar')) then
-      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No download link."); return
-    end if
+    call check_package_data(json, self, error)
+    if (allocated(error)) return
 
     ! Get download link and version of the package.
     call get_value(json, 'tar', target_url, stat=stat)
-
     if (stat /= 0) then
       call fatal_error(error, "Failed to get download link from '"//join_path(self%namespace, self%name)//"'."); return
     end if
 
-    if (.not. json%has_key('version')) then
-      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No version found."); return
-    end if
-
     ! Get version of the package.
     call get_value(json, 'version', downloaded_version, stat=stat)
-
     if (stat /= 0) then
       call fatal_error(error, "Failed to download version from '"//join_path(self%namespace, self%name)//"'."); return
     end if
 
     call new_version(version, downloaded_version, error)
-
     if (allocated(error)) then
       call fatal_error(error, "Version not valid: '"//downloaded_version//"'."); return
     end if
 
     ! Open new tmp file for downloading the actual package.
     open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
-
     if (stat /= 0) then
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
 
     print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
     call downloader%get_file(target_url, tmp_file, error)
-
     if (allocated(error)) then
       close (unit, status='delete'); return
     end if
@@ -620,14 +597,38 @@ contains
 
     ! Unpack the downloaded package to the final location.
     call downloader%unpack(tmp_file, cache_path, error)
-
     close (unit, status='delete')
-
     if (allocated(error)) return
 
     target_dir = cache_path
 
   end subroutine get_from_registry
+
+  subroutine check_package_data(json, node, error)
+    type(json_object), intent(inout) :: json
+    class(dependency_node_t), intent(in) :: node
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: code, stat
+
+    if (.not. json%has_key('code')) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No status code."); return
+    end if
+
+    if (.not. json%has_key('tar')) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No download link."); return
+    end if
+
+    if (.not. json%has_key('version')) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version found."); return
+    end if
+
+    call get_value(json, 'code', code, stat=stat)
+    if (code /= 200 .or. stat /= 0) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': " &
+      & //"Status code '"//str(code)//"'."); return
+    end if
+  end subroutine
 
   !> Get the dependency from a local registry.
   subroutine get_from_local_registry(self, target_dir, registry_path, error)
