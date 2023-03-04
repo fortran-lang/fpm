@@ -23,19 +23,19 @@ contains
     type(json_object), intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
 
-    class(json_value), allocatable :: raw
+    class(json_value), allocatable :: j_value
     type(json_object), pointer :: ptr
     type(json_error), allocatable :: j_error
 
     call get_file(url, tmp_file, error)
     if (allocated(error)) return
 
-    call json_load(raw, tmp_file, error=j_error)
+    call json_load(j_value, tmp_file, error=j_error)
     if (allocated(j_error)) then
       allocate (error); call move_alloc(j_error%message, error%message); call json%destroy(); return
     end if
 
-    ptr => cast_to_object(raw)
+    ptr => cast_to_object(j_value)
     if (.not. associated(ptr)) then
       call fatal_error(error, "Error parsing JSON from '"//url//"'."); return
     end if

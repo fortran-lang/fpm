@@ -750,11 +750,11 @@ contains
     type(json_object), intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
 
-    class(json_value), allocatable :: raw
+    class(json_value), allocatable :: j_value
     type(json_object), pointer :: ptr
 
-    call json_loads(raw, '{"code": 200, "version": "0.0.1", "tar": "abc"}')
-    ptr => cast_to_object(raw)
+    call json_loads(j_value, '{"code": 200, "version": "0.0.1", "tar": "abc"}')
+    ptr => cast_to_object(j_value)
     json = ptr
   end
 
