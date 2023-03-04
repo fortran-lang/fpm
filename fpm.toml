@@ -8,15 +8,15 @@ copyright = "2020 fpm contributors"
 [dependencies]
 [dependencies.toml-f]
 git = "https://github.com/toml-f/toml-f"
-rev = "aee54c5a480d623af99828c76df0447a15ce90dc"
+rev = "963082b9a1ef1833c2cd2d29dc037dbdb42d4b84"
 
 [dependencies.M_CLI2]
 git = "https://github.com/urbanjost/M_CLI2.git"
 rev = "7264878cdb1baff7323cc48596d829ccfe7751b8"
 
-[dependencies.json-fortran]
-git = "https://github.com/jacobwilliams/json-fortran.git"
-rev = "3ab8f98209871875325c6985dd0e50085d1c82c2"
+[dependencies.jonquil]
+git = "https://github.com/toml-f/jonquil"
+rev = "93354799980556023442b2307010c600370af097"
 
 [[test]]
 name = "cli-test"

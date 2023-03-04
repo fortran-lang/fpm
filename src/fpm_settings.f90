@@ -134,10 +134,11 @@ contains
 
         allocate (global_settings%registry_settings)
 
-        call get_value(table, 'path', path, stat=stat)
-
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Error reading registry path: '"//path//"'."); return
+        if (table%has_key('path')) then
+            call get_value(table, 'path', path, stat=stat)
+            if (stat /= toml_stat%success) then
+                call fatal_error(error, "Error reading registry path: '"//path//"'."); return
+            end if
         end if
 
         if (allocated(path)) then
@@ -157,10 +158,11 @@ contains
             end if
         end if
 
-        call get_value(table, 'url', url, stat=stat)
-
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Error reading registry url: '"//url//"'."); return
+        if (table%has_key('url')) then
+            call get_value(table, 'url', url, stat=stat)
+            if (stat /= toml_stat%success) then
+                call fatal_error(error, "Error reading registry url: '"//url//"'."); return
+            end if
         end if
 
         if (allocated(url)) then
@@ -173,10 +175,11 @@ contains
             global_settings%registry_settings%url = official_registry_base_url
         end if
 
-        call get_value(table, 'cache_path', cache_path, stat=stat)
-
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Error reading path to registry cache: '"//cache_path//"'."); return
+        if (table%has_key('cache_path')) then
+            call get_value(table, 'cache_path', cache_path, stat=stat)
+            if (stat /= toml_stat%success) then
+                call fatal_error(error, "Error reading path to registry cache: '"//cache_path//"'."); return
+            end if
         end if
 
         if (allocated(cache_path)) then

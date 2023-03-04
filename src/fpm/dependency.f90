@@ -68,7 +68,7 @@ module fpm_dependency
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings
   use fpm_downloader, only: downloader_t
-  use json_module, only: json_file
+  use jonquil, only: json_object, json_value, cast_to_object
   implicit none
   private
 
@@ -513,11 +513,11 @@ contains
     !> Downloader instance.
     class(downloader_t), optional, intent(in) :: downloader
 
-    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, status_code, downloaded_version
+    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, downloaded_version, code_str
     type(version_t) :: version
-    integer :: stat, unit
-    type(json_file) :: j_pkg
-    logical :: is_found
+    integer :: stat, unit, code
+    class(json_value), allocatable :: j_value
+    type(json_object), pointer :: json
 
     ! Use local registry if it was specified in the global config file.
     if (allocated(global_settings%registry_settings%path)) then
@@ -551,62 +551,62 @@ contains
 
     if (allocated(self%requested_version)) then
       ! Request specific version.
-      call downloader%get_pkg_data(target_url//'/'//self%requested_version%s(), tmp_file, j_pkg, error)
+      call downloader%get_pkg_data(target_url//'/'//self%requested_version%s(), tmp_file, j_value, error)
     else
       ! Request latest version.
-      call downloader%get_pkg_data(target_url, tmp_file, j_pkg, error)
+      call downloader%get_pkg_data(target_url, tmp_file, j_value, error)
     end if
 
     close (unit, status='delete')
+    if (allocated(error)) return
 
-    if (allocated(error)) then
-      call j_pkg%destroy(); return
+    json => cast_to_object(j_value)
+    if (.not. associated(json)) then
+      call fatal_error(error, "Error parsing JSON from '"//target_url//"'."); return
     end if
 
-    if (j_pkg%failed()) then
-      call fatal_error(error, "Error reading package data of '"//join_path(self%namespace, self%name)//"'.")
-      call j_pkg%destroy(); return
+    if (.not. json%has_key('code')) then
+      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No status code."); return
     end if
 
-    call j_pkg%get('code', status_code, is_found)
+    call get_value(json, 'code', code, stat=stat)
 
-    if (.not. is_found) then
-      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No status code.")
-      call j_pkg%destroy(); return
-    end if
-
-    if (status_code /= '200') then
+    if (code /= 200 .or. stat /= 0) then
+      allocate (character(int(log10(real(code))) + 1) :: code_str)
+      write (code_str, '(I0)') code
       call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': " &
-      & //"Status code '"//status_code//"'.")
-      call j_pkg%destroy(); return
+      & //"Status code '"//code_str//"'."); return
+    end if
+
+    if (.not. json%has_key('tar')) then
+      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No download link."); return
     end if
 
     ! Get download link and version of the package.
-    call j_pkg%get('tar', target_url, is_found)
+    call get_value(json, 'tar', target_url, stat=stat)
 
-    if (.not. is_found) then
-      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No download link.")
-      call j_pkg%destroy(); return
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to get download link from '"//join_path(self%namespace, self%name)//"'."); return
+    end if
+
+    if (.not. json%has_key('version')) then
+      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No version found."); return
     end if
 
     ! Get version of the package.
-    call j_pkg%get('version', downloaded_version, is_found)
+    call get_value(json, 'version', downloaded_version, stat=stat)
 
-    if (.not. is_found) then
-      call fatal_error(error, "Failed to download '"//join_path(self%namespace, self%name)//"': No version.")
-      call j_pkg%destroy(); return
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to download version from '"//join_path(self%namespace, self%name)//"'."); return
     end if
 
     call new_version(version, downloaded_version, error)
 
     if (allocated(error)) then
-      call fatal_error(error, "Version not valid: '"//downloaded_version//"'.")
-      call j_pkg%destroy(); return
+      call fatal_error(error, "Version not valid: '"//downloaded_version//"'."); return
     end if
 
-    call j_pkg%destroy()
-
-    ! Open new temporary file for downloading the actual package.
+    ! Open new tmp file for downloading the actual package.
     open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
 
     if (stat /= 0) then

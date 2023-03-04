@@ -1,7 +1,7 @@
 module fpm_downloader
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: which
-  use json_module, only: json_file
+  use jonquil, only: json_value, json_error, json_load
 
   implicit none
   private
@@ -20,15 +20,18 @@ contains
   subroutine get_pkg_data(url, tmp_file, json, error)
     character(*), intent(in) :: url
     character(*), intent(in) :: tmp_file
-    type(json_file), intent(out) :: json
+    class(json_value), allocatable, intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
 
-    call json%initialize()
+    class(json_error), allocatable :: j_error
 
     call get_file(url, tmp_file, error)
     if (allocated(error)) return
 
-    call json%load_file(tmp_file)
+    call json_load(json, tmp_file, error=j_error)
+    if (allocated(j_error)) then
+      allocate (error); call move_alloc(j_error%message, error%message); call json%destroy(); return
+    end if
   end
 
   subroutine get_file(url, tmp_file, error)
