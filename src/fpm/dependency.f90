@@ -66,7 +66,7 @@ module fpm_dependency
   use fpm_toml, only: toml_table, toml_key, toml_error, toml_serializer, &
                       toml_parse, get_value, set_value, add_table, toml_load, toml_stat
   use fpm_versioning, only: version_t, new_version
-  use fpm_settings, only: fpm_global_settings, get_global_settings
+  use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
   use fpm_downloader, only: downloader_t
   use jonquil, only: json_object
   use fpm_strings, only: str
@@ -514,7 +514,7 @@ contains
     !> Downloader instance.
     class(downloader_t), optional, intent(in) :: downloader
 
-    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path, downloaded_version
+    character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path
     type(version_t) :: version
     integer :: stat, unit
     type(json_object) :: json
@@ -559,25 +559,8 @@ contains
     close (unit, status='delete')
     if (allocated(error)) return
 
-    call check_package_data(json, self, error)
+    call check_and_read_pkg_data(json, self, target_url, version, error)
     if (allocated(error)) return
-
-    ! Get download link and version of the package.
-    call get_value(json, 'tar', target_url, stat=stat)
-    if (stat /= 0) then
-      call fatal_error(error, "Failed to get download link from '"//join_path(self%namespace, self%name)//"'."); return
-    end if
-
-    ! Get version of the package.
-    call get_value(json, 'version', downloaded_version, stat=stat)
-    if (stat /= 0) then
-      call fatal_error(error, "Failed to download version from '"//join_path(self%namespace, self%name)//"'."); return
-    end if
-
-    call new_version(version, downloaded_version, error)
-    if (allocated(error)) then
-      call fatal_error(error, "Version not valid: '"//downloaded_version//"'."); return
-    end if
 
     ! Open new tmp file for downloading the actual package.
     open (newunit=unit, file=tmp_file, action='readwrite', iostat=stat)
@@ -604,12 +587,15 @@ contains
 
   end subroutine get_from_registry
 
-  subroutine check_package_data(json, node, error)
+  subroutine check_and_read_pkg_data(json, node, download_link, version, error)
     type(json_object), intent(inout) :: json
     class(dependency_node_t), intent(in) :: node
+    character(:), allocatable, intent(out) :: download_link
+    type(version_t), intent(out) :: version
     type(error_t), allocatable, intent(out) :: error
 
     integer :: code, stat
+    character(:), allocatable :: version_str
 
     if (.not. json%has_key('code')) then
       call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No status code."); return
@@ -625,8 +611,27 @@ contains
 
     call get_value(json, 'code', code, stat=stat)
     if (code /= 200 .or. stat /= 0) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': " &
-      & //"Status code '"//str(code)//"'."); return
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': "//"Status code '"// &
+      & str(code)//"'."); return
+    end if
+
+    ! Get download link and version of the package.
+    call get_value(json, 'tar', download_link, stat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to get download link from '"//join_path(node%namespace, node%name)//"'."); return
+    end if
+
+    download_link = official_registry_base_url//download_link
+
+    ! Get version of the package.
+    call get_value(json, 'version', version_str, stat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to download version from '"//join_path(node%namespace, node%name)//"'."); return
+    end if
+
+    call new_version(version, version_str, error)
+    if (allocated(error)) then
+      call fatal_error(error, "Invalid version: '"//version_str//"'."); return
     end if
   end subroutine
 
