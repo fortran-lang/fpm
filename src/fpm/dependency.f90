@@ -536,9 +536,6 @@ contains
       end if
     end if
 
-    ! Include namespace and package name in the target url.
-    target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
-
     ! Define location of the temporary folder and file.
     tmp_path = join_path(global_settings%path_to_config_folder, 'tmp')
     tmp_file = join_path(tmp_path, 'package_data.tmp')
@@ -548,13 +545,9 @@ contains
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
 
-    if (allocated(self%requested_version)) then
-      ! Request specific version.
-      call downloader%get_pkg_data(target_url//'/'//self%requested_version%s(), tmp_file, json, error)
-    else
-      ! Request latest version.
-      call downloader%get_pkg_data(target_url, tmp_file, json, error)
-    end if
+    ! Include namespace and package name in the target url and download package data.
+    target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
+    call downloader%get_pkg_data(target_url, self%requested_version, tmp_file, json, error)
 
     close (unit, status='delete')
     if (allocated(error)) return
@@ -587,26 +580,19 @@ contains
 
   end subroutine get_from_registry
 
-  subroutine check_and_read_pkg_data(json, node, download_link, version, error)
+  subroutine check_and_read_pkg_data(json, node, download_url, version, error)
     type(json_object), intent(inout) :: json
     class(dependency_node_t), intent(in) :: node
-    character(:), allocatable, intent(out) :: download_link
+    character(:), allocatable, intent(out) :: download_url
     type(version_t), intent(out) :: version
     type(error_t), allocatable, intent(out) :: error
 
     integer :: code, stat
-    character(:), allocatable :: version_str
+    type(json_object), pointer :: p, q
+    character(:), allocatable :: version_key, version_str
 
     if (.not. json%has_key('code')) then
       call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No status code."); return
-    end if
-
-    if (.not. json%has_key('tar')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No download link."); return
-    end if
-
-    if (.not. json%has_key('version')) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version found."); return
     end if
 
     call get_value(json, 'code', code, stat=stat)
@@ -615,18 +601,48 @@ contains
       & str(code)//"'."); return
     end if
 
-    ! Get download link and version of the package.
-    call get_value(json, 'tar', download_link, stat=stat)
-    if (stat /= 0) then
-      call fatal_error(error, "Failed to get download link from '"//join_path(node%namespace, node%name)//"'."); return
+    if (.not. json%has_key('data')) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No data."); return
     end if
 
-    download_link = official_registry_base_url//download_link
-
-    ! Get version of the package.
-    call get_value(json, 'version', version_str, stat=stat)
+    call get_value(json, 'data', p, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to download version from '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to retrieve package data for '"//join_path(node%namespace, node%name)//"'."); return
+    end if
+
+    if (allocated(node%requested_version)) then
+      version_key = 'version_data'
+    else
+      version_key = 'latest_version_data'
+    end if
+
+    if (.not. p%has_key(version_key)) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version data."); return
+    end if
+
+    call get_value(p, version_key, q, stat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to retrieve version data for '"//join_path(node%namespace, node%name)//"'."); return
+    end if
+
+    if (.not. q%has_key('download_url')) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No download url."); return
+    end if
+
+    call get_value(q, 'download_url', download_url, stat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to retrieve download url for '"//join_path(node%namespace, node%name)//"'."); return
+    end if
+
+    download_url = official_registry_base_url//download_url
+
+    if (.not. q%has_key('version')) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version found."); return
+    end if
+
+    call get_value(q, 'version', version_str, stat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to retrieve version data for '"//join_path(node%namespace, node%name)//"'."); return
     end if
 
     call new_version(version, version_str, error)

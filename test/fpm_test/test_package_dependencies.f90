@@ -10,6 +10,7 @@ module test_package_dependencies
   use fpm_toml
   use fpm_settings, only: fpm_global_settings, get_registry_settings
   use fpm_downloader, only: downloader_t
+  use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_value, json_loads, cast_to_object
 
   implicit none
@@ -744,18 +745,22 @@ contains
     global_settings%config_file_name = config_file_name
   end
 
-  subroutine get_pkg_data(url, tmp_file, json, error)
+  subroutine get_pkg_data(url, version, tmp_file, json, error)
     character(*), intent(in) :: url
+    type(version_t), allocatable, intent(in) :: version
     character(*), intent(in) :: tmp_file
     type(json_object), intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
 
     class(json_value), allocatable :: j_value
-    type(json_object), pointer :: ptr
 
-    call json_loads(j_value, '{"code": 200, "version": "0.0.1", "tar": "abc"}')
-    ptr => cast_to_object(j_value)
-    json = ptr
+    if (allocated(version)) then
+      call json_loads(j_value, '{"code": 200, "data": {"version_data": {"version": "0.1.0", "download_url": "abc"}}}')
+    else
+      call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": {"version": "0.1.0", "download_url": "abc"}}}')
+    end if
+
+    json = cast_to_object(j_value)
   end
 
   subroutine get_file(url, tmp_file, error)

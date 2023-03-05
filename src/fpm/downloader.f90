@@ -1,6 +1,7 @@
 module fpm_downloader
   use fpm_error, only: error_t, fatal_error
   use fpm_filesystem, only: which
+  use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_value, json_error, json_load, cast_to_object
 
   implicit none
@@ -17,8 +18,9 @@ module fpm_downloader
 contains
 
   !> Perform an http get request and save output to file.
-  subroutine get_pkg_data(url, tmp_file, json, error)
+  subroutine get_pkg_data(url, version, tmp_file, json, error)
     character(*), intent(in) :: url
+    type(version_t), allocatable, intent(in) :: version
     character(*), intent(in) :: tmp_file
     type(json_object), intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
@@ -27,7 +29,13 @@ contains
     type(json_object), pointer :: ptr
     type(json_error), allocatable :: j_error
 
-    call get_file(url, tmp_file, error)
+    if (allocated(version)) then
+      ! Request specific version.
+      call get_file(url//'/'//version%s(), tmp_file, error)
+    else
+      ! Request latest version.
+      call get_file(url, tmp_file, error)
+    end if
     if (allocated(error)) return
 
     call json_load(j_value, tmp_file, error=j_error)
