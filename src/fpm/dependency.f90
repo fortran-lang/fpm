@@ -527,7 +527,8 @@ contains
     ! Include namespace and package name in the cache path.
     cache_path = join_path(global_settings%registry_settings%cache_path, self%namespace, self%name)
 
-    ! Check cache before downloading from the remote registry if a specific version was requested.
+    ! Check cache before downloading from the remote registry if a specific version was requested. When no specific
+    ! version was requested, do network request first to check which is the newest version.
     if (allocated(self%requested_version)) then
       cache_path = join_path(cache_path, self%requested_version%s())
       if (exists(join_path(cache_path, 'fpm.toml'))) then
@@ -548,10 +549,10 @@ contains
     ! Include namespace and package name in the target url and download package data.
     target_url = global_settings%registry_settings%url//'/packages/'//self%namespace//'/'//self%name
     call downloader%get_pkg_data(target_url, self%requested_version, tmp_file, json, error)
-
     close (unit, status='delete')
     if (allocated(error)) return
 
+    ! Verify package data read relevant information.
     call check_and_read_pkg_data(json, self, target_url, version, error)
     if (allocated(error)) return
 
@@ -561,20 +562,22 @@ contains
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
 
-    print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
-    call downloader%get_file(target_url, tmp_file, error)
-    if (allocated(error)) then
-      close (unit, status='delete'); return
-    end if
-
-    ! Include version number in the cache path.
+    ! Include version number in the cache path. In no cached version exists, download it.
     cache_path = join_path(cache_path, version%s())
-    if (.not. exists(cache_path)) call mkdir(cache_path)
+    if (.not. exists(join_path(cache_path, 'fpm.toml'))) then
+      if (.not. exists(cache_path)) call mkdir(cache_path)
 
-    ! Unpack the downloaded package to the final location.
-    call downloader%unpack(tmp_file, cache_path, error)
-    close (unit, status='delete')
-    if (allocated(error)) return
+      print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
+      call downloader%get_file(target_url, tmp_file, error)
+      if (allocated(error)) then
+        close (unit, status='delete'); return
+      end if
+
+      ! Unpack the downloaded package to the final location.
+      call downloader%unpack(tmp_file, cache_path, error)
+      close (unit, status='delete')
+      if (allocated(error)) return
+    end if
 
     target_dir = cache_path
 
