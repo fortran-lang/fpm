@@ -25,6 +25,7 @@ the features demonstrated in each package and which versions of fpm are supporte
 | link_executable             | Link external library to a single executable                  |            N            |  Y  |
 | link_external               | Link external library                                         |            N            |  Y  |
 | makefile_complex            | External build command (makefile); local path dependency      |            Y            |  N  |
+| many_source_folders         | Source files split among multiple directories                 |            N            |  Y  |
 | preprocess_cpp              | Lib only; C preprocessing; Macro parsing                      |            N            |  Y  |
 | preprocess_cpp_c            | C App; progate macros from fpm.toml to app                    |            N            |  Y  |
 | preprocess_cpp_deps         | App; cpp preprocessor settings in local path dependency only  |            N            |  Y  |

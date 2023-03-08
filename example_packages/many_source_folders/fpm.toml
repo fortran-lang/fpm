@@ -1,0 +1,19 @@
+name = "two_exe_dirs"
+version = "0.1.0"
+license = "license"
+author = "Federico Perini"
+maintainer = "federico.perini@gmail.com"
+copyright = "Copyright 2023, Federico Perini"
+[build]
+auto-executables = false
+auto-tests = true 
+auto-examples = true
+[install]
+library = false
+[[executable]]
+name="test_main"
+source-dir=["src","src2"]
+[[test]]
+name="test_modules"
+main="test.f90"
+source-dir=["test","test2"] 
