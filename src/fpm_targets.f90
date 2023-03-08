@@ -476,13 +476,19 @@ end subroutine add_dependency
 subroutine resolve_module_dependencies(targets,external_modules,source_dirs,error)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(string_t), intent(in) :: external_modules(:)
-    type(string_t), intent(in) :: source_dirs(:)
+    type(string_t), allocatable, intent(in) :: source_dirs(:)
     type(error_t), allocatable, intent(out) :: error
 
     type(build_target_ptr) :: dep
     type(string_t), allocatable :: dirs(:)
 
-    integer :: i, j
+    integer :: i, j, ndir
+
+    if (allocated(source_dirs)) then
+        ndir = size(source_dirs)
+    else
+        ndir = 0
+    end if
 
     do i=1,size(targets)
 
@@ -504,7 +510,7 @@ subroutine resolve_module_dependencies(targets,external_modules,source_dirs,erro
                     [FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST])) then
 
                     ! Fallback to default source dirs if model%source_dir not initialized
-                    if (size(source_dirs)>0) then
+                    if (ndir>0) then
                         dirs = source_dirs
                     else
                         dirs = [string_t(dirname(targets(i)%ptr%source%file_name))]
