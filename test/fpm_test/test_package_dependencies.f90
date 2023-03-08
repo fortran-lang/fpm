@@ -46,18 +46,18 @@ contains
         & new_unittest("add-dependencies", test_add_dependencies), &
         & new_unittest("registry-dir-not-found", registry_dir_not_found, should_fail=.true.), &
         & new_unittest("no-versions-in-registry", no_versions_in_registry, should_fail=.true.), &
-        & new_unittest("version-not-found-in-registry", version_not_found_in_registry, should_fail=.true.), &
-        & new_unittest("version-found-without-manifest", version_found_without_manifest, should_fail=.true.), &
-        & new_unittest("version-found-with-manifest", version_found_with_manifest), &
-        & new_unittest("not-a-dir", not_a_dir, should_fail=.true.), &
-        & new_unittest("no-versions-found", no_versions_found, should_fail=.true.), &
-        & new_unittest("newest-version-without-manifest", newest_version_without_manifest, should_fail=.true.), &
-        & new_unittest("newest-version-with-manifest", newest_version_with_manifest), &
-        & new_unittest("get-newest-version-from-registry", get_newest_version_from_registry), &
-        & new_unittest("version-found-in-cache", version_found_in_cache), &
-        & new_unittest("no-version-in-default-cache", no_version_in_default_cache), &
-        & new_unittest("no-version-in-cache-or-registry", no_version_in_cache_or_registry, should_fail=.true.), &
-        & new_unittest("other-versions-in-default-cache", other_versions_in_default_cache), &
+     & new_unittest("local-registry-specified-version-not-found", local_registry_specified_version_not_found, should_fail=.true.), &
+        & new_unittest("local-registry-specified-no-manifest", local_registry_specified_no_manifest, should_fail=.true.), &
+        & new_unittest("local-registry-specified-has-manifest", local_registry_specified_has_manifest), &
+        & new_unittest("local-registry-specified-not-a-dir", local_registry_specified_not_a_dir, should_fail=.true.), &
+        & new_unittest("local-registry-unspecified-no-versions", local_registry_unspecified_no_versions, should_fail=.true.), &
+        & new_unittest("local-registry-unspecified-no-manifest", local_registry_unspecified_no_manifest, should_fail=.true.), &
+        & new_unittest("local-registry-unspecified-has-manifest", local_registry_unspecified_has_manifest), &
+        & new_unittest("cache-specified-version-found", cache_specified_version_found), &
+        & new_unittest("specified-version-not-found-in-cache", registry_specified_version_not_found_in_cache), &
+        & new_unittest("registry-specified-version-not-exists-anywhere", registry_specified_version_not_exists_anywhere, should_fail=.true.), &
+        & new_unittest("registry-specified-version-other-versions-exist", registry_specified_version_other_versions_exist), &
+        & new_unittest("registry-unspecified-version", registry_unspecified_version), &
         & new_unittest("pkg-data-no-code", pkg_data_no_code, should_fail=.true.), &
         & new_unittest("pkg-data-corrupt-code", pkg_data_corrupt_code, should_fail=.true.), &
         & new_unittest("pkg-data-missing-error-message", pkg_data_missing_error_msg, should_fail=.true.), &
@@ -338,8 +338,8 @@ contains
 
   end subroutine no_versions_in_registry
 
-  !> Specific version not found in path registry.
-  subroutine version_not_found_in_registry(error)
+  !> Specific version not found in the local registry.
+  subroutine local_registry_specified_version_not_found(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -381,10 +381,10 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine version_not_found_in_registry
+  end subroutine local_registry_specified_version_not_found
 
   !> Target package in path registry does not contain manifest.
-  subroutine version_found_without_manifest(error)
+  subroutine local_registry_specified_no_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -427,10 +427,10 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine version_found_without_manifest
+  end subroutine local_registry_specified_no_manifest
 
   !> Target package in path registry contains manifest.
-  subroutine version_found_with_manifest(error)
+  subroutine local_registry_specified_has_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -484,10 +484,10 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine version_found_with_manifest
+  end subroutine local_registry_specified_has_manifest
 
   !> Target is a file, not a directory.
-  subroutine not_a_dir(error)
+  subroutine local_registry_specified_not_a_dir(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -528,11 +528,11 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine not_a_dir
+  end subroutine local_registry_specified_not_a_dir
 
   !> Try fetching the latest version in the local registry, but none are found.
   !> Compared to no-versions-in-registry, we aren't requesting a specific version here.
-  subroutine no_versions_found(error)
+  subroutine local_registry_unspecified_no_versions(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -572,10 +572,10 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine no_versions_found
+  end subroutine local_registry_unspecified_no_versions
 
   !> Latest version in the local registry does not have a manifest.
-  subroutine newest_version_without_manifest(error)
+  subroutine local_registry_unspecified_no_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -627,10 +627,10 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine newest_version_without_manifest
+  end subroutine local_registry_unspecified_no_manifest
 
   !> Latest version in the local registry has a manifest.
-  subroutine newest_version_with_manifest(error)
+  subroutine local_registry_unspecified_has_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -683,63 +683,10 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine newest_version_with_manifest
-
-  !> No version specified, get the newest version from the registry.
-  subroutine get_newest_version_from_registry(error)
-    type(error_t), allocatable, intent(out) :: error
-
-    type(toml_table) :: table
-    type(dependency_node_t) :: node
-    type(fpm_global_settings) :: global_settings
-    character(len=:), allocatable :: target_dir, cwd
-    type(toml_table), pointer :: child
-    type(mock_downloader_t) :: mock_downloader
-
-    call new_table(table)
-    table%key = 'test-dep'
-    call set_value(table, 'namespace', 'test-org')
-
-    call new_dependency(node%dependency_config_t, table, error=error)
-    if (allocated(error)) return
-
-    call delete_tmp_folder
-    call mkdir(tmp_folder)
-
-    call new_table(table)
-    call add_table(table, 'registry', child)
-
-    call setup_global_settings(global_settings, error)
-    if (allocated(error)) then
-      call delete_tmp_folder; return
-    end if
-
-    call get_registry_settings(child, global_settings, error)
-    if (allocated(error)) then
-      call delete_tmp_folder; return
-    end if
-
-    call node%get_from_registry(target_dir, global_settings, error, mock_downloader)
-    if (allocated(error)) then
-      call delete_tmp_folder; return
-    end if
-
-    call get_current_directory(cwd, error)
-    if (allocated(error)) then
-      call delete_tmp_folder; return
-    end if
-
-    if (target_dir /= join_path(cwd, join_path(tmp_folder, 'dependencies', 'test-org', 'test-dep', '0.1.0'))) then
-      call test_failed(error, "Target directory not set correctly: '"//target_dir//"'")
-      call delete_tmp_folder; return
-    end if
-
-    call delete_tmp_folder
-
-  end subroutine get_newest_version_from_registry
+  end subroutine local_registry_unspecified_has_manifest
 
   !> Version specified in manifest, version found in cache.
-  subroutine version_found_in_cache(error)
+  subroutine cache_specified_version_found(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -791,10 +738,10 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine version_found_in_cache
+  end subroutine cache_specified_version_found
 
   !> Version specified in manifest, but not found in cache. Therefore download dependency.
-  subroutine no_version_in_default_cache(error)
+  subroutine registry_specified_version_not_found_in_cache(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -845,10 +792,10 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine no_version_in_default_cache
+  end subroutine registry_specified_version_not_found_in_cache
 
   !> Version specified in manifest, but not found in cache or registry.
-  subroutine no_version_in_cache_or_registry(error)
+  subroutine registry_specified_version_not_exists_anywhere(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -889,9 +836,9 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine no_version_in_cache_or_registry
+  end subroutine registry_specified_version_not_exists_anywhere
 
-  subroutine other_versions_in_default_cache(error)
+  subroutine registry_specified_version_other_versions_exist(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -933,7 +880,60 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine other_versions_in_default_cache
+  end subroutine registry_specified_version_other_versions_exist
+
+  !> No version specified, get the newest version from the registry.
+  subroutine registry_unspecified_version(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(dependency_node_t) :: node
+    type(fpm_global_settings) :: global_settings
+    character(len=:), allocatable :: target_dir, cwd
+    type(toml_table), pointer :: child
+    type(mock_downloader_t) :: mock_downloader
+
+    call new_table(table)
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
+
+    call new_dependency(node%dependency_config_t, table, error=error)
+    if (allocated(error)) return
+
+    call delete_tmp_folder
+    call mkdir(tmp_folder)
+
+    call new_table(table)
+    call add_table(table, 'registry', child)
+
+    call setup_global_settings(global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_registry_settings(child, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call node%get_from_registry(target_dir, global_settings, error, mock_downloader)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_current_directory(cwd, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (target_dir /= join_path(cwd, join_path(tmp_folder, 'dependencies', 'test-org', 'test-dep', '0.1.0'))) then
+      call test_failed(error, "Target directory not set correctly: '"//target_dir//"'")
+      call delete_tmp_folder; return
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine registry_unspecified_version
 
   !> Package data returned from the registry does not contain a code field.
   subroutine pkg_data_no_code(error)
