@@ -55,9 +55,10 @@ contains
         & new_unittest("local-registry-unspecified-has-manifest", local_registry_unspecified_has_manifest), &
         & new_unittest("cache-specified-version-found", cache_specified_version_found), &
         & new_unittest("specified-version-not-found-in-cache", registry_specified_version_not_found_in_cache), &
-        & new_unittest("registry-specified-version-not-exists-anywhere", registry_specified_version_not_exists_anywhere, should_fail=.true.), &
+        & new_unittest("registry-specified-version-not-exists", registry_specified_version_not_exists, should_fail=.true.), &
         & new_unittest("registry-specified-version-other-versions-exist", registry_specified_version_other_versions_exist), &
         & new_unittest("registry-unspecified-version", registry_unspecified_version), &
+        & new_unittest("registry-unspecified-version_exists_in_cache", registry_unspecified_version_exists_in_cache), &
         & new_unittest("pkg-data-no-code", pkg_data_no_code, should_fail=.true.), &
         & new_unittest("pkg-data-corrupt-code", pkg_data_corrupt_code, should_fail=.true.), &
         & new_unittest("pkg-data-missing-error-message", pkg_data_missing_error_msg, should_fail=.true.), &
@@ -795,7 +796,7 @@ contains
   end subroutine registry_specified_version_not_found_in_cache
 
   !> Version specified in manifest, but not found in cache or registry.
-  subroutine registry_specified_version_not_exists_anywhere(error)
+  subroutine registry_specified_version_not_exists(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -836,7 +837,7 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine registry_specified_version_not_exists_anywhere
+  end subroutine registry_specified_version_not_exists
 
   subroutine registry_specified_version_other_versions_exist(error)
     type(error_t), allocatable, intent(out) :: error
@@ -934,6 +935,63 @@ contains
     call delete_tmp_folder
 
   end subroutine registry_unspecified_version
+
+  !> No version specified, therefore load package data from the registry. Find out that there is a cached version of
+  !> the latest package.
+  subroutine registry_unspecified_version_exists_in_cache(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(dependency_node_t) :: node
+    type(fpm_global_settings) :: global_settings
+    character(len=:), allocatable :: target_dir, cwd
+    type(toml_table), pointer :: child
+    type(mock_downloader_t) :: mock_downloader
+
+    call new_table(table)
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
+
+    call new_dependency(node%dependency_config_t, table, error=error)
+    if (allocated(error)) return
+
+    call delete_tmp_folder
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.0.0'))
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.0'))
+    call filewrite(join_path(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.0'), 'fpm.toml'), [''])
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '1.2.1'))
+
+    call new_table(table)
+    call add_table(table, 'registry', child)
+
+    call setup_global_settings(global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_registry_settings(child, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call node%get_from_registry(target_dir, global_settings, error, mock_downloader)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_current_directory(cwd, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (target_dir /= join_path(cwd, join_path(tmp_folder, 'dependencies', 'test-org', 'test-dep', '0.1.0'))) then
+      call test_failed(error, "Target directory not set correctly: '"//target_dir//"'")
+      call delete_tmp_folder; return
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine registry_unspecified_version_exists_in_cache
 
   !> Package data returned from the registry does not contain a code field.
   subroutine pkg_data_no_code(error)

@@ -56,9 +56,9 @@
 !> Currenly ignored. First come, first serve.
 module fpm_dependency
   use, intrinsic :: iso_fortran_env, only: output_unit
-  use fpm_environment, only: get_os_type, OS_WINDOWS
+  use fpm_environment, only: get_os_type, OS_WINDOWS, os_is_unix
   use fpm_error, only: error_t, fatal_error
-  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename
+  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, os_delete_dir
   use fpm_git, only: git_target_revision, git_target_default, git_revision
   use fpm_manifest, only: package_config_t, dependency_config_t, &
                           get_package_data
@@ -562,10 +562,11 @@ contains
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
     end if
 
-    ! Include version number in the cache path. In no cached version exists, download it.
+    ! Include version number in the cache path. If no cached version exists, download it.
     cache_path = join_path(cache_path, version%s())
     if (.not. exists(join_path(cache_path, 'fpm.toml'))) then
-      if (.not. exists(cache_path)) call mkdir(cache_path)
+      if (is_dir(cache_path)) call os_delete_dir(os_is_unix(), cache_path)
+      call mkdir(cache_path)
 
       print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
       call downloader%get_file(target_url, tmp_file, error)
