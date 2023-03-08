@@ -11,7 +11,8 @@ print *, "All source modules found!"
 
 call print_test1()
 call print_test2()
+print *, "All test modules found!"
 
 stop 0
 
-end program check
+end program test_many_folders
