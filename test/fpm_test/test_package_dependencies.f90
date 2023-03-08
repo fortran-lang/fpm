@@ -53,9 +53,10 @@ contains
         & new_unittest("no-versions-found", no_versions_found, should_fail=.true.), &
         & new_unittest("newest-version-without-manifest", newest_version_without_manifest, should_fail=.true.), &
         & new_unittest("newest-version-with-manifest", newest_version_with_manifest), &
-        & new_unittest("default-cache-path", default_cache_path), &
+        & new_unittest("get-newest-version-from-registry", get_newest_version_from_registry), &
         & new_unittest("version-found-in-cache", version_found_in_cache), &
         & new_unittest("no-version-in-default-cache", no_version_in_default_cache), &
+        & new_unittest("no-version-in-cache-or-registry", no_version_in_cache_or_registry, should_fail=.true.), &
         & new_unittest("other-versions-in-default-cache", other_versions_in_default_cache) &
         & ]
 
@@ -236,6 +237,7 @@ contains
 
   end subroutine test_add_dependencies
 
+  !> Directories for namespace and package name not found in path registry.
   subroutine registry_dir_not_found(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -278,6 +280,7 @@ contains
 
   end subroutine registry_dir_not_found
 
+  !> No versions found in path registry.
   subroutine no_versions_in_registry(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -320,6 +323,7 @@ contains
 
   end subroutine no_versions_in_registry
 
+  !> Specific version not found in path registry.
   subroutine version_not_found_in_registry(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -364,6 +368,7 @@ contains
 
   end subroutine version_not_found_in_registry
 
+  !> Target package in path registry does not contain manifest.
   subroutine version_found_without_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -409,6 +414,7 @@ contains
 
   end subroutine version_found_without_manifest
 
+  !> Target package in path registry contains manifest.
   subroutine version_found_with_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -465,6 +471,7 @@ contains
 
   end subroutine version_found_with_manifest
 
+  !> Target is a file, not a directory.
   subroutine not_a_dir(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -508,7 +515,8 @@ contains
 
   end subroutine not_a_dir
 
-  ! Compared to no-versions-in-registry, we aren't requesting a specific version here.
+  !> Try fetching the latest version in the local registry, but none are found.
+  !> Compared to no-versions-in-registry, we aren't requesting a specific version here.
   subroutine no_versions_found(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -551,6 +559,7 @@ contains
 
   end subroutine no_versions_found
 
+  !> Latest version in the local registry does not have a manifest.
   subroutine newest_version_without_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -605,6 +614,7 @@ contains
 
   end subroutine newest_version_without_manifest
 
+  !> Latest version in the local registry has a manifest.
   subroutine newest_version_with_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -660,14 +670,14 @@ contains
 
   end subroutine newest_version_with_manifest
 
-  !> No cache_path specified, use default cache path but folder exists already.
-  subroutine default_cache_path(error)
+  !> No version specified, get the newest version from the registry.
+  subroutine get_newest_version_from_registry(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
     type(dependency_node_t) :: node
     type(fpm_global_settings) :: global_settings
-    character(len=:), allocatable :: target_dir
+    character(len=:), allocatable :: target_dir, cwd
     type(toml_table), pointer :: child
     type(mock_downloader_t) :: mock_downloader
 
@@ -681,13 +691,13 @@ contains
     call delete_tmp_folder
     call mkdir(tmp_folder)
 
+    call new_table(table)
+    call add_table(table, 'registry', child)
+
     call setup_global_settings(global_settings, error)
     if (allocated(error)) then
       call delete_tmp_folder; return
     end if
-
-    call new_table(table)
-    call add_table(table, 'registry', child) ! No cache_path specified, use default
 
     call get_registry_settings(child, global_settings, error)
     if (allocated(error)) then
@@ -699,21 +709,21 @@ contains
       call delete_tmp_folder; return
     end if
 
-    if (global_settings%registry_settings%cache_path /= &
-    & join_path(global_settings%path_to_config_folder, 'dependencies')) then
-      call test_failed(error, 'Cache path not correctly set: '//global_settings%registry_settings%cache_path//"'")
+    call get_current_directory(cwd, error)
+    if (allocated(error)) then
       call delete_tmp_folder; return
     end if
 
-    if (.not. exists(global_settings%registry_settings%cache_path)) then
-      call test_failed(error, 'Folder does not exist: '//global_settings%registry_settings%cache_path//"'")
+    if (target_dir /= join_path(cwd, join_path(tmp_folder, 'dependencies', 'test-org', 'test-dep', '0.1.0'))) then
+      call test_failed(error, "Target directory not set correctly: '"//target_dir//"'")
       call delete_tmp_folder; return
     end if
 
     call delete_tmp_folder
 
-  end subroutine default_cache_path
+  end subroutine get_newest_version_from_registry
 
+  !> Version specified in manifest, version found in cache.
   subroutine version_found_in_cache(error)
     type(error_t), allocatable, intent(out) :: error
 
@@ -737,7 +747,7 @@ contains
     call filewrite(join_path(path, 'fpm.toml'), [''])
 
     call new_table(table)
-    call add_table(table, 'registry', child)
+    call add_table(table, 'registry', child) ! No cache_path specified, use default
 
     call setup_global_settings(global_settings, error)
     if (allocated(error)) then
@@ -768,13 +778,14 @@ contains
 
   end subroutine version_found_in_cache
 
+  !> Version specified in manifest, but not found in cache. Therefore download dependency.
   subroutine no_version_in_default_cache(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
     type(dependency_node_t) :: node
     type(fpm_global_settings) :: global_settings
-    character(len=:), allocatable :: target_dir
+    character(len=:), allocatable :: target_dir, cwd
     type(toml_table), pointer :: child
     type(mock_downloader_t) :: mock_downloader
 
@@ -807,9 +818,63 @@ contains
       call delete_tmp_folder; return
     end if
 
+    call get_current_directory(cwd, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (target_dir /= join_path(cwd, join_path(tmp_folder, 'dependencies', 'test-org', 'test-dep', '0.1.0'))) then
+      call test_failed(error, "Target directory not set correctly: '"//target_dir//"'")
+      call delete_tmp_folder; return
+    end if
+
     call delete_tmp_folder
 
   end subroutine no_version_in_default_cache
+
+  !> Version specified in manifest, but not found in cache or registry.
+  subroutine no_version_in_cache_or_registry(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(dependency_node_t) :: node
+    type(fpm_global_settings) :: global_settings
+    character(len=:), allocatable :: target_dir
+    type(toml_table), pointer :: child
+    type(mock_downloader_t) :: mock_downloader
+
+    call new_table(table)
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
+    call set_value(table, 'v', '9.9.9')
+
+    call new_dependency(node%dependency_config_t, table, error=error)
+    if (allocated(error)) return
+
+    call delete_tmp_folder
+    call mkdir(tmp_folder)
+
+    call new_table(table)
+    call add_table(table, 'registry', child)
+
+    call setup_global_settings(global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_registry_settings(child, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call node%get_from_registry(target_dir, global_settings, error, mock_downloader)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine no_version_in_cache_or_registry
 
   subroutine other_versions_in_default_cache(error)
     type(error_t), allocatable, intent(out) :: error
@@ -902,7 +967,11 @@ contains
     class(json_value), allocatable :: j_value
 
     if (allocated(version)) then
-      call json_loads(j_value, '{"code": 200, "data": {"version_data": {"version": "0.1.0", "download_url": "abc"}}}')
+      if (version%s() == '9.9.9') then
+        call json_loads(j_value, '{"code": 404, "message": "Package not found"}')
+      else
+        call json_loads(j_value, '{"code": 200, "data": {"version_data": {"version": "0.1.0", "download_url": "abc"}}}')
+      end if
     else
       call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": {"version": "0.1.0", "download_url": "abc"}}}')
     end if

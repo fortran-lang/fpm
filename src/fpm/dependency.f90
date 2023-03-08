@@ -530,10 +530,9 @@ contains
     ! Check cache before downloading from the remote registry if a specific version was requested. When no specific
     ! version was requested, do network request first to check which is the newest version.
     if (allocated(self%requested_version)) then
-      cache_path = join_path(cache_path, self%requested_version%s())
-      if (exists(join_path(cache_path, 'fpm.toml'))) then
-        print *, "Using cached version of '", join_path(self%namespace, self%name, self%requested_version%s()), "'"
-        target_dir = cache_path; return
+      if (exists(join_path(cache_path, self%requested_version%s(), 'fpm.toml'))) then
+        print *, "Using cached version of '", join_path(self%namespace, self%name, self%requested_version%s()), "'."
+        target_dir = join_path(cache_path, self%requested_version%s()); return
       end if
     end if
 
@@ -592,16 +591,31 @@ contains
 
     integer :: code, stat
     type(json_object), pointer :: p, q
-    character(:), allocatable :: version_key, version_str
+    character(:), allocatable :: version_key, version_str, error_message
 
     if (.not. json%has_key('code')) then
       call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No status code."); return
     end if
 
     call get_value(json, 'code', code, stat=stat)
-    if (code /= 200 .or. stat /= 0) then
-      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': "//"Status code '"// &
-      & str(code)//"'."); return
+    if (stat /= 0) then
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': "// &
+      & "Failed to read status code."); return
+    end if
+
+    if (code /= 200) then
+      if (.not. json%has_key('message')) then
+        call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No error message."); return
+      end if
+
+      call get_value(json, 'message', error_message, stat=stat)
+      if (stat /= 0) then
+        call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': "// &
+        & "Failed to read error message."); return
+      end if
+
+      call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"'. Status code: '"// &
+      & str(code)//"'. Error message: '"//error_message//"'."); return
     end if
 
     if (.not. json%has_key('data')) then
