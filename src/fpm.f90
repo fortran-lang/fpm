@@ -177,6 +177,10 @@ subroutine build_model(model, settings, package, error)
 
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
+
+        call add_executable_source_directories(model%source_dirs,package%executable,error)
+        if (allocated(error)) return
+
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., error=error)
 
@@ -186,6 +190,10 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (is_dir('example') .and. package%build%auto_examples) then
+
+        call add_executable_source_directories(model%source_dirs,package%executable,error)
+        if (allocated(error)) return
+
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
                                    with_executables=.true., error=error)
 
@@ -195,6 +203,10 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (is_dir('test') .and. package%build%auto_tests) then
+
+        call add_executable_source_directories(model%source_dirs,package%executable,error)
+        if (allocated(error)) return
+
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
                                    with_executables=.true., error=error)
 
