@@ -142,7 +142,7 @@ subroutine targets_from_sources(targets,model,prune,error)
 
     !> Enable tree-shaking/pruning of module dependencies
     logical, intent(in) :: prune
-    
+
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 
@@ -150,7 +150,7 @@ subroutine targets_from_sources(targets,model,prune,error)
 
     call collect_exe_link_dependencies(targets)
 
-    call resolve_module_dependencies(targets,model%external_modules,error)
+    call resolve_module_dependencies(targets,model%external_modules,model%source_dirs,error)
     if (allocated(error)) return
 
     if (prune) then
@@ -235,14 +235,14 @@ subroutine build_target_list(targets,model)
                                 output_name = get_object_name(sources(i)), &
                                 macros = model%packages(j)%macros, &
                                 version = model%packages(j)%version)
-                                
+
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
                         call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
                     end if
 
-                case (FPM_UNIT_CPPSOURCE) 
+                case (FPM_UNIT_CPPSOURCE)
 
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = FPM_TARGET_CPP_OBJECT, &
@@ -379,7 +379,7 @@ subroutine collect_exe_link_dependencies(targets)
                             dep%source%unit_type /= FPM_UNIT_MODULE .and. &
                             index(dirname(dep%source%file_name), exe_source_dir) == 1) then
 
-                            call add_dependency(exe, dep) 
+                            call add_dependency(exe, dep)
 
                         end if
 
@@ -473,9 +473,10 @@ end subroutine add_dependency
 !> a source file in the package of the correct scope, then a __fatal error__
 !> is returned by the procedure and model construction fails.
 !>
-subroutine resolve_module_dependencies(targets,external_modules,error)
+subroutine resolve_module_dependencies(targets,external_modules,source_dirs,error)
     type(build_target_ptr), intent(inout), target :: targets(:)
     type(string_t), intent(in) :: external_modules(:)
+    type(string_t), intent(in) :: source_dirs(:)
     type(error_t), allocatable, intent(out) :: error
 
     type(build_target_ptr) :: dep
@@ -498,17 +499,27 @@ subroutine resolve_module_dependencies(targets,external_modules,error)
                     cycle
                 end if
 
+                print *, 'search ',targets(i)%ptr%source%modules_used(j)%s
+
                 if (any(targets(i)%ptr%source%unit_scope == &
                     [FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST])) then
+                    print *, '1 use include_dir=',targets(i)%ptr%source%file_name
                     dep%ptr => &
                         find_module_dependency(targets,targets(i)%ptr%source%modules_used(j)%s, &
-                                            include_dir = dirname(targets(i)%ptr%source%file_name))
+                                               source_dirs = source_dirs)
                 else
+                    print *, '2'
                     dep%ptr => &
                         find_module_dependency(targets,targets(i)%ptr%source%modules_used(j)%s)
                 end if
 
                 if (.not.associated(dep%ptr)) then
+                    block
+                        integer :: k
+                        do k=1,size(targets(i)%ptr%dependencies)
+                            print *, 'dep ',k,'  = ',targets(i)%ptr%dependencies(k)%ptr%source%file_name
+                        end do
+                    end block
                     call fatal_error(error, &
                             'Unable to find source for module dependency: "' // &
                             targets(i)%ptr%source%modules_used(j)%s // &
@@ -524,7 +535,7 @@ subroutine resolve_module_dependencies(targets,external_modules,error)
 
 end subroutine resolve_module_dependencies
 
-function find_module_dependency(targets,module_name,include_dir) result(target_ptr)
+function find_module_dependency(targets,module_name,source_dirs) result(target_ptr)
     ! Find a module dependency in the library or a dependency library
     !
     ! 'include_dir' specifies an allowable non-library search directory
@@ -532,10 +543,10 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
     !
     type(build_target_ptr), intent(in), target :: targets(:)
     character(*), intent(in) :: module_name
-    character(*), intent(in), optional :: include_dir
+    type(string_t), intent(in), optional :: source_dirs(:)
     type(build_target_t), pointer :: target_ptr
 
-    integer :: k, l
+    integer :: k, l, d
 
     target_ptr => NULL()
 
@@ -545,17 +556,26 @@ function find_module_dependency(targets,module_name,include_dir) result(target_p
 
         do l=1,size(targets(k)%ptr%source%modules_provided)
 
+            print *, 'search scope ',targets(k)%ptr%source%file_name
+
             if (module_name == targets(k)%ptr%source%modules_provided(l)%s) then
                 select case(targets(k)%ptr%source%unit_scope)
                 case (FPM_SCOPE_LIB, FPM_SCOPE_DEP)
                     target_ptr => targets(k)%ptr
                     exit
                 case default
-                    if (present(include_dir)) then
-                        if (index(dirname(targets(k)%ptr%source%file_name), include_dir) == 1) then ! source file is within the include_dir or a subdirectory
-                            target_ptr => targets(k)%ptr
-                            exit
-                        end if
+
+                    ! If this target is part of an executable build, the provided module must be
+                    ! in any of the source file folders
+                    print *, 'search scope ',targets(k)%ptr%source%unit_scope,' modules in ',source_dirs(d)%s
+                    if (present(source_dirs)) then
+                        do d=1,size(source_dirs)
+                            ! source file is within the include_dirs(d) or a subdirectory
+                            if (index(dirname(targets(k)%ptr%source%file_name), source_dirs(d)%s) == 1) then
+                                target_ptr => targets(k)%ptr
+                                exit
+                            end if
+                        end do
                     end if
                 end select
             end if
@@ -574,13 +594,13 @@ subroutine prune_build_targets(targets, root_package)
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
 
     !> Name of root package
-    character(*), intent(in) :: root_package 
+    character(*), intent(in) :: root_package
 
     integer :: i, j, nexec
     type(string_t), allocatable :: modules_used(:)
     logical :: exclude_target(size(targets))
     logical, allocatable :: exclude_from_archive(:)
-    
+
     if (size(targets) < 1) then
         return
     end if
@@ -590,7 +610,7 @@ subroutine prune_build_targets(targets, root_package)
 
     ! Enumerate modules used by executables, non-module subprograms and their dependencies
     do i=1,size(targets)
-            
+
         if (targets(i)%ptr%target_type == FPM_TARGET_EXECUTABLE) then
 
             nexec = nexec + 1
@@ -611,16 +631,16 @@ subroutine prune_build_targets(targets, root_package)
     ! If there aren't any executables, then prune
     !  based on modules used in root package
     if (nexec < 1) then
-        
+
         do i=1,size(targets)
-            
+
             if (targets(i)%ptr%package_name == root_package .and. &
                  targets(i)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
-    
+
                 call collect_used_modules(targets(i)%ptr)
-    
+
             end if
-            
+
         end do
 
     end if
@@ -642,11 +662,11 @@ subroutine prune_build_targets(targets, root_package)
                     do j=1,size(target%source%modules_provided)
 
                         if (target%source%modules_provided(j)%s .in. modules_used) then
-                            
+
                             exclude_target(i) = .false.
                             target%skip = .false.
 
-                        end if 
+                        end if
 
                     end do
 
@@ -658,11 +678,11 @@ subroutine prune_build_targets(targets, root_package)
                     do j=1,size(target%source%parent_modules)
 
                         if (target%source%parent_modules(j)%s .in. modules_used) then
-                            
+
                             exclude_target(i) = .false.
                             target%skip = .false.
 
-                        end if 
+                        end if
 
                     end do
 
@@ -675,7 +695,7 @@ subroutine prune_build_targets(targets, root_package)
                 target%skip = .false.
             end if
 
-        end associate        
+        end associate
     end do
 
     targets = pack(targets,.not.exclude_target)
@@ -812,7 +832,7 @@ subroutine resolve_target_linking(targets, model)
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
                                                             target%macros, &
                                                             target%version)
- 
+
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if

@@ -16,7 +16,8 @@ use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
 use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 
-use fpm_sources, only: add_executable_sources, add_sources_from_dir
+use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
+                       add_executable_source_directories
 use fpm_targets, only: targets_from_sources, &
                         resolve_target_linking, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
@@ -53,6 +54,7 @@ subroutine build_model(model, settings, package, error)
 
     model%package_name = package%name
 
+    allocate(model%source_dirs(0))
     allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
@@ -202,6 +204,10 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%executable)) then
+
+        call add_executable_source_directories(model%source_dirs,package%executable,error)
+        if (allocated(error)) return
+
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
                                      auto_discover=package%build%auto_executables, &
                                      error=error)
@@ -212,6 +218,10 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%example)) then
+
+        call add_executable_source_directories(model%source_dirs,package%example,error)
+        if (allocated(error)) return
+
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
                                      auto_discover=package%build%auto_examples, &
                                      error=error)
@@ -222,6 +232,10 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%test)) then
+
+        call add_executable_source_directories(model%source_dirs,package%test,error)
+        if (allocated(error)) return
+
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
                                      auto_discover=package%build%auto_tests, &
                                      error=error)
