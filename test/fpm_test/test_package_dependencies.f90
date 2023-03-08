@@ -57,7 +57,22 @@ contains
         & new_unittest("version-found-in-cache", version_found_in_cache), &
         & new_unittest("no-version-in-default-cache", no_version_in_default_cache), &
         & new_unittest("no-version-in-cache-or-registry", no_version_in_cache_or_registry, should_fail=.true.), &
-        & new_unittest("other-versions-in-default-cache", other_versions_in_default_cache) &
+        & new_unittest("other-versions-in-default-cache", other_versions_in_default_cache), &
+        & new_unittest("pkg-data-no-code", pkg_data_no_code, should_fail=.true.), &
+        & new_unittest("pkg-data-corrupt-code", pkg_data_corrupt_code, should_fail=.true.), &
+        & new_unittest("pkg-data-missing-error-message", pkg_data_missing_error_msg, should_fail=.true.), &
+        & new_unittest("pkg-data-error-reading-message", pkg_data_error_reading_msg, should_fail=.true.), &
+        & new_unittest("pkg-data-error-has-message", pkg_data_error_has_msg, should_fail=.true.), &
+        & new_unittest("pkg-data-error-no-data", pkg_data_no_data, should_fail=.true.), &
+        & new_unittest("pkg-data-error-reading-data", pkg_data_error_reading_data, should_fail=.true.), &
+        & new_unittest("pkg-data-requested-version-wrong-key", pkg_data_requested_version_wrong_key, should_fail=.true.), &
+        & new_unittest("pkg-data-no-version-requested-wrong-key", pkg_data_no_version_requested_wrong_key, should_fail=.true.), &
+        & new_unittest("pkg-data-error-reading-latest-version", pkg_data_error_reading_latest_version, should_fail=.true.), &
+        & new_unittest("pkg-data-no-download-url", pkg_data_no_download_url, should_fail=.true.), &
+        & new_unittest("pkg-data-error-reading-donwload-url", pkg_data_error_reading_download_url, should_fail=.true.), &
+        & new_unittest("pkg-data-no-version", pkg_data_no_version, should_fail=.true.), &
+        & new_unittest("pkg-data-error-reading-version", pkg_data_error_reading_version, should_fail=.true.), &
+        & new_unittest("pkg-data-invalid-version", pkg_data_invalid_version, should_fail=.true.) &
         & ]
 
   end subroutine collect_package_dependencies
@@ -919,6 +934,249 @@ contains
     call delete_tmp_folder
 
   end subroutine other_versions_in_default_cache
+
+  !> Package data returned from the registry does not contain a code field.
+  subroutine pkg_data_no_code(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_no_code
+
+  !> Error reading status code from package data.
+  subroutine pkg_data_corrupt_code(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": "integer expected"}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_corrupt_code
+
+  subroutine pkg_data_missing_error_msg(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 123}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_missing_error_msg
+
+  subroutine pkg_data_error_reading_msg(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 123, "message": 123}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_error_reading_msg
+
+  subroutine pkg_data_error_has_msg(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 123, "message": "Really bad error message"}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_error_has_msg
+
+  subroutine pkg_data_no_data(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_no_data
+
+  subroutine pkg_data_error_reading_data(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200, "data": 123}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_error_reading_data
+
+  subroutine pkg_data_requested_version_wrong_key(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    allocate (node%requested_version)
+    call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": 123}}') ! Expected key: "version_data"
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_requested_version_wrong_key
+
+  subroutine pkg_data_no_version_requested_wrong_key(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200, "data": {"version_data": 123}}') ! Expected key: "latest_version_data"
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_no_version_requested_wrong_key
+
+  subroutine pkg_data_error_reading_latest_version(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": 123}}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_error_reading_latest_version
+
+  subroutine pkg_data_no_download_url(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": {}}}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_no_download_url
+
+  subroutine pkg_data_error_reading_download_url(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": {"download_url": 123}}}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_error_reading_download_url
+
+  subroutine pkg_data_no_version(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": {"download_url": "abc"}}}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_no_version
+
+  subroutine pkg_data_error_reading_version(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": {"download_url": "abc", "version": 123}}}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_error_reading_version
+
+  subroutine pkg_data_invalid_version(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(dependency_node_t) :: node
+    character(:), allocatable :: url
+    type(version_t) :: version
+    type(json_object) :: json
+    class(json_value), allocatable :: j_value
+
+    call json_loads(j_value, '{"code": 200, "data": {"latest_version_data": {"download_url": "abc", "version": "abc"}}}')
+    json = cast_to_object(j_value)
+
+    call check_and_read_pkg_data(json, node, url, version, error)
+
+  end subroutine pkg_data_invalid_version
 
   !> Resolve a single dependency node
   subroutine resolve_dependency_once(self, dependency, root, error)

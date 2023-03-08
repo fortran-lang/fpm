@@ -73,7 +73,8 @@ module fpm_dependency
   implicit none
   private
 
-  public :: dependency_tree_t, new_dependency_tree, dependency_node_t, new_dependency_node, resize
+  public :: dependency_tree_t, new_dependency_tree, dependency_node_t, new_dependency_node, resize, &
+            & check_and_read_pkg_data
 
   !> Overloaded reallocation interface
   interface resize
@@ -551,7 +552,7 @@ contains
     close (unit, status='delete')
     if (allocated(error)) return
 
-    ! Verify package data read relevant information.
+    ! Verify package data and read relevant information.
     call check_and_read_pkg_data(json, self, target_url, version, error)
     if (allocated(error)) return
 
@@ -624,7 +625,7 @@ contains
 
     call get_value(json, 'data', p, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to retrieve package data for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read package data for '"//join_path(node%namespace, node%name)//"'."); return
     end if
 
     if (allocated(node%requested_version)) then
@@ -648,7 +649,7 @@ contains
 
     call get_value(q, 'download_url', download_url, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to retrieve download url for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read download url for '"//join_path(node%namespace, node%name)//"'."); return
     end if
 
     download_url = official_registry_base_url//download_url
@@ -659,12 +660,13 @@ contains
 
     call get_value(q, 'version', version_str, stat=stat)
     if (stat /= 0) then
-      call fatal_error(error, "Failed to retrieve version data for '"//join_path(node%namespace, node%name)//"'."); return
+      call fatal_error(error, "Failed to read version data for '"//join_path(node%namespace, node%name)//"'."); return
     end if
 
     call new_version(version, version_str, error)
     if (allocated(error)) then
-      call fatal_error(error, "Invalid version: '"//version_str//"'."); return
+      call fatal_error(error, "'"//version_str//"' is not a valid version for '"// &
+      & join_path(node%namespace, node%name)//"'."); return
     end if
   end subroutine
 
