@@ -191,7 +191,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (is_dir('example') .and. package%build%auto_examples) then
 
-        call add_executable_source_directories(model%source_dirs,package%executable,error)
+        call add_executable_source_directories(model%source_dirs,package%example,error)
         if (allocated(error)) return
 
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
@@ -204,7 +204,7 @@ subroutine build_model(model, settings, package, error)
     end if
     if (is_dir('test') .and. package%build%auto_tests) then
 
-        call add_executable_source_directories(model%source_dirs,package%executable,error)
+        call add_executable_source_directories(model%source_dirs,package%test,error)
         if (allocated(error)) return
 
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
