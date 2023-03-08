@@ -79,8 +79,10 @@ contains
       ! Use default file name.
       global_settings%config_file_name = 'config.toml'
 
-      ! Return if config file doesn't exist.
-      if (.not. exists(global_settings%full_path())) return
+      ! Apply default registry settings and return if config file doesn't exist.
+      if (.not. exists(global_settings%full_path())) then
+        call use_default_registry_settings(global_settings); return
+      end if
     end if
 
     ! Load into TOML table.
@@ -99,16 +101,23 @@ contains
 
     ! A registry table was found.
     if (associated(registry_table)) then
-      call get_registry_settings(registry_table, global_settings, error); return
+      call get_registry_settings(registry_table, global_settings, error)
     else
-      ! No registry table was found, use default settings for url and cache_path.
-      allocate (global_settings%registry_settings)
-      global_settings%registry_settings%url = official_registry_base_url
-      global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder, &
-      & 'dependencies'); return
+      call use_default_registry_settings(global_settings)
     end if
 
   end subroutine get_global_settings
+
+  !> Default registry settings are typically applied if the config file doesn't exist or no registry table was found in
+  !> the global config file.
+  subroutine use_default_registry_settings(global_settings)
+    type(fpm_global_settings), intent(inout) :: global_settings
+
+    allocate (global_settings%registry_settings)
+    global_settings%registry_settings%url = official_registry_base_url
+    global_settings%registry_settings%cache_path = join_path(global_settings%path_to_config_folder, &
+    & 'dependencies')
+  end subroutine use_default_registry_settings
 
   !> Read registry settings from the global config file.
   subroutine get_registry_settings(table, global_settings, error)
