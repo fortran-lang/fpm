@@ -499,27 +499,17 @@ subroutine resolve_module_dependencies(targets,external_modules,source_dirs,erro
                     cycle
                 end if
 
-                print *, 'search ',targets(i)%ptr%source%modules_used(j)%s
-
                 if (any(targets(i)%ptr%source%unit_scope == &
                     [FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST])) then
-                    print *, '1 use include_dir=',targets(i)%ptr%source%file_name
                     dep%ptr => &
                         find_module_dependency(targets,targets(i)%ptr%source%modules_used(j)%s, &
                                                source_dirs = source_dirs)
                 else
-                    print *, '2'
                     dep%ptr => &
                         find_module_dependency(targets,targets(i)%ptr%source%modules_used(j)%s)
                 end if
 
                 if (.not.associated(dep%ptr)) then
-                    block
-                        integer :: k
-                        do k=1,size(targets(i)%ptr%dependencies)
-                            print *, 'dep ',k,'  = ',targets(i)%ptr%dependencies(k)%ptr%source%file_name
-                        end do
-                    end block
                     call fatal_error(error, &
                             'Unable to find source for module dependency: "' // &
                             targets(i)%ptr%source%modules_used(j)%s // &
@@ -556,8 +546,6 @@ function find_module_dependency(targets,module_name,source_dirs) result(target_p
 
         do l=1,size(targets(k)%ptr%source%modules_provided)
 
-            print *, 'search scope ',targets(k)%ptr%source%file_name
-
             if (module_name == targets(k)%ptr%source%modules_provided(l)%s) then
                 select case(targets(k)%ptr%source%unit_scope)
                 case (FPM_SCOPE_LIB, FPM_SCOPE_DEP)
@@ -567,7 +555,6 @@ function find_module_dependency(targets,module_name,source_dirs) result(target_p
 
                     ! If this target is part of an executable build, the provided module must be
                     ! in any of the source file folders
-                    print *, 'search scope ',targets(k)%ptr%source%unit_scope,' modules in ',source_dirs(d)%s
                     if (present(source_dirs)) then
                         do d=1,size(source_dirs)
                             ! source file is within the include_dirs(d) or a subdirectory

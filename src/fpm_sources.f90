@@ -167,7 +167,6 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     call get_executable_source_dirs(exe_dirs,executables)
 
     do i=1,size(exe_dirs)
-        print *, 'add sources from dir ',exe_dirs(i)%s
         call add_sources_from_dir(sources,exe_dirs(i)%s, scope, &
                      with_executables=auto_discover, recurse=.false., error=error)
 
@@ -258,7 +257,6 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
     do i=1,size(executables)
         if (.not.allocated(executables(i)%source_dir)) cycle
         do j=1,size(executables(i)%source_dir)
-            print *, 'test source dir ',executables(i)%source_dir(j)%s
             if (.not.(executables(i)%source_dir(j)%s .in. dirs_temp)) then
 
                 n = n + 1
