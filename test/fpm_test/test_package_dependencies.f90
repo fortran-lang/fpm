@@ -47,9 +47,12 @@ contains
         & new_unittest("registry-dir-not-found", registry_dir_not_found, should_fail=.true.), &
         & new_unittest("no-versions-in-registry", no_versions_in_registry, should_fail=.true.), &
         & new_unittest("version-not-found-in-registry", version_not_found_in_registry, should_fail=.true.), &
-        & new_unittest("found-in-registry", version_found_in_registry), &
+        & new_unittest("version-found-without-manifest", version_found_without_manifest, should_fail=.true.), &
+        & new_unittest("version-found-with-manifest", version_found_with_manifest), &
         & new_unittest("not-a-dir", not_a_dir, should_fail=.true.), &
-        & new_unittest("newest-version-in-registry", newest_version_in_registry), &
+        & new_unittest("no-versions-found", no_versions_found, should_fail=.true.), &
+        & new_unittest("newest-version-without-manifest", newest_version_without_manifest, should_fail=.true.), &
+        & new_unittest("newest-version-with-manifest", newest_version_with_manifest), &
         & new_unittest("default-cache-path", default_cache_path), &
         & new_unittest("version-found-in-cache", version_found_in_cache), &
         & new_unittest("no-version-in-default-cache", no_version_in_default_cache), &
@@ -361,7 +364,52 @@ contains
 
   end subroutine version_not_found_in_registry
 
-  subroutine version_found_in_registry(error)
+  subroutine version_found_without_manifest(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(dependency_node_t) :: node
+    type(fpm_global_settings) :: global_settings
+    character(len=:), allocatable :: target_dir
+    type(toml_table), pointer :: child
+
+    call new_table(table)
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
+    call set_value(table, 'v', '0.1.0')
+
+    call new_dependency(node%dependency_config_t, table, error=error)
+    if (allocated(error)) return
+
+    call delete_tmp_folder
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.0.9'))
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.0'))
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.1'))
+
+    call new_table(table)
+    call add_table(table, 'registry', child)
+    call set_value(child, 'path', 'cache')
+
+    call setup_global_settings(global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_registry_settings(child, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call node%get_from_registry(target_dir, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine version_found_without_manifest
+
+  subroutine version_found_with_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -381,6 +429,7 @@ contains
     call delete_tmp_folder
     call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.0.0'))
     call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.0'))
+    call filewrite(join_path(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.1.0'), 'fpm.toml'), [''])
     call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.2.0'))
 
     call new_table(table)
@@ -414,7 +463,7 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine version_found_in_registry
+  end subroutine version_found_with_manifest
 
   subroutine not_a_dir(error)
     type(error_t), allocatable, intent(out) :: error
@@ -459,7 +508,50 @@ contains
 
   end subroutine not_a_dir
 
-  subroutine newest_version_in_registry(error)
+  ! Compared to no-versions-in-registry, we aren't requesting a specific version here.
+  subroutine no_versions_found(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(dependency_node_t) :: node
+    type(fpm_global_settings) :: global_settings
+    character(len=:), allocatable :: target_dir
+    type(toml_table), pointer :: child
+
+    call new_table(table)
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
+
+    call new_dependency(node%dependency_config_t, table, error=error)
+    if (allocated(error)) return
+
+    call delete_tmp_folder
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep'))
+
+    call new_table(table)
+    call add_table(table, 'registry', child)
+    call set_value(child, 'path', 'cache')
+
+    call setup_global_settings(global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_registry_settings(child, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call node%get_from_registry(target_dir, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine no_versions_found
+
+  subroutine newest_version_without_manifest(error)
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
@@ -511,7 +603,62 @@ contains
 
     call delete_tmp_folder
 
-  end subroutine newest_version_in_registry
+  end subroutine newest_version_without_manifest
+
+  subroutine newest_version_with_manifest(error)
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: table
+    type(dependency_node_t) :: node
+    type(fpm_global_settings) :: global_settings
+    character(len=:), allocatable :: target_dir, cwd
+    type(toml_table), pointer :: child
+
+    call new_table(table)
+    table%key = 'test-dep'
+    call set_value(table, 'namespace', 'test-org')
+
+    call new_dependency(node%dependency_config_t, table, error=error)
+    if (allocated(error)) return
+
+    call delete_tmp_folder
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '0.0.0'))
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '1.3.0'))
+    call filewrite(join_path(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '1.3.0'), 'fpm.toml'), [''])
+    call mkdir(join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '1.2.1'))
+
+    call new_table(table)
+    call add_table(table, 'registry', child)
+    call set_value(child, 'path', 'cache')
+
+    call setup_global_settings(global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_registry_settings(child, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call node%get_from_registry(target_dir, global_settings, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    call get_current_directory(cwd, error)
+    if (allocated(error)) then
+      call delete_tmp_folder; return
+    end if
+
+    if (target_dir /= join_path(cwd, join_path(tmp_folder, 'cache', 'test-org', 'test-dep', '1.3.0'))) then
+      call test_failed(error, 'target_dir not set correctly: '//target_dir//"'")
+      call delete_tmp_folder; return
+    end if
+
+    call delete_tmp_folder
+
+  end subroutine newest_version_with_manifest
 
   !> No cache_path specified, use default cache path but folder exists already.
   subroutine default_cache_path(error)

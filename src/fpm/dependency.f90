@@ -692,6 +692,9 @@ contains
       do i = 1, size(files)
         ! Identify directory that matches the version number.
         if (files(i)%s == join_path(path_to_name, self%requested_version%s()) .and. is_dir(files(i)%s)) then
+          if (.not. exists(join_path(files(i)%s, 'fpm.toml'))) then
+            call fatal_error(error, "'"//files(i)%s//"' is missing an 'fpm.toml' file."); return
+          end if
           target_dir = files(i)%s; return
         end if
       end do
@@ -699,7 +702,7 @@ contains
       return
     end if
 
-    ! No version requested, generate list of available versions.
+    ! No specific version requested, therefore collect available versions.
     allocate (versions(0))
     do i = 1, size(files)
       if (is_dir(files(i)%s)) then
@@ -719,7 +722,13 @@ contains
       if (versions(i) > version) version = versions(i)
     end do
 
-    target_dir = join_path(path_to_name, version%s())
+    path_to_name = join_path(path_to_name, version%s())
+
+    if (.not. exists(join_path(path_to_name, 'fpm.toml'))) then
+      call fatal_error(error, "'"//path_to_name//"' is missing an 'fpm.toml' file."); return
+    end if
+
+    target_dir = path_to_name
   end subroutine get_from_local_registry
 
   !> True if dependency is part of the tree
