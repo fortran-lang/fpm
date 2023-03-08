@@ -330,7 +330,7 @@ end subroutine check_modules_for_duplicates
 subroutine check_module_names(model, error)
     type(fpm_model_t), intent(in) :: model
     type(error_t), allocatable, intent(out) :: error
-    integer :: i,j,k,l,m
+    integer :: k,l,m
     logical :: valid,errors_found,enforce_this_file
     type(string_t) :: package_name,module_name,package_prefix
 
