@@ -451,6 +451,7 @@ contains
     character(len=:), allocatable :: manifest, proj_dir, revision
     type(fpm_global_settings) :: global_settings
     logical :: fetch
+    type(downloader_t) :: downloader
 
     if (dependency%done) return
 
@@ -468,7 +469,7 @@ contains
     else
       call get_global_settings(global_settings, error)
       if (allocated(error)) return
-      call dependency%get_from_registry(proj_dir, global_settings, error)
+      call dependency%get_from_registry(proj_dir, global_settings, error, downloader)
       if (allocated(error)) return
     end if
 
@@ -513,7 +514,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     !> Downloader instance.
-    class(downloader_t), optional, intent(in) :: downloader
+    class(downloader_t), intent(in) :: downloader
 
     character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path
     type(version_t) :: version
@@ -653,7 +654,7 @@ contains
       call fatal_error(error, "Failed to read download url for '"//join_path(node%namespace, node%name)//"'."); return
     end if
 
-    download_url = official_registry_base_url//download_url
+    download_url = official_registry_base_url//'/'//download_url
 
     if (.not. q%has_key('version')) then
       call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version found."); return
