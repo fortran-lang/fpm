@@ -1,5 +1,5 @@
-name: fpm
-adopt-info: fpm
+name: fortran-fpm
+adopt-info: fortran-fpm
 summary: Fortran Package Manager
 description: |
   Fortran Package Manager (fpm) is a package manager and build system for Fortran. 
@@ -36,19 +36,19 @@ architectures:
   - build-on: amd64
 
 apps:
-  fpm:
+  fortran-fpm:
     command: usr/bin/fpm
     plugs: 
       - home
       
 parts:
-  fpm:
+  fortran-fpm:
     source: https://github.com/fortran-lang/fpm
     source-type: git
     plugin: dump
     build-packages:
       - wget
-      - sed
+      - curl
       
     override-build: |
       #VARS
