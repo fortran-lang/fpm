@@ -451,7 +451,6 @@ contains
     character(len=:), allocatable :: manifest, proj_dir, revision
     type(fpm_global_settings) :: global_settings
     logical :: fetch
-    type(downloader_t) :: downloader
 
     if (dependency%done) return
 
@@ -469,7 +468,7 @@ contains
     else
       call get_global_settings(global_settings, error)
       if (allocated(error)) return
-      call dependency%get_from_registry(proj_dir, global_settings, error, downloader)
+      call dependency%get_from_registry(proj_dir, global_settings, error)
       if (allocated(error)) return
     end if
 
@@ -499,7 +498,7 @@ contains
   !> Get a dependency from the registry. Whether the dependency is fetched
   !> from a local, a custom remote or the official registry is determined
   !> by the global configuration settings.
-  subroutine get_from_registry(self, target_dir, global_settings, error, downloader)
+  subroutine get_from_registry(self, target_dir, global_settings, error, downloader_)
 
     !> Instance of the dependency configuration.
     class(dependency_node_t), intent(in) :: self
@@ -514,12 +513,19 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     !> Downloader instance.
-    class(downloader_t), optional, intent(in) :: downloader
+    class(downloader_t), optional, intent(in) :: downloader_
 
     character(:), allocatable :: cache_path, target_url, tmp_file, tmp_path
     type(version_t) :: version
     integer :: stat, unit
     type(json_object) :: json
+    class(downloader_t), allocatable :: downloader
+
+    if (present(downloader_)) then
+      downloader = downloader_
+    else
+      allocate(downloader)
+    end if
 
     ! Use local registry if it was specified in the global config file.
     if (allocated(global_settings%registry_settings%path)) then
