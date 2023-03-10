@@ -84,6 +84,7 @@ contains
       call fatal_error(error, "'tar' not installed."); return
     end if
 
+    print *, "Unpacking '"//tmp_file//"' to '"//destination//"' ..."
     call execute_command_line('tar -zxf '//tmp_file//' -C '//destination, exitstat=stat)
 
     if (stat /= 0) then
