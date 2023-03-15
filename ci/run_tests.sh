@@ -191,7 +191,6 @@ test $EXIT_CODE -eq 2
 EXIT_CODE=0
 "$fpm" run || EXIT_CODE=$?
 test $EXIT_CODE -eq 1
-
 popd
 
 
