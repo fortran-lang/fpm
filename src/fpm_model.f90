@@ -168,6 +168,9 @@ type :: fpm_model_t
     !> Base directory for build
     character(:), allocatable :: build_prefix
 
+    !> Source directories
+    type(string_t), allocatable :: source_dirs(:)
+
     !> Include directories
     type(string_t), allocatable :: include_dirs(:)
 

@@ -28,7 +28,6 @@ contains
     type(fpm_model_t) :: model
     type(build_target_ptr), allocatable :: targets(:)
     type(installer_t) :: installer
-    character(len=:), allocatable :: lib, dir
     type(string_t), allocatable :: list(:)
     logical :: installable
 
@@ -88,7 +87,6 @@ contains
     type(build_target_ptr), intent(in) :: targets(:)
 
     integer :: ii, ntargets
-    character(len=:), allocatable :: lib
     type(string_t), allocatable :: install_target(:), temp(:)
 
     allocate(install_target(0))

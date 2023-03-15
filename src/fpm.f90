@@ -16,7 +16,8 @@ use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
 use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 
-use fpm_sources, only: add_executable_sources, add_sources_from_dir
+use fpm_sources, only: add_executable_sources, add_sources_from_dir, &
+                       add_executable_source_directories
 use fpm_targets, only: targets_from_sources, &
                         resolve_target_linking, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
@@ -53,6 +54,7 @@ subroutine build_model(model, settings, package, error)
 
     model%package_name = package%name
 
+    allocate(model%source_dirs(0))
     allocate(model%include_dirs(0))
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
@@ -134,12 +136,14 @@ subroutine build_model(model, settings, package, error)
             if (allocated(dependency%library)) then
 
                 if (allocated(dependency%library%source_dir)) then
-                    lib_dir = join_path(dep%proj_dir, dependency%library%source_dir)
-                    if (is_dir(lib_dir)) then
-                        call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
-                            error=error)
-                        if (allocated(error)) exit
-                    end if
+                    do j=1,size(dependency%library%source_dir)
+                        lib_dir = join_path(dep%proj_dir, dependency%library%source_dir(j)%s)
+                        if (is_dir(lib_dir)) then
+                            call add_sources_from_dir(model%packages(i)%sources, lib_dir, FPM_SCOPE_LIB, &
+                                error=error)
+                            if (allocated(error)) exit
+                        end if
+                    end do
                 end if
 
                 if (allocated(dependency%library%include_dir)) then
@@ -177,6 +181,9 @@ subroutine build_model(model, settings, package, error)
 
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
+
+        model%source_dirs = [model%source_dirs,string_t('app')]
+
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &
                                    with_executables=.true., error=error)
 
@@ -186,6 +193,9 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (is_dir('example') .and. package%build%auto_examples) then
+
+        model%source_dirs = [model%source_dirs,string_t('example')]
+
         call add_sources_from_dir(model%packages(1)%sources,'example', FPM_SCOPE_EXAMPLE, &
                                    with_executables=.true., error=error)
 
@@ -195,6 +205,9 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (is_dir('test') .and. package%build%auto_tests) then
+
+        model%source_dirs = [model%source_dirs,string_t('test')]
+
         call add_sources_from_dir(model%packages(1)%sources,'test', FPM_SCOPE_TEST, &
                                    with_executables=.true., error=error)
 
@@ -204,6 +217,10 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%executable)) then
+
+        call add_executable_source_directories(model%source_dirs,package%executable,error)
+        if (allocated(error)) return
+
         call add_executable_sources(model%packages(1)%sources, package%executable, FPM_SCOPE_APP, &
                                      auto_discover=package%build%auto_executables, &
                                      error=error)
@@ -214,6 +231,10 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%example)) then
+
+        call add_executable_source_directories(model%source_dirs,package%example,error)
+        if (allocated(error)) return
+
         call add_executable_sources(model%packages(1)%sources, package%example, FPM_SCOPE_EXAMPLE, &
                                      auto_discover=package%build%auto_examples, &
                                      error=error)
@@ -224,6 +245,10 @@ subroutine build_model(model, settings, package, error)
 
     end if
     if (allocated(package%test)) then
+
+        call add_executable_source_directories(model%source_dirs,package%test,error)
+        if (allocated(error)) return
+
         call add_executable_sources(model%packages(1)%sources, package%test, FPM_SCOPE_TEST, &
                                      auto_discover=package%build%auto_tests, &
                                      error=error)
@@ -306,7 +331,7 @@ end subroutine check_modules_for_duplicates
 subroutine check_module_names(model, error)
     type(fpm_model_t), intent(in) :: model
     type(error_t), allocatable, intent(out) :: error
-    integer :: i,j,k,l,m
+    integer :: k,l,m
     logical :: valid,errors_found,enforce_this_file
     type(string_t) :: package_name,module_name,package_prefix
 

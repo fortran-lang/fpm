@@ -22,7 +22,7 @@ module fpm_manifest_library
     type :: library_config_t
 
         !> Source path prefix
-        character(len=:), allocatable :: source_dir
+        type(string_t), allocatable :: source_dir(:)
 
         !> Include path prefix
         type(string_t), allocatable :: include_dir(:)
@@ -56,7 +56,9 @@ contains
         call check(table, error)
         if (allocated(error)) return
 
-        call get_value(table, "source-dir", self%source_dir, "src")
+        call get_list(table, "source-dir", self%source_dir, error)
+        if (allocated(error)) return
+
         call get_value(table, "build-script", self%build_script)
 
         call get_list(table, "include-dir", self%include_dir, error)
@@ -65,6 +67,11 @@ contains
         ! Set default value of include-dir if not found in manifest
         if (.not.allocated(self%include_dir)) then
             self%include_dir = [string_t("include")]
+        end if
+
+        ! Set default value of source-dir if not found in manifest
+        if (.not.allocated(self%source_dir)) then
+            self%source_dir = [string_t("src")]
         end if
 
     end subroutine new_library
@@ -127,7 +134,7 @@ contains
 
         write(unit, fmt) "Library target"
         if (allocated(self%source_dir)) then
-            write(unit, fmt) "- source directory", self%source_dir
+            write(unit, fmt) "- source directory", string_cat(self%source_dir,",")
         end if
         if (allocated(self%include_dir)) then
             write(unit, fmt) "- include directory", string_cat(self%include_dir,",")

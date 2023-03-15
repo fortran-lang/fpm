@@ -4,7 +4,7 @@
 !> `[[srcfile_t]]` objects by looking for source files in the filesystem.
 !>
 module fpm_sources
-use fpm_error, only: error_t
+use fpm_error, only: error_t, fatal_error
 use fpm_model, only: srcfile_t, FPM_UNIT_PROGRAM
 use fpm_filesystem, only: basename, canon_path, dirname, join_path, list_files, is_hidden_file
 use fpm_strings, only: lower, str_ends_with, string_t, operator(.in.)
@@ -14,6 +14,7 @@ implicit none
 
 private
 public :: add_sources_from_dir, add_executable_sources
+public :: add_executable_source_directories
 
 character(4), parameter :: fortran_suffixes(2) = [".f90", &
                                                   ".f  "]
@@ -123,6 +124,25 @@ subroutine add_sources_from_dir(sources,directory,scope,with_executables,recurse
 
 end subroutine add_sources_from_dir
 
+!> Add all source directories for a list of packages
+subroutine add_executable_source_directories(search_dir,executables,error)
+    !> List of search directories all source files of this model should be found within
+    type(string_t), allocatable, intent(inout) :: search_dir(:)
+    !> List of `[[executable_config_t]]` entries from manifest
+    class(executable_config_t), intent(in) :: executables(:)
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    ! Get all source directories
+    call get_executable_source_dirs(search_dir,executables)
+
+    if (.not.allocated(search_dir)) &
+    call fatal_error(error,'no valid source file directories were provided for this model')
+
+    if (size(search_dir)<1) &
+    call fatal_error(error,'no valid source file directories were provided for this model')
+
+end subroutine add_executable_source_directories
 
 !> Add to `sources` using the executable and test entries in the manifest and
 !> applies any executable-specific overrides such as `executable%name`.
@@ -139,7 +159,7 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: i, j
+    integer :: i, j, k
 
     type(string_t), allocatable :: exe_dirs(:)
     type(srcfile_t) :: exe_source
@@ -161,16 +181,22 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
         !  and apply any overrides
         do j=1,size(sources)
 
-            if (basename(sources(j)%file_name,suffix=.true.) == executables(i)%main .and.&
-                 canon_path(dirname(sources(j)%file_name)) == &
-                 canon_path(executables(i)%source_dir) ) then
+            if (basename(sources(j)%file_name,suffix=.true.) == executables(i)%main) then
 
-                sources(j)%exe_name = executables(i)%name
-                if (allocated(executables(i)%link)) then
-                    sources(j)%link_libraries = executables(i)%link
-                end if
-                sources(j)%unit_type = FPM_UNIT_PROGRAM
-                cycle exe_loop
+                do k=1,size(executables(i)%source_dir)
+
+                    if (canon_path(dirname(sources(j)%file_name)) == &
+                        canon_path(executables(i)%source_dir(k)%s) ) then
+
+                        sources(j)%exe_name = executables(i)%name
+                        if (allocated(executables(i)%link)) then
+                            sources(j)%link_libraries = executables(i)%link
+                        end if
+                        sources(j)%unit_type = FPM_UNIT_PROGRAM
+                        cycle exe_loop
+
+                    endif
+                end do
 
             end if
 
@@ -178,7 +204,14 @@ subroutine add_executable_sources(sources,executables,scope,auto_discover,error)
 
         ! Add if not already discovered (auto_discovery off)
         associate(exe => executables(i))
-            exe_source = parse_source(join_path(exe%source_dir,exe%main),error)
+
+            ! Search in all dirs
+            do j=1,size(exe%source_dir)
+               exe_source = parse_source(join_path(exe%source_dir(j)%s,exe%main),error)
+               if (.not.allocated(error)) exit
+            end do
+            if (allocated(error)) return
+
             exe_source%exe_name = exe%name
             if (allocated(exe%link)) then
                 exe_source%link_libraries = exe%link
@@ -205,9 +238,15 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
     type(string_t), allocatable, intent(inout) :: exe_dirs(:)
     class(executable_config_t), intent(in) :: executables(:)
 
-    type(string_t) :: dirs_temp(size(executables))
+    type(string_t), allocatable :: dirs_temp(:)
 
-    integer :: i, n
+    integer :: i, j, n, ndir(size(executables))
+
+    ndir = 0
+    do i=1,size(executables)
+        if (allocated(executables(i)%source_dir)) ndir(i) = size(executables(i)%source_dir)
+    end do
+    allocate(dirs_temp(sum(ndir)))
 
     n = 0
 
@@ -216,12 +255,15 @@ subroutine get_executable_source_dirs(exe_dirs,executables)
     enddo
 
     do i=1,size(executables)
-        if (.not.(executables(i)%source_dir .in. dirs_temp)) then
+        if (.not.allocated(executables(i)%source_dir)) cycle
+        do j=1,size(executables(i)%source_dir)
+            if (.not.(executables(i)%source_dir(j)%s .in. dirs_temp)) then
 
-            n = n + 1
-            dirs_temp(n)%s = executables(i)%source_dir
+                n = n + 1
+                dirs_temp(n) = executables(i)%source_dir(j)
 
-        end if
+            end if
+        end do
     end do
 
     if (.not.allocated(exe_dirs)) then

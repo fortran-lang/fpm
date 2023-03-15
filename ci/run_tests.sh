@@ -158,5 +158,11 @@ pushd cpp_files
 "$fpm" test
 popd
 
+pushd many_source_folders
+"$fpm" build
+"$fpm" run
+"$fpm" test
+popd
+
 # Cleanup
 rm -rf ./*/build
