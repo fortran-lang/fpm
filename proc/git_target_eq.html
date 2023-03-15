@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>validate_os_name &ndash; Fortran-lang/fpm</title>
+    <title>git_target_eq &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -79,8 +79,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>validate_os_name
-      <small>Subroutine</small>
+    <h1>git_target_eq
+      <small>Function</small>
       
     </h1>
       <div class="row" id="info-bar">
@@ -91,18 +91,18 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.2% of total for procedures.">10 statements</a>
+               title=" 0.1% of total for procedures.">4 statements</a>
           </li>
 
             <li id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/profiles.f90"> Source File</a>
+              <a href="../src/git.f90"> Source File</a>
             </li>
         </ul>
         <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/profiles.f90.html'>profiles.f90</a></li>
-              <li><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
-          <li class="active">validate_os_name</li>
+              <li><a href='../sourcefile/git.f90.html'>git.f90</a></li>
+              <li><a href='../module/fpm_git.html'>fpm_git</a></li>
+          <li class="active">git_target_eq</li>
         </ol>
       </div>
     </div>
@@ -141,7 +141,7 @@
     <div class="panel panel-primary">
       <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/validate_os_name.html#src">validate_os_name</a>
+        <a class="list-group-item" href="../proc/git_target_eq.html#src">git_target_eq</a>
       </div>
     </div>
 
@@ -151,11 +151,11 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine validate_os_name(os_name, is_valid)  
+    <h2>public  function git_target_eq(this, that) result(is_equal)  
 </h2>
     
 
-    <p>Check if os_name is a valid name of a supported OS</p>
+    <p>Check that two git targets are equal</p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -170,37 +170,44 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-os_name"></span>
-              character(len=:),
+              <span class="anchor" id="variable-this"></span>
+              type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              allocatable
-            </td>
-            <td>::</td>
-            <td><strong>os_name</strong></td>
-            <td>
-                <p>Name of an operating system</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-is_valid~2"></span>
-              logical,
-            </td>
-<td>intent(out)</td>
+<td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>is_valid</strong></td>
+            <td><strong>this</strong></td>
             <td>
-                <p>Boolean value of whether os_name is valid or not</p>
+                <p>Two input git targets</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-that"></span>
+              type(<a href='../type/git_target_t.html'>git_target_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>that</strong></td>
+            <td>
+                <p>Two input git targets</p>
             </td>
         </tr>
     </tbody>
   </table>
 
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-is_equal~2"></span>
+          logical
+        </small>
+      </h3>
+      
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
@@ -227,7 +234,7 @@
     <div class="panel panel-primary">
       <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/validate_os_name.html#src">validate_os_name</a>
+        <a class="list-group-item" href="../proc/git_target_eq.html#src">git_target_eq</a>
       </div>
     </div>
 
@@ -246,23 +253,16 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="w">      </span><span class="k">subroutine </span><span class="n">validate_os_name</span><span class="p">(</span><span class="n">os_name</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">)</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="kt">logical </span><span class="k">function </span><span class="n">git_target_eq</span><span class="p">(</span><span class="n">this</span><span class="p">,</span><span class="n">that</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">is_equal</span><span class="p">)</span><span class="w"></span>
 
-<span class="w">        </span><span class="c">!&gt; Name of an operating system</span>
-<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">os_name</span><span class="w"></span>
+<span class="w">        </span><span class="c">!&gt; Two input git targets</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">this</span><span class="p">,</span><span class="n">that</span><span class="w"></span>
 
-<span class="w">        </span><span class="c">!&gt; Boolean value of whether os_name is valid or not</span>
-<span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">is_valid</span><span class="w"></span>
+<span class="w">        </span><span class="n">is_equal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">this</span><span class="p">%</span><span class="n">descriptor</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">that</span><span class="p">%</span><span class="n">descriptor</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                   </span><span class="n">this</span><span class="p">%</span><span class="n">url</span><span class="w">        </span><span class="o">==</span><span class="w"> </span><span class="n">that</span><span class="p">%</span><span class="n">url</span><span class="w">        </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                   </span><span class="n">this</span><span class="p">%</span><span class="n">object</span><span class="w">     </span><span class="o">==</span><span class="w"> </span><span class="n">that</span><span class="p">%</span><span class="n">object</span><span class="w"></span>
 
-<span class="w">        </span><span class="k">select case</span><span class="w"> </span><span class="p">(</span><span class="n">os_name</span><span class="p">)</span><span class="w"></span>
-<span class="w">          </span><span class="k">case</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;linux&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;macos&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;windows&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cygwin&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;solaris&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;freebsd&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">                          </span><span class="p">&amp;</span><span class="w"> </span><span class="s2">&quot;openbsd&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
-<span class="w">          </span><span class="k">case </span><span class="n">default</span><span class="w"></span>
-<span class="w">            </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
-<span class="w">        </span><span class="k">end select</span>
-
-<span class="k">      end subroutine </span><span class="n">validate_os_name</span><span class="w"></span>
+<span class="w">    </span><span class="k">end function </span><span class="n">git_target_eq</span><span class="w"></span>
 </pre></div>
 
     </section>

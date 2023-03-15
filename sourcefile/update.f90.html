@@ -91,7 +91,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.6% of total for source files.">50 statements</a>
+               title=" 0.6% of total for source files.">48 statements</a>
           </li>
 
             <li id="source-file">
@@ -253,29 +253,27 @@
 <a id="ln-43" name="ln-43" href="#ln-43"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">fetch_only</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
 <a id="ln-44" name="ln-44" href="#ln-44"></a>
 <a id="ln-45" name="ln-45" href="#ln-45"></a><span class="k">    if</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="k">      do </span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">deps</span><span class="p">%</span><span class="n">ndep</span><span class="w"></span>
-<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="w">        </span><span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="n">deps</span><span class="p">%</span><span class="n">dep</span><span class="p">(</span><span class="n">ii</span><span class="p">)%</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="w">      </span><span class="k">end do</span>
-<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="k">    else</span>
-<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="k">      do </span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
-<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">        </span><span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">ii</span><span class="p">)),</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<a id="ln-54" name="ln-54" href="#ln-54"></a><span class="w">      </span><span class="k">end do</span>
-<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="k">    end if</span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="k">      call </span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="w">      </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="w">    </span><span class="k">else</span>
+<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="k">      do </span><span class="n">ii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="w">        </span><span class="k">call </span><span class="n">deps</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">settings</span><span class="p">%</span><span class="n">name</span><span class="p">(</span><span class="n">ii</span><span class="p">)),</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="w">        </span><span class="k">call </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">      </span><span class="k">end do</span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="k">    end if</span>
+<a id="ln-54" name="ln-54" href="#ln-54"></a>
+<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="k">  end subroutine </span><span class="n">cmd_update</span><span class="w"></span>
 <a id="ln-56" name="ln-56" href="#ln-56"></a>
-<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="k">  end subroutine </span><span class="n">cmd_update</span><span class="w"></span>
-<a id="ln-58" name="ln-58" href="#ln-58"></a>
-<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">  </span><span class="c">!&gt; Error handling for this command</span>
-<a id="ln-60" name="ln-60" href="#ln-60"></a><span class="w">  </span><span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
-<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="w">    </span><span class="c">!&gt; Potential error</span>
-<a id="ln-62" name="ln-62" href="#ln-62"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
-<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<a id="ln-64" name="ln-64" href="#ln-64"></a><span class="k">      call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
-<a id="ln-65" name="ln-65" href="#ln-65"></a><span class="w">    </span><span class="k">end if</span>
-<a id="ln-66" name="ln-66" href="#ln-66"></a><span class="k">  end subroutine </span><span class="n">handle_error</span><span class="w"></span>
-<a id="ln-67" name="ln-67" href="#ln-67"></a>
-<a id="ln-68" name="ln-68" href="#ln-68"></a><span class="k">end module </span><span class="n">fpm_cmd_update</span><span class="w"></span>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">  </span><span class="c">!&gt; Error handling for this command</span>
+<a id="ln-58" name="ln-58" href="#ln-58"></a><span class="w">  </span><span class="k">subroutine </span><span class="n">handle_error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="w"></span>
+<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">    </span><span class="c">!&gt; Potential error</span>
+<a id="ln-60" name="ln-60" href="#ln-60"></a><span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">error_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">error</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-62" name="ln-62" href="#ln-62"></a><span class="k">      call </span><span class="n">fpm_stop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">%</span><span class="n">message</span><span class="p">)</span><span class="w"></span>
+<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-64" name="ln-64" href="#ln-64"></a><span class="k">  end subroutine </span><span class="n">handle_error</span><span class="w"></span>
+<a id="ln-65" name="ln-65" href="#ln-65"></a>
+<a id="ln-66" name="ln-66" href="#ln-66"></a><span class="k">end module </span><span class="n">fpm_cmd_update</span><span class="w"></span>
 </pre></div>
 
     </section>
@@ -294,7 +292,7 @@
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-03-03 22:45            </p>
+ on 2023-03-15 07:52            </p>
         </div>
       </div>
       <br>

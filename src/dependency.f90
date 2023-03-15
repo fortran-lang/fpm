@@ -25,14 +25,14 @@
 module fpm_manifest_dependency
     use fpm_error, only : error_t, syntax_error
     use fpm_git, only : git_target_t, git_target_tag, git_target_branch, &
-        & git_target_revision, git_target_default
+        & git_target_revision, git_target_default, operator(==)
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     use fpm_filesystem, only: windows_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     implicit none
     private
 
-    public :: dependency_config_t, new_dependency, new_dependencies
+    public :: dependency_config_t, new_dependency, new_dependencies, manifest_has_changed
 
 
     !> Configuration meta data for a dependency
@@ -159,7 +159,7 @@ contains
                     exit
                 end if
                 url_present = .true.
-                
+
             case("path")
                 if (url_present) then
                     call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
@@ -265,6 +265,27 @@ contains
         end if
 
     end subroutine info
+
+    !> Check if two dependency configurations are different
+    logical function manifest_has_changed(this, that) result(has_changed)
+
+        !> Two instances of the dependency configuration
+        class(dependency_config_t), intent(in) :: this, that
+
+        has_changed = .true.
+
+        !> Perform all checks
+        if (this%name/=that%name) return
+        if (this%path/=that%path) return
+        if (allocated(this%git).neqv.allocated(that%git)) return
+        if (allocated(this%git)) then
+            if (.not.(this%git==that%git)) return
+        end if
+
+        !> All checks passed! The two instances are equal
+        has_changed = .false.
+
+    end function manifest_has_changed
 
 
 end module fpm_manifest_dependency

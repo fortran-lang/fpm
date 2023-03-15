@@ -91,7 +91,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 9.0% of total for derived types.</p>Including implementation: 716 statements, 37.7% of total for derived types.">31 statements</a>
+               title="<p> 9.5% of total for derived types.</p>Including implementation: 770 statements, 39.4% of total for derived types.">33 statements</a>
           </li>
 
             <li id="source-file">
@@ -132,8 +132,8 @@
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep">dep</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep_dir">dep_dir</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-ndep">ndep</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~4">unit</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~2">verbosity</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~7">unit</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~6">verbosity</a>
         </div>
       </div>
     </div>
@@ -207,8 +207,8 @@ with a binary-search tree or a hash table in the future.</p>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep">dep</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-dep_dir">dep_dir</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#variable-ndep">ndep</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~4">unit</a>
-            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~2">verbosity</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-unit~7">unit</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#variable-verbosity~6">verbosity</a>
         </div>
       </div>
     </div>
@@ -341,7 +341,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-unit~4"></span>
+              <span class="anchor" id="variable-unit~7"></span>
               integer,
             </td>
               <td>public</td>
@@ -358,7 +358,7 @@ with a binary-search tree or a hash table in the future.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-verbosity~2"></span>
+              <span class="anchor" id="variable-verbosity~6"></span>
               integer,
             </td>
               <td>public</td>
@@ -384,7 +384,7 @@ with a binary-search tree or a hash table in the future.</p>
       <section>
         <h2>Type-Bound Procedures</h2>
             <div class="panel panel-default">
-    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-add"></span><h3>generic, public :: <strong>add</strong>  => add_project, add_project_dependencies, add_dependencies, add_dependency         
+    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-add"></span><h3>generic, public :: <strong>add</strong>  => add_project, add_project_dependencies, add_dependencies, add_dependency, add_dependency_node         
     </h3></div>
       <div class="panel-body">
         
@@ -626,7 +626,7 @@ as a choice of design.</p>
         </li>
         <li class="list-group-item">
                   <h3>
-    private pure subroutine add_dependency(self, dependency, error)  
+    private  subroutine add_dependency(self, dependency, error)  
 </h3>
   <p>Add a single dependency to the dependency tree</p>
 
@@ -660,6 +660,78 @@ as a choice of design.</p>
             <td>
               <span class="anchor" ></span>
               type(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dependency</strong></td>
+            <td>
+                <p>Dependency configuration to add</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine add_dependency_node(self, dependency, error)  
+</h3>
+  <p>Add a single dependency node to the dependency tree
+Dependency nodes contain additional information (version, git, revision)
+A dependency with this same name is already in the dependency tree.
+check if it needs to be updated</p>
+<p>Ensure an update is requested whenever the dependency has changed
+New dependency: add from scratch</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the dependency tree</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1457,7 +1529,7 @@ as a choice of design.</p>
   </div>
 
             <div class="panel panel-default">
-    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-update~3"></span><h3>generic, public :: <strong>update</strong>  => update_dependency         
+    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-update~3"></span><h3>generic, public :: <strong>update</strong>  => update_dependency, update_tree         
     </h3></div>
       <div class="panel-body">
         
@@ -1531,6 +1603,58 @@ as a choice of design.</p>
 
 
         </li>
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine update_tree(self, error)  
+</h3>
+  <p>Update whole dependency tree</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the dependency tree</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
     </ul>
   </div>
 
@@ -1554,7 +1678,7 @@ as a choice of design.</p>
 <span class="w">  </span><span class="k">contains</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Overload procedure to add new dependencies to the tree</span>
 <span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">add_project</span><span class="p">,</span><span class="w"> </span><span class="n">add_project_dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">add_dependencies</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">      </span><span class="n">add_dependency</span><span class="w"></span>
+<span class="w">      </span><span class="n">add_dependency</span><span class="p">,</span><span class="w"> </span><span class="n">add_dependency_node</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Main entry point to add a project</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_project</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Add a project and its dependencies to the dependency tree</span>
@@ -1563,6 +1687,8 @@ as a choice of design.</p>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_dependencies</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Add a single dependency to the dependency tree</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Add a single dependency node to the dependency tree</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">add_dependency_node</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Resolve dependencies</span>
 <span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">resolve_dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">resolve_dependency</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Resolve dependencies</span>
@@ -1594,9 +1720,11 @@ as a choice of design.</p>
 <span class="w">    </span><span class="c">!&gt; Write dependency tree to TOML data structure</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Update dependency tree</span>
-<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">update_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">update_dependency</span><span class="p">,</span><span class="n">update_tree</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Update a list of dependencies</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Update all dependencies in the tree</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update_tree</span><span class="w"></span>
 <span class="w">  </span><span class="k">end type </span><span class="n">dependency_tree_t</span><span class="w"></span>
 </pre></div>
 
@@ -1617,7 +1745,7 @@ as a choice of design.</p>
           <p class="text-right">
             Documentation generated by 
             <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-03-03 22:45            </p>
+ on 2023-03-15 07:52            </p>
         </div>
       </div>
       <br>
