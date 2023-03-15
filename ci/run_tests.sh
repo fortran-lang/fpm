@@ -162,32 +162,32 @@ popd
 pushd fpm_test_exit_code
 "$fpm" build
 
-# odd number -> return 0
+# odd number -> success!
 EXIT_CODE=0
 "$fpm" run -- 1 || EXIT_CODE=$?
 test $EXIT_CODE -eq 0
 
-# even number -> return 3
+# even number -> error 3
 EXIT_CODE=0
 "$fpm" run -- 512 || EXIT_CODE=$?
 test $EXIT_CODE -eq 3
 
-# even number -> return 3
+# even number -> error 3
 EXIT_CODE=0
 "$fpm" run -- 0 || EXIT_CODE=$?
 test $EXIT_CODE -eq 3
 
-# not an integer -> return 3
+# not an integer -> error 2
 EXIT_CODE=0
 "$fpm" run -- 3.1415 || EXIT_CODE=$?
 test $EXIT_CODE -eq 2
 
-# not a number
+# not a number -> error 2
 EXIT_CODE=0
 "$fpm" run -- notanumber || EXIT_CODE=$?
 test $EXIT_CODE -eq 2
 
-# no arguments
+# no arguments -> error 1
 EXIT_CODE=0
 "$fpm" run || EXIT_CODE=$?
 test $EXIT_CODE -eq 1
