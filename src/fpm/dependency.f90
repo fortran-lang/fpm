@@ -59,9 +59,10 @@ module fpm_dependency
   use fpm_environment, only : get_os_type, OS_WINDOWS
   use fpm_error, only : error_t, fatal_error
   use fpm_filesystem, only : exists, join_path, mkdir, canon_path, windows_path
-  use fpm_git, only : git_target_revision, git_target_default, git_revision
+  use fpm_git, only : git_target_revision, git_target_default, git_revision, operator(==)
   use fpm_manifest, only : package_config_t, dependency_config_t, &
     get_package_data
+  use fpm_manifest_dependency, only: manifest_has_changed
   use fpm_strings, only : string_t, operator(.in.)
   use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
     toml_parse, get_value, set_value, add_table
@@ -95,6 +96,8 @@ module fpm_dependency
   contains
     !> Update dependency from project manifest
     procedure :: register
+    !> Print information on this instance
+    procedure :: info
   end type dependency_node_t
 
 
@@ -118,7 +121,7 @@ module fpm_dependency
   contains
     !> Overload procedure to add new dependencies to the tree
     generic :: add => add_project, add_project_dependencies, add_dependencies, &
-      add_dependency
+      add_dependency, add_dependency_node
     !> Main entry point to add a project
     procedure, private :: add_project
     !> Add a project and its dependencies to the dependency tree
@@ -127,6 +130,8 @@ module fpm_dependency
     procedure, private :: add_dependencies
     !> Add a single dependency to the dependency tree
     procedure, private :: add_dependency
+    !> Add a single dependency node to the dependency tree
+    procedure, private :: add_dependency_node
     !> Resolve dependencies
     generic :: resolve => resolve_dependencies, resolve_dependency
     !> Resolve dependencies
@@ -158,9 +163,11 @@ module fpm_dependency
     !> Write dependency tree to TOML data structure
     procedure, private :: dump_to_toml
     !> Update dependency tree
-    generic :: update => update_dependency
+    generic :: update => update_dependency,update_tree
     !> Update a list of dependencies
     procedure, private :: update_dependency
+    !> Update all dependencies in the tree
+    procedure, private :: update_tree
   end type dependency_tree_t
 
   !> Common output format for writing to the command line
@@ -191,7 +198,7 @@ contains
   end subroutine new_dependency_tree
 
   !> Create a new dependency node from a configuration
-  pure subroutine new_dependency_node(self, dependency, version, proj_dir, update)
+   subroutine new_dependency_node(self, dependency, version, proj_dir, update)
     !> Instance of the dependency node
     type(dependency_node_t), intent(out) :: self
     !> Dependency configuration data
@@ -218,6 +225,49 @@ contains
     end if
 
   end subroutine new_dependency_node
+
+  !> Write information on instance
+  subroutine info(self, unit, verbosity)
+
+    !> Instance of the dependency configuration
+    class(dependency_node_t), intent(in) :: self
+
+    !> Unit for IO
+    integer, intent(in) :: unit
+
+    !> Verbosity of the printout
+    integer, intent(in), optional :: verbosity
+
+    integer :: pr
+    character(:), allocatable :: ver
+    character(len=*), parameter :: fmt = '("#", 1x, a, t30, a)'
+
+    if (present(verbosity)) then
+        pr = verbosity
+    else
+        pr = 1
+    end if
+
+    !> Call base object info
+    call self%dependency_config_t%info(unit,pr)
+
+    if (allocated(self%version)) then
+        call self%version%to_string(ver)
+        write(unit, fmt) "- version", ver
+    end if
+
+    if (allocated(self%proj_dir)) then
+        write(unit, fmt) "- dir", self%proj_dir
+    end if
+
+    if (allocated(self%revision)) then
+        write(unit, fmt) "- revision", self%revision
+    end if
+
+    write(unit, fmt) "- done", merge('YES','NO ',self%done)
+    write(unit, fmt) "- update", merge('YES','NO ',self%update)
+
+  end subroutine info
 
   !> Add project dependencies, each depth level after each other.
   !>
@@ -356,8 +406,47 @@ contains
 
   end subroutine add_dependencies
 
+  !> Add a single dependency node to the dependency tree
+  !> Dependency nodes contain additional information (version, git, revision)
+   subroutine add_dependency_node(self, dependency, error)
+    !> Instance of the dependency tree
+    class(dependency_tree_t), intent(inout) :: self
+    !> Dependency configuration to add
+    type(dependency_node_t), intent(in) :: dependency
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: id
+    logical :: needs_update
+
+    id = self%find(dependency)
+
+    exists: if (id > 0) then
+
+      !> A dependency with this same name is already in the dependency tree.
+
+      !> check if it needs to be updated
+      needs_update = dependency_has_changed(self%dep(id), dependency)
+
+      !> Ensure an update is requested whenever the dependency has changed
+      if (needs_update) then
+         write(self%unit, out_fmt) "Dependency change detected:", dependency%name
+         self%dep(id) = dependency
+         self%dep(id)%update = .true.
+      endif
+
+    else exists
+
+      !> New dependency: add from scratch
+      self%ndep = self%ndep + 1
+      self%dep(self%ndep) = dependency
+
+    end if exists
+
+  end subroutine add_dependency_node
+
   !> Add a single dependency to the dependency tree
-  pure subroutine add_dependency(self, dependency, error)
+   subroutine add_dependency(self, dependency, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Dependency configuration to add
@@ -365,13 +454,10 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: id
+    type(dependency_node_t) :: node
 
-    id = self%find(dependency)
-    if (id == 0) then
-      self%ndep = self%ndep + 1
-      call new_dependency_node(self%dep(self%ndep), dependency)
-    end if
+    call new_dependency_node(node, dependency)
+    call add_dependency_node(self, node, error)
 
   end subroutine add_dependency
 
@@ -400,6 +486,7 @@ contains
         if (self%verbosity > 1) then
           write(self%unit, out_fmt) "Update:", dep%name
         end if
+        write(self%unit, out_fmt) "Update:", dep%name
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
         if (allocated(error)) return
@@ -418,6 +505,23 @@ contains
     end associate
 
   end subroutine update_dependency
+
+  !> Update whole dependency tree
+  subroutine update_tree(self, error)
+    !> Instance of the dependency tree
+    class(dependency_tree_t), intent(inout) :: self
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: i
+
+    ! Update dependencies where needed
+    do i = 1, self%ndep
+       call self%update(self%dep(i)%name,error)
+       if (allocated(error)) return
+    end do
+
+  end subroutine update_tree
 
   !> Resolve all dependencies in the tree
   subroutine resolve_dependencies(self, root, error)
@@ -810,5 +914,33 @@ contains
     end if
 
   end subroutine resize_dependency_node
+
+  !> Check if a dependency node has changed
+  logical function dependency_has_changed(this,that) result(has_changed)
+     !> Two instances of the same dependency to be compared
+     type(dependency_node_t), intent(in) :: this,that
+
+     has_changed = .true.
+
+     !> All the following entities must be equal for the dependency to not have changed
+     if (manifest_has_changed(this, that)) return
+
+     !> For now, only perform the following checks if both are available. A dependency in cache.toml
+     !> will always have this metadata; a dependency from fpm.toml which has not been fetched yet
+     !> may not have it
+     if (allocated(this%version) .and. allocated(that%version)) then
+        if (this%version/=that%version) return
+     endif
+     if (allocated(this%revision) .and. allocated(that%revision)) then
+        if (this%revision/=that%revision) return
+     endif
+     if (allocated(this%proj_dir) .and. allocated(that%proj_dir)) then
+        if (this%proj_dir/=that%proj_dir) return
+     endif
+
+     !> All checks passed: the two dependencies have no differences
+     has_changed = .false.
+
+  end function dependency_has_changed
 
 end module fpm_dependency

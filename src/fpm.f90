@@ -61,6 +61,10 @@ subroutine build_model(model, settings, package, error)
     call model%deps%add(package, error)
     if (allocated(error)) return
 
+    ! Update dependencies where needed
+    call model%deps%update(error)
+    if (allocated(error)) return
+
     ! build/ directory should now exist
     if (.not.exists("build/.gitignore")) then
       call filewrite(join_path("build", ".gitignore"),["*"])

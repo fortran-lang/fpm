@@ -30,7 +30,8 @@ contains
             & new_unittest("cache-load-dump", test_cache_load_dump), &
             & new_unittest("cache-dump-load", test_cache_dump_load), &
             & new_unittest("status-after-load", test_status), &
-            & new_unittest("add-dependencies", test_add_dependencies)]
+            & new_unittest("add-dependencies", test_add_dependencies), &
+            & new_unittest("update-dependencies",test_update_dependencies)]
 
     end subroutine collect_package_dependencies
 
@@ -212,6 +213,83 @@ contains
         end if
 
     end subroutine test_add_dependencies
+
+    subroutine test_update_dependencies(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: cache,manifest
+        type(toml_table), pointer :: ptr
+        type(toml_key), allocatable :: list(:)
+        type(dependency_tree_t) :: deps,cached_deps
+        integer :: ii
+
+        ! Create a dummy cache
+        cache = toml_table()
+        call add_table(cache, "dep1", ptr)
+        call set_value(ptr, "version", "1.1.0")
+        call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+        call add_table(cache, "dep2", ptr)
+        call set_value(ptr, "git", "https://gitlab.com/fortran-lang/lin2")
+        call set_value(ptr, "rev", "c0ffee")
+        call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+        call add_table(cache, "dep3", ptr)
+        call set_value(ptr, "git", "https://gitlab.com/fortran-lang/pkg3")
+        call set_value(ptr, "rev", "t4a")
+        call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+        call add_table(cache, "dep4", ptr)
+        call set_value(ptr, "version", "1.0.0")
+        call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+
+        ! Load into a dependency tree
+        call new_dependency_tree(cached_deps)
+        call cached_deps%load(cache, error)
+        call cache%destroy()
+        if (allocated(error)) return
+
+        ! Create a dummy manifest, with different version
+        manifest = toml_table()
+        call add_table(manifest, "dep1", ptr)
+        call set_value(ptr, "version", "1.1.1")
+        call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+        call add_table(manifest, "dep2", ptr)
+        call set_value(ptr, "git", "https://gitlab.com/fortran-lang/lin4")
+        call set_value(ptr, "rev", "c0ffee")
+        call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+        call add_table(manifest, "dep3", ptr)
+        call set_value(ptr, "git", "https://gitlab.com/fortran-lang/pkg3")
+        call set_value(ptr, "rev", "l4tte")
+        call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+
+        ! Load dependencies from manifest
+        call new_dependency_tree(deps)
+        call deps%load(manifest, error)
+        call manifest%destroy()
+        if (allocated(error)) return
+
+        ! Add manifest dependencies
+        do ii=1,cached_deps%ndep
+            call deps%add(cached_deps%dep(ii),error)
+            if (allocated(error)) return
+        end do
+
+        ! Test that all dependencies are flagged as "update"
+        if (.not.deps%dep(1)%update) then
+            call test_failed(error, "Updated dependency (different version) not detected")
+            return
+        end if
+        if (.not.deps%dep(2)%update) then
+            call test_failed(error, "Updated dependency (git address) not detected")
+            return
+        end if
+        if (.not.deps%dep(3)%update) then
+            call test_failed(error, "Updated dependency (git rev) not detected")
+            return
+        end if
+
+
+    end subroutine test_update_dependencies
 
 
     !> Resolve a single dependency node
