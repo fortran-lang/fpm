@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta name="description" content="Fortran Package Manager">
+      <meta name="description" content="Fortran Package Manager">
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
@@ -14,16 +14,16 @@
     <link href="../css/pygments.css" rel="stylesheet">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/local.css" rel="stylesheet">
-    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    
-    <script src="../js/jquery-2.1.3.min.js"></script>
-    <script src="../js/svg-pan-zoom.min.js"></script>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+         <script src="../js/jquery-2.1.3.min.js"></script>
+         <script src="../js/svg-pan-zoom.min.js"></script>
 
   </head>
 
@@ -43,36 +43,46 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href='../page/index.html'>Packaging and contributing</a></li>
+              <li><a href='../page/index.html'>Packaging and contributing</a></li>
             <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
               <a href="#" class="dropdown-toggle"
-              data-toggle="dropdown" role="button"
-              aria-haspopup="true"
-     aria-expanded="false">Contents <span class="caret"></span></a>
-        <ul class="dropdown-menu">
-            <li><a href="../lists/files.html">Source Files</a></li>
-            <li><a href="../lists/modules.html">Modules</a></li>
-            <li><a href="../lists/procedures.html">Procedures</a></li>
-                   <li><a href="../lists/types.html">Derived Types</a></li>
-            <li><a href="../program/main.html">Program</a></li>
-       
-            </ul>
-        
+                 data-toggle="dropdown" role="button"
+                 aria-haspopup="true"
+                 aria-expanded="false">
+                 Contents <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                    <li><a href="../lists/files.html">Source Files</a></li>
+                  <li><a href="../lists/modules.html">Modules</a></li>
+                  <li><a href="../lists/procedures.html">Procedures</a></li>
+                  <li><a href="../lists/types.html">Derived Types</a></li>
+                  <li><a href="../program/main.html">Program</a></li>
+              </ul>
             </li>
-<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
-<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
-<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
-                             <li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
-<li class="visible-xs hidden-sm visible-lg"><a href="../program/main.html">Program</a></li>
+                <li class="visible-xs hidden-sm visible-lg">
+                  <a href="../lists/files.html">Source Files</a>
+                </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/modules.html">Modules</a>
+              </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/procedures.html">Procedures</a>
+              </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/types.html">Derived Types</a>
+              </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../program/main.html">Program</a>
+              </li>
           </ul>
-        <form action="../search.html" class="navbar-form navbar-right" role="search">
-        <div class="form-group">
-          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
-        </div>
-<!--
-        <button type="submit" class="btn btn-default">Submit</button>
--->
-        </form>
+            <form action="../search.html" class="navbar-form navbar-right" role="search">
+              <div class="form-group">
+                <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+              </div>
+              <!--
+                  <button type="submit" class="btn btn-default">Submit</button>
+                  -->
+            </form>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
@@ -91,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 7.5% of total for source files.">603 statements</a>
+               title=" 7.5% of total for source files.">601 statements</a>
           </li>
 
             <li id="source-file">
@@ -1134,79 +1144,77 @@
 <a id="ln-924" name="ln-924" href="#ln-924"></a>
 <a id="ln-925" name="ln-925" href="#ln-925"></a><span class="s1">    if (present(exitstat)) then</span>
 <a id="ln-926" name="ln-926" href="#ln-926"></a><span class="s1">        exitstat = stat</span>
-<a id="ln-927" name="ln-927" href="#ln-927"></a><span class="s1">    else</span>
-<a id="ln-928" name="ln-928" href="#ln-928"></a><span class="s1">        if (stat /= 0) then</span>
-<a id="ln-929" name="ln-929" href="#ln-929"></a><span class="s1">            call fpm_stop(1,&#39;</span><span class="o">*</span><span class="n">run</span><span class="o">*</span><span class="p">:</span><span class="n">Command</span><span class="w"> </span><span class="n">failed</span><span class="s1">&#39;)</span>
-<a id="ln-930" name="ln-930" href="#ln-930"></a><span class="s1">        end if</span>
-<a id="ln-931" name="ln-931" href="#ln-931"></a><span class="s1">    end if</span>
+<a id="ln-927" name="ln-927" href="#ln-927"></a><span class="s1">    elseif (stat /= 0) then</span>
+<a id="ln-928" name="ln-928" href="#ln-928"></a><span class="s1">        call fpm_stop(stat,&#39;</span><span class="o">*</span><span class="n">run</span><span class="o">*</span><span class="p">:</span><span class="w"> </span><span class="n">Command</span><span class="w"> </span><span class="s1">&#39;//cmd//redirect_str//&#39;</span><span class="w"> </span><span class="n">returned</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="n">zero</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="n">code</span><span class="s1">&#39;)</span>
+<a id="ln-929" name="ln-929" href="#ln-929"></a><span class="s1">    end if</span>
+<a id="ln-930" name="ln-930" href="#ln-930"></a>
+<a id="ln-931" name="ln-931" href="#ln-931"></a><span class="s1">end subroutine run</span>
 <a id="ln-932" name="ln-932" href="#ln-932"></a>
-<a id="ln-933" name="ln-933" href="#ln-933"></a><span class="s1">end subroutine run</span>
-<a id="ln-934" name="ln-934" href="#ln-934"></a>
-<a id="ln-935" name="ln-935" href="#ln-935"></a><span class="s1">!&gt; Delete directory using system OS remove directory commands</span>
-<a id="ln-936" name="ln-936" href="#ln-936"></a><span class="s1">subroutine os_delete_dir(unix, dir, echo)</span>
-<a id="ln-937" name="ln-937" href="#ln-937"></a><span class="s1">    logical, intent(in) :: unix</span>
-<a id="ln-938" name="ln-938" href="#ln-938"></a><span class="s1">    character(len=*), intent(in) :: dir</span>
-<a id="ln-939" name="ln-939" href="#ln-939"></a><span class="s1">    logical, intent(in), optional :: echo</span>
-<a id="ln-940" name="ln-940" href="#ln-940"></a>
-<a id="ln-941" name="ln-941" href="#ln-941"></a><span class="s1">    if (unix) then</span>
-<a id="ln-942" name="ln-942" href="#ln-942"></a><span class="s1">        call run(&#39;</span><span class="n">rm</span><span class="w"> </span><span class="o">-</span><span class="n">rf</span><span class="w"> </span><span class="s1">&#39; // dir, echo=echo,verbose=.false.)</span>
-<a id="ln-943" name="ln-943" href="#ln-943"></a><span class="s1">    else</span>
-<a id="ln-944" name="ln-944" href="#ln-944"></a><span class="s1">        call run(&#39;</span><span class="n">rmdir</span><span class="w"> </span><span class="o">/</span><span class="n">s</span><span class="o">/</span><span class="n">q</span><span class="w"> </span><span class="err">&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"></span>
-<a id="ln-945" name="ln-945" href="#ln-945"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-933" name="ln-933" href="#ln-933"></a><span class="s1">!&gt; Delete directory using system OS remove directory commands</span>
+<a id="ln-934" name="ln-934" href="#ln-934"></a><span class="s1">subroutine os_delete_dir(unix, dir, echo)</span>
+<a id="ln-935" name="ln-935" href="#ln-935"></a><span class="s1">    logical, intent(in) :: unix</span>
+<a id="ln-936" name="ln-936" href="#ln-936"></a><span class="s1">    character(len=*), intent(in) :: dir</span>
+<a id="ln-937" name="ln-937" href="#ln-937"></a><span class="s1">    logical, intent(in), optional :: echo</span>
+<a id="ln-938" name="ln-938" href="#ln-938"></a>
+<a id="ln-939" name="ln-939" href="#ln-939"></a><span class="s1">    if (unix) then</span>
+<a id="ln-940" name="ln-940" href="#ln-940"></a><span class="s1">        call run(&#39;</span><span class="n">rm</span><span class="w"> </span><span class="o">-</span><span class="n">rf</span><span class="w"> </span><span class="s1">&#39; // dir, echo=echo,verbose=.false.)</span>
+<a id="ln-941" name="ln-941" href="#ln-941"></a><span class="s1">    else</span>
+<a id="ln-942" name="ln-942" href="#ln-942"></a><span class="s1">        call run(&#39;</span><span class="n">rmdir</span><span class="w"> </span><span class="o">/</span><span class="n">s</span><span class="o">/</span><span class="n">q</span><span class="w"> </span><span class="err">&#39;</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"></span>
+<a id="ln-943" name="ln-943" href="#ln-943"></a><span class="w">    </span><span class="k">end if</span>
+<a id="ln-944" name="ln-944" href="#ln-944"></a>
+<a id="ln-945" name="ln-945" href="#ln-945"></a><span class="k">end subroutine </span><span class="n">os_delete_dir</span><span class="w"></span>
 <a id="ln-946" name="ln-946" href="#ln-946"></a>
-<a id="ln-947" name="ln-947" href="#ln-947"></a><span class="k">end subroutine </span><span class="n">os_delete_dir</span><span class="w"></span>
-<a id="ln-948" name="ln-948" href="#ln-948"></a>
-<a id="ln-949" name="ln-949" href="#ln-949"></a><span class="k">end module </span><span class="n">fpm_filesystem</span><span class="w"></span>
+<a id="ln-947" name="ln-947" href="#ln-947"></a><span class="k">end module </span><span class="n">fpm_filesystem</span><span class="w"></span>
 </pre></div>
 
     </section>
     </div>
   </div>
 
-    <hr>    
+      <hr>
     </div> <!-- /container -->
     <footer>
       <div class="container">
-      <div class="row">
-        <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
+        <div class="row">
+          <div class="col-xs-6 col-md-6"><p>Fortran-lang/fpm was developed by fortran-lang/fpm contributors<br>&copy; 2023 
 </p>
+          </div>
+          <div class="col-xs-6 col-md-6">
+            <p class="text-right">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2023-03-22 08:20              </p>
+          </div>
         </div>
-        <div class="col-xs-6 col-md-6">
-          <p class="text-right">
-            Documentation generated by 
-            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-03-15 07:52            </p>
-        </div>
-      </div>
-      <br>
-      </div> <!-- /container -->    
+        <br>
+      </div> <!-- /container -->
     </footer>
 
     <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-<!--
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
--->
-    <script src="../js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+         ================================================== -->
+         <!-- Placed at the end of the document so the pages load faster -->
+    <!--
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        -->
+        <script src="../js/bootstrap.min.js"></script>
+        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+        <script src="../js/ie10-viewport-bug-workaround.js"></script>
 
-    <!-- MathJax JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
-        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
-        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
-      });
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script src="../tipuesearch/tipuesearch_content.js"></script>
-    <script src="../tipuesearch/tipuesearch_set.js"></script>
-    <script src="../tipuesearch/tipuesearch.js"></script>
-    
+        <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
   </body>
 </html>
