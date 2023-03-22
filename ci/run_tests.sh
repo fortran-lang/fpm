@@ -158,5 +158,41 @@ pushd cpp_files
 "$fpm" test
 popd
 
+# Test app exit codes
+pushd fpm_test_exit_code
+"$fpm" build
+
+# odd number -> success!
+EXIT_CODE=0
+"$fpm" run -- 1 || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+
+# even number -> error 3
+EXIT_CODE=0
+"$fpm" run -- 512 || EXIT_CODE=$?
+test $EXIT_CODE -eq 3
+
+# even number -> error 3
+EXIT_CODE=0
+"$fpm" run -- 0 || EXIT_CODE=$?
+test $EXIT_CODE -eq 3
+
+# not an integer -> error 2
+EXIT_CODE=0
+"$fpm" run -- 3.1415 || EXIT_CODE=$?
+test $EXIT_CODE -eq 2
+
+# not a number -> error 2
+EXIT_CODE=0
+"$fpm" run -- notanumber || EXIT_CODE=$?
+test $EXIT_CODE -eq 2
+
+# no arguments -> error 1
+EXIT_CODE=0
+"$fpm" run || EXIT_CODE=$?
+test $EXIT_CODE -eq 1
+popd
+
+
 # Cleanup
 rm -rf ./*/build
