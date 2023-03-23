@@ -161,7 +161,7 @@ end program main
 ```
 
 and then checking that the error code matches. Note that error codes are passed to variable `$?`
-on Unix/Mac systems, and to environment variable `%errorlevel%` on Windoes.
+on Unix/Mac systems, and to environment variable `%errorlevel%` on Windows.
 
 In this last example, our source file defined a `math_constants` module inside
 the same source file as the main program. Let’s see how we can define an *fpm*
