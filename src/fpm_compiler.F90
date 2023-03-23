@@ -105,6 +105,8 @@ contains
     procedure :: is_unknown
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+    !> Return compiler name
+    procedure :: name => compiler_name
 end type compiler_t
 
 
@@ -139,14 +141,16 @@ character(*), parameter :: &
     flag_gnu_warn = " -Wall -Wextra -Wimplicit-interface", &
     flag_gnu_check = " -fcheck=bounds -fcheck=array-temps", &
     flag_gnu_limit = " -fmax-errors=1", &
-    flag_gnu_external = " -Wimplicit-interface"
+    flag_gnu_external = " -Wimplicit-interface", &
+    flag_gnu_openmp = " -fopenmp"
 
 character(*), parameter :: &
     flag_pgi_backslash = " -Mbackslash", &
     flag_pgi_traceback = " -traceback", &
     flag_pgi_debug = " -g", &
     flag_pgi_check = " -Mbounds -Mchkptr -Mchkstk", &
-    flag_pgi_warn = " -Minform=inform"
+    flag_pgi_warn = " -Minform=inform", &
+    flag_pgi_openmp = " -mp"
 
 character(*), parameter :: &
     flag_ibmxl_backslash = " -qnoescape"
@@ -161,7 +165,8 @@ character(*), parameter :: &
     flag_intel_limit = " -error-limit 1", &
     flag_intel_pthread = " -reentrancy threaded", &
     flag_intel_nogen = " -nogen-interfaces", &
-    flag_intel_byterecl = " -assume byterecl"
+    flag_intel_byterecl = " -assume byterecl", &
+    flag_intel_openmp = " -qopenmp"
 
 character(*), parameter :: &
     flag_intel_backtrace_win = " /traceback", &
@@ -173,7 +178,8 @@ character(*), parameter :: &
     flag_intel_limit_win = " /error-limit:1", &
     flag_intel_pthread_win = " /reentrancy:threaded", &
     flag_intel_nogen_win = " /nogen-interfaces", &
-    flag_intel_byterecl_win = " /assume:byterecl"
+    flag_intel_byterecl_win = " /assume:byterecl", &
+    flag_intel_openmp_win = " /Qopenmp"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
@@ -181,10 +187,12 @@ character(*), parameter :: &
     flag_nag_check = " -C", &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
-    flag_nag_backtrace = " -gline"
+    flag_nag_backtrace = " -gline", &
+    flag_nag_openmp = " -openmp"
 
 character(*), parameter :: &
-    flag_lfortran_opt = " --fast"
+    flag_lfortran_opt = " --fast", &
+    flag_lfortran_openmp = " --openmp"
 
 
 contains
@@ -1014,6 +1022,36 @@ pure function debug_archiver(self) result(repr)
 
     repr = 'ar="'//self%ar//'"'
 end function debug_archiver
+
+!> Return a compiler name string
+type(string_t) function compiler_name(self) result(name)
+   !> Instance of the compiler object
+   class(compiler_t), intent(in) :: self
+
+   select case (self%id)
+       case(id_gcc); name = string_t("gfortran")
+       case(id_f95); name = string_t("f95")
+       case(id_caf); name = string_t("caf")
+       case(id_intel_classic_nix);     name = string_t("ifort")
+       case(id_intel_classic_mac);     name = string_t("ifort")
+       case(id_intel_classic_windows); name = string_t("ifort")
+       case(id_intel_llvm_nix);     name = string_t("ifx")
+       case(id_intel_llvm_windows); name = string_t("ifx")
+       case(id_intel_llvm_unknown); name = string_t("ifx")
+       case(id_pgi);       name = string_t("pgfortran")
+       case(id_nvhpc);     name = string_t("nvfortran")
+       case(id_nag);       name = string_t("nagfor")
+       case(id_flang);     name = string_t("flang")
+       case(id_flang_new); name = string_t("flang-new")
+       case(id_f18);       name = string_t("f18")
+       case(id_ibmxl);     name = string_t("xlf90")
+       case(id_cray);      name = string_t("crayftn")
+       case(id_lahey);     name = string_t("lfc")
+       case(id_lfortran);  name = string_t("lFortran")
+       case default;       name = string_t("invalid/unknown")
+   end select
+end function compiler_name
+
 
 
 end module fpm_compiler
