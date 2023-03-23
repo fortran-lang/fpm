@@ -128,14 +128,40 @@ $ fpm run
  pi =    3.14159274
 ```
 
+Although we have named our program `hello`, which is the same name as the
+package name in `fpm.toml`, you can name it anything you want as long as it’s
+permitted by the language.
+
 Notice that you can run `fpm run`, and if the package hasn’t been built yet,
 `fpm build` will run automatically for you. This is true if the source files
 have been updated since the last build.  Thus, if you want to run your
 application, you can skip the `fpm build` step, and go straight to `fpm run`.
 
-Although we have named our program `hello`, which is the same name as the
-package name in `fpm.toml`, you can name it anything you want as long as it’s
-permitted by the language.
+When running your application using `fpm run`, the program's exit code is
+passed by *fpm* back to the operating system. So, it is possible to use Fortran
+numbered `stop` and `error stop` codes to pass termination reasons back to the terminal.
+
+Try running the following app with `fpm run`:
+
+```fortran
+program main
+    use math_constants, only: pi
+
+    real :: angle
+
+    read(*,*,iostat=ierr) angle
+    if (ierr/=0) then
+       stop 2 ! Not real
+    elseif (angle>pi) then
+       stop 1
+    else
+       stop 0
+    endif
+end program main
+```
+
+and then checking that the error code matches. Note that error codes are passed to variable `$?`
+on Unix/Mac systems, and to environment variable `%errorlevel%` on Windoes.
 
 In this last example, our source file defined a `math_constants` module inside
 the same source file as the main program. Let’s see how we can define an *fpm*
