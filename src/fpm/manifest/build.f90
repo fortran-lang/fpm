@@ -37,8 +37,7 @@ module fpm_manifest_build
 
         !> Metapackages
         !> @note when several metapackages are supported, this will need be generalized
-        logical :: openmp
-        type(metapackage_t), allocatable :: metapackages(:)
+        logical :: openmp = .false.
 
         !> Libraries to link against
         type(string_t), allocatable :: link(:)
@@ -128,9 +127,6 @@ contains
         !> Metapackages: read all flags
         call get_value(table, "openmp", self%openmp, .false., stat=stat)
 
-        !> Generate metapackages
-        if (self%openmp) call add_metapackage(self,"openmp",error); if (allocated(error)) return
-
         call get_list(table, "link", self%link, error)
         if (allocated(error)) return
 
@@ -138,28 +134,6 @@ contains
         if (allocated(error)) return
 
     end subroutine new_build_config
-
-    !> Initialize a metapackage configuration
-    subroutine add_metapackage(build,name,error)
-        type(build_config_t), intent(inout) :: build
-        character(*), intent(in) :: name
-        type(error_t), allocatable, intent(out) :: error
-
-        type(metapackage_t) :: add_meta
-
-        !> Create new metapackage
-        call add_meta%new(name,error); if (allocated(error)) return
-
-        !> Add it to the list of metapackages
-        if (allocated(build%metapackages)) then
-            build%metapackages = [build%metapackages, add_meta]
-        else
-            build%metapackages = [add_meta]
-        end if
-
-        return
-
-    end subroutine add_metapackage
 
     !> Check local schema for allowed entries
     subroutine check(table, error)
