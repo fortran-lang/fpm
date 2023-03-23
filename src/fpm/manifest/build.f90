@@ -13,7 +13,6 @@ module fpm_manifest_build
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only : string_t, len_trim, is_valid_module_prefix
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
-    use fpm_meta, only : metapackage_t
     implicit none
     private
 
