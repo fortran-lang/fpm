@@ -1024,31 +1024,33 @@ pure function debug_archiver(self) result(repr)
 end function debug_archiver
 
 !> Return a compiler name string
-type(string_t) function compiler_name(self) result(name)
+pure function compiler_name(self) result(name)
    !> Instance of the compiler object
    class(compiler_t), intent(in) :: self
+   !> Representation as string
+   character(len=:), allocatable :: name
 
    select case (self%id)
-       case(id_gcc); name = string_t("gfortran")
-       case(id_f95); name = string_t("f95")
-       case(id_caf); name = string_t("caf")
-       case(id_intel_classic_nix);     name = string_t("ifort")
-       case(id_intel_classic_mac);     name = string_t("ifort")
-       case(id_intel_classic_windows); name = string_t("ifort")
-       case(id_intel_llvm_nix);     name = string_t("ifx")
-       case(id_intel_llvm_windows); name = string_t("ifx")
-       case(id_intel_llvm_unknown); name = string_t("ifx")
-       case(id_pgi);       name = string_t("pgfortran")
-       case(id_nvhpc);     name = string_t("nvfortran")
-       case(id_nag);       name = string_t("nagfor")
-       case(id_flang);     name = string_t("flang")
-       case(id_flang_new); name = string_t("flang-new")
-       case(id_f18);       name = string_t("f18")
-       case(id_ibmxl);     name = string_t("xlf90")
-       case(id_cray);      name = string_t("crayftn")
-       case(id_lahey);     name = string_t("lfc")
-       case(id_lfortran);  name = string_t("lFortran")
-       case default;       name = string_t("invalid/unknown")
+       case(id_gcc); name = "gfortran"
+       case(id_f95); name = "f95"
+       case(id_caf); name = "caf"
+       case(id_intel_classic_nix);     name = "ifort"
+       case(id_intel_classic_mac);     name = "ifort"
+       case(id_intel_classic_windows); name = "ifort"
+       case(id_intel_llvm_nix);     name = "ifx"
+       case(id_intel_llvm_windows); name = "ifx"
+       case(id_intel_llvm_unknown); name = "ifx"
+       case(id_pgi);       name = "pgfortran"
+       case(id_nvhpc);     name = "nvfortran"
+       case(id_nag);       name = "nagfor"
+       case(id_flang);     name = "flang"
+       case(id_flang_new); name = "flang-new"
+       case(id_f18);       name = "f18"
+       case(id_ibmxl);     name = "xlf90"
+       case(id_cray);      name = "crayftn"
+       case(id_lahey);     name = "lfc"
+       case(id_lfortran);  name = "lFortran"
+       case default;       name = "invalid/unknown"
    end select
 end function compiler_name
 
