@@ -21,6 +21,7 @@ use fpm_targets, only: targets_from_sources, &
                         resolve_target_linking, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
+use fpm_meta, only : add_metapackage
 use fpm_error, only : error_t, fatal_error, fpm_stop
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
@@ -174,6 +175,10 @@ subroutine build_model(model, settings, package, error)
     model%c_compile_flags = cflags
     model%cxx_compile_flags = cxxflags
     model%link_flags = ldflags
+
+    ! Build and resolve metapackage dependencies
+    if (package%build%openmp) call add_metapackage(model,"openmp",error)
+    if (allocated(error)) return
 
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
