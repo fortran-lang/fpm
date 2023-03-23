@@ -13,6 +13,7 @@ module fpm_manifest_build
     use fpm_error, only : error_t, syntax_error, fatal_error
     use fpm_strings, only : string_t, len_trim, is_valid_module_prefix
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
+    use fpm_meta, only : metapackage_t
     implicit none
     private
 
@@ -33,6 +34,11 @@ module fpm_manifest_build
         !> Enforcing of package module names
         logical :: module_naming = .false.
         type(string_t) :: module_prefix
+
+        !> Metapackages
+        !> @note when several metapackages are supported, this will need be generalized
+        logical :: openmp
+        type(metapackage_t), allocatable :: metapackages(:)
 
         !> Libraries to link against
         type(string_t), allocatable :: link(:)
@@ -119,6 +125,9 @@ contains
 
         end if
 
+        !> Metapackages: read all flags
+        call get_value(table, "openmp", self%openmp, .false., stat=stat)
+
         call get_list(table, "link", self%link, error)
         if (allocated(error)) return
 
@@ -151,6 +160,10 @@ contains
                 continue
 
             case ("module-naming")
+                continue
+
+            !> Supported metapackages
+            case ("openmp")
                 continue
 
             case default
