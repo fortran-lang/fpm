@@ -56,6 +56,10 @@ subroutine build_model(model, settings, package, error)
     call model%deps%add(package, error)
     if (allocated(error)) return
 
+    ! Update dependencies where needed
+    call model%deps%update(error)
+    if (allocated(error)) return
+
     ! build/ directory should now exist
     if (.not.exists("build/.gitignore")) then
       call filewrite(join_path("build", ".gitignore"),["*"])
@@ -435,7 +439,7 @@ subroutine cmd_run(settings,test)
     type(string_t), allocatable :: executables(:)
     type(build_target_t), pointer :: exe_target
     type(srcfile_t), pointer :: exe_source
-    integer :: run_scope
+    integer :: run_scope,firsterror
     integer, allocatable :: stat(:)
     character(len=:),allocatable :: line
     logical :: toomany
@@ -580,10 +584,12 @@ subroutine cmd_run(settings,test)
         if (any(stat /= 0)) then
             do i=1,size(stat)
                 if (stat(i) /= 0) then
-                    write(stderr,'(*(g0:,1x))') '<ERROR> Execution failed for object "',basename(executables(i)%s),'"'
+                    write(stderr,'(*(g0:,1x))') '<ERROR> Execution for object "',basename(executables(i)%s),&
+                                                '" returned exit code ',stat(i)
                 end if
             end do
-            call fpm_stop(1,'*cmd_run*: Stopping due to failed executions')
+            firsterror = findloc(stat/=0,value=.true.,dim=1)
+            call fpm_stop(stat(firsterror),'*cmd_run*:stopping due to failed executions')
         end if
 
     endif

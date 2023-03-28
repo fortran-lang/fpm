@@ -920,10 +920,8 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 
     if (present(exitstat)) then
         exitstat = stat
-    else
-        if (stat /= 0) then
-            call fpm_stop(1,'*run*:Command failed')
-        end if
+    elseif (stat /= 0) then
+        call fpm_stop(stat,'*run*: Command '//cmd//redirect_str//' returned a non-zero status code')
     end if
 
 end subroutine run

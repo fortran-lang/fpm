@@ -43,10 +43,8 @@ contains
     if (settings%fetch_only) return
 
     if (size(settings%name) == 0) then
-      do ii = 1, deps%ndep
-        call deps%update(deps%dep(ii)%name, error)
-        call handle_error(error)
-      end do
+      call deps%update(error)
+      call handle_error(error)
     else
       do ii = 1, size(settings%name)
         call deps%update(trim(settings%name(ii)), error)
