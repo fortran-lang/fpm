@@ -180,6 +180,10 @@ subroutine build_model(model, settings, package, error)
     if (package%build%openmp) call add_metapackage(model,"openmp",error)
     if (allocated(error)) return
 
+    ! Stdlib is available but not implemented yet
+    if (package%build%stdlib) call fatal_error(error,"stdlib is not implemented yet")
+    if (allocated(error)) return
+
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
         call add_sources_from_dir(model%packages(1)%sources,'app', FPM_SCOPE_APP, &

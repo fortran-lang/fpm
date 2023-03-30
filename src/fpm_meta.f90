@@ -80,6 +80,7 @@ subroutine init_from_name(this,name,compiler,error)
     !> Initialize metapackage by name
     select case(name)
         case("openmp"); call init_openmp(this,compiler,error)
+        case("stdlib"); call init_stdlib(this,compiler,error)
         case default
             call syntax_error(error, "Metapackage "//name//" is not supported in [build]")
             return
@@ -139,6 +140,20 @@ subroutine init_openmp(this,compiler,error)
 
 
 end subroutine init_openmp
+
+!> Initialize stdlib metapackage for the current system
+subroutine init_stdlib(this,compiler,error)
+    class(metapackage_t), intent(inout) :: this
+    type(compiler_t), intent(in) :: compiler
+    type(error_t), allocatable, intent(out) :: error
+
+    !> Cleanup
+    call destroy(this)
+
+    !> Not implemented yet
+    call fatal_error(error,'stdlib not supported yet')
+
+end subroutine init_stdlib
 
 ! Resolve metapackage dependencies into the model
 subroutine resolve(self,model,error)
