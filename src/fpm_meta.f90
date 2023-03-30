@@ -20,6 +20,7 @@ use fpm_model
 use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
+use iso_fortran_env, only: stdout => output_unit
 
 implicit none
 
@@ -300,6 +301,11 @@ subroutine resolve_metapackage_model(model,package,error)
         call add_metapackage_config(package,model%compiler,"stdlib",error)
         if (allocated(error)) return
     endif
+
+    ! Stdlib is not 100% thread safe. print a warning to the user
+    if (package%build%stdlib .and. package%build%openmp) then
+        write(stdout,'(a)')'<WARNING> both openmp and stdlib requested: some functions may not be thread-safe!'
+    end if
 
 end subroutine resolve_metapackage_model
 
