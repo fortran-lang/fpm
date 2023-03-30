@@ -56,8 +56,6 @@ jobs:
         ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libgfortran.5.dylib /usr/local/opt/gcc@9/lib/gcc/9/libgfortran.5.dylib
         ln -fs /usr/local/lib/gcc/${GCC_V}/libgcc_s.1.dylib /usr/local/lib/gcc/9/libgcc_s.1.dylib
 
-/usr/local/opt/gcc@9/lib/gcc/9/libquadmath.0.dylib
-
     - name: Install GFortran Linux
       if: contains(matrix.os, 'ubuntu')
       run: |
