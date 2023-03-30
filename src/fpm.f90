@@ -58,11 +58,6 @@ subroutine build_model(model, settings, package, error)
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
 
-    ! build/ directory should now exist
-    if (.not.exists("build/.gitignore")) then
-      call filewrite(join_path("build", ".gitignore"),["*"])
-    end if
-
     call new_compiler(model%compiler, settings%compiler, settings%c_compiler, &
         & settings%cxx_compiler, echo=settings%verbose, verbose=settings%verbose)
     call new_archiver(model%archiver, settings%archiver, &
@@ -96,6 +91,11 @@ subroutine build_model(model, settings, package, error)
     ! Update dependencies where needed
     call model%deps%update(error)
     if (allocated(error)) return
+
+    ! build/ directory should now exist
+    if (.not.exists("build/.gitignore")) then
+      call filewrite(join_path("build", ".gitignore"),["*"])
+    end if
 
     allocate(model%packages(model%deps%ndep))
 
