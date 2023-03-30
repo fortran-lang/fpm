@@ -58,15 +58,6 @@ subroutine build_model(model, settings, package, error)
     allocate(model%link_libraries(0))
     allocate(model%external_modules(0))
 
-    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
-    call model%deps%add(package, error)
-
-    if (allocated(error)) return
-
-    ! Update dependencies where needed
-    call model%deps%update(error)
-    if (allocated(error)) return
-
     ! build/ directory should now exist
     if (.not.exists("build/.gitignore")) then
       call filewrite(join_path("build", ".gitignore"),["*"])
@@ -88,6 +79,23 @@ subroutine build_model(model, settings, package, error)
     model%include_tests = settings%build_tests
     model%enforce_module_names = package%build%module_naming
     model%module_prefix = package%build%module_prefix
+
+    ! Create dependencies
+    call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
+    call model%deps%add(package, error)
+    if (allocated(error)) return
+
+    ! Build and resolve metapackage dependencies and flags
+    if (package%build%openmp) call add_metapackage(model,"openmp",error)
+    if (allocated(error)) return
+
+    ! Stdlib is available but not implemented yet
+    if (package%build%stdlib) call add_metapackage(model,"stdlib",error)
+    if (allocated(error)) return
+
+    ! Update dependencies where needed
+    call model%deps%update(error)
+    if (allocated(error)) return
 
     allocate(model%packages(model%deps%ndep))
 
@@ -160,14 +168,6 @@ subroutine build_model(model, settings, package, error)
 
     ! Add optional flags
     if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, model%fortran_compile_flags)
-
-    ! Build and resolve metapackage dependencies
-    if (package%build%openmp) call add_metapackage(model,"openmp",error)
-    if (allocated(error)) return
-
-    ! Stdlib is available but not implemented yet
-    if (package%build%stdlib) call add_metapackage(model,"stdlib",error)
-    if (allocated(error)) return
 
     ! Add sources from executable directories
     if (is_dir('app') .and. package%build%auto_executables) then
