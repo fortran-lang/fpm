@@ -18,6 +18,8 @@ use fpm_error, only: error_t, fatal_error, syntax_error
 use fpm_compiler
 use fpm_model
 use fpm_manifest_dependency, only: dependency_config_t
+use fpm_git, only : git_target_branch
+
 implicit none
 
 private
@@ -53,8 +55,6 @@ type, public :: metapackage_t
 
        !> Add metapackage dependencies to the model
        procedure :: resolve
-
-
 
 end type metapackage_t
 
@@ -158,8 +158,26 @@ subroutine init_stdlib(this,compiler,error)
     !> Cleanup
     call destroy(this)
 
-    !> Not implemented yet
-    call fatal_error(error,'stdlib not supported yet')
+    !> Stdlib is queried as a dependency from the official repository
+    this%has_dependencies = .true.
+
+    allocate(this%dependency(2))
+
+    !> 1) Test-drive
+    this%dependency(1)%name = "test-drive"
+    this%dependency(1)%git = git_target_branch("https://github.com/fortran-lang/test-drive","v0.4.0")
+    if (.not.allocated(this%dependency(1)%git)) then
+        call fatal_error(error,'cannot initialize test-drive git dependency for stdlib metapackage')
+        return
+    end if
+
+    !> 2) stdlib
+    this%dependency(2)%name = "stdlib"
+    this%dependency(2)%git = git_target_branch("https://github.com/fortran-lang/stdlib","stdlib-fpm")
+    if (.not.allocated(this%dependency(2)%git)) then
+        call fatal_error(error,'cannot initialize git repo dependency for stdlib metapackage')
+        return
+    end if
 
 end subroutine init_stdlib
 
@@ -187,6 +205,11 @@ subroutine resolve(self,model,error)
     if (self%has_include_dirs) then
         model%include_dirs          = [model%include_dirs,self%link_dirs]
     end if
+
+    ! Add dependencies
+    if (self%has_dependencies) then
+        call model%deps%add(self%dependency, error)
+    endif
 
 end subroutine resolve
 
