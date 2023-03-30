@@ -45,7 +45,7 @@ subroutine build_model(model, settings, package, error)
 
     integer :: i, j
     type(package_config_t) :: dependency
-    character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
+    character(len=:), allocatable :: manifest, lib_dir
     character(len=:), allocatable :: version
     logical :: has_cpp
 
@@ -60,6 +60,7 @@ subroutine build_model(model, settings, package, error)
 
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
     call model%deps%add(package, error)
+
     if (allocated(error)) return
 
     ! Update dependencies where needed
@@ -76,27 +77,14 @@ subroutine build_model(model, settings, package, error)
     call new_archiver(model%archiver, settings%archiver, &
         & echo=settings%verbose, verbose=settings%verbose)
 
-    if (settings%flag == '') then
-        flags = model%compiler%get_default_flags(settings%profile == "release")
-    else
-        flags = settings%flag
-        select case(settings%profile)
-        case("release", "debug")
-            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
-        end select
-    end if
-
-    cflags = trim(settings%cflag)
-    cxxflags = trim(settings%cxxflag)
-    ldflags = trim(settings%ldflag)
-
     if (model%compiler%is_unknown()) then
         write(*, '(*(a:,1x))') &
             "<WARN>", "Unknown compiler", model%compiler%fc, "requested!", &
             "Defaults for this compiler might be incorrect"
     end if
-    model%build_prefix = join_path("build", basename(model%compiler%fc))
 
+    call new_compiler_flags(model,settings)
+    model%build_prefix = join_path("build", basename(model%compiler%fc))
     model%include_tests = settings%build_tests
     model%enforce_module_names = package%build%module_naming
     model%module_prefix = package%build%module_prefix
@@ -170,18 +158,15 @@ subroutine build_model(model, settings, package, error)
     end do
     if (allocated(error)) return
 
-    if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, flags)
-    model%fortran_compile_flags = flags
-    model%c_compile_flags = cflags
-    model%cxx_compile_flags = cxxflags
-    model%link_flags = ldflags
+    ! Add optional flags
+    if (has_cpp) call set_cpp_preprocessor_flags(model%compiler%id, model%fortran_compile_flags)
 
     ! Build and resolve metapackage dependencies
     if (package%build%openmp) call add_metapackage(model,"openmp",error)
     if (allocated(error)) return
 
     ! Stdlib is available but not implemented yet
-    if (package%build%stdlib) call fatal_error(error,"stdlib is not implemented yet")
+    if (package%build%stdlib) call add_metapackage(model,"stdlib",error)
     if (allocated(error)) return
 
     ! Add sources from executable directories
@@ -266,6 +251,34 @@ subroutine build_model(model, settings, package, error)
         call fpm_stop(1,'*build_model*:Error: One or more duplicate module names found.')
     end if
 end subroutine build_model
+
+!> Initialize model compiler flags
+subroutine new_compiler_flags(model,settings)
+    type(fpm_model_t), intent(inout) :: model
+    type(fpm_build_settings), intent(in) :: settings
+
+    character(len=:), allocatable :: flags, cflags, cxxflags, ldflags
+
+    if (settings%flag == '') then
+        flags = model%compiler%get_default_flags(settings%profile == "release")
+    else
+        flags = settings%flag
+        select case(settings%profile)
+        case("release", "debug")
+            flags = flags // model%compiler%get_default_flags(settings%profile == "release")
+        end select
+    end if
+
+    cflags   = trim(settings%cflag)
+    cxxflags = trim(settings%cxxflag)
+    ldflags  = trim(settings%ldflag)
+
+    model%fortran_compile_flags = flags
+    model%c_compile_flags       = cflags
+    model%cxx_compile_flags     = cxxflags
+    model%link_flags            = ldflags
+
+end subroutine new_compiler_flags
 
 ! Check for duplicate modules
 subroutine check_modules_for_duplicates(model, duplicates_found)
