@@ -195,7 +195,18 @@ popd
 
 # Test metapackages
 pushd metapackage_openmp
-"$fpm" build
+EXIT_CODE=0
+"$fpm" build || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+EXIT_CODE=0
+"$fpm" run || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+popd
+
+pushd metapackage_stdlib
+EXIT_CODE=0
+"$fpm" build || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
 EXIT_CODE=0
 "$fpm" run || EXIT_CODE=$?
 test $EXIT_CODE -eq 0

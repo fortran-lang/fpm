@@ -1,0 +1,13 @@
+name = "test_stdlib"
+version = "0.1.0"
+license = "license"
+author = "Federico Perini"
+maintainer = "federico.perini@hello.world"
+copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+stdlib = true
+[install]
+library = false
