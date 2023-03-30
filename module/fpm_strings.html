@@ -275,8 +275,8 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a></li>
-                <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
+                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
+                <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a>'>iso_c_binding</a></li>
             </ul>
           </li>
       </ul>
@@ -414,7 +414,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -637,7 +637,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -907,7 +907,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -922,7 +922,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -965,7 +965,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -980,7 +980,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1034,7 +1034,7 @@
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1176,7 +1176,7 @@ single characters terminated with a C_NULL_CHAR character</p>
 
     <h4>
     Return Value
-    <small>character, allocatable</small>
+    <small>character(len=:), allocatable</small>
     </h4>
     
 
@@ -1722,7 +1722,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1769,7 +1769,7 @@ single characters terminated with a C_NULL_CHAR character</p>
 
     <h4>
     Return Value
-    <small>character</small>
+    <small>character(len=len(str))</small>
     </h4>
     
 
@@ -1917,7 +1917,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1932,7 +1932,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=1),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1947,7 +1947,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=1),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -1964,7 +1964,7 @@ single characters terminated with a C_NULL_CHAR character</p>
 
     <h4>
     Return Value
-    <small>character</small>
+    <small>character(len=len(string))</small>
     </h4>
     
 
@@ -1992,7 +1992,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -2007,7 +2007,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -2067,7 +2067,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -2143,7 +2143,7 @@ single characters terminated with a C_NULL_CHAR character</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in),</td>
               <td>optional</td>            <td>
@@ -2160,7 +2160,7 @@ single characters terminated with a C_NULL_CHAR character</p>
 
     <h4>
     Return Value
-    <small>character, allocatable</small>
+    <small>character(len=:), allocatable</small>
     </h4>
     
 
@@ -2190,7 +2190,7 @@ expanded to other characters if needed.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
-              character,
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -2207,7 +2207,7 @@ expanded to other characters if needed.</p>
 
     <h4>
     Return Value
-    <small>character</small>
+    <small>character(len=len(string))</small>
     </h4>
     
 
@@ -2415,7 +2415,7 @@ expanded to other characters if needed.</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-03-22 10:00              </p>
+ on 2023-03-30 12:15              </p>
           </div>
         </div>
         <br>

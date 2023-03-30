@@ -300,12 +300,12 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
+                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
                 <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-                <li><a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a></li>
-                <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-                <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
                 <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+                <li><a href='../module/fpm_manifest.html'>fpm_manifest</a></li>
+                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+                <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
             </ul>
           </li>
       </ul>
@@ -510,7 +510,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_backtrace"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -527,7 +527,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_check"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -544,7 +544,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_coarray"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -561,7 +561,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_debug"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -578,7 +578,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_external"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -595,7 +595,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_limit"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -612,7 +612,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_opt"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -629,7 +629,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_pic"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -646,7 +646,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_gnu_warn"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -663,7 +663,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_ibmxl_backslash"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -680,7 +680,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_align"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -697,7 +697,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_align_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -714,7 +714,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_backtrace"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -731,7 +731,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_backtrace_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -748,7 +748,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_byterecl"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -765,7 +765,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_byterecl_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -782,7 +782,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_check"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -799,7 +799,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_check_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -816,7 +816,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_debug"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -833,7 +833,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_debug_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -850,7 +850,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_fp"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -867,7 +867,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_fp_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -884,7 +884,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_limit"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -901,7 +901,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_limit_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -918,7 +918,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_nogen"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -935,7 +935,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_nogen_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -952,7 +952,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_pthread"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -969,7 +969,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_pthread_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -986,7 +986,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_warn"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1003,7 +1003,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_intel_warn_win"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1020,7 +1020,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_lfortran_opt"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1037,7 +1037,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_nag_backtrace"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1054,7 +1054,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_nag_check"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1071,7 +1071,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_nag_coarray"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1088,7 +1088,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_nag_debug"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1105,7 +1105,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_nag_opt"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1122,7 +1122,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_nag_pic"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1139,7 +1139,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_pgi_backslash"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1156,7 +1156,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_pgi_check"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1173,7 +1173,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_pgi_debug"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1190,7 +1190,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_pgi_traceback"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -1207,7 +1207,7 @@ parameter
         <tr>
             <td>
               <span class="anchor" id="variable-flag_pgi_warn"></span>
-              character,
+              character(len=*),
             </td>
               <td>public,</td>
             <td>
@@ -3484,7 +3484,7 @@ in case of errors.</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-03-22 10:00              </p>
+ on 2023-03-30 12:15              </p>
           </div>
         </div>
         <br>
