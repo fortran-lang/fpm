@@ -32,7 +32,6 @@ type, public :: metapackage_t
     logical :: has_build_flags     = .false.
     logical :: has_include_dirs    = .false.
     logical :: has_dependencies    = .false.
-    logical :: has_dev_depenencies = .false.
 
     !> List of compiler flags and options to be added
     type(string_t) :: flags
@@ -40,11 +39,9 @@ type, public :: metapackage_t
     type(string_t), allocatable :: link_dirs(:)
     type(string_t), allocatable :: link_libs(:)
 
-    !> List of Dependency meta data
+    !> List of Development dependency meta data.
+    !> Metapackage dependencies are never exported from the model
     type(dependency_config_t), allocatable :: dependency(:)
-
-    !> List of Development dependency meta data
-    type(dependency_config_t), allocatable :: dev_dependency(:)
 
     contains
 
@@ -72,14 +69,12 @@ elemental subroutine destroy(this)
    this%has_build_flags     = .false.
    this%has_include_dirs    = .false.
    this%has_dependencies    = .false.
-   this%has_dev_depenencies = .false.
 
    if (allocated(this%flags%s)) deallocate(this%flags%s)
    if (allocated(this%link_flags%s)) deallocate(this%link_flags%s)
    if (allocated(this%link_dirs)) deallocate(this%link_dirs)
    if (allocated(this%link_libs)) deallocate(this%link_libs)
    if (allocated(this%dependency)) deallocate(this%dependency)
-   if (allocated(this%dev_dependency)) deallocate(this%dev_dependency)
 
 end subroutine destroy
 
