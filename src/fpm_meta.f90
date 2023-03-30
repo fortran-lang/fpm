@@ -17,6 +17,7 @@ use fpm_strings, only: string_t
 use fpm_error, only: error_t, fatal_error, syntax_error
 use fpm_compiler
 use fpm_model
+use fpm_manifest_dependency, only: dependency_config_t
 implicit none
 
 private
