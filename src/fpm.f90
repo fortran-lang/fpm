@@ -21,7 +21,7 @@ use fpm_targets, only: targets_from_sources, &
                         resolve_target_linking, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
-use fpm_meta, only : add_metapackage
+use fpm_meta, only : resolve_metapackages
 use fpm_error, only : error_t, fatal_error, fpm_stop
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
@@ -40,7 +40,7 @@ subroutine build_model(model, settings, package, error)
     !
     type(fpm_model_t), intent(out) :: model
     type(fpm_build_settings), intent(in) :: settings
-    type(package_config_t), intent(in) :: package
+    type(package_config_t), intent(inout) :: package
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i, j
@@ -75,17 +75,15 @@ subroutine build_model(model, settings, package, error)
     model%enforce_module_names = package%build%module_naming
     model%module_prefix = package%build%module_prefix
 
+    ! Resolve meta-dependencies into the package and the model
+    call resolve_metapackages(model,package,error)
+    if (allocated(error)) return
+
     ! Create dependencies
     call new_dependency_tree(model%deps, cache=join_path("build", "cache.toml"))
+
+    ! Build and resolve model dependencies
     call model%deps%add(package, error)
-    if (allocated(error)) return
-
-    ! Build and resolve metapackage dependencies and flags
-    if (package%build%openmp) call add_metapackage(model,"openmp",error)
-    if (allocated(error)) return
-
-    ! Stdlib is available but not implemented yet
-    if (package%build%stdlib) call add_metapackage(model,"stdlib",error)
     if (allocated(error)) return
 
     ! Update dependencies where needed

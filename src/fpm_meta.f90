@@ -19,12 +19,13 @@ use fpm_compiler
 use fpm_model
 use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch
+use fpm_manifest, only: package_config_t
 
 implicit none
 
 private
 
-public :: add_metapackage
+public :: resolve_metapackages
 
 !> Type for describing a source file
 type, public :: metapackage_t
@@ -54,9 +55,15 @@ type, public :: metapackage_t
        procedure :: new => init_from_name
 
        !> Add metapackage dependencies to the model
-       procedure :: resolve
+       procedure, private :: resolve_model
+       procedure, private :: resolve_package_config
+       generic :: resolve => resolve_model,resolve_package_config
 
 end type metapackage_t
+
+interface resolve_metapackages
+    module procedure resolve_metapackage_model
+end interface resolve_metapackages
 
 contains
 
@@ -182,7 +189,7 @@ subroutine init_stdlib(this,compiler,error)
 end subroutine init_stdlib
 
 ! Resolve metapackage dependencies into the model
-subroutine resolve(self,model,error)
+subroutine resolve_model(self,model,error)
     class(metapackage_t), intent(in) :: self
     type(fpm_model_t), intent(inout) :: model
     type(error_t), allocatable, intent(out) :: error
@@ -206,15 +213,29 @@ subroutine resolve(self,model,error)
         model%include_dirs          = [model%include_dirs,self%link_dirs]
     end if
 
-    ! Add dependencies
-    if (self%has_dependencies) then
-        call model%deps%add(self%dependency, error)
-    endif
+    ! Dependencies are resolved in the package config
 
-end subroutine resolve
+end subroutine resolve_model
+
+subroutine resolve_package_config(self,package,error)
+    class(metapackage_t), intent(in) :: self
+    type(package_config_t), intent(inout) :: package
+    type(error_t), allocatable, intent(out) :: error
+
+    ! All metapackage dependencies are added as full dependencies,
+    ! as upstream projects will not otherwise compile without them
+    if (self%has_dependencies) then
+        if (allocated(package%dependency)) then
+           package%dependency = [package%dependency,self%dependency]
+        else
+           package%dependency = self%dependency
+        end if
+    end if
+
+end subroutine resolve_package_config
 
 ! Add named metapackage dependency to the model
-subroutine add_metapackage(model,name,error)
+subroutine add_metapackage_model(model,name,error)
     type(fpm_model_t), intent(inout) :: model
     character(*), intent(in) :: name
     type(error_t), allocatable, intent(out) :: error
@@ -229,6 +250,57 @@ subroutine add_metapackage(model,name,error)
     call meta%resolve(model,error)
     if (allocated(error)) return
 
-end subroutine add_metapackage
+end subroutine add_metapackage_model
+
+! Add named metapackage dependency to the model
+subroutine add_metapackage_config(package,compiler,name,error)
+    type(package_config_t), intent(inout) :: package
+    type(compiler_t), intent(in) :: compiler
+    character(*), intent(in) :: name
+    type(error_t), allocatable, intent(out) :: error
+
+    type(metapackage_t) :: meta
+
+    !> Init metapackage
+    call meta%new(name,compiler,error)
+    if (allocated(error)) return
+
+    !> Add it to the model
+    call meta%resolve(package,error)
+    if (allocated(error)) return
+
+end subroutine add_metapackage_config
+
+!> Resolve all metapackages into the package config
+subroutine resolve_metapackage_model(model,package,error)
+    type(fpm_model_t), intent(inout) :: model
+    type(package_config_t), intent(inout) :: package
+    type(error_t), allocatable, intent(out) :: error
+
+    ! Dependencies are added to the package config, so they're properly resolved
+    ! into the dependency tree later.
+    ! Flags are added to the model (whose compiler needs to be already initialized)
+    if (model%compiler%is_unknown()) then
+        call fatal_error(error,"compiler not initialized: cannot build metapackages")
+        return
+    end if
+
+    ! OpenMP
+    if (package%build%openmp) then
+        call add_metapackage_model(model,"openmp",error)
+        if (allocated(error)) return
+        call add_metapackage_config(package,model%compiler,"openmp",error)
+        if (allocated(error)) return
+    endif
+
+    ! stdlib
+    if (package%build%stdlib) then
+        call add_metapackage_model(model,"stdlib",error)
+        if (allocated(error)) return
+        call add_metapackage_config(package,model%compiler,"stdlib",error)
+        if (allocated(error)) return
+    endif
+
+end subroutine resolve_metapackage_model
 
 end module fpm_meta
