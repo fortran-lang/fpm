@@ -16,15 +16,15 @@ module fpm_toml
     use fpm_error, only : error_t, fatal_error, file_not_found_error
     use fpm_strings, only : string_t
     use tomlf, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
-        & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
-        & toml_serializer, len
+        & set_value, toml_load, toml_error, new_table, add_table, add_array, &
+        & toml_serialize, len
     implicit none
     private
 
     public :: read_package_file
     public :: toml_table, toml_array, toml_key, toml_stat, get_value, set_value, get_list
     public :: new_table, add_table, add_array, len
-    public :: toml_error, toml_serializer, toml_parse
+    public :: toml_error, toml_serialize, toml_load
 
 
 contains
@@ -54,7 +54,7 @@ contains
         end if
 
         open(file=manifest, newunit=unit)
-        call toml_parse(table, unit, parse_error)
+        call toml_load(table, unit, error=parse_error)
         close(unit)
 
         if (allocated(parse_error)) then
