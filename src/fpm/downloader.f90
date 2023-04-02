@@ -18,10 +18,10 @@ module fpm_downloader
 contains
 
   !> Perform an http get request and save output to file.
-  subroutine get_pkg_data(url, version, tmp_pkg_data_file, json, error)
+  subroutine get_pkg_data(url, version, tmp_pkg_file, json, error)
     character(*), intent(in) :: url
     type(version_t), allocatable, intent(in) :: version
-    character(*), intent(in) :: tmp_pkg_data_file
+    character(*), intent(in) :: tmp_pkg_file
     type(json_object), intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
 
@@ -31,14 +31,14 @@ contains
 
     if (allocated(version)) then
       ! Request specific version.
-      call get_file(url//'/'//version%s(), tmp_pkg_data_file, error)
+      call get_file(url//'/'//version%s(), tmp_pkg_file, error)
     else
       ! Request latest version.
-      call get_file(url, tmp_pkg_data_file, error)
+      call get_file(url, tmp_pkg_file, error)
     end if
     if (allocated(error)) return
 
-    call json_load(j_value, tmp_pkg_data_file, error=j_error)
+    call json_load(j_value, tmp_pkg_file, error=j_error)
     if (allocated(j_error)) then
       allocate (error); call move_alloc(j_error%message, error%message); call json%destroy(); return
     end if
@@ -51,19 +51,19 @@ contains
     json = ptr
   end
 
-  subroutine get_file(url, tmp_pkg_data_file, error)
+  subroutine get_file(url, tmp_pkg_file, error)
     character(*), intent(in) :: url
-    character(*), intent(in) :: tmp_pkg_data_file
+    character(*), intent(in) :: tmp_pkg_file
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
 
     if (which('curl') /= '') then
       print *, "Downloading package data from '"//url//"' ..."
-      call execute_command_line('curl '//url//' -s -o '//tmp_pkg_data_file, exitstat=stat)
+      call execute_command_line('curl '//url//' -s -o '//tmp_pkg_file, exitstat=stat)
     else if (which('wget') /= '') then
       print *, "Downloading package data from '"//url//"' ..."
-      call execute_command_line('wget '//url//' -q -O '//tmp_pkg_data_file, exitstat=stat)
+      call execute_command_line('wget '//url//' -q -O '//tmp_pkg_file, exitstat=stat)
     else
       call fatal_error(error, "Neither 'curl' nor 'wget' installed."); return
     end if
@@ -73,8 +73,9 @@ contains
     end if
   end
 
-  subroutine unpack(tmp_file, destination, error)
-    character(*), intent(in) :: tmp_file
+  !> Unpack a tarball to a destination.
+  subroutine unpack(tmp_pkg_file, destination, error)
+    character(*), intent(in) :: tmp_pkg_file
     character(*), intent(in) :: destination
     type(error_t), allocatable, intent(out) :: error
 
@@ -84,11 +85,11 @@ contains
       call fatal_error(error, "'tar' not installed."); return
     end if
 
-    print *, "Unpacking '"//tmp_file//"' to '"//destination//"' ..."
-    call execute_command_line('tar -zxf '//tmp_file//' -C '//destination, exitstat=stat)
+    print *, "Unpacking '"//tmp_pkg_file//"' to '"//destination//"' ..."
+    call execute_command_line('tar -zxf '//tmp_pkg_file//' -C '//destination, exitstat=stat)
 
     if (stat /= 0) then
-      call fatal_error(error, "Error unpacking '"//tmp_file//"'."); return
+      call fatal_error(error, "Error unpacking '"//tmp_pkg_file//"'."); return
     end if
   end
 end

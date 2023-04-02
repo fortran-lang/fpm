@@ -1350,10 +1350,10 @@ contains
     global_settings%config_file_name = config_file_name
   end
 
-  subroutine get_pkg_data(url, version, tmp_file, json, error)
+  subroutine get_pkg_data(url, version, tmp_pkg_file, json, error)
     character(*), intent(in) :: url
     type(version_t), allocatable, intent(in) :: version
-    character(*), intent(in) :: tmp_file
+    character(*), intent(in) :: tmp_pkg_file
     type(json_object), intent(out) :: json
     type(error_t), allocatable, intent(out) :: error
 
@@ -1372,20 +1372,20 @@ contains
     json = cast_to_object(j_value)
   end
 
-  subroutine get_file(url, tmp_file, error)
+  subroutine get_file(url, tmp_pkg_file, error)
     character(*), intent(in) :: url
-    character(*), intent(in) :: tmp_file
+    character(*), intent(in) :: tmp_pkg_file
     type(error_t), allocatable, intent(out) :: error
   end
 
-  subroutine unpack_mock_package(tmp_file, destination, error)
-    character(*), intent(in) :: tmp_file
+  subroutine unpack_mock_package(tmp_pkg_file, destination, error)
+    character(*), intent(in) :: tmp_pkg_file
     character(*), intent(in) :: destination
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
 
-    call execute_command_line('cp '//tmp_file//' '//destination, exitstat=stat)
+    call execute_command_line('cp '//tmp_pkg_file//' '//destination, exitstat=stat)
 
     if (stat /= 0) then
       call test_failed(error, "Failed to create mock package"); return
