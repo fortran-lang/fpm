@@ -17,13 +17,13 @@ module fpm_toml
     use fpm_strings, only: string_t
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
-        & toml_serializer, len, toml_load
+        & toml_serialize, len, toml_load
     implicit none
     private
 
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
-              toml_error, toml_serializer, toml_parse, toml_load, check_keys
+              toml_error, toml_serialize, toml_load, check_keys
 
 contains
 
@@ -50,9 +50,9 @@ contains
             return
         end if
 
-        open (file=manifest, newunit=unit)
-        call toml_parse(table, unit, parse_error)
-        close (unit)
+        open(file=manifest, newunit=unit)
+        call toml_load(table, unit, error=parse_error)
+        close(unit)
 
         if (allocated(parse_error)) then
             allocate (error)
