@@ -10,7 +10,7 @@ module fpm_settings
   private
   public :: fpm_global_settings, get_global_settings, get_registry_settings, official_registry_base_url
 
-  character(*), parameter :: official_registry_base_url = 'https://minhdao.pythonanywhere.com'
+  character(*), parameter :: official_registry_base_url = 'https://fpm-registry.onrender.com'
 
   type :: fpm_global_settings
     !> Path to the global config file excluding the file name.
