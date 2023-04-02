@@ -16,7 +16,7 @@ rev = "7264878cdb1baff7323cc48596d829ccfe7751b8"
 
 [dependencies.jonquil]
 git = "https://github.com/toml-f/jonquil"
-rev = "93354799980556023442b2307010c600370af097"
+rev = "05d30818bb12fb877226ce284b9a3a41b971a889"
 
 [[test]]
 name = "cli-test"
