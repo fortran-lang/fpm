@@ -94,6 +94,8 @@ contains
     procedure :: get_module_flag
     !> Get flag for include directories
     procedure :: get_include_flag
+    !> Get feature flag
+    procedure :: get_feature_flag
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -137,10 +139,14 @@ character(*), parameter :: &
     flag_gnu_opt = " -O3 -funroll-loops", &
     flag_gnu_debug = " -g", &
     flag_gnu_pic = " -fPIC", &
-    flag_gnu_warn = " -Wall -Wextra -Wimplicit-interface", &
+    flag_gnu_warn = " -Wall -Wextra", &
     flag_gnu_check = " -fcheck=bounds -fcheck=array-temps", &
     flag_gnu_limit = " -fmax-errors=1", &
-    flag_gnu_external = " -Wimplicit-interface"
+    flag_gnu_external = " -Wimplicit-interface", &
+    flag_gnu_no_implicit_typing = " -fimplicit-none", &
+    flag_gnu_no_implicit_external = " -Werror=implicit-interface", &
+    flag_gnu_free_format = " -ffree-form", &
+    flag_gnu_fixed_format = " -ffixed-form"
 
 character(*), parameter :: &
     flag_pgi_backslash = " -Mbackslash", &
@@ -185,7 +191,10 @@ character(*), parameter :: &
     flag_nag_backtrace = " -gline"
 
 character(*), parameter :: &
-    flag_lfortran_opt = " --fast"
+    flag_lfortran_opt = " --fast", &
+    flag_lfortran_implicit_typing = " --implicit-typing", &
+    flag_lfortran_implicit_external = " --allow-implicit-interface", &
+    flag_lfortran_fixed_format = " --fixed-form"
 
     
 contains
@@ -537,6 +546,67 @@ function get_module_flag(self, path) result(flags)
     end select
 
 end function get_module_flag
+
+
+function get_feature_flag(self, feature) result(flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: feature
+    character(len=:), allocatable :: flags
+
+    flags = ""
+    select case(feature)
+    case("no-implicit-typing")
+       select case(self%id)
+       case(id_caf, id_gcc, id_f95)
+           flags = flag_gnu_no_implicit_typing
+
+       end select
+
+    case("implicit-typing")
+       select case(self%id)
+       case(id_lfortran)
+           flags = flag_lfortran_implicit_typing
+
+       end select
+
+    case("no-implicit-external")
+       select case(self%id)
+       case(id_caf, id_gcc, id_f95)
+           flags = flag_gnu_no_implicit_external
+
+       end select
+
+    case("implicit-external")
+       select case(self%id)
+       case(id_lfortran)
+           flags = flag_lfortran_implicit_external
+
+       end select
+
+    case("free-format")
+       select case(self%id)
+       case(id_caf, id_gcc, id_f95)
+           flags = flag_gnu_free_format
+
+       end select
+
+    case("fixed-format")
+       select case(self%id)
+       case(id_caf, id_gcc, id_f95)
+           flags = flag_gnu_fixed_format
+
+       case(id_lfortran)
+           flags = flag_lfortran_fixed_format
+
+       end select
+
+    case("default-format")
+        continue
+
+    case default
+        error stop "Unknown feature '"//feature//"'"
+    end select
+end function get_feature_flag
 
 
 subroutine get_default_c_compiler(f_compiler, c_compiler)

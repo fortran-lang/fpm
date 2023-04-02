@@ -27,6 +27,7 @@
 !>[profiles]
 !>[build]
 !>[install]
+!>[fortran]
 !>[[ executable ]]
 !>[[ example ]]
 !>[[ test ]]
@@ -38,6 +39,7 @@ module fpm_manifest_package
     use fpm_manifest_profile, only : profile_config_t, new_profiles, get_default_profiles
     use fpm_manifest_example, only : example_config_t, new_example
     use fpm_manifest_executable, only : executable_config_t, new_executable
+    use fpm_manifest_fortran, only : fortran_config_t, new_fortran_config
     use fpm_manifest_library, only : library_config_t, new_library
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
@@ -74,6 +76,9 @@ module fpm_manifest_package
 
         !> Installation configuration data
         type(install_config_t) :: install
+
+        !> Fortran meta data
+        type(fortran_config_t) :: fortran
 
         !> Library meta data
         type(library_config_t), allocatable :: library
@@ -171,6 +176,14 @@ contains
             return
         end if
         call new_install_config(self%install, child, error)
+        if (allocated(error)) return
+
+        call get_value(table, "fortran", child, requested=.true., stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, "Type mismatch for fortran entry, must be a table")
+            return
+        end if
+        call new_fortran_config(self%fortran, child, error)
         if (allocated(error)) return
 
         call get_value(table, "version", version, "0")
@@ -328,7 +341,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "profiles", "test", "executable", &
-                    & "example", "library", "install", "extra", "preprocess")
+                    & "example", "library", "install", "extra", "preprocess", "fortran")
                 continue
 
             end select
