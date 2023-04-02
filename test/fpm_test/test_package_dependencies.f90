@@ -1314,11 +1314,13 @@ contains
   end subroutine pkg_data_invalid_version
 
   !> Resolve a single dependency node
-  subroutine resolve_dependency_once(self, dependency, root, error)
+  subroutine resolve_dependency_once(self, dependency, global_settings, root, error)
     !> Mock instance of the dependency tree
     class(mock_dependency_tree_t), intent(inout) :: self
     !> Dependency configuration to add
     type(dependency_node_t), intent(inout) :: dependency
+    !> Global configuration settings.
+    type(fpm_global_settings), intent(in) :: global_settings
     !> Current installation prefix
     character(len=*), intent(in) :: root
     !> Error handling

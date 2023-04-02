@@ -524,10 +524,14 @@ contains
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
+    type(fpm_global_settings) :: global_settings
     integer :: ii
 
+    call get_global_settings(global_settings, error)
+    if (allocated(error)) return
+
     do ii = 1, self%ndep
-      call self%resolve(self%dep(ii), root, error)
+      call self%resolve(self%dep(ii), global_settings, root, error)
       if (allocated(error)) exit
     end do
 
@@ -536,11 +540,13 @@ contains
   end subroutine resolve_dependencies
 
   !> Resolve a single dependency node
-  subroutine resolve_dependency(self, dependency, root, error)
+  subroutine resolve_dependency(self, dependency, global_settings, root, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Dependency configuration to add
     type(dependency_node_t), intent(inout) :: dependency
+    !> Global configuration settings.
+    type(fpm_global_settings), intent(in) :: global_settings
     !> Current installation prefix
     character(len=*), intent(in) :: root
     !> Error handling
@@ -548,7 +554,6 @@ contains
 
     type(package_config_t) :: package
     character(len=:), allocatable :: manifest, proj_dir, revision
-    type(fpm_global_settings) :: global_settings
     logical :: fetch
 
     if (dependency%done) return
@@ -565,8 +570,6 @@ contains
         if (allocated(error)) return
       end if
     else
-      call get_global_settings(global_settings, error)
-      if (allocated(error)) return
       call dependency%get_from_registry(proj_dir, global_settings, error)
       if (allocated(error)) return
     end if
