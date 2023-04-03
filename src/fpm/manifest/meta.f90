@@ -19,6 +19,9 @@ module fpm_manifest_metapackages
     !> Configuration data for metapackages
     type :: metapackage_config_t
 
+        !> Request MPI support
+        logical :: mpi = .false.
+
         !> Request OpenMP support
         logical :: openmp = .false.
 
@@ -61,6 +64,12 @@ contains
             return
         end if
 
+        call get_value(table, "mpi", self%mpi, .false., stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error,"Error while reading value for 'mpi' in fpm.toml, expecting logical")
+            return
+        end if
+
     end subroutine new_meta_config
 
     !> Check local schema for allowed entries
@@ -84,7 +93,7 @@ contains
             select case(list(ikey)%key)
 
             !> Supported metapackages
-            case ("openmp","stdlib")
+            case ("openmp","stdlib","mpi")
                 continue
 
             case default

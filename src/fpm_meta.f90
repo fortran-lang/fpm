@@ -98,7 +98,7 @@ subroutine init_from_name(this,name,compiler,error)
         case("openmp"); call init_openmp(this,compiler,error)
         case("stdlib"); call init_stdlib(this,compiler,error)
         case default
-            call syntax_error(error, "Metapackage "//name//" is not supported in [build]")
+            call syntax_error(error, "Package "//name//" is not supported in [metapackages]")
             return
     end select
 
@@ -306,6 +306,14 @@ subroutine resolve_metapackage_model(model,package,error)
     if (package%meta%stdlib .and. package%meta%openmp) then
         write(stdout,'(a)')'<WARNING> both openmp and stdlib requested: some functions may not be thread-safe!'
     end if
+
+    ! MPI
+    if (package%meta%mpi) then
+        call add_metapackage_model(model,"mpi",error)
+        if (allocated(error)) return
+        call add_metapackage_config(package,model%compiler,"mpi",error)
+        if (allocated(error)) return
+    endif
 
 end subroutine resolve_metapackage_model
 
