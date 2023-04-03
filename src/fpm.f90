@@ -115,7 +115,7 @@ subroutine build_model(model, settings, package, error)
             associate(features => model%packages(i)%features)
                 features%implicit_typing = dependency%fortran%implicit_typing
                 features%implicit_external = dependency%fortran%implicit_external
-                features%source_format = dependency%fortran%source_format
+                features%source_form = dependency%fortran%source_form
             end associate
             call package%version%to_string(version)
             model%packages(i)%version = version

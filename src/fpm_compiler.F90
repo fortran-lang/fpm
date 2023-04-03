@@ -145,8 +145,8 @@ character(*), parameter :: &
     flag_gnu_external = " -Wimplicit-interface", &
     flag_gnu_no_implicit_typing = " -fimplicit-none", &
     flag_gnu_no_implicit_external = " -Werror=implicit-interface", &
-    flag_gnu_free_format = " -ffree-form", &
-    flag_gnu_fixed_format = " -ffixed-form"
+    flag_gnu_free_form = " -ffree-form", &
+    flag_gnu_fixed_form = " -ffixed-form"
 
 character(*), parameter :: &
     flag_pgi_backslash = " -Mbackslash", &
@@ -194,7 +194,7 @@ character(*), parameter :: &
     flag_lfortran_opt = " --fast", &
     flag_lfortran_implicit_typing = " --implicit-typing", &
     flag_lfortran_implicit_external = " --allow-implicit-interface", &
-    flag_lfortran_fixed_format = " --fixed-form"
+    flag_lfortran_fixed_form = " --fixed-form"
 
     
 contains
@@ -583,24 +583,24 @@ function get_feature_flag(self, feature) result(flags)
 
        end select
 
-    case("free-format")
+    case("free-form")
        select case(self%id)
        case(id_caf, id_gcc, id_f95)
-           flags = flag_gnu_free_format
+           flags = flag_gnu_free_form
 
        end select
 
-    case("fixed-format")
+    case("fixed-form")
        select case(self%id)
        case(id_caf, id_gcc, id_f95)
-           flags = flag_gnu_fixed_format
+           flags = flag_gnu_fixed_form
 
        case(id_lfortran)
-           flags = flag_lfortran_fixed_format
+           flags = flag_lfortran_fixed_form
 
        end select
 
-    case("default-format")
+    case("default-form")
         continue
 
     case default

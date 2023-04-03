@@ -1,3 +1,0 @@
-name = "free-format"
-fortran.source-format = "free"
-executable = [{main="main.f", name="free-format"}]

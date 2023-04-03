@@ -1057,8 +1057,8 @@ function get_feature_flags(compiler, features) result(flags)
         flags = flags // compiler%get_feature_flag("no-implicit-external")
     end if
 
-    if (allocated(features%source_format)) then
-        flags = flags // compiler%get_feature_flag(features%source_format//"-format")
+    if (allocated(features%source_form)) then
+        flags = flags // compiler%get_feature_flag(features%source_form//"-form")
     end if
 end function get_feature_flags
 

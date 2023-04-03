@@ -159,7 +159,7 @@ pushd cpp_files
 popd
 
 # Test Fortran features
-for feature in free-format fixed-format implicit-typing implicit-external
+for feature in free-form fixed-form implicit-typing implicit-external
 do
   pushd $feature
   "$fpm" run

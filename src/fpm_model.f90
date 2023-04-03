@@ -88,8 +88,8 @@ type :: fortran_features_t
     !> Use implicit external interface
     logical :: implicit_external = .false.
 
-    !> Use free format for all Fortran sources
-    character(:), allocatable :: source_format
+    !> Form to use for all Fortran sources
+    character(:), allocatable :: source_form
 end type fortran_features_t
 
 !> Type for describing a source file

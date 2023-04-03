@@ -15,8 +15,8 @@ module fpm_manifest_fortran
         !> Enable implicit external interfaces
         logical :: implicit_external
 
-        !> Use free format for all Fortran sources
-        character(:), allocatable :: source_format
+        !> Form to use for all Fortran sources
+        character(:), allocatable :: source_form
 
     end type fortran_config_t
 
@@ -35,7 +35,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         integer :: stat
-        character(:), allocatable :: source_format
+        character(:), allocatable :: source_form
 
         call check(table, error)
         if (allocated(error)) return
@@ -54,18 +54,18 @@ contains
             return
         end if
 
-        call get_value(table, "source-format", source_format, "free", stat=stat)
+        call get_value(table, "source-form", source_form, "free", stat=stat)
 
         if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'source-format' in fpm.toml, expecting logical")
+            call fatal_error(error,"Error while reading value for 'source-form' in fpm.toml, expecting logical")
             return
         end if
-        select case(source_format)
+        select case(source_form)
         case default
-            call fatal_error(error,"Value of source-format cannot be '"//source_format//"'")
+            call fatal_error(error,"Value of source-form cannot be '"//source_form//"'")
             return
         case("free", "fixed", "default")
-            self%source_format = source_format
+            self%source_form = source_form
         end select
 
     end subroutine new_fortran_config
@@ -90,7 +90,7 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("implicit-typing", "implicit-external", "source-format")
+            case("implicit-typing", "implicit-external", "source-form")
                 continue
 
             case default
