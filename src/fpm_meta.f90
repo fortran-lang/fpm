@@ -97,6 +97,7 @@ subroutine init_from_name(this,name,compiler,error)
     select case(name)
         case("openmp"); call init_openmp(this,compiler,error)
         case("stdlib"); call init_stdlib(this,compiler,error)
+        case("mpi");    call init_mpi   (this,compiler,error)
         case default
             call syntax_error(error, "Package "//name//" is not supported in [metapackages]")
             return
@@ -316,5 +317,19 @@ subroutine resolve_metapackage_model(model,package,error)
     endif
 
 end subroutine resolve_metapackage_model
+
+!> Initialize MPI metapackage for the current system
+subroutine init_mpi(this,compiler,error)
+    class(metapackage_t), intent(inout) :: this
+    type(compiler_t), intent(in) :: compiler
+    type(error_t), allocatable, intent(out) :: error
+
+    !> Cleanup
+    call destroy(this)
+
+    !> Stop for now
+    call fatal_error(error,"MPI dependency is recognized but not implemented yet")
+
+end subroutine init_mpi
 
 end module fpm_meta
