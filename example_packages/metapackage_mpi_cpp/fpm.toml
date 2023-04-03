@@ -6,7 +6,7 @@ maintainer = "federico.perini@hello.world"
 copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
 
 [[executable]]
-name = "test-mpi-c++"
+name = "test-mpi-cpp"
 main = "main.cpp"
 
 [metapackages]
