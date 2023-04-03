@@ -64,8 +64,8 @@ module fpm_dependency
     get_package_data
   use fpm_manifest_dependency, only: manifest_has_changed
   use fpm_strings, only : string_t, operator(.in.)
-  use fpm_toml, only : toml_table, toml_key, toml_error, toml_serializer, &
-    toml_parse, get_value, set_value, add_table
+  use fpm_toml, only : toml_table, toml_key, toml_error, toml_serialize, &
+    toml_load, get_value, set_value, add_table
   use fpm_versioning, only : version_t, new_version, char
   implicit none
   private
@@ -720,7 +720,7 @@ contains
     type(toml_error), allocatable :: parse_error
     type(toml_table), allocatable :: table
 
-    call toml_parse(table, unit, parse_error)
+    call toml_load(table, unit, error=parse_error)
 
     if (allocated(parse_error)) then
       allocate(error)
@@ -830,14 +830,11 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     type(toml_table) :: table
-    type(toml_serializer) :: ser
 
     table = toml_table()
-    ser = toml_serializer(unit)
-
     call self%dump(table, error)
 
-    call table%accept(ser)
+    write(unit, '(a)') toml_serialize(table)
 
   end subroutine dump_to_unit
 
