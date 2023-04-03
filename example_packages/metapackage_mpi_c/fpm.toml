@@ -1,0 +1,16 @@
+name = "test_mpi_c"
+version = "0.1.0"
+license = "license"
+author = "Federico Perini"
+maintainer = "federico.perini@hello.world"
+copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
+
+[[executable]]
+name = "test-mpi-c-main"
+main = "main.c"
+
+[metapackages]
+mpi = true
+
+[install]
+library = false
