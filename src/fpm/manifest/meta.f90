@@ -11,6 +11,7 @@
 module fpm_manifest_metapackages
     use fpm_error, only: error_t, fatal_error, syntax_error
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_environment
     implicit none
     private
 

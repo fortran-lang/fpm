@@ -20,6 +20,8 @@ use fpm_model
 use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
+use fpm_environment, only: get_env,os_is_unix
+use fpm_filesystem, only: run
 use iso_fortran_env, only: stdout => output_unit
 
 implicit none
@@ -324,12 +326,131 @@ subroutine init_mpi(this,compiler,error)
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
 
+    type(string_t), allocatable :: c_wrappers(:),cpp_wrappers(:),fort_wrappers(:)
+
     !> Cleanup
     call destroy(this)
 
-    !> Stop for now
-    call fatal_error(error,"MPI dependency is recognized but not implemented yet")
+    !> Get all candidate MPI wrappers
+    call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
+
+    print "('MPI wrapper founds: fortran=',i0,' c=',i0,' c++=',i0)", &
+          size(fort_wrappers),size(c_wrappers),size(cpp_wrappers)
+
+    if (size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)<=0) then
+        call fatal_error(error,"cannot find MPI wrappers for "//compiler%name()//" compiler")
+        return
+    end if
+
+    call fatal_error(error,"MPI is being implemented, but not available yet")
+
 
 end subroutine init_mpi
+
+!> Return several mpi wrappers, and return
+subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
+    type(compiler_t), intent(in) :: compiler
+    type(string_t), allocatable, intent(out) :: c_wrappers(:),cpp_wrappers(:),fort_wrappers(:)
+
+    ! Attempt gathering MPI wrapper names from the environment variables
+    c_wrappers    = [string_t(get_env('MPICC' ,'mpicc'))]
+    cpp_wrappers  = [string_t(get_env('MPICXX','mpic++'))]
+    fort_wrappers = [string_t(get_env('MPIFC' ,'mpifc' )),&
+                     string_t(get_env('MPIf90','mpif90')),&
+                     string_t(get_env('MPIf77','mpif77'))]
+
+    if (get_os_type()==OS_WINDOWS) then
+        c_wrappers = [c_wrappers,string_t('mpicc.bat')]
+        cpp_wrappers = [cpp_wrappers,string_t('mpicxx.bat')]
+        fort_wrappers = [fort_wrappers,string_t('mpifc.bat')]
+    endif
+
+    ! Add compiler-specific wrappers
+    compiler_specific: select case (compiler%id)
+       case (id_gcc,id_f95)
+
+            c_wrappers = [c_wrappers,string_t('mpigcc'),string_t('mpgcc')]
+          cpp_wrappers = [cpp_wrappers,string_t('mpig++'),string_t('mpg++')]
+         fort_wrappers = [fort_wrappers,string_t('mpigfortran'),string_t('mpgfortran'),&
+                          string_t('mpig77'),string_t('mpg77')]
+
+       case (id_intel_classic_windows,id_intel_llvm_windows,&
+             id_intel_classic_nix,id_intel_classic_mac,id_intel_llvm_nix,id_intel_llvm_unknown)
+
+            c_wrappers = [c_wrappers,string_t(get_env('I_MPI_CC','mpiicc')),string_t('mpicl.bat')]
+          cpp_wrappers = [cpp_wrappers,string_t(get_env('I_MPI_CXX','mpiicpc')),string_t('mpicl.bat')]
+         fort_wrappers = [fort_wrappers,string_t(get_env('I_MPI_F90','mpiifort')),string_t('mpif77'),&
+                          string_t('mpif90')]
+
+       case (id_pgi,id_nvhpc)
+
+            c_wrappers = [c_wrappers,string_t('mpipgicc'),string_t('mpgcc')]
+          cpp_wrappers = [cpp_wrappers,string_t('mpipgic++')]
+         fort_wrappers = [fort_wrappers,string_t('mpipgifort'),string_t('mpipgf90')]
+
+       case (id_cray)
+
+            c_wrappers = [c_wrappers,string_t('cc')]
+          cpp_wrappers = [cpp_wrappers,string_t('CC')]
+         fort_wrappers = [fort_wrappers,string_t('ftn')]
+
+    end select compiler_specific
+
+    call assert_mpi_wrappers(fort_wrappers)
+    call assert_mpi_wrappers(c_wrappers)
+    call assert_mpi_wrappers(cpp_wrappers)
+
+end subroutine mpi_wrappers
+
+!> Filter out invalid/unavailable mpi wrappers
+subroutine assert_mpi_wrappers(wrappers,verbose)
+    type(string_t), allocatable, intent(inout) :: wrappers(:)
+    logical, optional, intent(in) :: verbose
+
+    integer :: i
+    logical, allocatable :: works(:)
+
+    allocate(works(size(wrappers)))
+
+    do i=1,size(wrappers)
+        works(i) = is_mpi_wrapper(wrappers(i),verbose)
+    end do
+
+    ! Filter out non-working wrappers
+    wrappers = pack(wrappers,works)
+
+end subroutine assert_mpi_wrappers
+
+!> Test if an MPI wrapper works
+logical function is_mpi_wrapper(wrapper,verbose)
+    type(string_t), intent(in) :: wrapper
+    logical, intent(in), optional :: verbose
+
+    logical :: echo_local
+    character(:), allocatable :: redirect_str
+    integer :: stat,cmdstat
+
+    if(present(verbose))then
+       echo_local=verbose
+    else
+       echo_local=.true.
+    end if
+
+    ! No redirection and non-verbose output
+    if (os_is_unix()) then
+        redirect_str = " >/dev/null 2>&1"
+    else
+        redirect_str = " >NUL 2>&1"
+    end if
+
+    if(echo_local) print *, '+ ', wrapper%s
+
+    ! Test command
+    call execute_command_line(wrapper%s//redirect_str, exitstat=stat,cmdstat=cmdstat)
+
+    ! Did this command work?
+    is_mpi_wrapper = cmdstat==0
+
+end function is_mpi_wrapper
 
 end module fpm_meta
