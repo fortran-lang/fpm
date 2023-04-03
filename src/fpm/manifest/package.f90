@@ -42,6 +42,7 @@ module fpm_manifest_package
     use fpm_manifest_install, only: install_config_t, new_install_config
     use fpm_manifest_test, only : test_config_t, new_test
     use fpm_mainfest_preprocess, only : preprocess_config_t, new_preprocessors
+    use fpm_manifest_metapackages, only: metapackage_config_t, new_meta_config
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
     use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
@@ -71,6 +72,9 @@ module fpm_manifest_package
 
         !> Build configuration data
         type(build_config_t) :: build
+
+        !> Metapackage data
+        type(metapackage_config_t) :: meta
 
         !> Installation configuration data
         type(install_config_t) :: install
@@ -165,6 +169,14 @@ contains
         call new_build_config(self%build, child, error)
         if (allocated(error)) return
 
+        call get_value(table, "metapackages", child, requested=.true., stat=stat)
+        if (stat /= toml_stat%success) then
+            call fatal_error(error, "Type mismatch for metapackages entry, must be a table")
+            return
+        end if
+        call new_meta_config(self%meta, child, error)
+        if (allocated(error)) return
+
         call get_value(table, "install", child, requested=.true., stat=stat)
         if (stat /= toml_stat%success) then
             call fatal_error(error, "Type mismatch for install entry, must be a table")
@@ -214,7 +226,7 @@ contains
             call new_library(self%library, child, error)
             if (allocated(error)) return
         end if
-        
+
         call get_value(table, "profiles", child, requested=.false.)
         if (associated(child)) then
             call new_profiles(self%profiles, child, error)
@@ -328,7 +340,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "profiles", "test", "executable", &
-                    & "example", "library", "install", "extra", "preprocess")
+                    & "example", "library", "install", "extra", "preprocess", "metapackages")
                 continue
 
             end select
@@ -424,7 +436,7 @@ contains
                 call self%dev_dependency(ii)%info(unit, pr - 1)
             end do
         end if
-        
+
         if (allocated(self%profiles)) then
             if (size(self%profiles) > 1 .or. pr > 2) then
                 write(unit, fmti) "- profiles", size(self%profiles)

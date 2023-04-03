@@ -34,15 +34,7 @@ module fpm_manifest_build
         logical :: module_naming = .false.
         type(string_t) :: module_prefix
 
-        !> Metapackages
-        !> @note when several metapackages are supported, this will need be generalized
-
-        !> Request OpenMP support
-        logical :: openmp = .false.
-
-        !> Request stdlib support
-        logical :: stdlib = .false.
-
+        !> Libraries to link against
         !> Libraries to link against
         type(string_t), allocatable :: link(:)
 
@@ -128,19 +120,6 @@ contains
 
         end if
 
-        !> Metapackages: read all flags
-        call get_value(table, "openmp", self%openmp, .false., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'openmp' in fpm.toml, expecting logical")
-            return
-        end if
-
-        call get_value(table, "stdlib", self%stdlib, .false., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'stdlib' in fpm.toml, expecting logical")
-            return
-        end if
-
         call get_list(table, "link", self%link, error)
         if (allocated(error)) return
 
@@ -173,10 +152,6 @@ contains
                 continue
 
             case ("module-naming")
-                continue
-
-            !> Supported metapackages
-            case ("openmp","stdlib")
                 continue
 
             case default

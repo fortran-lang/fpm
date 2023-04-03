@@ -4,10 +4,14 @@ license = "license"
 author = "Federico Perini"
 maintainer = "federico.perini@hello.world"
 copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
+
 [build]
 auto-executables = true
 auto-tests = true
 auto-examples = true
+
+[metapackages]
 openmp = true
+
 [install]
 library = false
