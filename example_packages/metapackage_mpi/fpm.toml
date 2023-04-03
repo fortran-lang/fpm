@@ -1,0 +1,15 @@
+name = "test_mpi"
+version = "0.1.0"
+license = "license"
+author = "Federico Perini"
+maintainer = "federico.perini@hello.world"
+copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
+
+[build]
+auto-executables = true
+
+[metapackages]
+mpi = true
+
+[install]
+library = false
