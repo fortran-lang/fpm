@@ -1,6 +1,8 @@
 // Test MPI linking from a C main program
 #include <mpi.h>
-#include <stdio.h>
+#include <iostream>
+
+using namespace std;
 
 int main(int argc, char** argv)
 {
@@ -10,7 +12,7 @@ int main(int argc, char** argv)
   // Initialize MPI argument	
   ierror = MPI_Init(&argc, &argv);
   if (ierror) {
-     printf("MPI_Init failed with error %d \n",ierror);
+     cout << "MPI_Init failed with error " << ierror << endl; 
      return 1;
   } 
 
@@ -20,12 +22,12 @@ int main(int argc, char** argv)
   //  Get Rank of the current process
   MPI_Comm_rank(MPI_COMM_WORLD, &cpuid);
 
-  printf("Hello, MPI C World from rank %d of %d! \n",cpuid+1,ncpus);
+  cout << "Hello, MPI C++ World from rank " << cpuid << " of " << ncpus << "!" << endl;
 
   // Finalize MPI environment.
   ierror = MPI_Finalize();
   if (ierror) {
-     printf("MPI_Finalize failed with error %d \n",ierror);
+     cout << "MPI_Finalize failed with error " << ierror << endl; 
      return 1;
   } else {
      return 0;
