@@ -8,7 +8,7 @@ copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
 [build]
 auto-executables = true
 
-[metapackages]
+[dependencies]
 mpi = true
 
 [install]

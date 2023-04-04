@@ -10,7 +10,7 @@ auto-executables = true
 auto-tests = true
 auto-examples = true
 
-[metapackages]
+[dependencies]
 openmp = true
 
 [install]

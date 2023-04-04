@@ -9,7 +9,7 @@ copyright = "Copyright 2023, Federico Perini and the fpm maintainers"
 name = "test-mpi-c-main"
 main = "main.c"
 
-[metapackages]
+[dependencies]
 mpi = true
 
 [install]
