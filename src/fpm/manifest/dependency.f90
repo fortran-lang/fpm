@@ -29,6 +29,7 @@ module fpm_manifest_dependency
     use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
     use fpm_filesystem, only: windows_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
+    use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config
     implicit none
     private
 
@@ -192,10 +193,13 @@ contains
 
 
     !> Construct new dependency array from a TOML data structure
-    subroutine new_dependencies(deps, table, root, error)
+    subroutine new_dependencies(deps, table, root, meta, error)
 
         !> Instance of the dependency configuration
         type(dependency_config_t), allocatable, intent(out) :: deps(:)
+
+        !> (optional) metapackages
+        type(metapackage_config_t), optional, intent(out) :: meta
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
@@ -208,20 +212,44 @@ contains
 
         type(toml_table), pointer :: node
         type(toml_key), allocatable :: list(:)
-        integer :: idep, stat
+        logical, allocatable :: non_meta(:)
+        integer :: idep, stat, ndep
 
         call table%get_keys(list)
         ! An empty table is okay
         if (size(list) < 1) return
 
-        allocate(deps(size(list)))
+        !> If requesting metapackages, do not stop on meta keywords
+        if (present(meta)) then
+            ndep = 0
+            do idep = 1, size(list)
+                if (is_meta_package(list(idep)%key)) cycle
+                ndep = ndep+1
+            end do
+
+            !> Return metapackages config from this node
+            call new_meta_config(meta, table, error)
+            if (allocated(error)) return
+
+        else
+            ndep = size(list)
+        end if
+
+        allocate(deps(ndep))
+        ndep = 0
         do idep = 1, size(list)
+
+            ! Skip meta packages
+            if (present(meta) .and. is_meta_package(list(idep)%key)) cycle
+
+            ndep = ndep+1
+
             call get_value(table, list(idep)%key, node, stat=stat)
             if (stat /= toml_stat%success) then
                 call syntax_error(error, "Dependency "//list(idep)%key//" must be a table entry")
                 exit
             end if
-            call new_dependency(deps(idep), node, root, error)
+            call new_dependency(deps(ndep), node, root, error)
             if (allocated(error)) exit
         end do
 

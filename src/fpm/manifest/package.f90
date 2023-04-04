@@ -169,14 +169,6 @@ contains
         call new_build_config(self%build, child, error)
         if (allocated(error)) return
 
-        call get_value(table, "metapackages", child, requested=.true., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error, "Type mismatch for metapackages entry, must be a table")
-            return
-        end if
-        call new_meta_config(self%meta, child, error)
-        if (allocated(error)) return
-
         call get_value(table, "install", child, requested=.true., stat=stat)
         if (stat /= toml_stat%success) then
             call fatal_error(error, "Type mismatch for install entry, must be a table")
@@ -210,13 +202,13 @@ contains
 
         call get_value(table, "dependencies", child, requested=.false.)
         if (associated(child)) then
-            call new_dependencies(self%dependency, child, root, error)
+            call new_dependencies(self%dependency, child, root, self%meta, error)
             if (allocated(error)) return
         end if
 
         call get_value(table, "dev-dependencies", child, requested=.false.)
         if (associated(child)) then
-            call new_dependencies(self%dev_dependency, child, root, error)
+            call new_dependencies(self%dev_dependency, child, root, error=error)
             if (allocated(error)) return
         end if
 
@@ -340,7 +332,7 @@ contains
             case("version", "license", "author", "maintainer", "copyright", &
                     & "description", "keywords", "categories", "homepage", "build", &
                     & "dependencies", "dev-dependencies", "profiles", "test", "executable", &
-                    & "example", "library", "install", "extra", "preprocess", "metapackages")
+                    & "example", "library", "install", "extra", "preprocess")
                 continue
 
             end select

@@ -15,7 +15,7 @@ module fpm_manifest_metapackages
     implicit none
     private
 
-    public :: metapackage_config_t, new_meta_config
+    public :: metapackage_config_t, new_meta_config, is_meta_package
 
     !> Configuration data for metapackages
     type :: metapackage_config_t
@@ -35,7 +35,6 @@ module fpm_manifest_metapackages
 
 contains
 
-
     !> Construct a new build configuration from a TOML data structure
     subroutine new_meta_config(self, table, error)
 
@@ -50,8 +49,8 @@ contains
 
         integer :: stat
 
-        call check(table, error)
-        if (allocated(error)) return
+        !> The toml table is not checked here because it already passed
+        !> the "new_dependencies" check
 
         call get_value(table, "openmp", self%openmp, .false., stat=stat)
         if (stat /= toml_stat%success) then
@@ -74,36 +73,22 @@ contains
     end subroutine new_meta_config
 
     !> Check local schema for allowed entries
-    subroutine check(table, error)
+    logical function is_meta_package(key)
 
         !> Instance of the TOML data structure
-        type(toml_table), intent(inout) :: table
+        character(*), intent(in) :: key
 
-        !> Error handling
-        type(error_t), allocatable, intent(out) :: error
-
-        type(toml_key), allocatable :: list(:)
-        integer :: ikey
-
-        call table%get_keys(list)
-
-        ! table can be empty
-        if (size(list) < 1) return
-
-        do ikey = 1, size(list)
-            select case(list(ikey)%key)
+        select case (key)
 
             !> Supported metapackages
             case ("openmp","stdlib","mpi")
-                continue
+                is_meta_package = .true.
 
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in [metapackages]")
-                exit
+                is_meta_package = .false.
 
-            end select
-        end do
+        end select
 
-    end subroutine check
+    end function is_meta_package
 
 end module fpm_manifest_metapackages
