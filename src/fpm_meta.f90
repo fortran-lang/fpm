@@ -22,7 +22,9 @@ use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
 use fpm_environment, only: get_env,os_is_unix
 use fpm_filesystem, only: run, get_temp_filename, getline
+use fpm_versioning, only: version_t, new_version
 use iso_fortran_env, only: stdout => output_unit
+use regex_module, only: regex
 
 implicit none
 
@@ -32,6 +34,9 @@ public :: resolve_metapackages
 
 !> Type for describing a source file
 type, public :: metapackage_t
+
+    !> Package version (if supported)
+    type(version_t), allocatable :: version
 
     logical :: has_link_libraries  = .false.
     logical :: has_link_flags      = .false.
@@ -80,12 +85,14 @@ contains
 elemental subroutine destroy(this)
    class(metapackage_t), intent(inout) :: this
 
+
    this%has_link_libraries  = .false.
    this%has_link_flags      = .false.
    this%has_build_flags     = .false.
    this%has_include_dirs    = .false.
    this%has_dependencies    = .false.
 
+   if (allocated(this%version)) deallocate(this%version)
    if (allocated(this%flags%s)) deallocate(this%flags%s)
    if (allocated(this%link_flags%s)) deallocate(this%link_flags%s)
    if (allocated(this%link_libs)) deallocate(this%link_libs)
@@ -338,6 +345,7 @@ subroutine init_mpi(this,compiler,error)
     logical, parameter :: verbose = .true.
     type(string_t), allocatable :: c_wrappers(:),cpp_wrappers(:),fort_wrappers(:)
     type(string_t) :: output
+    type(version_t) :: version
     character(256) :: msg_out
     character(len=:), allocatable :: tokens(:)
     integer :: ifort,ic,icpp,i
@@ -380,6 +388,15 @@ subroutine init_mpi(this,compiler,error)
 
          ! Add heading space
          this%flags = string_t(' '//this%flags%s)
+
+         ! Get library version
+         version = mpi_version_get(fort_wrappers(ifort),error)
+         if (allocated(error)) then
+            return
+         else
+            allocate(this%version,source=version)
+         end if
+
 
     else
 
@@ -433,6 +450,27 @@ integer function mpi_compiler_match(wrappers,compiler,error)
     1 format('<ERROR> None out of ',i0,' valid MPI wrappers matches compiler ',a)
 
 end function mpi_compiler_match
+
+!> Return library version from the MPI wrapper command
+type(version_t) function mpi_version_get(wrapper,error)
+   type(string_t), intent(in) :: wrapper
+   type(error_t), allocatable, intent(out) :: error
+
+   type(string_t) :: version_line,version_string
+   integer :: i,length
+
+   ! Get version string
+   version_line = mpi_wrapper_query(wrapper,'version',error=error)
+   if (allocated(error)) return
+
+   ! Extract version
+   version_string = regex(version_line%s,'',length=length)
+
+
+   ! Parse version
+   call new_version(mpi_version_get,version_s%s,error)
+
+end function mpi_version_get
 
 !> Return several mpi wrappers, and return
 subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
@@ -749,6 +787,30 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
                  if (stat/=0 .or. .not.success) then
                     call syntax_error(error,'local OpenMPI library does not support --showme:incdirs')
                     return
+                 end if
+
+              case default
+
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 return
+
+           end select
+
+       ! Retrieve library version
+       case ('version')
+
+           select case (mpi)
+              case (MPI_TYPE_OPENMPI)
+
+                 ! --showme:command returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:version')],verbose=.true., &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local OpenMPI library does not support --showme:version')
+                    return
+                 else
+                    call remove_new_lines(screen)
                  end if
 
               case default
