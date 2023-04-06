@@ -13,15 +13,15 @@
 !>
 !>
 module fpm_meta
-use fpm_strings, only: string_t
-use fpm_error, only: error_t, fatal_error, syntax_error
+use fpm_strings, only: string_t, len_trim
+use fpm_error, only: error_t, fatal_error, syntax_error, fpm_stop
 use fpm_compiler
 use fpm_model
 use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
 use fpm_environment, only: get_env,os_is_unix
-use fpm_filesystem, only: run
+use fpm_filesystem, only: run, get_temp_filename, getline
 use iso_fortran_env, only: stdout => output_unit
 
 implicit none
@@ -334,8 +334,10 @@ subroutine init_mpi(this,compiler,error)
     !> Get all candidate MPI wrappers
     call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
 
-    print "('MPI wrapper founds: fortran=',i0,' c=',i0,' c++=',i0)", &
+    print "('MPI wrappers found: fortran=',i0,' c=',i0,' c++=',i0)", &
           size(fort_wrappers),size(c_wrappers),size(cpp_wrappers)
+
+    !> Match available wrappers with the current compiler
 
     if (size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)<=0) then
         call fatal_error(error,"cannot find MPI wrappers for "//compiler%name()//" compiler")
@@ -346,6 +348,16 @@ subroutine init_mpi(this,compiler,error)
 
 
 end subroutine init_mpi
+
+!> Match
+logical function mpi_compiler_match(wrapper,compiler)
+    type(string_t), intent(in) :: wrapper
+    type(compiler_t), intent(in) :: compiler
+
+
+
+
+end function mpi_compiler_match
 
 !> Return several mpi wrappers, and return
 subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
@@ -421,10 +433,102 @@ subroutine assert_mpi_wrappers(wrappers,verbose)
 
 end subroutine assert_mpi_wrappers
 
+!> Simple call to execute_command_line involving one mpi* wrapper
+subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_output)
+    type(string_t), intent(in) :: wrapper
+    type(string_t), intent(in), optional :: args(:)
+    logical, intent(in), optional :: verbose
+    integer, intent(out), optional :: exitcode
+    logical, intent(out), optional :: cmd_success
+    type(string_t), intent(out), optional :: screen_output
+
+    logical :: echo_local
+    character(:), allocatable :: redirect_str,command,redirect,line
+    integer :: iunit,iarg,stat,cmdstat
+
+
+    if(present(verbose))then
+       echo_local=verbose
+    else
+       echo_local=.true.
+    end if
+
+    ! No redirection and non-verbose output
+    if (present(screen_output)) then
+        redirect = get_temp_filename()
+        redirect_str =  ">"//redirect//" 2>&1"
+    else
+        if (os_is_unix()) then
+            redirect_str = " >/dev/null 2>&1"
+        else
+            redirect_str = " >NUL 2>&1"
+        end if
+    end if
+
+    ! Init command
+    command = wrapper%s
+
+    add_arguments: if (present(args)) then
+        do iarg=1,size(args)
+            if (len_trim(args(iarg))<=0) cycle
+            command = trim(command)//' '//args(iarg)%s
+        end do
+    endif add_arguments
+
+
+    if (echo_local) print *, '+ ', command
+
+    ! Test command
+    call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)
+
+    ! Command successful?
+    if (present(cmd_success)) cmd_success = cmdstat==0
+
+    ! Program exit code?
+    if (present(exitcode)) exitcode = stat
+
+    ! Want screen output?
+    if (present(screen_output) .and. cmdstat==0) then
+
+        allocate(character(len=0) :: screen_output%s)
+
+        open(newunit=iunit,file=redirect,status='old',iostat=stat)
+        if (stat == 0)then
+           do
+               call getline(iunit, line, stat)
+               if (stat /= 0) exit
+
+               screen_output%s = screen_output%s//new_line('a')//line
+
+               write(*,'(A)') trim(line)
+           end do
+
+           ! Close and delete file
+           close(iunit,status='delete')
+
+        else
+           call fpm_stop(1,'cannot read temporary file from successful MPI wrapper')
+        endif
+
+    end if
+
+end subroutine run_mpi_wrapper
+
 !> Test if an MPI wrapper works
 logical function is_mpi_wrapper(wrapper,verbose)
     type(string_t), intent(in) :: wrapper
     logical, intent(in), optional :: verbose
+
+    call run_mpi_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
+
+end function is_mpi_wrapper
+
+!> Test if an MPI wrapper works
+type(string_t) function mpi_wrapper_command(wrapper,command,verbose,error)
+    type(string_t), intent(in) :: wrapper
+    character(*), intent(in) :: command
+    logical, intent(in), optional :: verbose
+    type(error_t), allocatable, intent(out) :: error
 
     logical :: echo_local
     character(:), allocatable :: redirect_str
@@ -445,12 +549,22 @@ logical function is_mpi_wrapper(wrapper,verbose)
 
     if(echo_local) print *, '+ ', wrapper%s
 
-    ! Test command
-    call execute_command_line(wrapper%s//redirect_str, exitstat=stat,cmdstat=cmdstat)
+    select case (command)
+       case ('compiler')
 
-    ! Did this command work?
-    is_mpi_wrapper = cmdstat==0
+           ! Return compiler name for the current MPI wrapper
+           call execute_command_line(wrapper%s//redirect_str, exitstat=stat,cmdstat=cmdstat)
 
-end function is_mpi_wrapper
+
+
+
+       case default;
+           call fatal_error(error,'an invalid MPI wrapper command ('//command//&
+                                  ') was invoked for wrapper <'//wrapper%s//'>.')
+           return
+    end select
+
+
+end function mpi_wrapper_command
 
 end module fpm_meta
