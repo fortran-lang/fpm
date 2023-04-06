@@ -1,12 +1,15 @@
-#2023-04-06 This script generates 
-
 #!/usr/bin/env bash
+
+#2023-04-06 This script generates a Fortran module file with the fpm release information, 
+#hardcoded as Fortran PARAMETERs. Other options using external/include files do not work
+#because fpm also needs to be built as a single-source-file package.
+
 set -ex
 
 # Helper function that wraps a string into a fortran character(*), parameter definition
 fortran_character_parameter()
 {
-    line="    character(len=*), parameter :: $1 = \"$2\""
+    line="character(len=*), parameter :: $1 = \"$2\""
     echo $line    
 }
 
@@ -25,9 +28,7 @@ no_v=${latest_release#*v}    # Remove heading v
 no_commit=${no_v%-*}         # Remove commit #
 version=${no_commit%-*}      # Remove increment
 
-echo $no_v
-echo $no_commit
-echo $version
+echo "Deploying fpm version $version information to $INCLUDE_FILE ...
 
 # Write to a fortran include file
 MODULE_NAME=fpm_release_parameters
