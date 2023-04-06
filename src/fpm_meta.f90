@@ -366,29 +366,15 @@ subroutine init_mpi(this,compiler,error)
     !> Build MPI dependency
     if (ifort>0) then
 
-         ! Get linking libraries
-         output = mpi_wrapper_query(fort_wrappers(ifort),'link',verbose,error)
+         ! Get linking flags
+         this%link_flags = mpi_wrapper_query(fort_wrappers(ifort),'link',verbose,error)
          if (allocated(error)) return
-         call split(output%s,tokens,delimiters=' ')
+         this%has_link_flags = len_trim(this%link_flags)>0
 
-         this%has_link_libraries = size(tokens)>0
-         this%link_libs = [(string_t(tokens(i)),i=1,size(tokens))]
-
-         ! Get library directories
-         output = mpi_wrapper_query(fort_wrappers(ifort),'link_dirs',verbose,error)
+         ! Get build flags
+         this%flags = mpi_wrapper_query(fort_wrappers(ifort),'flags',verbose,error)
          if (allocated(error)) return
-         call split(output%s,tokens,delimiters=' ')
-
-         this%has_link_dirs = size(tokens)>0
-         this%link_dirs = [(string_t(tokens(i)),i=1,size(tokens))]
-
-         ! Get include directories
-         output = mpi_wrapper_query(fort_wrappers(ifort),'incl_dirs',verbose,error)
-         if (allocated(error)) return
-         call split(output%s,tokens,delimiters=' ')
-
-         this%has_include_dirs = size(tokens)>0
-         this%incl_dirs = [(string_t(tokens(i)),i=1,size(tokens))]
+         this%has_build_flags = len_trim(this%flags)>0
 
     else
 
@@ -674,14 +660,37 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
 
            end select
 
-       ! Get a list of MPI linked libraries
+
+       ! Get a list of additional compiler flags
+       case ('flags')
+
+           select case (mpi)
+              case (MPI_TYPE_OPENMPI)
+
+                 ! --showme:command returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:compile')],verbose=.true., &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local OpenMPI library does not support --showme:compile')
+                    return
+                 end if
+
+              case default
+
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 return
+
+           end select
+
+       ! Get a list of additional linker flags
        case ('link')
 
            select case (mpi)
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:libs')],verbose=.true., &
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:link')],verbose=.true., &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
