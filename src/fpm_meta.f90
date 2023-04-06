@@ -34,7 +34,6 @@ public :: resolve_metapackages
 type, public :: metapackage_t
 
     logical :: has_link_libraries  = .false.
-    logical :: has_link_dirs       = .false.
     logical :: has_link_flags      = .false.
     logical :: has_build_flags     = .false.
     logical :: has_include_dirs    = .false.
@@ -44,7 +43,6 @@ type, public :: metapackage_t
     type(string_t) :: flags
     type(string_t) :: link_flags
     type(string_t), allocatable :: incl_dirs(:)
-    type(string_t), allocatable :: link_dirs(:)
     type(string_t), allocatable :: link_libs(:)
 
     !> List of Development dependency meta data.
@@ -84,14 +82,12 @@ elemental subroutine destroy(this)
 
    this%has_link_libraries  = .false.
    this%has_link_flags      = .false.
-   this%has_link_dirs       = .false.
    this%has_build_flags     = .false.
    this%has_include_dirs    = .false.
    this%has_dependencies    = .false.
 
    if (allocated(this%flags%s)) deallocate(this%flags%s)
    if (allocated(this%link_flags%s)) deallocate(this%link_flags%s)
-   if (allocated(this%link_dirs)) deallocate(this%link_dirs)
    if (allocated(this%link_libs)) deallocate(this%link_libs)
    if (allocated(this%dependency)) deallocate(this%dependency)
    if (allocated(this%incl_dirs)) deallocate(this%incl_dirs)
