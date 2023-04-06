@@ -397,7 +397,6 @@ subroutine init_mpi(this,compiler,error)
             allocate(this%version,source=version)
          end if
 
-
     else
 
          ! None of the available wrappers matched the current Fortran compiler
@@ -456,19 +455,14 @@ type(version_t) function mpi_version_get(wrapper,error)
    type(string_t), intent(in) :: wrapper
    type(error_t), allocatable, intent(out) :: error
 
-   type(string_t) :: version_line,version_string
-   integer :: i,length
+   type(string_t) :: version_line
 
    ! Get version string
    version_line = mpi_wrapper_query(wrapper,'version',error=error)
    if (allocated(error)) return
 
-   ! Extract version
-   version_string = regex(version_line%s,'',length=length)
-
-
-   ! Parse version
-   call new_version(mpi_version_get,version_s%s,error)
+   ! Wrap to object
+   call new_version(mpi_version_get,version_line%s,error)
 
 end function mpi_version_get
 
@@ -674,7 +668,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
 
     logical :: success
     character(:), allocatable :: redirect_str
-    integer :: stat,cmdstat,mpi
+    integer :: stat,cmdstat,mpi,ire,length
 
     ! Get mpi type
     mpi = which_mpi_library(wrapper,verbose)
@@ -811,6 +805,20 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
                     return
                  else
                     call remove_new_lines(screen)
+                 end if
+
+                 ! Extract version
+                 ire = regex(screen%s,'\d+.\d+.\d+',length=length)
+
+                 if (ire>0 .and. length>0) then
+
+                     ! Parse version into the object (this should always work)
+                     screen%s = screen%s(ire:ire+length-1)
+
+                 else
+
+                     call syntax_error(error,'cannot retrieve OpenMPI library version.')
+
                  end if
 
               case default
