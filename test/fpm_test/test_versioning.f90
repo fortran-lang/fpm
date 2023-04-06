@@ -2,7 +2,7 @@
 module test_versioning
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_versioning
-    use fpm_release_parameters, only: fpm_version
+    use fpm_release, only: fpm_version
     implicit none
     private
 

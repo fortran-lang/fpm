@@ -1,13 +1,13 @@
 !># Release parameters
 !> Module fpm_release contains public constants storing this build's unique version IDs
-module fpm_release_parameters
+module fpm_release
     use fpm_versioning, only: version_t,new_version
     use fpm_error, only: error_t, fpm_stop
+    use fpm_release_parameters
     implicit none
+    private
 
     public :: fpm_version
-
-    include "fpm_version_parameters.f90"
 
     contains
 
@@ -22,4 +22,4 @@ module fpm_release_parameters
 
     end function fpm_version
 
-end module fpm_release_parameters
+end module fpm_release
