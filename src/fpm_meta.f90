@@ -34,6 +34,7 @@ public :: resolve_metapackages
 type, public :: metapackage_t
 
     logical :: has_link_libraries  = .false.
+    logical :: has_link_dirs       = .false.
     logical :: has_link_flags      = .false.
     logical :: has_build_flags     = .false.
     logical :: has_include_dirs    = .false.
@@ -42,6 +43,7 @@ type, public :: metapackage_t
     !> List of compiler flags and options to be added
     type(string_t) :: flags
     type(string_t) :: link_flags
+    type(string_t), allocatable :: incl_dirs(:)
     type(string_t), allocatable :: link_dirs(:)
     type(string_t), allocatable :: link_libs(:)
 
@@ -82,6 +84,7 @@ elemental subroutine destroy(this)
 
    this%has_link_libraries  = .false.
    this%has_link_flags      = .false.
+   this%has_link_dirs       = .false.
    this%has_build_flags     = .false.
    this%has_include_dirs    = .false.
    this%has_dependencies    = .false.
@@ -91,6 +94,7 @@ elemental subroutine destroy(this)
    if (allocated(this%link_dirs)) deallocate(this%link_dirs)
    if (allocated(this%link_libs)) deallocate(this%link_libs)
    if (allocated(this%dependency)) deallocate(this%dependency)
+   if (allocated(this%incl_dirs)) deallocate(this%incl_dirs)
 
 end subroutine destroy
 
@@ -220,7 +224,7 @@ subroutine resolve_model(self,model,error)
     end if
 
     if (self%has_include_dirs) then
-        model%include_dirs          = [model%include_dirs,self%link_dirs]
+        model%include_dirs          = [model%include_dirs,self%incl_dirs]
     end if
 
     ! Dependencies are resolved in the package config
@@ -332,29 +336,72 @@ subroutine init_mpi(this,compiler,error)
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
 
+    logical, parameter :: verbose = .true.
     type(string_t), allocatable :: c_wrappers(:),cpp_wrappers(:),fort_wrappers(:)
-    integer :: ifort,ic,icpp
+    type(string_t) :: output
+    character(256) :: msg_out
+    character(len=:), allocatable :: tokens(:)
+    integer :: ifort,ic,icpp,i
 
     !> Cleanup
     call destroy(this)
 
     !> Get all candidate MPI wrappers
     call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
-
-    print "('MPI wrappers found: fortran=',i0,' c=',i0,' c++=',i0)", &
-          size(fort_wrappers),size(c_wrappers),size(cpp_wrappers)
+    if (verbose) print 1, size(fort_wrappers),size(c_wrappers),size(cpp_wrappers)
 
     if (size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)<=0) then
         call fatal_error(error,"cannot find MPI wrappers for "//compiler%name()//" compiler")
         return
     end if
 
+    !> Return an MPI wrapper that matches the current compiler
     ifort = mpi_compiler_match(fort_wrappers,compiler,error)
-    ic    = mpi_compiler_match(c_wrappers,compiler,error)
-    icpp  = mpi_compiler_match(cpp_wrappers,compiler,error)
+    if (allocated(error)) return
 
-    call fatal_error(error,"MPI is being implemented, but not available yet")
+    !C, C++ not available yet
+    !ic    = mpi_compiler_match(c_wrappers,compiler,error)
+    !icpp  = mpi_compiler_match(cpp_wrappers,compiler,error)
 
+    !> Build MPI dependency
+    if (ifort>0) then
+
+         ! Get linking libraries
+         output = mpi_wrapper_query(fort_wrappers(ifort),'link',verbose,error)
+         if (allocated(error)) return
+         call split(output%s,tokens,delimiters=' ')
+
+         this%has_link_libraries = size(tokens)>0
+         this%link_libs = [(string_t(tokens(i)),i=1,size(tokens))]
+
+         ! Get library directories
+         output = mpi_wrapper_query(fort_wrappers(ifort),'link_dirs',verbose,error)
+         if (allocated(error)) return
+         call split(output%s,tokens,delimiters=' ')
+
+         this%has_link_dirs = size(tokens)>0
+         this%link_dirs = [(string_t(tokens(i)),i=1,size(tokens))]
+
+         ! Get include directories
+         output = mpi_wrapper_query(fort_wrappers(ifort),'incl_dirs',verbose,error)
+         if (allocated(error)) return
+         call split(output%s,tokens,delimiters=' ')
+
+         this%has_include_dirs = size(tokens)>0
+         this%incl_dirs = [(string_t(tokens(i)),i=1,size(tokens))]
+
+    else
+
+         ! None of the available wrappers matched the current Fortran compiler
+         write(msg_out,1) size(fort_wrappers),compiler%fc
+         call fatal_error(error,trim(msg_out))
+         return
+
+    endif
+
+
+    1 format('MPI wrappers found: fortran=',i0,' c=',i0,' c++=',i0)
+    2 format('<ERROR> None out of ',i0,' valid MPI wrappers matches compiler ',a)
 
 end subroutine init_mpi
 
@@ -366,19 +413,33 @@ integer function mpi_compiler_match(wrappers,compiler,error)
 
     integer :: i
     type(string_t) :: screen
+    character(128) :: msg_out
+    type(compiler_t) :: mpi_compiler
+
+    mpi_compiler_match = 0
 
     do i=1,size(wrappers)
 
         screen = mpi_wrapper_query(wrappers(i),'compiler',.false.,error)
         if (allocated(error)) return
 
+        ! Build compiler type
+        call new_compiler(mpi_compiler, screen%s,'','',echo=.true.,verbose=.true.)
+
+        ! Match found!
+        if (mpi_compiler%id == compiler%id) then
+
+            mpi_compiler_match = i
+            return
+
+        end if
+
     end do
 
-
-
-
-
-
+    ! None of the available wrappers matched the current Fortran compiler
+    write(msg_out,1) size(wrappers),compiler%fc
+    call fatal_error(error,trim(msg_out))
+    1 format('<ERROR> None out of ',i0,' valid MPI wrappers matches compiler ',a)
 
 end function mpi_compiler_match
 
@@ -448,7 +509,7 @@ subroutine assert_mpi_wrappers(wrappers,verbose)
     allocate(works(size(wrappers)))
 
     do i=1,size(wrappers)
-        works(i) = which_mpi_wrapper(wrappers(i),verbose)
+        works(i) = which_mpi_library(wrappers(i),verbose)
     end do
 
     ! Filter out non-working wrappers
@@ -537,8 +598,8 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
 
 end subroutine run_mpi_wrapper
 
-!> Test if an MPI wrapper works
-integer function which_mpi_wrapper(wrapper,verbose)
+!> Get MPI library type from the wrapper command. Currently, only OpenMPI is supported
+integer function which_mpi_library(wrapper,verbose)
     type(string_t), intent(in) :: wrapper
     logical, intent(in), optional :: verbose
 
@@ -558,22 +619,22 @@ integer function which_mpi_wrapper(wrapper,verbose)
 
         if (stat==0 .and. is_mpi_wrapper) then
 
-            which_mpi_wrapper = MPI_TYPE_OPENMPI
+            which_mpi_library = MPI_TYPE_OPENMPI
 
         else
 
             ! This MPI wrapper is of a currently unsupported library
-            which_mpi_wrapper = MPI_TYPE_NONE
+            which_mpi_library = MPI_TYPE_NONE
 
         end if
 
     else
 
-        which_mpi_wrapper = MPI_TYPE_NONE
+        which_mpi_library = MPI_TYPE_NONE
 
     end if
 
-end function which_mpi_wrapper
+end function which_mpi_library
 
 !> Test if an MPI wrapper works
 type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(screen)
@@ -587,26 +648,97 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
     integer :: stat,cmdstat,mpi
 
     ! Get mpi type
-    mpi = which_mpi_wrapper(wrapper,verbose)
-    if (mpi==MPI_TYPE_NONE) then
-        call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
-        return
-    end if
+    mpi = which_mpi_library(wrapper,verbose)
 
     select case (command)
+
+       ! Get MPI compiler name
        case ('compiler')
 
-           ! Try one of the available "showme" options
-           call run_mpi_wrapper(wrapper,[string_t('--showme')],verbose=.true., &
-                                exitcode=stat,cmd_success=success,screen_output=screen)
+           select case (mpi)
+              case (MPI_TYPE_OPENMPI)
 
-           if (success .and. stat==0) then
+                 ! --showme:command returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:command')],verbose=.true., &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
 
-               print *, 'screen output = ',screen%s
-           else
-               print *, 'mpi wrapper unsuccessful'
-           end if
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local OpenMPI library does not support --showme:command')
+                    return
+                 end if
 
+              case default
+
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 return
+
+           end select
+
+       ! Get a list of MPI linked libraries
+       case ('link')
+
+           select case (mpi)
+              case (MPI_TYPE_OPENMPI)
+
+                 ! --showme:command returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:libs')],verbose=.true., &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local OpenMPI library does not support --showme:link')
+                    return
+                 end if
+
+              case default
+
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 return
+
+           end select
+
+       ! Get a list of MPI library directories
+       case ('link_dirs')
+
+           select case (mpi)
+              case (MPI_TYPE_OPENMPI)
+
+                 ! --showme:command returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:libdirs')],verbose=.true., &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local OpenMPI library does not support --showme:libdirs')
+                    return
+                 end if
+
+              case default
+
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 return
+
+           end select
+
+       ! Get a list of include directories for the MPI headers/modules
+       case ('incl_dirs')
+
+           select case (mpi)
+              case (MPI_TYPE_OPENMPI)
+
+                 ! --showme:command returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:incdirs')],verbose=.true., &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local OpenMPI library does not support --showme:incdirs')
+                    return
+                 end if
+
+              case default
+
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 return
+
+           end select
 
        case default;
            call fatal_error(error,'an invalid MPI wrapper command ('//command//&
