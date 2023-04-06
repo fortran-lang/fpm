@@ -322,6 +322,9 @@ subroutine resolve_metapackage_model(model,package,error)
 
     ! MPI
     if (package%meta%mpi) then
+
+        print *, 'resolving MPI...'
+
         call add_metapackage_model(model,"mpi",error)
         if (allocated(error)) return
         call add_metapackage_config(package,model%compiler,"mpi",error)
@@ -371,10 +374,16 @@ subroutine init_mpi(this,compiler,error)
          if (allocated(error)) return
          this%has_link_flags = len_trim(this%link_flags)>0
 
+         ! Add heading space
+         this%link_flags = string_t(' '//this%link_flags%s)
+
          ! Get build flags
          this%flags = mpi_wrapper_query(fort_wrappers(ifort),'flags',verbose,error)
          if (allocated(error)) return
          this%has_build_flags = len_trim(this%flags)>0
+
+         ! Add heading space
+         this%flags = string_t(' '//this%flags%s)
 
     else
 
@@ -410,7 +419,7 @@ integer function mpi_compiler_match(wrappers,compiler,error)
         if (allocated(error)) return
 
         ! Build compiler type
-        call new_compiler(mpi_compiler, screen%s,'','',echo=.true.,verbose=.true.)
+        call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.true.)
 
         ! Match found!
         if (mpi_compiler%id == compiler%id) then
@@ -676,6 +685,8 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
                     return
                  end if
 
+                 call remove_new_lines(screen)
+
               case default
 
                  call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
@@ -697,6 +708,8 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
                     call syntax_error(error,'local OpenMPI library does not support --showme:link')
                     return
                  end if
+
+                 call remove_new_lines(screen)
 
               case default
 
@@ -757,5 +770,36 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
 
 
 end function mpi_wrapper_query
+
+! Remove all new line characters from the current string
+subroutine remove_new_lines(string)
+    type(string_t), intent(inout) :: string
+
+    integer :: feed,length
+
+    if (.not.allocated(string%s)) return
+
+
+    length = len(string%s)
+    feed   = scan(string%s,new_line('a'))
+
+    do while (length>0 .and. feed>0)
+
+        if (length==1) then
+            string = string_t("")
+        elseif (feed==1) then
+            string%s = string%s(2:length)
+        elseif (feed==length) then
+            string%s = string%s(1:length-1)
+        else
+            string%s = string%s(1:feed-1)//string%s(feed+1:length)
+        end if
+
+        length = len(string%s)
+        feed   = scan(string%s,new_line('a'))
+
+    end do
+
+end subroutine remove_new_lines
 
 end module fpm_meta
