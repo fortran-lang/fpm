@@ -475,9 +475,6 @@ contains
 
     associate (dep => self%dep(id))
       if (allocated(dep%git) .and. dep%update) then
-        if (self%verbosity > 1) then
-          write (self%unit, out_fmt) "Update:", dep%name
-        end if
         write (self%unit, out_fmt) "Update:", dep%name
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
@@ -862,7 +859,7 @@ contains
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(in) :: self
     !> Dependency configuration to check
-    class(dependency_config_t), intent(in) :: dependency
+    class(dependency_node_t), intent(in) :: dependency
 
     has_dependency = self%find(dependency%name) /= 0
 
