@@ -68,6 +68,12 @@ interface resolve_metapackages
     module procedure resolve_metapackage_model
 end interface resolve_metapackages
 
+integer, parameter :: MPI_TYPE_NONE    = 0
+integer, parameter :: MPI_TYPE_OPENMPI = 1
+integer, parameter :: MPI_TYPE_MPICH   = 2
+integer, parameter :: MPI_TYPE_INTEL   = 3
+integer, parameter :: MPI_TYPE_MSMPI   = 4
+
 contains
 
 !> Clean the metapackage structure
@@ -327,6 +333,7 @@ subroutine init_mpi(this,compiler,error)
     type(error_t), allocatable, intent(out) :: error
 
     type(string_t), allocatable :: c_wrappers(:),cpp_wrappers(:),fort_wrappers(:)
+    integer :: ifort,ic,icpp
 
     !> Cleanup
     call destroy(this)
@@ -337,22 +344,38 @@ subroutine init_mpi(this,compiler,error)
     print "('MPI wrappers found: fortran=',i0,' c=',i0,' c++=',i0)", &
           size(fort_wrappers),size(c_wrappers),size(cpp_wrappers)
 
-    !> Match available wrappers with the current compiler
-
     if (size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)<=0) then
         call fatal_error(error,"cannot find MPI wrappers for "//compiler%name()//" compiler")
         return
     end if
+
+    ifort = mpi_compiler_match(fort_wrappers,compiler,error)
+    ic    = mpi_compiler_match(c_wrappers,compiler,error)
+    icpp  = mpi_compiler_match(cpp_wrappers,compiler,error)
 
     call fatal_error(error,"MPI is being implemented, but not available yet")
 
 
 end subroutine init_mpi
 
-!> Match
-logical function mpi_compiler_match(wrapper,compiler)
-    type(string_t), intent(in) :: wrapper
+!> Match one of the available compiler wrappers with the current compiler
+integer function mpi_compiler_match(wrappers,compiler,error)
+    type(string_t), intent(in) :: wrappers(:)
     type(compiler_t), intent(in) :: compiler
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: i
+    type(string_t) :: screen
+
+    do i=1,size(wrappers)
+
+        screen = mpi_wrapper_query(wrappers(i),'compiler',.false.,error)
+        if (allocated(error)) return
+
+    end do
+
+
+
 
 
 
@@ -420,16 +443,16 @@ subroutine assert_mpi_wrappers(wrappers,verbose)
     logical, optional, intent(in) :: verbose
 
     integer :: i
-    logical, allocatable :: works(:)
+    integer, allocatable :: works(:)
 
     allocate(works(size(wrappers)))
 
     do i=1,size(wrappers)
-        works(i) = is_mpi_wrapper(wrappers(i),verbose)
+        works(i) = which_mpi_wrapper(wrappers(i),verbose)
     end do
 
     ! Filter out non-working wrappers
-    wrappers = pack(wrappers,works)
+    wrappers = pack(wrappers,works/=MPI_TYPE_NONE)
 
 end subroutine assert_mpi_wrappers
 
@@ -515,47 +538,74 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
 end subroutine run_mpi_wrapper
 
 !> Test if an MPI wrapper works
-logical function is_mpi_wrapper(wrapper,verbose)
+integer function which_mpi_wrapper(wrapper,verbose)
     type(string_t), intent(in) :: wrapper
     logical, intent(in), optional :: verbose
 
+    logical :: is_mpi_wrapper
+    integer :: stat
+
+    ! Run mpi wrapper first
     call run_mpi_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
 
-end function is_mpi_wrapper
+    if (is_mpi_wrapper) then
+
+        ! Attempt to decipher which library this wrapper comes from.
+
+        ! OpenMPI responds to '--showme' calls
+        call run_mpi_wrapper(wrapper,[string_t('--showme')],verbose,&
+                             exitcode=stat,cmd_success=is_mpi_wrapper)
+
+        if (stat==0 .and. is_mpi_wrapper) then
+
+            which_mpi_wrapper = MPI_TYPE_OPENMPI
+
+        else
+
+            ! This MPI wrapper is of a currently unsupported library
+            which_mpi_wrapper = MPI_TYPE_NONE
+
+        end if
+
+    else
+
+        which_mpi_wrapper = MPI_TYPE_NONE
+
+    end if
+
+end function which_mpi_wrapper
 
 !> Test if an MPI wrapper works
-type(string_t) function mpi_wrapper_command(wrapper,command,verbose,error)
+type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(screen)
     type(string_t), intent(in) :: wrapper
     character(*), intent(in) :: command
     logical, intent(in), optional :: verbose
     type(error_t), allocatable, intent(out) :: error
 
-    logical :: echo_local
+    logical :: success
     character(:), allocatable :: redirect_str
-    integer :: stat,cmdstat
+    integer :: stat,cmdstat,mpi
 
-    if(present(verbose))then
-       echo_local=verbose
-    else
-       echo_local=.true.
+    ! Get mpi type
+    mpi = which_mpi_wrapper(wrapper,verbose)
+    if (mpi==MPI_TYPE_NONE) then
+        call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+        return
     end if
-
-    ! No redirection and non-verbose output
-    if (os_is_unix()) then
-        redirect_str = " >/dev/null 2>&1"
-    else
-        redirect_str = " >NUL 2>&1"
-    end if
-
-    if(echo_local) print *, '+ ', wrapper%s
 
     select case (command)
        case ('compiler')
 
-           ! Return compiler name for the current MPI wrapper
-           call execute_command_line(wrapper%s//redirect_str, exitstat=stat,cmdstat=cmdstat)
+           ! Try one of the available "showme" options
+           call run_mpi_wrapper(wrapper,[string_t('--showme')],verbose=.true., &
+                                exitcode=stat,cmd_success=success,screen_output=screen)
 
+           if (success .and. stat==0) then
 
+               print *, 'screen output = ',screen%s
+           else
+               print *, 'mpi wrapper unsuccessful'
+           end if
 
 
        case default;
@@ -565,6 +615,6 @@ type(string_t) function mpi_wrapper_command(wrapper,command,verbose,error)
     end select
 
 
-end function mpi_wrapper_command
+end function mpi_wrapper_query
 
 end module fpm_meta
