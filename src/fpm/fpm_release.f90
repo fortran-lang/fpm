@@ -12,6 +12,7 @@ module fpm_release
     character(len=*), parameter :: fpm_version_ID = "FPM_VERSION"
 
     public :: fpm_version
+    public :: version_t
 
     contains
 
