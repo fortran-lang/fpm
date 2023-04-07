@@ -6,10 +6,10 @@ module fpm_release
     implicit none
     private
 
-#ifndef FPM_VERSION
-#define FPM_VERSION UNDEFINED
+#ifndef FPM_RELEASE_VERSION
+#define FPM_RELEASE_VERSION UNDEFINED
 #endif
-    character(len=*), parameter :: fpm_version_ID = "FPM_VERSION"
+    character(len=*), parameter :: fpm_version_ID = "FPM_RELEASE_VERSION"
 
     public :: fpm_version
     public :: version_t
