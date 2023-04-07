@@ -10,7 +10,7 @@ use fpm_dependency, only : new_dependency_tree
 use fpm_environment, only: get_env
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
                    basename, filewrite, mkdir, run, os_delete_dir
-use fpm_model, only: fpm_model_t, srcfile_t, show_model, &
+use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
                     FPM_SCOPE_UNKNOWN, FPM_SCOPE_LIB, FPM_SCOPE_DEP, &
                     FPM_SCOPE_APP, FPM_SCOPE_EXAMPLE, FPM_SCOPE_TEST
 use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
@@ -107,8 +107,13 @@ subroutine build_model(model, settings, package, error)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
+            associate(features => model%packages(i)%features)
+                features%implicit_typing = dependency%fortran%implicit_typing
+                features%implicit_external = dependency%fortran%implicit_external
+                features%source_form = dependency%fortran%source_form
+            end associate
             model%packages(i)%version = package%version%s()
-            
+
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
                     if (dependency%preprocess(j)%name == "cpp") then
