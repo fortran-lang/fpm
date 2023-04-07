@@ -3,9 +3,13 @@
 module fpm_release
     use fpm_versioning, only: version_t,new_version
     use fpm_error, only: error_t, fpm_stop
-    use fpm_release_parameters
     implicit none
     private
+
+#ifndef FPM_VERSION
+#define FPM_VERSION UNDEFINED
+#endif
+    character(len=*), parameter :: fpm_version_ID = "FPM_VERSION"
 
     public :: fpm_version
 
