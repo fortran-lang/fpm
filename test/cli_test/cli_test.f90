@@ -206,7 +206,7 @@ use fpm_command_line, only: &
         fpm_clean_settings, &
         fpm_install_settings, &
         get_command_line_settings
-use fpm, only: cmd_build, cmd_run, cmd_clean
+use fpm, only: cmd_run, cmd_clean
 use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
 class(fpm_cmd_settings), allocatable :: cmd_settings

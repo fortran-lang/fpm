@@ -56,7 +56,7 @@ module fpm_cmd_new
 use fpm_command_line, only : fpm_new_settings
 use fpm_environment, only : OS_LINUX, OS_MACOS, OS_WINDOWS
 use fpm_filesystem, only : join_path, exists, basename, mkdir, is_dir
-use fpm_filesystem, only : fileopen, fileclose, filewrite, warnwrite, which, run
+use fpm_filesystem, only : fileopen, fileclose, warnwrite, which, run
 use fpm_strings, only : join, to_fortran_name
 use fpm_error, only : fpm_stop
 

@@ -8,17 +8,13 @@ module fpm_filesystem
     use fpm_environment, only: separator, get_env, os_is_unix
     use fpm_strings, only: f_string, replace, string_t, split, notabs, str_begins_with_str
     use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_pointer
-    use fpm_error, only : fpm_stop
+    use fpm_error, only : fpm_stop, error_t, fatal_error
     implicit none
     private
-    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, env_variable, &
-            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file
-    public :: fileopen, fileclose, filewrite, warnwrite, parent_dir
-    public :: is_hidden_file
-    public :: read_lines, read_lines_expanded
-    public :: which, run, LINE_BUFFER_LEN
-    public :: os_delete_dir
-
+    public :: basename, canon_path, dirname, is_dir, join_path, number_of_rows, list_files, get_local_prefix, &
+            mkdir, exists, get_temp_filename, windows_path, unix_path, getline, delete_file, fileopen, fileclose, &
+            filewrite, warnwrite, parent_dir, is_hidden_file, read_lines, read_lines_expanded, which, run, &
+            LINE_BUFFER_LEN, os_delete_dir, is_absolute_path, env_variable, get_home
     integer, parameter :: LINE_BUFFER_LEN = 1000
 
 #ifndef FPM_BOOTSTRAP
@@ -943,5 +939,85 @@ subroutine os_delete_dir(unix, dir, echo)
     end if
 
 end subroutine os_delete_dir
+
+    !> Determine the path prefix to the local folder. Used for installation, registry etc.
+    function get_local_prefix(os) result(prefix)
+        !> Installation prefix
+        character(len=:), allocatable :: prefix
+        !> Platform identifier
+        integer, intent(in), optional :: os
+
+        !> Default installation prefix on Unix platforms
+        character(len=*), parameter :: default_prefix_unix = "/usr/local"
+        !> Default installation prefix on Windows platforms
+        character(len=*), parameter :: default_prefix_win = "C:\"
+
+        character(len=:), allocatable :: home
+
+        if (os_is_unix(os)) then
+            call env_variable(home, "HOME")
+            if (allocated(home)) then
+                prefix = join_path(home, ".local")
+            else
+                prefix = default_prefix_unix
+            end if
+        else
+            call env_variable(home, "APPDATA")
+            if (allocated(home)) then
+                prefix = join_path(home, "local")
+            else
+                prefix = default_prefix_win
+            end if
+        end if
+
+    end function get_local_prefix
+
+    !> Returns .true. if provided path is absolute.
+    !>
+    !> `~` not treated as absolute.
+    logical function is_absolute_path(path, is_unix)
+        character(len=*), intent(in) :: path
+        logical, optional, intent(in):: is_unix
+        character(len=*), parameter :: letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        logical :: is_unix_os
+
+        if (present(is_unix)) then
+            is_unix_os = is_unix
+        else
+            is_unix_os = os_is_unix()
+        end if
+
+        if (is_unix_os) then
+            is_absolute_path = path(1:1) == '/'
+        else
+            if (len(path) < 2) then
+                is_absolute_path = .false.
+                return
+            end if
+
+            is_absolute_path = index(letters, path(1:1)) /= 0 .and. path(2:2) == ':'
+        end if
+
+    end function is_absolute_path
+
+    !> Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.
+    subroutine get_home(home, error)
+        character(len=:), allocatable, intent(out) :: home
+        type(error_t), allocatable, intent(out) :: error
+
+        if (os_is_unix()) then
+            call env_variable(home, 'HOME')
+            if (.not. allocated(home)) then
+                call fatal_error(error, "Couldn't retrieve 'HOME' variable")
+                return
+            end if
+        else
+            call env_variable(home, 'USERPROFILE')
+            if (.not. allocated(home)) then
+                call fatal_error(error, "Couldn't retrieve '%USERPROFILE%' variable")
+                return
+            end if
+        end if
+    end subroutine get_home
 
 end module fpm_filesystem

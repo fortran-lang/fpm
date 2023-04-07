@@ -158,6 +158,14 @@ pushd cpp_files
 "$fpm" test
 popd
 
+# Test Fortran features
+for feature in free-form fixed-form implicit-typing implicit-external
+do
+  pushd $feature
+  "$fpm" run
+  popd
+done
+
 # Test app exit codes
 pushd fpm_test_exit_code
 "$fpm" build

@@ -1,0 +1,2 @@
+name = "fixed-form"
+fortran.source-form = "fixed"
