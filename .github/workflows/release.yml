@@ -76,7 +76,7 @@ jobs:
         echo "OUTPUT=${{ env.OUTPUT }}" >> $GITHUB_ENV
         echo "#define FPM_BOOTSTRAP" > fpm-${{ env.VERSION }}.F90
         # We need to pass the exact version string that a fpm build command would send
-        echo "#define FPM_RELEASE_VERSION ${{ env.MANIFEST_VERSION }}" > fpm-${{ env.VERSION }}.F90
+        echo "#define FPM_RELEASE_VERSION ${{ env.MANIFEST_VERSION }}" >> fpm-${{ env.VERSION }}.F90
         # Intel compiler predefines "linux" and "unix" which causes inadvertent substitutions
         echo "#undef linux"          >> fpm-${{ env.VERSION }}.F90
         echo "#undef unix"           >> fpm-${{ env.VERSION }}.F90
