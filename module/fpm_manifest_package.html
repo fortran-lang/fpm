@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 4.0% of total for modules and submodules.">317 statements</a>
+               title=" 4.0% of total for modules and submodules.">326 statements</a>
           </li>
 
             <li id="source-file">
@@ -202,6 +202,7 @@
 <span class="k">[profiles]</span><span class="w"></span>
 <span class="k">[build]</span><span class="w"></span>
 <span class="k">[install]</span><span class="w"></span>
+<span class="k">[fortran]</span><span class="w"></span>
 <span class="k">[[ executable ]]</span><span class="w"></span>
 <span class="k">[[ example ]]</span><span class="w"></span>
 <span class="k">[[ test ]]</span><span class="w"></span>
@@ -214,19 +215,20 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
-                <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
-                <li><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></li>
-                <li><a href='../module/fpm_mainfest_preprocess.html'>fpm_mainfest_preprocess</a></li>
-                <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
-                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-                <li><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
-                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
                 <li><a href='../module/fpm_manifest_build.html'>fpm_manifest_build</a></li>
+                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+                <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
                 <li><a href='../module/fpm_manifest_library.html'>fpm_manifest_library</a></li>
-                <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
+                <li><a href='../module/fpm_manifest_fortran.html'>fpm_manifest_fortran</a></li>
+                <li><a href='../module/fpm_manifest_dependency.html'>fpm_manifest_dependency</a></li>
                 <li><a href='../module/fpm_manifest_example.html'>fpm_manifest_example</a></li>
+                <li><a href='../module/fpm_mainfest_preprocess.html'>fpm_mainfest_preprocess</a></li>
+                <li><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></li>
                 <li><a href='../module/fpm_manifest_install.html'>fpm_manifest_install</a></li>
+                <li><a href='../module/fpm_manifest_test.html'>fpm_manifest_test</a></li>
+                <li><a href='../module/fpm_manifest_executable.html'>fpm_manifest_executable</a></li>
+                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+                <li><a href='../module/fpm_toml.html'>fpm_toml</a></li>
             </ul>
           </li>
       </ul>
@@ -402,6 +404,23 @@
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-fortran"></span>
+              type(<a href='../type/fortran_config_t.html'>fortran_config_t</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fortran</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Fortran meta data</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-install~2"></span>
               type(<a href='../type/install_config_t.html'>install_config_t</a>),
             </td>
@@ -419,7 +438,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-library~3"></span>
+              <span class="anchor" id="variable-library~2"></span>
               type(<a href='../type/library_config_t.html'>library_config_t</a>),
             </td>
               <td>public,</td>
@@ -470,7 +489,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-profiles~6"></span>
+              <span class="anchor" id="variable-profiles"></span>
               type(<a href='../type/profile_config_t.html'>profile_config_t</a>),
             </td>
               <td>public,</td>
@@ -532,7 +551,7 @@
                 <td>
                     procedure
                     ,                  public
-                  :: <strong><a href='../type/package_config_t.html#boundprocedure-info~11'>info</a></strong>
+                  :: <strong><a href='../type/package_config_t.html#boundprocedure-info~7'>info</a></strong>
 <small>Subroutine</small>                </td>
                 <td><p>Print information on this instance</p></td>
               </tr>
@@ -652,7 +671,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-02 07:30              </p>
+ on 2023-04-07 07:53              </p>
           </div>
         </div>
         <br>

@@ -42,7 +42,7 @@ use fpm_strings, only: string_t, str, len_trim
 implicit none
 
 private
-public :: fpm_model_t, srcfile_t, show_model
+public :: fpm_model_t, srcfile_t, show_model, fortran_features_t
 
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
@@ -79,6 +79,18 @@ integer, parameter :: FPM_SCOPE_APP = 3
 integer, parameter :: FPM_SCOPE_TEST = 4
 integer, parameter :: FPM_SCOPE_EXAMPLE = 5
 
+!> Enabled Fortran language features
+type :: fortran_features_t
+
+    !> Use default implicit typing
+    logical :: implicit_typing = .false.
+
+    !> Use implicit external interface
+    logical :: implicit_external = .false.
+
+    !> Form to use for all Fortran sources
+    character(:), allocatable :: source_form
+end type fortran_features_t
 
 !> Type for describing a source file
 type srcfile_t
@@ -132,7 +144,12 @@ type package_t
 
     !> Module naming conventions
     logical :: enforce_module_names
+
+    !> Prefix for all module names
     type(string_t) :: module_prefix
+
+    !> Language features
+    type(fortran_features_t) :: features
 
 end type package_t
 
@@ -185,6 +202,8 @@ type :: fpm_model_t
 
     !> Whether module names should be prefixed with the package name
     logical :: enforce_module_names = .false.
+
+    !> Prefix for all module names
     type(string_t) :: module_prefix
 
 end type fpm_model_t

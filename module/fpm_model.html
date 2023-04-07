@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 2.6% of total for modules and submodules.">204 statements</a>
+               title=" 2.6% of total for modules and submodules.">210 statements</a>
           </li>
 
             <li id="source-file">
@@ -171,6 +171,7 @@
       </div>
       <div id="types-0" class="panel-collapse collapse">
         <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_model.html#type-fortran_features_t">fortran_features_t</a>
             <a class="list-group-item" href="../module/fpm_model.html#type-fpm_model_t">fpm_model_t</a>
             <a class="list-group-item" href="../module/fpm_model.html#type-srcfile_t">srcfile_t</a>
         </div>
@@ -237,8 +238,8 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
                 <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
+                <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
                 <li><a href='../module/fpm_dependency.html'>fpm_dependency</a></li>
                 <li><a href='../module/fpm_compiler.html'>fpm_compiler</a></li>
             </ul>
@@ -294,6 +295,7 @@
       </div>
       <div id="types-1" class="panel-collapse collapse">
         <div class="list-group">
+            <a class="list-group-item" href="../module/fpm_model.html#type-fortran_features_t">fortran_features_t</a>
             <a class="list-group-item" href="../module/fpm_model.html#type-fpm_model_t">fpm_model_t</a>
             <a class="list-group-item" href="../module/fpm_model.html#type-srcfile_t">srcfile_t</a>
         </div>
@@ -589,6 +591,89 @@ parameter
           <h2>Derived Types</h2>
               <div class="panel panel-default">
     <div class="panel-heading codesum">
+      <span class="anchor" id="type-fortran_features_t"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/fortran_features_t.html'>fortran_features_t</a>
+        
+      </h3>
+    </div>
+    <div class="panel-body">
+      <p>Enabled Fortran language features</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Visibility</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+<th></th><th>Initial</th>        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-implicit_external"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>implicit_external</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>Use implicit external interface</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-implicit_typing"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>implicit_typing</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>Use default implicit typing</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-source_form"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>source_form</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Form to use for all Fortran sources</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum">
       <span class="anchor" id="type-fpm_model_t"></span>
       <h3>
         type, public&nbsp;::&nbsp;
@@ -800,7 +885,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_flags~2"></span>
+              <span class="anchor" id="variable-link_flags"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -817,7 +902,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_libraries~3"></span>
+              <span class="anchor" id="variable-link_libraries~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -834,7 +919,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-module_prefix"></span>
+              <span class="anchor" id="variable-module_prefix~2"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public</td>
@@ -846,12 +931,12 @@ parameter
                 <td></td>
                 <td></td>
             <td>
-
+<p>Prefix for all module names</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-package_name~2"></span>
+              <span class="anchor" id="variable-package_name"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -985,7 +1070,7 @@ parameter
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-link_libraries~2"></span>
+              <span class="anchor" id="variable-link_libraries"></span>
               type(<a href='../type/string_t.html'>string_t</a>),
             </td>
               <td>public,</td>
@@ -1160,7 +1245,7 @@ parameter
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-02 07:30              </p>
+ on 2023-04-07 07:53              </p>
           </div>
         </div>
         <br>
