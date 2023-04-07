@@ -94,7 +94,7 @@ jobs:
     - name: Build Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} build --verbose
+        ${{ env.BOOTSTRAP }} build 
 
     - name: Run Fortran fpm (bootstrap)
       shell: bash
