@@ -262,7 +262,7 @@ contains
     type(toml_table) :: cache, manifest
     type(toml_table), pointer :: ptr
     type(toml_key), allocatable :: list(:)
-    type(dependency_tree_t) :: deps, cached_deps
+    type(dependency_tree_t) :: deps, manifest_deps
     integer :: ii
 
     ! Create a dummy cache
@@ -283,10 +283,14 @@ contains
     call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
 
     ! Load into a dependency tree
-    call new_dependency_tree(cached_deps)
-    call cached_deps%load(cache, error)
-    call cache%destroy()
+    call new_dependency_tree(deps)
+    call deps%load(cache, error)
     if (allocated(error)) return
+    ! Mark all dependencies as "cached"
+    do ii=1,deps%ndep
+        deps%dep(ii)%cached = .true.
+    end do
+    call cache%destroy()
 
     ! Create a dummy manifest, with different version
     manifest = toml_table()
@@ -303,14 +307,14 @@ contains
     call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
 
     ! Load dependencies from manifest
-    call new_dependency_tree(deps)
-    call deps%load(manifest, error)
+    call new_dependency_tree(manifest_deps)
+    call manifest_deps%load(manifest, error)
     call manifest%destroy()
     if (allocated(error)) return
 
     ! Add manifest dependencies
-    do ii = 1, cached_deps%ndep
-      call deps%add(cached_deps%dep(ii), error)
+    do ii = 1, manifest_deps%ndep
+      call deps%add(manifest_deps%dep(ii), error)
       if (allocated(error)) return
     end do
 
