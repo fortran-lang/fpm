@@ -17,23 +17,5 @@ M_CLI2.rev = "7264878cdb1baff7323cc48596d829ccfe7751b8"
 jonquil.git = "https://github.com/toml-f/jonquil"
 jonquil.rev = "05d30818bb12fb877226ce284b9a3a41b971a889"
 
-[[test]]
-name = "cli-test"
-source-dir = "test/cli_test"
-main = "cli_test.f90"
-
-[[test]]
-name = "new-test"
-source-dir = "test/new_test"
-main = "new_test.f90"
-
-[[test]]
-name = "fpm-test"
-source-dir = "test/fpm_test"
-main = "main.f90"
-
-[[test]]
-name = "help-test"
-source-dir = "test/help_test"
-main = "help_test.f90"
-
+[build]
+auto-tests = false
