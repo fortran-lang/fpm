@@ -153,7 +153,9 @@ character(*), parameter :: &
     flag_pgi_traceback = " -traceback", &
     flag_pgi_debug = " -g", &
     flag_pgi_check = " -Mbounds -Mchkptr -Mchkstk", &
-    flag_pgi_warn = " -Minform=inform"
+    flag_pgi_warn = " -Minform=inform", &
+    flag_pgi_free_form = " -Mfree", &
+    flag_pgi_fixed_form = " -Mfixed"
 
 character(*), parameter :: &
     flag_ibmxl_backslash = " -qnoescape"
@@ -168,7 +170,9 @@ character(*), parameter :: &
     flag_intel_limit = " -error-limit 1", &
     flag_intel_pthread = " -reentrancy threaded", &
     flag_intel_nogen = " -nogen-interfaces", &
-    flag_intel_byterecl = " -assume byterecl"
+    flag_intel_byterecl = " -assume byterecl", &
+    flag_intel_free_form = " -free", &
+    flag_intel_fixed_form = " -fixed"
 
 character(*), parameter :: &
     flag_intel_backtrace_win = " /traceback", &
@@ -180,7 +184,9 @@ character(*), parameter :: &
     flag_intel_limit_win = " /error-limit:1", &
     flag_intel_pthread_win = " /reentrancy:threaded", &
     flag_intel_nogen_win = " /nogen-interfaces", &
-    flag_intel_byterecl_win = " /assume:byterecl"
+    flag_intel_byterecl_win = " /assume:byterecl", &
+    flag_intel_free_form_win = " /free", &
+    flag_intel_fixed_form_win = " /fixed"
 
 character(*), parameter :: &
     flag_nag_coarray = " -coarray=single", &
@@ -188,7 +194,10 @@ character(*), parameter :: &
     flag_nag_check = " -C", &
     flag_nag_debug = " -g -O0", &
     flag_nag_opt = " -O4", &
-    flag_nag_backtrace = " -gline"
+    flag_nag_backtrace = " -gline", &
+    flag_nag_free_form = " -free", &
+    flag_nag_fixed_form = " -fixed", &
+    flag_nag_no_implicit_typing = " -u"
 
 character(*), parameter :: &
     flag_lfortran_opt = " --fast", &
@@ -196,6 +205,12 @@ character(*), parameter :: &
     flag_lfortran_implicit_external = " --allow-implicit-interface", &
     flag_lfortran_fixed_form = " --fixed-form"
 
+
+character(*), parameter :: &
+    flag_cray_no_implicit_typing = " -dl", &
+    flag_cray_implicit_typing = " -el", &
+    flag_cray_fixed_form = " -ffixed", &
+    flag_cray_free_form = " -ffree"
     
 contains
 
@@ -560,10 +575,19 @@ function get_feature_flag(self, feature) result(flags)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_no_implicit_typing
 
+       case(id_nag)
+           flags = flag_nag_no_implicit_typing
+
+       case(id_cray)
+           flags = flag_cray_no_implicit_typing
+
        end select
 
     case("implicit-typing")
        select case(self%id)
+       case(id_cray)
+           flags = flag_cray_implicit_typing
+
        case(id_lfortran)
            flags = flag_lfortran_implicit_typing
 
@@ -588,12 +612,44 @@ function get_feature_flag(self, feature) result(flags)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_free_form
 
+       case(id_pgi, id_nvhpc, id_flang)
+           flags = flag_pgi_free_form
+
+       case(id_nag)
+           flags = flag_nag_free_form
+
+       case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
+             & id_intel_llvm_unknown)
+           flags = flag_intel_free_form
+
+       case(id_intel_classic_windows, id_intel_llvm_windows)
+           flags = flag_intel_free_form_win
+
+       case(id_cray)
+           flags = flag_cray_free_form
+
        end select
 
     case("fixed-form")
        select case(self%id)
        case(id_caf, id_gcc, id_f95)
            flags = flag_gnu_fixed_form
+
+       case(id_pgi, id_nvhpc, id_flang)
+           flags = flag_pgi_fixed_form
+
+       case(id_nag)
+           flags = flag_nag_fixed_form
+
+       case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix, &
+             & id_intel_llvm_unknown)
+           flags = flag_intel_fixed_form
+
+       case(id_intel_classic_windows, id_intel_llvm_windows)
+           flags = flag_intel_fixed_form_win
+
+       case(id_cray)
+           flags = flag_cray_fixed_form
 
        case(id_lfortran)
            flags = flag_lfortran_fixed_form
