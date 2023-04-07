@@ -203,8 +203,7 @@ popd
 
 # test dependency priority
 pushd dependency_priority
-  "$fpm" run || EXIT_CODE=$?
-  test $EXIT_CODE -eq 0
+"$fpm" run 
 popd
 
 # Cleanup
