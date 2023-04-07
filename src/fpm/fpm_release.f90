@@ -37,7 +37,7 @@ module fpm_release
         ver_string = STRINGIFY_START(FPM_RELEASE_VERSION)
         STRINGIFY_END(FPM_RELEASE_VERSION)
 
-        call new_version(fpm_version,fpm_version_ID,error)
+        call new_version(fpm_version,ver_string,error)
 
         if (allocated(error)) call fpm_stop(1,'*fpm*:internal error: cannot get version - '//error%message)
 
