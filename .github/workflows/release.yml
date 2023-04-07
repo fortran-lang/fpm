@@ -92,7 +92,7 @@ jobs:
 
     - name: Build fpm with bootstrap version
       run: |
-        ${{ env.EXE }} build
+        ${{ env.EXE }} build --verbose
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
