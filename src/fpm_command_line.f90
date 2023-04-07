@@ -239,7 +239,7 @@ contains
 
         ! Get current release version
         version = fpm_version()
-        call version%to_string(version_s)
+        version_s = version%s()
 
         version_text = [character(len=80) :: &
          &  'Version:     '//trim(version_s),                          &
