@@ -93,6 +93,8 @@ module fpm_dependency
     logical :: done = .false.
     !> Dependency should be updated
     logical :: update = .false.
+    !> Dependency was loaded from a cache
+    logical :: cached = .false.
   contains
     !> Update dependency from project manifest.
     procedure :: register
@@ -285,10 +287,15 @@ contains
 
     type(dependency_config_t) :: dependency
     character(len=*), parameter :: root = '.'
+    integer :: id
 
     if (allocated(self%cache)) then
       call self%load(self%cache, error)
       if (allocated(error)) return
+      ! Mark all dependencies as "cached"
+      do id=1,self%ndep
+          self%dep(id)%cached = .true.
+      end do
     end if
 
     if (.not. exists(self%dep_dir)) then
@@ -423,8 +430,11 @@ contains
       ! Check if it needs to be updated
       id = self%find(dependency%name)
 
-      ! Ensure an update is requested whenever the dependency has changed
-      if (dependency_has_changed(self%dep(id), dependency)) then
+      ! If this dependency was in the cache, and we're now requesting a different version,
+      ! Ensure it is marked for update. Otherwise, if we're just querying the same dependency
+      ! from a lower branch of the dependency tree, the existing one from the manifest has
+      ! priority
+      if (self%dep(id)%cached .and. dependency_has_changed(self%dep(id), dependency)) then
         write (self%unit, out_fmt) "Dependency change detected:", dependency%name
         self%dep(id) = dependency
         self%dep(id)%update = .true.
