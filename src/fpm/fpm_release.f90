@@ -16,14 +16,14 @@ module fpm_release
 
         type(error_t), allocatable :: error
 
-        ! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran
-        ! which provides the "easiest" way to pass a macro to a string in Fortran complying with both
-        ! gfortran's "traditional" cpp and the standard cpp syntaxes
-
+! Fallback to last known version in case of undefined macro
 #ifndef FPM_RELEASE_VERSION
-#  define FPM_RELEASE_VERSION UNDEFINED
+#  define FPM_RELEASE_VERSION 0.8.0
 #endif
 
+! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran
+! which provides the "easiest" way to pass a macro to a string in Fortran complying with both
+! gfortran's "traditional" cpp and the standard cpp syntaxes
 #ifdef __GFORTRAN__ /* traditional-cpp stringification */
 #  define STRINGIFY_START(X) "&
 #  define STRINGIFY_END(X) &X"
