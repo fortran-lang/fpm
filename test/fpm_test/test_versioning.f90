@@ -12,12 +12,12 @@ contains
 
 
     !> Collect all exported unit tests
-    subroutine collect_versioning(testsuite)
+    subroutine collect_versioning(tests)
 
         !> Collection of tests
-        type(unittest_t), allocatable, intent(out) :: testsuite(:)
+        type(unittest_t), allocatable, intent(out) :: tests(:)
 
-        testsuite = [ &
+        tests = [ &
             & new_unittest("valid-version", test_valid_version), &
             & new_unittest("valid-equals", test_valid_equals), &
             & new_unittest("valid-notequals", test_valid_notequals), &
@@ -262,6 +262,98 @@ contains
            return
         end if
 
+        call new_version(v1, [1, 2, 3])
+        call new_version(v2, [2, 0, 0])
+
+        if (v1 > v2) then
+            call test_failed(error, "Version comparison failed (gt)")
+            return
+        end if
+
+        if (v1 >= v2) then
+            call test_failed(error, "Version comparison failed (ge)")
+            return
+        end if
+
+        if (v2 < v1) then
+            call test_failed(error, "Version comparison failed (lt)")
+            return
+        end if
+
+        if (v2 <= v1) then
+            call test_failed(error, "Version comparison failed (le)")
+            return
+        end if
+
+        call new_version(v1, [1, 2, 3])
+        call new_version(v2, [1, 0, 4])
+
+        if (v2 > v1) then
+            call test_failed(error, "Version comparison failed (gt)")
+            return
+        end if
+
+        if (v2 >= v1) then
+            call test_failed(error, "Version comparison failed (ge)")
+            return
+        end if
+
+        if (v1 < v2) then
+            call test_failed(error, "Version comparison failed (lt)")
+            return
+        end if
+
+        if (v1 <= v2) then
+            call test_failed(error, "Version comparison failed (le)")
+            return
+        end if
+
+        call new_version(v1, [1, 0, 8])
+        call new_version(v2, [1])
+
+        if (.not. v1 > v2) then
+           call test_failed(error, "Version comparison failed (gt)")
+           return
+        end if
+
+        if (.not. v1 >= v2) then
+           call test_failed(error, "Version comparison failed (ge)")
+           return
+        end if
+
+        if (.not. v2 < v1) then
+           call test_failed(error, "Version comparison failed (lt)")
+           return
+        end if
+
+        if (.not. v2 <= v1) then
+           call test_failed(error, "Version comparison failed (le)")
+           return
+        end if
+
+        call new_version(v1, [1])
+        call new_version(v2, [1, 0, 8])
+
+        if (v1 > v2) then
+           call test_failed(error, "Version comparison failed (gt)")
+           return
+        end if
+
+        if (v1 >= v2) then
+           call test_failed(error, "Version comparison failed (ge)")
+           return
+        end if
+
+        if (v2 < v1) then
+           call test_failed(error, "Version comparison failed (lt)")
+           return
+        end if
+
+        if (v2 <= v1) then
+           call test_failed(error, "Version comparison failed (le)")
+           return
+        end if
+
     end subroutine test_valid_compare
 
 
@@ -322,15 +414,13 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         character(len=*), parameter :: str_in = "20.1.100"
-        character(len=:), allocatable :: str_out
         type(version_t) :: version
 
         call new_version(version, str_in, error)
         if (allocated(error)) return
-        call version%to_string(str_out)
 
-        if (str_in /= str_out) then
-           call test_failed(error, "Expected "//str_in//" but got "//str_out)
+        if (str_in /= version%s()) then
+           call test_failed(error, "Expected "//str_in//" but got "//version%s())
         end if
 
     end subroutine test_valid_string

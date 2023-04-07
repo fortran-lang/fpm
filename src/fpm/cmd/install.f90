@@ -28,7 +28,6 @@ contains
     type(fpm_model_t) :: model
     type(build_target_ptr), allocatable :: targets(:)
     type(installer_t) :: installer
-    character(len=:), allocatable :: lib, dir
     type(string_t), allocatable :: list(:)
     logical :: installable
 
@@ -49,7 +48,7 @@ contains
     end if
 
     if (settings%list) then
-      call install_info(output_unit, package, model, targets)
+      call install_info(output_unit, targets)
       return
     end if
 
@@ -81,14 +80,11 @@ contains
 
   end subroutine cmd_install
 
-  subroutine install_info(unit, package, model, targets)
+  subroutine install_info(unit, targets)
     integer, intent(in) :: unit
-    type(package_config_t), intent(in) :: package
-    type(fpm_model_t), intent(in) :: model
     type(build_target_ptr), intent(in) :: targets(:)
 
     integer :: ii, ntargets
-    character(len=:), allocatable :: lib
     type(string_t), allocatable :: install_target(:), temp(:)
 
     allocate(install_target(0))

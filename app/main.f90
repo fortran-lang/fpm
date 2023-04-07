@@ -99,20 +99,20 @@ contains
         has_manifest = exists(join_path(dir, "fpm.toml"))
     end function has_manifest
 
-    subroutine handle_error(error)
-        type(error_t), optional, intent(in) :: error
-        if (present(error)) then
-            write(error_unit, '("[Error]", 1x, a)') error%message
+    subroutine handle_error(error_)
+        type(error_t), optional, intent(in) :: error_
+        if (present(error_)) then
+            write (error_unit, '("[Error]", 1x, a)') error_%message
             stop 1
         end if
     end subroutine handle_error
 
     !> Save access to working directory in settings, in case setting have not been allocated
-    subroutine get_working_dir(settings, working_dir)
+    subroutine get_working_dir(settings, working_dir_)
         class(fpm_cmd_settings), optional, intent(in) :: settings
-        character(len=:), allocatable, intent(out) :: working_dir
+        character(len=:), allocatable, intent(out) :: working_dir_
         if (present(settings)) then
-            working_dir = settings%working_dir
+            working_dir_ = settings%working_dir
         end if
     end subroutine get_working_dir
 
