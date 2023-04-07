@@ -103,15 +103,17 @@ Adds all sources (including modules) from each <code>executable%source_dir</code
 			   <tr><td><a href='../proc/add_target.html'>add_target</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Allocate a new target and append to target list</p></td></tr>
 			   <tr><td><a href='../proc/bad_name_error.html'>bad_name_error</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/basename.html'>basename</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Extract filename from path with/without suffix</p></td></tr>
-			   <tr><td><a href='../proc/build_model.html'>build_model</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
+			   <tr><td><a href='../proc/build_model.html'>build_model</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td><p>Constructs a valid fpm model from command line settings and the toml manifest.</p></td></tr>
 			   <tr><td><a href='../proc/build_package.html'>build_package</a></td><td><a href='../module/fpm_backend.html'>fpm_backend</a></td><td>Subroutine</td><td><p>Top-level routine to build package described by <code>model</code></p></td></tr>
 			   <tr><td><a href='../interface/build_progress_t.html'>build_progress_t</a></td><td><a href='../module/fpm_backend_output.html'>fpm_backend_output</a></td><td>Interface</td><td><p>Constructor for build_progress_t</p></td></tr>
 			   <tr><td><a href='../proc/canon_path.html'>canon_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Canonicalize path for comparison
 * Handles path string redundancies
 * Does not test existence of path</p><a href="../proc/canon_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/change_directory.html'>change_directory</a></td><td><a href='../module/fpm_os.html'>fpm_os</a></td><td>Subroutine</td><td></td></tr>
-			   <tr><td><a href='../interface/char.html'>char</a></td><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td>Interface</td><td></td></tr>
+			   <tr><td><a href='../proc/check_and_read_pkg_data.html'>check_and_read_pkg_data</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/check_compiler.html'>check_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
+			   <tr><td><a href='../proc/check_keys.html'>check_keys</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td><p>Check if table contains only keys that are part of the list. If a key is
+found that is not part of the list, an error is allocated.</p></td></tr>
 			   <tr><td><a href='../proc/check_modules_for_duplicates.html'>check_modules_for_duplicates</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/checkout.html'>checkout</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/cmd_build.html'>cmd_build</a></td><td><a href='../module/fpm.html'>fpm</a></td><td>Subroutine</td><td></td></tr>
@@ -125,6 +127,7 @@ temporarily change to new directory as a test. NB: System dependent</p></td></tr
 			   <tr><td><a href='../proc/compile_c.html'>compile_c</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a C object</p></td></tr>
 			   <tr><td><a href='../proc/compile_cpp.html'>compile_cpp</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a CPP object</p></td></tr>
 			   <tr><td><a href='../proc/compile_fortran.html'>compile_fortran</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td><p>Compile a Fortran object</p></td></tr>
+			   <tr><td><a href='../proc/convert_to_absolute_path.html'>convert_to_absolute_path</a></td><td><a href='../module/fpm_os.html'>fpm_os</a></td><td>Subroutine</td><td><p>Converts a path to an absolute, canonical path.</p></td></tr>
 			   <tr><td><a href='../interface/debug.html'>debug</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Interface</td><td><p>Create debug printout</p></td></tr>
 			   <tr><td><a href='../proc/debug_archiver.html'>debug_archiver</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>String representation of an archiver object</p></td></tr>
 			   <tr><td><a href='../proc/debug_compiler.html'>debug_compiler</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>String representation of a compiler object</p></td></tr>
@@ -151,6 +154,8 @@ single characters terminated with a C_NULL_CHAR character</p></td></tr>
 			   <tr><td><a href='../proc/find_profile.html'>find_profile</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Look for profile with given configuration in array profiles</p></td></tr>
 			   <tr><td><a href='../interface/fnv_1a.html'>fnv_1a</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Interface</td><td></td></tr>
 			   <tr><td><a href='../proc/fpm_stop.html'>fpm_stop</a></td><td><a href='../module/fpm_error.html'>fpm_error</a></td><td>Subroutine</td><td></td></tr>
+			   <tr><td><a href='../proc/get_absolute_path.html'>get_absolute_path</a></td><td><a href='../module/fpm_os.html'>fpm_os</a></td><td>Subroutine</td><td><p>Determine the canonical, absolute path for the given path.
+Expands home folder (~) on both Unix and Windows.</p></td></tr>
 			   <tr><td><a href='../proc/get_command_arguments_quoted.html'>get_command_arguments_quoted</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/get_command_line_settings.html'>get_command_line_settings</a></td><td><a href='../module/fpm_command_line.html'>fpm_command_line</a></td><td>Subroutine</td><td><p>! canon_path is not converting &ldquo;.&rdquo;, etc.
 &amp; &lsquo;<ERROR> unknown help topic &ldquo;&rsquo;//trim(unnamed(i)).&rsquo;not found in:&rsquo;,manual]</p></td></tr>
@@ -168,9 +173,12 @@ single characters terminated with a C_NULL_CHAR character</p></td></tr>
 			   <tr><td><a href='../proc/get_feature_flag.html'>get_feature_flag</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/get_flags.html'>get_flags</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Look for flags, c-flags, link-time-flags key-val pairs
 and files table in a given table and create new profiles</p></td></tr>
+			   <tr><td><a href='../proc/get_global_settings.html'>get_global_settings</a></td><td><a href='../module/fpm_settings.html'>fpm_settings</a></td><td>Subroutine</td><td><p>Obtain global settings from the global config file.</p></td></tr>
+			   <tr><td><a href='../proc/get_home.html'>get_home</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.</p></td></tr>
 			   <tr><td><a href='../proc/get_id.html'>get_id</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/get_include_flag.html'>get_include_flag</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/get_list.html'>get_list</a></td><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td>Subroutine</td><td></td></tr>
+			   <tr><td><a href='../proc/get_local_prefix.html'>get_local_prefix</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Determine the path prefix to the local folder. Used for installation, registry etc.</p></td></tr>
 			   <tr><td><a href='../proc/get_macros.html'>get_macros</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td><p>This function will parse and read the macros list and 
 return them as defined flags.
 Set macro defintion symbol on the basis of compiler used
@@ -179,6 +187,7 @@ Split the macro name and value.</p><a href="../proc/get_macros.html" class="pull
 			   <tr><td><a href='../proc/get_module_flag.html'>get_module_flag</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/get_os_type.html'>get_os_type</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>Determine the OS type</p><a href="../proc/get_os_type.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/get_package_data.html'>get_package_data</a></td><td><a href='../module/fpm_manifest.html'>fpm_manifest</a></td><td>Subroutine</td><td><p>Obtain package meta data from a configuation file</p></td></tr>
+			   <tr><td><a href='../proc/get_registry_settings.html'>get_registry_settings</a></td><td><a href='../module/fpm_settings.html'>fpm_settings</a></td><td>Subroutine</td><td><p>Read registry settings from the global config file.</p></td></tr>
 			   <tr><td><a href='../proc/get_release_compile_flags.html'>get_release_compile_flags</a></td><td><a href='../module/fpm_compiler.html'>fpm_compiler</a></td><td>Subroutine</td><td></td></tr>
 			   <tr><td><a href='../proc/get_temp_filename.html'>get_temp_filename</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Get a unused temporary filename
  Calls posix &lsquo;tempnam&rsquo; - not recommended, but
@@ -208,6 +217,7 @@ Works with MinGW</p></td></tr>
 			   <tr><td><a href='../proc/info.html'>info</a></td><td><a href='../module/fpm_git.html'>fpm_git</a></td><td>Subroutine</td><td><p>Show information on git target</p></td></tr>
 			   <tr><td><a href='../proc/info~9.html'>info</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Subroutine</td><td><p>Write information on instance</p></td></tr>
 			   <tr><td><a href='../proc/info_profile.html'>info_profile</a></td><td><a href='../module/fpm_manifest_profile.html'>fpm_manifest_profile</a></td><td>Function</td><td><p>Print a representation of profile_config_t</p></td></tr>
+			   <tr><td><a href='../proc/is_absolute_path.html'>is_absolute_path</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>Returns .true. if provided path is absolute.</p><a href="../proc/is_absolute_path.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/is_dir.html'>is_dir</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if a name matches an existing directory path</p></td></tr>
 			   <tr><td><a href='../proc/is_fortran_name.html'>is_fortran_name</a></td><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td>Function</td><td></td></tr>
 			   <tr><td><a href='../proc/is_hidden_file.html'>is_hidden_file</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Function</td><td><p>test if a file is hidden</p></td></tr>
@@ -275,8 +285,6 @@ and return .TRUE. if they match and .FALSE. otherwise</p></td></tr>
 			   <tr><td><a href='../interface/resize.html'>resize</a></td><td><a href='../module/fpm_dependency.html'>fpm_dependency</a></td><td>Interface</td><td><p>Overloaded reallocation interface</p></td></tr>
 			   <tr><td><a href='../proc/resolve_module_dependencies.html'>resolve_module_dependencies</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Add dependencies to source-based targets (<code>FPM_TARGET_OBJECT</code>)
  based on any modules used by the corresponding source file.</p><a href="../proc/resolve_module_dependencies.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-			   <tr><td><a href='../proc/resolve_target_linking.html'>resolve_target_linking</a></td><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td>Subroutine</td><td><p>Construct the linker flags string for each target
- <code>target%link_flags</code> includes non-library objects and library flags</p><a href="../proc/resolve_target_linking.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/run.html'>run</a></td><td><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></td><td>Subroutine</td><td><p>echo command string and pass it to the system for execution</p></td></tr>
 			   <tr><td><a href='../proc/schedule_targets.html'>schedule_targets</a></td><td><a href='../module/fpm_backend.html'>fpm_backend</a></td><td>Subroutine</td><td><p>Construct a build schedule from the sorted targets.</p><a href="../proc/schedule_targets.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			   <tr><td><a href='../proc/separator.html'>separator</a></td><td><a href='../module/fpm_environment.html'>fpm_environment</a></td><td>Function</td><td><p>sample usage</p><a href="../proc/separator.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
@@ -328,7 +336,7 @@ in case of errors.</p></td></tr>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-07 07:53              </p>
+ on 2023-04-07 09:50              </p>
           </div>
         </div>
         <br>

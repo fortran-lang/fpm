@@ -41,7 +41,7 @@ public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
-public resolve_target_linking, add_target, add_dependency
+public add_target, add_dependency
 public filter_library_targets, filter_executable_targets, filter_modules
 
 

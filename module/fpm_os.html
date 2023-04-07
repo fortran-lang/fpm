@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.9% of total for modules and submodules.">69 statements</a>
+               title=" 1.8% of total for modules and submodules.">152 statements</a>
           </li>
 
             <li id="source-file">
@@ -149,6 +149,8 @@
       <div id="subs-0" class="panel-collapse collapse">
         <div class="list-group">
             <a class="list-group-item" href="../module/fpm_os.html#proc-change_directory">change_directory</a>
+            <a class="list-group-item" href="../module/fpm_os.html#proc-convert_to_absolute_path">convert_to_absolute_path</a>
+            <a class="list-group-item" href="../module/fpm_os.html#proc-get_absolute_path">get_absolute_path</a>
             <a class="list-group-item" href="../module/fpm_os.html#proc-get_current_directory">get_current_directory</a>
         </div>
       </div>
@@ -176,6 +178,8 @@
           <li class="list-group-item">
             <ul class="list-inline">
                 <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+                <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
                 <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a>'>iso_c_binding</a></li>
             </ul>
           </li>
@@ -208,6 +212,8 @@
       <div id="subs-1" class="panel-collapse collapse">
         <div class="list-group">
             <a class="list-group-item" href="../module/fpm_os.html#proc-change_directory">change_directory</a>
+            <a class="list-group-item" href="../module/fpm_os.html#proc-convert_to_absolute_path">convert_to_absolute_path</a>
+            <a class="list-group-item" href="../module/fpm_os.html#proc-get_absolute_path">get_absolute_path</a>
             <a class="list-group-item" href="../module/fpm_os.html#proc-get_current_directory">get_current_directory</a>
         </div>
       </div>
@@ -262,6 +268,132 @@
             </td>
             <td>::</td>
             <td><strong>path</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-convert_to_absolute_path"></span><h3>public  subroutine <a href='../proc/convert_to_absolute_path.html'>convert_to_absolute_path</a>(path, error)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Converts a path to an absolute, canonical path.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>path</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-get_absolute_path"></span><h3>public  subroutine <a href='../proc/get_absolute_path.html'>get_absolute_path</a>(path, absolute_path, error)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Determine the canonical, absolute path for the given path.
+Expands home folder (~) on both Unix and Windows.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>path</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>absolute_path</strong></td>
             <td>
 
             </td>
@@ -363,7 +495,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-07 07:53              </p>
+ on 2023-04-07 09:50              </p>
           </div>
         </div>
         <br>

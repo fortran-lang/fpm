@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 9.1% of total for derived types.</p>Including implementation: 766 statements, 37.6% of total for derived types.">33 statements</a>
+               title="<p> 9.0% of total for derived types.</p>Including implementation: 753 statements, 33.8% of total for derived types.">34 statements</a>
           </li>
 
             <li id="source-file">
@@ -175,6 +175,7 @@
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump">dump</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-find">find</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-finished~2">finished</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-has">has</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load">load</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve">resolve</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-update~3">update</a>
@@ -250,6 +251,7 @@ with a binary-search tree or a hash table in the future.</p>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-dump">dump</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-find">find</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-finished~2">finished</a>
+            <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-has">has</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-load">load</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-resolve">resolve</a>
             <a class="list-group-item" href="../type/dependency_tree_t.html#boundprocedure-update~3">update</a>
@@ -706,11 +708,7 @@ as a choice of design.</p>
     private  subroutine add_dependency_node(self, dependency, error)  
 </h3>
   <p>Add a single dependency node to the dependency tree
-Dependency nodes contain additional information (version, git, revision)
-A dependency with this same name is already in the dependency tree.
-check if it needs to be updated</p>
-<p>Ensure an update is requested whenever the dependency has changed
-New dependency: add from scratch</p>
+Dependency nodes contain additional information (version, git, revision)</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -989,70 +987,13 @@ New dependency: add from scratch</p>
   </div>
 
             <div class="panel panel-default">
-    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-find"></span><h3>generic, public :: <strong>find</strong>  => find_dependency, find_name         
+    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-find"></span><h3>generic, public :: <strong>find</strong>  => find_name         
     </h3></div>
       <div class="panel-body">
         
         <p>Find a dependency in the tree</p>
       </div>
     <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
-    private pure function find_dependency(self, dependency) result(pos)  
-</h3>
-  <p>Find a dependency in the dependency tree</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-                <p>Instance of the dependency tree</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/dependency_config_t.html'>dependency_config_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>dependency</strong></td>
-            <td>
-                <p>Dependency configuration to add</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>integer</small>
-    </h4>
-    <p>Index of the dependency</p>
-
-        </li>
         <li class="list-group-item">
                   <h3>
     private pure function find_name(self, name) result(pos)  
@@ -1161,6 +1102,74 @@ New dependency: add from scratch</p>
     <small>logical</small>
     </h4>
     <p>All dependencies are updated</p>
+
+        </li>
+    </ul>
+  </div>
+
+            <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-has"></span><h3>generic, public :: <strong>has</strong>  => has_dependency         
+    </h3></div>
+      <div class="panel-body">
+        
+        <p>True if entity can be found</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function has_dependency(self, dependency)  
+</h3>
+  <p>True if dependency is part of the tree</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/dependency_tree_t.html'>dependency_tree_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the dependency tree</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dependency</strong></td>
+            <td>
+                <p>Dependency configuration to check</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
 
         </li>
     </ul>
@@ -1455,7 +1464,7 @@ New dependency: add from scratch</p>
         </li>
         <li class="list-group-item">
                   <h3>
-    private  subroutine resolve_dependency(self, dependency, root, error)  
+    private  subroutine resolve_dependency(self, dependency, global_settings, root, error)  
 </h3>
   <p>Resolve a single dependency node</p>
 
@@ -1498,6 +1507,21 @@ New dependency: add from scratch</p>
             <td><strong>dependency</strong></td>
             <td>
                 <p>Dependency configuration to add</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/fpm_global_settings.html'>fpm_global_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>global_settings</strong></td>
+            <td>
+                <p>Global configuration settings.</p>
             </td>
         </tr>
         <tr>
@@ -1703,12 +1727,14 @@ New dependency: add from scratch</p>
 <span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">resolve_dependencies</span><span class="p">,</span><span class="w"> </span><span class="n">resolve_dependency</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Resolve dependencies</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_dependencies</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Resolve dependencies</span>
+<span class="w">    </span><span class="c">!&gt; Resolve dependency</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">resolve_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; True if entity can be found</span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">has_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; True if dependency is part of the tree</span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">has_dependency</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Find a dependency in the tree</span>
-<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">find_dependency</span><span class="p">,</span><span class="w"> </span><span class="n">find_name</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Find a dependency from an dependency configuration</span>
-<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find_dependency</span><span class="w"></span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">find_name</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Find a dependency by its name</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find_name</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Depedendncy resolution finished</span>
@@ -1730,7 +1756,7 @@ New dependency: add from scratch</p>
 <span class="w">    </span><span class="c">!&gt; Write dependency tree to TOML data structure</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dump_to_toml</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Update dependency tree</span>
-<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">update_dependency</span><span class="p">,</span><span class="n">update_tree</span><span class="w"></span>
+<span class="w">    </span><span class="k">generic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">update_dependency</span><span class="p">,</span><span class="w"> </span><span class="n">update_tree</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Update a list of dependencies</span>
 <span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update_dependency</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Update all dependencies in the tree</span>
@@ -1755,7 +1781,7 @@ New dependency: add from scratch</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-07 07:53              </p>
+ on 2023-04-07 09:50              </p>
           </div>
         </div>
         <br>

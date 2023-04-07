@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 7.4% of total for modules and submodules.">601 statements</a>
+               title=" 7.6% of total for modules and submodules.">655 statements</a>
           </li>
 
             <li id="source-file">
@@ -163,7 +163,9 @@
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-canon_path">canon_path</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-dirname">dirname</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-exists">exists</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_local_prefix">get_local_prefix</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_temp_filename">get_temp_filename</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_absolute_path">is_absolute_path</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_dir">is_dir</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_hidden_file">is_hidden_file</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-join_path">join_path</a>
@@ -191,6 +193,7 @@
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-fileclose">fileclose</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-fileopen">fileopen</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-filewrite">filewrite</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_home">get_home</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-getline">getline</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-list_files">list_files</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-mkdir">mkdir</a>
@@ -222,10 +225,10 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
-                <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
                 <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+                <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
+                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
                 <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a>'>iso_c_binding</a></li>
             </ul>
           </li>
@@ -272,7 +275,9 @@
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-canon_path">canon_path</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-dirname">dirname</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-exists">exists</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_local_prefix">get_local_prefix</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_temp_filename">get_temp_filename</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_absolute_path">is_absolute_path</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_dir">is_dir</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-is_hidden_file">is_hidden_file</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-join_path">join_path</a>
@@ -300,6 +305,7 @@
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-fileclose">fileclose</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-fileopen">fileopen</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-filewrite">filewrite</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_home">get_home</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-getline">getline</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-list_files">list_files</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-mkdir">mkdir</a>
@@ -561,6 +567,51 @@ parameter
   </div>
 
               <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-get_local_prefix"></span><h3>public  function <a href='../proc/get_local_prefix.html'>get_local_prefix</a>(os) result(prefix)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Determine the path prefix to the local folder. Used for installation, registry etc.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>os</strong></td>
+            <td>
+<p>Platform identifier</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    <p>Installation prefix</p>
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
     <div class="panel-heading codesum"><span class="anchor" id="proc-get_temp_filename"></span><h3>public  function <a href='../proc/get_temp_filename.html'>get_temp_filename</a>() result(tempfile)  
 </h3></div>
     <div class="panel-body">
@@ -576,6 +627,66 @@ Works with MinGW</p>
     <h4>
     Return Value
     <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-is_absolute_path"></span><h3>public  function <a href='../proc/is_absolute_path.html'>is_absolute_path</a>(path, is_unix)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Returns .true. if provided path is absolute.</p><a href="../proc/is_absolute_path.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>path</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>is_unix</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
     </h4>
     
 
@@ -1373,6 +1484,61 @@ Works with MinGW</p>
   </div>
 
               <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-get_home"></span><h3>public  subroutine <a href='../proc/get_home.html'>get_home</a>(home, error)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Get the HOME directory on Unix and the %USERPROFILE% directory on Windows.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>home</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
     <div class="panel-heading codesum"><span class="anchor" id="proc-getline"></span><h3>public  subroutine <a href='../proc/getline.html'>getline</a>(unit, line, iostat, iomsg)  
 </h3></div>
     <div class="panel-body">
@@ -1827,7 +1993,7 @@ Works with MinGW</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-07 07:53              </p>
+ on 2023-04-07 09:50              </p>
           </div>
         </div>
         <br>

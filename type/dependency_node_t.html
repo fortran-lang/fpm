@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 2.8% of total for derived types.</p>Including implementation: 62 statements,  3.0% of total for derived types.">10 statements</a>
+               title="<p> 3.2% of total for derived types.</p>Including implementation: 182 statements,  8.2% of total for derived types.">12 statements</a>
           </li>
 
             <li id="source-file">
@@ -141,8 +141,10 @@
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-done">done</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-git">git</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-name~11">name</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#variable-path">path</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-namespace">namespace</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-path~2">path</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-proj_dir~2">proj_dir</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-requested_version">requested_version</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-revision~3">revision</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-update~2">update</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-version~4">version</a>
@@ -173,6 +175,7 @@
       </div>
       <div id="boundprocs-0" class="panel-collapse collapse">
         <div class="list-group">
+            <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-get_from_registry">get_from_registry</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-info~2">info</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-register">register</a>
         </div>
@@ -211,8 +214,10 @@
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-done">done</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-git">git</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-name~11">name</a>
-            <a class="list-group-item" href="../type/dependency_node_t.html#variable-path">path</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-namespace">namespace</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-path~2">path</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-proj_dir~2">proj_dir</a>
+            <a class="list-group-item" href="../type/dependency_node_t.html#variable-requested_version">requested_version</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-revision~3">revision</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-update~2">update</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#variable-version~4">version</a>
@@ -243,6 +248,7 @@
       </div>
       <div id="boundprocs-1" class="panel-collapse collapse">
         <div class="list-group">
+            <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-get_from_registry">get_from_registry</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-info~2">info</a>
             <a class="list-group-item" href="../type/dependency_node_t.html#boundprocedure-register">register</a>
         </div>
@@ -326,7 +332,26 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path"></span>
+              <span class="anchor" id="variable-namespace"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>namespace</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>Namespace which the dependency belongs to.
+Enables multiple dependencies with the same name.
+Required for dependencies that are obtained via the official registry.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-path~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -356,6 +381,24 @@
                 <td></td>
             <td>
                 <p>Installation prefix of this dependencies</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-requested_version"></span>
+              type(<a href='../type/version_t.html'>version_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>requested_version</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>The requested version of the dependency.
+The latest version is used if not specified.</p>
             </td>
         </tr>
         <tr>
@@ -419,6 +462,116 @@
 
       <section>
         <h2>Type-Bound Procedures</h2>
+            <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-get_from_registry"></span><h3>procedure, public :: <strong>get_from_registry</strong>          
+    </h3></div>
+      <div class="panel-body">
+        
+        <p>Get dependency from the registry.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine get_from_registry(self, target_dir, global_settings, error, downloader_)  
+</h3>
+  <p>Get a dependency from the registry. Whether the dependency is fetched
+from a local, a custom remote or the official registry is determined
+by the global configuration settings.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/dependency_node_t.html'>dependency_node_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                <p>Instance of the dependency configuration.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>target_dir</strong></td>
+            <td>
+                <p>The target directory of the dependency.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/fpm_global_settings.html'>fpm_global_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>global_settings</strong></td>
+            <td>
+                <p>Global configuration settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                <p>Error handling.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='../type/downloader_t.html'>downloader_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>downloader_</strong></td>
+            <td>
+                <p>Downloader instance.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
             <div class="panel panel-default">
     <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-info~2"></span><h3>procedure, public :: <strong>info</strong>          
     </h3></div>
@@ -503,7 +656,7 @@
     </h3></div>
       <div class="panel-body">
         
-        <p>Update dependency from project manifest</p>
+        <p>Update dependency from project manifest.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -637,8 +790,11 @@
 <span class="w">    </span><span class="c">!&gt; Dependency should be updated</span>
 <span class="w">    </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
 <span class="w">  </span><span class="k">contains</span><span class="w"></span>
-<span class="w">    </span><span class="c">!&gt; Update dependency from project manifest</span>
+<span class="w">    </span><span class="c">!&gt; Update dependency from project manifest.</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">register</span><span class="w"></span>
+<span class="w">    </span><span class="c">!&gt; Get dependency from the registry.</span>
+<span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_from_registry</span><span class="w"></span>
+<span class="w">    </span><span class="k">procedure</span><span class="p">,</span><span class="w"> </span><span class="k">private</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">get_from_local_registry</span><span class="w"></span>
 <span class="w">    </span><span class="c">!&gt; Print information on this instance</span>
 <span class="w">    </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">info</span><span class="w"></span>
 <span class="w">  </span><span class="k">end type </span><span class="n">dependency_node_t</span><span class="w"></span>
@@ -661,7 +817,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-07 07:53              </p>
+ on 2023-04-07 09:50              </p>
           </div>
         </div>
         <br>

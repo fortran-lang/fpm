@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 1.9% of total for derived types.</p>Including implementation: 31 statements,  1.5% of total for derived types.">7 statements</a>
+               title="<p> 2.4% of total for derived types.</p>Including implementation: 33 statements,  1.5% of total for derived types.">9 statements</a>
           </li>
 
             <li id="source-file">
@@ -140,7 +140,9 @@
         <div class="list-group">
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-git">git</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-name~11">name</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#variable-path">path</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-namespace">namespace</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-path~2">path</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-requested_version">requested_version</a>
         </div>
       </div>
     </div>
@@ -204,7 +206,9 @@
         <div class="list-group">
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-git">git</a>
             <a class="list-group-item" href="../type/dependency_config_t.html#variable-name~11">name</a>
-            <a class="list-group-item" href="../type/dependency_config_t.html#variable-path">path</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-namespace">namespace</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-path~2">path</a>
+            <a class="list-group-item" href="../type/dependency_config_t.html#variable-requested_version">requested_version</a>
         </div>
       </div>
     </div>
@@ -297,7 +301,26 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-path"></span>
+              <span class="anchor" id="variable-namespace"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>namespace</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>Namespace which the dependency belongs to.
+Enables multiple dependencies with the same name.
+Required for dependencies that are obtained via the official registry.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-path~2"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -310,6 +333,24 @@
                 <td></td>
             <td>
                 <p>Local target</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-requested_version"></span>
+              type(<a href='../type/version_t.html'>version_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>requested_version</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>The requested version of the dependency.
+The latest version is used if not specified.</p>
             </td>
         </tr>
     </tbody>
@@ -412,6 +453,15 @@
 <span class="w">        </span><span class="c">!&gt; Local target</span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">path</span><span class="w"></span>
 
+<span class="w">        </span><span class="c">!&gt; Namespace which the dependency belongs to.</span>
+<span class="w">        </span><span class="c">!&gt; Enables multiple dependencies with the same name.</span>
+<span class="w">        </span><span class="c">!&gt; Required for dependencies that are obtained via the official registry.</span>
+<span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">namespace</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; The requested version of the dependency.</span>
+<span class="w">        </span><span class="c">!&gt; The latest version is used if not specified.</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">requested_version</span><span class="w"></span>
+
 <span class="w">        </span><span class="c">!&gt; Git descriptor</span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">git</span><span class="w"></span>
 
@@ -440,7 +490,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-07 07:53              </p>
+ on 2023-04-07 09:50              </p>
           </div>
         </div>
         <br>

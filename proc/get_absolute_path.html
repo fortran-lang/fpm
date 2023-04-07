@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>char &ndash; Fortran-lang/fpm</title>
+    <title>get_absolute_path &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -89,8 +89,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>char
-      <small>Interface</small>
+    <h1>get_absolute_path
+      <small>Subroutine</small>
       
     </h1>
       <div class="row" id="info-bar">
@@ -101,18 +101,18 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="<p> 0.1% of total for procedures.</p>Including implementation: 8 statements,  0.2% of total for procedures.">3 statements</a>
+               title=" 0.8% of total for procedures.">40 statements</a>
           </li>
 
             <li id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/versioning.f90"> Source File</a>
+              <a href="../src/fpm_os.F90"> Source File</a>
             </li>
         </ul>
         <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/versioning.f90.html'>versioning.f90</a></li>
-              <li><a href='../module/fpm_versioning.html'>fpm_versioning</a></li>
-          <li class="active">char</li>
+              <li><a href='../sourcefile/fpm_os.f90.html'>fpm_os.F90</a></li>
+              <li><a href='../module/fpm_os.html'>fpm_os</a></li>
+          <li class="active">get_absolute_path</li>
         </ol>
       </div>
     </div>
@@ -124,10 +124,10 @@
   </script>
 
   </div>
-
+  
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-        <div id="sidebar">
+      <div id="sidebar">
       <h3>Contents</h3>
   
   
@@ -147,78 +147,23 @@
   
   
   
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#modprocs-0">Module Procedures</a>
-        </h3>
-      </div>
-      <div id="modprocs-0" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../interface/char.html#moduleprocedure-as_string">as_string</a>
-        </div>
-      </div>
-    </div>
-
+  
 
 
   </div>
 
     </div>
-
+    
     <div class="col-md-9" id='text'>
-      <h2>public interface char</h2>
-      
+    <h2>public  subroutine get_absolute_path(path, absolute_path, error)  
+</h2>
+    
 
-      <section class="visible-xs visible-sm hidden-md">
-          <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#modprocs-1">Module Procedures</a>
-        </h3>
-      </div>
-      <div id="modprocs-1" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../interface/char.html#moduleprocedure-as_string">as_string</a>
-        </div>
-      </div>
-    </div>
+    <p>Determine the canonical, absolute path for the given path.
+Expands home folder (~) on both Unix and Windows.</p>
 
-
-
-      </section>
-      <br class="visible-xs visible-sm hidden-md">
-
-
-
-        <h2>Module Procedures</h2>
-            <div class="panel panel-default">
-    <div class="panel-heading codesum"><span class="anchor" id="proc-as_string"></span><h3>private  function as_string(self) result(string)  
-</h3></div>
-    <div class="panel-body">
-        
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
     <thead>
       <tr>
         <th>Type</th>
@@ -230,33 +175,93 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/version_t.html'>version_t</a>),
+              <span class="anchor" id="variable-path~7"></span>
+              character(len=*),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>self</strong></td>
+            <td><strong>path</strong></td>
             <td>
-                <p>Version number</p>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-absolute_path"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>absolute_path</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error~84"></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+                
             </td>
         </tr>
     </tbody>
   </table>
 
-    <h4>
-    Return Value
-    <small>character(len=:), allocatable</small>
-    </h4>
-    <p>Character representation of the version</p>
+    <br>
 
+    <section class="visible-xs visible-sm hidden-md">
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+
+    
+    
+
+    
+    
+
+
+    
+    
     </div>
   </div>
 
-</div>
-  </div>
       <hr>
     </div> <!-- /container -->
     <footer>
@@ -269,7 +274,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-07 07:53              </p>
+ on 2023-04-07 09:50              </p>
           </div>
         </div>
         <br>

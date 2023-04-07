@@ -17,8 +17,7 @@ use fpm_compiler, only: new_compiler, new_archiver, set_cpp_preprocessor_flags
 
 
 use fpm_sources, only: add_executable_sources, add_sources_from_dir
-use fpm_targets, only: targets_from_sources, &
-                        resolve_target_linking, build_target_t, build_target_ptr, &
+use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only : error_t, fatal_error, fpm_stop
@@ -33,10 +32,8 @@ public :: build_model, check_modules_for_duplicates
 
 contains
 
-
+!> Constructs a valid fpm model from command line settings and the toml manifest.
 subroutine build_model(model, settings, package, error)
-    ! Constructs a valid fpm model from command line settings and toml manifest
-    !
     type(fpm_model_t), intent(out) :: model
     type(fpm_build_settings), intent(in) :: settings
     type(package_config_t), intent(in) :: package
@@ -45,9 +42,7 @@ subroutine build_model(model, settings, package, error)
     integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
-    character(len=:), allocatable :: version
     logical :: has_cpp
-
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
 
@@ -117,8 +112,7 @@ subroutine build_model(model, settings, package, error)
                 features%implicit_external = dependency%fortran%implicit_external
                 features%source_form = dependency%fortran%source_form
             end associate
-            call package%version%to_string(version)
-            model%packages(i)%version = version
+            model%packages(i)%version = package%version%s()
 
             if (allocated(dependency%preprocess)) then
                 do j = 1, size(dependency%preprocess)
@@ -238,7 +232,6 @@ subroutine build_model(model, settings, package, error)
         endif
 
     endif
-
 
     if (settings%verbose) then
         write(*,*)'<INFO> BUILD_NAME: ',model%build_prefix
@@ -402,6 +395,7 @@ end subroutine check_module_names
 
 subroutine cmd_build(settings)
 type(fpm_build_settings), intent(in) :: settings
+
 type(package_config_t) :: package
 type(fpm_model_t) :: model
 type(build_target_ptr), allocatable :: targets(:)
@@ -411,17 +405,17 @@ integer :: i
 
 call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
-    call fpm_stop(1,'*cmd_build*:package error:'//error%message)
+    call fpm_stop(1,'*cmd_build* Package error: '//error%message)
 end if
 
 call build_model(model, settings, package, error)
 if (allocated(error)) then
-    call fpm_stop(1,'*cmd_build*:model error:'//error%message)
+    call fpm_stop(1,'*cmd_build* Model error: '//error%message)
 end if
 
 call targets_from_sources(targets, model, settings%prune, error)
 if (allocated(error)) then
-    call fpm_stop(1,'*cmd_build*:target error:'//error%message)
+    call fpm_stop(1,'*cmd_build* Target error: '//error%message)
 end if
 
 if(settings%list)then
@@ -457,17 +451,17 @@ subroutine cmd_run(settings,test)
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
-        call fpm_stop(1, '*cmd_run*:package error:'//error%message)
+        call fpm_stop(1, '*cmd_run* Package error: '//error%message)
     end if
 
     call build_model(model, settings%fpm_build_settings, package, error)
     if (allocated(error)) then
-        call fpm_stop(1, '*cmd_run*:model error:'//error%message)
+        call fpm_stop(1, '*cmd_run* Model error: '//error%message)
     end if
 
     call targets_from_sources(targets, model, settings%prune, error)
     if (allocated(error)) then
-        call fpm_stop(1, '*cmd_run*:targets error:'//error%message)
+        call fpm_stop(1, '*cmd_run* Targets error: '//error%message)
     end if
 
     if (test) then

@@ -52,10 +52,11 @@ public :: fpm_cmd_settings, &
 
 type, abstract :: fpm_cmd_settings
     character(len=:), allocatable :: working_dir
-    logical                      :: verbose=.true.
+    logical                       :: verbose=.true.
 end type
 
 integer,parameter :: ibug=4096
+
 type, extends(fpm_cmd_settings)  :: fpm_new_settings
     character(len=:),allocatable :: name
     logical                      :: with_executable=.false.

@@ -232,7 +232,6 @@ subroutine get_release_compile_flags(id, flags)
     integer(compiler_enum), intent(in) :: id
     character(len=:), allocatable, intent(out) :: flags
 
-
     select case(id)
     case default
         flags = ""
