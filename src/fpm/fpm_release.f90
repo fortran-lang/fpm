@@ -6,11 +6,6 @@ module fpm_release
     implicit none
     private
 
-#ifndef FPM_RELEASE_VERSION
-#define FPM_RELEASE_VERSION UNDEFINED
-#endif
-    character(len=*), parameter :: fpm_version_ID = "FPM_RELEASE_VERSION"
-
     public :: fpm_version
     public :: version_t
 
@@ -20,6 +15,27 @@ module fpm_release
     type(version_t) function fpm_version()
 
         type(error_t), allocatable :: error
+
+        ! Accept solution from https://stackoverflow.com/questions/31649691/stringify-macro-with-gnu-gfortran
+        ! which provides the "easiest" way to pass a macro to a string in Fortran complying with both
+        ! gfortran's "traditional" cpp and the standard cpp syntaxes
+
+#ifndef FPM_RELEASE_VERSION
+#  define FPM_RELEASE_VERSION UNDEFINED
+#endif
+
+#ifdef __GFORTRAN__ /* traditional-cpp stringification */
+#  define STRINGIFY_START(X) "&
+#  define STRINGIFY_END(X) &X"
+#else               /* default stringification */
+#  define STRINGIFY_(X) #X
+#  define STRINGIFY_START(X) &
+#  define STRINGIFY_END(X) STRINGIFY_(X)
+#endif
+
+        character (len=:), allocatable :: ver_string
+        ver_string = STRINGIFY_START(FPM_RELEASE_VERSION)
+        STRINGIFY_END(FPM_RELEASE_VERSION)
 
         call new_version(fpm_version,fpm_version_ID,error)
 
