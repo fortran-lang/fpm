@@ -1196,7 +1196,6 @@ contains
     !> will always have this metadata; a dependency from fpm.toml which has not been fetched yet
     !> may not have it
     if (allocated(cached%version) .and. allocated(manifest%version)) then
-      print *, cached%version%s(),' ',manifest%version%s()
       if (cached%version /= manifest%version) return
     end if
     if (allocated(cached%revision) .and. allocated(manifest%revision)) then

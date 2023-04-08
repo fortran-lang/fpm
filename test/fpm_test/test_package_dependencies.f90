@@ -262,7 +262,7 @@ contains
     type(toml_table) :: cache, manifest
     type(toml_table), pointer :: ptr
     type(toml_key), allocatable :: list(:)
-    type(dependency_tree_t) :: deps, manifest_deps
+    type(dependency_tree_t) :: cached, manifest_deps
     integer :: ii
 
     ! Create a dummy cache
@@ -283,12 +283,12 @@ contains
     call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
 
     ! Load into a dependency tree
-    call new_dependency_tree(deps)
-    call deps%load(cache, error)
+    call new_dependency_tree(cached)
+    call cached%load(cache, error)
     if (allocated(error)) return
     ! Mark all dependencies as "cached"
-    do ii=1,deps%ndep
-        deps%dep(ii)%cached = .true.
+    do ii=1,cached%ndep
+        cached%dep(ii)%cached = .true.
     end do
     call cache%destroy()
 
@@ -312,22 +312,23 @@ contains
     call manifest%destroy()
     if (allocated(error)) return
 
-    ! Add manifest dependencies
-    do ii = 1, manifest_deps%ndep
-      call deps%add(manifest_deps%dep(ii), error)
-      if (allocated(error)) return
+    ! Add cached dependencies afterwards; will flag those that need udpate
+    do ii=1,cached%ndep
+        cached%dep(ii)%cached = .true.
+        call manifest_deps%add(cached%dep(ii), error)
+        if (allocated(error)) return
     end do
 
     ! Test that all dependencies are flagged as "update"
-    if (.not. deps%dep(1)%update) then
+    if (.not. manifest_deps%dep(1)%update) then
       call test_failed(error, "Updated dependency (different version) not detected")
       return
     end if
-    if (.not. deps%dep(2)%update) then
+    if (.not. manifest_deps%dep(2)%update) then
       call test_failed(error, "Updated dependency (git address) not detected")
       return
     end if
-    if (.not. deps%dep(3)%update) then
+    if (.not. manifest_deps%dep(3)%update) then
       call test_failed(error, "Updated dependency (git rev) not detected")
       return
     end if
