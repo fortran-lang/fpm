@@ -308,8 +308,7 @@ contains
     call self%add(package, root, .true., error)
     if (allocated(error)) return
 
-    ! Before resolving all dependencies, check if we have cached ones
-    ! Do that after the package node dependencies are already sorted out into a tree
+    ! After resolving all dependencies, check if we have cached ones to avoid updates
     if (allocated(self%cache)) then
       call new_dependency_tree(cached, cache=self%cache)
       call cached%load(self%cache, error)
