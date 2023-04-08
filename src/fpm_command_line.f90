@@ -48,6 +48,7 @@ public :: fpm_cmd_settings, &
           fpm_test_settings, &
           fpm_update_settings, &
           fpm_clean_settings, &
+          fpm_publish_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
@@ -116,6 +117,10 @@ type, extends(fpm_cmd_settings)   :: fpm_clean_settings
     logical                       :: clean_call=.false.
 end type
 
+type, extends(fpm_build_settings) :: fpm_publish_settings
+    logical :: print_request = .false.
+end type
+
 character(len=:),allocatable :: name
 character(len=:),allocatable :: os_type
 character(len=ibug),allocatable :: names(:)
@@ -126,10 +131,10 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), help_update(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:), &
-                 & help_clean(:)
+                 & help_clean(:), help_publish(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
-&  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
+&  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish'  ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
     val_profile
@@ -474,6 +479,8 @@ contains
                    help_text=[character(len=widest) :: help_text, version_text]
                 case('clean' )
                    help_text=[character(len=widest) :: help_text, help_clean]
+                case('publish')
+                   help_text=[character(len=widest) :: help_text, help_publish]
                 case default
                    help_text=[character(len=widest) :: help_text, &
                    & '<ERROR> unknown help topic "'//trim(unnamed(i))//'"']
@@ -601,6 +608,37 @@ contains
             &   clean_skip=lget('skip'),     &
                 clean_call=lget('all'))
 
+        case('publish')
+            call set_args(common_args // compiler_args //'&
+            & --print-request F &
+            & --list F &
+            & --show-model F &
+            & --tests F &
+            & --', help_publish, version_text)
+
+            call check_build_vals()
+
+            c_compiler = sget('c-compiler')
+            cxx_compiler = sget('cxx-compiler')
+            archiver = sget('archiver')
+
+            cmd_settings = fpm_publish_settings( &
+            & print_request = lget('print-request'), &
+            & profile=val_profile,&
+            & prune=.not.lget('no-prune'), &
+            & compiler=val_compiler, &
+            & c_compiler=c_compiler, &
+            & cxx_compiler=cxx_compiler, &
+            & archiver=archiver, &
+            & flag=val_flag, &
+            & cflag=val_cflag, &
+            & cxxflag=val_cxxflag, &
+            & ldflag=val_ldflag, &
+            & list=lget('list'),&
+            & show_model=lget('show-model'),&
+            & build_tests=lget('tests'),&
+            & verbose=lget('verbose') )
+
         case default
 
             if(cmdarg.ne.''.and.which('fpm-'//cmdarg).ne.'')then
@@ -636,12 +674,8 @@ contains
     contains
 
     subroutine check_build_vals()
-        character(len=:), allocatable :: flags
-
         val_compiler=sget('compiler')
-        if(val_compiler=='') then
-            val_compiler='gfortran'
-        endif
+        if(val_compiler=='') val_compiler='gfortran'
 
         val_flag = " " // sget('flag')
         val_cflag = " " // sget('c-flag')
@@ -684,6 +718,7 @@ contains
    '  update    Update and manage project dependencies                      ', &
    '  install   Install project                                             ', &
    '  clean     Delete the build                                            ', &
+   '  publish   Publish package to the registry                             ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
@@ -704,6 +739,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
+   ' publish [--print-request]                                                      ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -1300,6 +1336,19 @@ contains
     'OPTIONS', &
     ' --skip           delete the build without prompting but skip dependencies.', &
     ' --all            delete the build without prompting including dependencies.', &
+    '' ]
+    help_publish=[character(len=80) :: &
+    'NAME', &
+    ' publish(1) - publish package to the registry', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm publish', &
+    '', &
+    'DESCRIPTION', &
+    ' Collect relevant source files and upload package to the registry.', &
+    '', &
+    'OPTIONS', &
+    ' --print-request           print request to console without publishing', &
     '' ]
      end subroutine set_help
 
