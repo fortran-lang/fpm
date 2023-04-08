@@ -286,17 +286,9 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     type(dependency_config_t) :: dependency
+    type(dependency_tree_t) :: cached
     character(len=*), parameter :: root = '.'
     integer :: id
-
-    if (allocated(self%cache)) then
-      call self%load(self%cache, error)
-      if (allocated(error)) return
-      ! Mark all dependencies as "cached"
-      do id=1,self%ndep
-          self%dep(id)%cached = .true.
-      end do
-    end if
 
     if (.not. exists(self%dep_dir)) then
       call mkdir(self%dep_dir)
@@ -315,6 +307,21 @@ contains
     ! Add the root project dependencies (depth 1)
     call self%add(package, root, .true., error)
     if (allocated(error)) return
+
+    ! Before resolving all dependencies, check if we have cached ones
+    ! Do that after the package node dependencies are already sorted out into a tree
+    if (allocated(self%cache)) then
+      call new_dependency_tree(cached, cache=self%cache)
+      call cached%load(self%cache, error)
+      if (allocated(error)) return
+
+      ! Skip root node
+      do id=2,cached%ndep
+          cached%dep(id)%cached = .true.
+          call self%add(cached%dep(id), error)
+          if (allocated(error)) return
+      end do
+    end if
 
     ! Now decent into the dependency tree, level for level
     do while (.not. self%finished())
@@ -430,14 +437,19 @@ contains
       ! Check if it needs to be updated
       id = self%find(dependency%name)
 
-      ! If this dependency was in the cache, and we're now requesting a different version,
-      ! Ensure it is marked for update. Otherwise, if we're just querying the same dependency
-      ! from a lower branch of the dependency tree, the existing one from the manifest has
-      ! priority
-      if (self%dep(id)%cached .and. dependency_has_changed(self%dep(id), dependency)) then
-        write (self%unit, out_fmt) "Dependency change detected:", dependency%name
-        self%dep(id) = dependency
-        self%dep(id)%update = .true.
+      ! If this dependency was in the cache, and we're now requesting a different version
+      ! in the manifest, ensure it is marked for update. Otherwise, if we're just querying
+      ! the same dependency from a lower branch of the dependency tree, the existing one from
+      ! the manifest has priority
+      if (dependency%cached) then
+        if (dependency_has_changed(dependency, self%dep(id))) then
+           write (self%unit, out_fmt) "Dependency change detected:", dependency%name
+           self%dep(id)%update = .true.
+        else
+           ! Store the cached one
+           self%dep(id) = dependency
+           self%dep(id)%update = .false.
+        endif
       end if
     else
       ! New dependency: add from scratch
@@ -1171,26 +1183,27 @@ contains
   end subroutine resize_dependency_node
 
   !> Check if a dependency node has changed
-  logical function dependency_has_changed(this, that) result(has_changed)
+  logical function dependency_has_changed(cached, manifest) result(has_changed)
     !> Two instances of the same dependency to be compared
-    type(dependency_node_t), intent(in) :: this, that
+    type(dependency_node_t), intent(in) :: cached, manifest
 
     has_changed = .true.
 
     !> All the following entities must be equal for the dependency to not have changed
-    if (manifest_has_changed(this, that)) return
+    if (manifest_has_changed(cached=cached, manifest=manifest)) return
 
     !> For now, only perform the following checks if both are available. A dependency in cache.toml
     !> will always have this metadata; a dependency from fpm.toml which has not been fetched yet
     !> may not have it
-    if (allocated(this%version) .and. allocated(that%version)) then
-      if (this%version /= that%version) return
+    if (allocated(cached%version) .and. allocated(manifest%version)) then
+      print *, cached%version%s(),' ',manifest%version%s()
+      if (cached%version /= manifest%version) return
     end if
-    if (allocated(this%revision) .and. allocated(that%revision)) then
-      if (this%revision /= that%revision) return
+    if (allocated(cached%revision) .and. allocated(manifest%revision)) then
+      if (cached%revision /= manifest%revision) return
     end if
-    if (allocated(this%proj_dir) .and. allocated(that%proj_dir)) then
-      if (this%proj_dir /= that%proj_dir) return
+    if (allocated(cached%proj_dir) .and. allocated(manifest%proj_dir)) then
+      if (cached%proj_dir /= manifest%proj_dir) return
     end if
 
     !> All checks passed: the two dependencies have no differences
