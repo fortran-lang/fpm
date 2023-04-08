@@ -45,6 +45,7 @@ contains
         & new_unittest("status-after-load", test_status), &
         & new_unittest("add-dependencies", test_add_dependencies), &
         & new_unittest("update-dependencies", test_update_dependencies), &
+        & new_unittest("do-not-update-dependencies", test_non_updated_dependencies), &
         & new_unittest("registry-dir-not-found", registry_dir_not_found, should_fail=.true.), &
         & new_unittest("no-versions-in-registry", no_versions_in_registry, should_fail=.true.), &
      & new_unittest("local-registry-specified-version-not-found", local_registry_specified_version_not_found, should_fail=.true.), &
@@ -253,6 +254,90 @@ contains
     end if
 
   end subroutine test_add_dependencies
+
+  subroutine test_non_updated_dependencies(error)
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    type(toml_table) :: cache, manifest
+    type(toml_table), pointer :: ptr
+    type(toml_key), allocatable :: list(:)
+    type(dependency_tree_t) :: cached, manifest_deps
+    integer :: ii
+
+    ! Create a dummy cache
+    cache = toml_table()
+    call add_table(cache, "dep1", ptr)
+    call set_value(ptr, "version", "1.1.0")
+    call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+    call add_table(cache, "dep2", ptr)
+    call set_value(ptr, "git", "https://gitlab.com/fortran-lang/lin2")
+    call set_value(ptr, "rev", "c0ffee")
+    call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+    call add_table(cache, "dep3", ptr)
+    call set_value(ptr, "git", "https://gitlab.com/fortran-lang/pkg3")
+    call set_value(ptr, "rev", "t4a")
+    call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+    call add_table(cache, "dep4", ptr)
+    call set_value(ptr, "version", "1.0.0")
+    call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+
+    ! Load into a dependency tree
+    call new_dependency_tree(cached)
+    call cached%load(cache, error)
+    if (allocated(error)) return
+    ! Mark all dependencies as "cached"
+    do ii=1,cached%ndep
+        cached%dep(ii)%cached = .true.
+    end do
+    call cache%destroy()
+
+    ! Create a dummy manifest, with different version
+    manifest = toml_table()
+    call add_table(manifest, "dep1", ptr)
+    call set_value(ptr, "version", "1.1.1")
+    call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+    call add_table(manifest, "dep2", ptr)
+    call set_value(ptr, "git", "https://gitlab.com/fortran-lang/lin4")
+    call set_value(ptr, "rev", "c0ffee")
+    call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+    call add_table(manifest, "dep3", ptr)
+    call set_value(ptr, "git", "https://gitlab.com/fortran-lang/pkg3")
+    call set_value(ptr, "rev", "t4a")
+    call set_value(ptr, "proj-dir", "fpm-tmp1-dir")
+
+    ! Load dependencies from manifest
+    call new_dependency_tree(manifest_deps)
+    call manifest_deps%load(manifest, error)
+    call manifest%destroy()
+    if (allocated(error)) return
+
+    ! Add cached dependencies afterwards; will flag those that need udpate
+    do ii=1,cached%ndep
+        cached%dep(ii)%cached = .true.
+        call manifest_deps%add(cached%dep(ii), error)
+        if (allocated(error)) return
+    end do
+
+    ! Test that dependencies 1-2 are flagged as "update"
+    if (.not. manifest_deps%dep(1)%update) then
+      call test_failed(error, "Updated dependency (different version) not detected")
+      return
+    end if
+    if (.not. manifest_deps%dep(2)%update) then
+      call test_failed(error, "Updated dependency (git address) not detected")
+      return
+    end if
+
+
+    ! Test that dependency 3 is flagged as "not update"
+    if (manifest_deps%dep(3)%update) then
+      call test_failed(error, "Updated dependency (git rev) detected, should not be")
+      return
+    end if
+
+  end subroutine test_non_updated_dependencies
 
   subroutine test_update_dependencies(error)
 
