@@ -118,11 +118,9 @@ contains
         close(iunit)
 
         !> Check same
-        if (SAME_TYPE_AS(self,copy)) then
-            if (.not.(self==copy)) then
-                call fatal_error(error,'serializable object failed TOML write/reread test')
-                return
-            end if
+        if (.not.(self==copy)) then
+            call fatal_error(error,'serializable object failed TOML write/reread test')
+            return
         end if
         deallocate(copy)
 

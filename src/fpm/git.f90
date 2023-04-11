@@ -2,6 +2,7 @@
 module fpm_git
     use fpm_error, only: error_t, fatal_error
     use fpm_filesystem, only : get_temp_filename, getline, join_path
+    use fpm_toml, only: serializable_t, toml_table, get_value
     implicit none
 
     public :: git_target_t
@@ -27,6 +28,9 @@ module fpm_git
         !> Commit hash
         integer :: revision = 203
 
+        !> Invalid descriptor
+        integer :: error = -999
+
     end type enum_descriptor
 
     !> Actual enumerator for descriptors
@@ -34,7 +38,7 @@ module fpm_git
 
 
     !> Description of an git target
-    type :: git_target_t
+    type, extends(serializable_t) :: git_target_t
 
         !> Kind of the git target
         integer :: descriptor = git_descriptor%default
@@ -52,6 +56,11 @@ module fpm_git
 
         !> Show information on instance
         procedure :: info
+
+        !> Serialization interface
+        procedure :: serializable_is_same => git_is_same
+        procedure :: dump_to_toml
+        procedure :: load_from_toml
 
     end type git_target_t
 
@@ -145,6 +154,30 @@ contains
                    this%object     == that%object
 
     end function git_target_eq
+
+    !> Check that two git targets are equal
+    logical function git_is_same(this,that)
+        class(git_target_t), intent(in) :: this
+        class(serializable_t), intent(in) :: that
+
+        git_is_same = .false.
+
+        select type (other=>that)
+           type is (git_target_t)
+
+              if (.not.(this%descriptor==other%descriptor)) return
+              if (.not.(this%url==other%url)) return
+              if (.not.(this%object==other%object)) return
+
+           class default
+              ! Not the same type
+              return
+        end select
+
+        !> All checks passed!
+        git_is_same = .true.
+
+    end function git_is_same
 
     !> Check that a cached dependency matches a manifest request
     logical function git_matches_manifest(cached,manifest)
@@ -296,5 +329,80 @@ contains
 
     end subroutine info
 
+    !> Dump dependency to toml table
+    subroutine dump_to_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(git_target_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        stop 'dump_to_toml not yet implemented for class git_target_t'
+
+    end subroutine dump_to_toml
+
+    !> Read dependency from toml table (no checks made at this stage)
+    subroutine load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(git_target_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        character(len=:), allocatable :: descriptor_name
+
+        call get_value(table, "descriptor", descriptor_name)
+        self%descriptor = parse_descriptor(descriptor_name)
+
+        if (self%descriptor==git_descriptor%error) then
+            call fatal_error(error,"invalid descriptor ID in TOML entry")
+            return
+        end if
+
+        !> Target URL of the git repository
+        call get_value(table, "url", self%url)
+
+        !> Additional descriptor of the git object
+        call get_value(table,"object", self%object)
+
+    end subroutine load_from_toml
+
+    !> Parse git descriptor identifier from a string
+    pure integer function parse_descriptor(name)
+        character(len=*), intent(in) :: name
+
+        select case (name)
+           case ("default");  parse_descriptor = git_descriptor%default
+           case ("branch");   parse_descriptor = git_descriptor%branch
+           case ("tag");      parse_descriptor = git_descriptor%tag
+           case ("revision"); parse_descriptor = git_descriptor%revision
+           case default;      parse_descriptor = git_descriptor%error
+        end select
+
+    end function parse_descriptor
+
+    !> Code git descriptor to a string
+    pure function descriptor_name(descriptor) result(name)
+       integer, intent(in) :: descriptor
+       character(len=:), allocatable :: name
+
+       select case (descriptor)
+          case (git_descriptor%default);   name = "default"
+          case (git_descriptor%branch);    name = "branch"
+          case (git_descriptor%tag);       name = "tag"
+          case (git_descriptor%revision);  name = "revision"
+          case default;                    name = "ERROR"
+       end select
+
+    end function descriptor_name
 
 end module fpm_git
