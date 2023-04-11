@@ -8,7 +8,7 @@
     <meta name="author" content="fortran-lang/fpm contributors" >
     <link rel="icon" href="../favicon.png">
 
-    <title>filter_library_targets &ndash; Fortran-lang/fpm</title>
+    <title>git_matches_manifest &ndash; Fortran-lang/fpm</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -89,8 +89,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>filter_library_targets
-      <small>Subroutine</small>
+    <h1>git_matches_manifest
+      <small>Function</small>
       
     </h1>
       <div class="row" id="info-bar">
@@ -101,18 +101,18 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.3% of total for procedures.">15 statements</a>
+               title=" 0.1% of total for procedures.">6 statements</a>
           </li>
 
             <li id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/fpm_targets.f90"> Source File</a>
+              <a href="../src/git.f90"> Source File</a>
             </li>
         </ul>
         <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></li>
-              <li><a href='../module/fpm_targets.html'>fpm_targets</a></li>
-          <li class="active">filter_library_targets</li>
+              <li><a href='../sourcefile/git.f90.html'>git.f90</a></li>
+              <li><a href='../module/fpm_git.html'>fpm_git</a></li>
+          <li class="active">git_matches_manifest</li>
         </ol>
       </div>
     </div>
@@ -151,7 +151,7 @@
     <div class="panel panel-primary">
       <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/filter_library_targets.html#src">filter_library_targets</a>
+        <a class="list-group-item" href="../proc/git_matches_manifest.html#src">git_matches_manifest</a>
       </div>
     </div>
 
@@ -161,10 +161,15 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine filter_library_targets(targets, list)  
+    <h2>public  function git_matches_manifest(cached, manifest)  
 </h2>
     
 
+    <p>Check that a cached dependency matches a manifest request</p>
+<p>The manifest dependency only contains partial information (what&rsquo;s requested),
+while the cached dependency always stores a commit hash because it&rsquo;s built
+after the repo is available (saved as git_descriptor%revision==revision).
+So, comparing against the descriptor is not reliable</p>
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -179,37 +184,44 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-targets~8"></span>
-              type(<a href='../type/build_target_ptr.html'>build_target_ptr</a>),
+              <span class="anchor" id="variable-cached"></span>
+              type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>targets</strong>(:)</td>
+            <td><strong>cached</strong></td>
             <td>
-                
+                <p>Two input git targets</p>
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-list~5"></span>
-              type(<a href='../type/string_t.html'>string_t</a>),
+              <span class="anchor" id="variable-manifest~2"></span>
+              type(<a href='../type/git_target_t.html'>git_target_t</a>),
             </td>
-<td>intent(out),</td>
+<td>intent(in)</td>
               <td></td>            <td>
-              allocatable
+              
             </td>
             <td>::</td>
-            <td><strong>list</strong>(:)</td>
+            <td><strong>manifest</strong></td>
             <td>
-                
+                <p>Two input git targets</p>
             </td>
         </tr>
     </tbody>
   </table>
 
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-git_matches_manifest"></span>
+          logical
+        </small>
+      </h3>
+      
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
@@ -236,7 +248,7 @@
     <div class="panel panel-primary">
       <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
       <div class="list-group">
-        <a class="list-group-item" href="../proc/filter_library_targets.html#src">filter_library_targets</a>
+        <a class="list-group-item" href="../proc/git_matches_manifest.html#src">git_matches_manifest</a>
       </div>
     </div>
 
@@ -255,23 +267,21 @@
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">filter_library_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">build_target_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">targets</span><span class="p">(:)</span><span class="w"></span>
-<span class="w">    </span><span class="k">type</span><span class="p">(</span><span class="n">string_t</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">list</span><span class="p">(:)</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="kt">logical </span><span class="k">function </span><span class="n">git_matches_manifest</span><span class="p">(</span><span class="n">cached</span><span class="p">,</span><span class="n">manifest</span><span class="p">)</span><span class="w"></span>
 
-<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="w"></span>
+<span class="w">        </span><span class="c">!&gt; Two input git targets</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">git_target_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cached</span><span class="p">,</span><span class="n">manifest</span><span class="w"></span>
 
-<span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
-<span class="w">    </span><span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">list</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">target_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FPM_TARGET_ARCHIVE</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">list</span><span class="p">))</span><span class="w"> </span><span class="k">call </span><span class="n">resize</span><span class="p">(</span><span class="n">list</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="w">            </span><span class="n">list</span><span class="p">(</span><span class="n">n</span><span class="p">)%</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">targets</span><span class="p">(</span><span class="n">i</span><span class="p">)%</span><span class="n">ptr</span><span class="p">%</span><span class="n">output_file</span><span class="w"></span>
-<span class="w">        </span><span class="k">end if</span>
-<span class="k">    end do</span>
-<span class="k">    call </span><span class="n">resize</span><span class="p">(</span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"></span>
-<span class="k">end subroutine </span><span class="n">filter_library_targets</span><span class="w"></span>
+<span class="w">        </span><span class="n">git_matches_manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cached</span><span class="p">%</span><span class="n">url</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">url</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">git_matches_manifest</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; The manifest dependency only contains partial information (what&#39;s requested),</span>
+<span class="w">        </span><span class="c">!&gt; while the cached dependency always stores a commit hash because it&#39;s built</span>
+<span class="w">        </span><span class="c">!&gt; after the repo is available (saved as git_descriptor%revision==revision).</span>
+<span class="w">        </span><span class="c">!&gt; So, comparing against the descriptor is not reliable</span>
+<span class="w">        </span><span class="n">git_matches_manifest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cached</span><span class="p">%</span><span class="n">object</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">manifest</span><span class="p">%</span><span class="n">object</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">end function </span><span class="n">git_matches_manifest</span><span class="w"></span>
 </pre></div>
 
     </section>
