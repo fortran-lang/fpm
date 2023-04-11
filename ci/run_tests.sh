@@ -204,9 +204,6 @@ popd
 # test dependency priority
 pushd dependency_priority
 
-# temporaray: add more output
-"$fpm" --version
-
 # first build should run OK
 EXIT_CODE=0
 "$fpm" run || EXIT_CODE=$?
