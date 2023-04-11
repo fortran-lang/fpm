@@ -26,31 +26,41 @@ module fpm_toml
               toml_error, toml_serialize, toml_load, check_keys
 
     !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
-    type, abstract, public :: fpm_serializable
+    type, abstract, public :: serializable_t
 
         contains
 
-        !> Dump to TOML table
-        procedure(fpm_to_toml), deferred :: dump_to_toml
-
-        !> Dump TOML to unit/file
-        procedure, non_overridable :: dump_to_file
-        procedure, non_overridable :: dump_to_unit
-
+        !> Dump to TOML table, unit, file
+        procedure(to_toml), deferred, private :: dump_to_toml
+        procedure, non_overridable, private :: dump_to_file
+        procedure, non_overridable, private :: dump_to_unit
         generic :: dump => dump_to_toml, dump_to_file, dump_to_unit
 
-    end type fpm_serializable
+        !> Load from TOML table, unit, file
+        procedure(from_toml), deferred, private :: load_from_toml
+        procedure, non_overridable, private :: load_from_file
+        procedure, non_overridable, private :: load_from_unit
+        generic :: load => load_from_toml, load_from_file, load_from_unit
+
+        !> Serializable entities need a way to check that they're equal
+        procedure(is_equal), deferred, private :: serializable_is_same
+        generic :: operator(==) => serializable_is_same
+
+        !> Test load/write roundtrip
+        procedure, non_overridable :: test_serialization
+
+    end type serializable_t
 
 
     abstract interface
 
       !> Write object to TOML datastructure
-      subroutine fpm_to_toml(self, table, error)
-        import fpm_serializable,toml_table,error_t
+      subroutine to_toml(self, table, error)
+        import serializable_t,toml_table,error_t
         implicit none
 
-        !> Instance of the dependency tree
-        class(fpm_serializable), intent(inout) :: self
+        !> Instance of the serializable object
+        class(serializable_t), intent(inout) :: self
 
         !> Data structure
         type(toml_table), intent(inout) :: table
@@ -58,17 +68,71 @@ module fpm_toml
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-      end subroutine fpm_to_toml
+      end subroutine to_toml
+
+      !> Read dependency tree from TOML data structure
+      subroutine from_toml(self, table, error)
+        import serializable_t,toml_table,error_t
+        implicit none
+
+        !> Instance of the serializable object
+        class(serializable_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+      end subroutine from_toml
+
+      !> Compare two serializable objects
+      logical function is_equal(this,that)
+         import serializable_t
+         class(serializable_t), intent(in) :: this,that
+      end function is_equal
 
     end interface
 
 contains
 
+    !> Test serialization of a serializable object
+    subroutine test_serialization(self, error)
+        class(serializable_t), intent(inout) :: self
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: iunit
+        class(serializable_t), allocatable :: copy
+
+        open(newunit=iunit,form='formatted',status='scratch')
+
+        !> Dump to scratch file
+        call self%dump(iunit, error)
+        if (allocated(error)) return
+
+        !> Load from scratch file
+        rewind(iunit)
+        allocate(copy,mold=self)
+        call self%load(iunit,error)
+        if (allocated(error)) return
+        close(iunit)
+
+        !> Check same
+        if (SAME_TYPE_AS(self,copy)) then
+            if (.not.(self==copy)) then
+                call fatal_error(error,'serializable object failed TOML write/reread test')
+                return
+            end if
+        end if
+        deallocate(copy)
+
+    end subroutine test_serialization
+
 
     !> Write serializable object to a formatted Fortran unit
     subroutine dump_to_unit(self, unit, error)
         !> Instance of the dependency tree
-        class(fpm_serializable), intent(inout) :: self
+        class(serializable_t), intent(inout) :: self
         !> Formatted unit
         integer, intent(in) :: unit
         !> Error handling
@@ -88,7 +152,7 @@ contains
     !> Write serializable object to file
     subroutine dump_to_file(self, file, error)
         !> Instance of the dependency tree
-        class(fpm_serializable), intent(inout) :: self
+        class(serializable_t), intent(inout) :: self
         !> File name
         character(len=*), intent(in) :: file
         !> Error handling
@@ -102,6 +166,51 @@ contains
         if (allocated(error)) return
 
     end subroutine dump_to_file
+
+    !> Read dependency tree from file
+    subroutine load_from_file(self, file, error)
+        !> Instance of the dependency tree
+        class(serializable_t), intent(inout) :: self
+        !> File name
+        character(len=*), intent(in) :: file
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+        logical :: exist
+
+        inquire (file=file, exist=exist)
+        if (.not. exist) return
+
+        open (file=file, newunit=unit)
+        call self%load(unit, error)
+        close (unit)
+    end subroutine load_from_file
+
+    !> Read dependency tree from file
+    subroutine load_from_unit(self, unit, error)
+        !> Instance of the dependency tree
+        class(serializable_t), intent(inout) :: self
+        !> File name
+        integer, intent(in) :: unit
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_error), allocatable :: parse_error
+        type(toml_table), allocatable :: table
+
+        call toml_load(table, unit, error=parse_error)
+
+        if (allocated(parse_error)) then
+          allocate (error)
+          call move_alloc(parse_error%message, error%message)
+          return
+        end if
+
+        call self%load(table, error)
+        if (allocated(error)) return
+
+    end subroutine load_from_unit
 
     !> Process the configuration file to a TOML data structure
     subroutine read_package_file(table, manifest, error)
