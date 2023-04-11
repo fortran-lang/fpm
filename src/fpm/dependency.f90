@@ -310,7 +310,7 @@ contains
 
     ! After resolving all dependencies, check if we have cached ones to avoid updates
     if (allocated(self%cache)) then
-      call new_dependency_tree(cached, verbosity=2,cache=self%cache)
+      call new_dependency_tree(cached, verbosity=self%verbosity,cache=self%cache)
       call cached%load(self%cache, error)
       if (allocated(error)) return
 
@@ -601,10 +601,6 @@ contains
     manifest = join_path(proj_dir, "fpm.toml")
     call get_package_data(package, manifest, error)
     if (allocated(error)) return
-
-    print *, 'dependency',dependency%name,': fetch=',fetch,' allocated(git)=',allocated(dependency%git)
-    print *, ' proj_dir=',proj_dir,' fetch=',fetch
-
 
     call dependency%register(package, proj_dir, fetch, revision, error)
     if (allocated(error)) return
@@ -960,10 +956,6 @@ contains
 
     if (update) self%update = update
     self%done = .true.
-
-    print *, 'register: set '//self%name//' for update, has revision? ',present(revision),&
-    ' fetch? ',fetch,' set update? ',self%update
-    if (present(revision)) print *, ' git object=',self%git%object,' revision=',revision
 
   end subroutine register
 

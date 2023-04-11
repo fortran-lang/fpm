@@ -217,19 +217,13 @@ test $EXIT_CODE -eq 0
 # Build again, should update nothing
 "$fpm" build --verbose > build.log
 if [[ -n "$(grep Update build.log)" ]]; then
-  
-  cat build.log;
-
   echo "Some dependencies were updated that should not be";
   exit 1;
 fi
 
-# Request update, should update oth
+# Request update --clean, should update all dependencies
 "$fpm" update --clean --verbose > update.log
 if [[ -z "$(grep Update update.log)" ]]; then
-
-  cat update.log;
-
   echo "No updated dependencies after 'fpm update --clean'";
   exit 1;
 fi
