@@ -118,6 +118,7 @@ type, extends(fpm_cmd_settings)   :: fpm_clean_settings
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
+    logical :: print_package_version = .false.
     logical :: print_request = .false.
 end type
 
@@ -610,6 +611,7 @@ contains
 
         case('publish')
             call set_args(common_args // compiler_args //'&
+            & --print-package-version F &
             & --print-request F &
             & --list F &
             & --show-model F &
@@ -623,6 +625,7 @@ contains
             archiver = sget('archiver')
 
             cmd_settings = fpm_publish_settings( &
+            & print_package_version = lget('print-package-version'), &
             & print_request = lget('print-request'), &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
@@ -739,7 +742,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--print-request]                                                      ', &
+   ' publish [--print-package-version] [--print-request]                            ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -1348,6 +1351,7 @@ contains
     ' Collect relevant source files and upload package to the registry.', &
     '', &
     'OPTIONS', &
+    ' --print-package-version   print package version to console without publishing', &
     ' --print-request           print request to console without publishing', &
     '' ]
      end subroutine set_help
