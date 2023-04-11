@@ -454,6 +454,7 @@ contains
       ! New dependency: add from scratch
       self%ndep = self%ndep + 1
       self%dep(self%ndep) = dependency
+      self%dep(self%ndep)%update = .false.
     end if
 
   end subroutine add_dependency_node
@@ -948,9 +949,8 @@ contains
     if (allocated(self%git) .and. present(revision)) then
       self%revision = revision
       if (.not. fetch) then
-        ! Change in revision ID was checked already. Only update if git information is missing
-        ! git object is HEAD always allows an update
-        update = .not. allocated(self%git%object)
+        ! Change in revision ID was checked already. Only update if ALL git information is missing
+        update = .not. allocated(self%git%url)
       end if
     end if
 
