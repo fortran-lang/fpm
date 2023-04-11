@@ -961,7 +961,8 @@ contains
     if (update) self%update = update
     self%done = .true.
 
-    print *, 'register: set '//self%name//' for update, has revision? ',present(revision),' fetch? ',fetch,' set update? ',self%update
+    print *, 'register: set '//self%name//' for update, has revision? ',present(revision),&
+    ' fetch? ',fetch,' set update? ',self%update
     if (present(revision)) print *, ' git object=',self%git%object,' revision=',revision
 
   end subroutine register
