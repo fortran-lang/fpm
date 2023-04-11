@@ -60,6 +60,9 @@ module fpm_git
         module procedure git_target_eq
     end interface
 
+    !> Common output format for writing to the command line
+    character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
+
 contains
 
 
@@ -147,19 +150,27 @@ contains
     end function git_target_eq
 
     !> Check that a cached dependency matches a manifest request
-    logical function git_matches_manifest(cached,manifest)
+    logical function git_matches_manifest(cached,manifest,verbosity,iunit)
 
         !> Two input git targets
         type(git_target_t), intent(in) :: cached,manifest
 
+        integer, intent(in) :: verbosity,iunit
+
         git_matches_manifest = cached%url == manifest%url
-        if (.not.git_matches_manifest) return
+        if (.not.git_matches_manifest) then
+            if (verbosity>1) write(iunit,out_fmt) "GIT URL has changed: ",cached%url," vs. ", manifest%url
+            return
+        endif
 
         !> The manifest dependency only contains partial information (what's requested),
         !> while the cached dependency always stores a commit hash because it's built
         !> after the repo is available (saved as git_descriptor%revision==revision).
         !> So, comparing against the descriptor is not reliable
         git_matches_manifest = cached%object == manifest%object
+        if (.not.git_matches_manifest) then
+            if (verbosity>1) write(iunit,out_fmt) "GIT OBJECT has changed: ",cached%object," vs. ", manifest%object
+        end if
 
     end function git_matches_manifest
 

@@ -310,7 +310,7 @@ contains
 
     ! After resolving all dependencies, check if we have cached ones to avoid updates
     if (allocated(self%cache)) then
-      call new_dependency_tree(cached, cache=self%cache)
+      call new_dependency_tree(cached, verbosity=2,cache=self%cache)
       call cached%load(self%cache, error)
       if (allocated(error)) return
 
@@ -441,7 +441,7 @@ contains
       ! the same dependency from a lower branch of the dependency tree, the existing one from
       ! the manifest has priority
       if (dependency%cached) then
-        if (dependency_has_changed(dependency, self%dep(id))) then
+        if (dependency_has_changed(dependency, self%dep(id), self%verbosity, self%unit)) then
            if (self%verbosity>0) write (self%unit, out_fmt) "Dependency change detected:", dependency%name
            self%dep(id)%update = .true.
         else
@@ -1182,26 +1182,44 @@ contains
   end subroutine resize_dependency_node
 
   !> Check if a dependency node has changed
-  logical function dependency_has_changed(cached, manifest) result(has_changed)
+  logical function dependency_has_changed(cached, manifest, verbosity, iunit) result(has_changed)
     !> Two instances of the same dependency to be compared
     type(dependency_node_t), intent(in) :: cached, manifest
+
+    !> Log verbosity
+    integer, intent(in) :: verbosity, iunit
 
     has_changed = .true.
 
     !> All the following entities must be equal for the dependency to not have changed
-    if (manifest_has_changed(cached=cached, manifest=manifest)) return
+    if (manifest_has_changed(cached=cached, manifest=manifest, verbosity=verbosity, iunit=iunit)) return
 
     !> For now, only perform the following checks if both are available. A dependency in cache.toml
     !> will always have this metadata; a dependency from fpm.toml which has not been fetched yet
     !> may not have it
     if (allocated(cached%version) .and. allocated(manifest%version)) then
-      if (cached%version /= manifest%version) return
+      if (cached%version /= manifest%version) then
+         if (verbosity>1) write(iunit,out_fmt) "VERSION has changed: "//cached%version%s()//" vs. "//manifest%version%s()
+         return
+      endif
+    else
+       if (verbosity>1) write(iunit,out_fmt) "VERSION has changed presence "
     end if
     if (allocated(cached%revision) .and. allocated(manifest%revision)) then
-      if (cached%revision /= manifest%revision) return
+      if (cached%revision /= manifest%revision) then
+        if (verbosity>1) write(iunit,out_fmt) "REVISION has changed: "//cached%revision//" vs. "//manifest%revision
+        return
+      endif
+    else
+      if (verbosity>1) write(iunit,out_fmt) "REVISION has changed presence "
     end if
     if (allocated(cached%proj_dir) .and. allocated(manifest%proj_dir)) then
-      if (cached%proj_dir /= manifest%proj_dir) return
+      if (cached%proj_dir /= manifest%proj_dir) then
+        if (verbosity>1) write(iunit,out_fmt) "PROJECT DIR has changed: "//cached%proj_dir//" vs. "//manifest%proj_dir
+        return
+      endif
+    else
+      if (verbosity>1) write(iunit,out_fmt) "PROJECT DIR has changed presence "
     end if
 
     !> All checks passed: the two dependencies have no differences
