@@ -602,6 +602,8 @@ contains
     call get_package_data(package, manifest, error)
     if (allocated(error)) return
 
+    print *, 'dependency',dependency%name,': fetch=',fetch,' allocated(git)=',allocated(dependency%git),' proj_dir=',proj_dir,' fetch=',fetch
+
     call dependency%register(package, proj_dir, fetch, revision, error)
     if (allocated(error)) return
 
@@ -960,8 +962,8 @@ contains
     self%update = update
     self%done = .true.
 
-    if (self%update) print *, 'register: set '//self%name//' for update, has revision? ',present(revision),' fetch? ',fetch
-    if (self%update .and. present(revision)) print *, ' git object=',self%git%object,' revision=',revision
+    print *, 'register: set '//self%name//' for update, has revision? ',present(revision),' fetch? ',fetch,' set update? ',self%update
+    if (present(revision)) print *, ' git object=',self%git%object,' revision=',revision
 
   end subroutine register
 
