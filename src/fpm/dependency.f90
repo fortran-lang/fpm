@@ -602,7 +602,8 @@ contains
     call get_package_data(package, manifest, error)
     if (allocated(error)) return
 
-    print *, 'dependency',dependency%name,': fetch=',fetch,' allocated(git)=',allocated(dependency%git),' proj_dir=',proj_dir,' fetch=',fetch
+    print *, 'dependency',dependency%name,': fetch=',fetch,' allocated(git)=',allocated(dependency%git)
+    print *, ' proj_dir=',proj_dir,' fetch=',fetch
 
 
     call dependency%register(package, proj_dir, fetch, revision, error)
