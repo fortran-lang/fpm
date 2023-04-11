@@ -960,6 +960,9 @@ contains
     self%update = update
     self%done = .true.
 
+    if (self%update) print *, 'register: set '//self%name//' for update, has revision? ',present(revision),' fetch? ',fetch
+    if (self%update .and. present(revision)) print *, ' git object=',self%git%object,' revision=',revision
+
   end subroutine register
 
   !> Read dependency tree from file
