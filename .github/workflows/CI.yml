@@ -135,6 +135,8 @@ jobs:
         VERSION=$(echo ${{ github.ref }} | cut -dv -f2)
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         FPM_VERSION=$(${{ env.FPM }} --version | grep -o '${{ env.REGEX }}')
+        echo "git-based version = $VERSION"
+        echo "fpm-based version = $FPM_VERSION"        
         [ "$VERSION" = "$FPM_VERSION" ]
       env:
         REGEX: '[0-9]\{1,4\}\.[0-9]\{1,4\}\.[0-9]\{1,4\}'
