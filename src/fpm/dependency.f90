@@ -454,6 +454,7 @@ contains
       ! New dependency: add from scratch
       self%ndep = self%ndep + 1
       self%dep(self%ndep) = dependency
+      self%dep(self%ndep)%update = .false.
     end if
 
   end subroutine add_dependency_node
