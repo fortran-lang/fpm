@@ -201,6 +201,10 @@ EXIT_CODE=0
 test $EXIT_CODE -eq 1
 popd
 
+# test dependency priority
+pushd dependency_priority
+"$fpm" run 
+popd
 
 # Cleanup
 rm -rf ./*/build
