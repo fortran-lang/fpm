@@ -442,7 +442,7 @@ contains
       ! the manifest has priority
       if (dependency%cached) then
         if (dependency_has_changed(dependency, self%dep(id))) then
-           write (self%unit, out_fmt) "Dependency change detected:", dependency%name
+           if (self%verbosity>0) write (self%unit, out_fmt) "Dependency change detected:", dependency%name
            self%dep(id)%update = .true.
         else
            ! Store the cached one
@@ -496,7 +496,7 @@ contains
 
     associate (dep => self%dep(id))
       if (allocated(dep%git) .and. dep%update) then
-        write (self%unit, out_fmt) "Update:", dep%name
+        if (self%verbosity>0) write (self%unit, out_fmt) "Update:", dep%name
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
         if (allocated(error)) return
