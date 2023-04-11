@@ -118,8 +118,8 @@ type, extends(fpm_cmd_settings)   :: fpm_clean_settings
 end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
-    logical :: print_package_version = .false.
-    logical :: print_request = .false.
+    logical :: show_package_version = .false.
+    logical :: show_request = .false.
 end type
 
 character(len=:),allocatable :: name
@@ -611,8 +611,8 @@ contains
 
         case('publish')
             call set_args(common_args // compiler_args //'&
-            & --print-package-version F &
-            & --print-request F &
+            & --show-package-version F &
+            & --show-request F &
             & --list F &
             & --show-model F &
             & --tests F &
@@ -625,8 +625,8 @@ contains
             archiver = sget('archiver')
 
             cmd_settings = fpm_publish_settings( &
-            & print_package_version = lget('print-package-version'), &
-            & print_request = lget('print-request'), &
+            & show_package_version = lget('show-package-version'), &
+            & show_request = lget('show-request'), &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
@@ -742,7 +742,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--print-package-version] [--print-request]                            ', &
+   ' publish [--show-package-version] [--show-request]                            ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -1351,8 +1351,8 @@ contains
     ' Collect relevant source files and upload package to the registry.', &
     '', &
     'OPTIONS', &
-    ' --print-package-version   print package version to console without publishing', &
-    ' --print-request           print request to console without publishing', &
+    ' --show-package-version   show package version without publishing', &
+    ' --show-request           show request without publishing', &
     '' ]
      end subroutine set_help
 

@@ -30,12 +30,12 @@ contains
     if (size(model%deps%dep) < 1) call fpm_stop(1, 'Root package not found.')
     version = model%deps%dep(1)%version
 
-    if (settings%print_package_version) then
+    if (settings%show_package_version) then
       print *, version%s(); return
     end if
 
-    if (settings%print_request) then
-      print *, 'Print JSON fpm ...'
+    if (settings%show_request) then
+      print *, 'Show JSON ...'
     else
       print *, 'Start publishing ...'
     end if
