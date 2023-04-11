@@ -454,7 +454,6 @@ contains
       ! New dependency: add from scratch
       self%ndep = self%ndep + 1
       self%dep(self%ndep) = dependency
-      self%dep(self%ndep)%update = .false.
     end if
 
   end subroutine add_dependency_node
@@ -577,6 +576,7 @@ contains
 
     if (dependency%done) return
 
+    fetch = .false.
     if (allocated(dependency%proj_dir)) then
       proj_dir = dependency%proj_dir
     else if (allocated(dependency%path)) then
@@ -603,6 +603,7 @@ contains
     if (allocated(error)) return
 
     print *, 'dependency',dependency%name,': fetch=',fetch,' allocated(git)=',allocated(dependency%git),' proj_dir=',proj_dir,' fetch=',fetch
+
 
     call dependency%register(package, proj_dir, fetch, revision, error)
     if (allocated(error)) return
@@ -950,16 +951,13 @@ contains
     if (allocated(self%git) .and. present(revision)) then
       self%revision = revision
       if (.not. fetch) then
+        ! Change in revision ID was checked already. Only update if git information is missing
         ! git object is HEAD always allows an update
         update = .not. allocated(self%git%object)
-        if (.not. update) then
-          ! allow update in case the revision does not match the requested object
-          update = revision /= self%git%object
-        end if
       end if
     end if
 
-    self%update = update
+    if (update) self%update = update
     self%done = .true.
 
     print *, 'register: set '//self%name//' for update, has revision? ',present(revision),' fetch? ',fetch,' set update? ',self%update
