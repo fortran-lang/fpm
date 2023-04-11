@@ -2,7 +2,7 @@
 module fpm_git
     use fpm_error, only: error_t, fatal_error
     use fpm_filesystem, only : get_temp_filename, getline, join_path
-    use fpm_toml, only: serializable_t, toml_table, get_value
+    use fpm_toml, only: serializable_t, toml_table, get_value, set_value
     implicit none
 
     public :: git_target_t
@@ -341,7 +341,24 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        stop 'dump_to_toml not yet implemented for class git_target_t'
+        integer :: ierr
+
+        call set_value(table, "descriptor", descriptor_name(self%descriptor))
+        if (allocated(self%url)) then
+            call set_value(table, "url", self%url, ierr)
+            if (ierr/=0) then
+                call fatal_error(error,'git_target_t: cannot set url in TOML table')
+                return
+            end if
+        endif
+
+        if (allocated(self%object)) then
+            call set_value(table, "object", self%object, ierr)
+            if (ierr/=0) then
+                call fatal_error(error,'git_target_t: cannot set object in TOML table')
+                return
+            end if
+        endif
 
     end subroutine dump_to_toml
 
@@ -373,6 +390,9 @@ contains
 
         !> Additional descriptor of the git object
         call get_value(table,"object", self%object)
+
+        call info(self,unit=6,verbosity=10)
+
 
     end subroutine load_from_toml
 

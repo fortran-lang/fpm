@@ -97,8 +97,9 @@ module fpm_toml
 contains
 
     !> Test serialization of a serializable object
-    subroutine test_serialization(self, error)
+    subroutine test_serialization(self, message, error)
         class(serializable_t), intent(inout) :: self
+        character(len=*), intent(in) :: message
         type(error_t), allocatable, intent(out) :: error
 
         integer :: iunit
@@ -113,13 +114,13 @@ contains
         !> Load from scratch file
         rewind(iunit)
         allocate(copy,mold=self)
-        call self%load(iunit,error)
+        call copy%load(iunit,error)
         if (allocated(error)) return
         close(iunit)
 
         !> Check same
         if (.not.(self==copy)) then
-            call fatal_error(error,'serializable object failed TOML write/reread test')
+            call fatal_error(error,'serializable object failed TOML write/reread test: '//trim(message))
             return
         end if
         deallocate(copy)
