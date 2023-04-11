@@ -25,7 +25,83 @@ module fpm_toml
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
               toml_error, toml_serialize, toml_load, check_keys
 
+    !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
+    type, abstract, public :: fpm_serializable
+
+        contains
+
+        !> Dump to TOML table
+        procedure(fpm_to_toml), deferred :: dump_to_toml
+
+        !> Dump TOML to unit/file
+        procedure, non_overridable :: dump_to_file
+        procedure, non_overridable :: dump_to_unit
+
+        generic :: dump => dump_to_toml, dump_to_file, dump_to_unit
+
+    end type fpm_serializable
+
+
+    abstract interface
+
+      !> Write object to TOML datastructure
+      subroutine fpm_to_toml(self, table, error)
+        import fpm_serializable,toml_table,error_t
+        implicit none
+
+        !> Instance of the dependency tree
+        class(fpm_serializable), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+      end subroutine fpm_to_toml
+
+    end interface
+
 contains
+
+
+    !> Write serializable object to a formatted Fortran unit
+    subroutine dump_to_unit(self, unit, error)
+        !> Instance of the dependency tree
+        class(fpm_serializable), intent(inout) :: self
+        !> Formatted unit
+        integer, intent(in) :: unit
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table) :: table
+
+        table = toml_table()
+        call self%dump(table, error)
+
+        write (unit, '(a)') toml_serialize(table)
+
+        call table%destroy()
+
+    end subroutine dump_to_unit
+
+    !> Write serializable object to file
+    subroutine dump_to_file(self, file, error)
+        !> Instance of the dependency tree
+        class(fpm_serializable), intent(inout) :: self
+        !> File name
+        character(len=*), intent(in) :: file
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: unit
+
+        open (file=file, newunit=unit)
+        call self%dump(unit, error)
+        close (unit)
+        if (allocated(error)) return
+
+    end subroutine dump_to_file
 
     !> Process the configuration file to a TOML data structure
     subroutine read_package_file(table, manifest, error)
