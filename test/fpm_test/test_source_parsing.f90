@@ -117,6 +117,8 @@ contains
             return
         end if
 
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
     end subroutine test_modules_used
 
 
@@ -184,6 +186,8 @@ contains
             return
         end if
 
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
     end subroutine test_intrinsic_modules_used
 
 
@@ -241,6 +245,8 @@ contains
             return
         end if
 
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
     end subroutine test_include_stmt
 
     !> Try to parse a simple fortran program
@@ -295,6 +301,8 @@ contains
             call test_failed(error,'Missing module in modules_used')
             return
         end if
+
+        call f_source%test_serialization('srcfile_t: serialization', error)
 
     end subroutine test_program
 
@@ -378,6 +386,8 @@ contains
             return
         end if
 
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
     end subroutine test_module
 
 
@@ -426,6 +436,8 @@ contains
             call test_failed(error,'Incorrect number of modules_used - expecting zero')
             return
         end if
+
+        call f_source%test_serialization('srcfile_t: serialization', error)
 
     end subroutine test_module_with_subprogram
 
@@ -492,6 +504,8 @@ contains
             return
         end if
 
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
     end subroutine test_module_end_stmt
 
 
@@ -539,6 +553,8 @@ contains
             call test_failed(error,'Incorrect number of modules_used - expecting zero')
             return
         end if
+
+        call f_source%test_serialization('srcfile_t: serialization', error)
 
     end subroutine test_module_with_c_api
 
@@ -603,6 +619,8 @@ contains
             return
         end if
 
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
     end subroutine test_program_with_module
 
 
@@ -659,6 +677,8 @@ contains
             call test_failed(error,'Missing parent module in modules_used')
             return
         end if
+
+        call f_source%test_serialization('srcfile_t: serialization', error)
 
     end subroutine test_submodule
 
@@ -717,6 +737,8 @@ contains
             return
         end if
 
+        call f_source%test_serialization('srcfile_t: serialization', error)
+
     end subroutine test_submodule_ancestor
 
 
@@ -764,6 +786,8 @@ contains
             call test_failed(error,'Missing module in modules_used')
             return
         end if
+
+        call f_source%test_serialization('srcfile_t: serialization', error)
 
     end subroutine test_subprogram
 
@@ -834,6 +858,8 @@ contains
             call test_failed(error,'Missing file in include_dependencies')
             return
         end if
+
+        call f_source%test_serialization('srcfile_t: serialization', error)
 
     end subroutine test_csource
 
