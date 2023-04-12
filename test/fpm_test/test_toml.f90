@@ -3,7 +3,8 @@ module test_toml
     use testsuite, only : new_unittest, unittest_t, error_t
     use fpm_toml
     use fpm_git
-    use fpm_dependency, only: dependency_node_t, destroy_dependency_node
+    use fpm_dependency, only: dependency_node_t, destroy_dependency_node, dependency_tree_t, &
+         & new_dependency_node, new_dependency_tree, resize
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
     use fpm_versioning, only: new_version
 
@@ -28,7 +29,8 @@ contains
             & new_unittest("missing-file", test_missing_file, should_fail=.true.), &
             & new_unittest("serialize-git-target", git_target_roundtrip), &
             & new_unittest("serialize-dependency-config", dependency_config_roundtrip), &
-            & new_unittest("serialize-dependency-node", dependency_node_roundtrip)]
+            & new_unittest("serialize-dependency-node", dependency_node_roundtrip), &
+            & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip)]
 
     end subroutine collect_toml
 
@@ -117,8 +119,6 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        type(toml_table), allocatable :: table
-
         type(git_target_t) :: git
 
         ! Revision type
@@ -157,8 +157,6 @@ contains
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
-
-        type(toml_table), allocatable :: table
 
         type(dependency_config_t) :: dep
 
@@ -210,8 +208,6 @@ contains
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
-
-        type(toml_table), allocatable :: table
 
         type(dependency_node_t) :: dep
 
@@ -279,5 +275,74 @@ contains
         if (allocated(error)) return
 
     end subroutine dependency_node_roundtrip
+
+    !> Test dependency_tree_t serialization
+    subroutine dependency_tree_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(dependency_tree_t) :: deps
+        type(dependency_config_t) :: dep
+
+        integer, parameter :: ALLOCATED_DEPS = 5
+        character(36) :: msg
+        integer :: ii
+
+        ! Generate dummy tree with ndep=3 but 5 allocated dependencies
+        call new_dependency_tree(deps)
+        call resize(deps%dep, ALLOCATED_DEPS)
+        deps%ndep = 3
+        dep%name = "dep1"
+        dep%path = "fpm-tmp1-dir"
+        call new_dependency_node(deps%dep(1), dep, proj_dir=dep%path)
+        dep%name = "dep2"
+        dep%path = "fpm-tmp2-dir"
+        call new_dependency_node(deps%dep(2), dep, proj_dir=dep%path)
+        deps%dep(3)%name = "M_CLI2"
+        deps%dep(3)%path = "~/./some/dummy/path"
+        deps%dep(3)%proj_dir = "~/./"
+        deps%dep(3)%namespace = "urbanjost"
+        deps%dep(3)%revision = "7264878cdb1baff7323cc48596d829ccfe7751b8"
+        deps%dep(3)%cached = .true.
+        deps%dep(3)%done = .false.
+        deps%dep(3)%update = .true.
+        allocate(deps%dep(3)%requested_version)
+        call new_version(deps%dep(3)%requested_version, "3.2.0",error); if (allocated(error)) return
+        allocate(deps%dep(3)%version)
+        call new_version(deps%dep(3)%version, "4.53.2",error); if (allocated(error)) return
+        allocate(deps%dep(3)%git)
+        deps%dep(3)%git = git_target_revision(url="https://github.com/urbanjost/M_CLI2.git", &
+                                              sha1="7264878cdb1baff7323cc48596d829ccfe7751b8")
+
+        call deps%test_serialization("full dependency tree", error)
+        if (allocated(error)) then
+            print *, error%message
+            stop 'catastrophic'
+        end if
+
+        ! Remove dependencies (including all them)
+        do ii = 1, ALLOCATED_DEPS
+            write(msg,1) ii
+            call resize(deps%dep, size(deps%dep) - 1)
+            call deps%test_serialization(trim(msg), error)
+            if (allocated(error)) return
+        end do
+
+        ! deallocate dependencies
+        deallocate(deps%dep)
+        call deps%test_serialization("unallocated deps(:)", error)
+        if (allocated(error)) return
+
+        ! Remove deps dir
+        deallocate(deps%dep_dir)
+        call deps%test_serialization("no deps dir", error)
+        if (allocated(error)) return
+
+
+
+        1 format('removed ',i0,' dependencies')
+
+    end subroutine dependency_tree_roundtrip
 
 end module test_toml
