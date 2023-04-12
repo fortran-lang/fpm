@@ -161,21 +161,21 @@ module fpm_dependency
     !> Depedendncy resolution finished
     procedure :: finished
     !> Reading of dependency tree
-    generic :: load => load_from_file, load_from_unit, load_from_toml
+    generic :: load_cache => load_cache_from_file, load_cache_from_unit, load_cache_from_toml
     !> Read dependency tree from file
-    procedure, private :: load_from_file
+    procedure, private :: load_cache_from_file
     !> Read dependency tree from formatted unit
-    procedure, private :: load_from_unit
+    procedure, private :: load_cache_from_unit
     !> Read dependency tree from TOML data structure
-    procedure, private :: load_from_toml
+    procedure, private :: load_cache_from_toml
     !> Writing of dependency tree
-    generic :: dump => dump_to_file, dump_to_unit, dump_to_toml
+    generic :: dump_cache => dump_cache_to_file, dump_cache_to_unit, dump_cache_to_toml
     !> Write dependency tree to file
-    procedure, private :: dump_to_file
+    procedure, private :: dump_cache_to_file
     !> Write dependency tree to formatted unit
-    procedure, private :: dump_to_unit
+    procedure, private :: dump_cache_to_unit
     !> Write dependency tree to TOML data structure
-    procedure, private :: dump_to_toml
+    procedure, private :: dump_cache_to_toml
     !> Update dependency tree
     generic :: update => update_dependency, update_tree
     !> Update a list of dependencies
@@ -320,7 +320,7 @@ contains
     ! After resolving all dependencies, check if we have cached ones to avoid updates
     if (allocated(self%cache)) then
       call new_dependency_tree(cached, verbosity=self%verbosity,cache=self%cache)
-      call cached%load(self%cache, error)
+      call cached%load_cache(self%cache, error)
       if (allocated(error)) return
 
       ! Skip root node
@@ -339,7 +339,7 @@ contains
     if (allocated(error)) return
 
     if (allocated(self%cache)) then
-      call self%dump(self%cache, error)
+      call self%dump_cache(self%cache, error)
       if (allocated(error)) return
     end if
 
@@ -969,7 +969,7 @@ contains
   end subroutine register
 
   !> Read dependency tree from file
-  subroutine load_from_file(self, file, error)
+  subroutine load_cache_from_file(self, file, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> File name
@@ -984,12 +984,12 @@ contains
     if (.not. exist) return
 
     open (file=file, newunit=unit)
-    call self%load(unit, error)
+    call self%load_cache(unit, error)
     close (unit)
-  end subroutine load_from_file
+  end subroutine load_cache_from_file
 
   !> Read dependency tree from file
-  subroutine load_from_unit(self, unit, error)
+  subroutine load_cache_from_unit(self, unit, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> File name
@@ -1008,13 +1008,13 @@ contains
       return
     end if
 
-    call self%load(table, error)
+    call self%load_cache(table, error)
     if (allocated(error)) return
 
-  end subroutine load_from_unit
+  end subroutine load_cache_from_unit
 
   !> Read dependency tree from TOML data structure
-  subroutine load_from_toml(self, table, error)
+  subroutine load_cache_from_toml(self, table, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Data structure
@@ -1076,10 +1076,10 @@ contains
     if (allocated(error)) return
 
     self%ndep = size(list)
-  end subroutine load_from_toml
+  end subroutine load_cache_from_toml
 
   !> Write dependency tree to file
-  subroutine dump_to_file(self, file, error)
+  subroutine dump_cache_to_file(self, file, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> File name
@@ -1090,14 +1090,14 @@ contains
     integer :: unit
 
     open (file=file, newunit=unit)
-    call self%dump(unit, error)
+    call self%dump_cache(unit, error)
     close (unit)
     if (allocated(error)) return
 
-  end subroutine dump_to_file
+  end subroutine dump_cache_to_file
 
   !> Write dependency tree to file
-  subroutine dump_to_unit(self, unit, error)
+  subroutine dump_cache_to_unit(self, unit, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Formatted unit
@@ -1108,14 +1108,14 @@ contains
     type(toml_table) :: table
 
     table = toml_table()
-    call self%dump(table, error)
+    call self%dump_cache(table, error)
 
     write (unit, '(a)') toml_serialize(table)
 
-  end subroutine dump_to_unit
+  end subroutine dump_cache_to_unit
 
   !> Write dependency tree to TOML datastructure
-  subroutine dump_to_toml(self, table, error)
+  subroutine dump_cache_to_toml(self, table, error)
     !> Instance of the dependency tree
     class(dependency_tree_t), intent(inout) :: self
     !> Data structure
@@ -1152,7 +1152,7 @@ contains
     end do
     if (allocated(error)) return
 
-  end subroutine dump_to_toml
+  end subroutine dump_cache_to_toml
 
   !> Reallocate a list of dependencies
   pure subroutine resize_dependency_node(var, n)
