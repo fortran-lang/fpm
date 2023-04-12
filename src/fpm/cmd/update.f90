@@ -40,6 +40,13 @@ contains
     call deps%add(package, error)
     call handle_error(error)
 
+    ! Force-update all dependencies if `--clean`
+    if (settings%clean) then
+        do ii = 1, deps%ndep
+            deps%dep(ii)%update = .true.
+        end do
+    end if
+
     if (settings%fetch_only) return
 
     if (size(settings%name) == 0) then

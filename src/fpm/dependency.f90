@@ -93,6 +93,8 @@ module fpm_dependency
     logical :: done = .false.
     !> Dependency should be updated
     logical :: update = .false.
+    !> Dependency was loaded from a cache
+    logical :: cached = .false.
   contains
     !> Update dependency from project manifest.
     procedure :: register
@@ -284,12 +286,9 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     type(dependency_config_t) :: dependency
+    type(dependency_tree_t) :: cached
     character(len=*), parameter :: root = '.'
-
-    if (allocated(self%cache)) then
-      call self%load(self%cache, error)
-      if (allocated(error)) return
-    end if
+    integer :: id
 
     if (.not. exists(self%dep_dir)) then
       call mkdir(self%dep_dir)
@@ -308,6 +307,20 @@ contains
     ! Add the root project dependencies (depth 1)
     call self%add(package, root, .true., error)
     if (allocated(error)) return
+
+    ! After resolving all dependencies, check if we have cached ones to avoid updates
+    if (allocated(self%cache)) then
+      call new_dependency_tree(cached, verbosity=self%verbosity,cache=self%cache)
+      call cached%load(self%cache, error)
+      if (allocated(error)) return
+
+      ! Skip root node
+      do id=2,cached%ndep
+          cached%dep(id)%cached = .true.
+          call self%add(cached%dep(id), error)
+          if (allocated(error)) return
+      end do
+    end if
 
     ! Now decent into the dependency tree, level for level
     do while (.not. self%finished())
@@ -423,16 +436,25 @@ contains
       ! Check if it needs to be updated
       id = self%find(dependency%name)
 
-      ! Ensure an update is requested whenever the dependency has changed
-      if (dependency_has_changed(self%dep(id), dependency)) then
-        write (self%unit, out_fmt) "Dependency change detected:", dependency%name
-        self%dep(id) = dependency
-        self%dep(id)%update = .true.
+      ! If this dependency was in the cache, and we're now requesting a different version
+      ! in the manifest, ensure it is marked for update. Otherwise, if we're just querying
+      ! the same dependency from a lower branch of the dependency tree, the existing one from
+      ! the manifest has priority
+      if (dependency%cached) then
+        if (dependency_has_changed(dependency, self%dep(id), self%verbosity, self%unit)) then
+           if (self%verbosity>0) write (self%unit, out_fmt) "Dependency change detected:", dependency%name
+           self%dep(id)%update = .true.
+        else
+           ! Store the cached one
+           self%dep(id) = dependency
+           self%dep(id)%update = .false.
+        endif
       end if
     else
       ! New dependency: add from scratch
       self%ndep = self%ndep + 1
       self%dep(self%ndep) = dependency
+      self%dep(self%ndep)%update = .false.
     end if
 
   end subroutine add_dependency_node
@@ -475,7 +497,7 @@ contains
 
     associate (dep => self%dep(id))
       if (allocated(dep%git) .and. dep%update) then
-        write (self%unit, out_fmt) "Update:", dep%name
+        if (self%verbosity>0) write (self%unit, out_fmt) "Update:", dep%name
         proj_dir = join_path(self%dep_dir, dep%name)
         call dep%git%checkout(proj_dir, error)
         if (allocated(error)) return
@@ -555,6 +577,7 @@ contains
 
     if (dependency%done) return
 
+    fetch = .false.
     if (allocated(dependency%proj_dir)) then
       proj_dir = dependency%proj_dir
     else if (allocated(dependency%path)) then
@@ -926,16 +949,12 @@ contains
     if (allocated(self%git) .and. present(revision)) then
       self%revision = revision
       if (.not. fetch) then
-        ! git object is HEAD always allows an update
-        update = .not. allocated(self%git%object)
-        if (.not. update) then
-          ! allow update in case the revision does not match the requested object
-          update = revision /= self%git%object
-        end if
+        ! Change in revision ID was checked already. Only update if ALL git information is missing
+        update = .not. allocated(self%git%url)
       end if
     end if
 
-    self%update = update
+    if (update) self%update = update
     self%done = .true.
 
   end subroutine register
@@ -1161,26 +1180,44 @@ contains
   end subroutine resize_dependency_node
 
   !> Check if a dependency node has changed
-  logical function dependency_has_changed(this, that) result(has_changed)
+  logical function dependency_has_changed(cached, manifest, verbosity, iunit) result(has_changed)
     !> Two instances of the same dependency to be compared
-    type(dependency_node_t), intent(in) :: this, that
+    type(dependency_node_t), intent(in) :: cached, manifest
+
+    !> Log verbosity
+    integer, intent(in) :: verbosity, iunit
 
     has_changed = .true.
 
     !> All the following entities must be equal for the dependency to not have changed
-    if (manifest_has_changed(this, that)) return
+    if (manifest_has_changed(cached=cached, manifest=manifest, verbosity=verbosity, iunit=iunit)) return
 
     !> For now, only perform the following checks if both are available. A dependency in cache.toml
     !> will always have this metadata; a dependency from fpm.toml which has not been fetched yet
     !> may not have it
-    if (allocated(this%version) .and. allocated(that%version)) then
-      if (this%version /= that%version) return
+    if (allocated(cached%version) .and. allocated(manifest%version)) then
+      if (cached%version /= manifest%version) then
+         if (verbosity>1) write(iunit,out_fmt) "VERSION has changed: "//cached%version%s()//" vs. "//manifest%version%s()
+         return
+      endif
+    else
+       if (verbosity>1) write(iunit,out_fmt) "VERSION has changed presence "
     end if
-    if (allocated(this%revision) .and. allocated(that%revision)) then
-      if (this%revision /= that%revision) return
+    if (allocated(cached%revision) .and. allocated(manifest%revision)) then
+      if (cached%revision /= manifest%revision) then
+        if (verbosity>1) write(iunit,out_fmt) "REVISION has changed: "//cached%revision//" vs. "//manifest%revision
+        return
+      endif
+    else
+      if (verbosity>1) write(iunit,out_fmt) "REVISION has changed presence "
     end if
-    if (allocated(this%proj_dir) .and. allocated(that%proj_dir)) then
-      if (this%proj_dir /= that%proj_dir) return
+    if (allocated(cached%proj_dir) .and. allocated(manifest%proj_dir)) then
+      if (cached%proj_dir /= manifest%proj_dir) then
+        if (verbosity>1) write(iunit,out_fmt) "PROJECT DIR has changed: "//cached%proj_dir//" vs. "//manifest%proj_dir
+        return
+      endif
+    else
+      if (verbosity>1) write(iunit,out_fmt) "PROJECT DIR has changed presence "
     end if
 
     !> All checks passed: the two dependencies have no differences
