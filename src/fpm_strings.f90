@@ -39,7 +39,7 @@ use iso_c_binding, only: c_char, c_ptr, c_int, c_null_char, c_associated, c_f_po
 implicit none
 
 private
-public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
+public :: f_string, lower, upper, split, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
@@ -273,6 +273,37 @@ elemental pure function lower(str,begin,end) result (string)
     end do
 
 end function lower
+
+  !!License: Public Domain
+ !! Changes a string to upprtcase over optional specified column range
+elemental pure function upper(str,begin,end) result (string)
+
+    character(*), intent(In)     :: str
+    character(len(str))          :: string
+    integer,intent(in),optional  :: begin, end
+    integer                      :: i
+    integer                      :: ibegin, iend
+    string = str
+
+    ibegin = 1
+    if (present(begin))then
+        ibegin = max(ibegin,begin)
+    endif
+
+    iend = len_trim(str)
+    if (present(end))then
+        iend= min(iend,end)
+    endif
+
+    do i = ibegin, iend                               ! step thru each letter in the string in specified range
+        select case (str(i:i))
+        case ('a':'z')
+            string(i:i) = char(iachar(str(i:i))-32)   ! change letter to capitalized
+        case default
+        end select
+    end do
+
+end function upper
 
 !> Helper function to generate a new string_t instance
 !>  (Required due to the allocatable component)
