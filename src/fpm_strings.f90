@@ -44,6 +44,7 @@ public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
 public :: notabs
+public :: operator(==)
 
 !> Module naming
 public :: is_valid_module_name, is_valid_module_prefix, &
@@ -88,6 +89,11 @@ end interface string_t
 interface f_string
     module procedure f_string, f_string_cptr, f_string_cptr_n
 end interface f_string
+
+interface operator(==)
+    module procedure string_is_same
+    module procedure string_arrays_same
+end interface
 
 contains
 
@@ -1218,6 +1224,53 @@ logical function has_valid_standard_prefix(module_name,package_name) result(vali
     end if
 
 end function has_valid_standard_prefix
+
+!> Check that two string _objects_ are exactly identical
+pure logical function string_is_same(this,that)
+   !> two strings to be compared
+   type(string_t), intent(in) :: this, that
+
+   integer :: i
+
+   string_is_same = .false.
+
+   if (allocated(this%s).neqv.allocated(that%s)) return
+   if (allocated(this%s)) then
+      if (.not.len(this%s)==len(that%s)) return
+      if (.not.len_trim(this%s)==len_trim(that%s)) return
+      do i=1,len_trim(this%s)
+         if (.not.(this%s(i:i)==that%s(i:i))) return
+      end do
+   end if
+
+   ! All checks passed
+   string_is_same = .true.
+
+end function string_is_same
+
+!> Check that two allocatable string _object_ arrays are exactly identical
+pure logical function string_arrays_same(this,that)
+   !> two string arrays to be compared
+   type(string_t), allocatable, intent(in) :: this(:), that(:)
+
+   integer :: i
+
+   string_arrays_same = .false.
+
+   if (allocated(this).neqv.allocated(that)) return
+   if (allocated(this)) then
+      if (.not.(size(this)==size(that))) return
+      if (.not.(ubound(this,1)==ubound(that,1))) return
+      if (.not.(lbound(this,1)==lbound(that,1))) return
+      do i=lbound(this,1),ubound(this,1)
+         if (.not.string_is_same(this(i),that(i))) return
+      end do
+   end if
+
+   ! All checks passed
+   string_arrays_same = .true.
+
+end function string_arrays_same
 
 !>
 !!### NAME
