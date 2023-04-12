@@ -39,12 +39,13 @@ use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
 use fpm_strings, only: string_t, str, len_trim, upper, operator(==)
-use fpm_toml, only: serializable_t, toml_table, toml_stat, set_value, set_list, get_value, get_list
+use fpm_toml, only: serializable_t, toml_table, toml_stat, set_value, set_list, get_value, &
+                    & get_list, add_table, toml_key, add_array, set_string
 use fpm_error, only: error_t, fatal_error
 implicit none
 
 private
-public :: fpm_model_t, srcfile_t, show_model, fortran_features_t
+public :: fpm_model_t, srcfile_t, show_model, fortran_features_t, package_t
 
 public :: FPM_UNIT_UNKNOWN, FPM_UNIT_PROGRAM, FPM_UNIT_MODULE, &
           FPM_UNIT_SUBMODULE, FPM_UNIT_SUBPROGRAM, FPM_UNIT_CSOURCE, &
@@ -160,7 +161,7 @@ type, extends(serializable_t) :: package_t
     character(:), allocatable :: version
 
     !> Module naming conventions
-    logical :: enforce_module_names
+    logical :: enforce_module_names = .false.
 
     !> Prefix for all module names
     type(string_t) :: module_prefix
@@ -662,8 +663,6 @@ subroutine fft_load_from_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    character(len=:), allocatable :: flag
-
     integer :: ierr
 
     call get_value(table, "implicit-typing", self%implicit_typing, stat=ierr)
@@ -736,7 +735,64 @@ subroutine package_dump_to_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    call fatal_error(error,' not yet implemented ' )
+    integer :: ierr, ii
+    type(toml_table), pointer :: ptr,this_source
+    character(16) :: src_name
+
+    call set_string(table, "name", self%name, error, 'package_t')
+    if (allocated(error)) return
+
+    call set_string(table, "version", self%version, error, 'package_t')
+    if (allocated(error)) return
+
+    call set_value(table, "module-naming", self%enforce_module_names, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'package_t: cannot set module-naming in TOML table')
+        return
+    end if
+
+    call set_string(table, "module-prefix", self%module_prefix, error, 'package_t')
+    if (allocated(error)) return
+
+    call set_list(table, "macros", self%macros, error)
+    if (allocated(error)) return
+
+    !> Create a fortran table
+    call add_table(table, "fortran", ptr, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'package_t: cannot set fortran table in TOML table')
+        return
+    end if
+    call self%features%dump_to_toml(ptr, error)
+    if (allocated(error)) return
+
+    !> Create a sources table
+    if (allocated(self%sources)) then
+
+        call add_table(table, "sources", ptr, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'package_t: cannot set sources table in TOML table')
+            return
+        end if
+
+        do ii = 1, size(self%sources)
+
+            write(src_name,1) ii
+            call add_table(ptr, trim(src_name), this_source)
+
+            if (.not. associated(this_source)) then
+                call fatal_error(error, "package_t cannot create entry for source "//trim(src_name))
+                return
+            end if
+
+            call self%sources(ii)%dump_to_toml(this_source,error)
+            if (allocated(error)) return
+
+        end do
+
+    end if
+
+    1 format('src_',i0)
 
 end subroutine package_dump_to_toml
 
@@ -752,9 +808,66 @@ subroutine package_load_from_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    character(len=:), allocatable :: flag
+    integer :: ierr,ii,jj
+    type(toml_key), allocatable :: keys(:),src_keys(:)
+    type(toml_table), pointer :: ptr_sources,ptr,ptr_fortran
+    type(error_t), allocatable :: new_error
 
-    call fatal_error(error, ' not yet implemented ')
+    call get_value(table, "name", self%name)
+    call get_value(table, "version", self%version)
+
+    call get_value(table, "module-naming", self%enforce_module_names, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'package_t: cannot get module-naming from TOML table')
+        return
+    end if
+
+    ! Return unallocated value if not present
+    call get_value(table, "module-prefix", self%module_prefix%s)
+
+    call get_list(table, "macros", self%macros, error)
+    if (allocated(error)) return
+
+    ! Sources
+    call table%get_keys(keys)
+
+    find_others: do ii = 1, size(keys)
+        select case (keys(ii)%key)
+           case ("fortran")
+
+               call get_value(table, keys(ii), ptr_fortran)
+               if (.not.associated(ptr_fortran)) then
+                  call fatal_error(error,'package_t: error retrieving fortran table from TOML table')
+                  return
+               end if
+
+               call self%features%load_from_toml(ptr_fortran,error)
+               if (allocated(error)) return
+
+           case ("sources")
+
+               call get_value(table, keys(ii), ptr_sources)
+               if (.not.associated(ptr_sources)) then
+                  call fatal_error(error,'package_t: error retrieving sources table from TOML table')
+                  return
+               end if
+
+               !> Read all dependencies
+               call ptr_sources%get_keys(src_keys)
+               allocate(self%sources(size(src_keys)))
+
+               do jj = 1, size(src_keys)
+                   call get_value(ptr_sources, src_keys(jj), ptr)
+                   call self%sources(jj)%load_from_toml(ptr, error)
+                   if (allocated(error)) return
+               end do
+
+           case default
+              cycle find_others
+        end select
+    end do find_others
+
+    call self%dump('tmp_pkg.toml',new_error)
 
 end subroutine package_load_from_toml
 
