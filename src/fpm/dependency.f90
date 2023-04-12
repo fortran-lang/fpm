@@ -58,10 +58,12 @@ module fpm_dependency
   use, intrinsic :: iso_fortran_env, only: output_unit
   use fpm_environment, only: get_os_type, OS_WINDOWS, os_is_unix
   use fpm_error, only: error_t, fatal_error
-  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, basename, os_delete_dir
-  use fpm_git, only: git_target_revision, git_target_default, git_revision, operator(==)
+  use fpm_filesystem, only: exists, join_path, mkdir, canon_path, windows_path, list_files, is_dir, &
+                            basename, os_delete_dir
+  use fpm_git, only: git_target_revision, git_target_default, git_revision, operator(==), &
+                     serializable_t
   use fpm_manifest, only: package_config_t, dependency_config_t, get_package_data
-  use fpm_manifest_dependency, only: manifest_has_changed
+  use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_strings, only: string_t, operator(.in.)
   use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
                       get_value, set_value, add_table, toml_load, toml_stat
@@ -74,7 +76,7 @@ module fpm_dependency
   private
 
   public :: dependency_tree_t, new_dependency_tree, dependency_node_t, new_dependency_node, resize, &
-            & check_and_read_pkg_data
+            & check_and_read_pkg_data, destroy_dependency_node
 
   !> Overloaded reallocation interface
   interface resize
@@ -103,6 +105,13 @@ module fpm_dependency
     procedure, private :: get_from_local_registry
     !> Print information on this instance
     procedure :: info
+
+    !> Serialization interface
+    procedure :: serializable_is_same => dependency_node_is_same
+    procedure :: dump_to_toml => node_dump_to_toml
+    procedure :: load_from_toml => node_load_from_toml
+
+
   end type dependency_node_t
 
   !> Respresentation of a projects dependencies
@@ -1224,5 +1233,160 @@ contains
     has_changed = .false.
 
   end function dependency_has_changed
+
+  !> Check that two dependency nodes are equal
+  logical function dependency_node_is_same(this,that)
+      class(dependency_node_t), intent(in) :: this
+      class(serializable_t), intent(in) :: that
+
+      dependency_node_is_same = .false.
+
+      select type (other=>that)
+         type is (dependency_node_t)
+
+            ! Base class must match
+            if (.not.(this%dependency_config_t==other%dependency_config_t)) return
+
+            ! Extension must match
+            if (.not.(this%done  .eqv.other%done)) return
+            if (.not.(this%update.eqv.other%update)) return
+            if (.not.(this%cached.eqv.other%cached)) return
+            if (.not.(this%proj_dir==other%proj_dir)) return
+            if (.not.(this%revision==other%revision)) return
+
+            if (.not.(allocated(this%version).eqv.allocated(other%version))) return
+               if (allocated(this%version)) then
+              if (.not.(this%version==other%version)) return
+            endif
+
+         class default
+            ! Not the same type
+            return
+      end select
+
+      !> All checks passed!
+      dependency_node_is_same = .true.
+
+  end function dependency_node_is_same
+
+    !> Dump dependency to toml table
+    subroutine node_dump_to_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_node_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(toml_table), pointer :: ptr
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: ierr
+
+        ! Dump parent class
+        call self%dependency_config_t%dump_to_toml(table, error)
+        if (allocated(error)) return
+
+        if (allocated(self%version)) then
+            call set_value(table, "version", self%version%s(), ierr)
+            if (ierr/=toml_stat%success) then
+                call fatal_error(error,'dependency_node_t: cannot set version in TOML table')
+                return
+            end if
+        endif
+
+        if (allocated(self%proj_dir)) then
+            call set_value(table, "proj_dir", self%proj_dir, ierr)
+            if (ierr/=toml_stat%success) then
+                call fatal_error(error,'dependency_node_t: cannot set proj_dir in TOML table')
+                return
+            end if
+        endif
+
+        if (allocated(self%revision)) then
+            call set_value(table, "revision", self%revision, ierr)
+            if (ierr/=toml_stat%success) then
+                call fatal_error(error,'dependency_node_t: cannot set revision in TOML table')
+                return
+            end if
+        endif
+
+        call set_value(table, "done", self%done, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_node_t: cannot set done in TOML table')
+            return
+        end if
+
+        call set_value(table, "update", self%update, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_node_t: cannot set update in TOML table')
+            return
+        end if
+
+        call set_value(table, "cached", self%cached, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_node_t: cannot set cached in TOML table')
+            return
+        end if
+
+    end subroutine node_dump_to_toml
+
+    !> Read dependency from toml table (no checks made at this stage)
+    subroutine node_load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_node_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        character(len=:), allocatable :: version
+
+        call destroy_dependency_node(self)
+
+        ! Load parent class
+        call self%dependency_config_t%load_from_toml(table, error)
+        if (allocated(error)) return
+
+        call get_value(table, "done", self%done)
+        call get_value(table, "update", self%update)
+        call get_value(table, "cached", self%cached)
+        call get_value(table, "proj_dir", self%proj_dir)
+        call get_value(table, "revision", self%revision)
+
+        call get_value(table, "version", version)
+        if (allocated(version)) then
+            allocate(self%version)
+            call new_version(self%version, version, error)
+            if (allocated(error)) then
+                error%message = 'dependency_node_t: version error from TOML table - '//error%message
+                return
+            endif
+        end if
+
+    end subroutine node_load_from_toml
+
+    !> Destructor
+    elemental subroutine destroy_dependency_node(self)
+
+        class(dependency_node_t), intent(inout) :: self
+
+        integer :: ierr
+
+        call dependency_destroy(self)
+
+        deallocate(self%version,stat=ierr)
+        deallocate(self%proj_dir,stat=ierr)
+        deallocate(self%revision,stat=ierr)
+        self%done = .false.
+        self%update = .false.
+        self%cached = .false.
+
+    end subroutine destroy_dependency_node
 
 end module fpm_dependency
