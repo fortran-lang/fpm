@@ -23,7 +23,7 @@ module fpm_toml
 
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
-              toml_error, toml_serialize, toml_load, check_keys, set_list
+              toml_error, toml_serialize, toml_load, check_keys, set_list, set_string
 
     !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
     type, abstract, public :: serializable_t
@@ -50,6 +50,11 @@ module fpm_toml
         procedure, non_overridable :: test_serialization
 
     end type serializable_t
+
+    interface set_string
+        module procedure set_character
+        module procedure set_string_type
+    end interface set_string
 
 
     abstract interface
@@ -352,6 +357,65 @@ contains
 
     end subroutine set_list
 
+    !> Function wrapper to set a character(len=:), allocatable variable to a toml table
+    subroutine set_character(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> List of keys to check.
+        character(len=*), intent(in) :: key
+
+        !> The character variable
+        character(len=:), allocatable, intent(in) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        !> Check the key is not empty
+        if (len_trim(key)<=0) then
+            call fatal_error(error, 'key is empty setting character string to TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+        if (allocated(var)) then
+            call set_value(table, key, var, ierr)
+            if (ierr/=toml_stat%success) then
+                call fatal_error(error,'cannot set character key <'//key//'> in TOML table')
+                if (present(whereAt)) error%message = whereAt//': '//error%message
+                return
+            end if
+        endif
+
+    end subroutine set_character
+
+    !> Function wrapper to set a character(len=:), allocatable variable to a toml table
+    subroutine set_string_type(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> List of keys to check.
+        character(len=*), intent(in) :: key
+
+        !> The character variable
+        type(string_t), intent(in) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        call set_character(table, key, var%s, error, whereAt)
+
+    end subroutine set_string_type
 
     !> Check if table contains only keys that are part of the list. If a key is
     !> found that is not part of the list, an error is allocated.
