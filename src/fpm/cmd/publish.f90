@@ -9,6 +9,7 @@ module fpm_cmd_publish
   use fpm_git, only: git_archive, compressed_package_name
   use fpm_downloader, only: downloader_t
   use fpm_strings, only: string_t
+  use fpm_settings, only: official_registry_base_url
 
   implicit none
   private
@@ -70,7 +71,7 @@ contains
         print *, form_data(i)%s
       end do
     else
-      call downloader%upload_form(form_data, error)
+      call downloader%upload_form(official_registry_base_url//'packages', form_data, error)
       if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
     end if
   end
