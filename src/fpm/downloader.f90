@@ -79,6 +79,26 @@ contains
     character(len=*), intent(in) :: endpoint
     type(string_t), intent(in) :: form_data(:)
     type(error_t), allocatable, intent(out) :: error
+
+    integer :: stat, i
+    character(len=:), allocatable :: form_data_str
+
+    form_data_str = ''
+    do i = 1, size(form_data)
+      form_data_str = form_data_str//"-F '"//form_data(i)%s//"' "
+    end do
+
+    if (which('curl') /= '') then
+      print *, 'Uploading package ...'
+      call execute_command_line('curl -X POST -H "Content-Type: multipart/form-data" ' &
+      & //form_data_str//' '//endpoint, exitstat=stat)
+    else
+      call fatal_error(error, "'curl' not installed."); return
+    end if
+
+    if (stat /= 0) then
+      call fatal_error(error, "Error uploading package to registry."); return
+    end if
   end
 
   !> Unpack a tarball to a destination.

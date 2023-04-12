@@ -71,7 +71,7 @@ contains
         print *, form_data(i)%s
       end do
     else
-      call downloader%upload_form(official_registry_base_url//'packages', form_data, error)
+      call downloader%upload_form(official_registry_base_url//'/packages', form_data, error)
       if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
     end if
   end
