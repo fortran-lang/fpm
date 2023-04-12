@@ -3,8 +3,10 @@ module test_toml
     use testsuite, only : new_unittest, unittest_t, error_t
     use fpm_toml
     use fpm_git
+    use fpm_dependency, only: dependency_node_t, destroy_dependency_node
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
     use fpm_versioning, only: new_version
+
     implicit none
     private
 
@@ -25,7 +27,8 @@ contains
             & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.), &
             & new_unittest("missing-file", test_missing_file, should_fail=.true.), &
             & new_unittest("serialize-git-target", git_target_roundtrip), &
-            & new_unittest("serialize-dependency-config", dependency_config_roundtrip)]
+            & new_unittest("serialize-dependency-config", dependency_config_roundtrip), &
+            & new_unittest("serialize-dependency-node", dependency_node_roundtrip)]
 
     end subroutine collect_toml
 
@@ -187,7 +190,7 @@ contains
 
         ! Remove version
         deallocate(dep%requested_version)
-        call dep%test_serialization("no version",error)
+        call dep%test_serialization("no requested_version",error)
         if (allocated(error)) return
 
         ! Remove name
@@ -202,5 +205,79 @@ contains
 
     end subroutine dependency_config_roundtrip
 
+    !> Test dependency_node_t serialization
+    subroutine dependency_node_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+
+        type(dependency_node_t) :: dep
+
+        call destroy_dependency_node(dep)
+
+        dep%name = "M_CLI2"
+        dep%path = "~/./some/dummy/path"
+        dep%proj_dir = "~/./"
+        dep%namespace = "urbanjost"
+        dep%revision = "7264878cdb1baff7323cc48596d829ccfe7751b8"
+        dep%cached = .true.
+        dep%done = .false.
+        dep%update = .true.
+        allocate(dep%requested_version)
+        call new_version(dep%requested_version, "3.2.0",error); if (allocated(error)) return
+        allocate(dep%version)
+        call new_version(dep%version, "4.53.2",error); if (allocated(error)) return
+
+        allocate(dep%git)
+        dep%git = git_target_revision(url="https://github.com/urbanjost/M_CLI2.git", &
+                                      sha1="7264878cdb1baff7323cc48596d829ccfe7751b8")
+
+        ! Test full object
+        call dep%test_serialization("full object",error)
+        if (allocated(error)) return
+
+        ! Remove namespace
+        deallocate(dep%namespace)
+        call dep%test_serialization("no namespace",error)
+        if (allocated(error)) return
+
+        ! Remove git
+        deallocate(dep%git)
+        call dep%test_serialization("no git",error)
+        if (allocated(error)) return
+
+        ! Remove version
+        deallocate(dep%requested_version)
+        call dep%test_serialization("no requested_version",error)
+        if (allocated(error)) return
+
+        ! Remove name
+        deallocate(dep%name)
+        call dep%test_serialization("no name",error)
+        if (allocated(error)) return
+
+        ! Remove path
+        deallocate(dep%path)
+        call dep%test_serialization("no path",error)
+        if (allocated(error)) return
+
+        ! Remove revision
+        deallocate(dep%revision)
+        call dep%test_serialization("no revision",error)
+        if (allocated(error)) return
+
+        ! Remove proj_dir
+        deallocate(dep%proj_dir)
+        call dep%test_serialization("no proj_dir",error)
+        if (allocated(error)) return
+
+        ! Remove version
+        deallocate(dep%version)
+        call dep%test_serialization("no version",error)
+        if (allocated(error)) return
+
+    end subroutine dependency_node_roundtrip
 
 end module test_toml
