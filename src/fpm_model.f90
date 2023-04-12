@@ -181,7 +181,7 @@ end type package_t
 
 !> Type describing everything required to build
 !>  the root package and its dependencies.
-type :: fpm_model_t
+type, extends(serializable_t) :: fpm_model_t
 
     !> Name of root package
     character(:), allocatable :: package_name
@@ -230,6 +230,13 @@ type :: fpm_model_t
 
     !> Prefix for all module names
     type(string_t) :: module_prefix
+
+    contains
+
+        !> Serialization interface
+        procedure :: serializable_is_same => model_is_same
+        procedure :: dump_to_toml   => model_dump_to_toml
+        procedure :: load_from_toml => model_load_from_toml
 
 end type fpm_model_t
 
@@ -867,9 +874,87 @@ subroutine package_load_from_toml(self, table, error)
         end select
     end do find_others
 
-    call self%dump('tmp_pkg.toml',new_error)
-
 end subroutine package_load_from_toml
 
+
+!> Check that two model objects are equal
+logical function model_is_same(this,that)
+    class(fpm_model_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    type(fpm_model_t), pointer :: other
+
+    integer :: ii
+
+    model_is_same = .false.
+
+    select type (other=>that)
+       type is (fpm_model_t)
+
+           if (.not.(this%package_name==other%package_name)) return
+           if (.not.(allocated(this%packages).eqv.allocated(other%packages))) return
+           if (allocated(this%packages)) then
+               if (.not.(size(this%packages)==size(other%packages))) return
+               do ii = 1, size(this%packages)
+                   if (.not.(this%packages(ii)==other%packages(ii))) return
+               end do
+           end if
+
+           if (.not.(this%compiler==other%compiler)) return
+           if (.not.(this%archiver==other%archiver)) return
+           if (.not.(this%fortran_compile_flags==other%fortran_compile_flags)) return
+           if (.not.(this%c_compile_flags==other%c_compile_flags)) return
+           if (.not.(this%cxx_compile_flags==other%cxx_compile_flags)) return
+           if (.not.(this%link_flags==other%link_flags)) return
+           if (.not.(this%build_prefix==other%build_prefix)) return
+           if (.not.(this%include_dirs==other%include_dirs)) return
+           if (.not.(this%link_libraries==other%link_libraries)) return
+           if (.not.(this%external_modules==other%external_modules)) return
+           if (.not.(this%deps==other%deps)) return
+           if (.not.(this%include_tests.eqv.other%include_tests)) return
+           if (.not.(this%enforce_module_names.eqv.other%enforce_module_names)) return
+           if (.not.(this%module_prefix==other%module_prefix)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    model_is_same = .true.
+
+end function model_is_same
+
+!> Dump dependency to toml table
+subroutine model_dump_to_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(fpm_model_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call fatal_error(error,' model_t: dump not implemented ')
+
+end subroutine model_dump_to_toml
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine model_load_from_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(fpm_model_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call fatal_error(error,' model_t: load not implemented ')
+
+end subroutine model_load_from_toml
 
 end module fpm_model
