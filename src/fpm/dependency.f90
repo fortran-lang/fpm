@@ -117,7 +117,7 @@ module fpm_dependency
   !>
   !> The dependencies are stored in a simple array for now, this can be replaced
   !> with a binary-search tree or a hash table in the future.
-  type :: dependency_tree_t
+  type, extends(serializable_t) :: dependency_tree_t
     !> Unit for IO
     integer :: unit = output_unit
     !> Verbosity of printout
@@ -182,6 +182,11 @@ module fpm_dependency
     procedure, private :: update_dependency
     !> Update all dependencies in the tree
     procedure, private :: update_tree
+
+    !> Serialization interface
+    procedure :: serializable_is_same => dependency_tree_is_same
+    procedure :: dump_to_toml   => tree_dump_to_toml
+    procedure :: load_from_toml => tree_load_from_toml
 
   end type dependency_tree_t
 
@@ -1279,7 +1284,6 @@ contains
         type(toml_table), intent(inout) :: table
 
         !> Error handling
-        type(toml_table), pointer :: ptr
         type(error_t), allocatable, intent(out) :: error
 
         integer :: ierr
@@ -1388,5 +1392,175 @@ contains
         self%cached = .false.
 
     end subroutine destroy_dependency_node
+
+  !> Check that two dependency trees are equal
+  logical function dependency_tree_is_same(this,that)
+    class(dependency_tree_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    integer :: ii
+
+    dependency_tree_is_same = .false.
+
+    select type (other=>that)
+       type is (dependency_tree_t)
+
+          if (.not.(this%unit==other%unit)) return
+          if (.not.(this%verbosity==other%verbosity)) return
+          if (.not.(this%dep_dir==other%dep_dir)) return
+          if (.not.(this%ndep==other%ndep)) return
+          if (.not.(allocated(this%dep).eqv.allocated(other%dep))) return
+          if (allocated(this%dep)) then
+             if (.not.(size(this%dep)==size(other%dep))) return
+             do ii = 1, size(this%dep)
+                if (.not.(this%dep(ii)==other%dep(ii))) return
+             end do
+          endif
+          if (.not.(this%cache==other%cache)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    dependency_tree_is_same = .true.
+
+  end function dependency_tree_is_same
+
+    !> Dump dependency to toml table
+    subroutine tree_dump_to_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_tree_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        integer :: ierr, ii
+        type(toml_table), pointer :: ptr_deps,ptr
+        character(27) :: unnamed
+
+        call set_value(table, "unit", self%unit, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_tree_t: cannot set unit in TOML table')
+            return
+        end if
+        call set_value(table, "verbosity", self%verbosity, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_tree_t: cannot set verbosity in TOML table')
+            return
+        end if
+        if (allocated(self%dep_dir)) then
+            call set_value(table, "dep-dir", self%dep_dir, ierr)
+            if (ierr/=toml_stat%success) then
+                call fatal_error(error,'dependency_tree_t: cannot set dep-dir in TOML table')
+                return
+            end if
+        endif
+        if (allocated(self%cache)) then
+            call set_value(table, "cache", self%cache, ierr)
+            if (ierr/=toml_stat%success) then
+                call fatal_error(error,'dependency_tree_t: cannot set cache in TOML table')
+                return
+            end if
+        endif
+        call set_value(table, "ndep", self%ndep, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_tree_t: cannot set ndep in TOML table')
+            return
+        end if
+
+        if (allocated(self%dep)) then
+
+           ! Create dependency table
+           call add_table(table, "dependencies", ptr_deps)
+           if (.not. associated(ptr_deps)) then
+              call fatal_error(error, "dependency_tree_t cannot create dependency table ")
+              return
+           end if
+
+           do ii = 1, size(self%dep)
+              associate (dep => self%dep(ii))
+
+                 !> Because dependencies are named, fallback if this has no name
+                 !> So, serialization will work regardless of size(self%dep) == self%ndep
+                 if (len_trim(dep%name)==0) then
+                    write(unnamed,1) ii
+                    call add_table(ptr_deps, trim(unnamed), ptr)
+                 else
+                    call add_table(ptr_deps, dep%name, ptr)
+                 end if
+                 if (.not. associated(ptr)) then
+                    call fatal_error(error, "dependency_tree_t cannot create entry for dependency "//dep%name)
+                    return
+                 end if
+                 call dep%dump_to_toml(ptr, error)
+                 if (allocated(error)) return
+              end associate
+           end do
+
+        endif
+
+        1 format('UNNAMED_DEPENDENCY_',i0)
+
+    end subroutine tree_dump_to_toml
+
+    !> Read dependency from toml table (no checks made at this stage)
+    subroutine tree_load_from_toml(self, table, error)
+
+        !> Instance of the serializable object
+        class(dependency_tree_t), intent(inout) :: self
+
+        !> Data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        type(toml_key), allocatable :: keys(:),dep_keys(:)
+        type(toml_table), pointer :: ptr_deps,ptr
+        integer :: ii, jj, ierr
+
+        call table%get_keys(keys)
+
+        call get_value(table, "unit", self%unit)
+        call get_value(table, "verbosity", self%verbosity)
+        call get_value(table, "ndep", self%ndep)
+        call get_value(table, "dep-dir", self%dep_dir)
+        call get_value(table, "cache", self%cache)
+
+        find_deps_table: do ii = 1, size(keys)
+            if (keys(ii)%key=="dependencies") then
+
+               call get_value(table, keys(ii), ptr_deps)
+               if (.not.associated(ptr_deps)) then
+                  call fatal_error(error,'dependency_tree_t: error retrieving dependency table from TOML table')
+                  return
+               end if
+
+               !> Read all dependencies
+               call ptr_deps%get_keys(dep_keys)
+               call resize(self%dep, size(dep_keys))
+
+               do jj = 1, size(dep_keys)
+
+                   call get_value(ptr_deps, dep_keys(jj), ptr)
+                   call self%dep(jj)%load_from_toml(ptr, error)
+                   if (allocated(error)) return
+
+               end do
+
+               exit find_deps_table
+
+            endif
+        end do find_deps_table
+
+    end subroutine tree_load_from_toml
+
 
 end module fpm_dependency
