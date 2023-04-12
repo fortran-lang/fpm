@@ -7,7 +7,8 @@ module fpm_cmd_publish
   use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_serialize, set_value
   use fpm_filesystem, only: exists, join_path, get_tmp_directory
-  use fpm_git, only: git_archive
+  use fpm_git, only: git_archive, compressed_package_name
+  use fpm_downloader, only: downloader_t
 
   implicit none
   private
@@ -24,6 +25,7 @@ contains
     type(version_t), allocatable :: version
     type(json_object) :: json
     character(len=:), allocatable :: tmpdir
+    type(downloader_t) :: downloader
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Package error: '//error%message)
@@ -50,19 +52,22 @@ contains
     end if
 
     json = json_object()
+    call set_value(json, 'package_name', package%name)
+    call set_value(json, 'package_license', package%license)
+    call set_value(json, 'package_version', version%s())
+    call set_value(json, 'upload_token', settings%token)
+
+    call get_tmp_directory(tmpdir, error)
+    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Tmp directory error: '//error%message)
+    call git_archive(settings%source_path, tmpdir, error)
+    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Pack error: '//error%message)
+    call set_value(json, 'tarball', join_path(tmpdir, compressed_package_name))
 
     if (settings%show_request) then
-      call set_value(json, 'package_name', package%name)
-      call set_value(json, 'package_license', package%license)
-      call set_value(json, 'package_version', version%s())
-      call set_value(json, 'tarball', settings%source_path)
-      call set_value(json, 'upload_token', settings%token)
       print *, json_serialize(json)
     else
-      call get_tmp_directory(tmpdir, error)
-      if (allocated(error)) call fpm_stop(1, '*cmd_publish* Tmp directory error: '//error%message)
-      call git_archive(settings%source_path, tmpdir, error)
-      if (allocated(error)) call fpm_stop(1, '*cmd_publish* Pack error: '//error%message)
+      call downloader%upload_form(json, error)
+      if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
     end if
   end
 end

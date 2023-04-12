@@ -12,7 +12,7 @@ module fpm_downloader
   !> This type could be entirely avoided but it is quite practical because it can be mocked for testing.
   type downloader_t
   contains
-    procedure, nopass :: get_pkg_data, get_file, unpack
+    procedure, nopass :: get_pkg_data, get_file, upload_form, unpack
   end type
 
 contains
@@ -71,6 +71,12 @@ contains
     if (stat /= 0) then
       call fatal_error(error, "Error downloading package from '"//url//"'."); return
     end if
+  end
+
+  !> Perform an http post request with form data.
+  subroutine upload_form(json, error)
+    type(json_object), intent(in) :: json
+    type(error_t), allocatable, intent(out) :: error
   end
 
   !> Unpack a tarball to a destination.

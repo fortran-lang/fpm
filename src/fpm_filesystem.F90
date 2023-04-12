@@ -1063,17 +1063,17 @@ end subroutine os_delete_dir
 
         tmp_dir = get_env('TMPDIR', '')
         if (tmp_dir /= '') then
-          tmp_dir = join_path(tmp_dir, 'fpm'); return
+          tmp_dir = tmp_dir//'fpm'; return
         end if
 
         tmp_dir = get_env('TMP', '')
         if (tmp_dir /= '') then
-          tmp_dir = join_path(tmp_dir, 'fpm'); return
+          tmp_dir = tmp_dir//'fpm'; return
         end if
 
         tmp_dir = get_env('TEMP', '')
         if (tmp_dir /= '') then
-          tmp_dir = join_path(tmp_dir, 'fpm'); return
+          tmp_dir = tmp_dir//'fpm'; return
         end if
 
         call fatal_error(error, "Couldn't retrieve system temporary directory.")

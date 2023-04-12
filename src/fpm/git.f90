@@ -5,7 +5,10 @@ module fpm_git
     implicit none
 
     public :: git_target_t, git_target_default, git_target_branch, git_target_tag, git_target_revision, git_revision, &
-            & git_archive, git_matches_manifest, operator(==)
+            & git_archive, git_matches_manifest, operator(==), compressed_package_name
+    
+    !> Name of the compressed package that is generated temporarily.
+    character(len=*), parameter :: compressed_package_name = 'compressed_package'
 
     !> Possible git target
     type :: enum_descriptor
@@ -324,7 +327,7 @@ contains
     end if
 
     call execute_command_line('git archive HEAD --format='//archive_format//' -o '// &
-    & join_path(destination, 'compressed_package'), exitstat=stat)
+    & join_path(destination, compressed_package_name), exitstat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error packing '"//source//"'."); return
     end if
