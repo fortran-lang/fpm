@@ -203,7 +203,28 @@ popd
 
 # test dependency priority
 pushd dependency_priority
-"$fpm" run 
+
+# first build should run OK
+EXIT_CODE=0
+"$fpm" run || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+
+"$fpm" build --verbose
+
+# Build again, should update nothing
+"$fpm" build --verbose > build.log
+if [[ -n "$(grep Update build.log)" ]]; then
+  echo "Some dependencies were updated that should not be";
+  exit 1;
+fi
+
+# Request update --clean, should update all dependencies
+"$fpm" update --clean --verbose > update.log
+if [[ -z "$(grep Update update.log)" ]]; then
+  echo "No updated dependencies after 'fpm update --clean'";
+  exit 1;
+fi
+
 popd
 
 # Cleanup
