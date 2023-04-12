@@ -38,7 +38,6 @@ module fpm_model
 use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
-use fpm_strings, only: string_t, str, len_trim
 implicit none
 
 private
@@ -249,23 +248,7 @@ function info_srcfile(source) result(s)
     !    character(:), allocatable :: exe_name
     s = s // ', exe_name="' // source%exe_name // '"'
     !    integer :: unit_scope = FPM_SCOPE_UNKNOWN
-    s = s // ", unit_scope="
-    select case(source%unit_scope)
-    case (FPM_SCOPE_UNKNOWN)
-        s = s // "FPM_SCOPE_UNKNOWN"
-    case (FPM_SCOPE_LIB)
-        s = s // "FPM_SCOPE_LIB"
-    case (FPM_SCOPE_DEP)
-        s = s // "FPM_SCOPE_DEP"
-    case (FPM_SCOPE_APP)
-        s = s // "FPM_SCOPE_APP"
-    case (FPM_SCOPE_TEST)
-        s = s // "FPM_SCOPE_TEST"
-    case (FPM_SCOPE_EXAMPLE)
-        s = s // "FPM_SCOPE_EXAMPLE"
-    case default
-        s = s // "INVALID"
-    end select
+    s = s // ', unit_scope="' // FPM_SCOPE_NAME(source%unit_scope) // '"'
     !    type(string_t), allocatable :: modules_provided(:)
     s = s // ", modules_provided=["
     do i = 1, size(source%modules_provided)
@@ -280,27 +263,7 @@ function info_srcfile(source) result(s)
     end do
     s = s // "]"
     !    integer :: unit_type = FPM_UNIT_UNKNOWN
-    s = s // ", unit_type="
-    select case(source%unit_type)
-    case (FPM_UNIT_UNKNOWN)
-        s = s // "FPM_UNIT_UNKNOWN"
-    case (FPM_UNIT_PROGRAM)
-        s = s // "FPM_UNIT_PROGRAM"
-    case (FPM_UNIT_MODULE)
-        s = s // "FPM_UNIT_MODULE"
-    case (FPM_UNIT_SUBMODULE)
-        s = s // "FPM_UNIT_SUBMODULE"
-    case (FPM_UNIT_SUBPROGRAM)
-        s = s // "FPM_UNIT_SUBPROGRAM"
-    case (FPM_UNIT_CSOURCE)
-        s = s // "FPM_UNIT_CSOURCE"
-    case (FPM_UNIT_CPPSOURCE)
-        s = s // "FPM_UNIT_CPPSOURCE"
-    case (FPM_UNIT_CHEADER)
-        s = s // "FPM_UNIT_CHEADER"
-    case default
-        s = s // "INVALID"
-    end select
+    s = s // ', unit_type="' // FPM_UNIT_NAME(source%unit_type) // '"'
     !    type(string_t), allocatable :: modules_used(:)
     s = s // ", modules_used=["
     do i = 1, size(source%modules_used)
@@ -395,5 +358,39 @@ subroutine show_model(model)
     type(fpm_model_t), intent(in) :: model
     print *, info_model(model)
 end subroutine show_model
+
+!> Return the character name of a scope flag
+function FPM_SCOPE_NAME(flag) result(name)
+    integer, intent(in) :: flag
+    character(len=:), allocatable :: name
+
+    select case (flag)
+       case (FPM_SCOPE_UNKNOWN); name = "FPM_SCOPE_UNKNOWN"
+       case (FPM_SCOPE_LIB);     name = "FPM_SCOPE_LIB"
+       case (FPM_SCOPE_DEP);     name = "FPM_SCOPE_DEP"
+       case (FPM_SCOPE_APP);     name = "FPM_SCOPE_APP"
+       case (FPM_SCOPE_TEST);    name = "FPM_SCOPE_TEST"
+       case (FPM_SCOPE_EXAMPLE); name = "FPM_SCOPE_EXAMPLE"
+       case default;             name = "INVALID"
+    end select
+end function FPM_SCOPE_NAME
+
+!> Return the character name of a unit flag
+function FPM_UNIT_NAME(flag) result(name)
+    integer, intent(in) :: flag
+    character(len=:), allocatable :: name
+
+    select case (flag)
+       case (FPM_UNIT_UNKNOWN);    name = "FPM_SCOPE_UNKNOWN"
+       case (FPM_UNIT_PROGRAM);    name = "FPM_UNIT_PROGRAM"
+       case (FPM_UNIT_MODULE);     name = "FPM_UNIT_MODULE"
+       case (FPM_UNIT_SUBMODULE);  name = "FPM_UNIT_SUBMODULE"
+       case (FPM_UNIT_SUBPROGRAM); name = "FPM_UNIT_SUBPROGRAM"
+       case (FPM_UNIT_CSOURCE);    name = "FPM_UNIT_CSOURCE"
+       case (FPM_UNIT_CPPSOURCE);  name = "FPM_UNIT_CPPSOURCE"
+       case (FPM_UNIT_CHEADER);    name = "FPM_UNIT_CHEADER"
+       case default;               name = "INVALID"
+    end select
+end function FPM_UNIT_NAME
 
 end module fpm_model
