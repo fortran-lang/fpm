@@ -41,11 +41,13 @@ contains
     if (.not. allocated(package%license)) call fpm_stop(1, 'No license specified in fpm.toml.')
     if (.not. allocated(version)) call fpm_stop(1, 'No version specified in fpm.toml.')
     if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')
+    if (.not. allocated(settings%token)) call fpm_stop(1, 'No token provided.')
 
     if (settings%show_request) then
       call set_value(json, 'package_name', package%name)
       call set_value(json, 'package_license', package%license)
       call set_value(json, 'package_version', version%s())
+      call set_value(json, 'upload_token', settings%token)
       print *, json_serialize(json)
     else
       print *, 'Start publishing ...'

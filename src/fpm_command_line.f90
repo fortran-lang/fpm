@@ -120,6 +120,7 @@ end type
 type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
     logical :: show_request = .false.
+    character(len=:), allocatable :: token
 end type
 
 character(len=:),allocatable :: name
@@ -135,7 +136,7 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_clean(:), help_publish(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
-&  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish'  ]
+&  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
     val_profile
@@ -216,6 +217,7 @@ contains
         integer                       :: os
         logical                       :: unix
         type(fpm_install_settings), allocatable :: install_settings
+        type(fpm_publish_settings), allocatable :: publish_settings
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, cxx_compiler, archiver
 
@@ -613,6 +615,7 @@ contains
             call set_args(common_args // compiler_args //'&
             & --show-package-version F &
             & --show-request F &
+            & --token " " &
             & --list F &
             & --show-model F &
             & --tests F &
@@ -624,7 +627,7 @@ contains
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
 
-            cmd_settings = fpm_publish_settings( &
+            allocate(publish_settings, source=fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
             & show_request = lget('show-request'), &
             & profile=val_profile,&
@@ -640,7 +643,9 @@ contains
             & list=lget('list'),&
             & show_model=lget('show-model'),&
             & build_tests=lget('tests'),&
-            & verbose=lget('verbose') )
+            & verbose=lget('verbose')))
+            call get_char_arg(publish_settings%token, 'token')
+            call move_alloc(publish_settings, cmd_settings)
 
         case default
 
@@ -742,7 +747,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-request]                            ', &
+   ' publish [--show-package-version] [--show-request] [--token TOKEN]              ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -847,6 +852,7 @@ contains
     '  + install  Install project.                                          ', &
     '  + clean    Delete directories in the "build/" directory, except      ', &
     '             dependencies. Prompts for confirmation to delete.         ', &
+    '  + publish  Publish package to the registry.                          ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                                ', &
@@ -864,7 +870,8 @@ contains
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
-    '    clean [--skip] [--all]                                                       ', &
+    '    clean [--skip] [--all]                                                      ', &
+    '    publish [--show-package-version] [--show-request] [--token TOKEN]           ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1345,10 +1352,12 @@ contains
     ' publish(1) - publish package to the registry', &
     '', &
     'SYNOPSIS', &
-    ' fpm publish', &
+    ' fpm publish [--token TOKEN]', &
     '', &
     'DESCRIPTION', &
     ' Collect relevant source files and upload package to the registry.', &
+    ' It is mandatory to provide a token. The token can be generated on the', &
+    ' registry website and will be linked to your username and namespace.', &
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
