@@ -6,6 +6,7 @@ module fpm_cmd_publish
   use fpm, only: build_model
   use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_serialize, set_value
+  use fpm_filesystem, only: exists, join_path
 
   implicit none
   private
@@ -14,7 +15,7 @@ module fpm_cmd_publish
 contains
 
   subroutine cmd_publish(settings)
-    type(fpm_publish_settings), intent(in) :: settings
+    type(fpm_publish_settings), intent(inout) :: settings
 
     type(package_config_t) :: package
     type(fpm_model_t) :: model
@@ -36,13 +37,17 @@ contains
       print *, version%s(); return
     end if
 
-    json = json_object()
-
     if (.not. allocated(package%license)) call fpm_stop(1, 'No license specified in fpm.toml.')
     if (.not. allocated(version)) call fpm_stop(1, 'No version specified in fpm.toml.')
     if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')
-    if (.not. allocated(settings%source_path)) call fpm_stop(1, 'No source path provided.')
     if (.not. allocated(settings%token)) call fpm_stop(1, 'No token provided.')
+    if (.not. allocated(settings%source_path)) settings%source_path = '.'
+    if (.not. exists(settings%source_path)) call fpm_stop(1, 'Source path does not exist: "'//settings%source_path//'".')
+    if (.not. exists(join_path(settings%source_path, 'fpm.toml'))) then
+      call fpm_stop(1, 'No "fpm.toml" file in "'//settings%source_path//'".')
+    end if
+
+    json = json_object()
 
     if (settings%show_request) then
       call set_value(json, 'package_name', package%name)
