@@ -171,7 +171,7 @@ contains
            flush(unit=stderr,iostat=iostat)
            flush(unit=stdout,iostat=iostat)
            if(value>0)then
-              write(stderr,'("<ERROR>",a)')trim(message)
+              write(stderr,'("<ERROR> ",a)')trim(message)
            else
               write(stderr,'("<INFO> ",a)')trim(message)
            endif

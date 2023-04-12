@@ -5,6 +5,7 @@ module fpm_cmd_publish
   use fpm_error, only: error_t, fpm_stop
   use fpm, only: build_model
   use fpm_versioning, only: version_t
+  use jonquil, only: json_object, json_serialize, set_value
 
   implicit none
   private
@@ -18,7 +19,8 @@ contains
     type(package_config_t) :: package
     type(fpm_model_t) :: model
     type(error_t), allocatable :: error
-    type(version_t) :: version
+    type(version_t), allocatable :: version
+    type(json_object) :: json
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Package error: '//error%message)
@@ -34,8 +36,17 @@ contains
       print *, version%s(); return
     end if
 
+    json = json_object()
+
+    if (.not. allocated(package%license)) call fpm_stop(1, 'No license specified in fpm.toml.')
+    if (.not. allocated(version)) call fpm_stop(1, 'No version specified in fpm.toml.')
+    if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')
+
     if (settings%show_request) then
-      print *, 'Show JSON ...'
+      call set_value(json, 'package_name', package%name)
+      call set_value(json, 'package_license', package%license)
+      call set_value(json, 'package_version', version%s())
+      print *, json_serialize(json)
     else
       print *, 'Start publishing ...'
     end if
