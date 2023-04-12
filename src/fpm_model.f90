@@ -82,7 +82,7 @@ integer, parameter :: FPM_SCOPE_TEST = 4
 integer, parameter :: FPM_SCOPE_EXAMPLE = 5
 
 !> Enabled Fortran language features
-type :: fortran_features_t
+type, extends(serializable_t) :: fortran_features_t
 
     !> Use default implicit typing
     logical :: implicit_typing = .false.
@@ -92,6 +92,13 @@ type :: fortran_features_t
 
     !> Form to use for all Fortran sources
     character(:), allocatable :: source_form
+
+    contains
+
+        !> Serialization interface
+        procedure :: serializable_is_same => fft_is_same
+        procedure :: dump_to_toml   => fft_dump_to_toml
+        procedure :: load_from_toml => fft_load_from_toml
 
 end type fortran_features_t
 
@@ -585,6 +592,64 @@ subroutine srcfile_load_from_toml(self, table, error)
 
 end subroutine srcfile_load_from_toml
 
+!> Check that two fortran feature objects are equal
+logical function fft_is_same(this,that)
+    class(fortran_features_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    fft_is_same = .false.
+
+    select type (other=>that)
+       type is (fortran_features_t)
+
+           if (.not.(this%implicit_typing.eqv.other%implicit_typing)) return
+           if (.not.(this%implicit_external.eqv.other%implicit_external)) return
+           if (.not.(this%source_form==other%source_form)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    fft_is_same = .true.
+
+end function fft_is_same
+
+!> Dump fortran features to toml table
+subroutine fft_dump_to_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(fortran_features_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call fatal_error(error,' fortran-features-t serialization not yet implemented ' )
+
+end subroutine fft_dump_to_toml
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine fft_load_from_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(fortran_features_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    character(len=:), allocatable :: flag
+
+    call fatal_error(error, ' fortran-features-t serialization not yet implemented ')
+
+end subroutine fft_load_from_toml
+
 !> Check that two package objects are equal
 logical function package_is_same(this,that)
     class(package_t), intent(in) :: this
@@ -614,9 +679,7 @@ logical function package_is_same(this,that)
            if (.not.(this%module_prefix==other%module_prefix)) return
 
            !> Fortran features
-           if (.not.(this%features%implicit_typing.eqv.other%features%implicit_typing)) return
-           if (.not.(this%features%implicit_external.eqv.other%features%implicit_external)) return
-           if (.not.(this%features%source_form==other%features%source_form)) return
+           if (.not.(this%features==other%features)) return
 
        class default
           ! Not the same type
