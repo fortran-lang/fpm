@@ -92,6 +92,7 @@ type :: fortran_features_t
 
     !> Form to use for all Fortran sources
     character(:), allocatable :: source_form
+
 end type fortran_features_t
 
 !> Type for describing a source file
@@ -133,12 +134,11 @@ type, extends(serializable_t) :: srcfile_t
         procedure :: dump_to_toml   => srcfile_dump_to_toml
         procedure :: load_from_toml => srcfile_load_from_toml
 
-
 end type srcfile_t
 
 
 !> Type for describing a single package
-type package_t
+type, extends(serializable_t) :: package_t
 
     !> Name of package
     character(:), allocatable :: name
@@ -160,6 +160,13 @@ type package_t
 
     !> Language features
     type(fortran_features_t) :: features
+
+    contains
+
+        !> Serialization interface
+        procedure :: serializable_is_same => package_is_same
+        procedure :: dump_to_toml   => package_dump_to_toml
+        procedure :: load_from_toml => package_load_from_toml
 
 end type package_t
 
@@ -577,6 +584,83 @@ subroutine srcfile_load_from_toml(self, table, error)
 
 
 end subroutine srcfile_load_from_toml
+
+!> Check that two package objects are equal
+logical function package_is_same(this,that)
+    class(package_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    integer :: ii
+
+    package_is_same = .false.
+
+    select type (other=>that)
+       type is (package_t)
+
+           if (.not.(this%name==other%name)) return
+           if (.not.(allocated(this%sources).eqv.allocated(other%sources))) return
+           if (allocated(this%sources)) then
+              if (.not.(size(this%sources)==size(other%sources))) return
+              do ii = 1, size(this%sources)
+                  if (.not.(this%sources(ii)==other%sources(ii))) return
+              end do
+           end if
+
+           if (.not.(this%macros==other%macros)) return
+           if (.not.(this%version==other%version)) return
+
+           !> Module naming
+           if (.not.(this%enforce_module_names.eqv.other%enforce_module_names)) return
+           if (.not.(this%module_prefix==other%module_prefix)) return
+
+           !> Fortran features
+           if (.not.(this%features%implicit_typing.eqv.other%features%implicit_typing)) return
+           if (.not.(this%features%implicit_external.eqv.other%features%implicit_external)) return
+           if (.not.(this%features%source_form==other%features%source_form)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    package_is_same = .true.
+
+end function package_is_same
+
+!> Dump dependency to toml table
+subroutine package_dump_to_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(package_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    call fatal_error(error,' not yet implemented ' )
+
+end subroutine package_dump_to_toml
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine package_load_from_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(package_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    character(len=:), allocatable :: flag
+
+    call fatal_error(error, ' not yet implemented ')
+
+end subroutine package_load_from_toml
 
 
 end module fpm_model
