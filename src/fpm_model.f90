@@ -38,6 +38,7 @@ module fpm_model
 use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
+use fpm_strings, only: string_t, str, len_trim, lower
 implicit none
 
 private
@@ -375,6 +376,27 @@ function FPM_SCOPE_NAME(flag) result(name)
     end select
 end function FPM_SCOPE_NAME
 
+!> Parse git FPM_SCOPE identifier from a string
+integer function parse_scope(name) result(scope)
+    character(len=*), intent(in) :: name
+
+    character(len=len(name)) :: lowercase
+
+    !> Make it Case insensitive
+    lowercase = lower(name)
+
+    select case (trim(lowercase))
+       case ("FPM_SCOPE_UNKNOWN"); scope = FPM_SCOPE_UNKNOWN
+       case ("FPM_SCOPE_LIB");     scope = FPM_SCOPE_LIB
+       case ("FPM_SCOPE_DEP");     scope = FPM_SCOPE_DEP
+       case ("FPM_SCOPE_APP");     scope = FPM_SCOPE_APP
+       case ("FPM_SCOPE_TEST");    scope = FPM_SCOPE_TEST
+       case ("FPM_SCOPE_EXAMPLE"); scope = FPM_SCOPE_EXAMPLE
+       case default;               scope = -9999
+    end select
+
+end function parse_scope
+
 !> Return the character name of a unit flag
 function FPM_UNIT_NAME(flag) result(name)
     integer, intent(in) :: flag
@@ -392,5 +414,28 @@ function FPM_UNIT_NAME(flag) result(name)
        case default;               name = "INVALID"
     end select
 end function FPM_UNIT_NAME
+
+!> Parse git FPM_UNIT identifier from a string
+integer function parse_unit(name) result(unit)
+    character(len=*), intent(in) :: name
+
+    character(len=len(name)) :: lowercase
+
+    !> Make it Case insensitive
+    lowercase = lower(name)
+
+    select case (trim(lowercase))
+       case ("FPM_UNIT_UNKNOWN");    unit = FPM_UNIT_UNKNOWN
+       case ("FPM_UNIT_PROGRAM");    unit = FPM_UNIT_PROGRAM
+       case ("FPM_UNIT_MODULE");     unit = FPM_UNIT_MODULE
+       case ("FPM_UNIT_SUBMODULE");  unit = FPM_UNIT_SUBMODULE
+       case ("FPM_UNIT_SUBPROGRAM"); unit = FPM_UNIT_SUBPROGRAM
+       case ("FPM_UNIT_CSOURCE");    unit = FPM_UNIT_CSOURCE
+       case ("FPM_UNIT_CPPSOURCE");  unit = FPM_UNIT_CPPSOURCE
+       case ("FPM_UNIT_CHEADER");    unit = FPM_UNIT_CHEADER
+       case default;                 unit = -9999
+    end select
+
+end function parse_unit
 
 end module fpm_model
