@@ -23,7 +23,7 @@ module fpm_toml
 
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
-              toml_error, toml_serialize, toml_load, check_keys
+              toml_error, toml_serialize, toml_load, check_keys, set_list
 
     !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
     type, abstract, public :: serializable_t
@@ -292,6 +292,66 @@ contains
         end if
 
     end subroutine get_list
+
+    ! Set string array
+    subroutine set_list(table, key, list, error)
+
+        !> Instance of the string array
+        type(string_t), allocatable, intent(in) :: list(:)
+
+        !> Key to save to
+        character(len=*), intent(in) :: key
+
+        !> Instance of the toml table
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Local variables
+        integer :: stat, ilist
+        type(toml_array), pointer :: children
+        character(len=:), allocatable :: str
+
+        !> Set no key if array is not present
+        if (.not.allocated(list)) return
+
+        !> Check the key is not empty
+        if (len_trim(key)<=0) then
+            call fatal_error(error, 'key is empty dumping string array to TOML table')
+            return
+        end if
+
+        if (size(list)/=1) then ! includes empty list case
+
+            !> String array
+            call add_array(table, key, children, stat)
+            if (stat /= toml_stat%success) then
+                call fatal_error(error, "Cannot set array table in "//key//" field")
+                return
+            end if
+
+            do ilist = 1, size(list)
+                  call set_value(children, ilist, list(ilist)%s, stat=stat)
+                  if (stat /= toml_stat%success) then
+                      call fatal_error(error, "Cannot store array entry in "//key//" field")
+                      return
+                  end if
+            end do
+
+        else
+
+            ! Single value: set string
+            call set_value(table, key, list(1)%s, stat=stat)
+
+            if (stat /= toml_stat%success) &
+            call fatal_error(error, "Cannot store entry in "//key//" field")
+
+            return
+        end if
+
+    end subroutine set_list
+
 
     !> Check if table contains only keys that are part of the list. If a key is
     !> found that is not part of the list, an error is allocated.

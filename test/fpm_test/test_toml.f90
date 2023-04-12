@@ -7,6 +7,7 @@ module test_toml
          & new_dependency_node, new_dependency_tree, resize
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
     use fpm_versioning, only: new_version
+    use fpm_strings, only: string_t, operator(==), split
 
     implicit none
     private
@@ -30,7 +31,8 @@ contains
             & new_unittest("serialize-git-target", git_target_roundtrip), &
             & new_unittest("serialize-dependency-config", dependency_config_roundtrip), &
             & new_unittest("serialize-dependency-node", dependency_node_roundtrip), &
-            & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip)]
+            & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip), &
+            & new_unittest("serialize-string-array", string_array_roundtrip)]
 
     end subroutine collect_toml
 
@@ -344,5 +346,79 @@ contains
         1 format('removed ',i0,' dependencies')
 
     end subroutine dependency_tree_roundtrip
+
+    !> Test serialization/deserialization of a string array
+    subroutine string_array_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=*), parameter :: lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing " &
+            & //"elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad " &
+            & //"minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo " &
+            & //"consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum " &
+            & //"dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt " &
+            & //"in culpa qui officia deserunt mollit anim id est laborum"
+
+        integer :: ii, nword
+        character(len=:), allocatable :: tokens(:)
+        type(string_t), allocatable :: list(:),copy(:)
+        type(toml_table) :: table
+        character(len=16) :: key
+
+        call split(lorem, tokens)
+        nword = size(tokens)
+
+        !> Convert to string_t array
+        allocate(list(nword))
+        do ii = 1, nword
+            list(ii) = string_t(trim(tokens(ii)))
+        end do
+
+        ! Test list with any length
+        do ii = nword, 1, -1
+
+            ! Shorten list
+            list = list(1:ii)
+
+            ! Set list to table
+            table = toml_table()
+
+            call set_list(table, key="lorem-ipsum", list=list, error=error)
+            if (allocated(error)) return
+
+            ! Load list from table
+            call get_list(table, key="lorem-ipsum", list=copy, error=error)
+            if (allocated(error)) return
+
+            if (.not.(list==copy)) then
+               call fatal_error(error,'string_array is not equal after TOML roundtrip')
+               return
+            end if
+
+        end do
+
+        ! Test empty list
+        deallocate(list)
+        allocate(list(0))
+        ! Set list to table
+        table = toml_table()
+
+        call set_list(table, key="lorem-ipsum", list=list, error=error)
+        if (allocated(error)) return
+
+        ! Load list from table
+        call get_list(table, key="lorem-ipsum", list=copy, error=error)
+        if (allocated(error)) return
+
+        if (.not.(list==copy)) then
+           call fatal_error(error,'empty string_array is not equal after TOML roundtrip')
+           return
+        end if
+
+        1 format('word_',i0)
+
+
+    end subroutine string_array_roundtrip
 
 end module test_toml
