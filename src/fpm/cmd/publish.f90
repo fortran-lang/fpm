@@ -6,7 +6,8 @@ module fpm_cmd_publish
   use fpm, only: build_model
   use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_serialize, set_value
-  use fpm_filesystem, only: exists, join_path
+  use fpm_filesystem, only: exists, join_path, get_tmp_directory
+  use fpm_git, only: git_archive
 
   implicit none
   private
@@ -22,6 +23,7 @@ contains
     type(error_t), allocatable :: error
     type(version_t), allocatable :: version
     type(json_object) :: json
+    character(len=:), allocatable :: tmpdir
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Package error: '//error%message)
@@ -57,7 +59,10 @@ contains
       call set_value(json, 'upload_token', settings%token)
       print *, json_serialize(json)
     else
-      print *, 'Start publishing ...'
+      call get_tmp_directory(tmpdir, error)
+      if (allocated(error)) call fpm_stop(1, '*cmd_publish* Tmp directory error: '//error%message)
+      call git_archive(settings%source_path, tmpdir, error)
+      if (allocated(error)) call fpm_stop(1, '*cmd_publish* Pack error: '//error%message)
     end if
   end
 end

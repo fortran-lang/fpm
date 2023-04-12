@@ -1,15 +1,11 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
     use fpm_error, only: error_t, fatal_error
-    use fpm_filesystem, only : get_temp_filename, getline, join_path
+    use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output
     implicit none
 
-    public :: git_target_t
-    public :: git_target_default, git_target_branch, git_target_tag, &
-        & git_target_revision
-    public :: git_revision
-    public :: operator(==)
-
+    public :: git_target_t, git_target_default, git_target_branch, git_target_tag, git_target_revision, git_revision, &
+            & git_archive, operator(==)
 
     !> Possible git target
     type :: enum_descriptor
@@ -277,6 +273,34 @@ contains
         end if
 
     end subroutine info
+
+  !> Archive a folder using `git archive`.
+  subroutine git_archive(source, destination, error)
+    !> Directory to pack.
+    character(*), intent(in) :: source
+    !> Destination to pack to.
+    character(*), intent(in) :: destination
+    !> Error handling.
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: stat
+    character(len=:), allocatable :: output, archive_format
+
+    call execute_and_read_output('git archive -l', output, error)
+    if (allocated(error)) return
+
+    if (index(output, 'tar.gz') /= 0) then
+      archive_format = 'tar.gz'
+    else
+      call fatal_error(error, "Cannot find a suitable archive format for 'git archive'.")
+    end if
+
+    call execute_command_line('git archive HEAD --format='//archive_format//' -o '// &
+    & join_path(destination, 'compressed_package'), exitstat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, "Error packing '"//source//"'."); return
+    end if
+  end
 
 
 end module fpm_git

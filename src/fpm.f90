@@ -7,7 +7,6 @@ use fpm_command_line, only: fpm_build_settings, fpm_new_settings, &
                       fpm_run_settings, fpm_install_settings, fpm_test_settings, &
                       fpm_clean_settings
 use fpm_dependency, only : new_dependency_tree
-use fpm_environment, only: get_env
 use fpm_filesystem, only: is_dir, join_path, list_files, exists, &
                    basename, filewrite, mkdir, run, os_delete_dir
 use fpm_model, only: fpm_model_t, srcfile_t, show_model, fortran_features_t, &
