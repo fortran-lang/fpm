@@ -10,6 +10,7 @@ module test_toml
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE
+    use fpm_compiler, only: archiver_t
 
     implicit none
     private
@@ -36,7 +37,8 @@ contains
             & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip), &
             & new_unittest("serialize-string-array", string_array_roundtrip), &
             & new_unittest("serialize-fortran-features", fft_roundtrip), &
-            & new_unittest("serialize-package", package_roundtrip)]
+            & new_unittest("serialize-package", package_roundtrip), &
+            & new_unittest("serialize-archiver", ar_roundtrip)]
 
     end subroutine collect_toml
 
@@ -468,8 +470,6 @@ contains
         type(package_t) :: pkg
         integer :: ierr
 
-        call pkg%dump('pkg.toml',error)
-
         !> Default object
         call pkg%test_serialization('package_t: default object',error)
         if (allocated(error)) return
@@ -542,6 +542,30 @@ contains
         if (allocated(error)) return
 
     end subroutine package_roundtrip
+
+    !> Test serialization/deserialization of an archiver_t structure
+    subroutine ar_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(archiver_t) :: ar
+        integer :: ierr
+
+        call ar%dump('ar.toml',error)
+
+        !> Default object
+        call ar%test_serialization('archiver_t: default object',error)
+        if (allocated(error)) return
+
+        !> change a few items
+        ar%ar = "ar"
+        ar%echo = .true.
+        ar%use_response_file = .false.
+
+        call ar%test_serialization('archiver_t: ar',error)
+
+    end subroutine ar_roundtrip
 
 
 

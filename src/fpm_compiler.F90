@@ -42,7 +42,8 @@ use fpm_filesystem, only: join_path, basename, get_temp_filename, delete_file, u
     & getline, run
 use fpm_strings, only: split, string_cat, string_t, str_ends_with, str_begins_with_str
 use fpm_manifest, only : package_config_t
-use fpm_error, only: error_t
+use fpm_error, only: error_t, fatal_error
+use fpm_toml, only: serializable_t, toml_table, set_string, set_value, toml_stat, get_value
 implicit none
 public :: compiler_t, new_compiler, archiver_t, new_archiver, get_macros
 public :: debug
@@ -112,7 +113,7 @@ end type compiler_t
 
 
 !> Definition of archiver object
-type :: archiver_t
+type, extends(serializable_t) :: archiver_t
     !> Path to archiver
     character(len=:), allocatable :: ar
     !> Use response files to pass arguments
@@ -124,6 +125,12 @@ type :: archiver_t
 contains
     !> Create static archive
     procedure :: make_archive
+
+    !> Serialization interface
+    procedure :: serializable_is_same => ar_is_same
+    procedure :: dump_to_toml
+    procedure :: load_from_toml
+
 end type archiver_t
 
 
@@ -211,7 +218,7 @@ character(*), parameter :: &
     flag_cray_implicit_typing = " -el", &
     flag_cray_fixed_form = " -ffixed", &
     flag_cray_free_form = " -ffree"
-    
+
 contains
 
 
@@ -440,7 +447,7 @@ pure subroutine set_cpp_preprocessor_flags(id, flags)
 
 end subroutine set_cpp_preprocessor_flags
 
-!> This function will parse and read the macros list and 
+!> This function will parse and read the macros list and
 !> return them as defined flags.
 function get_macros(id, macros_list, version) result(macros)
     integer(compiler_enum), intent(in) :: id
@@ -450,7 +457,7 @@ function get_macros(id, macros_list, version) result(macros)
     character(len=:), allocatable :: macros
     character(len=:), allocatable :: macro_definition_symbol
     character(:), allocatable :: valued_macros(:)
-    
+
 
     integer :: i
 
@@ -473,10 +480,10 @@ function get_macros(id, macros_list, version) result(macros)
     end if
 
     do i = 1, size(macros_list)
-        
+
         !> Split the macro name and value.
         call split(macros_list(i)%s, valued_macros, delimiters="=")
- 
+
         if (size(valued_macros) > 1) then
             !> Check if the value of macro starts with '{' character.
             if (str_begins_with_str(trim(valued_macros(size(valued_macros))), "{")) then
@@ -486,15 +493,15 @@ function get_macros(id, macros_list, version) result(macros)
 
                     !> Check if the string contains "version" as substring.
                     if (index(valued_macros(size(valued_macros)), "version") /= 0) then
-                    
+
                         !> These conditions are placed in order to ensure proper spacing between the macros.
                         macros = macros//macro_definition_symbol//trim(valued_macros(1))//'='//version
                         cycle
                     end if
                 end if
-            end if 
+            end if
         end if
-         
+
         macros = macros//macro_definition_symbol//macros_list(i)%s
 
     end do
@@ -919,7 +926,7 @@ subroutine new_compiler(self, fc, cc, cxx, echo, verbose)
     logical, intent(in) :: verbose
 
     self%id = get_compiler_id(fc)
-    
+
     self%echo = echo
     self%verbose = verbose
     self%fc = fc
@@ -1140,6 +1147,106 @@ pure function debug_archiver(self) result(repr)
 
     repr = 'ar="'//self%ar//'"'
 end function debug_archiver
+
+!> Check that two source files are equal
+logical function ar_is_same(this,that)
+    class(archiver_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    ar_is_same = .false.
+
+    select type (other=>that)
+       type is (archiver_t)
+
+          if (.not.(this%ar==other%ar)) return
+          if (.not.(this%use_response_file.eqv.other%use_response_file)) return
+          if (.not.(this%echo.eqv.other%echo)) return
+          if (.not.(this%verbose.eqv.other%verbose)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    ar_is_same = .true.
+
+end function ar_is_same
+
+!> Dump dependency to toml table
+subroutine dump_to_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(archiver_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ierr
+
+    !> Path to archiver
+    call set_string(table, "ar", self%ar, error, 'archiver_t')
+    if (allocated(error)) return
+
+    call set_value(table, "use-response-file", self%use_response_file, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'archiver_t: error dumping use_response_file')
+        return
+    end if
+
+    call set_value(table, "echo", self%echo, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'archiver_t: error dumping echo')
+        return
+    end if
+
+    call set_value(table, "verbose", self%verbose, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'archiver_t: error dumping verbose')
+        return
+    end if
+
+end subroutine dump_to_toml
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine load_from_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(archiver_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ierr
+
+    call get_value(table, "ar", self%ar)
+
+    call get_value(table, "use-response-file", self%use_response_file, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'archiver_t: error getting use_response_file from TOML')
+        return
+    end if
+
+    call get_value(table, "echo", self%echo, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'archiver_t: error getting echo from TOML')
+        return
+    end if
+
+    call get_value(table, "verbose", self%verbose, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'archiver_t: error getting verbose from TOML')
+        return
+    end if
+
+end subroutine load_from_toml
+
 
 
 end module fpm_compiler
