@@ -416,8 +416,23 @@ contains
            return
         end if
 
-        1 format('word_',i0)
+        ! Test unallocated list
+        deallocate(list)
+        table = toml_table()
 
+        call set_list(table, key="lorem-ipsum", list=list, error=error)
+        if (allocated(error)) return
+
+        ! Load list from table
+        call get_list(table, key="lorem-ipsum", list=copy, error=error)
+        if (allocated(error)) return
+
+        if (.not.(list==copy)) then
+           call fatal_error(error,'deallocated string_array is not equal after TOML roundtrip')
+           return
+        end if
+
+        1 format('word_',i0)
 
     end subroutine string_array_roundtrip
 
