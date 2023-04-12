@@ -22,7 +22,7 @@ contains
             & new_unittest("valid-toml", test_valid_toml), &
             & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.), &
             & new_unittest("missing-file", test_missing_file, should_fail=.true.), &
-            & new_unittest("serialize-git-target", git_target_roundtrip_1)]
+            & new_unittest("serialize-git-target", git_target_roundtrip)]
 
     end subroutine collect_toml
 
@@ -106,7 +106,7 @@ contains
     end subroutine test_missing_file
 
     !> Test git_target_t serialization
-    subroutine git_target_roundtrip_1(error)
+    subroutine git_target_roundtrip(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -118,22 +118,32 @@ contains
         ! Revision type
         git = git_target_revision(url="https://github.com/urbanjost/M_CLI2.git", &
                                   sha1="7264878cdb1baff7323cc48596d829ccfe7751b8")
-        call git%test_serialization("git_target_roundtrip_1",error)
+        call git%test_serialization("revision git type",error)
         if (allocated(error)) return
 
         ! Branch type
         git = git_target_branch(url="https://github.com/urbanjost/M_CLI2.git", &
                                 branch="main")
-        call git%test_serialization("git_target_roundtrip_1",error)
+        call git%test_serialization("branch git type",error)
         if (allocated(error)) return
 
-        ! Branch type
+        ! Tag type
         git = git_target_tag(url="https://github.com/urbanjost/M_CLI2.git", &
                              tag="1.0.0")
-        call git%test_serialization("git_target_roundtrip_1",error)
+        call git%test_serialization("target git type",error)
         if (allocated(error)) return
 
-    end subroutine git_target_roundtrip_1
+        ! Incomplete type
+        if (allocated(git%object)) deallocate(git%object)
+        call git%test_serialization("incomplete git type 1/2",error)
+        if (allocated(error)) return
+
+        ! Incomplete type
+        if (allocated(git%url)) deallocate(git%url)
+        call git%test_serialization("incomplete git type 2/2",error)
+        if (allocated(error)) return
+
+    end subroutine git_target_roundtrip
 
 
 
