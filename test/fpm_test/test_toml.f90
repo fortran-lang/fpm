@@ -3,6 +3,8 @@ module test_toml
     use testsuite, only : new_unittest, unittest_t, error_t
     use fpm_toml
     use fpm_git
+    use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
+    use fpm_versioning, only: new_version
     implicit none
     private
 
@@ -22,7 +24,8 @@ contains
             & new_unittest("valid-toml", test_valid_toml), &
             & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.), &
             & new_unittest("missing-file", test_missing_file, should_fail=.true.), &
-            & new_unittest("serialize-git-target", git_target_roundtrip)]
+            & new_unittest("serialize-git-target", git_target_roundtrip), &
+            & new_unittest("serialize-dependency-config", dependency_config_roundtrip)]
 
     end subroutine collect_toml
 
@@ -145,6 +148,59 @@ contains
 
     end subroutine git_target_roundtrip
 
+
+    !> Test git_target_t serialization
+    subroutine dependency_config_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+
+        type(dependency_config_t) :: dep
+
+        call dependency_destroy(dep)
+
+        dep%name = "M_CLI2"
+        dep%path = "~/./some/dummy/path"
+        dep%namespace = "urbanjost"
+        allocate(dep%requested_version)
+        call new_version(dep%requested_version, "3.2.0",error); if (allocated(error)) return
+
+        allocate(dep%git)
+        dep%git = git_target_revision(url="https://github.com/urbanjost/M_CLI2.git", &
+                                      sha1="7264878cdb1baff7323cc48596d829ccfe7751b8")
+
+        ! Test full object
+        call dep%test_serialization("full object",error)
+        if (allocated(error)) return
+
+        ! Remove namespace
+        deallocate(dep%namespace)
+        call dep%test_serialization("no namespace",error)
+        if (allocated(error)) return
+
+        ! Remove git
+        deallocate(dep%git)
+        call dep%test_serialization("no git",error)
+        if (allocated(error)) return
+
+        ! Remove version
+        deallocate(dep%requested_version)
+        call dep%test_serialization("no version",error)
+        if (allocated(error)) return
+
+        ! Remove name
+        deallocate(dep%name)
+        call dep%test_serialization("no name",error)
+        if (allocated(error)) return
+
+        ! Remove path
+        deallocate(dep%path)
+        call dep%test_serialization("no path",error)
+        if (allocated(error)) return
+
+    end subroutine dependency_config_roundtrip
 
 
 end module test_toml
