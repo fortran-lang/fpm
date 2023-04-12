@@ -111,7 +111,6 @@ module fpm_dependency
     procedure :: dump_to_toml => node_dump_to_toml
     procedure :: load_from_toml => node_load_from_toml
 
-
   end type dependency_node_t
 
   !> Respresentation of a projects dependencies
@@ -183,6 +182,7 @@ module fpm_dependency
     procedure, private :: update_dependency
     !> Update all dependencies in the tree
     procedure, private :: update_tree
+
   end type dependency_tree_t
 
   !> Common output format for writing to the command line
@@ -1297,7 +1297,7 @@ contains
         endif
 
         if (allocated(self%proj_dir)) then
-            call set_value(table, "proj_dir", self%proj_dir, ierr)
+            call set_value(table, "proj-dir", self%proj_dir, ierr)
             if (ierr/=toml_stat%success) then
                 call fatal_error(error,'dependency_node_t: cannot set proj_dir in TOML table')
                 return
@@ -1356,7 +1356,7 @@ contains
         call get_value(table, "done", self%done)
         call get_value(table, "update", self%update)
         call get_value(table, "cached", self%cached)
-        call get_value(table, "proj_dir", self%proj_dir)
+        call get_value(table, "proj-dir", self%proj_dir)
         call get_value(table, "revision", self%revision)
 
         call get_value(table, "version", version)
