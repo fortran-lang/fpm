@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 0.2% of total for procedures.">9 statements</a>
+               title=" 0.3% of total for procedures.">13 statements</a>
           </li>
 
             <li id="source-file">
@@ -161,7 +161,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  function manifest_has_changed(cached, manifest) result(has_changed)  
+    <h2>public  function manifest_has_changed(cached, manifest, verbosity, iunit) result(has_changed)  
 </h2>
     
 
@@ -208,6 +208,36 @@ All checks passed! The two instances are equal</p>
             <td><strong>manifest</strong></td>
             <td>
                 <p>Two instances of the dependency configuration</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-verbosity~16"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>verbosity</strong></td>
+            <td>
+                <p>Log verbosity</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-iunit~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>iunit</strong></td>
+            <td>
+                <p>Log verbosity</p>
             </td>
         </tr>
     </tbody>
@@ -265,17 +295,23 @@ All checks passed! The two instances are equal</p>
     
     <section>
     <h2><span class="anchor" id="src"></span>Source Code</h2>
-    <div class="highlight"><pre><span></span><span class="w">    </span><span class="kt">logical </span><span class="k">function </span><span class="n">manifest_has_changed</span><span class="p">(</span><span class="n">cached</span><span class="p">,</span><span class="w"> </span><span class="n">manifest</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">has_changed</span><span class="p">)</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><span class="w">    </span><span class="kt">logical </span><span class="k">function </span><span class="n">manifest_has_changed</span><span class="p">(</span><span class="n">cached</span><span class="p">,</span><span class="w"> </span><span class="n">manifest</span><span class="p">,</span><span class="w"> </span><span class="n">verbosity</span><span class="p">,</span><span class="w"> </span><span class="n">iunit</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">has_changed</span><span class="p">)</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; Two instances of the dependency configuration</span>
 <span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">dependency_config_t</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cached</span><span class="p">,</span><span class="w"> </span><span class="n">manifest</span><span class="w"></span>
 
+<span class="w">        </span><span class="c">!&gt; Log verbosity</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">verbosity</span><span class="p">,</span><span class="w"> </span><span class="n">iunit</span><span class="w"></span>
+
 <span class="w">        </span><span class="n">has_changed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; Perform all checks</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">git</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">manifest</span><span class="p">%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">git</span><span class="p">).</span><span class="n">neqv</span><span class="p">.</span><span class="nb">allocated</span><span class="p">(</span><span class="n">manifest</span><span class="p">%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">write</span><span class="p">(</span><span class="n">iunit</span><span class="p">,</span><span class="n">out_fmt</span><span class="p">)</span><span class="w"> </span><span class="s2">&quot;GIT presence has changed. &quot;</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        endif</span>
 <span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
-<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">git_matches_manifest</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">git</span><span class="p">,</span><span class="n">manifest</span><span class="p">%</span><span class="n">git</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="n">git_matches_manifest</span><span class="p">(</span><span class="n">cached</span><span class="p">%</span><span class="n">git</span><span class="p">,</span><span class="n">manifest</span><span class="p">%</span><span class="n">git</span><span class="p">,</span><span class="n">verbosity</span><span class="p">,</span><span class="n">iunit</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
 <span class="k">        end if</span><span class="w"></span>
 
 <span class="w">        </span><span class="c">!&gt; All checks passed! The two instances are equal</span>
@@ -302,7 +338,7 @@ All checks passed! The two instances are equal</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-11 07:47              </p>
+ on 2023-04-12 06:49              </p>
           </div>
         </div>
         <br>

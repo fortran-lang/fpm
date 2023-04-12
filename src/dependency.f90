@@ -63,6 +63,9 @@ module fpm_manifest_dependency
 
     end type dependency_config_t
 
+    !> Common output format for writing to the command line
+    character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
+
 contains
 
     !> Construct a new dependency configuration from a TOML data structure
@@ -274,17 +277,23 @@ contains
     end subroutine info
 
     !> Check if two dependency configurations are different
-    logical function manifest_has_changed(cached, manifest) result(has_changed)
+    logical function manifest_has_changed(cached, manifest, verbosity, iunit) result(has_changed)
 
         !> Two instances of the dependency configuration
         class(dependency_config_t), intent(in) :: cached, manifest
 
+        !> Log verbosity
+        integer, intent(in) :: verbosity, iunit
+
         has_changed = .true.
 
         !> Perform all checks
-        if (allocated(cached%git).neqv.allocated(manifest%git)) return
+        if (allocated(cached%git).neqv.allocated(manifest%git)) then
+            if (verbosity>1) write(iunit,out_fmt) "GIT presence has changed. "
+            return
+        endif
         if (allocated(cached%git)) then
-            if (.not.git_matches_manifest(cached%git,manifest%git)) return
+            if (.not.git_matches_manifest(cached%git,manifest%git,verbosity,iunit)) return
         end if
 
         !> All checks passed! The two instances are equal
