@@ -121,6 +121,7 @@ type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
     logical :: show_request = .false.
     character(len=:), allocatable :: token
+    character(len=:), allocatable :: source_path
 end type
 
 character(len=:),allocatable :: name
@@ -616,6 +617,7 @@ contains
             & --show-package-version F &
             & --show-request F &
             & --token " " &
+            & --source-path " " &
             & --list F &
             & --show-model F &
             & --tests F &
@@ -645,6 +647,7 @@ contains
             & build_tests=lget('tests'),&
             & verbose=lget('verbose')))
             call get_char_arg(publish_settings%token, 'token')
+            call get_char_arg(publish_settings%source_path, 'source-path')
             call move_alloc(publish_settings, cmd_settings)
 
         case default
@@ -748,6 +751,7 @@ contains
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
    ' publish [--show-package-version] [--show-request] [--token TOKEN]              ', &
+   '         [--source-path PATH]                                                   ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -872,6 +876,7 @@ contains
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
     '    publish [--show-package-version] [--show-request] [--token TOKEN]           ', &
+    '            [--source-path PATH]                                                ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1352,7 +1357,7 @@ contains
     ' publish(1) - publish package to the registry', &
     '', &
     'SYNOPSIS', &
-    ' fpm publish [--token TOKEN]', &
+    ' fpm publish [--token TOKEN] [--source-path PATH]', &
     '', &
     'DESCRIPTION', &
     ' Collect relevant source files and upload package to the registry.', &
