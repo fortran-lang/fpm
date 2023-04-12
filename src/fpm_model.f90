@@ -937,7 +937,103 @@ subroutine model_dump_to_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    call fatal_error(error,' model_t: dump not implemented ')
+    integer :: ierr, ii
+    type(toml_table), pointer :: ptr,ptr_pkg
+    character(27) :: unnamed
+
+    call set_string(table, "package-name", self%package_name, error, 'fpm_model_t')
+    if (allocated(error)) return
+
+    call add_table(table, "compiler", ptr, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'package_t: cannot set compiler table')
+        return
+    end if
+    call self%compiler%dump_to_toml(ptr, error)
+    if (allocated(error)) return
+
+    call add_table(table, "archiver", ptr, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'package_t: cannot set archiver table')
+        return
+    end if
+    call self%archiver%dump_to_toml(ptr, error)
+    if (allocated(error)) return
+
+    call set_string(table, "fortran-flags", self%fortran_compile_flags, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_string(table, "c-flags", self%c_compile_flags, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_string(table, "cxx-flags", self%cxx_compile_flags, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_string(table, "link-flags", self%link_flags, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_string(table, "build-prefix", self%build_prefix, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_list(table, "include-dirs", self%include_dirs, error)
+    if (allocated(error)) return
+    call set_list(table, "link-libraries", self%link_libraries, error)
+    if (allocated(error)) return
+    call set_list(table, "external-modules", self%external_modules, error)
+    if (allocated(error)) return
+
+    call set_value(table, "include-tests", self%include_tests, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fpm_model_t: cannot set include-tests in TOML table')
+        return
+    end if
+
+    call set_value(table, "module-naming", self%enforce_module_names, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fpm_model_t: cannot set module-naming in TOML table')
+        return
+    end if
+    call set_string(table, "module-prefix", self%module_prefix, error, 'fpm_model_t')
+    if (allocated(error)) return
+
+    call add_table(table, "deps", ptr, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fpm_model_t: cannot set dependencies table')
+        return
+    end if
+    call self%deps%dump_to_toml(ptr, error)
+    if (allocated(error)) return
+
+    !> Array of packages (including the root package)
+    if (allocated(self%packages)) then
+
+           ! Create packages table
+           call add_table(table, "packages", ptr_pkg)
+           if (.not. associated(ptr_pkg)) then
+              call fatal_error(error, "fpm_model_t cannot create dependency table ")
+              return
+           end if
+
+           do ii = 1, size(self%packages)
+
+              associate (pkg => self%packages(ii))
+
+                 !> Because dependencies are named, fallback if this has no name
+                 !> So, serialization will work regardless of size(self%dep) == self%ndep
+                 if (len_trim(pkg%name)==0) then
+                    write(unnamed,1) ii
+                    call add_table(ptr_pkg, trim(unnamed), ptr)
+                 else
+                    call add_table(ptr_pkg, pkg%name, ptr)
+                 end if
+                 if (.not. associated(ptr)) then
+                    call fatal_error(error, "fpm_model_t cannot create entry for package "//pkg%name)
+                    return
+                 end if
+                 call pkg%dump_to_toml(ptr, error)
+                 if (allocated(error)) return
+
+              end associate
+
+           end do
+    end if
+
+    1 format('UNNAMED_PACKAGE_',i0)
 
 end subroutine model_dump_to_toml
 
@@ -953,7 +1049,103 @@ subroutine model_load_from_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    call fatal_error(error,' model_t: load not implemented ')
+    type(toml_key), allocatable :: keys(:),pkg_keys(:)
+    integer :: ierr, ii, jj
+    type(toml_table), pointer :: ptr,ptr_pkg
+    character(27) :: unnamed
+
+    call table%get_keys(keys)
+
+    call get_value(table, "package-name", self%package_name)
+    call get_value(table, "fortran-flags", self%fortran_compile_flags)
+    call get_value(table, "c-flags", self%c_compile_flags)
+    call get_value(table, "cxx-flags", self%cxx_compile_flags)
+    call get_value(table, "link-flags", self%link_flags)
+    call get_value(table, "build-prefix", self%build_prefix)
+
+    if (allocated(self%packages)) deallocate(self%packages)
+    sub_deps: do ii = 1, size(keys)
+
+       select case (keys(ii)%key)
+          case ("compiler")
+
+               call get_value(table, keys(ii), ptr)
+               if (.not.associated(ptr)) then
+                  call fatal_error(error,'fpm_model_t: error retrieving compiler table')
+                  return
+               end if
+
+               call self%compiler%load_from_toml(ptr, error)
+               if (allocated(error)) return
+
+          case ("archiver")
+
+               call get_value(table, keys(ii), ptr)
+               if (.not.associated(ptr)) then
+                  call fatal_error(error,'fpm_model_t: error retrieving archiver table')
+                  return
+               end if
+
+               call self%archiver%load_from_toml(ptr, error)
+               if (allocated(error)) return
+
+          case ("deps")
+
+               call get_value(table, keys(ii), ptr)
+               if (.not.associated(ptr)) then
+                  call fatal_error(error,'fpm_model_t: error retrieving dependency tree table')
+                  return
+               end if
+
+               call self%deps%load_from_toml(ptr, error)
+               if (allocated(error)) return
+
+          case ("packages")
+
+               call get_value(table, keys(ii), ptr)
+               if (.not.associated(ptr)) then
+                  call fatal_error(error,'fpm_model_t: error retrieving packages table')
+                  return
+               end if
+
+               !> Read all packages
+               call ptr%get_keys(pkg_keys)
+               allocate(self%packages(size(pkg_keys)))
+
+               do jj = 1, size(pkg_keys)
+
+                   call get_value(ptr, pkg_keys(jj), ptr_pkg)
+                   call self%packages(jj)%load_from_toml(ptr_pkg, error)
+                   if (allocated(error)) return
+
+               end do
+
+
+          case default
+                cycle sub_deps
+       end select
+
+    end do sub_deps
+
+    call get_list(table, "include-dirs", self%include_dirs, error)
+    if (allocated(error)) return
+    call get_list(table, "link-libraries", self%link_libraries, error)
+    if (allocated(error)) return
+    call get_list(table, "external-modules", self%external_modules, error)
+    if (allocated(error)) return
+
+    call get_value(table, "include-tests", self%include_tests, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fpm_model_t: cannot read include-tests in TOML table')
+        return
+    end if
+
+    call get_value(table, "module-naming", self%enforce_module_names, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fpm_model_t: cannot set module-naming in TOML table')
+        return
+    end if
+    call get_value(table, "module-prefix", self%module_prefix%s)
 
 end subroutine model_load_from_toml
 
