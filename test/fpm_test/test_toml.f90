@@ -8,6 +8,7 @@ module test_toml
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
+    use fpm_model, only: fortran_features_t
 
     implicit none
     private
@@ -32,7 +33,8 @@ contains
             & new_unittest("serialize-dependency-config", dependency_config_roundtrip), &
             & new_unittest("serialize-dependency-node", dependency_node_roundtrip), &
             & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip), &
-            & new_unittest("serialize-string-array", string_array_roundtrip)]
+            & new_unittest("serialize-string-array", string_array_roundtrip), &
+            & new_unittest("serialize-fortran-features", fft_roundtrip)]
 
     end subroutine collect_toml
 
@@ -435,5 +437,24 @@ contains
         1 format('word_',i0)
 
     end subroutine string_array_roundtrip
+
+    !> Test serialization/deserialization of a fortran-features structure
+    subroutine fft_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fortran_features_t) :: fortran
+
+        !> Default object
+        call fortran%test_serialization('fortran_features_t: default object',error)
+        if (allocated(error)) return
+
+        !> Set form
+        fortran%source_form = "free"
+        call fortran%test_serialization('fortran_features_t: with form',error)
+        if (allocated(error)) return
+
+    end subroutine fft_roundtrip
 
 end module test_toml

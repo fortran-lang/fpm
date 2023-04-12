@@ -588,8 +588,6 @@ subroutine srcfile_load_from_toml(self, table, error)
     call get_list(table,"link-libraries",self%link_libraries, error)
     if (allocated(error)) return
 
-
-
 end subroutine srcfile_load_from_toml
 
 !> Check that two fortran feature objects are equal
@@ -628,7 +626,27 @@ subroutine fft_dump_to_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    call fatal_error(error,' fortran-features-t serialization not yet implemented ' )
+    integer :: ierr
+
+    call set_value(table, "implicit-typing", self%implicit_typing, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fortran_features_t: cannot set implicit-typing in TOML table')
+        return
+    end if
+
+    call set_value(table, "implicit-external", self%implicit_external, ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fortran_features_t: cannot set implicit-external in TOML table')
+        return
+    end if
+
+    if (allocated(self%source_form)) then
+        call set_value(table, "source-form", self%source_form, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'fortran_features_t: cannot set source-form in TOML table')
+            return
+        end if
+    endif
 
 end subroutine fft_dump_to_toml
 
@@ -646,7 +664,22 @@ subroutine fft_load_from_toml(self, table, error)
 
     character(len=:), allocatable :: flag
 
-    call fatal_error(error, ' fortran-features-t serialization not yet implemented ')
+    integer :: ierr
+
+    call get_value(table, "implicit-typing", self%implicit_typing, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fortran_features_t: cannot read implicit-typing from TOML table')
+        return
+    end if
+
+    call get_value(table, "implicit-external", self%implicit_external, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'fortran_features_t: cannot read implicit-typing from TOML table')
+        return
+    end if
+
+    ! Return unallocated value if not present
+    call get_value(table, "source-form", self%source_form)
 
 end subroutine fft_load_from_toml
 
