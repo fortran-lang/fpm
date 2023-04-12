@@ -38,7 +38,9 @@ module fpm_model
 use iso_fortran_env, only: int64
 use fpm_compiler, only: compiler_t, archiver_t, debug
 use fpm_dependency, only: dependency_tree_t
-use fpm_strings, only: string_t, str, len_trim, lower
+use fpm_strings, only: string_t, str, len_trim, upper, operator(==)
+use fpm_toml, only: serializable_t, toml_table, toml_stat, set_value, set_list, get_value, get_list
+use fpm_error, only: error_t, fatal_error
 implicit none
 
 private
@@ -93,7 +95,7 @@ type :: fortran_features_t
 end type fortran_features_t
 
 !> Type for describing a source file
-type srcfile_t
+type, extends(serializable_t) :: srcfile_t
     !> File path relative to cwd
     character(:), allocatable :: file_name
 
@@ -123,6 +125,14 @@ type srcfile_t
 
     !> Current hash
     integer(int64) :: digest
+
+    contains
+
+        !> Serialization interface
+        procedure :: serializable_is_same => srcfile_is_same
+        procedure :: dump_to_toml   => srcfile_dump_to_toml
+        procedure :: load_from_toml => srcfile_load_from_toml
+
 
 end type srcfile_t
 
@@ -380,12 +390,12 @@ end function FPM_SCOPE_NAME
 integer function parse_scope(name) result(scope)
     character(len=*), intent(in) :: name
 
-    character(len=len(name)) :: lowercase
+    character(len=len(name)) :: uppercase
 
     !> Make it Case insensitive
-    lowercase = lower(name)
+    uppercase = upper(name)
 
-    select case (trim(lowercase))
+    select case (trim(uppercase))
        case ("FPM_SCOPE_UNKNOWN"); scope = FPM_SCOPE_UNKNOWN
        case ("FPM_SCOPE_LIB");     scope = FPM_SCOPE_LIB
        case ("FPM_SCOPE_DEP");     scope = FPM_SCOPE_DEP
@@ -403,7 +413,7 @@ function FPM_UNIT_NAME(flag) result(name)
     character(len=:), allocatable :: name
 
     select case (flag)
-       case (FPM_UNIT_UNKNOWN);    name = "FPM_SCOPE_UNKNOWN"
+       case (FPM_UNIT_UNKNOWN);    name = "FPM_UNIT_UNKNOWN"
        case (FPM_UNIT_PROGRAM);    name = "FPM_UNIT_PROGRAM"
        case (FPM_UNIT_MODULE);     name = "FPM_UNIT_MODULE"
        case (FPM_UNIT_SUBMODULE);  name = "FPM_UNIT_SUBMODULE"
@@ -419,12 +429,12 @@ end function FPM_UNIT_NAME
 integer function parse_unit(name) result(unit)
     character(len=*), intent(in) :: name
 
-    character(len=len(name)) :: lowercase
+    character(len=len(name)) :: uppercase
 
     !> Make it Case insensitive
-    lowercase = lower(name)
+    uppercase = upper(name)
 
-    select case (trim(lowercase))
+    select case (trim(uppercase))
        case ("FPM_UNIT_UNKNOWN");    unit = FPM_UNIT_UNKNOWN
        case ("FPM_UNIT_PROGRAM");    unit = FPM_UNIT_PROGRAM
        case ("FPM_UNIT_MODULE");     unit = FPM_UNIT_MODULE
@@ -437,5 +447,136 @@ integer function parse_unit(name) result(unit)
     end select
 
 end function parse_unit
+
+!> Check that two source files are equal
+logical function srcfile_is_same(this,that)
+    class(srcfile_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    srcfile_is_same = .false.
+
+    select type (other=>that)
+       type is (srcfile_t)
+
+          if (.not.(this%file_name==other%file_name)) return
+          if (.not.(this%exe_name==other%exe_name)) return
+          if (.not.(this%unit_scope==other%unit_scope)) return
+          if (.not.(this%modules_provided==other%modules_provided)) return
+          if (.not.(this%unit_type==other%unit_type)) return
+          if (.not.(this%parent_modules==other%parent_modules)) return
+          if (.not.(this%modules_used==other%modules_used)) return
+          if (.not.(this%include_dependencies==other%include_dependencies)) return
+          if (.not.(this%link_libraries==other%link_libraries)) return
+          if (.not.(this%digest==other%digest)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    srcfile_is_same = .true.
+
+end function srcfile_is_same
+
+!> Dump dependency to toml table
+subroutine srcfile_dump_to_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(srcfile_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ierr
+
+    if (allocated(self%file_name)) then
+        call set_value(table, "file-name", self%file_name, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'srcfile_t: cannot set file-name in TOML table')
+            return
+        end if
+    endif
+
+    if (allocated(self%exe_name)) then
+        call set_value(table, "exe-name", self%exe_name, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'srcfile_t: cannot set exe-name in TOML table')
+            return
+        end if
+    endif
+
+    call set_value(table,"digest",self%digest)
+
+    ! unit_scope and unit_type are saved as strings so the output is independent
+    ! of the internal representation
+    call set_value(table,"unit-scope",FPM_SCOPE_NAME(self%unit_scope))
+    call set_value(table,"unit-type",FPM_UNIT_NAME(self%unit_type))
+
+    call set_list(table,"modules-provided",self%modules_provided, error)
+    if (allocated(error)) return
+
+    call set_list(table,"parent-modules",self%parent_modules, error)
+    if (allocated(error)) return
+
+    call set_list(table,"modules-used",self%modules_used, error)
+    if (allocated(error)) return
+
+    call set_list(table,"include-dependencies",self%include_dependencies, error)
+    if (allocated(error)) return
+
+    call set_list(table,"link-libraries",self%link_libraries, error)
+    if (allocated(error)) return
+
+
+end subroutine srcfile_dump_to_toml
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine srcfile_load_from_toml(self, table, error)
+
+    !> Instance of the serializable object
+    class(srcfile_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    character(len=:), allocatable :: flag
+
+    call get_value(table, "file-name", self%file_name)
+    call get_value(table, "exe-name", self%exe_name)
+    call get_value(table, "digest", self%digest)
+
+    ! unit_scope and unit_type are saved as strings so the output is independent
+    ! of the internal representation
+    call get_value(table, "unit-scope", flag)
+    if (allocated(flag)) self%unit_scope = parse_scope(flag)
+    call get_value(table, "unit-type", flag)
+    if (allocated(flag)) self%unit_type = parse_unit(flag)
+
+    call get_list(table,"modules-provided",self%modules_provided, error)
+    if (allocated(error)) return
+
+    call get_list(table,"parent-modules",self%parent_modules, error)
+    if (allocated(error)) return
+
+    call get_list(table,"modules-used",self%modules_used, error)
+    if (allocated(error)) return
+
+    call get_list(table,"include-dependencies",self%include_dependencies, error)
+    if (allocated(error)) return
+
+    call get_list(table,"link-libraries",self%link_libraries, error)
+    if (allocated(error)) return
+
+
+
+end subroutine srcfile_load_from_toml
+
 
 end module fpm_model
