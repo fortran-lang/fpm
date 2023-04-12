@@ -2,13 +2,14 @@
 module test_toml
     use testsuite, only : new_unittest, unittest_t, error_t
     use fpm_toml
+    use tomlf_constants, only: tf_i8
     use fpm_git
     use fpm_dependency, only: dependency_node_t, destroy_dependency_node, dependency_tree_t, &
          & new_dependency_node, new_dependency_tree, resize
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
-    use fpm_model, only: fortran_features_t
+    use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE
 
     implicit none
     private
@@ -34,7 +35,8 @@ contains
             & new_unittest("serialize-dependency-node", dependency_node_roundtrip), &
             & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip), &
             & new_unittest("serialize-string-array", string_array_roundtrip), &
-            & new_unittest("serialize-fortran-features", fft_roundtrip)]
+            & new_unittest("serialize-fortran-features", fft_roundtrip), &
+            & new_unittest("serialize-package", package_roundtrip)]
 
     end subroutine collect_toml
 
@@ -456,5 +458,91 @@ contains
         if (allocated(error)) return
 
     end subroutine fft_roundtrip
+
+    !> Test serialization/deserialization of a package_t structure
+    subroutine package_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_t) :: pkg
+        integer :: ierr
+
+        call pkg%dump('pkg.toml',error)
+
+        !> Default object
+        call pkg%test_serialization('package_t: default object',error)
+        if (allocated(error)) return
+
+        !> Create a dummy package
+        pkg%name = "orderpack"
+        pkg%version = "0.1.0"
+        pkg%enforce_module_names = .false.
+        pkg%module_prefix = string_t("")
+        pkg%features%source_form = "free"
+
+        if (allocated(pkg%sources)) deallocate(pkg%sources)
+        allocate(pkg%sources(4))
+
+        pkg%sources(1)%file_name = "build/dependencies/orderpack/src/M_valnth.f90"
+        pkg%sources(1)%digest = 2662523002405134329_tf_i8
+        pkg%sources(1)%unit_scope = FPM_SCOPE_LIB
+        pkg%sources(1)%unit_type = FPM_UNIT_MODULE
+        pkg%sources(1)%modules_provided = [string_t("m_valnth")]
+        deallocate(pkg%sources(1)%parent_modules, stat=ierr)
+        deallocate(pkg%sources(1)%modules_used, stat=ierr)
+        deallocate(pkg%sources(1)%include_dependencies, stat=ierr)
+        deallocate(pkg%sources(1)%link_libraries, stat=ierr)
+
+        pkg%sources(2)%file_name = "build/dependencies/orderpack/src/M_mrgrnk.f90"
+        pkg%sources(2)%digest = 7985690966656622651_tf_i8
+        pkg%sources(2)%unit_scope = FPM_SCOPE_LIB
+        pkg%sources(2)%unit_type = FPM_UNIT_MODULE
+        pkg%sources(2)%modules_provided = [string_t("m_mrgrnk")]
+        pkg%sources(2)%link_libraries = [string_t("netcdf"),string_t("hdf-5")]
+        deallocate(pkg%sources(2)%parent_modules, stat=ierr)
+        deallocate(pkg%sources(2)%modules_used, stat=ierr)
+        deallocate(pkg%sources(2)%include_dependencies, stat=ierr)
+        deallocate(pkg%sources(2)%link_libraries, stat=ierr)
+
+        pkg%sources(3)%file_name = "build/dependencies/orderpack/src/M_median.f90"
+        pkg%sources(3)%digest = 7985690966656622651_tf_i8
+        pkg%sources(3)%unit_scope = FPM_SCOPE_LIB
+        pkg%sources(3)%unit_type = FPM_UNIT_MODULE
+        pkg%sources(3)%modules_provided = [string_t("m_median")]
+        deallocate(pkg%sources(3)%parent_modules, stat=ierr)
+        deallocate(pkg%sources(3)%modules_used, stat=ierr)
+        deallocate(pkg%sources(3)%include_dependencies, stat=ierr)
+        deallocate(pkg%sources(3)%link_libraries, stat=ierr)
+
+        pkg%sources(4)%file_name = "build/dependencies/orderpack/src/M_unista.f90"
+        pkg%sources(4)%digest = -7512253540457404792_tf_i8
+        pkg%sources(4)%unit_scope = FPM_SCOPE_LIB
+        pkg%sources(4)%unit_type = FPM_UNIT_MODULE
+        pkg%sources(4)%modules_provided = [string_t("m_unista")]
+        pkg%sources(4)%modules_used = [string_t("m_uniinv")]
+        deallocate(pkg%sources(4)%parent_modules, stat=ierr)
+        deallocate(pkg%sources(4)%include_dependencies, stat=ierr)
+        deallocate(pkg%sources(4)%link_libraries, stat=ierr)
+
+        !> Package mock
+        call pkg%test_serialization('package_t: orderpack',error)
+        if (allocated(error)) return
+
+        !> Remove some entries
+        pkg%sources(1)%file_name = ""
+        pkg%sources(3)%digest = 0
+        pkg%sources = pkg%sources(1:3)
+        call pkg%test_serialization('package_t: orderpack (reduced)',error)
+        if (allocated(error)) return
+
+        !> Remove all sources
+        deallocate(pkg%sources,stat=ierr)
+        call pkg%test_serialization('package_t: no sources',error)
+        if (allocated(error)) return
+
+    end subroutine package_roundtrip
+
+
 
 end module test_toml
