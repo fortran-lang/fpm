@@ -5,10 +5,10 @@ module fpm_cmd_publish
   use fpm_error, only: error_t, fpm_stop
   use fpm, only: build_model
   use fpm_versioning, only: version_t
-  use jonquil, only: json_object, json_serialize, set_value
   use fpm_filesystem, only: exists, join_path, get_tmp_directory
   use fpm_git, only: git_archive, compressed_package_name
   use fpm_downloader, only: downloader_t
+  use fpm_strings, only: string_t
 
   implicit none
   private
@@ -23,9 +23,10 @@ contains
     type(fpm_model_t) :: model
     type(error_t), allocatable :: error
     type(version_t), allocatable :: version
-    type(json_object) :: json
+    type(string_t), allocatable :: form_data(:)
     character(len=:), allocatable :: tmpdir
     type(downloader_t) :: downloader
+    integer :: i
 
     call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Package error: '//error%message)
@@ -51,22 +52,25 @@ contains
       call fpm_stop(1, 'No "fpm.toml" file in "'//settings%source_path//'".')
     end if
 
-    json = json_object()
-    call set_value(json, 'package_name', package%name)
-    call set_value(json, 'package_license', package%license)
-    call set_value(json, 'package_version', version%s())
-    call set_value(json, 'upload_token', settings%token)
+    form_data = [ &
+      string_t('package_name="'//package%name//'"'), &
+      string_t('package_license="'//package%license//'"'), &
+      string_t('package_version="'//version%s()//'"'), &
+      string_t('upload_token="'//settings%token//'"') &
+      & ]
 
     call get_tmp_directory(tmpdir, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Tmp directory error: '//error%message)
     call git_archive(settings%source_path, tmpdir, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Pack error: '//error%message)
-    call set_value(json, 'tarball', join_path(tmpdir, compressed_package_name))
+    form_data = [form_data, string_t('tarball=@"'//join_path(tmpdir, compressed_package_name)//'"')]
 
-    if (settings%show_request) then
-      print *, json_serialize(json)
+    if (settings%show_form_data) then
+      do i = 1, size(form_data)
+        print *, form_data(i)%s
+      end do
     else
-      call downloader%upload_form(json, error)
+      call downloader%upload_form(form_data, error)
       if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
     end if
   end

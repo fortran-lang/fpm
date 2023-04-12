@@ -3,6 +3,7 @@ module fpm_downloader
   use fpm_filesystem, only: which
   use fpm_versioning, only: version_t
   use jonquil, only: json_object, json_value, json_error, json_load, cast_to_object
+  use fpm_strings, only: string_t
 
   implicit none
   private
@@ -74,8 +75,8 @@ contains
   end
 
   !> Perform an http post request with form data.
-  subroutine upload_form(json, error)
-    type(json_object), intent(in) :: json
+  subroutine upload_form(form_data, error)
+    type(string_t), intent(in) :: form_data(:)
     type(error_t), allocatable, intent(out) :: error
   end
 

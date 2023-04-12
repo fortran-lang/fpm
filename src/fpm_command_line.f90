@@ -119,7 +119,7 @@ end type
 
 type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
-    logical :: show_request = .false.
+    logical :: show_form_data = .false.
     character(len=:), allocatable :: token
     character(len=:), allocatable :: source_path
 end type
@@ -615,7 +615,7 @@ contains
         case('publish')
             call set_args(common_args // compiler_args //'&
             & --show-package-version F &
-            & --show-request F &
+            & --show-form-data F &
             & --token " " &
             & --source-path " " &
             & --list F &
@@ -631,7 +631,7 @@ contains
 
             allocate(publish_settings, source=fpm_publish_settings( &
             & show_package_version = lget('show-package-version'), &
-            & show_request = lget('show-request'), &
+            & show_form_data = lget('show-form-data'), &
             & profile=val_profile,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
@@ -750,7 +750,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-request] [--token TOKEN]              ', &
+   ' publish [--show-package-version] [--show-form-data] [--token TOKEN]              ', &
    '         [--source-path PATH]                                                   ', &
    ' ']
     help_usage=[character(len=80) :: &
@@ -875,7 +875,7 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
-    '    publish [--show-package-version] [--show-request] [--token TOKEN]           ', &
+    '    publish [--show-package-version] [--show-form-data] [--token TOKEN]           ', &
     '            [--source-path PATH]                                                ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
@@ -1366,7 +1366,7 @@ contains
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
-    ' --show-request           show request without publishing', &
+    ' --show-form-data         show request without publishing', &
     '' ]
      end subroutine set_help
 
