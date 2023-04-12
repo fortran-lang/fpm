@@ -75,7 +75,7 @@ integer, parameter :: compiler_enum = kind(id_unknown)
 
 
 !> Definition of compiler object
-type :: compiler_t
+type, extends(serializable_t) :: compiler_t
     !> Identifier of the compiler
     integer(compiler_enum) :: id = id_unknown
     !> Path to the Fortran compiler
@@ -109,6 +109,12 @@ contains
     procedure :: is_unknown
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
+
+    !> Serialization interface
+    procedure :: serializable_is_same => compiler_is_same
+    procedure :: dump_to_toml => compiler_dump
+    procedure :: load_from_toml => compiler_load
+
 end type compiler_t
 
 
@@ -1148,7 +1154,7 @@ pure function debug_archiver(self) result(repr)
     repr = 'ar="'//self%ar//'"'
 end function debug_archiver
 
-!> Check that two source files are equal
+!> Check that two archiver_t objects are equal
 logical function ar_is_same(this,that)
     class(archiver_t), intent(in) :: this
     class(serializable_t), intent(in) :: that
@@ -1246,6 +1252,113 @@ subroutine load_from_toml(self, table, error)
     end if
 
 end subroutine load_from_toml
+
+!> Check that two compiler_t objects are equal
+logical function compiler_is_same(this,that)
+    class(compiler_t), intent(in) :: this
+    class(serializable_t), intent(in) :: that
+
+    compiler_is_same = .false.
+
+    select type (other=>that)
+       type is (compiler_t)
+
+          if (.not.(this%id==other%id)) return
+          if (.not.(this%fc==other%fc)) return
+          if (.not.(this%cc==other%cc)) return
+          if (.not.(this%cxx==other%cxx)) return
+          if (.not.(this%echo.eqv.other%echo)) return
+          if (.not.(this%verbose.eqv.other%verbose)) return
+
+       class default
+          ! Not the same type
+          return
+    end select
+
+    !> All checks passed!
+    compiler_is_same = .true.
+
+end function compiler_is_same
+
+!> Dump dependency to toml table
+subroutine compiler_dump(self, table, error)
+
+    !> Instance of the serializable object
+    class(compiler_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ierr
+
+    call set_value(table, "id", self%id, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'compiler_t: error dumping id')
+        return
+    end if
+
+    call set_string(table, "fc", self%fc, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_string(table, "cc", self%cc, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_string(table, "cxx", self%cxx, error, 'compiler_t')
+    if (allocated(error)) return
+
+    call set_value(table, "echo", self%echo, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'archiver_t: error dumping echo')
+        return
+    end if
+
+    call set_value(table, "verbose", self%verbose, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'archiver_t: error dumping verbose')
+        return
+    end if
+
+end subroutine compiler_dump
+
+!> Read dependency from toml table (no checks made at this stage)
+subroutine compiler_load(self, table, error)
+
+    !> Instance of the serializable object
+    class(compiler_t), intent(inout) :: self
+
+    !> Data structure
+    type(toml_table), intent(inout) :: table
+
+    !> Error handling
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ierr
+
+    call get_value(table, "id", self%id, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'compiler_t: error getting id from TOML')
+        return
+    end if
+
+    call get_value(table, "fc", self%fc)
+    call get_value(table, "cc", self%cc)
+    call get_value(table, "cxx", self%cxx)
+
+    call get_value(table, "echo", self%echo, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'compiler_t: error getting echo from TOML')
+        return
+    end if
+
+    call get_value(table, "verbose", self%verbose, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'compiler_t: error getting verbose from TOML')
+        return
+    end if
+
+end subroutine compiler_load
+
 
 
 

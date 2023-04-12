@@ -10,7 +10,7 @@ module test_toml
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
     use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE
-    use fpm_compiler, only: archiver_t
+    use fpm_compiler, only: archiver_t, compiler_t, id_gcc
 
     implicit none
     private
@@ -38,7 +38,8 @@ contains
             & new_unittest("serialize-string-array", string_array_roundtrip), &
             & new_unittest("serialize-fortran-features", fft_roundtrip), &
             & new_unittest("serialize-package", package_roundtrip), &
-            & new_unittest("serialize-archiver", ar_roundtrip)]
+            & new_unittest("serialize-archiver", ar_roundtrip), &
+            & new_unittest("serialize-compiler", compiler_roundtrip)]
 
     end subroutine collect_toml
 
@@ -552,8 +553,6 @@ contains
         type(archiver_t) :: ar
         integer :: ierr
 
-        call ar%dump('ar.toml',error)
-
         !> Default object
         call ar%test_serialization('archiver_t: default object',error)
         if (allocated(error)) return
@@ -568,5 +567,29 @@ contains
     end subroutine ar_roundtrip
 
 
+    !> Test serialization/deserialization of a compiler_t structure
+    subroutine compiler_roundtrip(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(compiler_t) :: compiler
+
+        !> Default object
+        call compiler%test_serialization('compiler_t: default object',error)
+        if (allocated(error)) return
+
+        !> change a few items
+        compiler%id = id_gcc
+        compiler%fc = "gfortran -ffree-line-length-none -fdefault-real-8 -O3"
+        compiler%cc = ""
+        compiler%cxx = "g++ -O3 -std=c++11"
+        compiler%echo = .false.
+
+        call compiler%dump('compiler.toml',error)
+
+        call compiler%test_serialization('compiler_t: gcc',error)
+
+    end subroutine compiler_roundtrip
 
 end module test_toml
