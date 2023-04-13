@@ -17,10 +17,10 @@ module fpm_toml
     use fpm_strings, only: string_t
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
-        & toml_serialize, len, toml_load
+        & toml_serialize, len, toml_load, toml_value
     use tomlf_de_parser, only: parse
-    use jonquil, only: json_serialize, json_error, json_value, json_object, json_load
-    use jonquil_lexer, only: json_lexer, new_lexer_from_unit
+    use jonquil, only: json_serialize, json_error, json_value, json_object, json_load, &
+                       cast_to_object
     use iso_fortran_env, only: int64
     implicit none
     private
@@ -130,28 +130,40 @@ contains
         character(len=*), intent(in) :: message
         type(error_t), allocatable, intent(out) :: error
 
-        integer :: iunit
+        integer :: iunit, ii
         class(serializable_t), allocatable :: copy
+        character(len=4), parameter :: formats(2) = ['TOML','JSON']
 
-        open(newunit=iunit,form='formatted',status='scratch')
+        all_formats: do ii = 1, 2
 
-        !> Dump to scratch file
-        call self%dump(iunit, error)
-        if (allocated(error)) return
+            open(newunit=iunit,form='formatted',status='scratch')
 
-        !> Load from scratch file
-        rewind(iunit)
-        allocate(copy,mold=self)
-        call copy%load(iunit,error)
-        if (allocated(error)) return
-        close(iunit)
+            !> Dump to scratch file
+            call self%dump(iunit, error, json=ii==2)
+            if (allocated(error)) then
+                error%message = formats(ii)//': '//error%message
+                return
+            endif
 
-        !> Check same
-        if (.not.(self==copy)) then
-            call fatal_error(error,'serializable object failed TOML write/reread test: '//trim(message))
-            return
-        end if
-        deallocate(copy)
+            !> Load from scratch file
+            rewind(iunit)
+            allocate(copy,mold=self)
+            call copy%load(iunit,error, json=ii==2)
+            if (allocated(error)) then
+                error%message = formats(ii)//': '//error%message
+                return
+            endif
+            close(iunit)
+
+            !> Check same
+            if (.not.(self==copy)) then
+                call fatal_error(error,'serializable object failed '//formats(ii)//&
+                                       ' write/reread test: '//trim(message))
+                return
+            end if
+            deallocate(copy)
+
+        end do all_formats
 
     end subroutine test_serialization
 
@@ -177,9 +189,9 @@ contains
 
         if (is_json) then
 
-            !> Deactivate JSON serialization for now
-            call fatal_error(error, 'JSON serialization option is not yet available')
-            return
+!            !> Deactivate JSON serialization for now
+!            call fatal_error(error, 'JSON serialization option is not yet available')
+!            return
 
             write (unit, '(a)') json_serialize(table)
         else
@@ -245,32 +257,30 @@ contains
 
         type(toml_error), allocatable :: toml_error
         type(toml_table), allocatable :: table
-        type(json_lexer) :: lexer
+        type(toml_table), pointer     :: jtable
+        class(toml_value), allocatable :: object
         logical :: is_json
 
         is_json = .false.; if (present(json)) is_json = json
 
         if (is_json) then
 
-           !> Deactivate JSON deserialization for now
-           call fatal_error(error, 'JSON deserialization option is not yet available')
-           return
-
            !> init JSON interpreter
-           call new_lexer_from_unit(lexer, unit, toml_error)
+           call json_load(object, unit, error=toml_error)
            if (allocated(toml_error)) then
               allocate (error)
               call move_alloc(toml_error%message, error%message)
               return
            end if
 
-           !> Parse JSON to TOML table
-           call parse(lexer, table, error=toml_error)
-           if (allocated(toml_error)) then
-              allocate (error)
-              call move_alloc(toml_error%message, error%message)
+           jtable => cast_to_object(object)
+           if (.not.associated(jtable)) then
+              call fatal_error(error,'cannot initialize JSON table ')
               return
            end if
+
+           !> Read object from TOML table
+           call self%load(jtable, error)
 
         else
 
@@ -283,10 +293,11 @@ contains
               return
            end if
 
+           !> Read object from TOML table
+           call self%load(table, error)
+
         endif
 
-        !> Read object from TOML table
-        call self%load(table, error)
         if (allocated(error)) return
 
     end subroutine load_from_unit

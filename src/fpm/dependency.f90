@@ -1516,19 +1516,20 @@ contains
 
         call get_value(table, "unit", self%unit, stat=ierr)
         if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_tree_t: cannot set <unit> in TOML table')
+            print *, 'unit=',self%unit,' ierr=',ierr
+            call fatal_error(error,'dependency_tree_t: cannot get <unit> in TOML table')
             return
         end if
 
         call get_value(table, "verbosity", self%verbosity, stat=ierr)
         if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_tree_t: cannot set <verbosity> in TOML table')
+            call fatal_error(error,'dependency_tree_t: cannot get <verbosity> in TOML table')
             return
         end if
 
         call get_value(table, "ndep", self%ndep, stat=ierr)
         if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_tree_t: cannot set <ndep> in TOML table')
+            call fatal_error(error,'dependency_tree_t: cannot get <ndep> in TOML table')
             return
         end if
 
