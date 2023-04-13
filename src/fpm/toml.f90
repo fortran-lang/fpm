@@ -14,7 +14,7 @@
 !> [TOML-Fortran](https://toml-f.github.io/toml-f) developer pages.
 module fpm_toml
     use fpm_error, only: error_t, fatal_error, file_not_found_error
-    use fpm_strings, only: string_t
+    use fpm_strings, only: string_t, str_ends_with, lower
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
         & toml_serialize, len, toml_load, toml_value
@@ -27,7 +27,8 @@ module fpm_toml
 
     public :: read_package_file, toml_table, toml_array, toml_key, toml_stat, &
               get_value, set_value, get_list, new_table, add_table, add_array, len, &
-              toml_error, toml_serialize, toml_load, check_keys, set_list, set_string
+              toml_error, toml_serialize, toml_load, check_keys, set_list, set_string, &
+              name_is_json
 
     !> An abstract interface for any fpm class that should be fully serializable to/from TOML/JSON
     type, abstract, public :: serializable_t
@@ -753,5 +754,19 @@ contains
         end do
 
     end subroutine check_keys
+
+    !> Choose between JSON or TOML based on a file name
+    logical function name_is_json(filename)
+        character(*), intent(in) :: filename
+
+        character(*), parameter :: json_identifier = ".json"
+
+        name_is_json = .false.
+
+        if (len_trim(filename)<len(json_identifier)) return
+
+        name_is_json = str_ends_with(lower(filename),json_identifier)
+
+    end function name_is_json
 
 end module fpm_toml

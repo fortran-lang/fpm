@@ -21,6 +21,7 @@ use fpm_targets, only: targets_from_sources, build_target_t, build_target_ptr, &
                         FPM_TARGET_EXECUTABLE, FPM_TARGET_ARCHIVE
 use fpm_manifest, only : get_package_data, package_config_t
 use fpm_error, only : error_t, fatal_error, fpm_stop
+use fpm_toml, only: name_is_json
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit,   &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -420,7 +421,7 @@ end if
 
 !> Dump model to file
 if (len_trim(settings%dump)>0) then
-    call model%dump(trim(settings%dump),error)
+    call model%dump(trim(settings%dump),error,json=name_is_json(trim(settings%dump)))
     if (allocated(error)) call fpm_stop(1,'*cmd_build* Model dump error: '//error%message)
 endif
 
