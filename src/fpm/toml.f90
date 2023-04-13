@@ -18,6 +18,9 @@ module fpm_toml
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
         & toml_serialize, len, toml_load
+    use tomlf_de_parser, only: parse
+    use jonquil, only: json_serialize, json_error, json_value, json_object, json_load
+    use jonquil_lexer, only: json_lexer, new_lexer_from_unit
     use iso_fortran_env, only: int64
     implicit none
     private
@@ -154,51 +157,69 @@ contains
 
 
     !> Write serializable object to a formatted Fortran unit
-    subroutine dump_to_unit(self, unit, error)
+    subroutine dump_to_unit(self, unit, error, json)
         !> Instance of the dependency tree
         class(serializable_t), intent(inout) :: self
         !> Formatted unit
         integer, intent(in) :: unit
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        !> Optional JSON format requested?
+        logical, optional, intent(in) :: json
 
         type(toml_table) :: table
+        logical :: is_json
+
+        is_json = .false.; if (present(json)) is_json = json
 
         table = toml_table()
         call self%dump(table, error)
 
-        write (unit, '(a)') toml_serialize(table)
+        if (is_json) then
+
+            !> Deactivate JSON serialization for now
+            call fatal_error(error, 'JSON serialization option is not yet available')
+            return
+
+            write (unit, '(a)') json_serialize(table)
+        else
+            write (unit, '(a)') toml_serialize(table)
+        end if
 
         call table%destroy()
 
     end subroutine dump_to_unit
 
     !> Write serializable object to file
-    subroutine dump_to_file(self, file, error)
+    subroutine dump_to_file(self, file, error, json)
         !> Instance of the dependency tree
         class(serializable_t), intent(inout) :: self
         !> File name
         character(len=*), intent(in) :: file
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        !> Optional JSON format
+        logical, optional, intent(in) :: json
 
         integer :: unit
 
         open (file=file, newunit=unit)
-        call self%dump(unit, error)
+        call self%dump(unit, error, json)
         close (unit)
         if (allocated(error)) return
 
     end subroutine dump_to_file
 
     !> Read dependency tree from file
-    subroutine load_from_file(self, file, error)
+    subroutine load_from_file(self, file, error, json)
         !> Instance of the dependency tree
         class(serializable_t), intent(inout) :: self
         !> File name
         character(len=*), intent(in) :: file
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        !> Optional JSON format
+        logical, optional, intent(in) :: json
 
         integer :: unit
         logical :: exist
@@ -207,30 +228,64 @@ contains
         if (.not. exist) return
 
         open (file=file, newunit=unit)
-        call self%load(unit, error)
+        call self%load(unit, error, json)
         close (unit)
     end subroutine load_from_file
 
     !> Read dependency tree from file
-    subroutine load_from_unit(self, unit, error)
+    subroutine load_from_unit(self, unit, error, json)
         !> Instance of the dependency tree
         class(serializable_t), intent(inout) :: self
         !> File name
         integer, intent(in) :: unit
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
+        !> Optional JSON format
+        logical, optional, intent(in) :: json
 
-        type(toml_error), allocatable :: parse_error
+        type(toml_error), allocatable :: toml_error
         type(toml_table), allocatable :: table
+        type(json_lexer) :: lexer
+        logical :: is_json
 
-        call toml_load(table, unit, error=parse_error)
+        is_json = .false.; if (present(json)) is_json = json
 
-        if (allocated(parse_error)) then
-          allocate (error)
-          call move_alloc(parse_error%message, error%message)
-          return
-        end if
+        if (is_json) then
 
+           !> Deactivate JSON deserialization for now
+           call fatal_error(error, 'JSON deserialization option is not yet available')
+           return
+
+           !> init JSON interpreter
+           call new_lexer_from_unit(lexer, unit, toml_error)
+           if (allocated(toml_error)) then
+              allocate (error)
+              call move_alloc(toml_error%message, error%message)
+              return
+           end if
+
+           !> Parse JSON to TOML table
+           call parse(lexer, table, error=toml_error)
+           if (allocated(toml_error)) then
+              allocate (error)
+              call move_alloc(toml_error%message, error%message)
+              return
+           end if
+
+        else
+
+           !> use default TOML parser
+           call toml_load(table, unit, error=toml_error)
+
+           if (allocated(toml_error)) then
+              allocate (error)
+              call move_alloc(toml_error%message, error%message)
+              return
+           end if
+
+        endif
+
+        !> Read object from TOML table
         call self%load(table, error)
         if (allocated(error)) return
 

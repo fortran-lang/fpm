@@ -404,10 +404,7 @@ contains
                                               sha1="7264878cdb1baff7323cc48596d829ccfe7751b8")
 
         call deps%test_serialization("full dependency tree", error)
-        if (allocated(error)) then
-            print *, error%message
-            stop 'catastrophic'
-        end if
+        if (allocated(error)) return
 
         ! Remove dependencies (including all them)
         do ii = 1, ALLOCATED_DEPS

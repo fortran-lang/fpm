@@ -382,7 +382,7 @@ contains
         self%descriptor = parse_descriptor(descriptor_name)
 
         if (self%descriptor==git_descriptor%error) then
-            call fatal_error(error,"invalid descriptor ID in TOML entry")
+            call fatal_error(error,"invalid descriptor ID <"//descriptor_name//"> in TOML entry")
             return
         end if
 
