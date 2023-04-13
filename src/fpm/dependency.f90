@@ -1293,46 +1293,19 @@ contains
         if (allocated(error)) return
 
         if (allocated(self%version)) then
-            call set_value(table, "version", self%version%s(), ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_node_t: cannot set version in TOML table')
-                return
-            end if
+            call set_string(table, "version", self%version%s(), error,'dependency_node_t')
+            if (allocated(error)) return
         endif
-
-        if (allocated(self%proj_dir)) then
-            call set_value(table, "proj-dir", self%proj_dir, ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_node_t: cannot set proj_dir in TOML table')
-                return
-            end if
-        endif
-
-        if (allocated(self%revision)) then
-            call set_value(table, "revision", self%revision, ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_node_t: cannot set revision in TOML table')
-                return
-            end if
-        endif
-
-        call set_value(table, "done", self%done, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_node_t: cannot set done in TOML table')
-            return
-        end if
-
-        call set_value(table, "update", self%update, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_node_t: cannot set update in TOML table')
-            return
-        end if
-
-        call set_value(table, "cached", self%cached, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_node_t: cannot set cached in TOML table')
-            return
-        end if
+        call set_string(table, "proj-dir", self%proj_dir, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call set_string(table, "revision", self%revision, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call set_value(table, "done", self%done, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call set_value(table, "update", self%update, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call set_value(table, "cached", self%cached, error, 'dependency_node_t')
+        if (allocated(error)) return
 
     end subroutine node_dump_to_toml
 
@@ -1514,25 +1487,12 @@ contains
 
         call table%get_keys(keys)
 
-        call get_value(table, "unit", self%unit, stat=ierr)
-        if (ierr/=toml_stat%success) then
-            print *, 'unit=',self%unit,' ierr=',ierr
-            call fatal_error(error,'dependency_tree_t: cannot get <unit> in TOML table')
-            return
-        end if
-
-        call get_value(table, "verbosity", self%verbosity, stat=ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_tree_t: cannot get <verbosity> in TOML table')
-            return
-        end if
-
-        call get_value(table, "ndep", self%ndep, stat=ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_tree_t: cannot get <ndep> in TOML table')
-            return
-        end if
-
+        call get_value(table, "unit", self%unit, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call get_value(table, "verbosity", self%verbosity, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call get_value(table, "ndep", self%ndep, error, 'dependency_tree_t')
+        if (allocated(error)) return
         call get_value(table, "dep-dir", self%dep_dir)
         call get_value(table, "cache", self%cache)
 
