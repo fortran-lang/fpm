@@ -418,6 +418,12 @@ if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Target error: '//error%message)
 end if
 
+!> Dump model to file
+if (len_trim(settings%dump)>0) then
+    call model%dump(trim(settings%dump),error)
+    if (allocated(error)) call fpm_stop(1,'*cmd_build* Model dump error: '//error%message)
+endif
+
 if(settings%list)then
     do i=1,size(targets)
         write(stderr,*) targets(i)%ptr%output_file

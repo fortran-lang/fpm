@@ -73,6 +73,7 @@ type, extends(fpm_cmd_settings)  :: fpm_build_settings
     logical                      :: show_model=.false.
     logical                      :: build_tests=.false.
     logical                      :: prune=.true.
+    character(len=:),allocatable :: dump
     character(len=:),allocatable :: compiler
     character(len=:),allocatable :: c_compiler
     character(len=:),allocatable :: cxx_compiler
@@ -105,6 +106,7 @@ end type
 !> Settings for interacting and updating with project dependencies
 type, extends(fpm_cmd_settings)  :: fpm_update_settings
     character(len=ibug),allocatable :: name(:)
+    character(len=:),allocatable :: dump
     logical :: fetch_only
     logical :: clean
 end type
@@ -132,7 +134,7 @@ character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
-    val_profile
+    val_profile, val_dump
 
 !   '12345678901234567890123456789012345678901234567890123456789012345678901234567890',&
 character(len=80), parameter :: help_text_build_common(*) = [character(len=80) ::      &
@@ -331,6 +333,7 @@ contains
             call set_args(common_args // compiler_args //'&
             & --list F &
             & --show-model F &
+            & --dump " " &
             & --tests F &
             & --',help_build,version_text)
 
@@ -339,9 +342,14 @@ contains
             c_compiler = sget('c-compiler')
             cxx_compiler = sget('cxx-compiler')
             archiver = sget('archiver')
+
+            val_dump = sget('dump')
+            if (specified('dump') .and. val_dump=='')val_dump='fpm_model.toml'
+
             allocate( fpm_build_settings :: cmd_settings )
             cmd_settings=fpm_build_settings(  &
             & profile=val_profile,&
+            & dump=val_dump,&
             & prune=.not.lget('no-prune'), &
             & compiler=val_compiler, &
             & c_compiler=c_compiler, &
@@ -574,7 +582,7 @@ contains
             & verbose=lget('verbose') )
 
         case('update')
-            call set_args(common_args // ' --fetch-only F --clean F', &
+            call set_args(common_args // ' --fetch-only F --clean F --dump " " ', &
                 help_update, version_text)
 
             if( size(unnamed) > 1 )then
@@ -583,8 +591,11 @@ contains
                 names=[character(len=len(names)) :: ]
             endif
 
+            val_dump = sget('dump')
+            if (specified('dump') .and. val_dump=='')val_dump='fpm_dependencies.toml'
+
             allocate(fpm_update_settings :: cmd_settings)
-            cmd_settings=fpm_update_settings(name=names, &
+            cmd_settings=fpm_update_settings(name=names, dump=val_dump, &
                 fetch_only=lget('fetch-only'), verbose=lget('verbose'), &
                 clean=lget('clean'))
 
@@ -691,11 +702,11 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests] [--no-prune]                                                   ', &
+   '       [--tests] [--no-prune] [--dump [TOMLFILE]]                               ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
-   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose]                          ', &
+   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose] [--dump [TOMLFILE]]      ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]  ', &
    '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
@@ -812,10 +823,10 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests] [--no-prune]                                                ', &
+    '          [--tests] [--no-prune] [--dump [TOMLFILE]]                            ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
-    '    update [NAME(s)] [--fetch-only] [--clean]                                   ', &
+    '    update [NAME(s)] [--fetch-only] [--clean] [--dump [TOMLFILE]]               ', &
     '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
     '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME]                 ', &
     '        [--no-prune] [-- ARGS]                                                  ', &
@@ -998,7 +1009,7 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--list] [--tests]                                          ', &
+    '           [--list] [--tests] [--dump [TOMLFILE]]                      ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1026,6 +1037,8 @@ contains
     ' --list        list candidates instead of building or running them     ', &
     ' --tests       build all tests (otherwise only if needed)              ', &
     ' --show-model  show the model and exit (do not build)                  ', &
+    ' --dump [TOMLFILE] save model representation to TOMLFILE               ', &
+    '                   (default file name: model.toml)                     ', &
     ' --help        print this help and exit                                ', &
     ' --version     print program version information and exit              ', &
     '                                                                       ', &
@@ -1225,7 +1238,7 @@ contains
     ' update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
-    ' fpm update [--fetch-only] [--clean] [--verbose] [NAME(s)]', &
+    ' fpm update [--fetch-only] [--clean] [--verbose] [--dump [TOMLFILE]] [NAME(s)]', &
     '', &
     'DESCRIPTION', &
     ' Manage and update project dependencies. If no dependency names are', &
@@ -1235,6 +1248,7 @@ contains
     ' --fetch-only  Only fetch dependencies, do not update existing projects', &
     ' --clean       Do not use previous dependency cache', &
     ' --verbose     Show additional printout', &
+    ' --dump [TOMLFILE] Dump updated dependency tree to a toml file (default: fpm_dependencies.toml)', &
     '', &
     'SEE ALSO', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &

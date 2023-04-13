@@ -59,6 +59,11 @@ contains
       end do
     end if
 
+    if (len_trim(settings%dump)>0) then
+        call deps%dump(trim(settings%dump), error)
+        call handle_error(error)
+    end if
+
   end subroutine cmd_update
 
   !> Error handling for this command
@@ -66,7 +71,7 @@ contains
     !> Potential error
     type(error_t), intent(in), optional :: error
     if (present(error)) then
-      call fpm_stop(1, error%message)
+      call fpm_stop(1, '*cmd_update* error: '//error%message)
     end if
   end subroutine handle_error
 
