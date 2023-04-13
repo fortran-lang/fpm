@@ -702,11 +702,11 @@ contains
    help_list_dash = [character(len=80) :: &
    '                                                                                ', &
    ' build [--compiler COMPILER_NAME] [--profile PROF] [--flag FFLAGS] [--list]     ', &
-   '       [--tests] [--no-prune] [--dump [TOMLFILE]]                               ', &
+   '       [--tests] [--no-prune] [--dump [FILENAME]]                               ', &
    ' help [NAME(s)]                                                                 ', &
    ' new NAME [[--lib|--src] [--app] [--test] [--example]]|                         ', &
    '          [--full|--bare][--backfill]                                           ', &
-   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose] [--dump [TOMLFILE]]      ', &
+   ' update [NAME(s)] [--fetch-only] [--clean] [--verbose] [--dump [FILENAME]]      ', &
    ' list [--list]                                                                  ', &
    ' run  [[--target] NAME(s) [--example] [--profile PROF] [--flag FFLAGS] [--all]  ', &
    '      [--runner "CMD"] [--compiler COMPILER_NAME] [--list] [-- ARGS]            ', &
@@ -823,10 +823,10 @@ contains
     '  Their syntax is                                                      ', &
     '                                                                                ', &
     '    build [--profile PROF] [--flag FFLAGS] [--list] [--compiler COMPILER_NAME]  ', &
-    '          [--tests] [--no-prune] [--dump [TOMLFILE]]                            ', &
+    '          [--tests] [--no-prune] [--dump [FILENAME]]                            ', &
     '    new NAME [[--lib|--src] [--app] [--test] [--example]]|                      ', &
     '             [--full|--bare][--backfill]                                        ', &
-    '    update [NAME(s)] [--fetch-only] [--clean] [--dump [TOMLFILE]]               ', &
+    '    update [NAME(s)] [--fetch-only] [--clean] [--dump [FILENAME]]               ', &
     '    run [[--target] NAME(s)] [--profile PROF] [--flag FFLAGS] [--list] [--all]  ', &
     '        [--example] [--runner "CMD"] [--compiler COMPILER_NAME]                 ', &
     '        [--no-prune] [-- ARGS]                                                  ', &
@@ -1009,7 +1009,7 @@ contains
     '                                                                       ', &
     'SYNOPSIS                                                               ', &
     ' fpm build [--profile PROF] [--flag FFLAGS] [--compiler COMPILER_NAME] ', &
-    '           [--list] [--tests] [--dump [TOMLFILE]]                      ', &
+    '           [--list] [--tests] [--dump [FILENAME]]                      ', &
     '                                                                       ', &
     ' fpm build --help|--version                                            ', &
     '                                                                       ', &
@@ -1037,7 +1037,8 @@ contains
     ' --list        list candidates instead of building or running them     ', &
     ' --tests       build all tests (otherwise only if needed)              ', &
     ' --show-model  show the model and exit (do not build)                  ', &
-    ' --dump [TOMLFILE] save model representation to TOMLFILE               ', &
+    ' --dump [FILENAME] save model representation to file. use JSON format  ', &
+    '                   if file name is *.json; use TOML format otherwise   ', &
     '                   (default file name: model.toml)                     ', &
     ' --help        print this help and exit                                ', &
     ' --version     print program version information and exit              ', &
@@ -1238,7 +1239,7 @@ contains
     ' update(1) - manage project dependencies', &
     '', &
     'SYNOPSIS', &
-    ' fpm update [--fetch-only] [--clean] [--verbose] [--dump [TOMLFILE]] [NAME(s)]', &
+    ' fpm update [--fetch-only] [--clean] [--verbose] [--dump [FILENAME]] [NAME(s)]', &
     '', &
     'DESCRIPTION', &
     ' Manage and update project dependencies. If no dependency names are', &
@@ -1248,7 +1249,9 @@ contains
     ' --fetch-only  Only fetch dependencies, do not update existing projects', &
     ' --clean       Do not use previous dependency cache', &
     ' --verbose     Show additional printout', &
-    ' --dump [TOMLFILE] Dump updated dependency tree to a toml file (default: fpm_dependencies.toml)', &
+    ' --dump [FILENAME] Dump updated dependency tree to file. use JSON format  ', &
+    '                   if file name is *.json; use TOML format otherwise      ', &
+    '                   (default file name: fpm_dependencies.toml)             ', &
     '', &
     'SEE ALSO', &
     ' The fpm(1) home page at https://github.com/fortran-lang/fpm', &
