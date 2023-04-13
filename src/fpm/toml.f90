@@ -69,6 +69,13 @@ module fpm_toml
         module procedure set_string_type
     end interface set_string
 
+    !> get_value: fpm interface
+    interface get_value
+        module procedure get_logical
+        module procedure get_integer
+        module procedure get_integer_64
+    end interface get_value
+
 
     abstract interface
 
@@ -549,6 +556,92 @@ contains
 
     end subroutine add_table_fpm
 
+    !> Function wrapper to get a logical variable from a toml table, returning an fpm error
+    subroutine get_logical(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> The key
+        character(len=*), intent(in) :: key
+
+        !> The variable
+        logical, intent(inout) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        call get_value(table, key, var, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'cannot get logical key <'//key//'> from TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+    end subroutine get_logical
+
+    !> Function wrapper to get a default integer variable from a toml table, returning an fpm error
+    subroutine get_integer(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> The key
+        character(len=*), intent(in) :: key
+
+        !> The variable
+        integer, intent(inout) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        call get_value(table, key, var, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'cannot get integer key <'//key//'> from TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+    end subroutine get_integer
+
+    !> Function wrapper to get a integer(int64) variable from a toml table, returning an fpm error
+    subroutine get_integer_64(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> The key
+        character(len=*), intent(in) :: key
+
+        !> The variable
+        integer(int64), intent(inout) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        call get_value(table, key, var, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'cannot get integer(int64) key <'//key//'> from TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+    end subroutine get_integer_64
 
     !> Check if table contains only keys that are part of the list. If a key is
     !> found that is not part of the list, an error is allocated.

@@ -1358,29 +1358,12 @@ contains
         call self%dependency_config_t%load_from_toml(table, error)
         if (allocated(error)) return
 
-        call get_value(table, "done", self%done, stat=ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_node_t: cannot read done flag in TOML table')
-            return
-        end if
-
-        call get_value(table, "update", self%update, stat=ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_node_t: cannot read update flag in TOML table')
-            return
-        end if
-
-        call get_value(table, "cached", self%cached, stat=ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_node_t: cannot read cached flag in TOML table')
-            return
-        end if
-
-        call get_value(table, "done", self%done, stat=ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_node_t: cannot read done flag in TOML table')
-            return
-        end if
+        call get_value(table, "done", self%done, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call get_value(table, "update", self%update, error, 'dependency_node_t')
+        if (allocated(error)) return
+        call get_value(table, "cached", self%cached, error, 'dependency_node_t')
+        if (allocated(error)) return
 
         call get_value(table, "proj-dir", self%proj_dir)
         call get_value(table, "revision", self%revision)

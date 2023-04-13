@@ -558,12 +558,8 @@ subroutine srcfile_load_from_toml(self, table, error)
 
     call get_value(table, "file-name", self%file_name)
     call get_value(table, "exe-name", self%exe_name)
-
-    call get_value(table, "digest", self%digest, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'srcfile_t: cannot set digest in TOML table')
-        return
-    end if
+    call get_value(table, "digest", self%digest, error, 'srcfile_t')
+    if (allocated(error)) return
 
     ! unit_scope and unit_type are saved as strings so the output is independent
     ! of the internal representation
@@ -648,18 +644,10 @@ subroutine fft_load_from_toml(self, table, error)
 
     integer :: ierr
 
-    call get_value(table, "implicit-typing", self%implicit_typing, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fortran_features_t: cannot read implicit-typing from TOML table')
-        return
-    end if
-
-    call get_value(table, "implicit-external", self%implicit_external, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fortran_features_t: cannot read implicit-typing from TOML table')
-        return
-    end if
-
+    call get_value(table, "implicit-typing", self%implicit_typing, error, 'fortran_features_t')
+    if (allocated(error)) return
+    call get_value(table, "implicit-external", self%implicit_external, error, 'fortran_features_t')
+    if (allocated(error)) return
     ! Return unallocated value if not present
     call get_value(table, "source-form", self%source_form)
 
@@ -785,11 +773,8 @@ subroutine package_load_from_toml(self, table, error)
     call get_value(table, "name", self%name)
     call get_value(table, "version", self%version)
 
-    call get_value(table, "module-naming", self%enforce_module_names, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'package_t: cannot get module-naming from TOML table')
-        return
-    end if
+    call get_value(table, "module-naming", self%enforce_module_names, error, 'package_t')
+    if (allocated(error)) return
 
     ! Return unallocated value if not present
     call get_value(table, "module-prefix", self%module_prefix%s)
@@ -1076,18 +1061,10 @@ subroutine model_load_from_toml(self, table, error)
     if (allocated(error)) return
     call get_list(table, "external-modules", self%external_modules, error)
     if (allocated(error)) return
-
-    call get_value(table, "include-tests", self%include_tests, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fpm_model_t: cannot read include-tests in TOML table')
-        return
-    end if
-
-    call get_value(table, "module-naming", self%enforce_module_names, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fpm_model_t: cannot set module-naming in TOML table')
-        return
-    end if
+    call get_value(table, "include-tests", self%include_tests, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call get_value(table, "module-naming", self%enforce_module_names, error, 'fpm_model_t')
+    if (allocated(error)) return
     call get_value(table, "module-prefix", self%module_prefix%s)
 
 end subroutine model_load_from_toml

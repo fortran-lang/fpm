@@ -1215,27 +1215,14 @@ subroutine load_from_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: ierr
-
     call get_value(table, "ar", self%ar)
 
-    call get_value(table, "use-response-file", self%use_response_file, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'archiver_t: error getting use_response_file from TOML')
-        return
-    end if
-
-    call get_value(table, "echo", self%echo, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'archiver_t: error getting echo from TOML')
-        return
-    end if
-
-    call get_value(table, "verbose", self%verbose, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'archiver_t: error getting verbose from TOML')
-        return
-    end if
+    call get_value(table, "use-response-file", self%use_response_file, error, 'archiver_t')
+    if (allocated(error)) return
+    call get_value(table, "echo", self%echo, error, 'archiver_t')
+    if (allocated(error)) return
+    call get_value(table, "verbose", self%verbose, error, 'archiver_t')
+    if (allocated(error)) return
 
 end subroutine load_from_toml
 
@@ -1307,29 +1294,15 @@ subroutine compiler_load(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: ierr
-
-    call get_value(table, "id", self%id, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'compiler_t: error getting id from TOML')
-        return
-    end if
-
+    call get_value(table, "id", self%id, error, 'compiler_t')
+    if (allocated(error)) return
     call get_value(table, "fc", self%fc)
     call get_value(table, "cc", self%cc)
     call get_value(table, "cxx", self%cxx)
-
-    call get_value(table, "echo", self%echo, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'compiler_t: error getting echo from TOML')
-        return
-    end if
-
-    call get_value(table, "verbose", self%verbose, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'compiler_t: error getting verbose from TOML')
-        return
-    end if
+    call get_value(table, "echo", self%echo, error, 'compiler_t')
+    if (allocated(error)) return
+    call get_value(table, "verbose", self%verbose, error, 'compiler_t')
+    if (allocated(error)) return
 
 end subroutine compiler_load
 
