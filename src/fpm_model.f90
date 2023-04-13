@@ -569,10 +569,16 @@ subroutine srcfile_load_from_toml(self, table, error)
     type(error_t), allocatable, intent(out) :: error
 
     character(len=:), allocatable :: flag
+    integer :: ierr
 
     call get_value(table, "file-name", self%file_name)
     call get_value(table, "exe-name", self%exe_name)
-    call get_value(table, "digest", self%digest)
+
+    call get_value(table, "digest", self%digest, stat=ierr)
+    if (ierr/=toml_stat%success) then
+        call fatal_error(error,'srcfile_t: cannot set digest in TOML table')
+        return
+    end if
 
     ! unit_scope and unit_type are saved as strings so the output is independent
     ! of the internal representation

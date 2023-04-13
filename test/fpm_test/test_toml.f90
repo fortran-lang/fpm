@@ -9,7 +9,8 @@ module test_toml
     use fpm_manifest_dependency, only: dependency_config_t, dependency_destroy
     use fpm_versioning, only: new_version
     use fpm_strings, only: string_t, operator(==), split
-    use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t
+    use fpm_model, only: fortran_features_t, package_t, FPM_SCOPE_LIB, FPM_UNIT_MODULE, fpm_model_t, &
+         & srcfile_t
     use fpm_compiler, only: archiver_t, compiler_t, id_gcc
 
     implicit none
@@ -17,6 +18,7 @@ module test_toml
 
     public :: collect_toml
 
+    character, parameter :: NL = new_line('a')
 
 contains
 
@@ -28,19 +30,30 @@ contains
         type(unittest_t), allocatable, intent(out) :: testsuite(:)
 
         testsuite = [ &
-            & new_unittest("valid-toml", test_valid_toml), &
-            & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.), &
-            & new_unittest("missing-file", test_missing_file, should_fail=.true.), &
-            & new_unittest("serialize-git-target", git_target_roundtrip), &
-            & new_unittest("serialize-dependency-config", dependency_config_roundtrip), &
-            & new_unittest("serialize-dependency-node", dependency_node_roundtrip), &
-            & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip), &
-            & new_unittest("serialize-string-array", string_array_roundtrip), &
-            & new_unittest("serialize-fortran-features", fft_roundtrip), &
-            & new_unittest("serialize-package", package_roundtrip), &
-            & new_unittest("serialize-archiver", ar_roundtrip), &
-            & new_unittest("serialize-compiler", compiler_roundtrip), &
-            & new_unittest("serialize-model", fpm_model_roundtrip)]
+           & new_unittest("valid-toml", test_valid_toml), &
+           & new_unittest("invalid-toml", test_invalid_toml, should_fail=.true.), &
+           & new_unittest("missing-file", test_missing_file, should_fail=.true.), &
+           & new_unittest("serialize-git-target", git_target_roundtrip), &
+           & new_unittest("serialize-git-invalid", git_target_invalid, should_fail=.true.), &
+           & new_unittest("serialize-dependency-config", dependency_config_roundtrip), &
+           & new_unittest("serialize-dependency-node", dependency_node_roundtrip), &
+           & new_unittest("serialize-dependency-invalid", dependency_node_invalid, should_fail=.true.), &
+           & new_unittest("serialize-dependency-invalid2", dependency_node_invalid_2, should_fail=.true.), &
+           & new_unittest("serialize-dependency-tree", dependency_tree_roundtrip), &
+           & new_unittest("serialize-dependency-tree-invalid", dependency_tree_invalid, should_fail=.true.), &
+           & new_unittest("serialize-dependency-tree-invalid2", dependency_tree_invalid2, should_fail=.true.), &
+           & new_unittest("serialize-string-array", string_array_roundtrip), &
+           & new_unittest("serialize-fortran-features", fft_roundtrip), &
+           & new_unittest("serialize-fortran-invalid", fft_invalid, should_fail=.true.), &
+           & new_unittest("serialize-package", package_roundtrip), &
+           & new_unittest("serialize-package-invalid", package_invalid, should_fail=.true.), &
+           & new_unittest("serialize-srcfile-invalid", source_invalid, should_fail=.true.), &
+           & new_unittest("serialize-archiver", ar_roundtrip), &
+           & new_unittest("serialize-archiver-invalid", ar_invalid, should_fail=.true.), &
+           & new_unittest("serialize-compiler", compiler_roundtrip), &
+           & new_unittest("serialize-compiler-invalid", compiler_invalid, should_fail=.true.), &
+           & new_unittest("serialize-model", fpm_model_roundtrip), &
+           & new_unittest("serialize-model-invalid", fpm_model_invalid, should_fail=.true.)]
 
     end subroutine collect_toml
 
@@ -161,6 +174,26 @@ contains
 
     end subroutine git_target_roundtrip
 
+
+    !> Test invalid git_target_t serialization
+    subroutine git_target_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(git_target_t) :: git
+        type(toml_table), allocatable :: table
+
+        character(*), parameter :: toml = 'descriptor = ""'//NL//& ! invalid descriptor ID
+                                          'url = "https://github.com/toml-f/toml-f"'//NL//&
+                                          'object = "54686e45993f3a9a1d05d5c7419f39e7d5a4eb3f"'
+
+
+        call string_to_toml(toml, table)
+
+        call git%load(table, error)
+
+    end subroutine git_target_invalid
 
     !> Test git_target_t serialization
     subroutine dependency_config_roundtrip(error)
@@ -286,6 +319,51 @@ contains
 
     end subroutine dependency_node_roundtrip
 
+    !> Test loading invalid dependency node
+    subroutine dependency_node_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(dependency_node_t) :: dep
+        type(toml_table), allocatable :: table
+
+        character(*), parameter :: toml = 'name = "jonquil" '//NL//&
+                                        & 'version = "h0.2.0"'//NL//& ! invalid version
+                                        & 'proj-dir = "build/dependencies/jonquil"'//NL//&
+                                        & 'revision = "05d30818bb12fb877226ce284b9a3a41b971a889"'//NL//&
+                                        & 'done = true'//NL//&
+                                        & 'update = false'//NL//&
+                                        & 'cached = true'
+
+        call string_to_toml(toml, table)
+
+        call dep%load(table, error)
+
+    end subroutine dependency_node_invalid
+
+    !> Test loading invalid dependency node
+    subroutine dependency_node_invalid_2(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(dependency_node_t) :: dep
+        type(toml_table), allocatable :: table
+
+        character(*), parameter :: toml = 'name = "jonquil" '//NL//&
+                                        & 'version = "0.2.0"'//NL//&
+                                        & 'proj-dir = "build/dependencies/jonquil"'//NL//&
+                                        & 'revision = "05d30818bb12fb877226ce284b9a3a41b971a889"'//NL//&
+                                        & 'done = 123'//NL//&  ! not a boolean
+                                        & 'update = false'//NL//&
+                                        & 'cached = true'
+
+        call string_to_toml(toml, table)
+        call dep%load(table, error)
+
+    end subroutine dependency_node_invalid_2
+
     !> Test dependency_tree_t serialization
     subroutine dependency_tree_roundtrip(error)
 
@@ -349,11 +427,72 @@ contains
         call deps%test_serialization("no deps dir", error)
         if (allocated(error)) return
 
-
-
         1 format('removed ',i0,' dependencies')
 
     end subroutine dependency_tree_roundtrip
+
+    !> Test invalid dependency tree loading
+    subroutine dependency_tree_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+        type(dependency_tree_t) :: dep
+
+        character(len=*), parameter :: toml = &
+            & 'unit = 6 '//NL//&
+            & 'verbosity = true'//NL//& ! not a number
+            & 'dep-dir = "build/dependencies"'//NL//&
+            & 'ndep = 3'//NL//& ! consistency is not checked:
+            & '[dependencies]'//NL//&
+            & '[dependencies.dep1]'//NL//&
+            & 'name = "dep1"'//NL//&
+            & 'path = "fpm-tmp1-dir"'//NL//&
+            & 'proj-dir = "fpm-tmp1-dir"'//NL//&
+            & 'done = false'//NL//&
+            & 'update = false'//NL//&
+            & 'cached = false'
+
+        call string_to_toml(toml, table)
+        call dep%load(table, error)
+
+    end subroutine dependency_tree_invalid
+
+    !> Test invalid dependency tree loading
+    subroutine dependency_tree_invalid2(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(toml_table), allocatable :: table
+        type(dependency_tree_t) :: dep
+
+        character(len=*), parameter :: toml = &
+            & 'unit = "" '//NL//& ! not provided
+            & 'verbosity = 1'//NL//&
+            & 'dep-dir = "build/dependencies"'//NL//&
+            & 'ndep = 3'//NL//& ! consistency is not checked:
+            & '[dependencies.M_CLI2]'//NL//&
+            & 'name = "M_CLI2"'//NL//&
+            & 'path = "~/./some/dummy/path"'//NL//&
+            & 'namespace = "urbanjost"'//NL//&
+            & 'requested_version = "3.2.0"'//NL//&
+            & 'version = "4.53.2"'//NL//&
+            & 'proj-dir = "~/./"'//NL//&
+            & 'revision = "7264878cdb1baff7323cc48596d829ccfe7751b8"'//NL//&
+            & 'done = false'//NL//&
+            & 'update = true'//NL//&
+            & 'cached = true'//NL//&
+            & '[dependencies.M_CLI2.git]'//NL//&
+            & 'descriptor = "revision"'//NL//&
+            & 'url = "https://github.com/urbanjost/M_CLI2.git"'//NL//&
+            & 'object = "7264878cdb1baff7323cc48596d829ccfe7751b8"'
+
+        call string_to_toml(toml, table)
+        call dep%load(table, error)
+
+    end subroutine dependency_tree_invalid2
 
     !> Test serialization/deserialization of a string array
     subroutine string_array_roundtrip(error)
@@ -463,6 +602,26 @@ contains
 
     end subroutine fft_roundtrip
 
+    !> Test deserialization of an invalid fortran-features structure
+    subroutine fft_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fortran_features_t) :: fortran
+        type(toml_table), allocatable :: table
+
+        character(len=*), parameter :: toml = 'implicit-typing = false '//NL//&
+                                            & 'implicit-external = 0 '//NL//& ! not a boolean
+                                            & 'source-form = "free" '
+
+        call string_to_toml(toml, table)
+
+        !> Default object
+        call fortran%load(table,error)
+
+    end subroutine fft_invalid
+
     !> Test serialization/deserialization of a package_t structure
     subroutine package_roundtrip(error)
 
@@ -545,6 +704,55 @@ contains
 
     end subroutine package_roundtrip
 
+    !> Test deserialization of an invalid package TOML file
+    subroutine package_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=*), parameter :: toml = &
+            & 'name = "toml-f"  '//NL//&
+            & 'version = "0.8.0"  '//NL//&
+            & 'module-naming = "prefix"  '//NL//& ! this should be boolean
+            & 'module-prefix = ""  '
+
+        type(package_t) :: pkg
+        type(toml_table), allocatable :: table
+
+        call string_to_toml(toml, table)
+
+        !> Default object
+        call pkg%load(table,error)
+
+    end subroutine package_invalid
+
+    !> Test deserialization of an invalid source file
+    subroutine source_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=*), parameter :: toml = &
+            & 'file-name = "build/dependencies/toml-f/src/tomlf.f90"  '//NL//&
+            & 'digest = "abcde"  '//NL//& ! not a number
+            & 'unit-scope = "FPM_SCOPE_MODULE"  '//NL//&
+            & 'unit-type = "FPM_UNIT_MODULE"  '//NL//&
+            & 'modules-provided = "tomlf"  '//NL//&
+            & 'parent-modules = [ ]  '//NL//&
+            & 'modules-used = [ "tomlf_build", "tomlf_datetime" ]  '//NL//&
+            & 'include-dependencies = [ ]  '//NL//&
+            & 'link-libraries = [ ]  '
+
+        type(srcfile_t) :: src
+        type(toml_table), allocatable :: table
+
+        call string_to_toml(toml, table)
+
+        !> Default object
+        call src%load(table,error)
+
+    end subroutine source_invalid
+
     !> Test serialization/deserialization of an archiver_t structure
     subroutine ar_roundtrip(error)
 
@@ -567,6 +775,27 @@ contains
 
     end subroutine ar_roundtrip
 
+    !> Test deserialization of an invalid archiver_t structure
+    subroutine ar_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=*), parameter :: toml = &
+            & 'ar = "ar -rs "    '//NL//&
+            & 'use-response-file = false    '//NL//&
+            & 'echo = 123     '//NL//& ! not a boolean
+            & 'verbose = false   '
+
+        type(archiver_t) :: ar
+        type(toml_table), allocatable :: table
+
+        call string_to_toml(toml, table)
+
+        !> Default object
+        call ar%load(table,error)
+
+    end subroutine ar_invalid
 
     !> Test serialization/deserialization of a compiler_t structure
     subroutine compiler_roundtrip(error)
@@ -587,11 +816,33 @@ contains
         compiler%cxx = "g++ -O3 -std=c++11"
         compiler%echo = .false.
 
-        call compiler%dump('compiler.toml',error)
-
         call compiler%test_serialization('compiler_t: gcc',error)
 
     end subroutine compiler_roundtrip
+
+    !> Test deserialization of an invalid compiler_t TOML structure
+    subroutine compiler_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=*), parameter :: toml = &
+            & 'id = "gfortran"    '//NL//& ! not an integer identifier
+            & 'fc = "gfortran"    '//NL//&
+            & 'cc = "gcc"    '//NL//&
+            & 'cxx = "g++"     '//NL//&
+            & 'echo = false    '//NL//&
+            & 'verbose = false    '
+
+        type(compiler_t) :: cc
+        type(toml_table), allocatable :: table
+
+        call string_to_toml(toml, table)
+
+        !> Default object
+        call cc%load(table,error)
+
+    end subroutine compiler_invalid
 
     !> Get a simplified TOML representation of the fpm v0.8.1 model
     subroutine fpm_081_table(table)
@@ -600,7 +851,6 @@ contains
         type(toml_table), allocatable, intent(out) :: table
 
         !> simplified TOML representation of the fpm v0.8.1 model
-        character, parameter :: NL = new_line('a')
         character(len=:), allocatable :: fpm
 
         integer :: iunit
@@ -1812,11 +2062,26 @@ contains
         fpm = fpm//NL//'include-dependencies = [ ]'
         fpm = fpm//NL//'link-libraries = [ ]'
 
+        call string_to_toml(fpm, table)
+
+    end subroutine fpm_081_table
+
+    !> Convert a character string to a TOML table
+    subroutine string_to_toml(string, table)
+
+        !> The input TOML as a string
+        character(*), intent(in) :: string
+
+        !> The TOML table
+        type(toml_table), allocatable, intent(out) :: table
+
+        integer :: iunit
+
         ! Write
-        open(newunit=iunit,form='formatted',status='scratch')
+        open(newunit=iunit,form='formatted',status='scratch',action='readwrite')
 
         !> Dump to scratch file
-        write(iunit,*) fpm
+        write(iunit,*) string
 
         !> Load from scratch file
         rewind(iunit)
@@ -1824,7 +2089,7 @@ contains
 
         close(iunit)
 
-    end subroutine fpm_081_table
+    end subroutine string_to_toml
 
     subroutine fpm_model_roundtrip(error)
 
@@ -1848,5 +2113,34 @@ contains
         call model%test_serialization('fpm_model_t: fpm v0.8.1 model test', error)
 
     end subroutine fpm_model_roundtrip
+
+
+    subroutine fpm_model_invalid(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(fpm_model_t) :: model
+        type(toml_table), allocatable :: table
+        character(len=:), allocatable :: fpm
+
+        allocate(character(len=0) :: fpm)
+        fpm = fpm//NL//'package-name = "fpm"'
+        fpm = fpm//NL//'fortran-flags = " -Wall -Wextra -fPIC -fmax-errors=1 -g "'
+        fpm = fpm//NL//'c-flags = ""'
+        fpm = fpm//NL//'cxx-flags = ""'
+        fpm = fpm//NL//'link-flags = ""'
+        fpm = fpm//NL//'build-prefix = "build/gfortran"'
+        fpm = fpm//NL//'include-dirs = [ ]'
+        fpm = fpm//NL//'link-libraries = [ ]'
+        fpm = fpm//NL//'external-modules = "" '
+        fpm = fpm//NL//'include-tests = "my_test"' ! not a boolean
+        fpm = fpm//NL//'module-naming = false'
+        fpm = fpm//NL//'module-prefix = ""'
+
+        call string_to_toml(fpm, table)
+        call model%load(table,error)
+
+    end subroutine fpm_model_invalid
 
 end module test_toml

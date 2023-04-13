@@ -1350,6 +1350,7 @@ contains
 
         !> Local variables
         character(len=:), allocatable :: version
+        integer :: ierr
 
         call destroy_dependency_node(self)
 
@@ -1357,9 +1358,30 @@ contains
         call self%dependency_config_t%load_from_toml(table, error)
         if (allocated(error)) return
 
-        call get_value(table, "done", self%done)
-        call get_value(table, "update", self%update)
-        call get_value(table, "cached", self%cached)
+        call get_value(table, "done", self%done, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_node_t: cannot read done flag in TOML table')
+            return
+        end if
+
+        call get_value(table, "update", self%update, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_node_t: cannot read update flag in TOML table')
+            return
+        end if
+
+        call get_value(table, "cached", self%cached, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_node_t: cannot read cached flag in TOML table')
+            return
+        end if
+
+        call get_value(table, "done", self%done, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_node_t: cannot read done flag in TOML table')
+            return
+        end if
+
         call get_value(table, "proj-dir", self%proj_dir)
         call get_value(table, "revision", self%revision)
 
@@ -1528,9 +1550,24 @@ contains
 
         call table%get_keys(keys)
 
-        call get_value(table, "unit", self%unit)
-        call get_value(table, "verbosity", self%verbosity)
-        call get_value(table, "ndep", self%ndep)
+        call get_value(table, "unit", self%unit, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_tree_t: cannot set <unit> in TOML table')
+            return
+        end if
+
+        call get_value(table, "verbosity", self%verbosity, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_tree_t: cannot set <verbosity> in TOML table')
+            return
+        end if
+
+        call get_value(table, "ndep", self%ndep, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'dependency_tree_t: cannot set <ndep> in TOML table')
+            return
+        end if
+
         call get_value(table, "dep-dir", self%dep_dir)
         call get_value(table, "cache", self%cache)
 
