@@ -1191,29 +1191,15 @@ subroutine dump_to_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: ierr
-
     !> Path to archiver
     call set_string(table, "ar", self%ar, error, 'archiver_t')
     if (allocated(error)) return
-
-    call set_value(table, "use-response-file", self%use_response_file, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'archiver_t: error dumping use_response_file')
-        return
-    end if
-
-    call set_value(table, "echo", self%echo, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'archiver_t: error dumping echo')
-        return
-    end if
-
-    call set_value(table, "verbose", self%verbose, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'archiver_t: error dumping verbose')
-        return
-    end if
+    call set_value(table, "use-response-file", self%use_response_file, error, 'archiver_t')
+    if (allocated(error)) return
+    call set_value(table, "echo", self%echo, error, 'archiver_t')
+    if (allocated(error)) return
+    call set_value(table, "verbose", self%verbose, error, 'archiver_t')
+    if (allocated(error)) return
 
 end subroutine dump_to_toml
 
@@ -1294,30 +1280,18 @@ subroutine compiler_dump(self, table, error)
 
     integer :: ierr
 
-    call set_value(table, "id", self%id, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'compiler_t: error dumping id')
-        return
-    end if
-
+    call set_value(table, "id", self%id, error, 'compiler_t')
+    if (allocated(error)) return
     call set_string(table, "fc", self%fc, error, 'compiler_t')
     if (allocated(error)) return
     call set_string(table, "cc", self%cc, error, 'compiler_t')
     if (allocated(error)) return
     call set_string(table, "cxx", self%cxx, error, 'compiler_t')
     if (allocated(error)) return
-
-    call set_value(table, "echo", self%echo, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'archiver_t: error dumping echo')
-        return
-    end if
-
-    call set_value(table, "verbose", self%verbose, stat=ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'archiver_t: error dumping verbose')
-        return
-    end if
+    call set_value(table, "echo", self%echo, error, 'compiler_t')
+    if (allocated(error)) return
+    call set_value(table, "verbose", self%verbose, error, 'compiler_t')
+    if (allocated(error)) return
 
 end subroutine compiler_dump
 

@@ -18,6 +18,7 @@ module fpm_toml
     use tomlf, only: toml_table, toml_array, toml_key, toml_stat, get_value, &
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
         & toml_serialize, len, toml_load
+    use iso_fortran_env, only: int64
     implicit none
     private
 
@@ -50,6 +51,18 @@ module fpm_toml
         procedure, non_overridable :: test_serialization
 
     end type serializable_t
+
+    !> add_table: fpm interface
+    interface add_table
+        module procedure add_table_fpm
+    end interface add_table
+
+    !> set_value: fpm interface
+    interface set_value
+        module procedure set_logical
+        module procedure set_integer
+        module procedure set_integer_64
+    end interface set_value
 
     interface set_string
         module procedure set_character
@@ -395,6 +408,93 @@ contains
 
     end subroutine set_character
 
+    !> Function wrapper to set a logical variable to a toml table, returning an fpm error
+    subroutine set_logical(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> The key
+        character(len=*), intent(in) :: key
+
+        !> The variable
+        logical, intent(in) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        call set_value(table, key, var, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'cannot set logical key <'//key//'> in TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+    end subroutine set_logical
+
+    !> Function wrapper to set a default integer variable to a toml table, returning an fpm error
+    subroutine set_integer(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> The key
+        character(len=*), intent(in) :: key
+
+        !> The variable
+        integer, intent(in) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        call set_value(table, key, var, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'cannot set integer key <'//key//'> in TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+    end subroutine set_integer
+
+    !> Function wrapper to set a default integer variable to a toml table, returning an fpm error
+    subroutine set_integer_64(table, key, var, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> The key
+        character(len=*), intent(in) :: key
+
+        !> The variable
+        integer(int64), intent(in) :: var
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        call set_value(table, key, var, stat=ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'cannot set integer(int64) key <'//key//'> in TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+    end subroutine set_integer_64
+
     !> Function wrapper to set a character(len=:), allocatable variable to a toml table
     subroutine set_string_type(table, key, var, error, whereAt)
 
@@ -416,6 +516,39 @@ contains
         call set_character(table, key, var%s, error, whereAt)
 
     end subroutine set_string_type
+
+    !> Function wrapper to add a toml table and return an fpm error
+    subroutine add_table_fpm(table, key, ptr, error, whereAt)
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Table key
+        character(len=*), intent(in) :: key
+
+        !> The character variable
+        type(toml_table), pointer, intent(out) :: ptr
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        !> Optional description
+        character(len=*), intent(in), optional :: whereAt
+
+        integer :: ierr
+
+        !> Nullify pointer
+        nullify(ptr)
+
+        call add_table(table, key, ptr, ierr)
+        if (ierr/=toml_stat%success) then
+            call fatal_error(error,'cannot add <'//key//'> table in TOML table')
+            if (present(whereAt)) error%message = whereAt//': '//error%message
+            return
+        end if
+
+    end subroutine add_table_fpm
+
 
     !> Check if table contains only keys that are part of the list. If a key is
     !> found that is not part of the list, an error is allocated.

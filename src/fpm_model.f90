@@ -515,44 +515,29 @@ subroutine srcfile_dump_to_toml(self, table, error)
 
     integer :: ierr
 
-    if (allocated(self%file_name)) then
-        call set_value(table, "file-name", self%file_name, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'srcfile_t: cannot set file-name in TOML table')
-            return
-        end if
-    endif
-
-    if (allocated(self%exe_name)) then
-        call set_value(table, "exe-name", self%exe_name, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'srcfile_t: cannot set exe-name in TOML table')
-            return
-        end if
-    endif
-
-    call set_value(table,"digest",self%digest)
+    call set_string(table, "file-name", self%file_name, error, 'srcfile_t')
+    if (allocated(error)) return
+    call set_string(table, "exe-name", self%exe_name, error, 'srcfile_t')
+    if (allocated(error)) return
+    call set_value(table, "digest", self%digest, error, 'srcfile_t')
+    if (allocated(error)) return
 
     ! unit_scope and unit_type are saved as strings so the output is independent
     ! of the internal representation
-    call set_value(table,"unit-scope",FPM_SCOPE_NAME(self%unit_scope))
-    call set_value(table,"unit-type",FPM_UNIT_NAME(self%unit_type))
-
-    call set_list(table,"modules-provided",self%modules_provided, error)
+    call set_string(table,"unit-scope",FPM_SCOPE_NAME(self%unit_scope), error, 'srcfile_t')
     if (allocated(error)) return
-
-    call set_list(table,"parent-modules",self%parent_modules, error)
+    call set_string(table,"unit-type",FPM_UNIT_NAME(self%unit_type), error, 'srcfile_t')
     if (allocated(error)) return
-
-    call set_list(table,"modules-used",self%modules_used, error)
+    call set_list(table, "modules-provided",self%modules_provided, error)
     if (allocated(error)) return
-
-    call set_list(table,"include-dependencies",self%include_dependencies, error)
+    call set_list(table, "parent-modules",self%parent_modules, error)
     if (allocated(error)) return
-
-    call set_list(table,"link-libraries",self%link_libraries, error)
+    call set_list(table, "modules-used",self%modules_used, error)
     if (allocated(error)) return
-
+    call set_list(table, "include-dependencies",self%include_dependencies, error)
+    if (allocated(error)) return
+    call set_list(table, "link-libraries",self%link_libraries, error)
+    if (allocated(error)) return
 
 end subroutine srcfile_dump_to_toml
 
@@ -640,27 +625,12 @@ subroutine fft_dump_to_toml(self, table, error)
     !> Error handling
     type(error_t), allocatable, intent(out) :: error
 
-    integer :: ierr
-
-    call set_value(table, "implicit-typing", self%implicit_typing, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fortran_features_t: cannot set implicit-typing in TOML table')
-        return
-    end if
-
-    call set_value(table, "implicit-external", self%implicit_external, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fortran_features_t: cannot set implicit-external in TOML table')
-        return
-    end if
-
-    if (allocated(self%source_form)) then
-        call set_value(table, "source-form", self%source_form, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'fortran_features_t: cannot set source-form in TOML table')
-            return
-        end if
-    endif
+    call set_value(table, "implicit-typing", self%implicit_typing, error, 'fortran_features_t')
+    if (allocated(error)) return
+    call set_value(table, "implicit-external", self%implicit_external, error, 'fortran_features_t')
+    if (allocated(error)) return
+    call set_string(table, "source-form", self%source_form, error, 'fortran_features_t')
+    if (allocated(error)) return
 
 end subroutine fft_dump_to_toml
 
@@ -758,11 +728,8 @@ subroutine package_dump_to_toml(self, table, error)
     call set_string(table, "version", self%version, error, 'package_t')
     if (allocated(error)) return
 
-    call set_value(table, "module-naming", self%enforce_module_names, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'package_t: cannot set module-naming in TOML table')
-        return
-    end if
+    call set_value(table, "module-naming", self%enforce_module_names, error, 'package_t')
+    if (allocated(error)) return
 
     call set_string(table, "module-prefix", self%module_prefix, error, 'package_t')
     if (allocated(error)) return
@@ -771,33 +738,22 @@ subroutine package_dump_to_toml(self, table, error)
     if (allocated(error)) return
 
     !> Create a fortran table
-    call add_table(table, "fortran", ptr, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'package_t: cannot set fortran table in TOML table')
-        return
-    end if
+    call add_table(table, "fortran", ptr, error, 'package_t')
+    if (allocated(error)) return
     call self%features%dump_to_toml(ptr, error)
     if (allocated(error)) return
 
     !> Create a sources table
     if (allocated(self%sources)) then
 
-        call add_table(table, "sources", ptr, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'package_t: cannot set sources table in TOML table')
-            return
-        end if
+        call add_table(table, "sources", ptr, error, 'package_t')
+        if (allocated(error)) return
 
         do ii = 1, size(self%sources)
 
             write(src_name,1) ii
-            call add_table(ptr, trim(src_name), this_source)
-
-            if (.not. associated(this_source)) then
-                call fatal_error(error, "package_t cannot create entry for source "//trim(src_name))
-                return
-            end if
-
+            call add_table(ptr, trim(src_name), this_source, error, 'package_t[source]')
+            if (allocated(error)) return
             call self%sources(ii)%dump_to_toml(this_source,error)
             if (allocated(error)) return
 
@@ -950,19 +906,13 @@ subroutine model_dump_to_toml(self, table, error)
     call set_string(table, "package-name", self%package_name, error, 'fpm_model_t')
     if (allocated(error)) return
 
-    call add_table(table, "compiler", ptr, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'package_t: cannot set compiler table')
-        return
-    end if
+    call add_table(table, "compiler", ptr, error, 'fpm_model_t')
+    if (allocated(error)) return
     call self%compiler%dump_to_toml(ptr, error)
     if (allocated(error)) return
 
-    call add_table(table, "archiver", ptr, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'package_t: cannot set archiver table')
-        return
-    end if
+    call add_table(table, "archiver", ptr, error, 'fpm_model_t')
+    if (allocated(error)) return
     call self%archiver%dump_to_toml(ptr, error)
     if (allocated(error)) return
 
@@ -983,25 +933,15 @@ subroutine model_dump_to_toml(self, table, error)
     call set_list(table, "external-modules", self%external_modules, error)
     if (allocated(error)) return
 
-    call set_value(table, "include-tests", self%include_tests, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fpm_model_t: cannot set include-tests in TOML table')
-        return
-    end if
-
-    call set_value(table, "module-naming", self%enforce_module_names, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fpm_model_t: cannot set module-naming in TOML table')
-        return
-    end if
+    call set_value(table, "include-tests", self%include_tests, error, 'fpm_model_t')
+    if (allocated(error)) return
+    call set_value(table, "module-naming", self%enforce_module_names, error, 'fpm_model_t')
+    if (allocated(error)) return
     call set_string(table, "module-prefix", self%module_prefix, error, 'fpm_model_t')
     if (allocated(error)) return
 
-    call add_table(table, "deps", ptr, ierr)
-    if (ierr/=toml_stat%success) then
-        call fatal_error(error,'fpm_model_t: cannot set dependencies table')
-        return
-    end if
+    call add_table(table, "deps", ptr, error, 'fpm_model_t')
+    if (allocated(error)) return
     call self%deps%dump_to_toml(ptr, error)
     if (allocated(error)) return
 
@@ -1023,14 +963,11 @@ subroutine model_dump_to_toml(self, table, error)
                  !> So, serialization will work regardless of size(self%dep) == self%ndep
                  if (len_trim(pkg%name)==0) then
                     write(unnamed,1) ii
-                    call add_table(ptr_pkg, trim(unnamed), ptr)
+                    call add_table(ptr_pkg, trim(unnamed), ptr, error, 'fpm_model_t[package]')
                  else
-                    call add_table(ptr_pkg, pkg%name, ptr)
+                    call add_table(ptr_pkg, pkg%name, ptr, error, 'fpm_model_t[package]')
                  end if
-                 if (.not. associated(ptr)) then
-                    call fatal_error(error, "fpm_model_t cannot create entry for package "//pkg%name)
-                    return
-                 end if
+                 if (allocated(error)) return
                  call pkg%dump_to_toml(ptr, error)
                  if (allocated(error)) return
 

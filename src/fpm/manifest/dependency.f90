@@ -27,7 +27,7 @@ module fpm_manifest_dependency
     use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
         & git_target_revision, git_target_default, operator(==), git_matches_manifest
     use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys, serializable_t, add_table, &
-        & set_value
+        & set_value, set_string
     use fpm_filesystem, only: windows_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_versioning, only: version_t, new_version
@@ -368,46 +368,20 @@ contains
 
         integer :: ierr
 
-        if (allocated(self%name)) then
-            call set_value(table, "name", self%name, ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_config_t: cannot set name in TOML table')
-                return
-            end if
-        endif
-
-        if (allocated(self%path)) then
-            call set_value(table, "path", self%path, ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_config_t: cannot set path in TOML table')
-                return
-            end if
-        endif
-
-        if (allocated(self%namespace)) then
-            call set_value(table, "namespace", self%namespace, ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_config_t: cannot set namespace in TOML table')
-                return
-            end if
-        endif
-
+        call set_string(table, "name", self%name, error, 'dependency_config_t')
+        if (allocated(error)) return
+        call set_string(table, "path", self%path, error, 'dependency_config_t')
+        if (allocated(error)) return
+        call set_string(table, "namespace", self%namespace, error, 'dependency_config_t')
+        if (allocated(error)) return
         if (allocated(self%requested_version)) then
-            call set_value(table, "requested_version", self%requested_version%s(), ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_config_t: cannot set requested_version in TOML table')
-                return
-            end if
+             call set_string(table, "requested_version", self%requested_version%s(), error, 'dependency_config_t')
+             if (allocated(error)) return
         endif
-
 
         if (allocated(self%git)) then
-            call add_table(table, "git", ptr, ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_config_t: cannot set git table in TOML table')
-                return
-            end if
-
+            call add_table(table, "git", ptr, error)
+            if (allocated(error)) return
             call self%git%dump_to_toml(ptr, error)
             if (allocated(error)) return
         endif

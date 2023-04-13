@@ -66,7 +66,7 @@ module fpm_dependency
   use fpm_manifest_dependency, only: manifest_has_changed, dependency_destroy
   use fpm_strings, only: string_t, operator(.in.)
   use fpm_toml, only: toml_table, toml_key, toml_error, toml_serialize, &
-                      get_value, set_value, add_table, toml_load, toml_stat
+                      get_value, set_value, add_table, toml_load, toml_stat, set_string
   use fpm_versioning, only: version_t, new_version
   use fpm_settings, only: fpm_global_settings, get_global_settings, official_registry_base_url
   use fpm_downloader, only: downloader_t
@@ -1466,35 +1466,16 @@ contains
         type(toml_table), pointer :: ptr_deps,ptr
         character(27) :: unnamed
 
-        call set_value(table, "unit", self%unit, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_tree_t: cannot set unit in TOML table')
-            return
-        end if
-        call set_value(table, "verbosity", self%verbosity, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_tree_t: cannot set verbosity in TOML table')
-            return
-        end if
-        if (allocated(self%dep_dir)) then
-            call set_value(table, "dep-dir", self%dep_dir, ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_tree_t: cannot set dep-dir in TOML table')
-                return
-            end if
-        endif
-        if (allocated(self%cache)) then
-            call set_value(table, "cache", self%cache, ierr)
-            if (ierr/=toml_stat%success) then
-                call fatal_error(error,'dependency_tree_t: cannot set cache in TOML table')
-                return
-            end if
-        endif
-        call set_value(table, "ndep", self%ndep, ierr)
-        if (ierr/=toml_stat%success) then
-            call fatal_error(error,'dependency_tree_t: cannot set ndep in TOML table')
-            return
-        end if
+        call set_value(table, "unit", self%unit, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call set_value(table, "verbosity", self%verbosity, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call set_string(table, "dep-dir", self%dep_dir, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call set_string(table, "cache", self%cache, error, 'dependency_tree_t')
+        if (allocated(error)) return
+        call set_value(table, "ndep", self%ndep, error, 'dependency_tree_t')
+        if (allocated(error)) return
 
         if (allocated(self%dep)) then
 
