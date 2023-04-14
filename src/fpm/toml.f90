@@ -19,7 +19,9 @@ module fpm_toml
         & set_value, toml_parse, toml_error, new_table, add_table, add_array, &
         & toml_serialize, len, toml_load, toml_value
     use tomlf_de_parser, only: parse
-    use jonquil, only: json_serialize, json_error, json_value, json_object, json_load, &
+    use tomlf_constants, only: TOML_NEWLINE
+    use tomlf_utils, only: read_whole_line
+    use jonquil, only: json_serialize, json_error, json_value, json_object, json_loads, &
                        cast_to_object
     use iso_fortran_env, only: int64
     use fpm_filesystem, only: get_temp_filename
@@ -266,14 +268,22 @@ contains
         type(toml_table), allocatable :: table
         type(toml_table), pointer     :: jtable
         class(toml_value), allocatable :: object
+        character(len=:), allocatable :: unit_string
         logical :: is_json
 
         is_json = .false.; if (present(json)) is_json = json
 
         if (is_json) then
 
+           !> Bypass gfortran+Windows issue in Jonquil
+           call read_whole_unit(unit_string, unit, error)
+           if (allocated(error)) return
+
+           !> Add a few spaces
+           unit_string = unit_string // repeat(' ',10)
+
            !> init JSON interpreter
-           call json_load(object, unit, error=toml_error)
+           call json_loads(object, unit_string, error=toml_error)
            if (allocated(toml_error)) then
               allocate (error)
               call move_alloc(toml_error%message, error%message)
@@ -308,6 +318,51 @@ contains
         if (allocated(error)) return
 
     end subroutine load_from_unit
+
+    !> Create a new instance of a lexer by reading from a unit.
+    !>
+    !> Currently, only sequential access units can be processed by this constructor.
+    subroutine read_whole_unit(string, iunit, error)
+       !> Whole file string
+       character(len=:), allocatable, intent(out) :: string
+       !> Unit to read from
+       integer, intent(in) :: iunit
+       !> Error code
+       type(error_t), allocatable, intent(out) :: error
+
+       character(len=:), allocatable :: source, line
+       integer, parameter :: bufsize = 512
+       character(len=bufsize) :: filename, mode
+       integer :: stat
+
+       inquire(unit=iunit, access=mode, name=filename)
+       select case(trim(mode))
+       case default
+          stat = 1
+          call fatal_error(error, "Failed to read from unit: unit is not sequential")
+          return
+
+       case("sequential", "SEQUENTIAL")
+          allocate(character(0) :: source)
+          do
+             call read_whole_line(iunit, line, stat)
+             if (stat > 0) exit
+             source = source // line // TOML_NEWLINE
+             if (stat < 0) then
+                if (is_iostat_end(stat)) stat = 0
+                exit
+             end if
+          end do
+       end select
+
+       !> Pass to output
+       allocate(character(len=len(source)) :: string)
+       string(1:len(source)) = source(1:len(source))
+
+       if (stat /= 0) then
+          call fatal_error(error, "Failed to read from unit")
+       end if
+    end subroutine read_whole_unit
 
     !> Process the configuration file to a TOML data structure
     subroutine read_package_file(table, manifest, error)
