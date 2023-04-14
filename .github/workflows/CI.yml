@@ -155,7 +155,6 @@ jobs:
         ${{ env.FPM }} run ${{ matrix.release-flags }}
         ${{ env.FPM }} run ${{ matrix.release-flags }} -- --version
         ${{ env.FPM }} run ${{ matrix.release-flags }} -- --help
-        gfortran --version
 
     - name: Test Fortran fpm
       shell: bash
