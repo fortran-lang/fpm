@@ -5,6 +5,10 @@ author = "fpm maintainers"
 maintainer = ""
 copyright = "2020 fpm contributors"
 
+[preprocess]
+[preprocess.cpp]
+macros=["FPM_RELEASE_VERSION={version}"]
+
 [dependencies]
 toml-f.git = "https://github.com/toml-f/toml-f"
 toml-f.rev = "54686e45993f3a9a1d05d5c7419f39e7d5a4eb3f"
@@ -32,3 +36,4 @@ main = "main.f90"
 name = "help-test"
 source-dir = "test/help_test"
 main = "help_test.f90"
+

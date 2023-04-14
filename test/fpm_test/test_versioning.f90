@@ -2,6 +2,7 @@
 module test_versioning
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed
     use fpm_versioning
+    use fpm_release, only: fpm_version
     implicit none
     private
 
@@ -18,6 +19,7 @@ contains
         type(unittest_t), allocatable, intent(out) :: tests(:)
 
         tests = [ &
+            & new_unittest("fpm-version", test_fpm_version), &        
             & new_unittest("valid-version", test_valid_version), &
             & new_unittest("valid-equals", test_valid_equals), &
             & new_unittest("valid-notequals", test_valid_notequals), &
@@ -32,6 +34,17 @@ contains
 
     end subroutine collect_versioning
 
+    !> Test fpm self-version query
+    subroutine test_fpm_version(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(version_t) :: self_version
+
+        self_version = fpm_version()
+
+    end subroutine test_fpm_version
 
     !> Read valid version strings
     subroutine test_valid_version(error)
