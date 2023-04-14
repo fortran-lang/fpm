@@ -77,7 +77,7 @@ jobs:
         Expand-Archive mingw-w64.zip
         echo "$pwd\mingw-w64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       env:
-        GCC_DOWNLOAD: "https://github.com/brechtsanders/winlibs_mingw/releases/download/10.4.0-10.0.0-msvcrt-r1/winlibs-x86_64-posix-seh-gcc-10.4.0-mingw-w64msvcrt-10.0.0-r1.zip"
+        GCC_DOWNLOAD: "https://github.com/brechtsanders/winlibs_mingw/releases/download/9.4.0-9.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-9.4.0-mingw-w64-9.0.0-r2.zip"
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
