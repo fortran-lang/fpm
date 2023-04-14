@@ -102,6 +102,7 @@ jobs:
         ${{ env.BOOTSTRAP }} run
         ${{ env.BOOTSTRAP }} run -- --version
         ${{ env.BOOTSTRAP }} run -- --help
+        gfortran --version
 
     - name: Test Fortran fpm (bootstrap)
       shell: bash
@@ -155,7 +156,6 @@ jobs:
         ${{ env.FPM }} run ${{ matrix.release-flags }}
         ${{ env.FPM }} run ${{ matrix.release-flags }} -- --version
         ${{ env.FPM }} run ${{ matrix.release-flags }} -- --help
-        gfortran --version
 
     - name: Test Fortran fpm
       shell: bash
