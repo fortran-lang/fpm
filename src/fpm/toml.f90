@@ -270,6 +270,7 @@ contains
         class(toml_value), allocatable :: object
         character(len=:), allocatable :: unit_string
         logical :: is_json
+        integer :: i
 
         is_json = .false.; if (present(json)) is_json = json
 
@@ -280,7 +281,9 @@ contains
            if (allocated(error)) return
 
            !> Add a few spaces
-           unit_string = unit_string // repeat(' ',10)
+!           unit_string = unit_string // repeat(' ',10)
+
+           print "(a,*(1x,i0))", 'input string: ',(iachar(unit_string(i:i)),i=1,len(unit_string))
 
            !> init JSON interpreter
            call json_loads(object, unit_string, error=toml_error)
@@ -347,7 +350,7 @@ contains
           do
              call read_whole_line(iunit, line, stat)
              if (stat > 0) exit
-             source = source // line // TOML_NEWLINE
+             source = source // line // new_line(TOML_NEWLINE)
              if (stat < 0) then
                 if (is_iostat_end(stat)) stat = 0
                 exit
