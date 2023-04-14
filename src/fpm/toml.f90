@@ -22,6 +22,7 @@ module fpm_toml
     use jonquil, only: json_serialize, json_error, json_value, json_object, json_load, &
                        cast_to_object
     use iso_fortran_env, only: int64
+    use fpm_filesystem, only: get_temp_filename
     implicit none
     private
 
@@ -133,11 +134,14 @@ contains
 
         integer :: iunit, ii
         class(serializable_t), allocatable :: copy
+        character(len=:), allocatable :: filename
         character(len=4), parameter :: formats(2) = ['TOML','JSON']
 
         all_formats: do ii = 1, 2
 
-            open(newunit=iunit,form='formatted',action='readwrite',status='scratch')
+            filename = get_temp_filename()
+
+            open(newunit=iunit,file=filename,form='formatted',action='write')
 
             !> Dump to scratch file
             call self%dump(iunit, error, json=ii==2)
@@ -145,16 +149,18 @@ contains
                 error%message = formats(ii)//': '//error%message
                 return
             endif
+            close(iunit)
 
             !> Load from scratch file
-            rewind(iunit)
+            open(newunit=iunit,file=filename,form='formatted',action='read')
             allocate(copy,mold=self)
             call copy%load(iunit,error, json=ii==2)
             if (allocated(error)) then
                 error%message = formats(ii)//': '//error%message
                 return
             endif
-            close(iunit)
+
+            close(iunit,status='delete')
 
             !> Check same
             if (.not.(self==copy)) then

@@ -89,6 +89,7 @@ contains
 
     type(dependency_tree_t) :: deps
     type(dependency_config_t) :: dep
+    character(len=:), allocatable :: filename
     integer :: unit
 
     call new_dependency_tree(deps)
@@ -104,7 +105,8 @@ contains
     dep%path = "fpm-tmp3-dir"
     call new_dependency_node(deps%dep(3), dep, proj_dir=dep%path)
 
-    open (newunit=unit, status='scratch')
+    filename = get_temp_filename()
+    open (newunit=unit, file=filename, action='readwrite', form='formatted')
     call deps%dump_cache(unit, error)
     if (.not. allocated(error)) then
       rewind (unit)
@@ -112,7 +114,7 @@ contains
       call new_dependency_tree(deps)
       call resize(deps%dep, 2)
       call deps%load_cache(unit, error)
-      close (unit)
+      close (unit,status='delete')
     end if
     if (allocated(error)) return
 
