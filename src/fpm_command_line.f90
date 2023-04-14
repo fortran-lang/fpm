@@ -1366,7 +1366,7 @@ contains
     '', &
     'OPTIONS', &
     ' --show-package-version   show package version without publishing', &
-    ' --show-form-data         show request without publishing', &
+    ' --show-form-data         show sent form data without publishing', &
     '' ]
      end subroutine set_help
 
