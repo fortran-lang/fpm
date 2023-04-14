@@ -137,7 +137,7 @@ contains
 
         all_formats: do ii = 1, 2
 
-            open(newunit=iunit,form='formatted',status='scratch')
+            open(newunit=iunit,form='formatted',action='readwrite',status='scratch')
 
             !> Dump to scratch file
             call self%dump(iunit, error, json=ii==2)
