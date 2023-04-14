@@ -53,6 +53,13 @@ contains
       call fpm_stop(1, 'No "fpm.toml" file in "'//settings%source_path//'".')
     end if
 
+    ! Check if package contains git dependencies. Only publish packages without git dependencies.
+    do i = 1, model%deps%ndep
+      if (allocated(model%deps%dep(i)%git)) then
+        call fpm_stop(1, "Do not publish packages containing git dependencies. '"//model%deps%dep(i)%name//"' is a git dependency.")
+      end if
+    end do
+
     form_data = [ &
       string_t('package_name="'//package%name//'"'), &
       string_t('package_license="'//package%license//'"'), &
