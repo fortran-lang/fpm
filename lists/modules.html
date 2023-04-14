@@ -137,27 +137,28 @@
 <!---->			   <tr class="active"><td><a href='../module/fpm_model.html'>fpm_model</a></td><td><a href='../sourcefile/fpm_model.f90.html'>fpm_model.f90</a></td><td><p>Defines the fpm model data types which encapsulate all information
  required to correctly build a package and its dependencies.</p><a href="../module/fpm_model.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 <!--active-->			   <tr class=""><td><a href='../module/fpm_os.html'>fpm_os</a></td><td><a href='../sourcefile/fpm_os.f90.html'>fpm_os.F90</a></td><td></td></tr>
-<!---->			   <tr class="active"><td><a href='../module/fpm_settings.html'>fpm_settings</a></td><td><a href='../sourcefile/fpm_settings.f90.html'>fpm_settings.f90</a></td><td><p>Manages global settings which are defined in the global config file.</p></td></tr>
-<!--active-->			   <tr class=""><td><a href='../module/fpm_source_parsing.html'>fpm_source_parsing</a></td><td><a href='../sourcefile/fpm_source_parsing.f90.html'>fpm_source_parsing.f90</a></td><td><p>This module exposes two functions, <code><a href="../proc/parse_f_source.html">parse_f_source</a></code> and <code><a href="../proc/parse_c_source.html">parse_c_source</a></code>,
+<!---->			   <tr class="active"><td><a href='../module/fpm_release.html'>fpm_release</a></td><td><a href='../sourcefile/fpm_release.f90.html'>fpm_release.f90</a></td><td><p>Module fpm_release contains public constants storing this build&rsquo;s unique version IDs</p><a href="../module/fpm_release.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
+<!--active-->			   <tr class=""><td><a href='../module/fpm_settings.html'>fpm_settings</a></td><td><a href='../sourcefile/fpm_settings.f90.html'>fpm_settings.f90</a></td><td><p>Manages global settings which are defined in the global config file.</p></td></tr>
+<!---->			   <tr class="active"><td><a href='../module/fpm_source_parsing.html'>fpm_source_parsing</a></td><td><a href='../sourcefile/fpm_source_parsing.f90.html'>fpm_source_parsing.f90</a></td><td><p>This module exposes two functions, <code><a href="../proc/parse_f_source.html">parse_f_source</a></code> and <code><a href="../proc/parse_c_source.html">parse_c_source</a></code>,
  which perform a rudimentary parsing of fortran and c source files
  in order to extract information required for module dependency tracking.</p><a href="../module/fpm_source_parsing.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-<!---->			   <tr class="active"><td><a href='../module/fpm_sources.html'>fpm_sources</a></td><td><a href='../sourcefile/fpm_sources.f90.html'>fpm_sources.f90</a></td><td><p>This module implements subroutines for building a list of
+<!--active-->			   <tr class=""><td><a href='../module/fpm_sources.html'>fpm_sources</a></td><td><a href='../sourcefile/fpm_sources.f90.html'>fpm_sources.f90</a></td><td><p>This module implements subroutines for building a list of
  <code><a href="../type/srcfile_t.html">srcfile_t</a></code> objects by looking for source files in the filesystem.</p><a href="../module/fpm_sources.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-<!--active-->			   <tr class=""><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></td><td><p>This module defines general procedures for <strong>string operations</strong> for both CHARACTER and
+<!---->			   <tr class="active"><td><a href='../module/fpm_strings.html'>fpm_strings</a></td><td><a href='../sourcefile/fpm_strings.f90.html'>fpm_strings.f90</a></td><td><p>This module defines general procedures for <strong>string operations</strong> for both CHARACTER and
  TYPE(STRING_T) variables</p><a href="../module/fpm_strings.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-<!---->			   <tr class="active"><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></td><td><p>This module handles the construction of the build target list
+<!--active-->			   <tr class=""><td><a href='../module/fpm_targets.html'>fpm_targets</a></td><td><a href='../sourcefile/fpm_targets.f90.html'>fpm_targets.f90</a></td><td><p>This module handles the construction of the build target list
  from the sources list (<code><a href="../proc/targets_from_sources.html">targets_from_sources</a></code>), the
  resolution of module-dependencies between build targets
  (<code><a href="../proc/resolve_module_dependencies.html">resolve_module_dependencies</a></code>), and the enumeration of
  objects required for link targets (<code><a>resolve_target_linking</a></code>).</p><a href="../module/fpm_targets.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-<!--active-->			   <tr class=""><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td><a href='../sourcefile/toml.f90.html'>toml.f90</a></td><td><p>This module acts as a proxy to the <code>toml-f</code> public Fortran API and allows
+<!---->			   <tr class="active"><td><a href='../module/fpm_toml.html'>fpm_toml</a></td><td><a href='../sourcefile/toml.f90.html'>toml.f90</a></td><td><p>This module acts as a proxy to the <code>toml-f</code> public Fortran API and allows
  to selectively expose components from the library to <code>fpm</code>.
  The interaction with <code>toml-f</code> data types outside of this module should be
  limited to tables, arrays and key-lists, most of the necessary interactions
  are implemented in the building interface with the <code>get_value</code> and <code>set_value</code>
  procedures.</p><a href="../module/fpm_toml.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
-<!---->			   <tr class="active"><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td><a href='../sourcefile/versioning.f90.html'>versioning.f90</a></td><td><p>Implementation of versioning data for comparing packages</p></td></tr>
-<!--active-->			 </tbody></table>
+<!--active-->			   <tr class=""><td><a href='../module/fpm_versioning.html'>fpm_versioning</a></td><td><a href='../sourcefile/versioning.f90.html'>versioning.f90</a></td><td><p>Implementation of versioning data for comparing packages</p></td></tr>
+<!---->			 </tbody></table>
              
         </div>
       </div>
@@ -173,7 +174,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-12 13:29              </p>
+ on 2023-04-14 11:10              </p>
           </div>
         </div>
         <br>

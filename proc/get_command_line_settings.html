@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 5.2% of total for procedures.">264 statements</a>
+               title=" 5.3% of total for procedures.">267 statements</a>
           </li>
 
             <li id="source-file">
@@ -251,8 +251,9 @@
 <span class="w">        </span><span class="kt">integer</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">os</span><span class="w"></span>
 <span class="w">        </span><span class="kt">logical</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">unix</span><span class="w"></span>
 <span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">fpm_install_settings</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">install_settings</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">version_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">version</span><span class="w"></span>
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">common_args</span><span class="p">,</span><span class="w"> </span><span class="n">compiler_args</span><span class="p">,</span><span class="w"> </span><span class="n">run_args</span><span class="p">,</span><span class="w"> </span><span class="n">working_dir</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">archiver</span><span class="w"></span>
+<span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">c_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">cxx_compiler</span><span class="p">,</span><span class="w"> </span><span class="n">archiver</span><span class="p">,</span><span class="w"> </span><span class="n">version_s</span><span class="w"></span>
 
 <span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fc_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cc_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CC&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ar_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;AR&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">            </span><span class="p">&amp;</span><span class="w"> </span><span class="n">fflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cxxflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CXXFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ldflags_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;LDFLAGS&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
@@ -275,8 +276,13 @@
 <span class="w">            </span><span class="k">case </span><span class="n">default</span><span class="w">     </span><span class="p">;</span><span class="w"> </span><span class="n">os_type</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="s2">&quot;OS Type:     UNKNOWN&quot;</span><span class="w"></span>
 <span class="w">        </span><span class="k">end select</span>
 <span class="k">        </span><span class="n">unix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">os_is_unix</span><span class="p">(</span><span class="n">os</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">! Get current release version</span>
+<span class="w">        </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fpm_version</span><span class="p">()</span><span class="w"></span>
+<span class="w">        </span><span class="n">version_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">version</span><span class="p">%</span><span class="n">s</span><span class="p">()</span><span class="w"></span>
+
 <span class="w">        </span><span class="n">version_text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
-<span class="w">         </span><span class="p">&amp;</span><span class="w">  </span><span class="s1">&#39;Version:     0.8.1, alpha&#39;</span><span class="p">,</span><span class="w">                               </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">         </span><span class="p">&amp;</span><span class="w">  </span><span class="s1">&#39;Version:     &#39;</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">version_s</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;, alpha&#39;</span><span class="p">,</span><span class="w">               </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">         </span><span class="p">&amp;</span><span class="w">  </span><span class="s1">&#39;Program:     fpm(1)&#39;</span><span class="p">,</span><span class="w">                                     </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">         </span><span class="p">&amp;</span><span class="w">  </span><span class="s1">&#39;Description: A Fortran package manager and build system&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">         </span><span class="p">&amp;</span><span class="w">  </span><span class="s1">&#39;Home Page:   https://github.com/fortran-lang/fpm&#39;</span><span class="p">,</span><span class="w">        </span><span class="p">&amp;</span><span class="w"></span>
@@ -728,7 +734,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-12 13:29              </p>
+ on 2023-04-14 11:10              </p>
           </div>
         </div>
         <br>
