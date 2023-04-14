@@ -1075,19 +1075,18 @@ contains
         type(toml_table), allocatable, intent(out) :: table
 
         integer :: iunit
-        character(len=:), allocatable :: filename
 
-        filename = get_temp_filename()
+        ! Write
+        open(newunit=iunit,form='formatted',status='scratch',action='readwrite')
 
         !> Dump to scratch file
-        open(newunit=iunit,file=filename,form='formatted',action='write')
         write(iunit,*) string
-        close(iunit)
 
         !> Load from scratch file
-        open(newunit=iunit,file=filename,form='formatted',action='read')
+        rewind(iunit)
         call toml_load(table, iunit)
-        close(iunit,status='delete')
+
+        close(iunit)
 
     end subroutine string_to_toml
 
