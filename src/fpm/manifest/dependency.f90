@@ -25,7 +25,7 @@
 module fpm_manifest_dependency
     use fpm_error, only: error_t, syntax_error
     use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
-        & git_target_revision, git_target_default, operator(==)
+        & git_target_revision, git_target_default, operator(==), git_matches_manifest
     use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys
     use fpm_filesystem, only: windows_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
@@ -62,6 +62,9 @@ module fpm_manifest_dependency
         procedure :: info
 
     end type dependency_config_t
+
+    !> Common output format for writing to the command line
+    character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
 
 contains
 
@@ -274,19 +277,23 @@ contains
     end subroutine info
 
     !> Check if two dependency configurations are different
-    logical function manifest_has_changed(this, that) result(has_changed)
+    logical function manifest_has_changed(cached, manifest, verbosity, iunit) result(has_changed)
 
         !> Two instances of the dependency configuration
-        class(dependency_config_t), intent(in) :: this, that
+        class(dependency_config_t), intent(in) :: cached, manifest
+
+        !> Log verbosity
+        integer, intent(in) :: verbosity, iunit
 
         has_changed = .true.
 
         !> Perform all checks
-        if (this%name/=that%name) return
-        if (this%path/=that%path) return
-        if (allocated(this%git).neqv.allocated(that%git)) return
-        if (allocated(this%git)) then
-            if (.not.(this%git==that%git)) return
+        if (allocated(cached%git).neqv.allocated(manifest%git)) then
+            if (verbosity>1) write(iunit,out_fmt) "GIT presence has changed. "
+            return
+        endif
+        if (allocated(cached%git)) then
+            if (.not.git_matches_manifest(cached%git,manifest%git,verbosity,iunit)) return
         end if
 
         !> All checks passed! The two instances are equal
