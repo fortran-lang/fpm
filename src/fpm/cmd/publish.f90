@@ -1,3 +1,4 @@
+!> Upload a package to the registry using the `publish` command (`fpm publish`).
 module fpm_cmd_publish
   use fpm_command_line, only: fpm_publish_settings
   use fpm_manifest, only: package_config_t, get_package_data
@@ -17,6 +18,8 @@ module fpm_cmd_publish
 
 contains
 
+  !> The `publish` command first builds the model to obtain all the relevant information of the package such as the
+  !> package version. It then creates a tarball of the package and uploads it to the registry.
   subroutine cmd_publish(settings)
     type(fpm_publish_settings), intent(inout) :: settings
 
@@ -43,6 +46,7 @@ contains
       print *, version%s(); return
     end if
 
+    !> Checks before uploading the package.
     if (.not. allocated(package%license)) call fpm_stop(1, 'No license specified in fpm.toml.')
     if (.not. allocated(version)) call fpm_stop(1, 'No version specified in fpm.toml.')
     if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')

@@ -307,23 +307,23 @@ contains
 
   !> Archive a folder using `git archive`.
   subroutine git_archive(source, destination, error)
-    !> Directory to pack.
+    !> Directory to archive.
     character(*), intent(in) :: source
-    !> Destination to pack to.
+    !> Destination of the archive.
     character(*), intent(in) :: destination
     !> Error handling.
     type(error_t), allocatable, intent(out) :: error
 
     integer :: stat
-    character(len=:), allocatable :: output, archive_format
+    character(len=:), allocatable :: cmd_output, archive_format
 
-    call execute_and_read_output('git archive -l', output, error)
+    call execute_and_read_output('git archive -l', cmd_output, error)
     if (allocated(error)) return
 
-    if (index(output, 'tar.gz') /= 0) then
+    if (index(cmd_output, 'tar.gz') /= 0) then
       archive_format = 'tar.gz'
     else
-      call fatal_error(error, "Cannot find a suitable archive format for 'git archive'.")
+      call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
     end if
 
     call execute_command_line('git archive HEAD --format='//archive_format//' -o '// &

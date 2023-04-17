@@ -1023,9 +1023,13 @@ end subroutine os_delete_dir
 
     !> Execute command line and return output as a string.
     subroutine execute_and_read_output(cmd, output, error, exitstat)
+        !> Command to execute.
         character(len=*), intent(in) :: cmd
+        !> Command line output.
         character(len=:), allocatable, intent(out) :: output
+        !> Error to handle.
         type(error_t), allocatable, intent(out) :: error
+        !> Can optionally used for error handling.
         integer, intent(out), optional :: exitstat
 
         integer :: cmdstat, unit, stat = 0
@@ -1058,7 +1062,9 @@ end subroutine os_delete_dir
 
     !> Get system-dependent tmp directory.
     subroutine get_tmp_directory(tmp_dir, error)
+        !> System-dependant tmp directory.
         character(len=:), allocatable, intent(out) :: tmp_dir
+        !> Error to handle.
         type(error_t), allocatable, intent(out) :: error
 
         tmp_dir = get_env('TMPDIR', '')

@@ -91,7 +91,7 @@ contains
     if (which('curl') /= '') then
       print *, 'Uploading package ...'
       call execute_command_line('curl -X POST -H "Content-Type: multipart/form-data" ' &
-      & //form_data_str//' '//endpoint, exitstat=stat)
+      & //form_data_str//endpoint, exitstat=stat)
     else
       call fatal_error(error, "'curl' not installed."); return
     end if
