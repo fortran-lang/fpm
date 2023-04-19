@@ -33,6 +33,7 @@ use fpm_filesystem,   only : basename, canon_path, which, run
 use fpm_environment,  only : get_command_arguments_quoted
 use fpm_error,        only : fpm_stop, error_t
 use fpm_os,           only : get_current_directory
+use fpm_release,      only : fpm_version, version_t
 use,intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
                                        & stdout=>output_unit, &
                                        & stderr=>error_unit
@@ -218,8 +219,9 @@ contains
         logical                       :: unix
         type(fpm_install_settings), allocatable :: install_settings
         type(fpm_publish_settings), allocatable :: publish_settings
+        type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
-            & c_compiler, cxx_compiler, archiver
+            & c_compiler, cxx_compiler, archiver, version_s
 
         character(len=*), parameter :: fc_env = "FC", cc_env = "CC", ar_env = "AR", &
             & fflags_env = "FFLAGS", cflags_env = "CFLAGS", cxxflags_env = "CXXFLAGS", ldflags_env = "LDFLAGS", &
@@ -242,8 +244,13 @@ contains
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
         unix = os_is_unix(os)
+
+        ! Get current release version
+        version = fpm_version()
+        version_s = version%s()
+
         version_text = [character(len=80) :: &
-         &  'Version:     0.8.0, alpha',                               &
+         &  'Version:     '//trim(version_s)//', alpha',               &
          &  'Program:     fpm(1)',                                     &
          &  'Description: A Fortran package manager and build system', &
          &  'Home Page:   https://github.com/fortran-lang/fpm',        &

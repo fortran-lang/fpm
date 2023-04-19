@@ -1,9 +1,13 @@
 name = "fpm"
-version = "0.8.0"
+version = "0.8.1"
 license = "MIT"
 author = "fpm maintainers"
 maintainer = ""
 copyright = "2020 fpm contributors"
+
+[preprocess]
+[preprocess.cpp]
+macros=["FPM_RELEASE_VERSION={version}"]
 
 [dependencies]
 toml-f.git = "https://github.com/toml-f/toml-f"
@@ -32,3 +36,4 @@ main = "main.f90"
 name = "help-test"
 source-dir = "test/help_test"
 main = "help_test.f90"
+
