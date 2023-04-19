@@ -1,4 +1,8 @@
-!> Upload a package to the registry using the `publish` command (`fpm publish`).
+!> Upload a package to the registry using the `publish` command.
+!>
+!> To upload a package you need to provide a token that will be linked to your username and will be created
+!> for a namespace. The token can be obtained from the registry website. It can be used as
+!> `fpm publish --token <token>`.
 module fpm_cmd_publish
   use fpm_command_line, only: fpm_publish_settings
   use fpm_manifest, only: package_config_t, get_package_data
