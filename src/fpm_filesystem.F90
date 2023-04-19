@@ -1036,7 +1036,7 @@ end subroutine os_delete_dir
         character(len=:), allocatable :: cmdmsg, tmp_path
         character(len=1000) :: output_line
 
-        call get_tmp_directory(tmp_path, error=error)
+        call get_tmp_directory(tmp_path, error)
         if (allocated(error)) return
 
         if (.not. exists(tmp_path)) call mkdir(tmp_path)
@@ -1045,10 +1045,7 @@ end subroutine os_delete_dir
         call filewrite(tmp_path, [''])
 
         call execute_command_line(cmd//' > '//tmp_path, exitstat=exitstat, cmdstat=cmdstat)
-        if (cmdstat /= 0) then
-          print *, 'Command failed: "', cmd, '"'
-          call fpm_stop(1,'*run*:'//trim(cmdmsg))
-        end if
+        if (cmdstat /= 0) call fpm_stop(1,'*run*: '//"Command failed: '"//cmd//"'. Message: '"//trim(cmdmsg)//"'.")
 
         open(unit, file=tmp_path, action='read', status='old')
         output = ''
@@ -1082,7 +1079,7 @@ end subroutine os_delete_dir
           tmp_dir = tmp_dir//'fpm'; return
         end if
 
-        call fatal_error(error, "Couldn't retrieve system temporary directory.")
+        call fatal_error(error, "Couldn't determine system temporary directory.")
     end
 
 end module fpm_filesystem

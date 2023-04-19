@@ -121,7 +121,6 @@ type, extends(fpm_build_settings) :: fpm_publish_settings
     logical :: show_package_version = .false.
     logical :: show_form_data = .false.
     character(len=:), allocatable :: token
-    character(len=:), allocatable :: source_path
 end type
 
 character(len=:),allocatable :: name
@@ -617,7 +616,6 @@ contains
             & --show-package-version F &
             & --show-form-data F &
             & --token " " &
-            & --source-path " " &
             & --list F &
             & --show-model F &
             & --tests F &
@@ -647,7 +645,6 @@ contains
             & build_tests=lget('tests'),&
             & verbose=lget('verbose')))
             call get_char_arg(publish_settings%token, 'token')
-            call get_char_arg(publish_settings%source_path, 'source-path')
             call move_alloc(publish_settings, cmd_settings)
 
         case default
@@ -750,8 +747,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
-   ' publish [--show-package-version] [--show-form-data] [--token TOKEN]              ', &
-   '         [--source-path PATH]                                                   ', &
+   ' publish [--show-package-version] [--show-form-data] [--token TOKEN]            ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -875,8 +871,7 @@ contains
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
     '    clean [--skip] [--all]                                                      ', &
-    '    publish [--show-package-version] [--show-form-data] [--token TOKEN]           ', &
-    '            [--source-path PATH]                                                ', &
+    '    publish [--show-package-version] [--show-form-data] [--token TOKEN]         ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1357,7 +1352,7 @@ contains
     ' publish(1) - publish package to the registry', &
     '', &
     'SYNOPSIS', &
-    ' fpm publish [--token TOKEN] [--source-path PATH]', &
+    ' fpm publish [--token TOKEN]', &
     '', &
     'DESCRIPTION', &
     ' Collect relevant source files and upload package to the registry.', &

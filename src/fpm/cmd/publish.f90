@@ -51,11 +51,7 @@ contains
     if (.not. allocated(version)) call fpm_stop(1, 'No version specified in fpm.toml.')
     if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')
     if (.not. allocated(settings%token)) call fpm_stop(1, 'No token provided.')
-    if (.not. allocated(settings%source_path)) settings%source_path = '.'
-    if (.not. exists(settings%source_path)) call fpm_stop(1, 'Source path does not exist: "'//settings%source_path//'".')
-    if (.not. exists(join_path(settings%source_path, 'fpm.toml'))) then
-      call fpm_stop(1, 'No "fpm.toml" file in "'//settings%source_path//'".')
-    end if
+    if (.not. exists('fpm.toml')) call fpm_stop(1, "Cannot find 'fpm.toml' file. Are you in your project root?")
 
     ! Check if package contains git dependencies. Only publish packages without git dependencies.
     do i = 1, model%deps%ndep
@@ -73,7 +69,7 @@ contains
 
     call get_tmp_directory(tmpdir, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Tmp directory error: '//error%message)
-    call git_archive(settings%source_path, tmpdir, error)
+    call git_archive('.', tmpdir, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Pack error: '//error%message)
     form_data = [form_data, string_t('tarball=@"'//join_path(tmpdir, compressed_package_name)//'"')]
 
