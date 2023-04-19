@@ -50,8 +50,7 @@ contains
     if (.not. allocated(package%license)) call fpm_stop(1, 'No license specified in fpm.toml.')
     if (.not. allocated(version)) call fpm_stop(1, 'No version specified in fpm.toml.')
     if (version%s() == '0') call fpm_stop(1, 'Invalid version: "'//version%s()//'".')
-    if (.not. allocated(settings%token)) call fpm_stop(1, 'No token provided.')
-    if (.not. exists('fpm.toml')) call fpm_stop(1, "Cannot find 'fpm.toml' file. Are you in your project root?")
+    if (.not. exists('fpm.toml')) call fpm_stop(1, "Cannot find 'fpm.toml' file. Are you in the project root?")
 
     ! Check if package contains git dependencies. Only publish packages without git dependencies.
     do i = 1, model%deps%ndep
@@ -63,9 +62,10 @@ contains
     form_data = [ &
       string_t('package_name="'//package%name//'"'), &
       string_t('package_license="'//package%license//'"'), &
-      string_t('package_version="'//version%s()//'"'), &
-      string_t('upload_token="'//settings%token//'"') &
+      string_t('package_version="'//version%s()//'"') &
       & ]
+
+    if (allocated(settings%token)) form_data = [form_data, string_t('upload_token="'//settings%token//'"')]
 
     call get_tmp_directory(tmpdir, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_publish* Tmp directory error: '//error%message)
@@ -77,9 +77,13 @@ contains
       do i = 1, size(form_data)
         print *, form_data(i)%s
       end do
-    else
-      call downloader%upload_form(official_registry_base_url//'/packages', form_data, error)
-      if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
+      return
     end if
+
+    ! Make sure a token is provided for publishing.
+    if (.not. allocated(settings%token)) call fpm_stop(1, 'No token provided.')
+
+    call downloader%upload_form(official_registry_base_url//'/packages', form_data, error)
+    if (allocated(error)) call fpm_stop(1, '*cmd_publish* Upload error: '//error%message)
   end
 end
