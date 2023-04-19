@@ -11,7 +11,7 @@ macros=["FPM_RELEASE_VERSION={version}"]
 
 [dependencies]
 toml-f.git = "https://github.com/toml-f/toml-f"
-toml-f.rev = "6290b0bc5f5ebeff231625a3b6685de85f33fc79"
+toml-f.rev = "d7b892b1d074b7cfc5d75c3e0eb36ebc1f7958c1"
 M_CLI2.git = "https://github.com/urbanjost/M_CLI2.git"
 M_CLI2.rev = "7264878cdb1baff7323cc48596d829ccfe7751b8"
 jonquil.git = "https://github.com/toml-f/jonquil"
