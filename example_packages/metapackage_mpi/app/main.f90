@@ -18,7 +18,7 @@ program with_mpi
   call MPI_Comm_rank(MPI_COMM_WORLD, cpuid, ierror) 
   if (ierror/=0) stop RANK_ERROR
 
-  print "('Hello, mpi world from rank ',i0,' of ',i0,'!')", cpuid+1,ncpu
+  print "('Hello, mpi world from rank ',i0,' of ',i0,'!')", cpuid+1,ncpus
 
   ! Finalize MPI environment.
   call MPI_FINALIZE(ierror)
