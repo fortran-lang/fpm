@@ -543,7 +543,8 @@ logical function msmpi_init(this,compiler,error) result(found)
 
             if (len_trim(post)<=0 .or. .not.exists(post)) then
                 call fatal_error(error,'MS-MPI available through the MSYS2 system not found. '// &
-                                       'Run <pacman -Sy mingw64/mingw-w64-x86_64-msmpi> or your system-specific version to install.')
+                                       'Run <pacman -Sy mingw64/mingw-w64-x86_64-msmpi> '// &
+                                       'or your system-specific version to install.')
                 return
             end if
 
