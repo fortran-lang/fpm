@@ -44,10 +44,12 @@ type, public :: metapackage_t
     logical :: has_build_flags     = .false.
     logical :: has_include_dirs    = .false.
     logical :: has_dependencies    = .false.
+    logical :: has_run_command     = .false.
 
     !> List of compiler flags and options to be added
     type(string_t) :: flags
     type(string_t) :: link_flags
+    type(string_t) :: run_command
     type(string_t), allocatable :: incl_dirs(:)
     type(string_t), allocatable :: link_libs(:)
 
@@ -98,11 +100,13 @@ elemental subroutine destroy(this)
    this%has_build_flags     = .false.
    this%has_include_dirs    = .false.
    this%has_dependencies    = .false.
+   this%has_run_command     = .false.
 
    if (allocated(this%fortran)) deallocate(this%fortran)
    if (allocated(this%version)) deallocate(this%version)
    if (allocated(this%flags%s)) deallocate(this%flags%s)
    if (allocated(this%link_flags%s)) deallocate(this%link_flags%s)
+   if (allocated(this%run_command%s)) deallocate(this%run_command%s)
    if (allocated(this%link_libs)) deallocate(this%link_libs)
    if (allocated(this%dependency)) deallocate(this%dependency)
    if (allocated(this%incl_dirs)) deallocate(this%incl_dirs)
@@ -470,7 +474,7 @@ logical function msmpi_init(this,compiler,error) result(found)
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
 
-    character(len=:), allocatable :: incdir,windir,libdir,post,reall,msysdir
+    character(len=:), allocatable :: incdir,windir,libdir,bindir,post,reall,msysdir
     type(version_t) :: ver,ver10
     type(string_t) :: cpath,msys_path
     logical :: msys2
@@ -506,6 +510,12 @@ logical function msmpi_init(this,compiler,error) result(found)
         windir = get_env('WINDIR')
         call get_absolute_path(join_path(windir,'system32\msmpi.dll'),libdir,error)
         if (allocated(error)) return
+
+        bindir = get_env('MSMPI_BIN')
+        if (len_trim(bindir)<=0 .or. .not.exists(bindir)) then
+            call fatal_error(error,'MS-MPI error: MS-MPI Runtime directory is missing. check environment variable %MSMPI_BIN%.')
+            return
+        end if
 
         if (len_trim(libdir)<=0 .or. .not.exists(libdir)) then
             call fatal_error(error,'MS-MPI error: msmpi.dll is missing. Is MS-MPI installed on this system?')
@@ -601,6 +611,10 @@ logical function msmpi_init(this,compiler,error) result(found)
             end if
 
         endif allow_BOZ
+
+        !> Add default run command
+        this%has_run_command = .true.
+        this%run_command = string_t(get_dos_path(bindir,error)//' np * ')
 
     else
 
