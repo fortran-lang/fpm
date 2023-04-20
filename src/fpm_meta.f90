@@ -17,6 +17,7 @@ use fpm_strings, only: string_t, len_trim
 use fpm_error, only: error_t, fatal_error, syntax_error, fpm_stop
 use fpm_compiler
 use fpm_model
+use fpm_command_line
 use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
@@ -69,9 +70,10 @@ type, public :: metapackage_t
        procedure :: new => init_from_name
 
        !> Add metapackage dependencies to the model
+       procedure, private :: resolve_cmd
        procedure, private :: resolve_model
        procedure, private :: resolve_package_config
-       generic :: resolve => resolve_model,resolve_package_config
+       generic :: resolve => resolve_cmd,resolve_model,resolve_package_config
 
 end type metapackage_t
 
@@ -216,6 +218,30 @@ subroutine init_stdlib(this,compiler,error)
     end if
 
 end subroutine init_stdlib
+
+! Resolve metapackage dependencies into the command line settings
+subroutine resolve_cmd(self,settings,error)
+    class(metapackage_t), intent(in) :: self
+    class(fpm_cmd_settings), intent(inout) :: settings
+    type(error_t), allocatable, intent(out) :: error
+
+    ! Add customize run commands
+    if (self%has_run_command) then
+
+        select type (cmd=>settings)
+           class is (fpm_run_settings) ! includes fpm_test_settings
+
+              if (.not.allocated(cmd%runner)) then
+                  cmd%runner = self%run_command%s
+              else
+                  cmd%runner = self%run_command%s//' '//cmd%runner
+              end if
+
+        end select
+
+    endif
+
+end subroutine resolve_cmd
 
 ! Resolve metapackage dependencies into the model
 subroutine resolve_model(self,model,error)
