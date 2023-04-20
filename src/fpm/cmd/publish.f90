@@ -1,14 +1,12 @@
 !> Upload a package to the registry using the `publish` command.
 !>
 !> To upload a package you need to provide a token that will be linked to your username and will be created
-!> for a namespace. The token can be obtained from the registry website. It can be used as
-!> `fpm publish --token <token>`.
+!> for a namespace. The token can be obtained from the registry website. It can be used as `fpm publish --token <token>`.
 module fpm_cmd_publish
   use fpm_command_line, only: fpm_publish_settings
   use fpm_manifest, only: package_config_t, get_package_data
   use fpm_model, only: fpm_model_t
   use fpm_error, only: error_t, fpm_stop
-  use fpm, only: build_model
   use fpm_versioning, only: version_t
   use fpm_filesystem, only: exists, join_path, get_tmp_directory
   use fpm_git, only: git_archive, compressed_package_name
@@ -36,15 +34,10 @@ contains
     type(downloader_t) :: downloader
     integer :: i
 
-    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    call get_package_data(package, 'fpm.toml', error, apply_defaults=.true.)
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Package error: '//error%message)
 
-    call build_model(model, settings%fpm_build_settings, package, error)
-    if (allocated(error)) call fpm_stop(1, '*cmd_build* Model error: '//error%message)
-
-    ! Determine version of the root package after building the model.
-    if (size(model%deps%dep) < 1) call fpm_stop(1, 'Root package not found.')
-    version = model%deps%dep(1)%version
+    version = package%version
 
     if (settings%show_package_version) then
       print *, version%s(); return
