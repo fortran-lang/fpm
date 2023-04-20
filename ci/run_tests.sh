@@ -158,6 +158,14 @@ pushd cpp_files
 "$fpm" test
 popd
 
+# Test Fortran features
+for feature in free-form fixed-form implicit-typing implicit-external
+do
+  pushd $feature
+  "$fpm" run
+  popd
+done
+
 # Test app exit codes
 pushd fpm_test_exit_code
 "$fpm" build
@@ -193,6 +201,7 @@ EXIT_CODE=0
 test $EXIT_CODE -eq 1
 popd
 
+
 # Test metapackages
 pushd metapackage_openmp
 EXIT_CODE=0
@@ -210,6 +219,31 @@ test $EXIT_CODE -eq 0
 EXIT_CODE=0
 "$fpm" run || EXIT_CODE=$?
 test $EXIT_CODE -eq 0
+
+# test dependency priority
+pushd dependency_priority
+
+# first build should run OK
+EXIT_CODE=0
+"$fpm" run || EXIT_CODE=$?
+test $EXIT_CODE -eq 0
+
+"$fpm" build --verbose
+
+# Build again, should update nothing
+"$fpm" build --verbose > build.log
+if [[ -n "$(grep Update build.log)" ]]; then
+  echo "Some dependencies were updated that should not be";
+  exit 1;
+fi
+
+# Request update --clean, should update all dependencies
+"$fpm" update --clean --verbose > update.log
+if [[ -z "$(grep Update update.log)" ]]; then
+  echo "No updated dependencies after 'fpm update --clean'";
+  exit 1;
+fi
+
 popd
 
 # Cleanup

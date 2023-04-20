@@ -23,18 +23,18 @@
 !> Resolving a dependency will result in obtaining a new package configuration
 !> data for the respective project.
 module fpm_manifest_dependency
-    use fpm_error, only : error_t, syntax_error
-    use fpm_git, only : git_target_t, git_target_tag, git_target_branch, &
-        & git_target_revision, git_target_default, operator(==)
-    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value
+    use fpm_error, only: error_t, syntax_error
+    use fpm_git, only: git_target_t, git_target_tag, git_target_branch, &
+        & git_target_revision, git_target_default, operator(==), git_matches_manifest
+    use fpm_toml, only: toml_table, toml_key, toml_stat, get_value, check_keys
     use fpm_filesystem, only: windows_path
     use fpm_environment, only: get_os_type, OS_WINDOWS
     use fpm_manifest_metapackages, only: metapackage_config_t, is_meta_package, new_meta_config
+    use fpm_versioning, only: version_t, new_version
     implicit none
     private
 
     public :: dependency_config_t, new_dependency, new_dependencies, manifest_has_changed
-
 
     !> Configuration meta data for a dependency
     type :: dependency_config_t
@@ -44,6 +44,15 @@ module fpm_manifest_dependency
 
         !> Local target
         character(len=:), allocatable :: path
+
+        !> Namespace which the dependency belongs to.
+        !> Enables multiple dependencies with the same name.
+        !> Required for dependencies that are obtained via the official registry.
+        character(len=:), allocatable :: namespace
+
+        !> The requested version of the dependency.
+        !> The latest version is used if not specified.
+        type(version_t), allocatable :: requested_version
 
         !> Git descriptor
         type(git_target_t), allocatable :: git
@@ -55,9 +64,10 @@ module fpm_manifest_dependency
 
     end type dependency_config_t
 
+    !> Common output format for writing to the command line
+    character(len=*), parameter :: out_fmt = '("#", *(1x, g0))'
 
 contains
-
 
     !> Construct a new dependency configuration from a TOML data structure
     subroutine new_dependency(self, table, root, error)
@@ -74,48 +84,58 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: url, obj
+        character(len=:), allocatable :: uri, value, requested_version
 
         call check(table, error)
         if (allocated(error)) return
 
         call table%get_key(self%name)
+        call get_value(table, "namespace", self%namespace)
 
-        call get_value(table, "path", url)
-        if (allocated(url)) then
-            if (get_os_type() == OS_WINDOWS) url = windows_path(url)
-            if (present(root)) url = root//url  ! Relative to the fpm.toml it’s written in
-            call move_alloc(url, self%path)
-        else
-            call get_value(table, "git", url)
+        call get_value(table, "path", uri)
+        if (allocated(uri)) then
+            if (get_os_type() == OS_WINDOWS) uri = windows_path(uri)
+            if (present(root)) uri = root//uri  ! Relative to the fpm.toml it’s written in
+            call move_alloc(uri, self%path)
+            return
+        end if
 
-            call get_value(table, "tag", obj)
-            if (allocated(obj)) then
-                self%git = git_target_tag(url, obj)
+        call get_value(table, "git", uri)
+        if (allocated(uri)) then
+            call get_value(table, "tag", value)
+            if (allocated(value)) then
+                self%git = git_target_tag(uri, value)
             end if
 
-            if (.not.allocated(self%git)) then
-                call get_value(table, "branch", obj)
-                if (allocated(obj)) then
-                    self%git = git_target_branch(url, obj)
+            if (.not. allocated(self%git)) then
+                call get_value(table, "branch", value)
+                if (allocated(value)) then
+                    self%git = git_target_branch(uri, value)
                 end if
             end if
 
-            if (.not.allocated(self%git)) then
-                call get_value(table, "rev", obj)
-                if (allocated(obj)) then
-                    self%git = git_target_revision(url, obj)
+            if (.not. allocated(self%git)) then
+                call get_value(table, "rev", value)
+                if (allocated(value)) then
+                    self%git = git_target_revision(uri, value)
                 end if
             end if
 
-            if (.not.allocated(self%git)) then
-                self%git = git_target_default(url)
+            if (.not. allocated(self%git)) then
+                self%git = git_target_default(uri)
             end if
+            return
+        end if
 
+        call get_value(table, "v", requested_version)
+
+        if (allocated(requested_version)) then
+            if (.not. allocated(self%requested_version)) allocate (self%requested_version)
+            call new_version(self%requested_version, requested_version, error)
+            if (allocated(error)) return
         end if
 
     end subroutine new_dependency
-
 
     !> Check local schema for allowed entries
     subroutine check(table, error)
@@ -126,71 +146,62 @@ contains
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
-        character(len=:), allocatable :: name, url
+        character(len=:), allocatable :: name
         type(toml_key), allocatable :: list(:)
-        logical :: url_present, git_target_present, has_path
-        integer :: ikey
 
-        has_path = .false.
-        url_present = .false.
-        git_target_present = .false.
+        !> List of valid keys for the dependency table.
+        character(*), dimension(*), parameter :: valid_keys = [character(24) :: &
+            & "namespace", &
+              "v", &
+              "path", &
+              "git", &
+              "tag", &
+              "branch", &
+              "rev" &
+            & ]
 
         call table%get_key(name)
         call table%get_keys(list)
 
         if (size(list) < 1) then
-            call syntax_error(error, "Dependency "//name//" does not provide sufficient entries")
+            call syntax_error(error, "Dependency '"//name//"' does not provide sufficient entries")
             return
         end if
 
-        do ikey = 1, size(list)
-            select case(list(ikey)%key)
-            case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in dependency "//name)
-                exit
-
-            case("git")
-                if (url_present) then
-                    call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
-                    exit
-                end if
-                call get_value(table, "git", url)
-                if (.not.allocated(url)) then
-                    call syntax_error(error, "Dependency "//name//" has invalid git source")
-                    exit
-                end if
-                url_present = .true.
-
-            case("path")
-                if (url_present) then
-                    call syntax_error(error, "Dependency "//name//" cannot have both git and path entries")
-                    exit
-                end if
-                url_present = .true.
-                has_path = .true.
-
-            case("branch", "rev", "tag")
-                if (git_target_present) then
-                    call syntax_error(error, "Dependency "//name//" can only have one of branch, rev or tag present")
-                    exit
-                end if
-                git_target_present = .true.
-
-            end select
-        end do
+        call check_keys(table, valid_keys, error)
         if (allocated(error)) return
 
-        if (.not.url_present) then
-            call syntax_error(error, "Dependency "//name//" does not provide a method to actually retrieve itself")
+        if (table%has_key("path") .and. table%has_key("git")) then
+            call syntax_error(error, "Dependency '"//name//"' cannot have both git and path entries")
             return
         end if
 
-        if (has_path .and. git_target_present) then
-            call syntax_error(error, "Dependency "//name//" uses a local path, therefore no git identifiers are allowed")
+        if ((table%has_key("branch") .and. table%has_key("rev")) .or. &
+            (table%has_key("branch") .and. table%has_key("tag")) .or. &
+            (table%has_key("rev") .and. table%has_key("tag"))) then
+            call syntax_error(error, "Dependency '"//name//"' can only have one of branch, rev or tag present")
+            return
+        end if
+
+        if ((table%has_key("branch") .or. table%has_key("tag") .or. table%has_key("rev")) &
+            .and. .not. table%has_key("git")) then
+            call syntax_error(error, "Dependency '"//name//"' has git identifier but no git url")
+            return
+        end if
+
+        if (.not. table%has_key("path") .and. .not. table%has_key("git") &
+            .and. .not. table%has_key("namespace")) then
+            call syntax_error(error, "Please provide a 'namespace' for dependency '"//name// &
+            & "' if it is not a local path or git repository")
+            return
+        end if
+
+        if (table%has_key('v') .and. (table%has_key('path') .or. table%has_key('git'))) then
+            call syntax_error(error, "Dependency '"//name//"' cannot have both v and git/path entries")
+            return
         end if
 
     end subroutine check
-
 
     !> Construct new dependency array from a TOML data structure
     subroutine new_dependencies(deps, table, root, meta, error)
@@ -255,7 +266,6 @@ contains
 
     end subroutine new_dependencies
 
-
     !> Write information on instance
     subroutine info(self, unit, verbosity)
 
@@ -277,37 +287,41 @@ contains
             pr = 1
         end if
 
-        write(unit, fmt) "Dependency"
+        write (unit, fmt) "Dependency"
         if (allocated(self%name)) then
-            write(unit, fmt) "- name", self%name
+            write (unit, fmt) "- name", self%name
         end if
 
         if (allocated(self%git)) then
-            write(unit, fmt) "- kind", "git"
+            write (unit, fmt) "- kind", "git"
             call self%git%info(unit, pr - 1)
         end if
 
         if (allocated(self%path)) then
-            write(unit, fmt) "- kind", "local"
-            write(unit, fmt) "- path", self%path
+            write (unit, fmt) "- kind", "local"
+            write (unit, fmt) "- path", self%path
         end if
 
     end subroutine info
 
     !> Check if two dependency configurations are different
-    logical function manifest_has_changed(this, that) result(has_changed)
+    logical function manifest_has_changed(cached, manifest, verbosity, iunit) result(has_changed)
 
         !> Two instances of the dependency configuration
-        class(dependency_config_t), intent(in) :: this, that
+        class(dependency_config_t), intent(in) :: cached, manifest
+
+        !> Log verbosity
+        integer, intent(in) :: verbosity, iunit
 
         has_changed = .true.
 
         !> Perform all checks
-        if (this%name/=that%name) return
-        if (this%path/=that%path) return
-        if (allocated(this%git).neqv.allocated(that%git)) return
-        if (allocated(this%git)) then
-            if (.not.(this%git==that%git)) return
+        if (allocated(cached%git).neqv.allocated(manifest%git)) then
+            if (verbosity>1) write(iunit,out_fmt) "GIT presence has changed. "
+            return
+        endif
+        if (allocated(cached%git)) then
+            if (.not.git_matches_manifest(cached%git,manifest%git,verbosity,iunit)) return
         end if
 
         !> All checks passed! The two instances are equal

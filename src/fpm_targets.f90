@@ -27,6 +27,7 @@ module fpm_targets
 use iso_fortran_env, only: int64
 use fpm_error, only: error_t, fatal_error, fpm_stop
 use fpm_model
+use fpm_compiler, only : compiler_t
 use fpm_environment, only: get_os_type, OS_WINDOWS, OS_MACOS
 use fpm_filesystem, only: dirname, join_path, canon_path
 use fpm_strings, only: string_t, operator(.in.), string_cat, fnv_1a, resize, lower, str_ends_with
@@ -40,7 +41,7 @@ public FPM_TARGET_UNKNOWN, FPM_TARGET_EXECUTABLE, &
        FPM_TARGET_C_OBJECT, FPM_TARGET_CPP_OBJECT
 public build_target_t, build_target_ptr
 public targets_from_sources, resolve_module_dependencies
-public resolve_target_linking, add_target, add_dependency
+public add_target, add_dependency
 public filter_library_targets, filter_executable_targets, filter_modules
 
 
@@ -113,6 +114,9 @@ type build_target_t
 
     !> Flag set if build target will be skipped (not built)
     logical :: skip = .false.
+
+    !> Language features
+    type(fortran_features_t) :: features
 
     !> Targets in the same schedule group are guaranteed to be independent
     integer :: schedule = -1
@@ -233,6 +237,7 @@ subroutine build_target_list(targets,model)
                                 type = merge(FPM_TARGET_C_OBJECT,FPM_TARGET_OBJECT,&
                                                sources(i)%unit_type==FPM_UNIT_CSOURCE), &
                                 output_name = get_object_name(sources(i)), &
+                                features = model%packages(j)%features, &
                                 macros = model%packages(j)%macros, &
                                 version = model%packages(j)%version)
                                 
@@ -279,6 +284,7 @@ subroutine build_target_list(targets,model)
                     call add_target(targets,package=model%packages(j)%name,type = exe_type,&
                                 output_name = get_object_name(sources(i)), &
                                 source = sources(i), &
+                                features = model%packages(j)%features, &
                                 macros = model%packages(j)%macros &
                                 )
 
@@ -397,13 +403,15 @@ end subroutine collect_exe_link_dependencies
 
 
 !> Allocate a new target and append to target list
-subroutine add_target(targets,package,type,output_name,source,link_libraries, macros, version)
+subroutine add_target(targets, package, type, output_name, source, link_libraries, &
+        & features, macros, version)
     type(build_target_ptr), allocatable, intent(inout) :: targets(:)
     character(*), intent(in) :: package
     integer, intent(in) :: type
     character(*), intent(in) :: output_name
     type(srcfile_t), intent(in), optional :: source
     type(string_t), intent(in), optional :: link_libraries(:)
+    type(fortran_features_t), intent(in), optional :: features
     type(string_t), intent(in), optional :: macros(:)
     character(*), intent(in), optional :: version
 
@@ -432,6 +440,7 @@ subroutine add_target(targets,package,type,output_name,source,link_libraries, ma
     new_target%package_name = package
     if (present(source)) new_target%source = source
     if (present(link_libraries)) new_target%link_libraries = link_libraries
+    if (present(features)) new_target%features = features
     if (present(macros)) new_target%macros = macros
     if (present(version)) new_target%version = version
     allocate(new_target%dependencies(0))
@@ -801,7 +810,8 @@ subroutine resolve_target_linking(targets, model)
 
         associate(target => targets(i)%ptr)
             if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = model%fortran_compile_flags
+                target%compile_flags = model%fortran_compile_flags &
+                    & // get_feature_flags(model%compiler, target%features)
             else if (target%target_type == FPM_TARGET_C_OBJECT) then
                 target%compile_flags = model%c_compile_flags
             else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
@@ -1027,6 +1037,30 @@ subroutine filter_modules(targets, list)
     end do
     call resize(list, n)
 end subroutine filter_modules
+
+
+function get_feature_flags(compiler, features) result(flags)
+    type(compiler_t), intent(in) :: compiler
+    type(fortran_features_t), intent(in) :: features
+    character(:), allocatable :: flags
+
+    flags = ""
+    if (features%implicit_typing) then
+        flags = flags // compiler%get_feature_flag("implicit-typing")
+    else
+        flags = flags // compiler%get_feature_flag("no-implicit-typing")
+    end if
+
+    if (features%implicit_external) then
+        flags = flags // compiler%get_feature_flag("implicit-external")
+    else
+        flags = flags // compiler%get_feature_flag("no-implicit-external")
+    end if
+
+    if (allocated(features%source_form)) then
+        flags = flags // compiler%get_feature_flag(features%source_form//"-form")
+    end if
+end function get_feature_flags
 
 
 end module fpm_targets
