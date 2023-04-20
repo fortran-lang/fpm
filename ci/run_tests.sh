@@ -219,6 +219,7 @@ test $EXIT_CODE -eq 0
 EXIT_CODE=0
 "$fpm" run || EXIT_CODE=$?
 test $EXIT_CODE -eq 0
+popd
 
 # test dependency priority
 pushd dependency_priority
@@ -243,7 +244,6 @@ if [[ -z "$(grep Update update.log)" ]]; then
   echo "No updated dependencies after 'fpm update --clean'";
   exit 1;
 fi
-
 popd
 
 # Cleanup
