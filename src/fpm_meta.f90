@@ -322,8 +322,10 @@ subroutine resolve_package_config(self,package,error)
 end subroutine resolve_package_config
 
 ! Add named metapackage dependency to the model
-subroutine add_metapackage_model(model,name,error)
+subroutine add_metapackage_model(model,package,settings,name,error)
     type(fpm_model_t), intent(inout) :: model
+    type(package_config_t), intent(inout) :: package
+    class(fpm_cmd_settings), intent(inout) :: settings
     character(*), intent(in) :: name
     type(error_t), allocatable, intent(out) :: error
 
@@ -333,43 +335,25 @@ subroutine add_metapackage_model(model,name,error)
     call meta%new(name,model%compiler,error)
     if (allocated(error)) return
 
-    !> Add it to the model
+    !> Add it into the model
     call meta%resolve(model,error)
+    if (allocated(error)) return
+
+    !> Add it into the package
+    call meta%resolve(package,error)
+    if (allocated(error)) return
+
+    !> Add it into the settings
+    call meta%resolve(settings,error)
     if (allocated(error)) return
 
 end subroutine add_metapackage_model
 
-! Add named metapackage dependency to the model
-subroutine add_metapackage_config(package,compiler,name,error)
-    type(package_config_t), intent(inout) :: package
-    type(compiler_t), intent(in) :: compiler
-    character(*), intent(in) :: name
-    type(error_t), allocatable, intent(out) :: error
-
-    type(metapackage_t) :: meta
-
-    !> Init metapackage
-    call meta%new(name,compiler,error)
-    if (allocated(error)) return
-
-    !> Add it to the model
-    call meta%resolve(package,error)
-    if (allocated(error)) return
-
-    ! Temporary
-    if (name=="mpi") then
-
-
-
-
-    end if
-
-end subroutine add_metapackage_config
-
 !> Resolve all metapackages into the package config
-subroutine resolve_metapackage_model(model,package,error)
+subroutine resolve_metapackage_model(model,package,settings,error)
     type(fpm_model_t), intent(inout) :: model
     type(package_config_t), intent(inout) :: package
+    class(fpm_build_settings), intent(inout) :: settings
     type(error_t), allocatable, intent(out) :: error
 
     ! Dependencies are added to the package config, so they're properly resolved
@@ -382,17 +366,13 @@ subroutine resolve_metapackage_model(model,package,error)
 
     ! OpenMP
     if (package%meta%openmp) then
-        call add_metapackage_model(model,"openmp",error)
-        if (allocated(error)) return
-        call add_metapackage_config(package,model%compiler,"openmp",error)
+        call add_metapackage_model(model,package,settings,"openmp",error)
         if (allocated(error)) return
     endif
 
     ! stdlib
     if (package%meta%stdlib) then
-        call add_metapackage_model(model,"stdlib",error)
-        if (allocated(error)) return
-        call add_metapackage_config(package,model%compiler,"stdlib",error)
+        call add_metapackage_model(model,package,settings,"stdlib",error)
         if (allocated(error)) return
     endif
 
@@ -403,9 +383,7 @@ subroutine resolve_metapackage_model(model,package,error)
 
     ! MPI
     if (package%meta%mpi) then
-        call add_metapackage_model(model,"mpi",error)
-        if (allocated(error)) return
-        call add_metapackage_config(package,model%compiler,"mpi",error)
+        call add_metapackage_model(model,package,settings,"mpi",error)
         if (allocated(error)) return
     endif
 
@@ -640,7 +618,7 @@ logical function msmpi_init(this,compiler,error) result(found)
 
         !> Add default run command
         this%has_run_command = .true.
-        this%run_command = string_t(get_dos_path(bindir,error)//' np * ')
+        this%run_command = string_t(join_path(get_dos_path(bindir,error),'mpiexec')//' -np * ')
 
     else
 

@@ -36,7 +36,7 @@ contains
 !> Constructs a valid fpm model from command line settings and the toml manifest.
 subroutine build_model(model, settings, package, error)
     type(fpm_model_t), intent(out) :: model
-    type(fpm_build_settings), intent(in) :: settings
+    class(fpm_build_settings), intent(inout) :: settings
     type(package_config_t), intent(inout) :: package
     type(error_t), allocatable, intent(out) :: error
 
@@ -72,7 +72,7 @@ subroutine build_model(model, settings, package, error)
     model%module_prefix = package%build%module_prefix
 
     ! Resolve meta-dependencies into the package and the model
-    call resolve_metapackages(model,package,error)
+    call resolve_metapackages(model,package,settings,error)
     if (allocated(error)) return
 
     ! Create dependencies
@@ -415,7 +415,7 @@ subroutine check_module_names(model, error)
 end subroutine check_module_names
 
 subroutine cmd_build(settings)
-type(fpm_build_settings), intent(in) :: settings
+type(fpm_build_settings), intent(inout) :: settings
 
 type(package_config_t) :: package
 type(fpm_model_t) :: model
@@ -452,7 +452,7 @@ endif
 end subroutine cmd_build
 
 subroutine cmd_run(settings,test)
-    class(fpm_run_settings), intent(in) :: settings
+    class(fpm_run_settings), intent(inout) :: settings
     logical, intent(in) :: test
 
     integer :: i, j, col_width
@@ -475,7 +475,7 @@ subroutine cmd_run(settings,test)
         call fpm_stop(1, '*cmd_run* Package error: '//error%message)
     end if
 
-    call build_model(model, settings%fpm_build_settings, package, error)
+    call build_model(model, settings, package, error)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run* Model error: '//error%message)
     end if
