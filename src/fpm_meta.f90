@@ -21,8 +21,9 @@ use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
 use fpm_environment, only: get_env,os_is_unix
-use fpm_filesystem, only: run, get_temp_filename, getline
+use fpm_filesystem, only: run, get_temp_filename, getline, exists
 use fpm_versioning, only: version_t, new_version
+use fpm_os, only: get_absolute_path
 use iso_fortran_env, only: stdout => output_unit
 use regex_module, only: regex
 
@@ -78,6 +79,9 @@ integer, parameter :: MPI_TYPE_OPENMPI = 1
 integer, parameter :: MPI_TYPE_MPICH   = 2
 integer, parameter :: MPI_TYPE_INTEL   = 3
 integer, parameter :: MPI_TYPE_MSMPI   = 4
+
+!> Debugging information
+logical, parameter, private :: verbose = .true.
 
 contains
 
@@ -338,17 +342,19 @@ end subroutine resolve_metapackage_model
 
 !> Initialize MPI metapackage for the current system
 subroutine init_mpi(this,compiler,error)
+    use iso_fortran_env, only: compiler_version,compiler_options
     class(metapackage_t), intent(inout) :: this
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
 
-    logical, parameter :: verbose = .true.
+
     type(string_t), allocatable :: c_wrappers(:),cpp_wrappers(:),fort_wrappers(:)
     type(string_t) :: output
-    type(version_t) :: version
     character(256) :: msg_out
     character(len=:), allocatable :: tokens(:)
-    integer :: ifort,ic,icpp,i
+    integer :: mpif90,ic,icpp,i
+    logical :: wcfit,found
+
 
     !> Cleanup
     call destroy(this)
@@ -357,60 +363,209 @@ subroutine init_mpi(this,compiler,error)
     call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
     if (verbose) print 1, size(fort_wrappers),size(c_wrappers),size(cpp_wrappers)
 
-    if (size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)<=0) then
-        call fatal_error(error,"cannot find MPI wrappers for "//compiler%name()//" compiler")
-        return
-    end if
+    wcfit = wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error)
 
-    !> Return an MPI wrapper that matches the current compiler
-    ifort = mpi_compiler_match(fort_wrappers,compiler,error)
-    if (allocated(error)) return
+    if (allocated(error) .or. .not.wcfit) then
 
-    !C, C++ not available yet
-    !ic    = mpi_compiler_match(c_wrappers,compiler,error)
-    !icpp  = mpi_compiler_match(cpp_wrappers,compiler,error)
+        !> No wrapper compiler fit. Are we on Windows? use MSMPI-specific search
+        found = msmpi_init(this)
 
-    !> Build MPI dependency
-    if (ifort>0) then
-
-         ! Get linking flags
-         this%link_flags = mpi_wrapper_query(fort_wrappers(ifort),'link',verbose,error)
-         if (allocated(error)) return
-         this%has_link_flags = len_trim(this%link_flags)>0
-
-         ! Add heading space
-         this%link_flags = string_t(' '//this%link_flags%s)
-
-         ! Get build flags
-         this%flags = mpi_wrapper_query(fort_wrappers(ifort),'flags',verbose,error)
-         if (allocated(error)) return
-         this%has_build_flags = len_trim(this%flags)>0
-
-         ! Add heading space
-         this%flags = string_t(' '//this%flags%s)
-
-         ! Get library version
-         version = mpi_version_get(fort_wrappers(ifort),error)
-         if (allocated(error)) then
+        !> All attempts failed
+        if (.not.found) then
+            call fatal_error(error,"cannot find MPI wrappers or libraries for "//compiler%name()//" compiler")
             return
-         else
-            allocate(this%version,source=version)
-         end if
+        endif
 
     else
 
-         ! None of the available wrappers matched the current Fortran compiler
-         write(msg_out,1) size(fort_wrappers),compiler%fc
-         call fatal_error(error,trim(msg_out))
-         return
+        !> Initialize MPI package from wrapper command
+        call init_mpi_from_wrapper(this,compiler,fort_wrappers(mpif90),error)
+        if (allocated(error)) return
 
-    endif
-
+    end if
 
     1 format('MPI wrappers found: fortran=',i0,' c=',i0,' c++=',i0)
-    2 format('<ERROR> None out of ',i0,' valid MPI wrappers matches compiler ',a)
 
 end subroutine init_mpi
+
+!> Check if we're on a 64-bit environment
+!> Accept answer from https://stackoverflow.com/questions/49141093/get-system-information-with-fortran
+logical function is_64bit_environment()
+   use iso_c_binding, only: c_intptr_t
+   integer, parameter :: nbits = bit_size(0_c_intptr_t)
+   is_64bit_environment = nbits==64
+end function is_64bit_environment
+
+!> Check if there is a wrapper-compiler fit
+logical function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error)
+   type(string_t), allocatable, intent(in) :: fort_wrappers(:),c_wrappers(:),cpp_wrappers(:)
+   type(compiler_t), intent(in) :: compiler
+   type(error_t), allocatable, intent(out) :: error
+
+   logical :: has_wrappers
+   integer :: mpif90
+
+   wrapper_compiler_fit = .false.
+
+   !> Were any wrappers found?
+   has_wrappers = size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)>0
+
+   if (has_wrappers) then
+
+        !> Find an MPI wrapper that matches the current compiler
+        mpif90 = mpi_compiler_match(fort_wrappers,compiler,error)
+        if (allocated(error)) return
+
+        !> Was a valid wrapper found?
+        wrapper_compiler_fit = mpif90>0
+
+   endif
+
+end function wrapper_compiler_fit
+
+!> Check if a local MS-MPI SDK build is found
+logical function msmpi_init(this) result(found)
+    class(metapackage_t), intent(inout) :: this
+
+    character(len=:), allocatable :: incdir,libdir,post,reall
+    type(error_t), allocatable :: error
+
+
+    !> Default: not found
+    found = .false.
+
+    if (get_os_type()==OS_WINDOWS) then
+
+        !> Find include and library directories
+        incdir = get_env('MSMPI_INC')
+        if (is_64bit_environment()) then
+            libdir = get_env('MSMPI_LIB64')
+            post   = 'x64'
+        else
+            libdir = get_env('MSMPI_LIB32')
+            post   = 'x86'
+        end if
+
+        if (verbose) print 1, 'include',incdir,exists(incdir)
+        if (verbose) print 1, 'library',libdir,exists(libdir)
+
+        ! Both directories need be defined and existent
+        if (len_trim(incdir)<=0 .or. len_trim(libdir)<=0) return
+        if (.not.exists(incdir) .or. .not.exists(libdir)) return
+
+        ! Init ms-mpi
+        call destroy(this)
+
+        this%has_link_flags = .true.
+        this%link_flags = string_t(' -l'//get_dos_path(libdir//'msmpi')// &
+                                   ' -l'//get_dos_path(libdir//'msmpifec')) ! fortran-only
+
+        this%has_include_dirs = .true.
+        this%incl_dirs = [string_t(get_dos_path(incdir)), &
+                          string_t(get_dos_path(incdir//post))]
+
+        call get_absolute_path(libdir//'msmpi.lib', reall, error)
+        if (allocated(error)) stop 'cannot get realpath '//error%message
+        print *, 'real pach= ',reall
+
+        found = .true.
+
+    else
+
+        !> Not on Windows
+        found = .false.
+
+    end if
+
+    1 format('MSMSPI ',a,' directory: PATH=',a,' EXISTS=',l1)
+
+end function msmpi_init
+
+!> Ensure a windows path is converted to a DOS path if it contains spaces
+function get_dos_path(path)
+    character(len=*), intent(in) :: path
+    character(len=:), allocatable :: get_dos_path
+
+    character(:), allocatable :: redirect,screen_output,line
+    integer :: stat,cmdstat,iunit
+
+    ! Trim path first
+    get_dos_path = trim(path)
+
+    !> No need to convert if there are no spaces
+    if (scan(get_dos_path,' ')<=0) return
+
+
+    redirect = get_temp_filename()
+    call execute_command_line('cmd /c for %A in ("'//path//'") do @echo %~sA >'//redirect//' 2>&1',&
+                              exitstat=stat,cmdstat=cmdstat)
+
+    !> Read screen output
+    if (cmdstat==0) then
+
+        allocate(character(len=0) :: screen_output)
+        open(newunit=iunit,file=redirect,status='old',iostat=stat)
+        if (stat == 0)then
+           do
+               call getline(iunit, line, stat)
+               if (stat /= 0) exit
+               screen_output = screen_output//line//' '
+           end do
+
+           ! Close and delete file
+           close(iunit,status='delete')
+
+        else
+           call fpm_stop(1,'cannot read temporary file from successful DOS path evaluation')
+        endif
+
+    else
+
+        call fpm_stop(1,'cannot convert windows path to DOS path')
+
+    end if
+
+    get_dos_path = trim(adjustl(screen_output))
+
+end function get_dos_path
+
+!> Initialize an MPI metapackage from a valid wrapper command ('mpif90', etc...)
+subroutine init_mpi_from_wrapper(this,compiler,fort_wrapper,error)
+    class(metapackage_t), intent(inout) :: this
+    type(compiler_t), intent(in) :: compiler
+    type(string_t), intent(in) :: fort_wrapper
+    type(error_t), allocatable, intent(out) :: error
+
+    type(version_t) :: version
+
+    ! Cleanup structure
+    call destroy(this)
+
+    ! Get linking flags
+    this%link_flags = mpi_wrapper_query(fort_wrapper,'link',verbose,error)
+    if (allocated(error)) return
+    this%has_link_flags = len_trim(this%link_flags)>0
+
+    ! Add heading space
+    this%link_flags = string_t(' '//this%link_flags%s)
+
+    ! Get build flags
+    this%flags = mpi_wrapper_query(fort_wrapper,'flags',verbose,error)
+    if (allocated(error)) return
+    this%has_build_flags = len_trim(this%flags)>0
+
+    ! Add heading space
+    this%flags = string_t(' '//this%flags%s)
+
+    ! Get library version
+    version = mpi_version_get(fort_wrapper,error)
+    if (allocated(error)) then
+       return
+    else
+       allocate(this%version,source=version)
+    end if
+
+end subroutine init_mpi_from_wrapper
 
 !> Match one of the available compiler wrappers with the current compiler
 integer function mpi_compiler_match(wrappers,compiler,error)
@@ -427,7 +582,7 @@ integer function mpi_compiler_match(wrappers,compiler,error)
 
     do i=1,size(wrappers)
 
-        screen = mpi_wrapper_query(wrappers(i),'compiler',.false.,error)
+        screen = mpi_wrapper_query(wrappers(i),'compiler',verbose=.false.,error=error)
         if (allocated(error)) return
 
         ! Build compiler type
@@ -607,7 +762,7 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
 
                screen_output%s = screen_output%s//new_line('a')//line
 
-               write(*,'(A)') trim(line)
+               if (verbose) write(*,'(A)') trim(line)
            end do
 
            ! Close and delete file
