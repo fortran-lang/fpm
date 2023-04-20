@@ -470,9 +470,9 @@ logical function msmpi_init(this,compiler,error) result(found)
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
 
-    character(len=:), allocatable :: incdir,libdir,post,reall,msysdir
+    character(len=:), allocatable :: incdir,windir,libdir,post,reall,msysdir
     type(version_t) :: ver,ver10
-    type(string_t) :: path
+    type(string_t) :: cpath,msys_path
     logical :: msys2
 
     !> Default: not found
@@ -488,39 +488,32 @@ logical function msmpi_init(this,compiler,error) result(found)
 
         endif is_minGW
 
-        !> Find include and library directories of the MS-MPI SDK
-        incdir = get_env('MSMPI_INC')
+        ! Check we're on a 64-bit environment
         if (is_64bit_environment()) then
             libdir = get_env('MSMPI_LIB64')
             post   = 'x64'
         else
             libdir = get_env('MSMPI_LIB32')
             post   = 'x86'
+
+            !> Not working on 32-bit Windows yet
+            call fatal_error(error,'MS-MPI error: this package requires 64-bit Windows environment')
+            return
+
         end if
 
-        if (verbose) print 1, 'include',incdir,exists(incdir)
-        if (verbose) print 1, 'library',libdir,exists(libdir)
+        ! Check that the runtime is installed
+        windir = get_env('WINDIR')
+        call get_absolute_path(join_path(windir,'system32\msmpi.dll'),libdir,error)
+        if (allocated(error)) return
 
-        ! Both directories need be defined and existent
-        if (len_trim(incdir)<=0 .or. len_trim(libdir)<=0) return
-        if (.not.exists(incdir) .or. .not.exists(libdir)) return
+        if (len_trim(libdir)<=0 .or. .not.exists(libdir)) then
+            call fatal_error(error,'MS-MPI error: msmpi.dll is missing. Is MS-MPI installed on this system?')
+            return
+        end if
 
         ! Success!
         found = .true.
-
-        ! gfortran>=10 is incompatible with the old-style mpif.h MS-MPI headers.
-        ! If so, add flags to allow old-style BOZ constants in mpif.h
-        allow_BOZ: if (compiler%id==id_gcc) then
-
-            call new_version(ver10,'10.0.0',error)
-            if (allocated(error)) return
-
-            if (ver>=ver10) then
-                this%has_build_flags = .true.
-                this%flags = string_t(' -fallow-invalid-boz')
-            end if
-
-        endif allow_BOZ
 
         ! Init ms-mpi
         call destroy(this)
@@ -528,26 +521,43 @@ logical function msmpi_init(this,compiler,error) result(found)
         ! MSYS2 provides a pre-built static msmpi.dll.a library. Use that if possible
         use_prebuilt: if (msys2) then
 
-            call compiler_get_path(compiler,path,error)
+            ! MSYS executables are in %MSYS_ROOT%/bin
+            call compiler_get_path(compiler,cpath,error)
             if (allocated(error)) return
 
-            print *, 'compiler path: '//path%s
-            stop
+            call get_absolute_path(join_path(cpath%s,'..'),msys_path%s,error)
+            if (allocated(error)) return
 
-            ! Add dir path
+            call get_absolute_path(join_path(msys_path%s,'include'),incdir,error)
+            if (allocated(error)) return
+
+            call get_absolute_path(join_path(msys_path%s,'lib'),libdir,error)
+            if (allocated(error)) return
+
+            if (verbose) print 1, 'include',incdir,exists(incdir)
+            if (verbose) print 1, 'library',libdir,exists(libdir)
+
+            ! Check that the necessary files exist
+            call get_absolute_path(join_path(libdir,'libmsmpi.dll.a'),post,error)
+            if (allocated(error)) return
+
+            if (len_trim(post)<=0 .or. .not.exists(post)) then
+                call fatal_error(error,'MS-MPI available through the MSYS2 system not found. '// &
+                                       'Run <pacman -Sy mingw64/mingw-w64-x86_64-msmpi> or your system-specific version to install.')
+                return
+            end if
+
+            ! Add dir cpath
             this%has_link_flags = .true.
-            !this%link_flags = string_t(' -L'//get_dos_path(libdir,error))
-            this%link_flags = string_t(' -LC:\msys64\mingw64\lib')
+            this%link_flags = string_t(' -L'//get_dos_path(libdir,error))
 
             this%has_link_libraries = .true.
             this%link_libs = [string_t('msmpi.dll')]
-            !this%link_libs = [string_t('msmpi'),string_t('msmpifec'),string_t('msmpifmc')]
 
             if (allocated(error)) return
 
             this%has_include_dirs = .true.
-            this%incl_dirs = [string_t(get_dos_path(incdir,error)), &
-                              string_t(get_dos_path(incdir//post,error))]
+            this%incl_dirs = [string_t(get_dos_path(incdir,error))]
             if (allocated(error)) return
 
         else
@@ -576,6 +586,20 @@ logical function msmpi_init(this,compiler,error) result(found)
         allocate(this%fortran)
         this%fortran%implicit_typing = .true.
         this%fortran%implicit_external = .true.
+
+        ! gfortran>=10 is incompatible with the old-style mpif.h MS-MPI headers.
+        ! If so, add flags to allow old-style BOZ constants in mpif.h
+        allow_BOZ: if (compiler%id==id_gcc) then
+
+            call new_version(ver10,'10.0.0',error)
+            if (allocated(error)) return
+
+            if (ver>=ver10) then
+                this%has_build_flags = .true.
+                this%flags = string_t(' -fallow-invalid-boz')
+            end if
+
+        endif allow_BOZ
 
     else
 
@@ -732,6 +756,12 @@ function get_dos_path(path,error)
     character(:), allocatable :: redirect,screen_output,line
     integer :: stat,cmdstat,iunit,last
 
+    ! Non-Windows OS
+    if (get_os_type()/=OS_WINDOWS) then
+        get_dos_path = path
+        return
+    end if
+
     ! Trim path first
     get_dos_path = trim(path)
 
@@ -770,11 +800,11 @@ function get_dos_path(path,error)
 
         end if command_OK
 
+        get_dos_path = trim(adjustl(screen_output))
+
     endif has_spaces
 
     !> Ensure there are no trailing slashes
-    get_dos_path = trim(adjustl(screen_output))
-
     last = len_trim(get_dos_path)
     if (last>1 .and. get_dos_path(last:last)=='/' .or. get_dos_path(last:last)=='\') get_dos_path = get_dos_path(1:last-1)
 
