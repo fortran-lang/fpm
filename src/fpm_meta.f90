@@ -457,16 +457,12 @@ logical function msmpi_init(this) result(found)
         call destroy(this)
 
         this%has_link_flags = .true.
-        this%link_flags = string_t(' -l'//get_dos_path(libdir//'msmpi')// &
-                                   ' -l'//get_dos_path(libdir//'msmpifec')) ! fortran-only
+        this%link_flags = string_t(' -l'//get_dos_path(join_path(libdir,'msmpi'))// &
+                                   ' -l'//get_dos_path(join_path(libdir,'msmpifec'))) ! fortran-only
 
         this%has_include_dirs = .true.
         this%incl_dirs = [string_t(get_dos_path(incdir)), &
                           string_t(get_dos_path(incdir//post))]
-
-        call get_absolute_path(libdir//'msmpi.lib', reall, error)
-        if (allocated(error)) stop 'cannot get realpath '//error%message
-        print *, 'real pach= ',reall
 
         found = .true.
 
@@ -487,45 +483,50 @@ function get_dos_path(path)
     character(len=:), allocatable :: get_dos_path
 
     character(:), allocatable :: redirect,screen_output,line
-    integer :: stat,cmdstat,iunit
+    integer :: stat,cmdstat,iunit,last
 
     ! Trim path first
     get_dos_path = trim(path)
 
     !> No need to convert if there are no spaces
-    if (scan(get_dos_path,' ')<=0) return
+    has_spaces: if (scan(get_dos_path,' ')>0) then
 
+        redirect = get_temp_filename()
+        call execute_command_line('cmd /c for %A in ("'//path//'") do @echo %~sA >'//redirect//' 2>&1',&
+                                  exitstat=stat,cmdstat=cmdstat)
 
-    redirect = get_temp_filename()
-    call execute_command_line('cmd /c for %A in ("'//path//'") do @echo %~sA >'//redirect//' 2>&1',&
-                              exitstat=stat,cmdstat=cmdstat)
+        !> Read screen output
+        if (cmdstat==0) then
 
-    !> Read screen output
-    if (cmdstat==0) then
+            allocate(character(len=0) :: screen_output)
+            open(newunit=iunit,file=redirect,status='old',iostat=stat)
+            if (stat == 0)then
+               do
+                   call getline(iunit, line, stat)
+                   if (stat /= 0) exit
+                   screen_output = screen_output//line//' '
+               end do
 
-        allocate(character(len=0) :: screen_output)
-        open(newunit=iunit,file=redirect,status='old',iostat=stat)
-        if (stat == 0)then
-           do
-               call getline(iunit, line, stat)
-               if (stat /= 0) exit
-               screen_output = screen_output//line//' '
-           end do
+               ! Close and delete file
+               close(iunit,status='delete')
 
-           ! Close and delete file
-           close(iunit,status='delete')
+            else
+               call fpm_stop(1,'cannot read temporary file from successful DOS path evaluation')
+            endif
 
         else
-           call fpm_stop(1,'cannot read temporary file from successful DOS path evaluation')
-        endif
 
-    else
+            call fpm_stop(1,'cannot convert windows path to DOS path')
 
-        call fpm_stop(1,'cannot convert windows path to DOS path')
+        end if
 
-    end if
+    endif has_spaces
 
+    !> Ensure there are no trailing slashes
     get_dos_path = trim(adjustl(screen_output))
+
+    last = len_trim(get_dos_path)
+    if (last>1 .and. get_dos_path(last:last)=='/' .or. get_dos_path(last:last)=='\') get_dos_path = get_dos_path(1:last-1)
 
 end function get_dos_path
 
