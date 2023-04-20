@@ -342,7 +342,6 @@ end subroutine resolve_metapackage_model
 
 !> Initialize MPI metapackage for the current system
 subroutine init_mpi(this,compiler,error)
-    use iso_fortran_env, only: compiler_version,compiler_options
     class(metapackage_t), intent(inout) :: this
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
@@ -368,7 +367,8 @@ subroutine init_mpi(this,compiler,error)
     if (allocated(error) .or. .not.wcfit) then
 
         !> No wrapper compiler fit. Are we on Windows? use MSMPI-specific search
-        found = msmpi_init(this)
+        found = msmpi_init(this,compiler,error)
+        if (allocated(error)) return
 
         !> All attempts failed
         if (.not.found) then
@@ -424,12 +424,13 @@ logical function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,comp
 end function wrapper_compiler_fit
 
 !> Check if a local MS-MPI SDK build is found
-logical function msmpi_init(this) result(found)
+logical function msmpi_init(this,compiler,error) result(found)
     class(metapackage_t), intent(inout) :: this
+    type(compiler_t), intent(in) :: compiler
+    type(error_t), allocatable, intent(out) :: error
 
     character(len=:), allocatable :: incdir,libdir,post,reall
-    type(error_t), allocatable :: error
-
+    type(version_t) :: ver,ver10
 
     !> Default: not found
     found = .false.
@@ -457,14 +458,35 @@ logical function msmpi_init(this) result(found)
         call destroy(this)
 
         this%has_link_flags = .true.
-        this%link_flags = string_t(' -l'//get_dos_path(join_path(libdir,'msmpi'))// &
-                                   ' -l'//get_dos_path(join_path(libdir,'msmpifec'))) ! fortran-only
+        this%link_flags = string_t(' -l'//get_dos_path(join_path(libdir,'msmpi'),error)// &
+                                   ' -l'//get_dos_path(join_path(libdir,'msmpifec'),error)) ! fortran-only
+        if (allocated(error)) return
 
         this%has_include_dirs = .true.
-        this%incl_dirs = [string_t(get_dos_path(incdir)), &
-                          string_t(get_dos_path(incdir//post))]
+        this%incl_dirs = [string_t(get_dos_path(incdir,error)), &
+                          string_t(get_dos_path(incdir//post,error))]
+        if (allocated(error)) return
 
         found = .true.
+
+        ! gfortran>=10 is incompatible with the old-style mpif.h MS-MPI headers.
+        ! If so, add flags to allow old-style BOZ constants in mpif.h
+
+        allow_BOZ: if (compiler%id==id_gcc) then
+            ver = compiler_get_version(compiler,error)
+            if (allocated(error)) return
+
+            call new_version(ver10,'10.0.0',error)
+            if (allocated(error)) return
+
+            if (ver>=ver10) then
+                this%has_build_flags = .true.
+                this%flags = string_t(' -fallow-invalid-boz')
+
+            end if
+
+        endif allow_BOZ
+
 
     else
 
@@ -477,9 +499,68 @@ logical function msmpi_init(this) result(found)
 
 end function msmpi_init
 
+!> Return compiler version
+type(version_t) function compiler_get_version(self,error)
+    type(compiler_t), intent(in) :: self
+    type(error_t), allocatable, intent(out) :: error
+
+    character(:), allocatable :: tmp_file,screen_output,line
+    integer :: stat,iunit,ire,length
+
+    select case (self%id)
+       case (id_gcc)
+
+            tmp_file = get_temp_filename()
+
+            call run(self%fc // " --version ", echo=self%echo, verbose=self%verbose, redirect=tmp_file, exitstat=stat)
+            if (stat/=0) then
+                call fatal_error(error,'compiler_get_version failed for '//self%fc)
+                return
+            end if
+
+            allocate(character(len=0) :: screen_output)
+            open(newunit=iunit,file=tmp_file,status='old',iostat=stat)
+            if (stat == 0)then
+
+               do
+                   call getline(iunit, line, stat)
+                   if (stat /= 0) exit
+                   screen_output = screen_output//' '//line//' '
+               end do
+
+               ! Close and delete file
+               close(iunit,status='delete')
+
+            else
+               call fatal_error(error,'cannot read temporary file from successful compiler_get_version')
+               return
+            endif
+
+            ! Extract version
+            ire = regex(screen_output,'\d+.\d+.\d+',length=length)
+
+            if (ire>0 .and. length>0) then
+                ! Parse version into the object (this should always work)
+                screen_output = screen_output(ire:ire+length-1)
+            else
+                call syntax_error(error,'cannot retrieve '//self%fc//' compiler version.')
+                return
+            end if
+
+            ! Wrap to object
+            call new_version(compiler_get_version,screen_output,error)
+
+       case default
+            call fatal_error(error,'compiler_get_version not yet implemented for compiler '//self%fc)
+            return
+    end select
+
+end function compiler_get_version
+
 !> Ensure a windows path is converted to a DOS path if it contains spaces
-function get_dos_path(path)
+function get_dos_path(path,error)
     character(len=*), intent(in) :: path
+    type(error_t), allocatable, intent(out) :: error
     character(len=:), allocatable :: get_dos_path
 
     character(:), allocatable :: redirect,screen_output,line
@@ -496,11 +577,12 @@ function get_dos_path(path)
                                   exitstat=stat,cmdstat=cmdstat)
 
         !> Read screen output
-        if (cmdstat==0) then
+        command_OK: if (cmdstat==0 .and. stat==0) then
 
             allocate(character(len=0) :: screen_output)
             open(newunit=iunit,file=redirect,status='old',iostat=stat)
             if (stat == 0)then
+
                do
                    call getline(iunit, line, stat)
                    if (stat /= 0) exit
@@ -511,14 +593,16 @@ function get_dos_path(path)
                close(iunit,status='delete')
 
             else
-               call fpm_stop(1,'cannot read temporary file from successful DOS path evaluation')
+               call fatal_error(error,'cannot read temporary file from successful DOS path evaluation')
+               return
             endif
 
-        else
+        else command_OK
 
-            call fpm_stop(1,'cannot convert windows path to DOS path')
+            call fatal_error(error,'unsuccessful Windows->DOS path command')
+            return
 
-        end if
+        end if command_OK
 
     endif has_spaces
 
