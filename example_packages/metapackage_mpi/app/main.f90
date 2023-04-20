@@ -1,4 +1,5 @@
 program with_mpi
+  implicit none
  
   include 'mpif.h'
 
@@ -6,6 +7,7 @@ program with_mpi
   integer, parameter :: RANK_ERROR = 2
 
   integer :: ierror,ncpus,cpuid
+  
 
   ! Initialize MPI argument
   call MPI_INIT(ierror);  

@@ -21,7 +21,7 @@ use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
 use fpm_environment, only: get_env,os_is_unix
-use fpm_filesystem, only: run, get_temp_filename, getline, exists
+use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, is_dir
 use fpm_versioning, only: version_t, new_version
 use fpm_os, only: get_absolute_path
 use iso_fortran_env, only: stdout => output_unit
@@ -50,6 +50,9 @@ type, public :: metapackage_t
     type(string_t) :: link_flags
     type(string_t), allocatable :: incl_dirs(:)
     type(string_t), allocatable :: link_libs(:)
+
+    !> Special fortran features
+    type(fortran_features_t), allocatable :: fortran
 
     !> List of Development dependency meta data.
     !> Metapackage dependencies are never exported from the model
@@ -96,6 +99,7 @@ elemental subroutine destroy(this)
    this%has_include_dirs    = .false.
    this%has_dependencies    = .false.
 
+   if (allocated(this%fortran)) deallocate(this%fortran)
    if (allocated(this%version)) deallocate(this%version)
    if (allocated(this%flags%s)) deallocate(this%flags%s)
    if (allocated(this%link_flags%s)) deallocate(this%link_flags%s)
@@ -234,7 +238,7 @@ subroutine resolve_model(self,model,error)
         model%include_dirs          = [model%include_dirs,self%incl_dirs]
     end if
 
-    ! Dependencies are resolved in the package config
+
 
 end subroutine resolve_model
 
@@ -243,15 +247,47 @@ subroutine resolve_package_config(self,package,error)
     type(package_config_t), intent(inout) :: package
     type(error_t), allocatable, intent(out) :: error
 
-    ! All metapackage dependencies are added as full dependencies,
-    ! as upstream projects will not otherwise compile without them
+    ! All metapackage dependencies are added as dev-dependencies,
+    ! as they may change if built upstream
     if (self%has_dependencies) then
-        if (allocated(package%dependency)) then
-           package%dependency = [package%dependency,self%dependency]
+        if (allocated(package%dev_dependency)) then
+           package%dev_dependency = [package%dev_dependency,self%dependency]
         else
-           package%dependency = self%dependency
+           package%dev_dependency = self%dependency
         end if
     end if
+
+    ! Check if there are any special fortran requests which the package does not comply to
+    if (allocated(self%fortran)) then
+
+        if (self%fortran%implicit_external.neqv.package%fortran%implicit_external) then
+            call fatal_error(error,'metapackage fortran error: metapackage '// &
+                                   dn(self%fortran%implicit_external)//' require implicit-external, main package '//&
+                                   dn(package%fortran%implicit_external))
+            return
+        end if
+
+        if (self%fortran%implicit_typing.neqv.package%fortran%implicit_typing) then
+            call fatal_error(error,'metapackage fortran error: metapackage '// &
+                                   dn(self%fortran%implicit_external)//' require implicit-typing, main package '//&
+                                   dn(package%fortran%implicit_external))
+            return
+        end if
+
+    end if
+
+    contains
+
+    pure function dn(bool)
+       logical, intent(in) :: bool
+       character(len=:), allocatable :: dn
+       if (bool) then
+          dn = "does"
+       else
+          dn = "does not"
+       end if
+    end function dn
+
 
 end subroutine resolve_package_config
 
@@ -289,6 +325,14 @@ subroutine add_metapackage_config(package,compiler,name,error)
     !> Add it to the model
     call meta%resolve(package,error)
     if (allocated(error)) return
+
+    ! Temporary
+    if (name=="mpi") then
+
+
+
+
+    end if
 
 end subroutine add_metapackage_config
 
@@ -329,9 +373,6 @@ subroutine resolve_metapackage_model(model,package,error)
 
     ! MPI
     if (package%meta%mpi) then
-
-        print *, 'resolving MPI...'
-
         call add_metapackage_model(model,"mpi",error)
         if (allocated(error)) return
         call add_metapackage_config(package,model%compiler,"mpi",error)
@@ -429,15 +470,25 @@ logical function msmpi_init(this,compiler,error) result(found)
     type(compiler_t), intent(in) :: compiler
     type(error_t), allocatable, intent(out) :: error
 
-    character(len=:), allocatable :: incdir,libdir,post,reall
+    character(len=:), allocatable :: incdir,libdir,post,reall,msysdir
     type(version_t) :: ver,ver10
+    type(string_t) :: path
+    logical :: msys2
 
     !> Default: not found
     found = .false.
 
     if (get_os_type()==OS_WINDOWS) then
 
-        !> Find include and library directories
+        ! to run MSMPI on Windows,
+        is_minGW: if (compiler%id==id_gcc) then
+
+            call compiler_get_version(compiler,ver,msys2,error)
+            if (allocated(error)) return
+
+        endif is_minGW
+
+        !> Find include and library directories of the MS-MPI SDK
         incdir = get_env('MSMPI_INC')
         if (is_64bit_environment()) then
             libdir = get_env('MSMPI_LIB64')
@@ -454,27 +505,12 @@ logical function msmpi_init(this,compiler,error) result(found)
         if (len_trim(incdir)<=0 .or. len_trim(libdir)<=0) return
         if (.not.exists(incdir) .or. .not.exists(libdir)) return
 
-        ! Init ms-mpi
-        call destroy(this)
-
-        this%has_link_flags = .true.
-        this%link_flags = string_t(' -l'//get_dos_path(join_path(libdir,'msmpi'),error)// &
-                                   ' -l'//get_dos_path(join_path(libdir,'msmpifec'),error)) ! fortran-only
-        if (allocated(error)) return
-
-        this%has_include_dirs = .true.
-        this%incl_dirs = [string_t(get_dos_path(incdir,error)), &
-                          string_t(get_dos_path(incdir//post,error))]
-        if (allocated(error)) return
-
+        ! Success!
         found = .true.
 
         ! gfortran>=10 is incompatible with the old-style mpif.h MS-MPI headers.
         ! If so, add flags to allow old-style BOZ constants in mpif.h
-
         allow_BOZ: if (compiler%id==id_gcc) then
-            ver = compiler_get_version(compiler,error)
-            if (allocated(error)) return
 
             call new_version(ver10,'10.0.0',error)
             if (allocated(error)) return
@@ -482,11 +518,64 @@ logical function msmpi_init(this,compiler,error) result(found)
             if (ver>=ver10) then
                 this%has_build_flags = .true.
                 this%flags = string_t(' -fallow-invalid-boz')
-
             end if
 
         endif allow_BOZ
 
+        ! Init ms-mpi
+        call destroy(this)
+
+        ! MSYS2 provides a pre-built static msmpi.dll.a library. Use that if possible
+        use_prebuilt: if (msys2) then
+
+            call compiler_get_path(compiler,path,error)
+            if (allocated(error)) return
+
+            print *, 'compiler path: '//path%s
+            stop
+
+            ! Add dir path
+            this%has_link_flags = .true.
+            !this%link_flags = string_t(' -L'//get_dos_path(libdir,error))
+            this%link_flags = string_t(' -LC:\msys64\mingw64\lib')
+
+            this%has_link_libraries = .true.
+            this%link_libs = [string_t('msmpi.dll')]
+            !this%link_libs = [string_t('msmpi'),string_t('msmpifec'),string_t('msmpifmc')]
+
+            if (allocated(error)) return
+
+            this%has_include_dirs = .true.
+            this%incl_dirs = [string_t(get_dos_path(incdir,error)), &
+                              string_t(get_dos_path(incdir//post,error))]
+            if (allocated(error)) return
+
+        else
+
+            call fatal_error(error,'MS-MPI cannot work with non-MSYS2 GNU compilers yet')
+            return
+
+            ! Add dir path
+            this%has_link_flags = .true.
+            this%link_flags = string_t(' -L'//get_dos_path(libdir,error))
+
+            this%has_link_libraries = .true.
+            this%link_libs = [string_t('msmpi'),string_t('msmpifec'),string_t('msmpifmc')]
+
+            if (allocated(error)) return
+
+            this%has_include_dirs = .true.
+            this%incl_dirs = [string_t(get_dos_path(incdir,error)), &
+                              string_t(get_dos_path(incdir//post,error))]
+            if (allocated(error)) return
+
+
+        end if use_prebuilt
+
+        !> Request no Fortran implicit typing
+        allocate(this%fortran)
+        this%fortran%implicit_typing = .true.
+        this%fortran%implicit_external = .true.
 
     else
 
@@ -499,13 +588,89 @@ logical function msmpi_init(this,compiler,error) result(found)
 
 end function msmpi_init
 
-!> Return compiler version
-type(version_t) function compiler_get_version(self,error)
+!> Return compiler path
+subroutine compiler_get_path(self,path,error)
     type(compiler_t), intent(in) :: self
+    type(string_t), intent(out) :: path
+    type(error_t), allocatable, intent(out) :: error
+
+    character(:), allocatable :: tmp_file,screen_output,line,fullpath
+    integer :: stat,iunit,ire,length
+
+    tmp_file = get_temp_filename()
+
+    if (get_os_type()==OS_WINDOWS) then
+       call run("where "//self%fc, echo=self%echo, verbose=self%verbose, redirect=tmp_file, exitstat=stat)
+    else
+       call run("which "//self%fc, echo=self%echo, verbose=self%verbose, redirect=tmp_file, exitstat=stat)
+    end if
+    if (stat/=0) then
+        call fatal_error(error,'compiler_get_path failed for '//self%fc)
+        return
+    end if
+
+    ! Only read first instance (first line)
+    allocate(character(len=0) :: screen_output)
+    open(newunit=iunit,file=tmp_file,status='old',iostat=stat)
+    if (stat == 0)then
+       do
+           call getline(iunit, line, stat)
+           if (stat /= 0) exit
+           if (len(screen_output)>0) then
+                screen_output = screen_output//new_line('a')//line
+           else
+                screen_output = line
+           endif
+       end do
+       ! Close and delete file
+       close(iunit,status='delete')
+    else
+       call fatal_error(error,'cannot read temporary file from successful compiler_get_path')
+       return
+    endif
+
+    ! Only use the first instance
+    length = index(screen_output,new_line('a'))
+    multiline: if (length>1) then
+        fullpath = screen_output(1:length-1)
+    else
+        fullpath = screen_output
+    endif multiline
+    if (len_trim(fullpath)<1) then
+        call fatal_error(error,'no paths found to the current compiler ('//self%fc//')')
+        return
+    end if
+
+    ! Extract path only
+    length = index(fullpath,self%fc,BACK=.true.)
+    if (length<=0) then
+        call fatal_error(error,'full path to the current compiler ('//self%fc//') does not include compiler name')
+        return
+    elseif (length==1) then
+        ! Compiler is in the current folder
+        call get_absolute_path('.',path%s,error)
+    else
+        path%s = canon_path(fullpath(1:length-1))
+    end if
+
+    if (.not.is_dir(path%s)) then
+        call fatal_error(error,'full path to the current compiler ('//self%fc//') is not a directory')
+        return
+    end if
+
+end subroutine compiler_get_path
+
+!> Return compiler version
+subroutine compiler_get_version(self,version,is_msys2,error)
+    type(compiler_t), intent(in) :: self
+    type(version_t), intent(out) :: version
+    logical, intent(out) :: is_msys2
     type(error_t), allocatable, intent(out) :: error
 
     character(:), allocatable :: tmp_file,screen_output,line
     integer :: stat,iunit,ire,length
+
+    is_msys2 = .false.
 
     select case (self%id)
        case (id_gcc)
@@ -521,20 +686,20 @@ type(version_t) function compiler_get_version(self,error)
             allocate(character(len=0) :: screen_output)
             open(newunit=iunit,file=tmp_file,status='old',iostat=stat)
             if (stat == 0)then
-
                do
                    call getline(iunit, line, stat)
                    if (stat /= 0) exit
                    screen_output = screen_output//' '//line//' '
                end do
-
                ! Close and delete file
                close(iunit,status='delete')
-
             else
                call fatal_error(error,'cannot read temporary file from successful compiler_get_version')
                return
             endif
+
+            ! Check if this gcc is from the MSYS2 project
+            is_msys2 = index(screen_output,'MSYS2')>0
 
             ! Extract version
             ire = regex(screen_output,'\d+.\d+.\d+',length=length)
@@ -548,14 +713,15 @@ type(version_t) function compiler_get_version(self,error)
             end if
 
             ! Wrap to object
-            call new_version(compiler_get_version,screen_output,error)
+            call new_version(version,screen_output,error)
+
 
        case default
             call fatal_error(error,'compiler_get_version not yet implemented for compiler '//self%fc)
             return
     end select
 
-end function compiler_get_version
+end subroutine compiler_get_version
 
 !> Ensure a windows path is converted to a DOS path if it contains spaces
 function get_dos_path(path,error)
