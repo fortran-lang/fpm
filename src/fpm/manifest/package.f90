@@ -53,7 +53,7 @@ module fpm_manifest_package
     implicit none
     private
 
-    public :: package_config_t, new_package
+    public :: package_config_t, new_package, read_version
 
 
     interface unique_programs
@@ -136,8 +136,7 @@ contains
            achar(8) // achar(9) // achar(10) // achar(12) // achar(13)
         type(toml_table), pointer :: child, node
         type(toml_array), pointer :: children
-        character(len=:), allocatable :: version, version_file
-        integer :: ii, nn, stat, io
+        integer :: ii, nn, stat
 
         call check(table, error)
         if (allocated(error)) return
@@ -186,27 +185,7 @@ contains
         call new_fortran_config(self%fortran, child, error)
         if (allocated(error)) return
 
-        call get_value(table, "version", version, "0")
-        call new_version(self%version, version, error)
-        if (allocated(error) .and. present(root)) then
-            version_file = join_path(root, version)
-            if (exists(version_file)) then
-                deallocate(error)
-                open(file=version_file, newunit=io, iostat=stat)
-                if (stat == 0) then
-                    call getline(io, version, iostat=stat)
-                end if
-                if (stat == 0) then
-                    close(io, iostat=stat)
-                end if
-                if (stat == 0) then
-                    call new_version(self%version, version, error)
-                else
-                    call fatal_error(error, "Reading version number from file '" &
-                        & //version_file//"' failed")
-                end if
-            end if
-        end if
+        call read_version(self, table, root, error)
         if (allocated(error)) return
 
         call get_value(table, "dependencies", child, requested=.false.)
@@ -305,6 +284,41 @@ contains
             if (allocated(error)) return
         end if
     end subroutine new_package
+
+    !> Read version from the manifest or a separate file.
+    subroutine read_version(self, table, root, error)
+        !> Instance of the package configuration.
+        type(package_config_t), intent(inout) :: self
+
+        !> Instance of the TOML data structure.
+        type(toml_table), intent(inout) :: table
+
+        !> Root directory of the manifest.
+        character(len=*), intent(in), optional :: root
+
+        !> Error handling.
+        type(error_t), allocatable, intent(out) :: error
+
+        character(len=:), allocatable :: version, version_file
+        integer :: stat, io
+
+        call get_value(table, "version", version, "0")
+        call new_version(self%version, version, error)
+        if (allocated(error) .and. present(root)) then
+            version_file = join_path(root, version)
+            if (exists(version_file)) then
+                deallocate(error)
+                open(file=version_file, newunit=io, iostat=stat)
+                if (stat == 0) call getline(io, version, iostat=stat)
+                if (stat == 0) close(io, iostat=stat)
+                if (stat == 0) then
+                    call new_version(self%version, version, error)
+                else
+                    call fatal_error(error, "Reading version number from file '"//version_file//"' failed.")
+                end if
+            end if
+        end if
+    end
 
 
     !> Check local schema for allowed entries
