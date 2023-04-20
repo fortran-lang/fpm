@@ -52,6 +52,13 @@ jobs:
       run: |
         VERSION=$(git describe --tags --match 'v*' --always | tr -d 'v')
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
+        echo ${{ env.VERSION }}
+
+    - name: Get manifest version
+      run: |
+        MANIFEST_VERSION=$(grep version fpm.toml | head -1 | tr -d ' ' | tr -d 'version=')
+        echo "MANIFEST_VERSION=${MANIFEST_VERSION}" >> $GITHUB_ENV
+        echo ${{ env.MANIFEST_VERSION }}
 
     # Note: this step is meant to remove the test targets from the package manifest,
     #       a change in the package manifest might require to regenerate the patch file.
@@ -62,12 +69,14 @@ jobs:
     - name: Install fpm
       uses: fortran-lang/setup-fpm@v3
       with:
-        fpm-version: 'v0.4.0'
+        fpm-version: 'v0.8.0'
 
     - name: Create single file version
       run: |
         echo "OUTPUT=${{ env.OUTPUT }}" >> $GITHUB_ENV
         echo "#define FPM_BOOTSTRAP" > fpm-${{ env.VERSION }}.F90
+        # We need to pass the exact version string that a fpm build command would send
+        echo "#define FPM_RELEASE_VERSION ${{ env.MANIFEST_VERSION }}" >> fpm-${{ env.VERSION }}.F90
         # Intel compiler predefines "linux" and "unix" which causes inadvertent substitutions
         echo "#undef linux"          >> fpm-${{ env.VERSION }}.F90
         echo "#undef unix"           >> fpm-${{ env.VERSION }}.F90
@@ -92,7 +101,7 @@ jobs:
 
     - name: Build fpm with bootstrap version
       run: |
-        ${{ env.EXE }} build
+        ${{ env.EXE }} build 
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
