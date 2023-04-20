@@ -5,6 +5,9 @@ module test_manifest
     use fpm_manifest
     use fpm_manifest_profile, only: profile_config_t, find_profile
     use fpm_strings, only: operator(.in.)
+    use fpm_manifest_package, only: read_version
+    use fpm_toml, only : new_table, add_table, add_array, set_value, toml_table, toml_array
+
     implicit none
     private
     public :: collect_manifest
@@ -68,7 +71,9 @@ contains
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.)]
+            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("version-reading-from-table", test_version_reading_from_table) &
+            & ]
 
     end subroutine collect_manifest
 
@@ -246,7 +251,6 @@ contains
     !> Dependencies cannot be created from empty tables
     subroutine test_dependency_empty(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -265,7 +269,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_pathtag(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -287,7 +290,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_nourl(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -308,7 +310,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_gitpath(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -330,7 +331,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_gitconflict(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -353,7 +353,6 @@ contains
     !> Try to create a git dependency with an invalid source format.
     subroutine test_dependency_invalid_git(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -372,7 +371,6 @@ contains
     !> Namespace is necessary if a dependency is not a git or path dependency
     subroutine test_dependency_no_namespace(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         type(error_t), allocatable, intent(out) :: error
 
@@ -390,7 +388,6 @@ contains
     !> Do not specify version with a git or path dependency
     subroutine test_dependency_redundant_v(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         type(error_t), allocatable, intent(out) :: error
 
@@ -410,7 +407,6 @@ contains
     !> Try to create a dependency with conflicting entries
     subroutine test_dependency_wrongkey(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -431,7 +427,6 @@ contains
     !> Dependency tables can be empty
     subroutine test_dependencies_empty(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -454,7 +449,6 @@ contains
     !> Add a dependency as an array, which is not supported
     subroutine test_dependencies_typeerror(error)
         use fpm_manifest_dependency
-        use fpm_toml, only : new_table, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -572,7 +566,6 @@ contains
     !> Executables cannot be created from empty tables
     subroutine test_executable_empty(error)
         use fpm_manifest_executable
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -590,7 +583,6 @@ contains
     !> Pass a wrong TOML type to the name field of the executable
     subroutine test_executable_typeerror(error)
         use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -611,7 +603,6 @@ contains
     !> Pass a TOML table with insufficient entries to the executable constructor
     subroutine test_executable_noname(error)
         use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -632,7 +623,6 @@ contains
     !> Pass a TOML table with not allowed keys
     subroutine test_executable_wrongkey(error)
         use fpm_manifest_executable
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -761,7 +751,6 @@ contains
     !> Libraries can be created from empty tables
     subroutine test_library_empty(error)
         use fpm_manifest_library
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -794,7 +783,6 @@ contains
     !> Pass a TOML table with not allowed keys
     subroutine test_library_wrongkey(error)
         use fpm_manifest_library
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -815,8 +803,6 @@ contains
     !> Packages cannot be created from empty tables
     subroutine test_package_simple(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, add_table, add_array, set_value, &
-            & toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -854,7 +840,6 @@ contains
     !> Packages cannot be created from empty tables
     subroutine test_package_empty(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -872,7 +857,6 @@ contains
     !> Create an array in the package name, which should cause an error
     subroutine test_package_typeerror(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -893,7 +877,6 @@ contains
     !> Try to create a new package without a name field
     subroutine test_package_noname(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -916,7 +899,6 @@ contains
     !> Try to read executables from a mixed type array
     subroutine test_package_wrongexe(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, set_value, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -939,7 +921,6 @@ contains
     !> Try to read tests from a mixed type array
     subroutine test_package_wrongtest(error)
         use fpm_manifest_package
-        use fpm_toml, only : new_table, set_value, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -962,7 +943,6 @@ contains
     !> Try to read tests from a mixed type array
     subroutine test_package_duplicate(error)
         use fpm_manifest_package
-        use fpm_toml, only : set_value, add_table, add_array, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -989,7 +969,6 @@ contains
     !> Tests cannot be created from empty tables
     subroutine test_test_simple(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, set_value, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1017,7 +996,6 @@ contains
     !> Tests cannot be created from empty tables
     subroutine test_test_empty(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1035,7 +1013,6 @@ contains
     !> Pass a wrong TOML type to the name field of the test
     subroutine test_test_typeerror(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1056,7 +1033,6 @@ contains
     !> Pass a TOML table with insufficient entries to the test constructor
     subroutine test_test_noname(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1077,7 +1053,6 @@ contains
     !> Pass a TOML table with not allowed keys
     subroutine test_test_wrongkey(error)
         use fpm_manifest_test
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1098,7 +1073,6 @@ contains
     !> Create a simple example entry
     subroutine test_example_simple(error)
         use fpm_manifest_example
-        use fpm_toml, only : new_table, set_value, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1126,7 +1100,6 @@ contains
     !> Examples cannot be created from empty tables
     subroutine test_example_empty(error)
         use fpm_manifest_example
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1144,7 +1117,6 @@ contains
     !> Test link options
     subroutine test_link_string(error)
         use fpm_manifest_build
-        use fpm_toml, only : set_value, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1164,7 +1136,6 @@ contains
     !> Test link options
     subroutine test_link_array(error)
         use fpm_manifest_build
-        use fpm_toml, only : add_array, set_value, toml_table, toml_array
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1187,7 +1158,6 @@ contains
     !> Test link options
     subroutine test_invalid_link(error)
         use fpm_manifest_build
-        use fpm_toml, only : add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1207,7 +1177,6 @@ contains
 
     subroutine test_install_library(error)
         use fpm_manifest_install
-        use fpm_toml, only : toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1231,7 +1200,6 @@ contains
 
     subroutine test_install_empty(error)
         use fpm_manifest_install
-        use fpm_toml, only : toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1254,7 +1222,6 @@ contains
 
     subroutine test_install_wrongkey(error)
         use fpm_manifest_install
-        use fpm_toml, only : toml_table, set_value
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1271,7 +1238,6 @@ contains
 
     subroutine test_preprocess_empty(error)
         use fpm_mainfest_preprocess
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1289,7 +1255,6 @@ contains
     !> Pass a TOML table with not allowed keys
     subroutine test_preprocess_wrongkey(error)
         use fpm_mainfest_preprocess
-        use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1310,7 +1275,6 @@ contains
     !> Preprocess table cannot be empty.
     subroutine test_preprocessors_empty(error)
         use fpm_mainfest_preprocess
-        use fpm_toml, only : new_table, toml_table
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1415,5 +1379,18 @@ contains
         end if
 
     end subroutine test_macro_parsing_dependency
+
+    subroutine test_version_reading_from_table(error)
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(package_config_t) :: pkg
+        type(toml_table) :: table
+        
+        call new_table(table)
+        call set_value(table, 'version', '1.2.3')
+        call read_version(pkg, table, error=error)
+
+        if (pkg%version%s() /= '1.2.3') call test_failed(error, 'Version was not read correctly')
+    end
 
 end module test_manifest

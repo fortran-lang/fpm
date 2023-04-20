@@ -46,8 +46,7 @@ module fpm_manifest_package
     use fpm_mainfest_preprocess, only : preprocess_config_t, new_preprocessors
     use fpm_filesystem, only : exists, getline, join_path
     use fpm_error, only : error_t, fatal_error, syntax_error, bad_name_error
-    use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, &
-        & len
+    use fpm_toml, only : toml_table, toml_array, toml_key, toml_stat, get_value, len
     use fpm_versioning, only : version_t, new_version
     use fpm_filesystem, only: join_path
     implicit none
@@ -286,9 +285,9 @@ contains
     end subroutine new_package
 
     !> Read version from the manifest or a separate file.
-    subroutine read_version(self, table, root, error)
+    subroutine read_version(pkg, table, root, error)
         !> Instance of the package configuration.
-        type(package_config_t), intent(inout) :: self
+        type(package_config_t), intent(inout) :: pkg
 
         !> Instance of the TOML data structure.
         type(toml_table), intent(inout) :: table
@@ -303,7 +302,7 @@ contains
         integer :: stat, io
 
         call get_value(table, "version", version, "0")
-        call new_version(self%version, version, error)
+        call new_version(pkg%version, version, error)
         if (allocated(error) .and. present(root)) then
             version_file = join_path(root, version)
             if (exists(version_file)) then
@@ -312,7 +311,7 @@ contains
                 if (stat == 0) call getline(io, version, iostat=stat)
                 if (stat == 0) close(io, iostat=stat)
                 if (stat == 0) then
-                    call new_version(self%version, version, error)
+                    call new_version(pkg%version, version, error)
                 else
                     call fatal_error(error, "Reading version number from file '"//version_file//"' failed.")
                 end if
