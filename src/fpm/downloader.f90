@@ -18,7 +18,7 @@ module fpm_downloader
 
 contains
 
-  !> Perform an http get request and save output to file.
+  !> Perform an http get request, save output to file, and parse json.
   subroutine get_pkg_data(url, version, tmp_pkg_file, json, error)
     character(*), intent(in) :: url
     type(version_t), allocatable, intent(in) :: version
@@ -52,6 +52,7 @@ contains
     json = ptr
   end
 
+  !> Download a file from a url using either curl or wget.
   subroutine get_file(url, tmp_pkg_file, error)
     character(*), intent(in) :: url
     character(*), intent(in) :: tmp_pkg_file
@@ -60,10 +61,10 @@ contains
     integer :: stat
 
     if (which('curl') /= '') then
-      print *, "Downloading package data from '"//url//"' ..."
+      print *, "Downloading '"//url//"' -> '"//tmp_pkg_file//"'"
       call execute_command_line('curl '//url//' -s -o '//tmp_pkg_file, exitstat=stat)
     else if (which('wget') /= '') then
-      print *, "Downloading package data from '"//url//"' ..."
+      print *, "Downloading '"//url//"' -> '"//tmp_pkg_file//"'"
       call execute_command_line('wget '//url//' -q -O '//tmp_pkg_file, exitstat=stat)
     else
       call fatal_error(error, "Neither 'curl' nor 'wget' installed."); return

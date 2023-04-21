@@ -668,8 +668,8 @@ contains
 
     ! Define location of the temporary folder and file.
     tmp_pkg_path = join_path(global_settings%path_to_config_folder, 'tmp')
-    tmp_pkg_file = join_path(tmp_pkg_path, 'package_data.tmp')
     if (.not. exists(tmp_pkg_path)) call mkdir(tmp_pkg_path)
+    tmp_pkg_file = join_path(tmp_pkg_path, 'package_data.tmp')
     open (newunit=unit, file=tmp_pkg_file, action='readwrite', iostat=stat)
     if (stat /= 0) then
       call fatal_error(error, "Error creating temporary file for downloading package '"//self%name//"'."); return
@@ -697,7 +697,6 @@ contains
       if (is_dir(cache_path)) call os_delete_dir(os_is_unix(), cache_path)
       call mkdir(cache_path)
 
-      print *, "Downloading '"//join_path(self%namespace, self%name, version%s())//"' ..."
       call downloader%get_file(target_url, tmp_pkg_file, error)
       if (allocated(error)) then
         close (unit, status='delete'); return
@@ -782,7 +781,7 @@ contains
       call fatal_error(error, "Failed to read download url for '"//join_path(node%namespace, node%name)//"'."); return
     end if
 
-    download_url = official_registry_base_url//'/'//download_url
+    download_url = official_registry_base_url//download_url
 
     if (.not. q%has_key('version')) then
       call fatal_error(error, "Failed to download '"//join_path(node%namespace, node%name)//"': No version found."); return
