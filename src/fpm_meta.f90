@@ -96,7 +96,7 @@ integer, parameter :: MPI_TYPE_MSMPI   = 4
 
 
 !> Debugging information
-logical, parameter, private :: verbose = .true.
+logical, parameter, private :: verbose = .false.
 
 integer, parameter, private :: WRAPPER_FORTRAN = 1
 integer, parameter, private :: WRAPPER_C       = 2
@@ -696,9 +696,9 @@ subroutine find_command_location(command,path,echo,verbose,error)
     tmp_file = get_temp_filename()
 
     if (get_os_type()==OS_WINDOWS) then
-       call run("where "//command, echo=echo, verbose=verbose, redirect=tmp_file, exitstat=stat)
+       call run("where "//command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
     else
-       call run("which "//command, echo=echo, verbose=verbose, redirect=tmp_file, exitstat=stat)
+       call run("which "//command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
     end if
     if (stat/=0) then
         call fatal_error(error,'compiler_get_path failed for '//command)
