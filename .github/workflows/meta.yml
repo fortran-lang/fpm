@@ -2,6 +2,10 @@ name: metapackage-tests
 
 on:
   push:
+    paths:
+      - 'src/*meta*.f90'  # On push, only launch job if something has changed in the metapackages
+      - 'src/fpm/*meta*.f90'
+      - 'src/fpm/manifest/*meta*.f90'
   pull_request:
   release:
     types: [published]
