@@ -631,24 +631,30 @@ logical function msmpi_init(this,compiler,error) result(found)
 
 end function msmpi_init
 
-!> Return compiler path
-subroutine compiler_get_path(self,path,error)
-    type(compiler_t), intent(in) :: self
-    type(string_t), intent(out) :: path
+!> Find the location of a valid command
+subroutine find_command_location(command,path,echo,verbose,error)
+    character(*), intent(in) :: command
+    character(len=:), allocatable, intent(out) :: path
+    logical, optional, intent(in) :: echo,verbose
     type(error_t), allocatable, intent(out) :: error
 
     character(:), allocatable :: tmp_file,screen_output,line,fullpath
     integer :: stat,iunit,ire,length
 
+    if (len_trim(command)<=0) then
+        call fatal_error(error,'empty command provided in find_command_location')
+        return
+    end if
+
     tmp_file = get_temp_filename()
 
     if (get_os_type()==OS_WINDOWS) then
-       call run("where "//self%fc, echo=self%echo, verbose=self%verbose, redirect=tmp_file, exitstat=stat)
+       call run("where "//command, echo=echo, verbose=verbose, redirect=tmp_file, exitstat=stat)
     else
-       call run("which "//self%fc, echo=self%echo, verbose=self%verbose, redirect=tmp_file, exitstat=stat)
+       call run("which "//command, echo=echo, verbose=verbose, redirect=tmp_file, exitstat=stat)
     end if
     if (stat/=0) then
-        call fatal_error(error,'compiler_get_path failed for '//self%fc)
+        call fatal_error(error,'compiler_get_path failed for '//command)
         return
     end if
 
@@ -668,7 +674,7 @@ subroutine compiler_get_path(self,path,error)
        ! Close and delete file
        close(iunit,status='delete')
     else
-       call fatal_error(error,'cannot read temporary file from successful compiler_get_path')
+       call fatal_error(error,'cannot read temporary file from successful find_command_location')
        return
     endif
 
@@ -680,26 +686,65 @@ subroutine compiler_get_path(self,path,error)
         fullpath = screen_output
     endif multiline
     if (len_trim(fullpath)<1) then
-        call fatal_error(error,'no paths found to the current compiler ('//self%fc//')')
+        call fatal_error(error,'no paths found to command ('//command//')')
         return
     end if
 
     ! Extract path only
-    length = index(fullpath,self%fc,BACK=.true.)
+    length = index(fullpath,command,BACK=.true.)
     if (length<=0) then
-        call fatal_error(error,'full path to the current compiler ('//self%fc//') does not include compiler name')
+        call fatal_error(error,'full path to command ('//command//') does not include command name')
         return
     elseif (length==1) then
         ! Compiler is in the current folder
-        call get_absolute_path('.',path%s,error)
+        call get_absolute_path('.',path,error)
     else
-        path%s = canon_path(fullpath(1:length-1))
+        path = canon_path(fullpath(1:length-1))
     end if
 
-    if (.not.is_dir(path%s)) then
-        call fatal_error(error,'full path to the current compiler ('//self%fc//') is not a directory')
+    if (.not.is_dir(path)) then
+        call fatal_error(error,'full path to command ('//command//') is not a directory')
         return
     end if
+
+end subroutine find_command_location
+
+!> Get MPI runner in $PATH
+subroutine get_mpi_runner(command,verbose,error)
+    type(string_t), intent(out) :: command
+    logical, optional, intent(in) :: verbose
+    type(error_t), allocatable, intent(out) :: error
+
+    character(*), parameter :: try(*) = ['mpiexec','mpirun ']
+    integer :: itri
+    logical :: success
+
+    ! Try several commands
+    do itri=1,size(try)
+       call find_command_location(trim(try(itri)),command%s,verbose=verbose,error=error)
+
+       ! Success!
+       success = len_trim(command%s)>0 .and. .not.allocated(error)
+       if (success) then
+           command%s = join_path(command%s,trim(try(itri)))
+           return
+       endif
+
+    end do
+
+    ! No valid command found
+    call fatal_error(error,'cannot find a valid mpi runner command')
+    return
+
+end subroutine get_mpi_runner
+
+!> Return compiler path
+subroutine compiler_get_path(self,path,error)
+    type(compiler_t), intent(in) :: self
+    type(string_t), intent(out) :: path
+    type(error_t), allocatable, intent(out) :: error
+
+    call find_command_location(self%fc,path%s,self%echo,self%verbose,error)
 
 end subroutine compiler_get_path
 
@@ -865,6 +910,12 @@ subroutine init_mpi_from_wrapper(this,compiler,fort_wrapper,error)
        allocate(this%version,source=version)
     end if
 
+    !> Add default run command, if present
+    this%run_command = mpi_wrapper_query(fort_wrapper,'runner',verbose,error)
+    if (allocated(error)) return
+    this%has_run_command = len_trim(this%run_command)>0
+
+
 end subroutine init_mpi_from_wrapper
 
 !> Match one of the available compiler wrappers with the current compiler
@@ -1012,7 +1063,7 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
     if(present(verbose))then
        echo_local=verbose
     else
-       echo_local=.true.
+       echo_local=.false.
     end if
 
     ! No redirection and non-verbose output
@@ -1062,7 +1113,7 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
 
                screen_output%s = screen_output%s//new_line('a')//line
 
-               if (verbose) write(*,'(A)') trim(line)
+               if (echo_local) write(*,'(A)') trim(line)
            end do
 
            ! Close and delete file
@@ -1137,7 +1188,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:command')],verbose=.true., &
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:command')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1160,7 +1211,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:compile')],verbose=.true., &
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:compile')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1184,7 +1235,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:link')],verbose=.true., &
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:link')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1208,7 +1259,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:libdirs')],verbose=.true., &
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:libdirs')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1230,7 +1281,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:incdirs')],verbose=.true., &
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:incdirs')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1252,7 +1303,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:version')],verbose=.true., &
+                 call run_mpi_wrapper(wrapper,[string_t('--showme:version')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
                  if (stat/=0 .or. .not.success) then
@@ -1281,6 +1332,17 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
                  call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
                  return
 
+           end select
+
+       ! Get path to the MPI runner command
+       case ('runner')
+
+           select case (mpi)
+              case (MPI_TYPE_OPENMPI)
+                 call get_mpi_runner(screen,verbose,error)
+              case default
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 return
            end select
 
        case default;
