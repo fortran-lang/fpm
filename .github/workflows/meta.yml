@@ -54,6 +54,8 @@ jobs:
         msystem: MINGW64 
         update: true
         install: >-
+          git
+          base-devel
           wget
           unzip
           curl
