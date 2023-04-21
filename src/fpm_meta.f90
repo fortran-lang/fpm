@@ -741,7 +741,7 @@ subroutine find_command_location(command,path,echo,verbose,error)
     end if
 
     if (.not.is_dir(path)) then
-        call fatal_error(error,'full path to command ('//command//') is not a directory')
+        call fatal_error(error,'full path ('//path//') to command ('//command//') is not a directory')
         return
     end if
 
