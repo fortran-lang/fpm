@@ -21,7 +21,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11]   
+        os: [macos-11]  
+        mpi: [mpich] 
         gcc_v: [10] # Version of GFortran we want to use 
         include:
         - os: macos-11
@@ -44,9 +45,14 @@ jobs:
       if: contains(matrix.os, 'macos')
       run: |
         brew install gcc@${GCC_V}
+        ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
         which gfortran-${GCC_V}
         which gfortran
-
+    
+    - name: Install homebrew MPICH
+      if: contains(matrix.mpi,'mpich')
+      run: |
+        brew install mpich
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
