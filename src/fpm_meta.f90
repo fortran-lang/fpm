@@ -558,7 +558,7 @@ logical function msmpi_init(this,compiler,error) result(found)
             if (allocated(error)) return
         endif
 
-        if (allocated(error) .or. len_trim(bindir)<=0) then
+        if (allocated(error) .or. .not.exists(bindir)) then
             call fatal_error(error,'MS-MPI error: MS-MPI Runtime directory is missing. '//&
                                    'check environment variable %MSMPI_BIN% or that the folder is in %PATH%.')
             return
@@ -748,6 +748,10 @@ subroutine find_command_location(command,path,echo,verbose,error)
     else
         call get_absolute_path(fullpath(1:length-1),path,error)
     end if
+    if (allocated(error)) return
+
+    ! On Windows, be sure to return a path with no spaces
+    if (get_os_type()==OS_WINDOWS) path = get_dos_path(path,error)
 
     if (.not.is_dir(path)) then
         call fatal_error(error,'full path ('//path//') to command ('//command//') is not a directory')
