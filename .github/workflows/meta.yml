@@ -60,7 +60,6 @@ jobs:
           unzip
           curl
           gcc-fortran
-          msmpi
 
     - name: Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')
@@ -83,6 +82,10 @@ jobs:
     - name: put MSMPI_BIN on PATH (where mpiexec is)
       if: contains(matrix.os,'windows')
       run: echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Install MSYS2 msmpi package
+      if: contains(matrix.os,'windows')
+      run: pacman -Ss msmpi 
 
     - name: Set up Homebrew
       if: contains(matrix.os,'macos')
