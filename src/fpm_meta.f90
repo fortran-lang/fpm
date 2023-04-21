@@ -274,8 +274,6 @@ subroutine resolve_model(self,model,error)
     endif
 
     ! Add language-specific flags
-    print *, 'has fortran,c,cpp',self%has_fortran_flags,self%has_c_flags,self%has_cxx_flags
-    stop
     if (self%has_fortran_flags) model%fortran_compile_flags = model%fortran_compile_flags//self%fflags%s
     if (self%has_c_flags)       model%c_compile_flags       = model%c_compile_flags//self%cflags%s
     if (self%has_cxx_flags)     model%cxx_compile_flags     = model%cxx_compile_flags//self%cxxflags%s
@@ -448,6 +446,8 @@ subroutine init_mpi(this,compiler,error)
         endif
 
     else
+
+        print *, 'wcfit=',wcfit
 
         if (wcfit(WRAPPER_FORTRAN)>0) fwrap   = fort_wrappers(wcfit(WRAPPER_FORTRAN))
         if (wcfit(WRAPPER_C)>0)       cwrap   = c_wrappers   (wcfit(WRAPPER_C))
@@ -962,7 +962,7 @@ subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapp
             print *, 'flags=',flags%s,' error=',allocated(error),' wrapper=',wrapper%s
 
             if (allocated(error)) return
-            this%has_fortran_flags = len_trim(flags)>0
+            has_flags = len_trim(flags)>0
 
             ! Add heading space
             flags = string_t(' '//flags%s)
@@ -983,6 +983,13 @@ integer function mpi_compiler_match(wrappers,compiler,error)
     type(string_t) :: screen
     character(128) :: msg_out
     type(compiler_t) :: mpi_compiler
+
+    !> If there's only one available wrapper, we're forced to use that one regardless of
+    !> what compiler it was bound to
+    if (size(wrappers)==1) then
+        mpi_compiler_match = 1
+        return
+    end if
 
     mpi_compiler_match = 0
 
