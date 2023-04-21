@@ -13,6 +13,7 @@ module fpm_cmd_publish
   use fpm_downloader, only: downloader_t
   use fpm_strings, only: string_t
   use fpm_settings, only: official_registry_base_url
+  use fpm, only: build_model
 
   implicit none
   private
@@ -36,12 +37,11 @@ contains
 
     call get_package_data(package, 'fpm.toml', error, apply_defaults=.true.)
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Package error: '//error%message)
-
     version = package%version
 
-    if (settings%show_package_version) then
-      print *, version%s(); return
-    end if
+    ! Build model to obtain dependency tree.
+    call build_model(model, settings%fpm_build_settings, package, error)
+    if (allocated(error)) call fpm_stop(1, '*cmd_build* Model error: '//error%message)
 
     !> Checks before uploading the package.
     if (.not. allocated(package%license)) call fpm_stop(1, 'No license specified in fpm.toml.')
