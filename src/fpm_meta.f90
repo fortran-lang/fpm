@@ -400,8 +400,8 @@ subroutine init_mpi(this,compiler,error)
     type(string_t) :: output
     character(256) :: msg_out
     character(len=:), allocatable :: tokens(:)
-    integer :: mpif90,ic,icpp,i
-    logical :: wcfit,found
+    integer :: wcfit,ic,icpp,i
+    logical :: found
 
 
     !> Cleanup
@@ -413,7 +413,7 @@ subroutine init_mpi(this,compiler,error)
 
     wcfit = wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error)
 
-    if (allocated(error) .or. .not.wcfit) then
+    if (allocated(error) .or. wcfit==0) then
 
         !> No wrapper compiler fit. Are we on Windows? use MSMPI-specific search
         found = msmpi_init(this,compiler,error)
@@ -428,7 +428,7 @@ subroutine init_mpi(this,compiler,error)
     else
 
         !> Initialize MPI package from wrapper command
-        call init_mpi_from_wrapper(this,compiler,fort_wrappers(mpif90),error)
+        call init_mpi_from_wrapper(this,compiler,fort_wrappers(wcfit),error)
         if (allocated(error)) return
 
     end if
@@ -446,7 +446,7 @@ logical function is_64bit_environment()
 end function is_64bit_environment
 
 !> Check if there is a wrapper-compiler fit
-logical function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error)
+integer function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error)
    type(string_t), allocatable, intent(in) :: fort_wrappers(:),c_wrappers(:),cpp_wrappers(:)
    type(compiler_t), intent(in) :: compiler
    type(error_t), allocatable, intent(out) :: error
@@ -454,7 +454,7 @@ logical function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,comp
    logical :: has_wrappers
    integer :: mpif90
 
-   wrapper_compiler_fit = .false.
+   wrapper_compiler_fit = 0
 
    !> Were any wrappers found?
    has_wrappers = size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)>0
@@ -466,7 +466,7 @@ logical function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,comp
         if (allocated(error)) return
 
         !> Was a valid wrapper found?
-        wrapper_compiler_fit = mpif90>0
+        wrapper_compiler_fit = mpif90
 
    endif
 
