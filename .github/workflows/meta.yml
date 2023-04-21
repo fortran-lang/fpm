@@ -21,13 +21,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11]  
+        os: [macos-11,windows-2019]  
         mpi: [mpich,openmpi] 
         gcc_v: [10] # Version of GFortran we want to use 
         include:
         - os: macos-11
           os-arch: macos-x86_64
           release-flags: --flag '-g -fbacktrace -O3'
+        - os: windows-2019
+          os-arch: windows-x86_64
+          release-flags: --flag '--static -g -fbacktrace -O3'
+          exe: .exe
 
     env:
       FC: gfortran
@@ -37,7 +41,19 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v1
 
+    - name: Set up MSYS2 and gfortran
+      uses: msys2/setup-msys2@v2
+      if: contains(matrix.os,'windows')
+      with:
+        msystem: MINGW64 
+        update: false
+        install: >-
+          wget
+          unzip
+          gcc-fortran
+
     - name: Set up Homebrew
+      if: contains(matrix.os,'macos')
       id: set-up-homebrew
       uses: Homebrew/actions/setup-homebrew@master        
 
