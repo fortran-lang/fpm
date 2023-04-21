@@ -447,8 +447,6 @@ subroutine init_mpi(this,compiler,error)
 
     else
 
-        print *, 'wcfit=',wcfit
-
         if (wcfit(WRAPPER_FORTRAN)>0) fwrap   = fort_wrappers(wcfit(WRAPPER_FORTRAN))
         if (wcfit(WRAPPER_C)>0)       cwrap   = c_wrappers   (wcfit(WRAPPER_C))
         if (wcfit(WRAPPER_CXX)>0)     cxxwrap = cpp_wrappers (wcfit(WRAPPER_CXX))
@@ -959,13 +957,14 @@ subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapp
         if (len_trim(wrapper)>0) then
             flags = mpi_wrapper_query(wrapper,'flags',verbose,error)
 
-            print *, 'flags=',flags%s,' error=',allocated(error),' wrapper=',wrapper%s
-
             if (allocated(error)) return
             has_flags = len_trim(flags)>0
 
             ! Add heading space
             flags = string_t(' '//flags%s)
+
+            if (verbose) print *, 'MPI set language flags from wrapper <',wrapper%s,'>: flags=',flags%s
+
         endif
 
     end subroutine set_language_flags
