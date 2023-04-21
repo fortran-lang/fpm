@@ -24,18 +24,9 @@ jobs:
         os: [macos-11]   ##[ubuntu-latest, macos-11, windows-latest]
         gcc_v: [10] # Version of GFortran we want to use 
         include:
-        - os: ubuntu-latest
-          os-arch: linux-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-
         - os: macos-11
           os-arch: macos-x86_64
           release-flags: --flag '-g -fbacktrace -O3'
-
-        - os: windows-latest
-          os-arch: windows-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-          exe: .exe
 
     env:
       FC: gfortran
@@ -62,22 +53,6 @@ jobs:
         ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libquadmath.0.dylib /usr/local/opt/gcc@9/lib/gcc/9/libquadmath.0.dylib 
         ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libgfortran.5.dylib /usr/local/opt/gcc@9/lib/gcc/9/libgfortran.5.dylib
         ln -fs /usr/local/lib/gcc/${GCC_V}/libgcc_s.1.dylib /usr/local/lib/gcc/9/libgcc_s.1.dylib
-
-    - name: Install GFortran Linux
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
-        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
-        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}
-
-    - name: Install GFortran Windows
-      if: contains(matrix.os, 'windows')
-      run: |
-        Invoke-WebRequest -Uri $Env:GCC_DOWNLOAD -OutFile mingw-w64.zip
-        Expand-Archive mingw-w64.zip
-        echo "$pwd\mingw-w64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      env:
-        GCC_DOWNLOAD: "https://github.com/brechtsanders/winlibs_mingw/releases/download/10.4.0-10.0.0-msvcrt-r1/winlibs-x86_64-posix-seh-gcc-10.4.0-mingw-w64msvcrt-10.0.0-r1.zip"
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
