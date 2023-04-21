@@ -21,15 +21,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11,windows-2019]  
-        mpi: [mpich,openmpi,msmpi] 
         gcc_v: [10] # Version of GFortran we want to use 
         include:
         - os: macos-11
           os-arch: macos-x86_64
+          mpi: openmpi
+          release-flags: --flag '-g -fbacktrace -O3'
+        - os: macos-11
+          os-arch: macos-x86_64
+          mpi: mpich
           release-flags: --flag '-g -fbacktrace -O3'
         - os: windows-2019
           os-arch: windows-x86_64
+          mpi: msmpi
           release-flags: --flag '--static -g -fbacktrace -O3'
           exe: .exe
 
