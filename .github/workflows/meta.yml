@@ -42,8 +42,8 @@ jobs:
 
     - name: Install Homebrew gfortran
       if: contains(matrix.os, 'macos')
-      shell: bash
-      run: brew install gcc@${GCC_V}
+      run: |
+        brew install gcc@${GCC_V}
         which gfortran-${GCC_V}
         which gfortran
 
