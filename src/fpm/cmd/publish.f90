@@ -39,6 +39,10 @@ contains
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Package error: '//error%message)
     version = package%version
 
+    if (settings%show_package_version) then
+      print *, version%s(); return
+    end if
+
     ! Build model to obtain dependency tree.
     call build_model(model, settings%fpm_build_settings, package, error)
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Model error: '//error%message)
