@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-11,windows-2019]  
-        mpi: [mpich,openmpi] 
+        mpi: [mpich,openmpi,msmpi] 
         gcc_v: [10] # Version of GFortran we want to use 
         include:
         - os: macos-11
@@ -51,6 +51,7 @@ jobs:
           wget
           unzip
           gcc-fortran
+          msmpi
 
     - name: Set up Homebrew
       if: contains(matrix.os,'macos')
@@ -67,13 +68,20 @@ jobs:
     
     - name: Install homebrew MPICH
       if: contains(matrix.mpi,'mpich')
+      if: contains(matrix.os,'macos')
       run: |
         brew install mpich
 
     - name: Install homebrew OpenMPI
       if: contains(matrix.mpi,'openmpi')
+      if: contains(matrix.os,'macos')
       run: |
         brew install --cc=gcc-${GCC_V} openmpi
+
+    - name: Install MSYS2 MSMPI
+      if: contains(matrix.mpi,'msmpi')
+      if: contains(matrix.os,'windows')
+      run: | 
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
