@@ -67,20 +67,17 @@ jobs:
         which gfortran
     
     - name: Install homebrew MPICH
-      if: contains(matrix.mpi,'mpich')
-      if: contains(matrix.os,'macos')
+      if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
       run: |
         brew install mpich
 
     - name: Install homebrew OpenMPI
-      if: contains(matrix.mpi,'openmpi')
-      if: contains(matrix.os,'macos')
+      if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |
         brew install --cc=gcc-${GCC_V} openmpi
 
     - name: Install MSYS2 MSMPI
-      if: contains(matrix.mpi,'msmpi')
-      if: contains(matrix.os,'windows')
+      if: contains(matrix.mpi,'msmpi') && contains(matrix.os,'windows')
       run: | 
 
     # Phase 1: Bootstrap fpm with existing version
