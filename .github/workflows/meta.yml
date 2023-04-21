@@ -85,7 +85,8 @@ jobs:
 
     - name: Install MSYS2 msmpi package
       if: contains(matrix.os,'windows')
-      run: pacman -Ss msmpi 
+      shell: msys2 {0}
+      run: pacman --noconfirm -S mingw-w64-x86_64-msmpi
 
     - name: Set up Homebrew
       if: contains(matrix.os,'macos')
