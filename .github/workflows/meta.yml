@@ -24,6 +24,13 @@ jobs:
         os: [macos-11,windows-2019]  
         mpi: [mpich,openmpi,msmpi] 
         gcc_v: [10] # Version of GFortran we want to use 
+        exclude:
+        - os: macos-11
+          mpi: msmpi
+        - os: windows-2019
+          mpi: mpich
+        - os: windows-2019
+          mpi: openmpi
         include:
         - os: macos-11
           os-arch: macos-x86_64
