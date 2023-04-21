@@ -457,6 +457,7 @@ subroutine init_mpi(this,compiler,error)
         !> see e.g. Homebrew with clabng C/C++ and GNU fortran at https://gitlab.kitware.com/cmake/cmake/-/issues/18139
         if (wcfit(WRAPPER_FORTRAN)>0 .and. wcfit(WRAPPER_C)==0 .and. wcfit(WRAPPER_CXX)==0) then
             cwrap = fort_wrappers(wcfit(WRAPPER_FORTRAN))
+            cxxwrap = fort_wrappers(wcfit(WRAPPER_FORTRAN))
         end if
 
         !> Initialize MPI package from wrapper command
