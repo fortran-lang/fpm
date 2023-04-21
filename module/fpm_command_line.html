@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 4.4% of total for modules and submodules.">380 statements</a>
+               title=" 4.5% of total for modules and submodules.">395 statements</a>
           </li>
 
             <li id="source-file">
@@ -151,6 +151,7 @@
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_cmd_settings">fpm_cmd_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_install_settings">fpm_install_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_new_settings">fpm_new_settings</a>
+            <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_publish_settings">fpm_publish_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_run_settings">fpm_run_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_test_settings">fpm_test_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_update_settings">fpm_update_settings</a>
@@ -213,14 +214,14 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
+                <li><a href='../module/fpm_os.html'>fpm_os</a></li>
+                <li><a href='../module/fpm_release.html'>fpm_release</a></li>
                 <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
-                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
                 <li><a href='../module/fpm_error.html'>fpm_error</a></li>
                 <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
-                <li><a href='../module/fpm_release.html'>fpm_release</a></li>
+                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
                 <li><a href='<a href="https://github.com/urbanjost/M_CLI2">M_CLI2</a>'>m_cli2</a></li>
-                <li><a href='../module/fpm_os.html'>fpm_os</a></li>
+                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
             </ul>
           </li>
       </ul>
@@ -254,6 +255,7 @@
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_cmd_settings">fpm_cmd_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_install_settings">fpm_install_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_new_settings">fpm_new_settings</a>
+            <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_publish_settings">fpm_publish_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_run_settings">fpm_run_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_test_settings">fpm_test_settings</a>
             <a class="list-group-item" href="../module/fpm_command_line.html#type-fpm_update_settings">fpm_update_settings</a>
@@ -1356,6 +1358,344 @@
 
               <div class="panel panel-default">
     <div class="panel-heading codesum">
+      <span class="anchor" id="type-fpm_publish_settings"></span>
+      <h3>
+        type, public, extends(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>)&nbsp;::&nbsp;
+        <a href='../type/fpm_publish_settings.html'>fpm_publish_settings</a>
+        
+      </h3>
+    </div>
+    <div class="panel-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Visibility</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+<th></th><th>Initial</th>        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-archiver~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>archiver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-build_tests"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>build_tests</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c_compiler"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>c_compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-compiler~5"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cxx_compiler"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cxx_compiler</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cxxflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>cxxflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-flag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>flag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ldflag"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>ldflag</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-list~3"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>list</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-profile~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>profile</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-prune~2"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>prune</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-show_form_data"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>show_form_data</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-show_model"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>show_model</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-show_package_version"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>show_package_version</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-token"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>token</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-verbose~5"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>verbose</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-working_dir"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>working_dir</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum">
       <span class="anchor" id="type-fpm_run_settings"></span>
       <h3>
         type, public, extends(<a href='../type/fpm_build_settings.html'>fpm_build_settings</a>)&nbsp;::&nbsp;
@@ -2248,7 +2588,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-14 15:57              </p>
+ on 2023-04-21 10:11              </p>
           </div>
         </div>
         <br>

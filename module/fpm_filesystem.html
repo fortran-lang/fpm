@@ -101,7 +101,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title=" 7.5% of total for modules and submodules.">655 statements</a>
+               title=" 7.9% of total for modules and submodules.">700 statements</a>
           </li>
 
             <li id="source-file">
@@ -190,10 +190,12 @@
         <div class="list-group">
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-delete_file">delete_file</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-env_variable">env_variable</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-execute_and_read_output">execute_and_read_output</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-fileclose">fileclose</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-fileopen">fileopen</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-filewrite">filewrite</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_home">get_home</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_tmp_directory">get_tmp_directory</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-getline">getline</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-list_files">list_files</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-mkdir">mkdir</a>
@@ -225,11 +227,11 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
                 <li><a href='../module/fpm_strings.html'>fpm_strings</a></li>
                 <li><a href='../module/fpm_error.html'>fpm_error</a></li>
-                <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a>'>iso_c_binding</a></li>
                 <li><a href='../module/fpm_environment.html'>fpm_environment</a></li>
+                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
+                <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_c_binding">iso_c_binding</a>'>iso_c_binding</a></li>
             </ul>
           </li>
       </ul>
@@ -302,10 +304,12 @@
         <div class="list-group">
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-delete_file">delete_file</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-env_variable">env_variable</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-execute_and_read_output">execute_and_read_output</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-fileclose">fileclose</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-fileopen">fileopen</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-filewrite">filewrite</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_home">get_home</a>
+            <a class="list-group-item" href="../module/fpm_filesystem.html#proc-get_tmp_directory">get_tmp_directory</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-getline">getline</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-list_files">list_files</a>
             <a class="list-group-item" href="../module/fpm_filesystem.html#proc-mkdir">mkdir</a>
@@ -1304,6 +1308,91 @@ Works with MinGW</p>
   </div>
 
               <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-execute_and_read_output"></span><h3>public  subroutine <a href='../proc/execute_and_read_output.html'>execute_and_read_output</a>(cmd, output, error, exitstat)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Execute command line and return output as a string.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cmd</strong></td>
+            <td>
+<p>Command to execute.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>Command line output.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+<p>Error to handle.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>exitstat</strong></td>
+            <td>
+<p>Can optionally used for error handling.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
     <div class="panel-heading codesum"><span class="anchor" id="proc-fileclose"></span><h3>public  subroutine <a href='../proc/fileclose.html'>fileclose</a>(lun, ier)  
 </h3></div>
     <div class="panel-body">
@@ -1529,6 +1618,61 @@ Works with MinGW</p>
             <td><strong>error</strong></td>
             <td>
 
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-get_tmp_directory"></span><h3>public  subroutine <a href='../proc/get_tmp_directory.html'>get_tmp_directory</a>(tmp_dir, error)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Get system-dependent tmp directory.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>tmp_dir</strong></td>
+            <td>
+<p>System-dependant tmp directory.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='../type/error_t.html'>error_t</a>),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>error</strong></td>
+            <td>
+<p>Error to handle.</p>
             </td>
         </tr>
     </tbody>
@@ -1993,7 +2137,7 @@ Works with MinGW</p>
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-14 15:57              </p>
+ on 2023-04-21 10:11              </p>
           </div>
         </div>
         <br>

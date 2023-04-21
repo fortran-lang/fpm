@@ -100,7 +100,7 @@
           <li id="statements"><i class="fa fa-list-ol"></i>
             <a data-toggle="tooltip"
                data-placement="bottom" data-html="true"
-               title="100.0% of total for programs.">91 statements</a>
+               title="100.0% of total for programs.">94 statements</a>
           </li>
 
             <li id="source-file">
@@ -137,7 +137,7 @@
       <div id="vars-0" class="panel-collapse collapse">
         <div class="list-group">
             <a class="list-group-item" href="../program/main.html#variable-cmd_settings~2">cmd_settings</a>
-            <a class="list-group-item" href="../program/main.html#variable-error~89">error</a>
+            <a class="list-group-item" href="../program/main.html#variable-error~93">error</a>
             <a class="list-group-item" href="../program/main.html#variable-project_root">project_root</a>
             <a class="list-group-item" href="../program/main.html#variable-pwd_start">pwd_start</a>
             <a class="list-group-item" href="../program/main.html#variable-pwd_working">pwd_working</a>
@@ -208,15 +208,16 @@
       <ul class="list-group">
           <li class="list-group-item">
             <ul class="list-inline">
-                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
-                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
-                <li><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
-                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
                 <li><a href='../module/fpm.html'>fpm</a></li>
-                <li><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></li>
-                <li><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></li>
-                <li><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></li>
+                <li><a href='../module/fpm_command_line.html'>fpm_command_line</a></li>
                 <li><a href='../module/fpm_os.html'>fpm_os</a></li>
+                <li><a href='../module/fpm_cmd_install.html'>fpm_cmd_install</a></li>
+                <li><a href='../module/fpm_error.html'>fpm_error</a></li>
+                <li><a href='../module/fpm_cmd_new.html'>fpm_cmd_new</a></li>
+                <li><a href='<a href="https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html">iso_fortran_env</a>'>iso_fortran_env</a></li>
+                <li><a href='../module/fpm_cmd_publish.html'>fpm_cmd_publish</a></li>
+                <li><a href='../module/fpm_filesystem.html'>fpm_filesystem</a></li>
+                <li><a href='../module/fpm_cmd_update.html'>fpm_cmd_update</a></li>
             </ul>
           </li>
       </ul>
@@ -236,7 +237,7 @@
       <div id="vars-1" class="panel-collapse collapse">
         <div class="list-group">
             <a class="list-group-item" href="../program/main.html#variable-cmd_settings~2">cmd_settings</a>
-            <a class="list-group-item" href="../program/main.html#variable-error~89">error</a>
+            <a class="list-group-item" href="../program/main.html#variable-error~93">error</a>
             <a class="list-group-item" href="../program/main.html#variable-project_root">project_root</a>
             <a class="list-group-item" href="../program/main.html#variable-pwd_start">pwd_start</a>
             <a class="list-group-item" href="../program/main.html#variable-pwd_working">pwd_working</a>
@@ -329,7 +330,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-error~89"></span>
+              <span class="anchor" id="variable-error~93"></span>
               type(<a href='../type/error_t.html'>error_t</a>),
             </td>
             <td>
@@ -581,6 +582,7 @@
 <span class="w">        </span><span class="n">fpm_install_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">        </span><span class="n">fpm_update_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">        </span><span class="n">fpm_clean_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">        </span><span class="n">fpm_publish_settings</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
 <span class="w">        </span><span class="n">get_command_line_settings</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_error</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">error_t</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_filesystem</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">exists</span><span class="p">,</span><span class="w"> </span><span class="n">parent_dir</span><span class="p">,</span><span class="w"> </span><span class="n">join_path</span><span class="w"></span>
@@ -588,6 +590,7 @@
 <span class="k">use </span><span class="n">fpm_cmd_install</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_install</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_cmd_new</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_new</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_cmd_update</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">cmd_update</span><span class="w"></span>
+<span class="k">use </span><span class="n">fpm_cmd_publish</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cmd_publish</span><span class="w"></span>
 <span class="k">use </span><span class="n">fpm_os</span><span class="p">,</span><span class="w">  </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">change_directory</span><span class="p">,</span><span class="w"> </span><span class="n">get_current_directory</span><span class="w"></span>
 
 <span class="k">implicit none</span>
@@ -652,6 +655,8 @@
 <span class="w">    </span><span class="k">call </span><span class="n">cmd_update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
 <span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_clean_settings</span><span class="p">)</span><span class="w"></span>
 <span class="w">    </span><span class="k">call </span><span class="n">cmd_clean</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
+<span class="k">type is</span><span class="w"> </span><span class="p">(</span><span class="n">fpm_publish_settings</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">call </span><span class="n">cmd_publish</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="w"></span>
 <span class="k">end select</span>
 
 <span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">project_root</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
@@ -708,7 +713,7 @@
             <p class="text-right">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2023-04-14 15:57              </p>
+ on 2023-04-21 10:11              </p>
           </div>
         </div>
         <br>
