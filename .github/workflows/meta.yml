@@ -44,6 +44,8 @@ jobs:
       if: contains(matrix.os, 'macos')
       shell: bash
       run: brew install gcc@${GCC_V}
+        which gfortran-${GCC_V}
+        which gfortran
 
 
     # Phase 1: Bootstrap fpm with existing version
