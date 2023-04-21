@@ -93,10 +93,8 @@ integer, parameter :: MPI_TYPE_MPICH   = 2
 integer, parameter :: MPI_TYPE_INTEL   = 3
 integer, parameter :: MPI_TYPE_MSMPI   = 4
 
-
-
 !> Debugging information
-logical, parameter, private :: verbose = .true.
+logical, parameter, private :: verbose = .false.
 
 integer, parameter, private :: WRAPPER_FORTRAN = 1
 integer, parameter, private :: WRAPPER_C       = 2
@@ -772,7 +770,7 @@ subroutine get_mpi_runner(command,verbose,error)
 
     ! Try several commands
     do itri=1,size(try)
-       call find_command_location(trim(try(itri)),command%s,verbose=verbose,error=error)
+       call find_command_location(trim(try(itri)),command%s,echo=.false.,verbose=verbose,error=error)
 
        ! Success!
        success = len_trim(command%s)>0 .and. .not.allocated(error)
@@ -795,7 +793,7 @@ subroutine compiler_get_path(self,path,error)
     type(string_t), intent(out) :: path
     type(error_t), allocatable, intent(out) :: error
 
-    call find_command_location(self%fc,path%s,self%echo,self%verbose,error)
+    call find_command_location(self%fc,path%s,.false.,self%verbose,error)
 
 end subroutine compiler_get_path
 
