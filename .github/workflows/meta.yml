@@ -21,21 +21,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11,windows-2019]  
+        os: [macos-11,windows-latest]  
         mpi: [mpich,openmpi,msmpi] 
         gcc_v: [10] # Version of GFortran we want to use 
         exclude:
         - os: macos-11
           mpi: msmpi
-        - os: windows-2019
+        - os: windows-latest
           mpi: mpich
-        - os: windows-2019
+        - os: windows-latest
           mpi: openmpi
         include:
         - os: macos-11
           os-arch: macos-x86_64
           release-flags: --flag '-g -fbacktrace -O3'
-        - os: windows-2019
+        - os: windows-latest
           os-arch: windows-x86_64
           release-flags: --flag '--static -g -fbacktrace -O3'
           exe: .exe
