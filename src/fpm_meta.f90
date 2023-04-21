@@ -669,6 +669,15 @@ logical function msmpi_init(this,compiler,error) result(found)
 
 end function msmpi_init
 
+!> Check if we're under a WSL bash shell
+logical function wsl_shell()
+    if (get_os_type()==OS_WINDOWS) then
+        wsl_shell = exists('/proc/sys/fs/binfmt_misc/WSLInterop')
+    else
+        wsl_shell = .false.
+    endif
+end function wsl_shell
+
 !> Find the location of a valid command
 subroutine find_command_location(command,path,echo,verbose,error)
     character(*), intent(in) :: command
@@ -737,7 +746,7 @@ subroutine find_command_location(command,path,echo,verbose,error)
         ! Compiler is in the current folder
         call get_absolute_path('.',path,error)
     else
-        path = canon_path(fullpath(1:length-1))
+        call get_absolute_path(fullpath(1:length-1),path,error)
     end if
 
     if (.not.is_dir(path)) then
