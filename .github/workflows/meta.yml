@@ -64,7 +64,7 @@ jobs:
     - name: Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')
       # there is not yet an environment variable for this path from msys2/setup-msys2
-      run: echo "${{ runner.temp }}/msys64/mingw64/bin" | Out-File -FilePath $GITHUB_PATH -Encoding utf8 -Append
+      run: echo "${{ runner.temp }}/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: download MS-MPI setup (SDK is from MSYS2)
       if: contains(matrix.os,'windows')
@@ -110,10 +110,6 @@ jobs:
       if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |
         brew install --cc=gcc-${GCC_V} openmpi
-
-    - name: Install MSYS2 MSMPI
-      if: contains(matrix.mpi,'msmpi') && contains(matrix.os,'windows')
-      run: | 
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
