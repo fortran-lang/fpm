@@ -43,12 +43,18 @@ type, public :: metapackage_t
     logical :: has_link_libraries  = .false.
     logical :: has_link_flags      = .false.
     logical :: has_build_flags     = .false.
+    logical :: has_fortran_flags   = .false.
+    logical :: has_c_flags         = .false.
+    logical :: has_cxx_flags       = .false.
     logical :: has_include_dirs    = .false.
     logical :: has_dependencies    = .false.
     logical :: has_run_command     = .false.
 
     !> List of compiler flags and options to be added
     type(string_t) :: flags
+    type(string_t) :: fflags
+    type(string_t) :: cflags
+    type(string_t) :: cxxflags
     type(string_t) :: link_flags
     type(string_t) :: run_command
     type(string_t), allocatable :: incl_dirs(:)
@@ -87,8 +93,14 @@ integer, parameter :: MPI_TYPE_MPICH   = 2
 integer, parameter :: MPI_TYPE_INTEL   = 3
 integer, parameter :: MPI_TYPE_MSMPI   = 4
 
+
+
 !> Debugging information
 logical, parameter, private :: verbose = .true.
+
+integer, parameter, private :: WRAPPER_FORTRAN = 1
+integer, parameter, private :: WRAPPER_C       = 2
+integer, parameter, private :: WRAPPER_CXX     = 3
 
 contains
 
@@ -96,10 +108,12 @@ contains
 elemental subroutine destroy(this)
    class(metapackage_t), intent(inout) :: this
 
-
    this%has_link_libraries  = .false.
    this%has_link_flags      = .false.
    this%has_build_flags     = .false.
+   this%has_fortran_flags   = .false.
+   this%has_c_flags         = .false.
+   this%has_cxx_flags       = .false.
    this%has_include_dirs    = .false.
    this%has_dependencies    = .false.
    this%has_run_command     = .false.
@@ -107,6 +121,9 @@ elemental subroutine destroy(this)
    if (allocated(this%fortran)) deallocate(this%fortran)
    if (allocated(this%version)) deallocate(this%version)
    if (allocated(this%flags%s)) deallocate(this%flags%s)
+   if (allocated(this%fflags%s)) deallocate(this%fflags%s)
+   if (allocated(this%cflags%s)) deallocate(this%cflags%s)
+   if (allocated(this%cxxflags%s)) deallocate(this%cxxflags%s)
    if (allocated(this%link_flags%s)) deallocate(this%link_flags%s)
    if (allocated(this%run_command%s)) deallocate(this%run_command%s)
    if (allocated(this%link_libs)) deallocate(this%link_libs)
@@ -249,12 +266,19 @@ subroutine resolve_model(self,model,error)
     type(fpm_model_t), intent(inout) :: model
     type(error_t), allocatable, intent(out) :: error
 
-    ! For now, additional flags are assumed to apply to all sources
+    ! Add global build flags, to apply to all sources
     if (self%has_build_flags) then
         model%fortran_compile_flags = model%fortran_compile_flags//self%flags%s
         model%c_compile_flags       = model%c_compile_flags//self%flags%s
         model%cxx_compile_flags     = model%cxx_compile_flags//self%flags%s
     endif
+
+    ! Add language-specific flags
+    print *, 'has fortran,c,cpp',self%has_fortran_flags,self%has_c_flags,self%has_cxx_flags
+    stop
+    if (self%has_fortran_flags) model%fortran_compile_flags = model%fortran_compile_flags//self%fflags%s
+    if (self%has_c_flags)       model%c_compile_flags       = model%c_compile_flags//self%cflags%s
+    if (self%has_cxx_flags)     model%cxx_compile_flags     = model%cxx_compile_flags//self%cxxflags%s
 
     if (self%has_link_flags) then
         model%link_flags            = model%link_flags//self%link_flags%s
@@ -267,8 +291,6 @@ subroutine resolve_model(self,model,error)
     if (self%has_include_dirs) then
         model%include_dirs          = [model%include_dirs,self%incl_dirs]
     end if
-
-
 
 end subroutine resolve_model
 
@@ -397,10 +419,10 @@ subroutine init_mpi(this,compiler,error)
 
 
     type(string_t), allocatable :: c_wrappers(:),cpp_wrappers(:),fort_wrappers(:)
-    type(string_t) :: output
+    type(string_t) :: output,fwrap,cwrap,cxxwrap
     character(256) :: msg_out
     character(len=:), allocatable :: tokens(:)
-    integer :: wcfit,ic,icpp,i
+    integer :: wcfit(3),ic,icpp,i
     logical :: found
 
 
@@ -413,7 +435,7 @@ subroutine init_mpi(this,compiler,error)
 
     wcfit = wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error)
 
-    if (allocated(error) .or. wcfit==0) then
+    if (allocated(error) .or. all(wcfit==0)) then
 
         !> No wrapper compiler fit. Are we on Windows? use MSMPI-specific search
         found = msmpi_init(this,compiler,error)
@@ -427,8 +449,12 @@ subroutine init_mpi(this,compiler,error)
 
     else
 
+        if (wcfit(WRAPPER_FORTRAN)>0) fwrap   = fort_wrappers(wcfit(WRAPPER_FORTRAN))
+        if (wcfit(WRAPPER_C)>0)       cwrap   = c_wrappers   (wcfit(WRAPPER_C))
+        if (wcfit(WRAPPER_CXX)>0)     cxxwrap = cpp_wrappers (wcfit(WRAPPER_CXX))
+
         !> Initialize MPI package from wrapper command
-        call init_mpi_from_wrapper(this,compiler,fort_wrappers(wcfit),error)
+        call init_mpi_from_wrappers(this,compiler,fwrap,cwrap,cxxwrap,error)
         if (allocated(error)) return
 
     end if
@@ -446,27 +472,32 @@ logical function is_64bit_environment()
 end function is_64bit_environment
 
 !> Check if there is a wrapper-compiler fit
-integer function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error)
+function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error) result(wrap)
    type(string_t), allocatable, intent(in) :: fort_wrappers(:),c_wrappers(:),cpp_wrappers(:)
    type(compiler_t), intent(in) :: compiler
    type(error_t), allocatable, intent(out) :: error
+   integer :: wrap(3)
 
    logical :: has_wrappers
-   integer :: mpif90
+   integer :: mpif90,mpic,mpicxx
+   type(error_t), allocatable :: wrap_error
 
-   wrapper_compiler_fit = 0
+   wrap = 0
 
    !> Were any wrappers found?
    has_wrappers = size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)>0
 
    if (has_wrappers) then
 
-        !> Find an MPI wrapper that matches the current compiler
-        mpif90 = mpi_compiler_match(fort_wrappers,compiler,error)
-        if (allocated(error)) return
+        !> Find a Fortran wrapper for the current compiler
+        wrap(WRAPPER_FORTRAN) = mpi_compiler_match(fort_wrappers,compiler,wrap_error)
+        wrap(WRAPPER_C      ) = mpi_compiler_match(c_wrappers,compiler,wrap_error)
+        wrap(WRAPPER_CXX    ) = mpi_compiler_match(cpp_wrappers,compiler,wrap_error)
 
-        !> Was a valid wrapper found?
-        wrapper_compiler_fit = mpif90
+        if (all(wrap==0)) then
+            call fatal_error(error,'no valid wrappers match current compiler, '//compiler_name(compiler))
+            return
+        end if
 
    endif
 
@@ -875,10 +906,10 @@ function get_dos_path(path,error)
 end function get_dos_path
 
 !> Initialize an MPI metapackage from a valid wrapper command ('mpif90', etc...)
-subroutine init_mpi_from_wrapper(this,compiler,fort_wrapper,error)
+subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapper,error)
     class(metapackage_t), intent(inout) :: this
     type(compiler_t), intent(in) :: compiler
-    type(string_t), intent(in) :: fort_wrapper
+    type(string_t), intent(in) :: fort_wrapper,c_wrapper,cxx_wrapper
     type(error_t), allocatable, intent(out) :: error
 
     type(version_t) :: version
@@ -894,13 +925,13 @@ subroutine init_mpi_from_wrapper(this,compiler,fort_wrapper,error)
     ! Add heading space
     this%link_flags = string_t(' '//this%link_flags%s)
 
-    ! Get build flags
-    this%flags = mpi_wrapper_query(fort_wrapper,'flags',verbose,error)
+    ! Add language-specific flags
+    call set_language_flags(fort_wrapper,this%has_fortran_flags,this%fflags,verbose,error)
     if (allocated(error)) return
-    this%has_build_flags = len_trim(this%flags)>0
-
-    ! Add heading space
-    this%flags = string_t(' '//this%flags%s)
+    call set_language_flags(c_wrapper,this%has_c_flags,this%cflags,verbose,error)
+    if (allocated(error)) return
+    call set_language_flags(cxx_wrapper,this%has_cxx_flags,this%cxxflags,verbose,error)
+    if (allocated(error)) return
 
     ! Get library version
     version = mpi_version_get(fort_wrapper,error)
@@ -915,8 +946,32 @@ subroutine init_mpi_from_wrapper(this,compiler,fort_wrapper,error)
     if (allocated(error)) return
     this%has_run_command = len_trim(this%run_command)>0
 
+    contains
 
-end subroutine init_mpi_from_wrapper
+    subroutine set_language_flags(wrapper,has_flags,flags,verbose,error)
+        type(string_t), intent(in) :: wrapper
+        logical, intent(inout) :: has_flags
+        type(string_t), intent(inout) :: flags
+        logical, intent(in) :: verbose
+        type(error_t), allocatable, intent(out) :: error
+
+        ! Get build flags for each language
+        if (len_trim(wrapper)>0) then
+            flags = mpi_wrapper_query(wrapper,'flags',verbose,error)
+
+            print *, 'flags=',flags%s,' error=',allocated(error),' wrapper=',wrapper%s
+
+            if (allocated(error)) return
+            this%has_fortran_flags = len_trim(flags)>0
+
+            ! Add heading space
+            flags = string_t(' '//flags%s)
+        endif
+
+    end subroutine set_language_flags
+
+
+end subroutine init_mpi_from_wrappers
 
 !> Match one of the available compiler wrappers with the current compiler
 integer function mpi_compiler_match(wrappers,compiler,error)
