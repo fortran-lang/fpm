@@ -1149,7 +1149,6 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
         end do
     endif add_arguments
 
-
     if (echo_local) print *, '+ ', command
 
     ! Test command
@@ -1238,7 +1237,9 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
     type(error_t), allocatable, intent(out) :: error
 
     logical :: success
-    character(:), allocatable :: redirect_str
+    character(:), allocatable :: redirect_str,tokens(:)
+    type(string_t) :: cmdstr
+    type(compiler_t) :: mpi_compiler
     integer :: stat,cmdstat,mpi,ire,length
 
     ! Get mpi type
@@ -1260,6 +1261,21 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
                     call syntax_error(error,'local OpenMPI library does not support --showme:command')
                     return
                  end if
+
+              case (MPI_TYPE_MPICH)
+
+                 ! -compile_info returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('-compile-info')],verbose=verbose, &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local MPICH library does not support -compile-info')
+                    return
+                 end if
+
+                 ! Take out the first command from the whole line
+                 call split(screen%s,tokens,delimiters=' ')
+                 screen%s = tokens(1)
 
               case default
 
@@ -1286,6 +1302,26 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
 
                  call remove_new_lines(screen)
 
+              case (MPI_TYPE_MPICH)
+
+                 call run_mpi_wrapper(wrapper,[string_t('-compile-info')],verbose=verbose, &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local MPICH library does not support -compile-info')
+                    return
+                 end if
+
+                 ! MPICH reports the full command including the compiler name. Remove it if so
+                 call remove_new_lines(screen)
+                 call split(screen%s,tokens)
+                 call new_compiler(mpi_compiler,tokens(1),tokens(1),tokens(1),echo=.false.,verbose=verbose)
+
+                 if (mpi_compiler%id/=id_unknown) then
+                    ! Remove trailing compiler name
+                    screen%s = screen%s(len_trim(tokens(1))+1:)
+                 end if
+
               case default
 
                  call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
@@ -1299,7 +1335,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
            select case (mpi)
               case (MPI_TYPE_OPENMPI)
 
-                 ! --showme:command returns the build command of this wrapper
+                 ! --showme:link returns the linker command of this wrapper
                  call run_mpi_wrapper(wrapper,[string_t('--showme:link')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
 
@@ -1309,6 +1345,26 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
                  end if
 
                  call remove_new_lines(screen)
+
+              case (MPI_TYPE_MPICH)
+
+                 call run_mpi_wrapper(wrapper,[string_t('-link-info')],verbose=verbose, &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local MPICH library does not support -link-info')
+                    return
+                 end if
+
+                 ! MPICH reports the full command including the compiler name. Remove it if so
+                 call remove_new_lines(screen)
+                 call split(screen%s,tokens)
+                 call new_compiler(mpi_compiler,tokens(1),tokens(1),tokens(1),echo=.false.,verbose=verbose)
+
+                 if (mpi_compiler%id/=id_unknown) then
+                    ! Remove trailing compiler name
+                    screen%s = screen%s(len_trim(tokens(1))+1:)
+                 end if
 
               case default
 
@@ -1392,6 +1448,44 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
 
                  end if
 
+              case (MPI_TYPE_MPICH)
+
+                 !> MPICH offers command "mpichversion" in the same system folder as the MPI wrappers.
+                 !> So, attempt to run that first
+                 cmdstr = string_t('mpichversion')
+                 call run_mpi_wrapper(cmdstr,verbose=verbose, &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 ! Second option: run mpich wrapper + "-v"
+                 if (stat/=0 .or. .not.success) then
+                    call run_mpi_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
+                                         exitcode=stat,cmd_success=success,screen_output=screen)
+                    call remove_new_lines(screen)
+                 endif
+
+                 ! Third option: mpiexec --version
+                 if (stat/=0 .or. .not.success) then
+                     cmdstr = string_t('mpiexec --version')
+                     call run_mpi_wrapper(cmdstr,verbose=verbose, &
+                                          exitcode=stat,cmd_success=success,screen_output=screen)
+                 endif
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'cannot retrieve MPICH library version from <mpichversion, '//wrapper%s//', mpiexec>')
+                    return
+                 else
+
+                    ! Extract version
+                    ire = regex(screen%s,'\d+.\d+.\d+',length=length)
+                    if (ire>0 .and. length>0) then
+                        ! Parse version into the object (this should always work)
+                        screen%s = screen%s(ire:ire+length-1)
+                    else
+                        call syntax_error(error,'cannot retrieve MPICH library version.')
+                    end if
+
+                 end if
+
               case default
 
                  call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
@@ -1403,7 +1497,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
        case ('runner')
 
            select case (mpi)
-              case (MPI_TYPE_OPENMPI)
+              case (MPI_TYPE_OPENMPI,MPI_TYPE_MPICH,MPI_TYPE_MSMPI)
                  call get_mpi_runner(screen,verbose,error)
               case default
                  call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
