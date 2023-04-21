@@ -549,10 +549,6 @@ logical function msmpi_init(this,compiler,error) result(found)
         end if
 
         ! Check that the runtime is installed
-        windir = get_env('WINDIR')
-        call get_absolute_path(join_path(windir,'system32\msmpi.dll'),libdir,error)
-        if (allocated(error)) return
-
         bindir = get_env('MSMPI_BIN')
 
         ! In some environments, variable %MSMPI_BIN% is missing (i.e. in GitHub Action images).
@@ -563,11 +559,6 @@ logical function msmpi_init(this,compiler,error) result(found)
         if (allocated(error) .or. len_trim(bindir)<=0 .or. .not.exists(bindir)) then
             call fatal_error(error,'MS-MPI error: MS-MPI Runtime directory is missing. '//&
                                    'check environment variable %MSMPI_BIN% or that the folder is in %PATH%.')
-            return
-        end if
-
-        if (len_trim(libdir)<=0 .or. .not.exists(libdir)) then
-            call fatal_error(error,'MS-MPI error: msmpi.dll is missing. Is MS-MPI installed on this system?')
             return
         end if
 
