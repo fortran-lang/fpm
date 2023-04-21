@@ -40,6 +40,12 @@ jobs:
       id: set-up-homebrew
       uses: Homebrew/actions/setup-homebrew@master        
 
+    - name: Install Homebrew gfortran
+      if: matrix.os.contains('macos')
+      shell: bash
+      run: brew install gcc@${{ GCC_V }}
+
+
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
       uses: fortran-lang/setup-fpm@v3
