@@ -41,7 +41,7 @@ jobs:
       uses: Homebrew/actions/setup-homebrew@master        
 
     - name: Install Homebrew gfortran
-      if: matrix.os.contains('macos')
+      if: contains(matrix.os, 'macos')
       shell: bash
       run: brew install gcc@${GCC_V}
 
