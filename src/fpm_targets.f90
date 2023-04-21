@@ -146,7 +146,7 @@ subroutine targets_from_sources(targets,model,prune,error)
 
     !> Enable tree-shaking/pruning of module dependencies
     logical, intent(in) :: prune
-    
+
     !> Error structure
     type(error_t), intent(out), allocatable :: error
 

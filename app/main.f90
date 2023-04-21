@@ -9,6 +9,7 @@ use fpm_command_line, only: &
         fpm_install_settings, &
         fpm_update_settings, &
         fpm_clean_settings, &
+        fpm_publish_settings, &
         get_command_line_settings
 use fpm_error, only: error_t
 use fpm_filesystem, only: exists, parent_dir, join_path
@@ -16,6 +17,7 @@ use fpm, only: cmd_build, cmd_run, cmd_clean
 use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
 use fpm_cmd_update, only : cmd_update
+use fpm_cmd_publish, only: cmd_publish
 use fpm_os,  only: change_directory, get_current_directory
 
 implicit none
@@ -80,6 +82,8 @@ type is (fpm_update_settings)
     call cmd_update(settings)
 type is (fpm_clean_settings)
     call cmd_clean(settings)
+type is (fpm_publish_settings)
+    call cmd_publish(settings)
 end select
 
 if (allocated(project_root)) then

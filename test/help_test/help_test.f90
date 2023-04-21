@@ -34,6 +34,7 @@ character(len=*),parameter     :: cmds(*) = [character(len=80) :: &
 'help list    >> fpm_scratch_help.txt',&
 'help help    >> fpm_scratch_help.txt',&
 'help clean   >> fpm_scratch_help.txt',&
+'help publish >> fpm_scratch_help.txt',&
 '--version    >> fpm_scratch_help.txt',&
 ! generate manual
 ' help manual   > fpm_scratch_manual.txt']
