@@ -554,8 +554,15 @@ logical function msmpi_init(this,compiler,error) result(found)
         if (allocated(error)) return
 
         bindir = get_env('MSMPI_BIN')
-        if (len_trim(bindir)<=0 .or. .not.exists(bindir)) then
-            call fatal_error(error,'MS-MPI error: MS-MPI Runtime directory is missing. check environment variable %MSMPI_BIN%.')
+
+        ! In some environments, variable %MSMPI_BIN% is missing (i.e. in GitHub Action images).
+        ! Do a second attempt: search for mpiexec.exe
+        if (len_trim(bindir)<=0 .or. .not.exists(bindir)) &
+        call find_command_location('mpiexec.exe',bindir,verbose=verbose,error=error)
+
+        if (allocated(error) .or. len_trim(bindir)<=0 .or. .not.exists(bindir)) then
+            call fatal_error(error,'MS-MPI error: MS-MPI Runtime directory is missing. '//&
+                                   'check environment variable %MSMPI_BIN% or that the folder is in %PATH%.')
             return
         end if
 
