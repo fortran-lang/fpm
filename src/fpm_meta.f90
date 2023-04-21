@@ -451,6 +451,14 @@ subroutine init_mpi(this,compiler,error)
         if (wcfit(WRAPPER_C)>0)       cwrap   = c_wrappers   (wcfit(WRAPPER_C))
         if (wcfit(WRAPPER_CXX)>0)     cxxwrap = cpp_wrappers (wcfit(WRAPPER_CXX))
 
+        !> If there's only an available Fortran wrapper, and the compiler's different than fpm's baseline
+        !> fortran compiler suite, we still want to enable C language flags as that is most likely being
+        !> ABI-compatible anyways. However, issues may arise.
+        !> see e.g. Homebrew with clabng C/C++ and GNU fortran at https://gitlab.kitware.com/cmake/cmake/-/issues/18139
+        if (wcfit(WRAPPER_FORTRAN)>0 .and. wcfit(WRAPPER_C)==0 .and. wcfit(WRAPPER_CXX)==0) then
+            cwrap = fort_wrappers(wcfit(WRAPPER_FORTRAN))
+        end if
+
         !> Initialize MPI package from wrapper command
         call init_mpi_from_wrappers(this,compiler,fwrap,cwrap,cxxwrap,error)
         if (allocated(error)) return
@@ -969,7 +977,6 @@ subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapp
 
     end subroutine set_language_flags
 
-
 end subroutine init_mpi_from_wrappers
 
 !> Match one of the available compiler wrappers with the current compiler
@@ -982,13 +989,6 @@ integer function mpi_compiler_match(wrappers,compiler,error)
     type(string_t) :: screen
     character(128) :: msg_out
     type(compiler_t) :: mpi_compiler
-
-    !> If there's only one available wrapper, we're forced to use that one regardless of
-    !> what compiler it was bound to
-    if (size(wrappers)==1) then
-        mpi_compiler_match = 1
-        return
-    end if
 
     mpi_compiler_match = 0
 
@@ -1201,22 +1201,26 @@ integer function which_mpi_library(wrapper,verbose)
 
     if (is_mpi_wrapper) then
 
+        ! Init as currently unsupported library
+        which_mpi_library = MPI_TYPE_NONE
+
         ! Attempt to decipher which library this wrapper comes from.
 
         ! OpenMPI responds to '--showme' calls
         call run_mpi_wrapper(wrapper,[string_t('--showme')],verbose,&
                              exitcode=stat,cmd_success=is_mpi_wrapper)
-
         if (stat==0 .and. is_mpi_wrapper) then
-
             which_mpi_library = MPI_TYPE_OPENMPI
+            return
+        endif
 
-        else
-
-            ! This MPI wrapper is of a currently unsupported library
-            which_mpi_library = MPI_TYPE_NONE
-
-        end if
+        ! MPICH responds to '-show' calls
+        call run_mpi_wrapper(wrapper,[string_t('-show')],verbose,&
+                             exitcode=stat,cmd_success=is_mpi_wrapper)
+        if (stat==0 .and. is_mpi_wrapper) then
+            which_mpi_library = MPI_TYPE_MPICH
+            return
+        endif
 
     else
 
