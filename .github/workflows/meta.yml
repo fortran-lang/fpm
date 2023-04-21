@@ -54,10 +54,11 @@ jobs:
         msystem: MINGW64 
         update: true
         install: >-
-          mingw-w64-x86_64-wget
-          mingw-w64-x86_64-unzip
-          mingw-w64-x86_64-gcc-fortran
-          mingw-w64-x86_64-msmpi
+          wget
+          unzip
+          curl
+          gcc-fortran
+          msmpi
 
     - name: Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')
