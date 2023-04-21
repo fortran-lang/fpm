@@ -1,0 +1,172 @@
+name: metapackage-tests
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+
+env:
+  CI: "ON" # We can detect this in the build system and other vendors implement it
+  HOMEBREW_NO_ANALYTICS: "ON" # Make Homebrew installation a little quicker
+  HOMEBREW_NO_AUTO_UPDATE: "ON"
+  HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
+  HOMEBREW_NO_GITHUB_API: "ON"
+  HOMEBREW_NO_INSTALL_CLEANUP: "ON"
+
+jobs:
+
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-11]   ##[ubuntu-latest, macos-11, windows-latest]
+        gcc_v: [10] # Version of GFortran we want to use 
+        include:
+        - os: ubuntu-latest
+          os-arch: linux-x86_64
+          release-flags: --flag '--static -g -fbacktrace -O3'
+
+        - os: macos-11
+          os-arch: macos-x86_64
+          release-flags: --flag '-g -fbacktrace -O3'
+
+        - os: windows-latest
+          os-arch: windows-x86_64
+          release-flags: --flag '--static -g -fbacktrace -O3'
+          exe: .exe
+
+    env:
+      FC: gfortran
+      GCC_V: ${{ matrix.gcc_v }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+
+    - name: Install GFortran macOS
+      if: contains(matrix.os, 'macos')
+      run: |
+        ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
+        which gfortran-${GCC_V}
+        which gfortran
+        # Backport gfortran shared libraries to version 9 folder. This is necessary because all macOS releases of fpm 
+        # have these paths hardcoded in the executable (no PIC?). As the gcc ABIs have not changed from 9 to 10, we 
+        # can just create symbolic links for now. This can be removed when an updated fpm release is built with gcc-10  
+        mkdir /usr/local/opt/gcc@9
+        mkdir /usr/local/opt/gcc@9/lib
+        mkdir /usr/local/opt/gcc@9/lib/gcc
+        mkdir /usr/local/opt/gcc@9/lib/gcc/9
+        mkdir /usr/local/lib/gcc/9
+        ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libquadmath.0.dylib /usr/local/opt/gcc@9/lib/gcc/9/libquadmath.0.dylib 
+        ln -fs /usr/local/opt/gcc@${GCC_V}/lib/gcc/${GCC_V}/libgfortran.5.dylib /usr/local/opt/gcc@9/lib/gcc/9/libgfortran.5.dylib
+        ln -fs /usr/local/lib/gcc/${GCC_V}/libgcc_s.1.dylib /usr/local/lib/gcc/9/libgcc_s.1.dylib
+
+    - name: Install GFortran Linux
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
+        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
+        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}
+
+    - name: Install GFortran Windows
+      if: contains(matrix.os, 'windows')
+      run: |
+        Invoke-WebRequest -Uri $Env:GCC_DOWNLOAD -OutFile mingw-w64.zip
+        Expand-Archive mingw-w64.zip
+        echo "$pwd\mingw-w64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      env:
+        GCC_DOWNLOAD: "https://github.com/brechtsanders/winlibs_mingw/releases/download/10.4.0-10.0.0-msvcrt-r1/winlibs-x86_64-posix-seh-gcc-10.4.0-mingw-w64msvcrt-10.0.0-r1.zip"
+
+    # Phase 1: Bootstrap fpm with existing version
+    - name: Install fpm
+      uses: fortran-lang/setup-fpm@v3
+      with:
+        fpm-version: 'v0.8.0'
+
+    - name: Remove fpm from path
+      shell: bash
+      run: |
+        mv $(which fpm) fpm-bootstrap${{ matrix.exe }}
+        echo "BOOTSTRAP=$PWD/fpm-bootstrap" >> $GITHUB_ENV
+
+    - name: Build Fortran fpm (bootstrap)
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} build 
+
+    - name: Run Fortran fpm (bootstrap)
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} run
+        ${{ env.BOOTSTRAP }} run -- --version
+        ${{ env.BOOTSTRAP }} run -- --help
+
+    - name: Test Fortran fpm (bootstrap)
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} test
+
+    - name: Install Fortran fpm (bootstrap)
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} install
+
+    # Phase 2: Bootstrap fpm with itself
+    - name: Replace bootstrapping version
+      shell: bash
+      run: |
+        ${{ env.BOOTSTRAP }} run --runner cp -- fpm-debug${{ matrix.exe }}
+        rm -v ${{ env.BOOTSTRAP }}
+        echo "FPM=$PWD/fpm-debug" >> $GITHUB_ENV
+
+    - name: Get version (normal)
+      if: github.event_name != 'release'
+      shell: bash
+      run: |
+        VERSION=$(git rev-parse --short HEAD)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Get version (release)
+      if: github.event_name == 'release'
+      shell: bash
+      run: |
+        VERSION=$(echo ${{ github.ref }} | cut -dv -f2)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        FPM_VERSION=$(${{ env.FPM }} --version | grep -o '${{ env.REGEX }}')
+        [ "$VERSION" = "$FPM_VERSION" ]
+      env:
+        REGEX: '[0-9]\{1,4\}\.[0-9]\{1,4\}\.[0-9]\{1,4\}'
+
+    - name: Build Fortran fpm
+      shell: bash
+      run: |
+        ${{ env.FPM }} build ${{ matrix.release-flags }}
+
+    - name: Run Fortran fpm
+      shell: bash
+      run: |
+        ${{ env.FPM }} run ${{ matrix.release-flags }}
+        ${{ env.FPM }} run ${{ matrix.release-flags }} -- --version
+        ${{ env.FPM }} run ${{ matrix.release-flags }} -- --help
+
+    - name: Install Fortran fpm
+      shell: bash
+      run: |
+        ${{ env.FPM }} install ${{ matrix.release-flags }}
+
+    - name: Package release version
+      shell: bash
+      run: |
+        ${{ env.FPM }} run ${{ matrix.release-flags }} --runner cp -- ${{ env.EXE }}
+        rm -v ${{ env.FPM }}
+        echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
+      env:
+        EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
+
+    - name: Run metapackage tests using the release version 
+      shell: bash
+      run: |
+        ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
+
