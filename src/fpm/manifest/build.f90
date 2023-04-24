@@ -52,7 +52,7 @@ contains
 
 
     !> Construct a new build configuration from a TOML data structure
-    subroutine new_build_config(self, table, error)
+    subroutine new_build_config(self, table, package_name, error)
 
         !> Instance of the build configuration
         type(build_config_t), intent(out) :: self
@@ -60,12 +60,15 @@ contains
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
 
+        !> Package name
+        character(len=*), intent(in) :: package_name
+
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
 
         integer :: stat
 
-        call check(table, error)
+        call check(table, package_name, error)
         if (allocated(error)) return
 
         call get_value(table, "auto-executables", self%auto_executables, .true., stat=stat)
@@ -128,10 +131,13 @@ contains
     end subroutine new_build_config
 
     !> Check local schema for allowed entries
-    subroutine check(table, error)
+    subroutine check(table, package_name, error)
 
         !> Instance of the TOML data structure
         type(toml_table), intent(inout) :: table
+
+        !> Package name
+        character(len=*), intent(in) :: package_name
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -154,7 +160,8 @@ contains
                 continue
 
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in [build]")
+                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in [build]"//&
+                                         " building package "//package_name)
                 exit
 
             end select
