@@ -5,6 +5,7 @@ module test_manifest
     use fpm_manifest
     use fpm_manifest_profile, only: profile_config_t, find_profile
     use fpm_strings, only: operator(.in.)
+    use fpm_error, only: fatal_error, error_t
     implicit none
     private
     public :: collect_manifest
@@ -42,6 +43,7 @@ contains
             & new_unittest("build-config-valid", test_build_valid), &
             & new_unittest("build-config-empty", test_build_empty), &
             & new_unittest("build-config-invalid-values", test_build_invalid_values, should_fail=.true.), &
+            & new_unittest("build-key-invalid", test_build_invalid_key), &
             & new_unittest("library-empty", test_library_empty), &
             & new_unittest("library-wrongkey", test_library_wrongkey, should_fail=.true.), &
             & new_unittest("package-simple", test_package_simple), &
@@ -693,6 +695,52 @@ contains
     end subroutine test_build_valid
 
 
+    !> Try to read values from the [build] table
+    subroutine test_build_invalid_key(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+        type(error_t), allocatable :: build_error
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & '[build]', &
+            & 'auto-executables = false', &
+            & 'auto-tests = false ', &
+            & 'module-naming = true ', &
+            & 'this-will-fail = true '
+        close(unit)
+
+        call get_package_data(package, temp_file, build_error)
+
+        ! Error message should contain both package name and key name
+        if (allocated(build_error)) then
+
+            if (.not.index(build_error%message,'this-will-fail')>0) then
+                call fatal_error(error, 'no invalid key name is printed to output')
+                return
+            end if
+
+            if (.not.index(build_error%message,'example')>0) then
+                call fatal_error(error, 'no package name is printed to output')
+                return
+            end if
+
+        else
+            call fatal_error(error, 'no error allocated on invalid [build] section key ')
+            return
+        end if
+
+    end subroutine test_build_invalid_key
+
+
     !> Try to read values from an empty [build] table
     subroutine test_build_empty(error)
 
@@ -1156,7 +1204,7 @@ contains
         table = toml_table()
         call set_value(table, "link", "z", stat=stat)
 
-        call new_build_config(build, table, error)
+        call new_build_config(build, table, 'test_link_string', error)
 
     end subroutine test_link_string
 
@@ -1179,7 +1227,7 @@ contains
         call set_value(children, 1, "blas", stat=stat)
         call set_value(children, 2, "lapack", stat=stat)
 
-        call new_build_config(build, table, error)
+        call new_build_config(build, table, 'test_link_array', error)
 
     end subroutine test_link_array
 
@@ -1200,7 +1248,7 @@ contains
         table = toml_table()
         call add_table(table, "link", child, stat=stat)
 
-        call new_build_config(build, table, error)
+        call new_build_config(build, table, 'test_invalid_link', error)
 
     end subroutine test_invalid_link
 
