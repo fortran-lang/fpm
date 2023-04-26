@@ -47,16 +47,14 @@ module fpm_os
             type(c_ptr) :: ptr
         end function realpath
 
-        !> Determine the absolute, canonicalized path for a given path.
-        !> Calls custom C routine and is able to distinguish between Unix and Windows.
-        function c_realpath(path, resolved_path, maxLength) result(ptr) &
-            bind(C, name="c_realpath")
+        !> Determine the absolute, canonicalized path for a given path. Windows-only.
+        function fullpath(resolved_path, path, maxLength) result(ptr) bind(C, name="_fullpath")
             import :: c_ptr, c_char, c_int
             character(kind=c_char, len=1), intent(in) :: path(*)
             character(kind=c_char, len=1), intent(out) :: resolved_path(*)
             integer(c_int), value, intent(in) :: maxLength
             type(c_ptr) :: ptr
-        end function c_realpath
+        end function fullpath
     end interface
 
 contains
@@ -145,11 +143,11 @@ contains
 
         allocate (cpath(buffersize))
 
-! The _WIN32 macro is currently not exported using gfortran.
-#if defined(FPM_BOOTSTRAP) && !defined(_WIN32)
+! The _WIN32 macro is currently not exported using gfortran. Therefore using FPM_IS_WINDOWS.
+#ifndef FPM_IS_WINDOWS
         ptr = realpath(appended_path, cpath)
 #else
-        ptr = c_realpath(appended_path, cpath, buffersize)
+        ptr = fullpath(cpath, appended_path, buffersize)
 #endif
 
         if (c_associated(ptr)) then

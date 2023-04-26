@@ -35,6 +35,7 @@ contains
     type(downloader_t) :: downloader
     integer :: i
 
+    ! Get package data to determine package version.
     call get_package_data(package, 'fpm.toml', error, apply_defaults=.true.)
     if (allocated(error)) call fpm_stop(1, '*cmd_build* Package error: '//error%message)
     version = package%version

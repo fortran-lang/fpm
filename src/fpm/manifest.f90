@@ -18,6 +18,7 @@ module fpm_manifest
     use fpm_toml, only : toml_table, read_package_file
     use fpm_manifest_test, only : test_config_t
     use fpm_filesystem, only: join_path, exists, dirname, is_dir
+    use fpm_environment, only: os_is_unix
     use fpm_strings, only: string_t
     implicit none
     private
@@ -89,7 +90,7 @@ contains
 
 
     !> Obtain package meta data from a configuation file
-    subroutine get_package_data(package, file, error, apply_defaults)
+    subroutine get_package_data(package, file, error, apply_defaults, add_is_windows_macro)
 
         !> Parsed package meta data
         type(package_config_t), intent(out) :: package
@@ -102,6 +103,9 @@ contains
 
         !> Apply package defaults (uses file system operations)
         logical, intent(in), optional :: apply_defaults
+
+        !> Add `FPM_IS_WINDOWS` macro to the preprocessor
+        logical, intent(in), optional :: add_is_windows_macro
 
         type(toml_table), allocatable :: table
         character(len=:), allocatable :: root
@@ -124,6 +128,10 @@ contains
                 call package_defaults(package, root, error)
                 if (allocated(error)) return
             end if
+        end if
+
+        if (present(add_is_windows_macro)) then
+            if (add_is_windows_macro) call add_fpm_is_windows_macro(package%preprocess)
         end if
 
     end subroutine get_package_data
@@ -180,6 +188,44 @@ contains
         end if
 
     end subroutine package_defaults
+
+
+    !> Add the FPM_IS_WINDOWS macro if it wasn't already defined.
+    subroutine add_fpm_is_windows_macro(preprocessors)
+        !> Preprocessor configurations.
+        type(preprocess_config_t), allocatable, intent(inout) :: preprocessors(:)
+
+        type(preprocess_config_t), allocatable :: new_cpp
+        integer :: i, j
+
+        if (os_is_unix()) return
+
+        if (allocated(preprocessors)) then
+            do i = 1, size(preprocessors)
+                if (preprocessors(i)%name == 'cpp') then
+                    if (allocated(preprocessors(i)%macros)) then
+                        ! Return if macro is already defined.
+                        do j = 1, size(preprocessors(i)%macros)
+                            if (preprocessors(i)%macros(i)%s == 'FPM_IS_WINDOWS') return
+                        end do
+                        ! Macro not found, therefore add it.
+                        allocate(preprocessors(i)%macros(size(preprocessors(i)%macros) + 1))
+                    else
+                        allocate(preprocessors(i)%macros(1))
+                    end if
+                    preprocessors(i)%macros(size(preprocessors(i)%macros))%s = 'FPM_IS_WINDOWS'
+                    return
+                end if
+            end do
+        end if
+
+        ! Add cpp macro if it was not already defined.
+        if (.not. allocated(preprocessors)) allocate(preprocessors(1))
+        new_cpp%name = 'cpp'
+        allocate(new_cpp%macros(1))
+        new_cpp%macros(1)%s = 'FPM_IS_WINDOWS'
+        preprocessors(1) = new_cpp
+    end
 
 
 end module fpm_manifest

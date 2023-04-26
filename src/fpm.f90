@@ -41,7 +41,7 @@ subroutine build_model(model, settings, package, error)
     integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
-    logical :: has_cpp
+    logical :: has_cpp = .false.
     logical :: duplicates_found = .false.
     type(string_t) :: include_dir
 
@@ -96,13 +96,11 @@ subroutine build_model(model, settings, package, error)
 
     allocate(model%packages(model%deps%ndep))
 
-    has_cpp = .false.
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))
             manifest = join_path(dep%proj_dir, "fpm.toml")
 
-            call get_package_data(dependency, manifest, error, &
-                apply_defaults=.true.)
+            call get_package_data(dependency, manifest, error, apply_defaults=.true.)
             if (allocated(error)) exit
 
             model%packages(i)%name = dependency%name
@@ -118,7 +116,7 @@ subroutine build_model(model, settings, package, error)
                     if (dependency%preprocess(j)%name == "cpp") then
                         if (.not. has_cpp) has_cpp = .true.
                         if (allocated(dependency%preprocess(j)%macros)) then
-                        model%packages(i)%macros = dependency%preprocess(j)%macros
+                            model%packages(i)%macros = dependency%preprocess(j)%macros
                         end if
                     else
                         write(stderr, '(a)') 'Warning: Preprocessor ' // package%preprocess(i)%name // &
@@ -402,7 +400,7 @@ type(error_t), allocatable :: error
 
 integer :: i
 
-call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+call get_package_data(package, "fpm.toml", error, apply_defaults=.true., add_is_windows_macro=.true.)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Package error: '//error%message)
 end if
@@ -448,7 +446,7 @@ subroutine cmd_run(settings,test)
     character(len=:),allocatable :: line
     logical :: toomany
 
-    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true., add_is_windows_macro=.true.)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run* Package error: '//error%message)
     end if
