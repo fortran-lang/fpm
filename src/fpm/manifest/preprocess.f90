@@ -10,7 +10,7 @@
 !> macros = []
 !> ```
 
-module fpm_mainfest_preprocess
+module fpm_manifest_preprocess
    use fpm_error, only : error_t, syntax_error
    use fpm_strings, only : string_t
    use fpm_toml, only : toml_table, toml_key, toml_stat, get_value, get_list
@@ -191,4 +191,4 @@ contains
 
    end subroutine info
 
-end module fpm_mainfest_preprocess
+end module fpm_manifest_preprocess

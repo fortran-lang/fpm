@@ -12,7 +12,7 @@ module fpm_manifest
     use fpm_manifest_executable, only : executable_config_t
     use fpm_manifest_dependency, only : dependency_config_t
     use fpm_manifest_library, only : library_config_t
-    use fpm_mainfest_preprocess, only : preprocess_config_t
+    use fpm_manifest_preprocess, only : preprocess_config_t
     use fpm_manifest_package, only : package_config_t, new_package
     use fpm_error, only : error_t, fatal_error
     use fpm_toml, only : toml_table, read_package_file

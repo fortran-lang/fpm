@@ -1270,7 +1270,7 @@ contains
     end subroutine test_install_wrongkey
 
     subroutine test_preprocess_empty(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, toml_table
 
         !> Error handling
@@ -1288,7 +1288,7 @@ contains
 
     !> Pass a TOML table with not allowed keys
     subroutine test_preprocess_wrongkey(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, add_table, toml_table
 
         !> Error handling
@@ -1309,7 +1309,7 @@ contains
 
     !> Preprocess table cannot be empty.
     subroutine test_preprocessors_empty(error)
-        use fpm_mainfest_preprocess
+        use fpm_manifest_preprocess
         use fpm_toml, only : new_table, toml_table
 
         !> Error handling
