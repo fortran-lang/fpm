@@ -191,14 +191,24 @@ contains
 
 
     !> Add the FPM_IS_WINDOWS macro if it wasn't already defined.
-    subroutine add_fpm_is_windows_macro(preprocessors)
+    subroutine add_fpm_is_windows_macro(preprocessors, is_unix)
         !> Preprocessor configurations.
         type(preprocess_config_t), allocatable, intent(inout) :: preprocessors(:)
 
+        !> Whether the operating system is Unix-like.
+        logical, intent(in), optional :: is_unix
+
         type(preprocess_config_t), allocatable :: new_cpp
         integer :: i, j
+        logical :: is_unix_os = .true.
 
-        if (os_is_unix()) return
+        if (present(is_unix)) then
+            is_unix_os = is_unix
+        else
+            is_unix_os = os_is_unix()
+        end if
+
+        if (is_unix_os) return
 
         if (allocated(preprocessors)) then
             do i = 1, size(preprocessors)
