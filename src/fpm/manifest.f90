@@ -219,22 +219,23 @@ contains
                             if (preprocessors(i)%macros(i)%s == 'FPM_IS_WINDOWS') return
                         end do
                         ! Macro not found, therefore add it.
-                        allocate(preprocessors(i)%macros(size(preprocessors(i)%macros) + 1))
+                        preprocessors(i)%macros = [preprocessors(i)%macros, string_t('FPM_IS_WINDOWS')]
                     else
-                        allocate(preprocessors(i)%macros(1))
+                        preprocessors(i)%macros = [string_t('FPM_IS_WINDOWS')]
                     end if
-                    preprocessors(i)%macros(size(preprocessors(i)%macros))%s = 'FPM_IS_WINDOWS'
                     return
                 end if
             end do
         end if
 
-        ! Add cpp macro if it was not already defined.
-        if (.not. allocated(preprocessors)) allocate(preprocessors(1))
+        ! No cpp macros found, add one.
         new_cpp%name = 'cpp'
-        allocate(new_cpp%macros(1))
-        new_cpp%macros(1)%s = 'FPM_IS_WINDOWS'
-        preprocessors(1) = new_cpp
+        new_cpp%macros = [string_t('FPM_IS_WINDOWS')]
+        if (allocated(preprocessors)) then
+            preprocessors = [preprocessors, new_cpp]
+        else
+            preprocessors = [new_cpp]
+        end if
     end
 
 
