@@ -1274,8 +1274,10 @@ integer function which_mpi_library(wrapper,compiler,verbose)
     logical :: is_mpi_wrapper
     integer :: stat
 
+    ! Init as currently unsupported library
+    which_mpi_library = MPI_TYPE_NONE
+
     ! Run mpi wrapper first
-    print *, 'run wrapper ',wrapper%s
     call run_mpi_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
 
     if (is_mpi_wrapper) then
@@ -1284,10 +1286,6 @@ integer function which_mpi_library(wrapper,compiler,verbose)
             which_mpi_library = MPI_TYPE_INTEL
             return
         end if
-
-
-        ! Init as currently unsupported library
-        which_mpi_library = MPI_TYPE_NONE
 
         ! Attempt to decipher which library this wrapper comes from.
 
@@ -1306,10 +1304,6 @@ integer function which_mpi_library(wrapper,compiler,verbose)
             which_mpi_library = MPI_TYPE_MPICH
             return
         endif
-
-    else
-
-        which_mpi_library = MPI_TYPE_NONE
 
     end if
 
@@ -1416,12 +1410,8 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  ! MPICH reports the full command including the compiler name. Remove it if so
                  call remove_new_lines(screen)
                  call split(screen%s,tokens)
-                 call new_compiler(mpi_compiler,tokens(1),tokens(1),tokens(1),echo=.false.,verbose=verbose)
-
-                 if (mpi_compiler%id/=id_unknown) then
-                    ! Remove trailing compiler name
-                    screen%s = screen%s(len_trim(tokens(1))+1:)
-                 end if
+                 ! Remove trailing compiler name
+                 screen%s = screen%s(len_trim(tokens(1))+1:)
 
               case (MPI_TYPE_INTEL)
 
@@ -1436,12 +1426,8 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  ! MPICH reports the full command including the compiler name. Remove it if so
                  call remove_new_lines(screen)
                  call split(screen%s,tokens)
-                 call new_compiler(mpi_compiler,tokens(1),tokens(1),tokens(1),echo=.false.,verbose=verbose)
-
-                 if (mpi_compiler%id/=id_unknown) then
-                    ! Remove trailing compiler name
-                    screen%s = screen%s(len_trim(tokens(1))+1:)
-                 end if
+                 ! Remove trailing compiler name
+                 screen%s = screen%s(len_trim(tokens(1))+1:)
 
               case default
 
@@ -1480,12 +1466,8 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  ! MPICH reports the full command including the compiler name. Remove it if so
                  call remove_new_lines(screen)
                  call split(screen%s,tokens)
-                 call new_compiler(mpi_compiler,tokens(1),tokens(1),tokens(1),echo=.false.,verbose=verbose)
-
-                 if (mpi_compiler%id/=id_unknown) then
-                    ! Remove trailing compiler name
-                    screen%s = screen%s(len_trim(tokens(1))+1:)
-                 end if
+                 ! Remove trailing compiler name
+                 screen%s = screen%s(len_trim(tokens(1))+1:)
 
               case default
 
