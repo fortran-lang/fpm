@@ -28,9 +28,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-11,windows-latest,ubuntu-latest]
-        mpi: [mpich,openmpi,msmpi]
+        mpi: [mpich,openmpi,msmpi,intel]
         gcc_v: [10] # Version of GFortran we want to use
         exclude:
+        - os: macos-11
+          mpi: intel
         - os: macos-11
           mpi: msmpi
         - os: macos-11 # temporary
@@ -42,7 +44,15 @@ jobs:
         - os: windows-latest
           mpi: mpich
         - os: windows-latest
+          mpi: intel
+        - os: windows-latest
           mpi: openmpi
+        - os: ubuntu-latest 
+          mpi: openmpi
+        - os: ubuntu-latest 
+          mpi: mpich
+        - os: ubuntu-latest 
+          mpi: msmpi
         include:
         - os: macos-11
           os-arch: macos-x86_64
@@ -72,6 +82,13 @@ jobs:
           unzip
           curl
           gcc-fortran
+
+    - name: (Ubuntu) Install INTEL MPI toolchain 
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
+      uses: awvwgk/setup-fortran@v1
+      with:
+        compiler: intel-classic
+        version: 2021.8  
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')

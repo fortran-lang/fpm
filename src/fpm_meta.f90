@@ -440,18 +440,12 @@ subroutine init_mpi(this,compiler,error)
     !> Cleanup
     call destroy(this)
 
-    print *, 'init wrappers'
 
     !> Get all candidate MPI wrappers
     call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
     if (verbose) print 1, size(fort_wrappers),size(c_wrappers),size(cpp_wrappers)
 
-    print *, 'wrapper compiler fit'
-
     call wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,wcfit,mpilib,error)
-
-    print *, 'wcfit = ',wcfit
-    print *, 'mpilib = ',mpilib
 
     if (allocated(error) .or. all(wcfit==0)) then
 
@@ -470,8 +464,6 @@ subroutine init_mpi(this,compiler,error)
         if (wcfit(LANG_FORTRAN)>0) fwrap   = fort_wrappers(wcfit(LANG_FORTRAN))
         if (wcfit(LANG_C)>0)       cwrap   = c_wrappers   (wcfit(LANG_C))
         if (wcfit(LANG_CXX)>0)     cxxwrap = cpp_wrappers (wcfit(LANG_CXX))
-
-        print *, 'wcfit'
 
         !> If there's only an available Fortran wrapper, and the compiler's different than fpm's baseline
         !> fortran compiler suite, we still want to enable C language flags as that is most likely being
@@ -516,19 +508,20 @@ subroutine wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,w
    !> Were any wrappers found?
    has_wrappers = size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)>0
 
-   if (has_wrappers) then
+   if (size(fort_wrappers)>0) &
+   call mpi_compiler_match(LANG_FORTRAN,fort_wrappers,compiler,wrap(LANG_FORTRAN),mpi(LANG_FORTRAN),wrap_error)
 
-        !> Find a Fortran wrapper for the current compiler
-        call mpi_compiler_match(LANG_FORTRAN,fort_wrappers,compiler,wrap(LANG_FORTRAN),mpi(LANG_FORTRAN),wrap_error)
-        call mpi_compiler_match(LANG_C,      c_wrappers,compiler,wrap(LANG_C),mpi(LANG_C),wrap_error)
-        call mpi_compiler_match(LANG_CXX,    cpp_wrappers,compiler,wrap(LANG_CXX),mpi(LANG_CXX),wrap_error)
+   if (size(c_wrappers)>0) &
+   call mpi_compiler_match(LANG_C,c_wrappers,compiler,wrap(LANG_C),mpi(LANG_C),wrap_error)
 
-        if (all(wrap==0)) then
-            call fatal_error(error,'no valid wrappers match current compiler, '//compiler_name(compiler))
-            return
-        end if
+   if (size(cpp_wrappers)>0) &
+   call mpi_compiler_match(LANG_CXX,cpp_wrappers,compiler,wrap(LANG_CXX),mpi(LANG_CXX),wrap_error)
 
-   endif
+   !> Find a Fortran wrapper for the current compiler
+   if (all(wrap==0)) then
+        call fatal_error(error,'no valid wrappers match current compiler, '//compiler_name(compiler))
+        return
+   end if
 
 end subroutine wrapper_compiler_fit
 
