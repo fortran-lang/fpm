@@ -198,7 +198,7 @@ contains
         !> Whether the operating system is Unix-like.
         logical, intent(in), optional :: is_unix
 
-        type(preprocess_config_t), allocatable :: new_cpp
+        type(preprocess_config_t) :: new_cpp
         integer :: i, j
         logical :: is_unix_os = .true.
 
