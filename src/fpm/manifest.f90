@@ -216,7 +216,7 @@ contains
                     if (allocated(preprocessors(i)%macros)) then
                         ! Return if macro is already defined.
                         do j = 1, size(preprocessors(i)%macros)
-                            if (preprocessors(i)%macros(i)%s == 'FPM_IS_WINDOWS') return
+                            if (preprocessors(i)%macros(j)%s == 'FPM_IS_WINDOWS') return
                         end do
                         ! Macro not found, therefore add it.
                         preprocessors(i)%macros = [preprocessors(i)%macros, string_t('FPM_IS_WINDOWS')]
