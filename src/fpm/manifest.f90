@@ -109,11 +109,12 @@ contains
 
         type(toml_table), allocatable :: table
         character(len=:), allocatable :: root
+        logical :: set_is_windows_macro = .true.
 
         call read_package_file(table, file, error)
         if (allocated(error)) return
 
-        if (.not.allocated(table)) then
+        if (.not. allocated(table)) then
             call fatal_error(error, "Unclassified error while reading: '"//file//"'")
             return
         end if
@@ -130,9 +131,8 @@ contains
             end if
         end if
 
-        if (present(add_is_windows_macro)) then
-            if (add_is_windows_macro) call add_fpm_is_windows_macro(package%preprocess)
-        end if
+        if (present(add_is_windows_macro)) set_is_windows_macro = add_is_windows_macro
+        if (set_is_windows_macro) call add_fpm_is_windows_macro(package%preprocess)
 
     end subroutine get_package_data
 

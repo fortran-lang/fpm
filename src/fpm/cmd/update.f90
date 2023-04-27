@@ -21,7 +21,7 @@ contains
     integer :: ii
     character(len=:), allocatable :: cache
 
-    call get_package_data(package, "fpm.toml", error, apply_defaults=.true., add_is_windows_macro=.true.)
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     call handle_error(error)
 
     if (.not.exists("build")) then

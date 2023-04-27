@@ -400,7 +400,7 @@ type(error_t), allocatable :: error
 
 integer :: i
 
-call get_package_data(package, "fpm.toml", error, apply_defaults=.true., add_is_windows_macro=.true.)
+call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
 if (allocated(error)) then
     call fpm_stop(1,'*cmd_build* Package error: '//error%message)
 end if
@@ -446,7 +446,7 @@ subroutine cmd_run(settings,test)
     character(len=:),allocatable :: line
     logical :: toomany
 
-    call get_package_data(package, "fpm.toml", error, apply_defaults=.true., add_is_windows_macro=.true.)
+    call get_package_data(package, "fpm.toml", error, apply_defaults=.true.)
     if (allocated(error)) then
         call fpm_stop(1, '*cmd_run* Package error: '//error%message)
     end if
