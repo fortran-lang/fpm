@@ -6,6 +6,8 @@ on:
       - 'src/*meta*.f90'  # On push, only launch job if something has changed in the metapackages
       - 'src/fpm/*meta*.f90'
       - 'src/fpm/manifest/*meta*.f90'
+      - 'src/ci/meta_tests.sh'
+      - 'src/.github/workflows/meta.yml'
   pull_request:
   release:
     types: [published]
@@ -25,11 +27,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11,windows-latest]  
-        mpi: [mpich,openmpi,msmpi] 
-        gcc_v: [10] # Version of GFortran we want to use 
+        os: [macos-11,windows-latest,ubuntu-latest]
+        mpi: [mpich,openmpi,msmpi]
+        gcc_v: [10] # Version of GFortran we want to use
         exclude:
         - os: macos-11
+          mpi: msmpi
+        - os: macos-11 # temporary
+          mpi: openmpi
+        - os: macos-11 # temporary
+          mpi: mpich
+        - os: windows-latest # temporary
           mpi: msmpi
         - os: windows-latest
           mpi: mpich
@@ -55,7 +63,7 @@ jobs:
     - uses: msys2/setup-msys2@v2
       if: contains(matrix.os,'windows')
       with:
-        msystem: MINGW64 
+        msystem: MINGW64
         update: true
         install: >-
           git
@@ -65,52 +73,52 @@ jobs:
           curl
           gcc-fortran
 
-    - name: Put MSYS2_MinGW64 on PATH
+    - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')
       # there is not yet an environment variable for this path from msys2/setup-msys2
       run: echo "${{ runner.temp }}/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-    - name: download MS-MPI setup (SDK is from MSYS2)
+    - name: (Windows) download MS-MPI setup (SDK is from MSYS2)
       if: contains(matrix.os,'windows')
       run: curl -L -O https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe
 
-    - name: Install mpiexec.exe (-force needed to bypass GUI on headless)
+    - name: (Windows) Install mpiexec.exe (-force needed to bypass GUI on headless)
       if: contains(matrix.os,'windows')
       run: .\msmpisetup.exe -unattend -force
 
-    - name: test that mpiexec.exe exists
+    - name: (Windows) test that mpiexec.exe exists
       if: contains(matrix.os,'windows')
       # can't use MSMPI_BIN as Actions doesn't update PATH from msmpisetup.exe
       run: Test-Path "C:\Program Files\Microsoft MPI\Bin\mpiexec.exe" -PathType leaf
 
-    - name: put MSMPI_BIN on PATH (where mpiexec is)
+    - name: (Windows) put MSMPI_BIN on PATH (where mpiexec is)
       if: contains(matrix.os,'windows')
       run: echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-    - name: Install MSYS2 msmpi package
+    - name: (Windows) Install MSYS2 msmpi package
       if: contains(matrix.os,'windows')
       shell: msys2 {0}
       run: pacman --noconfirm -S mingw-w64-x86_64-msmpi
 
-    - name: Set up Homebrew
+    - name: (macOS) Set up Homebrew
       if: contains(matrix.os,'macos')
       id: set-up-homebrew
-      uses: Homebrew/actions/setup-homebrew@master        
+      uses: Homebrew/actions/setup-homebrew@master
 
-    - name: Install Homebrew gfortran
+    - name: (macOS) Install Homebrew gfortran
       if: contains(matrix.os, 'macos')
       run: |
         brew install gcc@${GCC_V}
         ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
         which gfortran-${GCC_V}
         which gfortran
-    
-    - name: Install homebrew MPICH
+
+    - name: (macOS) Install homebrew MPICH
       if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
       run: |
         brew install mpich
 
-    - name: Install homebrew OpenMPI
+    - name: (macOS) Install homebrew OpenMPI
       if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |
         brew install --cc=gcc-${GCC_V} openmpi
@@ -130,7 +138,7 @@ jobs:
     - name: Build Fortran fpm (bootstrap)
       shell: bash
       run: |
-        ${{ env.BOOTSTRAP }} build 
+        ${{ env.BOOTSTRAP }} build
 
     - name: Run Fortran fpm (bootstrap)
       shell: bash
@@ -201,7 +209,7 @@ jobs:
       env:
         EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
 
-    - name: Run metapackage tests using the release version 
+    - name: Run metapackage tests using the release version
       shell: bash
       run: |
         ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
