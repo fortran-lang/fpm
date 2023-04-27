@@ -307,7 +307,6 @@ subroutine build_target_list(targets,model)
                                     output_name = join_path(exe_dir, &
                                     sources(i)%exe_name//xsuffix))
 
-
                     ! If the main program is on a C/C++ source, the Intel Fortran compiler requires option
                     ! -nofor-main to avoid "duplicate main" errors.
                     ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
@@ -839,9 +838,6 @@ subroutine resolve_target_linking(targets, model)
             ! If the main program is a C/C++ one, Intel compilers require additional
             ! linking flag -nofor-main to avoid a "duplicate main" error, see
             ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
-            if (model%compiler%is_intel() .and. target%target_type==FPM_TARGET_EXECUTABLE) then
-                print *, 'target compile flags ',target%compile_flags
-            end if
 
             !> Get macros as flags.
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
