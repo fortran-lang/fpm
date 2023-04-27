@@ -160,8 +160,9 @@ contains
                 continue
 
             case default
-                call syntax_error(error, "Key "//list(ikey)%key//" is not allowed in [build]"//&
-                                         " building package "//package_name)
+
+                call syntax_error(error, 'Manifest file syntax error: key "'//list(ikey)%key//'" found in the [build] '//&
+                                         'section of package/dependency "'//package_name//'" fpm.toml is not allowed')
                 exit
 
             end select
