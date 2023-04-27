@@ -759,16 +759,19 @@ subroutine find_command_location(command,path,echo,verbose,error)
         return
     end if
 
+    print *, 'fullpath <'//fullpath//'>, command=<'//command//'>'
+
     ! Extract path only
     length = index(fullpath,command,BACK=.true.)
+    print *, 'length=',length
     if (length<=0) then
         call fatal_error(error,'full path to command ('//command//') does not include command name')
         return
     elseif (length==1) then
         ! Compiler is in the current folder
-        call get_absolute_path('.',path,error)
+        path = '.'
     else
-        call get_absolute_path(fullpath(1:length-1),path,error)
+        path = fullpath(1:length-1)
     end if
     if (allocated(error)) return
 
@@ -795,10 +798,16 @@ subroutine get_mpi_runner(command,verbose,error)
     ! Try several commands
     do itri=1,size(try)
        call find_command_location(trim(try(itri)),command%s,verbose=.true.,error=error)
-       if (allocated(error)) cycle
+
+       if (allocated(error)) then
+          print *, 'error returned: ',error%message
+          cycle
+       end if
+
+       print *, 'command = ',command%s
 
        ! Success!
-       success = len_trim(command%s)
+       success = len_trim(command%s)>0
        if (success) then
            command%s = join_path(command%s,trim(try(itri)))
            return
