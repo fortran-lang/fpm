@@ -1,6 +1,6 @@
 // Test MPI linking from a C main program
-#include <mpi.h>
 #include <iostream>
+#include <mpi.h>
 
 using namespace std;
 
