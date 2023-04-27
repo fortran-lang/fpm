@@ -96,6 +96,8 @@ contains
     procedure :: get_include_flag
     !> Get feature flag
     procedure :: get_feature_flag
+    !> Get flags for the main linking command
+    procedure :: get_main_flags
     !> Compile a Fortran object
     procedure :: compile_fortran
     !> Compile a C object
@@ -665,6 +667,45 @@ function get_feature_flag(self, feature) result(flags)
     end select
 end function get_feature_flag
 
+
+!> Get special flags for the main linker
+subroutine get_main_flags(self, language, flags)
+    class(compiler_t), intent(in) :: self
+    character(len=*), intent(in) :: language
+    character(len=:), allocatable, intent(out) :: flags
+
+    flags = ""
+    select case(language)
+
+    case("fortran")
+        flags = ""
+
+    case("c")
+
+        ! If the main program is on a C/C++ source, the Intel Fortran compiler requires option
+        ! -nofor-main to avoid "duplicate main" errors.
+        ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+        select case(self%id)
+           case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix)
+               flags = '-nofor-main'
+           case(id_intel_classic_windows,id_intel_llvm_windows)
+               flags = '/nofor-main'
+        end select
+
+    case("c++","cpp","cxx")
+
+        select case(self%id)
+           case(id_intel_classic_nix, id_intel_classic_mac, id_intel_llvm_nix)
+               flags = '-nofor-main'
+           case(id_intel_classic_windows,id_intel_llvm_windows)
+               flags = '/nofor-main'
+        end select
+
+    case default
+        error stop "Unknown language '"//language//'", try "fortran", "c", "c++"'
+    end select
+
+end subroutine get_main_flags
 
 subroutine get_default_c_compiler(f_compiler, c_compiler)
     character(len=*), intent(in) :: f_compiler
