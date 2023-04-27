@@ -92,17 +92,30 @@ integer, parameter :: MPI_TYPE_OPENMPI = 1
 integer, parameter :: MPI_TYPE_MPICH   = 2
 integer, parameter :: MPI_TYPE_INTEL   = 3
 integer, parameter :: MPI_TYPE_MSMPI   = 4
-
-
+public             :: MPI_TYPE_NAME
 
 !> Debugging information
 logical, parameter, private :: verbose = .false.
 
-integer, parameter, private :: WRAPPER_FORTRAN = 1
-integer, parameter, private :: WRAPPER_C       = 2
-integer, parameter, private :: WRAPPER_CXX     = 3
+integer, parameter, private :: LANG_FORTRAN = 1
+integer, parameter, private :: LANG_C       = 2
+integer, parameter, private :: LANG_CXX     = 3
 
 contains
+
+!> Return a name for the MPI library
+pure function MPI_TYPE_NAME(mpilib) result(name)
+   integer, intent(in) :: mpilib
+   character(len=:), allocatable :: name
+   select case (mpilib)
+      case (MPI_TYPE_NONE);    name = "none"
+      case (MPI_TYPE_OPENMPI); name = "OpenMPI"
+      case (MPI_TYPE_MPICH);   name = "MPICH"
+      case (MPI_TYPE_INTEL);   name = "INTELMPI"
+      case (MPI_TYPE_MSMPI);   name = "MS-MPI"
+      case default;            name = "UNKNOWN"
+   end select
+end function MPI_TYPE_NAME
 
 !> Clean the metapackage structure
 elemental subroutine destroy(this)
@@ -420,18 +433,25 @@ subroutine init_mpi(this,compiler,error)
     type(string_t) :: output,fwrap,cwrap,cxxwrap
     character(256) :: msg_out
     character(len=:), allocatable :: tokens(:)
-    integer :: wcfit(3),ic,icpp,i
+    integer :: wcfit(3),mpilib(3),ic,icpp,i
     logical :: found
 
 
     !> Cleanup
     call destroy(this)
 
+    print *, 'init wrappers'
+
     !> Get all candidate MPI wrappers
     call mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
     if (verbose) print 1, size(fort_wrappers),size(c_wrappers),size(cpp_wrappers)
 
-    wcfit = wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error)
+    print *, 'wrapper compiler fit'
+
+    call wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,wcfit,mpilib,error)
+
+    print *, 'wcfit = ',wcfit
+    print *, 'mpilib = ',mpilib
 
     if (allocated(error) .or. all(wcfit==0)) then
 
@@ -447,21 +467,23 @@ subroutine init_mpi(this,compiler,error)
 
     else
 
-        if (wcfit(WRAPPER_FORTRAN)>0) fwrap   = fort_wrappers(wcfit(WRAPPER_FORTRAN))
-        if (wcfit(WRAPPER_C)>0)       cwrap   = c_wrappers   (wcfit(WRAPPER_C))
-        if (wcfit(WRAPPER_CXX)>0)     cxxwrap = cpp_wrappers (wcfit(WRAPPER_CXX))
+        if (wcfit(LANG_FORTRAN)>0) fwrap   = fort_wrappers(wcfit(LANG_FORTRAN))
+        if (wcfit(LANG_C)>0)       cwrap   = c_wrappers   (wcfit(LANG_C))
+        if (wcfit(LANG_CXX)>0)     cxxwrap = cpp_wrappers (wcfit(LANG_CXX))
+
+        print *, 'wcfit'
 
         !> If there's only an available Fortran wrapper, and the compiler's different than fpm's baseline
         !> fortran compiler suite, we still want to enable C language flags as that is most likely being
         !> ABI-compatible anyways. However, issues may arise.
         !> see e.g. Homebrew with clabng C/C++ and GNU fortran at https://gitlab.kitware.com/cmake/cmake/-/issues/18139
-        if (wcfit(WRAPPER_FORTRAN)>0 .and. wcfit(WRAPPER_C)==0 .and. wcfit(WRAPPER_CXX)==0) then
-            cwrap = fort_wrappers(wcfit(WRAPPER_FORTRAN))
-            cxxwrap = fort_wrappers(wcfit(WRAPPER_FORTRAN))
+        if (wcfit(LANG_FORTRAN)>0 .and. wcfit(LANG_C)==0 .and. wcfit(LANG_CXX)==0) then
+            cwrap   = fort_wrappers(wcfit(LANG_FORTRAN))
+            cxxwrap = fort_wrappers(wcfit(LANG_FORTRAN))
         end if
 
         !> Initialize MPI package from wrapper command
-        call init_mpi_from_wrappers(this,compiler,fwrap,cwrap,cxxwrap,error)
+        call init_mpi_from_wrappers(this,compiler,mpilib(LANG_FORTRAN),fwrap,cwrap,cxxwrap,error)
         if (allocated(error)) return
 
     end if
@@ -479,17 +501,17 @@ logical function is_64bit_environment()
 end function is_64bit_environment
 
 !> Check if there is a wrapper-compiler fit
-function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,error) result(wrap)
+subroutine wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,wrap,mpi,error)
    type(string_t), allocatable, intent(in) :: fort_wrappers(:),c_wrappers(:),cpp_wrappers(:)
    type(compiler_t), intent(in) :: compiler
    type(error_t), allocatable, intent(out) :: error
-   integer :: wrap(3)
+   integer, intent(out), dimension(3) :: wrap, mpi
 
    logical :: has_wrappers
-   integer :: mpif90,mpic,mpicxx
    type(error_t), allocatable :: wrap_error
 
    wrap = 0
+   mpi  = MPI_TYPE_NONE
 
    !> Were any wrappers found?
    has_wrappers = size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)>0
@@ -497,9 +519,9 @@ function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,err
    if (has_wrappers) then
 
         !> Find a Fortran wrapper for the current compiler
-        wrap(WRAPPER_FORTRAN) = mpi_compiler_match(fort_wrappers,compiler,wrap_error)
-        wrap(WRAPPER_C      ) = mpi_compiler_match(c_wrappers,compiler,wrap_error)
-        wrap(WRAPPER_CXX    ) = mpi_compiler_match(cpp_wrappers,compiler,wrap_error)
+        call mpi_compiler_match(LANG_FORTRAN,fort_wrappers,compiler,wrap(LANG_FORTRAN),mpi(LANG_FORTRAN),wrap_error)
+        call mpi_compiler_match(LANG_C,      c_wrappers,compiler,wrap(LANG_C),mpi(LANG_C),wrap_error)
+        call mpi_compiler_match(LANG_CXX,    cpp_wrappers,compiler,wrap(LANG_CXX),mpi(LANG_CXX),wrap_error)
 
         if (all(wrap==0)) then
             call fatal_error(error,'no valid wrappers match current compiler, '//compiler_name(compiler))
@@ -508,7 +530,7 @@ function wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,err
 
    endif
 
-end function wrapper_compiler_fit
+end subroutine wrapper_compiler_fit
 
 !> Check if a local MS-MPI SDK build is found
 logical function msmpi_init(this,compiler,error) result(found)
@@ -926,9 +948,10 @@ function get_dos_path(path,error)
 end function get_dos_path
 
 !> Initialize an MPI metapackage from a valid wrapper command ('mpif90', etc...)
-subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapper,error)
+subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cxx_wrapper,error)
     class(metapackage_t), intent(inout) :: this
     type(compiler_t), intent(in) :: compiler
+    integer, intent(in) :: mpilib
     type(string_t), intent(in) :: fort_wrapper,c_wrapper,cxx_wrapper
     type(error_t), allocatable, intent(out) :: error
 
@@ -938,23 +961,25 @@ subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapp
     call destroy(this)
 
     ! Get linking flags
-    this%link_flags = mpi_wrapper_query(fort_wrapper,'link',verbose,error)
-    if (allocated(error)) return
-    this%has_link_flags = len_trim(this%link_flags)>0
+    if (mpilib/=MPI_TYPE_INTEL) then
+        this%link_flags = mpi_wrapper_query(mpilib,fort_wrapper,'link',verbose,error)
+        if (allocated(error)) return
+        this%has_link_flags = len_trim(this%link_flags)>0
+    endif
 
     ! Add heading space
-    this%link_flags = string_t(' '//this%link_flags%s)
+    if (this%has_link_flags) this%link_flags = string_t(' '//this%link_flags%s)
 
     ! Add language-specific flags
-    call set_language_flags(fort_wrapper,this%has_fortran_flags,this%fflags,verbose,error)
+    call set_language_flags(mpilib,fort_wrapper,this%has_fortran_flags,this%fflags,verbose,error)
     if (allocated(error)) return
-    call set_language_flags(c_wrapper,this%has_c_flags,this%cflags,verbose,error)
+    call set_language_flags(mpilib,c_wrapper,this%has_c_flags,this%cflags,verbose,error)
     if (allocated(error)) return
-    call set_language_flags(cxx_wrapper,this%has_cxx_flags,this%cxxflags,verbose,error)
+    call set_language_flags(mpilib,cxx_wrapper,this%has_cxx_flags,this%cxxflags,verbose,error)
     if (allocated(error)) return
 
     ! Get library version
-    version = mpi_version_get(fort_wrapper,error)
+    version = mpi_version_get(mpilib,fort_wrapper,error)
     if (allocated(error)) then
        return
     else
@@ -962,13 +987,14 @@ subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapp
     end if
 
     !> Add default run command, if present
-    this%run_command = mpi_wrapper_query(fort_wrapper,'runner',verbose,error)
+    this%run_command = mpi_wrapper_query(mpilib,fort_wrapper,'runner',verbose,error)
     if (allocated(error)) return
     this%has_run_command = len_trim(this%run_command)>0
 
     contains
 
-    subroutine set_language_flags(wrapper,has_flags,flags,verbose,error)
+    subroutine set_language_flags(mpilib,wrapper,has_flags,flags,verbose,error)
+        integer, intent(in) :: mpilib
         type(string_t), intent(in) :: wrapper
         logical, intent(inout) :: has_flags
         type(string_t), intent(inout) :: flags
@@ -977,7 +1003,7 @@ subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapp
 
         ! Get build flags for each language
         if (len_trim(wrapper)>0) then
-            flags = mpi_wrapper_query(wrapper,'flags',verbose,error)
+            flags = mpi_wrapper_query(mpilib,wrapper,'flags',verbose,error)
 
             if (allocated(error)) return
             has_flags = len_trim(flags)>0
@@ -994,9 +1020,11 @@ subroutine init_mpi_from_wrappers(this,compiler,fort_wrapper,c_wrapper,cxx_wrapp
 end subroutine init_mpi_from_wrappers
 
 !> Match one of the available compiler wrappers with the current compiler
-integer function mpi_compiler_match(wrappers,compiler,error)
+subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
+    integer, intent(in) :: language
     type(string_t), intent(in) :: wrappers(:)
     type(compiler_t), intent(in) :: compiler
+    integer, intent(out) :: which_one, mpilib
     type(error_t), allocatable, intent(out) :: error
 
     integer :: i
@@ -1004,23 +1032,44 @@ integer function mpi_compiler_match(wrappers,compiler,error)
     character(128) :: msg_out
     type(compiler_t) :: mpi_compiler
 
-    mpi_compiler_match = 0
+    which_one = 0
+    mpilib = MPI_TYPE_NONE
 
     do i=1,size(wrappers)
 
-        screen = mpi_wrapper_query(wrappers(i),'compiler',verbose=.false.,error=error)
+        print *, 'TEST WRAPPER '//wrappers(i)%s
+
+        mpilib = which_mpi_library(wrappers(i),compiler,verbose=.false.)
+
+        screen = mpi_wrapper_query(mpilib,wrappers(i),'compiler',verbose=.false.,error=error)
         if (allocated(error)) return
 
-        ! Build compiler type
-        call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.true.)
+        print *, 'screen <'//screen%s//'> compiler ',compiler%fc
 
-        ! Match found!
-        if (mpi_compiler%id == compiler%id) then
 
-            mpi_compiler_match = i
-            return
+        select case (language)
+           case (LANG_FORTRAN)
+               ! Build compiler type. The ID is created based on the Fortran name
+               call new_compiler(mpi_compiler,screen%s,'','',echo=.true.,verbose=.true.)
 
-        end if
+               ! Fortran match found!
+               if (mpi_compiler%id == compiler%id) then
+                   which_one = i
+                   return
+               end if
+
+           case (LANG_C)
+               ! For other languages, we can only hope that the name matches the expected one
+               if (screen%s==compiler%cc) then
+                   which_one = i
+                   return
+               end if
+           case (LANG_CXX)
+               if (screen%s==compiler%cxx) then
+                   which_one = i
+                   return
+               end if
+        end select
 
     end do
 
@@ -1029,17 +1078,18 @@ integer function mpi_compiler_match(wrappers,compiler,error)
     call fatal_error(error,trim(msg_out))
     1 format('<ERROR> None out of ',i0,' valid MPI wrappers matches compiler ',a)
 
-end function mpi_compiler_match
+end subroutine mpi_compiler_match
 
 !> Return library version from the MPI wrapper command
-type(version_t) function mpi_version_get(wrapper,error)
+type(version_t) function mpi_version_get(mpilib,wrapper,error)
+   integer, intent(in) :: mpilib
    type(string_t), intent(in) :: wrapper
    type(error_t), allocatable, intent(out) :: error
 
    type(string_t) :: version_line
 
    ! Get version string
-   version_line = mpi_wrapper_query(wrapper,'version',error=error)
+   version_line = mpi_wrapper_query(mpilib,wrapper,'version',error=error)
    if (allocated(error)) return
 
    ! Wrap to object
@@ -1074,13 +1124,14 @@ subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
          fort_wrappers = [fort_wrappers,string_t('mpigfortran'),string_t('mpgfortran'),&
                           string_t('mpig77'),string_t('mpg77')]
 
-       case (id_intel_classic_windows,id_intel_llvm_windows,&
+       case (id_intel_classic_windows,id_intel_llvm_windows, &
              id_intel_classic_nix,id_intel_classic_mac,id_intel_llvm_nix,id_intel_llvm_unknown)
 
-            c_wrappers = [c_wrappers,string_t(get_env('I_MPI_CC','mpiicc')),string_t('mpicl.bat')]
-          cpp_wrappers = [cpp_wrappers,string_t(get_env('I_MPI_CXX','mpiicpc')),string_t('mpicl.bat')]
-         fort_wrappers = [fort_wrappers,string_t(get_env('I_MPI_F90','mpiifort')),string_t('mpif77'),&
-                          string_t('mpif90')]
+            print *, 'intel wrappers'
+
+            c_wrappers = [string_t(get_env('I_MPI_CC','mpiicc'))]
+          cpp_wrappers = [string_t(get_env('I_MPI_CXX','mpiicpc'))]
+         fort_wrappers = [string_t(get_env('I_MPI_F90','mpiifort'))]
 
        case (id_pgi,id_nvhpc)
 
@@ -1096,15 +1147,16 @@ subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
 
     end select compiler_specific
 
-    call assert_mpi_wrappers(fort_wrappers)
-    call assert_mpi_wrappers(c_wrappers)
-    call assert_mpi_wrappers(cpp_wrappers)
+    call assert_mpi_wrappers(fort_wrappers,compiler)
+    call assert_mpi_wrappers(c_wrappers,compiler)
+    call assert_mpi_wrappers(cpp_wrappers,compiler)
 
 end subroutine mpi_wrappers
 
 !> Filter out invalid/unavailable mpi wrappers
-subroutine assert_mpi_wrappers(wrappers,verbose)
+subroutine assert_mpi_wrappers(wrappers,compiler,verbose)
     type(string_t), allocatable, intent(inout) :: wrappers(:)
+    type(compiler_t), intent(in) :: compiler
     logical, optional, intent(in) :: verbose
 
     integer :: i
@@ -1113,7 +1165,8 @@ subroutine assert_mpi_wrappers(wrappers,verbose)
     allocate(works(size(wrappers)))
 
     do i=1,size(wrappers)
-        works(i) = which_mpi_library(wrappers(i),verbose)
+        print *, 'test wrapper <', wrappers(i)%s,'>'
+        works(i) = which_mpi_library(wrappers(i),compiler,verbose)
     end do
 
     ! Filter out non-working wrappers
@@ -1154,7 +1207,7 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
     end if
 
     ! Init command
-    command = wrapper%s
+    command = trim(wrapper%s)
 
     add_arguments: if (present(args)) then
         do iarg=1,size(args)
@@ -1164,6 +1217,7 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
     endif add_arguments
 
     if (echo_local) print *, '+ ', command
+    print *, '+ ', command
 
     ! Test command
     call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)
@@ -1202,17 +1256,25 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
 end subroutine run_mpi_wrapper
 
 !> Get MPI library type from the wrapper command. Currently, only OpenMPI is supported
-integer function which_mpi_library(wrapper,verbose)
+integer function which_mpi_library(wrapper,compiler,verbose)
     type(string_t), intent(in) :: wrapper
+    type(compiler_t), intent(in) :: compiler
     logical, intent(in), optional :: verbose
 
     logical :: is_mpi_wrapper
     integer :: stat
 
     ! Run mpi wrapper first
+    print *, 'run wrapper ',wrapper%s
     call run_mpi_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
 
     if (is_mpi_wrapper) then
+
+        if (compiler%is_intel()) then
+            which_mpi_library = MPI_TYPE_INTEL
+            return
+        end if
+
 
         ! Init as currently unsupported library
         which_mpi_library = MPI_TYPE_NONE
@@ -1244,7 +1306,8 @@ integer function which_mpi_library(wrapper,verbose)
 end function which_mpi_library
 
 !> Test if an MPI wrapper works
-type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(screen)
+type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) result(screen)
+    integer, intent(in) :: mpilib
     type(string_t), intent(in) :: wrapper
     character(*), intent(in) :: command
     logical, intent(in), optional :: verbose
@@ -1254,17 +1317,14 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
     character(:), allocatable :: redirect_str,tokens(:)
     type(string_t) :: cmdstr
     type(compiler_t) :: mpi_compiler
-    integer :: stat,cmdstat,mpi,ire,length
-
-    ! Get mpi type
-    mpi = which_mpi_library(wrapper,verbose)
+    integer :: stat,cmdstat,ire,length
 
     select case (command)
 
        ! Get MPI compiler name
        case ('compiler')
 
-           select case (mpi)
+           select case (mpilib)
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
@@ -1289,11 +1349,28 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
 
                  ! Take out the first command from the whole line
                  call split(screen%s,tokens,delimiters=' ')
-                 screen%s = tokens(1)
+                 screen%s = trim(tokens(1))
+
+              case (MPI_TYPE_INTEL)
+
+                 ! -show returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('-show')],verbose=verbose, &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local INTEL MPI library does not support -show')
+                    return
+                 end if
+
+                 ! Take out the first command from the whole line
+                 call split(screen%s,tokens,delimiters=' ')
+                 screen%s = trim(tokens(1))
+
+                 print *, 'INTEL MPI compiler: ',screen%s
 
               case default
 
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
                  return
 
            end select
@@ -1302,7 +1379,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
        ! Get a list of additional compiler flags
        case ('flags')
 
-           select case (mpi)
+           select case (mpilib)
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
@@ -1336,9 +1413,29 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
                     screen%s = screen%s(len_trim(tokens(1))+1:)
                  end if
 
+              case (MPI_TYPE_INTEL)
+
+                 call run_mpi_wrapper(wrapper,[string_t('-show')],verbose=verbose, &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local INTEL MPI library does not support -show')
+                    return
+                 end if
+
+                 ! MPICH reports the full command including the compiler name. Remove it if so
+                 call remove_new_lines(screen)
+                 call split(screen%s,tokens)
+                 call new_compiler(mpi_compiler,tokens(1),tokens(1),tokens(1),echo=.false.,verbose=verbose)
+
+                 if (mpi_compiler%id/=id_unknown) then
+                    ! Remove trailing compiler name
+                    screen%s = screen%s(len_trim(tokens(1))+1:)
+                 end if
+
               case default
 
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
                  return
 
            end select
@@ -1346,7 +1443,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
        ! Get a list of additional linker flags
        case ('link')
 
-           select case (mpi)
+           select case (mpilib)
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:link returns the linker command of this wrapper
@@ -1382,7 +1479,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
 
               case default
 
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
                  return
 
            end select
@@ -1390,7 +1487,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
        ! Get a list of MPI library directories
        case ('link_dirs')
 
-           select case (mpi)
+           select case (mpilib)
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
@@ -1412,7 +1509,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
        ! Get a list of include directories for the MPI headers/modules
        case ('incl_dirs')
 
-           select case (mpi)
+           select case (mpilib)
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
@@ -1434,7 +1531,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
        ! Retrieve library version
        case ('version')
 
-           select case (mpi)
+           select case (mpilib)
               case (MPI_TYPE_OPENMPI)
 
                  ! --showme:command returns the build command of this wrapper
@@ -1500,9 +1597,40 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
 
                  end if
 
+              case (MPI_TYPE_INTEL)
+
+                 ! --showme:command returns the build command of this wrapper
+                 call run_mpi_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
+                                      exitcode=stat,cmd_success=success,screen_output=screen)
+
+                 if (stat/=0 .or. .not.success) then
+                    call syntax_error(error,'local INTEL MPI library does not support -v')
+                    return
+                 else
+                    call remove_new_lines(screen)
+                 end if
+
+                 print *, 'version screen = ',screen%s
+
+                 ! Extract version
+                 ire = regex(screen%s,'\d+\.\d+\.\d+',length=length)
+
+                 print *, 'ire = ',ire,' length=',length
+
+                 if (ire>0 .and. length>0) then
+
+                     ! Parse version into the object (this should always work)
+                     screen%s = screen%s(ire:ire+length-1)
+
+                 else
+
+                     call syntax_error(error,'cannot retrieve INTEL MPI library version.')
+
+                 end if
+
               case default
 
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
                  return
 
            end select
@@ -1510,7 +1638,7 @@ type(string_t) function mpi_wrapper_query(wrapper,command,verbose,error) result(
        ! Get path to the MPI runner command
        case ('runner')
 
-           select case (mpi)
+           select case (mpilib)
               case (MPI_TYPE_OPENMPI,MPI_TYPE_MPICH,MPI_TYPE_MSMPI)
                  call get_mpi_runner(screen,verbose,error)
               case default

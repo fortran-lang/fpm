@@ -105,6 +105,8 @@ contains
     procedure :: link
     !> Check whether compiler is recognized
     procedure :: is_unknown
+    !> Check whether this is an Intel compiler
+    procedure :: is_intel
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
     !> Return compiler name
@@ -203,7 +205,7 @@ character(*), parameter :: &
     flag_nag_openmp = " -openmp", &
     flag_nag_free_form = " -free", &
     flag_nag_fixed_form = " -fixed", &
-    flag_nag_no_implicit_typing = " -u"    
+    flag_nag_no_implicit_typing = " -u"
 
 character(*), parameter :: &
     flag_lfortran_opt = " --fast", &
@@ -217,7 +219,7 @@ character(*), parameter :: &
     flag_cray_implicit_typing = " -el", &
     flag_cray_fixed_form = " -ffixed", &
     flag_cray_free_form = " -ffree"
-    
+
 contains
 
 
@@ -890,6 +892,12 @@ pure function is_unknown(self)
     logical :: is_unknown
     is_unknown = self%id == id_unknown
 end function is_unknown
+
+pure logical function is_intel(self)
+    class(compiler_t), intent(in) :: self
+    is_intel = any(self%id == [id_intel_classic_nix,id_intel_classic_mac,id_intel_classic_windows, &
+                               id_intel_llvm_nix,id_intel_llvm_windows,id_intel_llvm_unknown])
+end function is_intel
 
 !>
 !> Enumerate libraries, based on compiler and platform
