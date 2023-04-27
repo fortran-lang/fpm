@@ -84,6 +84,9 @@ module fpm_manifest_package
         !> Fortran meta data
         type(fortran_config_t) :: fortran
 
+        !> License meta data
+        character(len=:), allocatable :: license
+
         !> Library meta data
         type(library_config_t), allocatable :: library
 
@@ -154,6 +157,8 @@ contains
         if (bad_name_error(error,'package',self%name))then
            return
         endif
+
+        call get_value(table, "license", self%license)
 
         if (len(self%name) <= 0) then
             call syntax_error(error, "Package name must be a non-empty string")

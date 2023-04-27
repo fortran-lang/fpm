@@ -1,16 +1,14 @@
 !> Implementation for interacting with git repositories.
 module fpm_git
     use fpm_error, only: error_t, fatal_error
-    use fpm_filesystem, only : get_temp_filename, getline, join_path
+    use fpm_filesystem, only : get_temp_filename, getline, join_path, execute_and_read_output
     implicit none
 
-    public :: git_target_t
-    public :: git_target_default, git_target_branch, git_target_tag, &
-        & git_target_revision
-    public :: git_revision
-    public :: git_matches_manifest
-    public :: operator(==)
-
+    public :: git_target_t, git_target_default, git_target_branch, git_target_tag, git_target_revision, git_revision, &
+            & git_archive, git_matches_manifest, operator(==), compressed_package_name
+    
+    !> Name of the compressed package that is generated temporarily.
+    character(len=*), parameter :: compressed_package_name = 'compressed_package'
 
     !> Possible git target
     type :: enum_descriptor
@@ -306,6 +304,34 @@ contains
         end if
 
     end subroutine info
+
+  !> Archive a folder using `git archive`.
+  subroutine git_archive(source, destination, error)
+    !> Directory to archive.
+    character(*), intent(in) :: source
+    !> Destination of the archive.
+    character(*), intent(in) :: destination
+    !> Error handling.
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: stat
+    character(len=:), allocatable :: cmd_output, archive_format
+
+    call execute_and_read_output('git archive -l', cmd_output, error)
+    if (allocated(error)) return
+
+    if (index(cmd_output, 'tar.gz') /= 0) then
+      archive_format = 'tar.gz'
+    else
+      call fatal_error(error, "Cannot find a suitable archive format for 'git archive'."); return
+    end if
+
+    call execute_command_line('git archive HEAD --format='//archive_format//' -o '// &
+    & join_path(destination, compressed_package_name), exitstat=stat)
+    if (stat /= 0) then
+      call fatal_error(error, "Error packing '"//source//"'."); return
+    end if
+  end
 
 
 end module fpm_git
