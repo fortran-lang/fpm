@@ -794,10 +794,11 @@ subroutine get_mpi_runner(command,verbose,error)
 
     ! Try several commands
     do itri=1,size(try)
-       call find_command_location(trim(try(itri)),command%s,verbose=verbose,error=error)
+       call find_command_location(trim(try(itri)),command%s,verbose=.true.,error=error)
+       if (allocated(error)) cycle
 
        ! Success!
-       success = len_trim(command%s)>0 .and. .not.allocated(error)
+       success = len_trim(command%s)
        if (success) then
            command%s = join_path(command%s,trim(try(itri)))
            return
@@ -1501,7 +1502,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
               case default
 
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
                  return
 
            end select
@@ -1523,7 +1524,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
               case default
 
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
                  return
 
            end select
@@ -1639,10 +1640,10 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
        case ('runner')
 
            select case (mpilib)
-              case (MPI_TYPE_OPENMPI,MPI_TYPE_MPICH,MPI_TYPE_MSMPI)
+              case (MPI_TYPE_OPENMPI,MPI_TYPE_MPICH,MPI_TYPE_MSMPI,MPI_TYPE_INTEL)
                  call get_mpi_runner(screen,verbose,error)
               case default
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' is not currently supported')
+                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
                  return
            end select
 
