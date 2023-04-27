@@ -112,7 +112,7 @@ type, extends(fpm_cmd_settings)  :: fpm_update_settings
 end type
 
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
-    logical                       :: unix
+    logical                       :: is_unix
     character(len=:), allocatable :: calling_dir  ! directory clean called from
     logical                       :: clean_skip=.false.
     logical                       :: clean_call=.false.
@@ -216,7 +216,7 @@ contains
         character(len=4096)           :: cmdarg
         integer                       :: i
         integer                       :: os
-        logical                       :: unix
+        logical                       :: is_unix
         type(fpm_install_settings), allocatable :: install_settings
         type(fpm_publish_settings), allocatable :: publish_settings
         type(version_t) :: version
@@ -243,7 +243,7 @@ contains
             case (OS_UNKNOWN); os_type =  "OS Type:     Unknown"
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
-        unix = os_is_unix(os)
+        is_unix = os_is_unix(os)
 
         ! Get current release version
         version = fpm_version()
@@ -613,7 +613,7 @@ contains
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
             cmd_settings=fpm_clean_settings( &
-            &   unix=unix,                   &
+            &   is_unix=is_unix,             &
             &   calling_dir=working_dir,     &
             &   clean_skip=lget('skip'),     &
                 clean_call=lget('all'))
