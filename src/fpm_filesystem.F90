@@ -928,12 +928,12 @@ subroutine run(cmd,echo,exitstat,verbose,redirect)
 end subroutine run
 
 !> Delete directory using system OS remove directory commands
-subroutine os_delete_dir(unix, dir, echo)
-    logical, intent(in) :: unix
+subroutine os_delete_dir(is_unix, dir, echo)
+    logical, intent(in) :: is_unix
     character(len=*), intent(in) :: dir
     logical, intent(in), optional :: echo
 
-    if (unix) then
+    if (is_unix) then
         call run('rm -rf ' // dir, echo=echo,verbose=.false.)
     else
         call run('rmdir /s/q ' // dir, echo=echo,verbose=.false.)
