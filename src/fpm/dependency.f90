@@ -1014,7 +1014,7 @@ contains
     type(error_t), allocatable, intent(out) :: error
 
     integer :: ndep, ii
-    logical :: unix
+    logical :: is_unix
     character(len=:), allocatable :: version, url, obj, rev, proj_dir
     type(toml_key), allocatable :: list(:)
     type(toml_table), pointer :: ptr
@@ -1026,7 +1026,7 @@ contains
       call resize(self%dep, ndep + ndep/2 + size(list))
     end if
 
-    unix = get_os_type() /= OS_WINDOWS
+    is_unix = get_os_type() /= OS_WINDOWS
 
     do ii = 1, size(list)
       call get_value(table, list(ii)%key, ptr)
@@ -1039,7 +1039,7 @@ contains
       self%ndep = self%ndep + 1
       associate (dep => self%dep(self%ndep))
         dep%name = list(ii)%key
-        if (unix) then
+        if (is_unix) then
           dep%proj_dir = proj_dir
         else
           dep%proj_dir = windows_path(proj_dir)

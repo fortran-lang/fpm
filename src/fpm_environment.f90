@@ -145,7 +145,7 @@ contains
     !> Compare the output of [[get_os_type]] or the optional
     !! passed INTEGER value to the value for OS_WINDOWS
     !! and return .TRUE. if they match and .FALSE. otherwise
-    logical function os_is_unix(os) result(unix)
+    logical function os_is_unix(os)
         integer, intent(in), optional :: os
         integer :: build_os
         if (present(os)) then
@@ -153,7 +153,7 @@ contains
         else
             build_os = get_os_type()
         end if
-        unix = build_os /= OS_WINDOWS
+        os_is_unix = build_os /= OS_WINDOWS
     end function os_is_unix
 
     !> get named environment variable value. It it is blank or

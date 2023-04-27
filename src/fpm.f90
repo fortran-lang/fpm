@@ -663,9 +663,9 @@ subroutine cmd_run(settings,test)
 
 end subroutine cmd_run
 
-subroutine delete_skip(unix)
+subroutine delete_skip(is_unix)
     !> delete directories in the build folder, skipping dependencies
-    logical, intent(in) :: unix
+    logical, intent(in) :: is_unix
     character(len=:), allocatable :: dir
     type(string_t), allocatable :: files(:)
     integer :: i
@@ -673,7 +673,7 @@ subroutine delete_skip(unix)
     do i = 1, size(files)
         if (is_dir(files(i)%s)) then
             dir = files(i)%s
-            if (.not.str_ends_with(dir,'dependencies')) call os_delete_dir(unix, dir)
+            if (.not.str_ends_with(dir,'dependencies')) call os_delete_dir(is_unix, dir)
         end if
     end do
 end subroutine delete_skip
@@ -687,18 +687,18 @@ subroutine cmd_clean(settings)
     if (is_dir('build')) then
         ! remove the entire build directory
         if (settings%clean_call) then
-            call os_delete_dir(settings%unix, 'build')
+            call os_delete_dir(settings%is_unix, 'build')
             return
         end if
         ! remove the build directory but skip dependencies
         if (settings%clean_skip) then
-            call delete_skip(settings%unix)
+            call delete_skip(settings%is_unix)
             return
         end if
         ! prompt to remove the build directory but skip dependencies
         write(stdout, '(A)', advance='no') "Delete build, excluding dependencies (y/n)? "
         read(stdin, '(A1)') response
-        if (lower(response) == 'y') call delete_skip(settings%unix)
+        if (lower(response) == 'y') call delete_skip(settings%is_unix)
     else
         write (stdout, '(A)') "fpm: No build directory found."
     end if
