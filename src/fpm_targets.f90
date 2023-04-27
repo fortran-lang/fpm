@@ -240,14 +240,14 @@ subroutine build_target_list(targets,model)
                                 features = model%packages(j)%features, &
                                 macros = model%packages(j)%macros, &
                                 version = model%packages(j)%version)
-                                
+
 
                     if (with_lib .and. sources(i)%unit_scope == FPM_SCOPE_LIB) then
                         ! Archive depends on object
                         call add_dependency(targets(1)%ptr, targets(size(targets))%ptr)
                     end if
 
-                case (FPM_UNIT_CPPSOURCE) 
+                case (FPM_UNIT_CPPSOURCE)
 
                     call add_target(targets,package=model%packages(j)%name,source = sources(i), &
                                 type = FPM_TARGET_CPP_OBJECT, &
@@ -306,6 +306,18 @@ subroutine build_target_list(targets,model)
                                     link_libraries = sources(i)%link_libraries, &
                                     output_name = join_path(exe_dir, &
                                     sources(i)%exe_name//xsuffix))
+
+
+                    ! If the main program is on a C/C++ source, the Intel Fortran compiler requires option
+                    ! -nofor-main to avoid "duplicate main" errors.
+                    ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+                    if (model%compiler%is_intel() .and. any(exe_type==[FPM_TARGET_C_OBJECT,FPM_TARGET_CPP_OBJECT])) then
+                       if (get_os_type()==OS_WINDOWS) then
+                           targets(size(targets))%ptr%compile_flags = '/nofor-main'
+                       else
+                           targets(size(targets))%ptr%compile_flags = '-nofor-main'
+                       end if
+                    end if
 
                     ! Executable depends on object
                     call add_dependency(targets(size(targets))%ptr, targets(size(targets)-1)%ptr)
@@ -385,7 +397,7 @@ subroutine collect_exe_link_dependencies(targets)
                             dep%source%unit_type /= FPM_UNIT_MODULE .and. &
                             index(dirname(dep%source%file_name), exe_source_dir) == 1) then
 
-                            call add_dependency(exe, dep) 
+                            call add_dependency(exe, dep)
 
                         end if
 
@@ -583,13 +595,13 @@ subroutine prune_build_targets(targets, root_package)
     type(build_target_ptr), intent(inout), allocatable :: targets(:)
 
     !> Name of root package
-    character(*), intent(in) :: root_package 
+    character(*), intent(in) :: root_package
 
     integer :: i, j, nexec
     type(string_t), allocatable :: modules_used(:)
     logical :: exclude_target(size(targets))
     logical, allocatable :: exclude_from_archive(:)
-    
+
     if (size(targets) < 1) then
         return
     end if
@@ -599,7 +611,7 @@ subroutine prune_build_targets(targets, root_package)
 
     ! Enumerate modules used by executables, non-module subprograms and their dependencies
     do i=1,size(targets)
-            
+
         if (targets(i)%ptr%target_type == FPM_TARGET_EXECUTABLE) then
 
             nexec = nexec + 1
@@ -620,16 +632,16 @@ subroutine prune_build_targets(targets, root_package)
     ! If there aren't any executables, then prune
     !  based on modules used in root package
     if (nexec < 1) then
-        
+
         do i=1,size(targets)
-            
+
             if (targets(i)%ptr%package_name == root_package .and. &
                  targets(i)%ptr%target_type /= FPM_TARGET_ARCHIVE) then
-    
+
                 call collect_used_modules(targets(i)%ptr)
-    
+
             end if
-            
+
         end do
 
     end if
@@ -651,11 +663,11 @@ subroutine prune_build_targets(targets, root_package)
                     do j=1,size(target%source%modules_provided)
 
                         if (target%source%modules_provided(j)%s .in. modules_used) then
-                            
+
                             exclude_target(i) = .false.
                             target%skip = .false.
 
-                        end if 
+                        end if
 
                     end do
 
@@ -667,11 +679,11 @@ subroutine prune_build_targets(targets, root_package)
                     do j=1,size(target%source%parent_modules)
 
                         if (target%source%parent_modules(j)%s .in. modules_used) then
-                            
+
                             exclude_target(i) = .false.
                             target%skip = .false.
 
-                        end if 
+                        end if
 
                     end do
 
@@ -684,7 +696,7 @@ subroutine prune_build_targets(targets, root_package)
                 target%skip = .false.
             end if
 
-        end associate        
+        end associate
     end do
 
     targets = pack(targets,.not.exclude_target)
@@ -809,20 +821,33 @@ subroutine resolve_target_linking(targets, model)
     do i=1,size(targets)
 
         associate(target => targets(i)%ptr)
+
+            ! May have been previously allocated
+            if (.not.allocated(target%compile_flags)) allocate(character(len=0) :: target%compile_flags)
+
+            target%compile_flags = target%compile_flags//' '
+
             if (target%target_type /= FPM_TARGET_C_OBJECT .and. target%target_type /= FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = model%fortran_compile_flags &
+                target%compile_flags = target%compile_flags//model%fortran_compile_flags &
                     & // get_feature_flags(model%compiler, target%features)
             else if (target%target_type == FPM_TARGET_C_OBJECT) then
-                target%compile_flags = model%c_compile_flags
+                target%compile_flags = target%compile_flags//model%c_compile_flags
             else if(target%target_type == FPM_TARGET_CPP_OBJECT) then
-                target%compile_flags = model%cxx_compile_flags
+                target%compile_flags = target%compile_flags//model%cxx_compile_flags
+            end if
+
+            ! If the main program is a C/C++ one, Intel compilers require additional
+            ! linking flag -nofor-main to avoid a "duplicate main" error, see
+            ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
+            if (model%compiler%is_intel() .and. target%target_type==FPM_TARGET_EXECUTABLE) then
+                print *, 'target compile flags ',target%compile_flags
             end if
 
             !> Get macros as flags.
             target%compile_flags = target%compile_flags // get_macros(model%compiler%id, &
                                                             target%macros, &
                                                             target%version)
- 
+
             if (len(global_include_flags) > 0) then
                 target%compile_flags = target%compile_flags//global_include_flags
             end if
