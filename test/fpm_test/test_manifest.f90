@@ -1455,9 +1455,7 @@ contains
             if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
             if (package%preprocess(1)%name /= 'cpp') call test_failed(error, 'No cpp table created.')
             if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, 'List of macros not allocated.')
-            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') then
-                call test_failed(error, "'FPM_IS_WINDOWS' macro not added.")
-            end if
+            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') call test_failed(error, "'FPM_IS_WINDOWS' not added.")
         end if
     end
 
@@ -1492,9 +1490,7 @@ contains
             if (allocated(package%preprocess(1)%macros)) call test_failed(error, "Macros should not be allocated.")
         else
             if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, 'List of macros not allocated.')
-            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') then
-                call test_failed(error, "'FPM_IS_WINDOWS' macro not added.")
-            end if
+            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') call test_failed(error, "'FPM_IS_WINDOWS' not added.")
         end if
     end
 
