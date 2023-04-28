@@ -69,7 +69,13 @@ contains
             & new_unittest("preprocess-wrongkey", test_preprocess_wrongkey, should_fail=.true.), &
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
-            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.)]
+            & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("add-windows-macro-to-empty", test_add_windows_macro_to_empty), &
+            & new_unittest("add-windows-macro-to-preprocess", test_add_windows_macro_to_preprocess), &
+            & new_unittest("add-windows-macro-to-empty-macros", test_add_windows_macro_to_empty_macros), &
+            & new_unittest("add-windows-macro-to-other-macro", test_add_windows_macro_to_other_macro), &
+            & new_unittest("add-second-windows-macro", test_add_second_windows_macro) &
+            & ]
 
     end subroutine collect_manifest
 
@@ -1421,5 +1427,201 @@ contains
         end if
 
     end subroutine test_macro_parsing_dependency
+
+    !> Add `FPM_IS_WINDOWS` macro when no preprocess table exists.
+    subroutine test_add_windows_macro_to_empty(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        if (os_is_unix()) then
+            if (allocated(package%preprocess)) call test_failed(error, 'Preprocess table should not be allocated.')
+        else
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, 'No cpp table created.')
+            if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, 'List of macros not allocated.')
+            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') then
+                call test_failed(error, "'FPM_IS_WINDOWS' macro not added.")
+            end if
+        end if
+    end
+
+    !> Add `FPM_IS_WINDOWS` macro to empty cpp table.
+    subroutine test_add_windows_macro_to_preprocess(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        if (os_is_unix()) then
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (size(package%preprocess) /= 1) call test_failed(error, 'Wrong number of preprocessors.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, "Preprocessor isn't cpp.")
+            if (allocated(package%preprocess(1)%macros)) call test_failed(error, "Macros should not be allocated.")
+        else
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (size(package%preprocess) /= 1) call test_failed(error, 'Wrong number of preprocessors.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, "Preprocessor isn't cpp.")
+            if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, 'List of macros not allocated.')
+            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') then
+                call test_failed(error, "'FPM_IS_WINDOWS' macro not added.")
+            end if
+        end if
+    end
+
+    !> Add `FPM_IS_WINDOWS` macro to empty macros table.
+    subroutine test_add_windows_macro_to_empty_macros(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', &
+            & 'macros = []'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        if (os_is_unix()) then
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (size(package%preprocess) /= 1) call test_failed(error, 'Wrong number of preprocessors.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, "Preprocessor isn't cpp.")
+            if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, "Macros should be allocated.")
+            if (size(package%preprocess(1)%macros) /= 0) call test_failed(error, "Macros not empty.")
+        else
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (size(package%preprocess) /= 1) call test_failed(error, 'Wrong number of preprocessors.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, "Preprocessor isn't cpp.")
+            if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, 'List of macros not allocated.')
+            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') then
+                call test_failed(error, "'FPM_IS_WINDOWS' macro not added.")
+            end if
+        end if
+    end
+
+    !> Add `FPM_IS_WINDOWS` macro to list of macros containing another macro.
+    subroutine test_add_windows_macro_to_other_macro(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', &
+            & 'macros = ["ABC"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        if (os_is_unix()) then
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (size(package%preprocess) /= 1) call test_failed(error, 'Wrong number of preprocessors.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, "Preprocessor isn't cpp.")
+            if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, "Macros should be allocated.")
+            if (size(package%preprocess(1)%macros) /= 1) call test_failed(error, "Wrong number of macros.")
+        else
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (size(package%preprocess) /= 1) call test_failed(error, 'Wrong number of preprocessors.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, "Preprocessor isn't cpp.")
+            if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, 'List of macros not allocated.')
+            if (size(package%preprocess(1)%macros) /= 2) call test_failed(error, "Wrong number of macros.")
+            if (package%preprocess(1)%macros(2)%s /= 'FPM_IS_WINDOWS') then
+                call test_failed(error, "'FPM_IS_WINDOWS' macro not added.")
+            end if
+        end if
+    end
+
+    !> Add `FPM_IS_WINDOWS` macro to list of macros that already contains "FPM_IS_WINDOWS".
+    subroutine test_add_second_windows_macro(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[preprocess]', &
+            & '[preprocess.cpp]', &
+            & 'macros = ["FPM_IS_WINDOWS"]'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        if (allocated(error)) return
+        
+        if (os_is_unix()) then
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (size(package%preprocess) /= 1) call test_failed(error, 'Wrong number of preprocessors.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, "Preprocessor isn't cpp.")
+            if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, "Macros should be allocated.")
+            if (size(package%preprocess(1)%macros) /= 1) call test_failed(error, "Wrong number of macros.")
+            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') call test_failed(error, '"FPM_IS_WINDOWS" not parsed.')
+        else
+            if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
+            if (size(package%preprocess) /= 1) call test_failed(error, 'Wrong number of preprocessors.')
+            if (package%preprocess(1)%name /= 'cpp') call test_failed(error, "Preprocessor isn't cpp.")
+            if (.not. allocated(package%preprocess(1)%macros)) call test_failed(error, 'List of macros not allocated.')
+            if (size(package%preprocess(1)%macros) /= 1) call test_failed(error, "Macro should not have been added.")
+            if (package%preprocess(1)%macros(1)%s /= 'FPM_IS_WINDOWS') call test_failed(error, '"FPM_IS_WINDOWS" should exist.')
+        end if
+    end
 
 end module test_manifest
