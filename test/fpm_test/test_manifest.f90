@@ -1333,7 +1333,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(package_config_t) :: package
-        character(:), allocatable :: temp_file
+        character(:), allocatable :: temp_file, macros
         integer :: unit
         integer(compiler_enum)  :: id
 
@@ -1352,8 +1352,10 @@ contains
 
         if (allocated(error)) return
 
-        if (get_macros(id, package%preprocess(1)%macros, package%version%s()) /= " -DFOO -DBAR=2 -DVERSION=0.1.0") then
-            call test_failed(error, "Macros were not parsed correctly")
+        macros = get_macros(id, package%preprocess(1)%macros, package%version%s())
+
+        if (macros /= " -DFOO -DBAR=2 -DVERSION=0.1.0 -DFPM_IS_WINDOWS") then
+            call test_failed(error, "Macros were not parsed correctly: '"//macros//"'")
         end if
 
     end subroutine test_macro_parsing
