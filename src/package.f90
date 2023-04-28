@@ -172,7 +172,7 @@ contains
             call fatal_error(error, "Type mismatch for build entry, must be a table")
             return
         end if
-        call new_build_config(self%build, child, error)
+        call new_build_config(self%build, child, self%name, error)
         if (allocated(error)) return
 
         call get_value(table, "install", child, requested=.true., stat=stat)
@@ -232,7 +232,7 @@ contains
             call new_library(self%library, child, error)
             if (allocated(error)) return
         end if
-        
+
         call get_value(table, "profiles", child, requested=.false.)
         if (associated(child)) then
             call new_profiles(self%profiles, child, error)
@@ -442,7 +442,7 @@ contains
                 call self%dev_dependency(ii)%info(unit, pr - 1)
             end do
         end if
-        
+
         if (allocated(self%profiles)) then
             if (size(self%profiles) > 1 .or. pr > 2) then
                 write(unit, fmti) "- profiles", size(self%profiles)
