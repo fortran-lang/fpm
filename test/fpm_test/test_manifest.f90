@@ -1,6 +1,7 @@
 !> Define tests for the `fpm_manifest` modules
 module test_manifest
     use fpm_filesystem, only: get_temp_filename
+    use fpm_environment, only: os_is_unix
     use testsuite, only : new_unittest, unittest_t, error_t, test_failed, check_string
     use fpm_manifest
     use fpm_manifest_profile, only: profile_config_t, find_profile
@@ -1333,7 +1334,7 @@ contains
         type(error_t), allocatable, intent(out) :: error
 
         type(package_config_t) :: package
-        character(:), allocatable :: temp_file, macros
+        character(:), allocatable :: temp_file, macros, expected_result
         integer :: unit
         integer(compiler_enum)  :: id
 
@@ -1354,7 +1355,10 @@ contains
 
         macros = get_macros(id, package%preprocess(1)%macros, package%version%s())
 
-        if (macros /= " -DFOO -DBAR=2 -DVERSION=0.1.0 -DFPM_IS_WINDOWS") then
+        expected_result = " -DFOO -DBAR=2 -DVERSION=0.1.0"
+        if (.not. os_is_unix()) expected_result = expected_result // " -DFPM_IS_WINDOWS"
+
+        if (macros /= expected_result) then
             call test_failed(error, "Macros were not parsed correctly: '"//macros//"'")
         end if
 
