@@ -208,7 +208,7 @@ contains
             is_unix_os = os_is_unix()
         end if
 
-        if (is_unix_os) return
+        if (is_unix_os .and. .not. present(is_unix)) return
 
         if (allocated(preprocessors)) then
             do i = 1, size(preprocessors)

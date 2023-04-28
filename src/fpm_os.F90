@@ -168,48 +168,38 @@ contains
         character(len=:), allocatable :: home
 
         if (len_trim(path) < 1) then
-            ! Empty path
-            call fatal_error(error, 'Path cannot be empty')
-            return
+            call fatal_error(error, 'Path cannot be empty'); return
         else if (path(1:1) == '~') then
-            ! Expand home
             call get_home(home, error)
             if (allocated(error)) return
 
             if (len_trim(path) == 1) then
-                absolute_path = home
-                return
+                absolute_path = home; return
             end if
 
             if (os_is_unix()) then
                 if (path(2:2) /= '/') then
-                    call fatal_error(error, "Wrong separator in path: '"//path//"'")
-                    return
+                    call fatal_error(error, "Wrong separator in path: '"//path//"'"); return
                 end if
             else
                 if (path(2:2) /= '\') then
-                    call fatal_error(error, "Wrong separator in path: '"//path//"'")
-                    return
+                    call fatal_error(error, "Wrong separator in path: '"//path//"'"); return
                 end if
             end if
 
             if (len_trim(path) == 2) then
-                absolute_path = home
-                return
+                absolute_path = home; return
             end if
 
             absolute_path = join_path(home, path(3:len_trim(path)))
 
             if (.not. exists(absolute_path)) then
-                call fatal_error(error, "Path not found: '"//absolute_path//"'")
-                deallocate (absolute_path)
-                return
+                call fatal_error(error, "Path not found: '"//absolute_path//"'"); return
             end if
         else
             ! Get canonicalized absolute path from either the absolute or the relative path.
             call get_realpath(path, absolute_path, error)
         end if
-
     end subroutine
 
     !> Converts a path to an absolute, canonical path.
