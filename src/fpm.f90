@@ -41,8 +41,8 @@ subroutine build_model(model, settings, package, error)
     integer :: i, j
     type(package_config_t) :: dependency
     character(len=:), allocatable :: manifest, lib_dir, flags, cflags, cxxflags, ldflags
-    logical :: has_cpp = .false.
-    logical :: duplicates_found = .false.
+    logical :: has_cpp
+    logical :: duplicates_found
     type(string_t) :: include_dir
 
     model%package_name = package%name
@@ -96,6 +96,7 @@ subroutine build_model(model, settings, package, error)
 
     allocate(model%packages(model%deps%ndep))
 
+    has_cpp = .false.
     do i = 1, model%deps%ndep
         associate(dep => model%deps%dep(i))
             manifest = join_path(dep%proj_dir, "fpm.toml")
@@ -247,6 +248,7 @@ subroutine build_model(model, settings, package, error)
     if (allocated(error)) return
 
     ! Check for duplicate modules
+    duplicates_found = .false.
     call check_modules_for_duplicates(model, duplicates_found)
     if (duplicates_found) then
         call fpm_stop(1,'*build_model*:Error: One or more duplicate module names found.')
