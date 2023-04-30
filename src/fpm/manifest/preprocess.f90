@@ -34,6 +34,9 @@ module fpm_manifest_preprocess
       !> Macros to be defined for the preprocessor
       type(string_t), allocatable :: macros(:)
 
+      !> Export `FPM_IS_WINDOWS` macro on Windows for the respective preprocessor.
+      logical :: export_windows_macro = .false.
+
    contains
 
       !> Print information on this instance
@@ -55,6 +58,8 @@ contains
       !> Error handling
       type(error_t), allocatable, intent(out) :: error
 
+      integer :: stat
+
       call check(table, error)
       if (allocated(error)) return
 
@@ -69,6 +74,11 @@ contains
       call get_list(table, "macros", self%macros, error)
       if (allocated(error)) return
 
+      call get_value(table, "export-windows-macro", self%export_windows_macro, .false., stat=stat)
+      if (stat /= toml_stat%success) then
+         call syntax_error(error, "'export-windows-macro' must be a boolean."); return
+      end if
+
    end subroutine new_preprocess_config
 
    !> Check local schema for allowed entries
@@ -82,27 +92,17 @@ contains
 
       character(len=:), allocatable :: name
       type(toml_key), allocatable :: list(:)
-      logical :: suffixes_present, directories_present, macros_present
       integer :: ikey
-
-      suffixes_present = .false.
-      directories_present = .false.
-      macros_present = .false.
 
       call table%get_key(name)
       call table%get_keys(list)
 
       do ikey = 1, size(list)
          select case(list(ikey)%key)
-          case default
-            call syntax_error(error, "Key " // list(ikey)%key // "is not allowed in preprocessor"//name)
-            exit
-          case("suffixes")
-            suffixes_present = .true.
-          case("directories")
-            directories_present = .true.
-          case("macros")
-            macros_present = .true.
+         !> Valid keys.
+         case("suffixes", "directories", "macros", "export-windows-macro")
+         case default
+            call syntax_error(error, "Key '"//list(ikey)%key//"' not allowed in preprocessor '"//name//"'."); exit
          end select
       end do
    end subroutine check

@@ -126,7 +126,7 @@ contains
             end if
         end if
 
-        if (package%build%export_windows_macro) call add_fpm_is_windows_macro(package%preprocess)
+        call add_fpm_is_windows_macro(package%preprocess)
 
     end subroutine get_package_data
 
@@ -193,33 +193,21 @@ contains
         integer :: i, j
 
         if (os_is_unix()) return
-
-        if (allocated(preprocessors)) then
-            do i = 1, size(preprocessors)
-                if (preprocessors(i)%name == 'cpp') then
-                    if (allocated(preprocessors(i)%macros)) then
-                        ! Return if macro is already defined.
-                        do j = 1, size(preprocessors(i)%macros)
-                            if (preprocessors(i)%macros(j)%s == 'FPM_IS_WINDOWS') return
-                        end do
-                        ! Macro not found, therefore add it.
-                        preprocessors(i)%macros = [preprocessors(i)%macros, string_t('FPM_IS_WINDOWS')]
-                    else
-                        preprocessors(i)%macros = [string_t('FPM_IS_WINDOWS')]
-                    end if
-                    return
+        if (.not. allocated(preprocessors)) return
+        do i = 1, size(preprocessors)
+            if (preprocessors(i)%export_windows_macro) then
+                if (allocated(preprocessors(i)%macros)) then
+                    ! Do not add if macro is already defined.
+                    do j = 1, size(preprocessors(i)%macros)
+                        if (preprocessors(i)%macros(j)%s == 'FPM_IS_WINDOWS') cycle
+                    end do
+                    ! Macro not found, therefore add it.
+                    preprocessors(i)%macros = [preprocessors(i)%macros, string_t('FPM_IS_WINDOWS')]
+                else
+                    preprocessors(i)%macros = [string_t('FPM_IS_WINDOWS')]
                 end if
-            end do
-        end if
-
-        ! No cpp macros found, add one.
-        new_cpp%name = 'cpp'
-        new_cpp%macros = [string_t('FPM_IS_WINDOWS')]
-        if (allocated(preprocessors)) then
-            preprocessors = [preprocessors, new_cpp]
-        else
-            preprocessors = [new_cpp]
-        end if
+            end if
+        end do
     end
 
 
