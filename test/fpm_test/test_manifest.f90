@@ -70,6 +70,7 @@ contains
             & new_unittest("preprocessors-empty", test_preprocessors_empty, should_fail=.true.), &
             & new_unittest("macro-parsing", test_macro_parsing, should_fail=.false.), &
             & new_unittest("macro-parsing-dependency", test_macro_parsing_dependency, should_fail=.false.), &
+            & new_unittest("not-add-windows-macro", test_not_add_windows_macro), &
             & new_unittest("add-windows-macro-to-empty", test_add_windows_macro_to_empty), &
             & new_unittest("add-windows-macro-to-preprocess", test_add_windows_macro_to_preprocess), &
             & new_unittest("add-windows-macro-to-empty-macros", test_add_windows_macro_to_empty_macros), &
@@ -96,6 +97,7 @@ contains
             & '[build]', &
             & 'auto-executables = false', &
             & 'auto-tests = false', &
+            & 'export-windows-macro = false', &
             & 'module-naming = false', &
             & '[dependencies.fpm]', &
             & 'git = "https://github.com/fortran-lang/fpm"', &
@@ -674,8 +676,9 @@ contains
             & 'name = "example"', &
             & '[build]', &
             & 'auto-executables = false', &
-            & 'auto-tests = false ', &
-            & 'module-naming = true '
+            & 'auto-tests = false', &
+            & 'export-windows-macro = true', &
+            & 'module-naming = true'
         close(unit)
 
         call get_package_data(package, temp_file, error)
@@ -692,7 +695,12 @@ contains
             return
         end if
 
-        if (.not.package%build%module_naming) then
+        if (.not. package%build%export_windows_macro) then
+            call test_failed(error, "Wong value of 'export-windows-macro' read, expecting .true.")
+            return
+        end if
+
+        if (.not. package%build%module_naming) then
             call test_failed(error, "Wong value of 'module-naming' read, expecting .true.")
             return
         end if
@@ -730,6 +738,11 @@ contains
 
         if (.not.package%build%auto_tests) then
             call test_failed(error, "Wong default value of 'auto-tests' read, expecting .true.")
+            return
+        end if
+
+        if (package%build%export_windows_macro) then
+            call test_failed(error, "Wong default value of 'export-windows-macro' read, expecting .false.")
             return
         end if
 
@@ -1428,8 +1441,8 @@ contains
 
     end subroutine test_macro_parsing_dependency
 
-    !> Add `FPM_IS_WINDOWS` macro when no preprocess table exists.
-    subroutine test_add_windows_macro_to_empty(error)
+    !> Not add `FPM_IS_WINDOWS` macro without flag.
+    subroutine test_not_add_windows_macro(error)
 
         !> Error handling
         type(error_t), allocatable, intent(out) :: error
@@ -1447,6 +1460,36 @@ contains
         close(unit)
 
         call get_package_data(package, temp_file, error)
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
+        if (allocated(error)) return
+        
+        if (allocated(package%preprocess)) call test_failed(error, 'Preprocess table should not be allocated.')
+    end
+
+    !> Add `FPM_IS_WINDOWS` macro when no preprocess table exists.
+    subroutine test_add_windows_macro_to_empty(error)
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+        
+        type(package_config_t) :: package
+        character(:), allocatable :: temp_file
+        integer :: unit
+
+        allocate(temp_file, source=get_temp_filename())
+
+        open(file=temp_file, newunit=unit)
+        write(unit, '(a)') &
+            & 'name = "example"', &
+            & 'version = "0.1.0"', &
+            & '[build]', &
+            & 'export-windows-macro = true'
+        close(unit)
+
+        call get_package_data(package, temp_file, error)
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
         if (allocated(error)) return
         
         if (os_is_unix()) then
@@ -1475,11 +1518,15 @@ contains
         write(unit, '(a)') &
             & 'name = "example"', &
             & 'version = "0.1.0"', &
+            & '[build]', &
+            & 'export-windows-macro = true', &
             & '[preprocess]', &
             & '[preprocess.cpp]'
         close(unit)
 
         call get_package_data(package, temp_file, error)
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
         if (allocated(error)) return
         
         if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
@@ -1510,12 +1557,16 @@ contains
         write(unit, '(a)') &
             & 'name = "example"', &
             & 'version = "0.1.0"', &
+            & '[build]', &
+            & 'export-windows-macro = true', &
             & '[preprocess]', &
             & '[preprocess.cpp]', &
             & 'macros = []'
         close(unit)
 
         call get_package_data(package, temp_file, error)
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
         if (allocated(error)) return
         
         if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
@@ -1546,12 +1597,16 @@ contains
         write(unit, '(a)') &
             & 'name = "example"', &
             & 'version = "0.1.0"', &
+            & '[build]', &
+            & 'export-windows-macro = true', &
             & '[preprocess]', &
             & '[preprocess.cpp]', &
             & 'macros = ["ABC"]'
         close(unit)
 
         call get_package_data(package, temp_file, error)
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
         if (allocated(error)) return
         
         if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')
@@ -1583,12 +1638,16 @@ contains
         write(unit, '(a)') &
             & 'name = "example"', &
             & 'version = "0.1.0"', &
+            & '[build]', &
+            & 'export-windows-macro = true', &
             & '[preprocess]', &
             & '[preprocess.cpp]', &
             & 'macros = ["FPM_IS_WINDOWS"]'
         close(unit)
 
         call get_package_data(package, temp_file, error)
+        open(file=temp_file, newunit=unit)
+        close(unit, status='delete')
         if (allocated(error)) return
         
         if (.not. allocated(package%preprocess)) call test_failed(error, 'Preprocess table not allocated.')

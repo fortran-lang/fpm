@@ -7,7 +7,6 @@
 !> Additionally, the required data types for users of this module are reexported
 !> to hide the actual implementation details.
 module fpm_manifest
-    use fpm_manifest_build, only: build_config_t
     use fpm_manifest_example, only : example_config_t
     use fpm_manifest_executable, only : executable_config_t
     use fpm_manifest_dependency, only : dependency_config_t
@@ -90,7 +89,7 @@ contains
 
 
     !> Obtain package meta data from a configuation file
-    subroutine get_package_data(package, file, error, apply_defaults, add_is_windows_macro)
+    subroutine get_package_data(package, file, error, apply_defaults)
 
         !> Parsed package meta data
         type(package_config_t), intent(out) :: package
@@ -104,12 +103,8 @@ contains
         !> Apply package defaults (uses file system operations)
         logical, intent(in), optional :: apply_defaults
 
-        !> Add `FPM_IS_WINDOWS` macro to the preprocessor
-        logical, intent(in), optional :: add_is_windows_macro
-
         type(toml_table), allocatable :: table
         character(len=:), allocatable :: root
-        logical :: set_is_windows_macro
 
         call read_package_file(table, file, error)
         if (allocated(error)) return
@@ -131,9 +126,7 @@ contains
             end if
         end if
 
-        set_is_windows_macro = .true.
-        if (present(add_is_windows_macro)) set_is_windows_macro = add_is_windows_macro
-        if (set_is_windows_macro) call add_fpm_is_windows_macro(package%preprocess)
+        if (package%build%export_windows_macro) call add_fpm_is_windows_macro(package%preprocess)
 
     end subroutine get_package_data
 

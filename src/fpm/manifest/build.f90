@@ -30,6 +30,9 @@ module fpm_manifest_build
         !> Automatic discovery of tests
         logical :: auto_tests
 
+        !> Export `FPM_IS_WINDOWS` macro on Windows.
+        logical :: export_windows_macro = .false.
+
         !> Enforcing of package module names
         logical :: module_naming = .false.
         type(string_t) :: module_prefix
@@ -86,6 +89,13 @@ contains
 
         if (stat /= toml_stat%success) then
             call fatal_error(error,"Error while reading value for 'auto-examples' in fpm.toml, expecting logical")
+            return
+        end if
+
+        call get_value(table, "export-windows-macro", self%export_windows_macro, .false., stat=stat)
+
+        if (stat /= toml_stat%success) then
+            call fatal_error(error,"Error while reading value for 'export-windows-macro' in fpm.toml, expecting logical")
             return
         end if
 
@@ -147,10 +157,8 @@ contains
         do ikey = 1, size(list)
             select case(list(ikey)%key)
 
-            case("auto-executables", "auto-examples", "auto-tests", "link", "external-modules")
-                continue
-
-            case ("module-naming")
+            case("auto-executables", "auto-examples", "auto-tests", "link", "external-modules", &
+                & "export-windows-macro", "module-naming")
                 continue
 
             case default
