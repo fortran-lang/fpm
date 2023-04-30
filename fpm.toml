@@ -5,6 +5,9 @@ author = "fpm maintainers"
 maintainer = ""
 copyright = "2020 fpm contributors"
 
+[build]
+export-windows-macro = true
+
 [preprocess]
 [preprocess.cpp]
 macros=["FPM_RELEASE_VERSION={version}"]
