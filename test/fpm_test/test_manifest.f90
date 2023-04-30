@@ -96,7 +96,6 @@ contains
             & '[build]', &
             & 'auto-executables = false', &
             & 'auto-tests = false', &
-            & 'export-windows-macro = false', &
             & 'module-naming = false', &
             & '[dependencies.fpm]', &
             & 'git = "https://github.com/fortran-lang/fpm"', &
