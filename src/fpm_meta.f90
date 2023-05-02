@@ -1136,18 +1136,11 @@ subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
           cpp_wrappers = [string_t(get_env('I_MPI_CXX','mpiicpc'))]
          fort_wrappers = [string_t(get_env('I_MPI_F90','mpiifort'))]
 
-         ! temporary
-         deallocate(c_wrappers,cpp_wrappers,fort_wrappers)
-         allocate(c_wrappers(0),cpp_wrappers(0),fort_wrappers(0))
-
-         ! It is possible that
+         ! Also search MPI wrappers via the base MPI folder
          mpi_root = get_env('I_MPI_ROOT')
-
          if (mpi_root/="") then
 
              mpi_root = join_path(mpi_root,'bin')
-
-             print *, 'mpi_root',mpi_root
 
              intel_wrap = join_path(mpi_root,'mpiifort')
              if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
@@ -1162,7 +1155,6 @@ subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
              if (intel_wrap/="") cpp_wrappers = [cpp_wrappers,string_t(intel_wrap)]
 
          end if
-
 
        case (id_pgi,id_nvhpc)
 

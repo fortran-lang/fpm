@@ -247,6 +247,4 @@ jobs:
       shell: bash
       run: |
         ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
-      env:
-        FPM_FC : ${{ env.FC }}
 
