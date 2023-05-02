@@ -95,7 +95,7 @@ integer, parameter :: MPI_TYPE_MSMPI   = 4
 public             :: MPI_TYPE_NAME
 
 !> Debugging information
-logical, parameter, private :: verbose = .false.
+logical, parameter, private :: verbose = .true.
 
 integer, parameter, private :: LANG_FORTRAN = 1
 integer, parameter, private :: LANG_C       = 2
@@ -474,6 +474,9 @@ subroutine init_mpi(this,compiler,error)
             cxxwrap = fort_wrappers(wcfit(LANG_FORTRAN))
         end if
 
+        print *, 'wcfit = ',wcfit
+        print *, 'mpilib = ',mpilib
+
         !> Initialize MPI package from wrapper command
         call init_mpi_from_wrappers(this,compiler,mpilib(LANG_FORTRAN),fwrap,cwrap,cxxwrap,error)
         if (allocated(error)) return
@@ -499,14 +502,10 @@ subroutine wrapper_compiler_fit(fort_wrappers,c_wrappers,cpp_wrappers,compiler,w
    type(error_t), allocatable, intent(out) :: error
    integer, intent(out), dimension(3) :: wrap, mpi
 
-   logical :: has_wrappers
    type(error_t), allocatable :: wrap_error
 
    wrap = 0
    mpi  = MPI_TYPE_NONE
-
-   !> Were any wrappers found?
-   has_wrappers = size(fort_wrappers)*size(c_wrappers)*size(cpp_wrappers)>0
 
    if (size(fort_wrappers)>0) &
    call mpi_compiler_match(LANG_FORTRAN,fort_wrappers,compiler,wrap(LANG_FORTRAN),mpi(LANG_FORTRAN),wrap_error)
@@ -1047,7 +1046,7 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
         screen = mpi_wrapper_query(mpilib,wrappers(i),'compiler',verbose=.false.,error=error)
         if (allocated(error)) return
 
-        print *, 'screen <'//screen%s//'> compiler ',compiler%fc
+        print *, 'screen <'//screen%s//'> compiler ',compiler%fc,' language = ',language
 
 
         select case (language)
@@ -1063,12 +1062,12 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
 
            case (LANG_C)
                ! For other languages, we can only hope that the name matches the expected one
-               if (screen%s==compiler%cc) then
+               if (screen%s==compiler%cc .or. screen%s==compiler%fc) then
                    which_one = i
                    return
                end if
            case (LANG_CXX)
-               if (screen%s==compiler%cxx) then
+               if (screen%s==compiler%cxx .or. screen%s==compiler%fc) then
                    which_one = i
                    return
                end if
@@ -1105,6 +1104,9 @@ subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
     type(compiler_t), intent(in) :: compiler
     type(string_t), allocatable, intent(out) :: c_wrappers(:),cpp_wrappers(:),fort_wrappers(:)
 
+    character(len=:), allocatable :: mpi_root,intel_wrap
+    type(error_t), allocatable :: error
+
     ! Attempt gathering MPI wrapper names from the environment variables
     c_wrappers    = [string_t(get_env('MPICC' ,'mpicc'))]
     cpp_wrappers  = [string_t(get_env('MPICXX','mpic++'))]
@@ -1130,11 +1132,37 @@ subroutine mpi_wrappers(compiler,fort_wrappers,c_wrappers,cpp_wrappers)
        case (id_intel_classic_windows,id_intel_llvm_windows, &
              id_intel_classic_nix,id_intel_classic_mac,id_intel_llvm_nix,id_intel_llvm_unknown)
 
-            print *, 'intel wrappers'
-
             c_wrappers = [string_t(get_env('I_MPI_CC','mpiicc'))]
           cpp_wrappers = [string_t(get_env('I_MPI_CXX','mpiicpc'))]
          fort_wrappers = [string_t(get_env('I_MPI_F90','mpiifort'))]
+
+         ! temporary
+         deallocate(c_wrappers,cpp_wrappers,fort_wrappers)
+         allocate(c_wrappers(0),cpp_wrappers(0),fort_wrappers(0))
+
+         ! It is possible that
+         mpi_root = get_env('I_MPI_ROOT')
+
+         if (mpi_root/="") then
+
+             mpi_root = join_path(mpi_root,'bin')
+
+             print *, 'mpi_root',mpi_root
+
+             intel_wrap = join_path(mpi_root,'mpiifort')
+             if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
+             if (intel_wrap/="") fort_wrappers = [fort_wrappers,string_t(intel_wrap)]
+
+             intel_wrap = join_path(mpi_root,'mpiicc')
+             if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
+             if (intel_wrap/="") c_wrappers = [c_wrappers,string_t(intel_wrap)]
+
+             intel_wrap = join_path(mpi_root,'mpiicpc')
+             if (get_os_type()==OS_WINDOWS) intel_wrap = get_dos_path(intel_wrap,error)
+             if (intel_wrap/="") cpp_wrappers = [cpp_wrappers,string_t(intel_wrap)]
+
+         end if
+
 
        case (id_pgi,id_nvhpc)
 
@@ -1209,6 +1237,15 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
         end if
     end if
 
+    ! Empty command
+    if (len_trim(wrapper)<=0) then
+        if (verbose) print *, '+ <EMPTY COMMAND>'
+        if (present(exitcode)) exitcode = 0
+        if (present(cmd_success)) cmd_success = .true.
+        if (present(screen_output)) screen_output = string_t("")
+        return
+    end if
+
     ! Init command
     command = trim(wrapper%s)
 
@@ -1270,8 +1307,14 @@ integer function which_mpi_library(wrapper,compiler,verbose)
     ! Init as currently unsupported library
     which_mpi_library = MPI_TYPE_NONE
 
+    print *, 'len_trim= ',len_trim(wrapper)
+
+    if (len_trim(wrapper)<=0) return
+
     ! Run mpi wrapper first
     call run_mpi_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
+
+    print *, 'is_mpi_wrapper=',is_mpi_wrapper,' wrapper = ',wrapper%s
 
     if (is_mpi_wrapper) then
 
