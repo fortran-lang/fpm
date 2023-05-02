@@ -31,9 +31,11 @@ jobs:
         include:
           - os: ubuntu-latest
             mpi: intel
-          - os: macos-11 
+          - os: ubuntu-latest
             mpi: openmpi
-          - os: macos-11 
+          - os: macos-11
+            mpi: openmpi
+          - os: macos-11
             mpi: mpich
         #- os: windows-latest # temporary
         #  mpi: msmpi
@@ -81,12 +83,12 @@ jobs:
           curl
           gcc-fortran
 
-    - name: (Ubuntu) Install gfortran 
+    - name: (Ubuntu) Install gfortran
       if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
       run: |
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
         --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
-        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}        
+        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}
 
     - name: (Ubuntu) Install OpenMPI
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
@@ -188,7 +190,7 @@ jobs:
         ${{ env.BOOTSTRAP }} run -- --version
         ${{ env.BOOTSTRAP }} run -- --help
 
-    - name: Test Fortran fpm (bootstrap)      
+    - name: Test Fortran fpm (bootstrap)
       shell: bash
       run: |
         ${{ env.BOOTSTRAP }} test
