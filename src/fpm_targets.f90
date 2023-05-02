@@ -305,8 +305,7 @@ subroutine build_target_list(targets,model)
                     call add_target(targets,package=model%packages(j)%name,type = FPM_TARGET_EXECUTABLE,&
                                     link_libraries = sources(i)%link_libraries, &
                                     output_name = join_path(exe_dir, &
-                                    sources(i)%exe_name//xsuffix), &
-                                    features = model%packages(j)%features)
+                                    sources(i)%exe_name//xsuffix))
 
 
                     ! If the main program is on a C/C++ source, the Intel Fortran compiler requires option
@@ -840,9 +839,8 @@ subroutine resolve_target_linking(targets, model)
             ! If the main program is a C/C++ one, Intel compilers require additional
             ! linking flag -nofor-main to avoid a "duplicate main" error, see
             ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
-            if (target%target_type==FPM_TARGET_EXECUTABLE) then
+            if (model%compiler%is_intel() .and. target%target_type==FPM_TARGET_EXECUTABLE) then
                 print *, 'target compile flags ',target%compile_flags
-                print *, 'target fortran features ',get_feature_flags(model%compiler, target%features)
             end if
 
             !> Get macros as flags.
