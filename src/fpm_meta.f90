@@ -1184,6 +1184,8 @@ type(version_t) function mpi_version_get(mpilib,wrapper,error)
    version_line = mpi_wrapper_query(mpilib,wrapper,'version',error=error)
    if (allocated(error)) return
 
+   print *, 'version line = ',version_line%s
+
    ! Wrap to object
    call new_version(mpi_version_get,version_line%s,error)
 
@@ -1695,6 +1697,8 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     call syntax_error(error,'cannot retrieve MPICH library version from <mpichversion, '//wrapper%s//', mpiexec>')
                     return
                  else
+
+                    print *, 'version line=',screen%s
 
                     ! Extract version
                     ire = regex(screen%s,'\d+.\d+.\d+',length=length)
