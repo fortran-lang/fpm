@@ -98,6 +98,9 @@ jobs:
       run: |
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
+        echo "FPM_FC=ifort" >> $GITHUB_ENV
+        echo "FPM_CC=icc" >> $GITHUB_ENV
+        echo "FPM_CXX=icpc" >> $GITHUB_ENV
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')
