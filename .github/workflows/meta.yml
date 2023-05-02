@@ -82,7 +82,7 @@ jobs:
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       uses: awvwgk/setup-fortran@v1
       with:
-        compiler: intel
+        compiler: intel-classic
         version: 2023.0  
 
     - name: (Ubuntu) Setup Intel oneAPI environment
