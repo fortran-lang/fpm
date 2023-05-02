@@ -481,6 +481,13 @@ subroutine init_mpi(this,compiler,error)
         call init_mpi_from_wrappers(this,compiler,mpilib(LANG_FORTRAN),fwrap,cwrap,cxxwrap,error)
         if (allocated(error)) return
 
+        !> Request Fortran implicit typing
+        if (mpilib(LANG_FORTRAN)/=MPI_TYPE_INTEL) then
+            allocate(this%fortran)
+            this%fortran%implicit_typing   = .true.
+            this%fortran%implicit_external = .true.
+        endif
+
     end if
 
     1 format('MPI wrappers found: fortran=',i0,' c=',i0,' c++=',i0)
@@ -649,7 +656,7 @@ logical function msmpi_init(this,compiler,error) result(found)
 
         end if use_prebuilt
 
-        !> Request no Fortran implicit typing
+        !> Request Fortran implicit typing
         allocate(this%fortran)
         this%fortran%implicit_typing = .true.
         this%fortran%implicit_external = .true.
