@@ -50,11 +50,11 @@ jobs:
         #  mpi: intel
         #- os: windows-latest
         #  mpi: openmpi
-        #- os: ubuntu-latest 
+        #- os: ubuntu-latest
         #  mpi: openmpi
-        #- os: ubuntu-latest 
+        #- os: ubuntu-latest
         #  mpi: mpich
-        #- os: ubuntu-latest 
+        #- os: ubuntu-latest
         #  mpi: msmpi
 
         #    env:
@@ -78,17 +78,24 @@ jobs:
           curl
           gcc-fortran
 
-    - name: (Ubuntu) Install Intel toolchain 
+    - name: (Ubuntu) Retrieve Intel toolchain
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
-      uses: awvwgk/setup-fortran@v1
-      with:
-        compiler: intel-classic
-        version: 2021.1.1
+      timeout-minutes: 1
+      run: |
+        wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt-get update
+
+    - name: (Ubuntu) Install Intel oneAPI
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
+      timeout-minutes: 5
+      run: sudo apt-get install intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mpi intel-oneapi-mpi-devel intel-oneapi-mkl ninja-build
 
     - name: (Ubuntu) Setup Intel oneAPI environment
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
       run: |
-        sudo apt-get install intel-oneapi-mpi-2021.1.1 intel-oneapi-mpi-2021.1.1         
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
@@ -233,6 +240,6 @@ jobs:
       run: |
         echo "using compiler $FPM_FC "
         ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
-      env: 
+      env:
         FPM_FC : ${{ env.FC }}
 
