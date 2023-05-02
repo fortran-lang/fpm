@@ -308,24 +308,28 @@ subroutine build_target_list(targets,model)
                                     sources(i)%exe_name//xsuffix))
 
 
+                    associate(target=>targets(size(targets))%ptr)
+
                     ! If the main program is on a C/C++ source, the Intel Fortran compiler requires option
                     ! -nofor-main to avoid "duplicate main" errors.
                     ! https://stackoverflow.com/questions/36221612/p3dfft-compilation-ifort-compiler-error-multiple-definiton-of-main
                     if (model%compiler%is_intel() .and. any(exe_type==[FPM_TARGET_C_OBJECT,FPM_TARGET_CPP_OBJECT])) then
                        if (get_os_type()==OS_WINDOWS) then
-                           targets(size(targets))%ptr%compile_flags = '/nofor-main'
+                           target%compile_flags = '/nofor-main'
                        else
-                           targets(size(targets))%ptr%compile_flags = '-nofor-main'
+                           target%compile_flags = '-nofor-main'
                        end if
                     end if
 
                     ! Executable depends on object
-                    call add_dependency(targets(size(targets))%ptr, targets(size(targets)-1)%ptr)
+                    call add_dependency(target, targets(size(targets)-1)%ptr)
 
                     if (with_lib) then
                         ! Executable depends on library
-                        call add_dependency(targets(size(targets))%ptr, targets(1)%ptr)
+                        call add_dependency(target, targets(1)%ptr)
                     end if
+
+                    endassociate
 
                 end select
 
