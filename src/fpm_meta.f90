@@ -710,7 +710,8 @@ subroutine find_command_location(command,path,echo,verbose,error)
     type(error_t), allocatable, intent(out) :: error
 
     character(:), allocatable :: tmp_file,screen_output,line,fullpath,search_command
-    integer :: stat,iunit,ire,length
+    integer :: stat,iunit,ire,length,try
+    character(*), parameter :: search(2) = ["where ","which "]
 
     if (len_trim(command)<=0) then
         call fatal_error(error,'empty command provided in find_command_location')
@@ -719,9 +720,12 @@ subroutine find_command_location(command,path,echo,verbose,error)
 
     tmp_file = get_temp_filename()
 
-    search_command = merge("where ","which ",get_os_type()==OS_WINDOWS)//command
-
-    call run(search_command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
+    ! On Windows, we try both commands because we may be on WSL
+    do try=merge(1,2,get_os_type()==OS_WINDOWS),2
+       search_command = search(try)//command
+       call run(search_command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
+       if (stat==0) exit
+    end do
     if (stat/=0) then
         call fatal_error(error,'find_command_location failed for '//command)
         return
