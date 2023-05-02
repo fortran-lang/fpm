@@ -469,13 +469,14 @@ subroutine init_mpi(this,compiler,error)
         !> fortran compiler suite, we still want to enable C language flags as that is most likely being
         !> ABI-compatible anyways. However, issues may arise.
         !> see e.g. Homebrew with clabng C/C++ and GNU fortran at https://gitlab.kitware.com/cmake/cmake/-/issues/18139
-        if (wcfit(LANG_FORTRAN)>0 .and. wcfit(LANG_C)==0 .and. wcfit(LANG_CXX)==0) then
+        if (wcfit(LANG_FORTRAN)>0 .and. all(wcfit([LANG_C,LANG_CXX])==0)) then
             cwrap   = fort_wrappers(wcfit(LANG_FORTRAN))
             cxxwrap = fort_wrappers(wcfit(LANG_FORTRAN))
         end if
 
-        print *, 'wcfit = ',wcfit
-        print *, 'mpilib = ',mpilib
+        if (verbose) print *, '+ fortran MPI wrapper: ',fwrap%s
+        if (verbose) print *, '+ c       MPI wrapper: ',cwrap%s
+        if (verbose) print *, '+ c++     MPI wrapper: ',cxxwrap%s
 
         !> Initialize MPI package from wrapper command
         call init_mpi_from_wrappers(this,compiler,mpilib(LANG_FORTRAN),fwrap,cwrap,cxxwrap,error)
@@ -1018,80 +1019,13 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
             ! Add heading space
             flags = string_t(' '//flags%s)
 
-            if (verbose) print *, 'MPI set language flags from wrapper <',wrapper%s,'>: flags=',flags%s
+            if (verbose) print *, '+ MPI language flags from wrapper <',wrapper%s,'>: flags=',flags%s
 
         endif
 
     end subroutine set_language_flags
 
 end subroutine init_mpi_from_wrappers
-
-! Due to OpenMPI's Fortran wrapper bug (https://github.com/open-mpi/ompi/issues/11636)
-! we need to check whether all library directories are real
-subroutine check_openmpi_lib_dirs(link_flags,compiler,mpilib,fort_wrapper,c_wrapper,cxx_wrapper,error)
-    type(string_t), intent(inout) :: link_flags
-    type(compiler_t), intent(in) :: compiler
-    integer, intent(in) :: mpilib
-    type(string_t), intent(in) :: fort_wrapper,c_wrapper,cxx_wrapper
-    type(error_t), allocatable, intent(out) :: error
-
-    character(:), allocatable :: tokens(:),dtokens(:),dir_name,cdir_name
-    type(string_t), allocatable :: include_dirs(:),dir_tokens(:)
-    type(string_t) :: new_dirs
-    integer :: i, j, k
-    integer, allocatable :: invalid_dirs(:)
-
-    if (mpilib/=MPI_TYPE_OPENMPI .or. .not.os_is_unix()) return
-    if (len_trim(link_flags)<=0) return
-
-    ! Extract library directory (-L/path/to/dir) from the linker flags
-    call split(link_flags%s,tokens,' ')
-
-    allocate(invalid_dirs(0),include_dirs(0))
-    check_lib_directories: do i=1,size(tokens)
-       if (str_begins_with_str(tokens(i),'-L')) then
-          dir_name = trim(tokens(i)(3:))
-          if (.not.exists(join_path(dir_name,'.'))) then
-             invalid_dirs = [invalid_dirs,i]
-             print *, 'invalid directory: ',dir_name
-          endif
-       endif
-    end do check_lib_directories
-
-    ! No invalid directories found
-    if (size(invalid_dirs)<=0) return
-
-    ! The only viable strategy is to replace all invalid directory with all include directories.
-    ! Because include directories have Fortran .mod files and mpif.h, we hope the library files are there too.
-    ! Include directories need to be retrieved
-    if (size(invalid_dirs)>0 ) then
-
-        ! Query include libraries for Fortran
-        new_dirs = mpi_wrapper_query(mpilib,fort_wrapper,'incl_dirs',verbose,error)
-        if (allocated(error) .or. len_trim(new_dirs)<=0) return
-
-        ! Split into strings
-        call split(new_dirs%s,dtokens,' ')
-        allocate(dir_tokens(size(dtokens)))
-        do i=1,size(dtokens)
-            dir_tokens(i) = string_t('-L'//trim(adjustl(dtokens(i))))
-        end do
-        new_dirs%s = string_cat(dir_tokens,' ')
-
-        ! Assemble a unique token with the new library dirs
-        link_flags = string_t("")
-        do i=1,size(tokens)
-            if (i==invalid_dirs(1)) then
-                ! Replace invalid directory with the new library dirs
-                link_flags%s = link_flags%s//' '//trim(new_dirs%s)
-            else
-                link_flags%s = link_flags%s//' '//trim(tokens(i))
-            end if
-        end do
-
-    endif
-
-end subroutine check_openmpi_lib_dirs
 
 !> Match one of the available compiler wrappers with the current compiler
 subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
@@ -1111,15 +1045,10 @@ subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
 
     do i=1,size(wrappers)
 
-        print *, 'TEST WRAPPER '//wrappers(i)%s
-
         mpilib = which_mpi_library(wrappers(i),compiler,verbose=.false.)
 
         screen = mpi_wrapper_query(mpilib,wrappers(i),'compiler',verbose=.false.,error=error)
         if (allocated(error)) return
-
-        print *, 'screen <'//screen%s//'> compiler ',compiler%fc,' language = ',language
-
 
         select case (language)
            case (LANG_FORTRAN)
@@ -1165,8 +1094,6 @@ type(version_t) function mpi_version_get(mpilib,wrapper,error)
    ! Get version string
    version_line = mpi_wrapper_query(mpilib,wrapper,'version',error=error)
    if (allocated(error)) return
-
-   print *, 'version line = ',version_line%s
 
    ! Wrap to object
    call new_version(mpi_version_get,version_line%s,error)
@@ -1373,14 +1300,10 @@ integer function which_mpi_library(wrapper,compiler,verbose)
     ! Init as currently unsupported library
     which_mpi_library = MPI_TYPE_NONE
 
-    print *, 'len_trim= ',len_trim(wrapper)
-
     if (len_trim(wrapper)<=0) return
 
     ! Run mpi wrapper first
     call run_mpi_wrapper(wrapper,verbose=verbose,cmd_success=is_mpi_wrapper)
-
-    print *, 'is_mpi_wrapper=',is_mpi_wrapper,' wrapper = ',wrapper%s
 
     if (is_mpi_wrapper) then
 
@@ -1463,8 +1386,6 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     call syntax_error(error,'local INTEL MPI library does not support -show')
                     return
                  end if
-
-                 print *, 'INTEL MPI compiler: ',screen%s
 
               case default
 
