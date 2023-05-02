@@ -29,10 +29,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #        - os: ubuntu-latest
-          #mpi: intel
-        - os: ubuntu-latest
-          mpi: openmpi
+          - os: ubuntu-latest
+            mpi: intel
+          - os: macos-11 
+            mpi: openmpi
+          - os: macos-11 
+            mpi: mpich
+        #- os: windows-latest # temporary
+        #  mpi: msmpi
+          #    - os: ubuntu-latest DOES NOT WORK
+          #mpi: openmpi
         #        os: [macos-11,windows-latest,ubuntu-latest]
         #mpi: [mpich,openmpi,msmpi,intel]
         #gcc_v: [10] # Version of GFortran we want to use
@@ -40,12 +46,6 @@ jobs:
         #- os: macos-11
         #  mpi: intel
         #- os: macos-11
-        #  mpi: msmpi
-        #- os: macos-11 # temporary
-        #  mpi: openmpi
-        #- os: macos-11 # temporary
-        #  mpi: mpich
-        #- os: windows-latest # temporary
         #  mpi: msmpi
         #- os: windows-latest
         #  mpi: mpich
