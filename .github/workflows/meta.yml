@@ -225,8 +225,7 @@ jobs:
     - name: Run metapackage tests using the release version
       shell: bash
       run: |
-        echo "FPM_FC=${{ matrix.FPM_FC }}" >> $GITHUB_ENV
-        FPM_FC=$(echo ${{ env.FPM_FC }})
+        FPM_FC=$(echo ${{ matrix.FPM_FC }})
         echo "using compiler $FPM_FC "
         ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
