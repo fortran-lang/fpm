@@ -971,20 +971,9 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
         this%has_link_flags = len_trim(this%link_flags)>0
     endif
 
-    ! Add heading space
-    if (this%has_link_flags) then
-        this%link_flags = string_t(' -Wl,--start-group '//this%link_flags%s)
-
-!        ! If
-!        if (compiler%) then
-!            !
-!
-!            -Wl,--start-group
-!
-!
-!        end if
-
-
+    ! Request to use libs in arbitrary order
+    if (this%has_link_flags .and. compiler%is_gnu() .and. os_is_unix() .and. get_os_type()/=OS_MACOS) then
+        this%link_flags = string_t(' -Wl,--as-needed '//this%link_flags%s)
     end if
 
 

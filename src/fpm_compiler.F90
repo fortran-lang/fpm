@@ -107,6 +107,8 @@ contains
     procedure :: is_unknown
     !> Check whether this is an Intel compiler
     procedure :: is_intel
+    !> Check whether this is a GNU compiler
+    procedure :: is_gnu
     !> Enumerate libraries, based on compiler and platform
     procedure :: enumerate_libraries
     !> Return compiler name
@@ -898,6 +900,11 @@ pure logical function is_intel(self)
     is_intel = any(self%id == [id_intel_classic_nix,id_intel_classic_mac,id_intel_classic_windows, &
                                id_intel_llvm_nix,id_intel_llvm_windows,id_intel_llvm_unknown])
 end function is_intel
+
+pure logical function is_gnu(self)
+    class(compiler_t), intent(in) :: self
+    is_gnu = any(self%id == [id_f95,id_gcc,id_caf])
+end function is_gnu
 
 !>
 !> Enumerate libraries, based on compiler and platform
