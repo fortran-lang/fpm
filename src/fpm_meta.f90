@@ -836,6 +836,7 @@ subroutine compiler_get_version(self,version,is_msys2,error)
     type(error_t), allocatable, intent(out) :: error
 
     character(:), allocatable :: tmp_file,screen_output,line
+    type(string_t) :: ver
     integer :: stat,iunit,ire,length
 
     is_msys2 = .false.
@@ -869,19 +870,11 @@ subroutine compiler_get_version(self,version,is_msys2,error)
             ! Check if this gcc is from the MSYS2 project
             is_msys2 = index(screen_output,'MSYS2')>0
 
+            ver = extract_version_text(screen_output,self%fc//' compiler',error)
+            if (allocated(error)) return
+
             ! Extract version
-            ire = regex(screen_output,'\d+.\d+.\d+',length=length)
-
-            if (ire>0 .and. length>0) then
-                ! Parse version into the object (this should always work)
-                screen_output = screen_output(ire:ire+length-1)
-            else
-                call syntax_error(error,'cannot retrieve '//self%fc//' compiler version.')
-                return
-            end if
-
-            ! Wrap to object
-            call new_version(version,screen_output,error)
+            call new_version(version,ver%s,error)
 
 
        case default
@@ -1658,18 +1651,8 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  end if
 
                  ! Extract version
-                 ire = regex(screen%s,'\d+.\d+.\d+',length=length)
-
-                 if (ire>0 .and. length>0) then
-
-                     ! Parse version into the object (this should always work)
-                     screen%s = screen%s(ire:ire+length-1)
-
-                 else
-
-                     call syntax_error(error,'cannot retrieve OpenMPI library version.')
-
-                 end if
+                 screen = extract_version_text(screen%s,'OpenMPI library',error)
+                 if (allocated(error)) return
 
               case (MPI_TYPE_MPICH)
 
@@ -1698,16 +1681,8 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     return
                  else
 
-                    print *, 'version line=',screen%s
-
-                    ! Extract version
-                    ire = regex(screen%s,'\d+.\d+.\d+',length=length)
-                    if (ire>0 .and. length>0) then
-                        ! Parse version into the object (this should always work)
-                        screen%s = screen%s(ire:ire+length-1)
-                    else
-                        call syntax_error(error,'cannot retrieve MPICH library version.')
-                    end if
+                    screen = extract_version_text(screen%s,'MPICH library',error)
+                    if (allocated(error)) return
 
                  end if
 
@@ -1724,23 +1699,9 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     call remove_new_lines(screen)
                  end if
 
-                 print *, 'version screen = ',screen%s
-
                  ! Extract version
-                 ire = regex(screen%s,'\d+\.\d+\.\d+',length=length)
-
-                 print *, 'ire = ',ire,' length=',length
-
-                 if (ire>0 .and. length>0) then
-
-                     ! Parse version into the object (this should always work)
-                     screen%s = screen%s(ire:ire+length-1)
-
-                 else
-
-                     call syntax_error(error,'cannot retrieve INTEL MPI library version.')
-
-                 end if
+                 screen = extract_version_text(screen%s,'INTEL MPI library',error)
+                 if (allocated(error)) return
 
               case default
 
@@ -1799,5 +1760,37 @@ subroutine remove_new_lines(string)
     end do
 
 end subroutine remove_new_lines
+
+type(string_t) function extract_version_text(text,what,error) result(ver)
+    character(*), intent(in) :: text
+    character(*), intent(in) :: what
+    type(error_t), allocatable, intent(out) :: error
+
+    integer :: ire, length
+
+    if (len_trim(text)<=0) then
+        call syntax_error(error,'cannot retrieve '//what//' version: empty input string')
+        return
+    end if
+
+    ! Extract 3-sized version "1.0.4"
+    ire = regex(text,'\d+\.\d+\.\d+',length=length)
+    if (ire>0 .and. length>0) then
+        ! Parse version into the object (this should always work)
+        ver = string_t(text(ire:ire+length-1))
+    else
+
+        ! Try 2-sized version "1.0"
+        ire = regex(text,'\d+\.\d+',length=length)
+
+        if (ire>0 .and. length>0) then
+            ver = string_t(text(ire:ire+length-1))
+        else
+            call syntax_error(error,'cannot retrieve '//what//' version.')
+        end if
+
+    end if
+
+end function extract_version_text
 
 end module fpm_meta
