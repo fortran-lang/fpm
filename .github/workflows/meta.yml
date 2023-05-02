@@ -98,9 +98,6 @@ jobs:
       run: |
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
-        echo "FPM_FC=ifort" >> $GITHUB_ENV
-        echo "FPM_CC=icc" >> $GITHUB_ENV
-        echo "FPM_CXX=icpc" >> $GITHUB_ENV
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')
@@ -176,7 +173,7 @@ jobs:
         ${{ env.BOOTSTRAP }} run -- --version
         ${{ env.BOOTSTRAP }} run -- --help
 
-    - name: Test Fortran fpm (bootstrap)
+    - name: Test Fortran fpm (bootstrap)      
       shell: bash
       run: |
         ${{ env.BOOTSTRAP }} test
@@ -238,10 +235,17 @@ jobs:
       env:
         EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
 
+    - name: (Ubuntu) Use Intel compiler for the metapackage tests
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
+      shell: bash
+      run: |
+        echo "FPM_FC=ifort" >> $GITHUB_ENV
+        echo "FPM_CC=icc" >> $GITHUB_ENV
+        echo "FPM_CXX=icpc" >> $GITHUB_ENV
+
     - name: Run metapackage tests using the release version
       shell: bash
       run: |
-        echo "using compiler $FPM_FC "
         ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
       env:
         FPM_FC : ${{ env.FC }}
