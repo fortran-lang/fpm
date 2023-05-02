@@ -30,9 +30,7 @@ jobs:
         include:
         - os: ubuntu-latest
           mpi: intel
-          env: 
-            FC: ifort
-            FPM_FC: ifort
+          FPM_FC: ifort
         #        os: [macos-11,windows-latest,ubuntu-latest]
         #mpi: [mpich,openmpi,msmpi,intel]
         #gcc_v: [10] # Version of GFortran we want to use
@@ -227,7 +225,7 @@ jobs:
     - name: Run metapackage tests using the release version
       shell: bash
       run: |
-        echo "FPM_FC=${{ env.FPM_FC }}" >> $GITHUB_ENV
+        echo "FPM_FC=${{ matrix.FPM_FC }}" >> $GITHUB_ENV
         echo "using compiler $FPM_FC"
         ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
