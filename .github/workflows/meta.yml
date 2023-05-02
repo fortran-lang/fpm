@@ -33,9 +33,7 @@ jobs:
             mpi: intel
           - os: ubuntu-latest
             mpi: openmpi
-          - os: macos-11
-            mpi: openmpi
-          - os: macos-11
+          - os: ubuntu-latest
             mpi: mpich
         #- os: windows-latest # temporary
         #  mpi: msmpi
@@ -94,6 +92,11 @@ jobs:
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
       run: |
         sudo apt install -y -q openmpi-bin libopenmpi-dev
+
+    - name: (Ubuntu) Install MPICH
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'mpich')
+      run: |
+        sudo apt install -y -q mpich
 
     - name: (Ubuntu) Retrieve Intel toolchain
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
