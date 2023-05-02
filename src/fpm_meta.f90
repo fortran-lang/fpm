@@ -970,12 +970,30 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
     ! Get linking flags
     if (mpilib/=MPI_TYPE_INTEL) then
         this%link_flags = mpi_wrapper_query(mpilib,fort_wrapper,'link',verbose,error)
+
+        ! We fix OpenMPI's Fortran wrapper bug (https://github.com/open-mpi/ompi/issues/11636)
+        !call fix_openmpi_link_flags(this%link_flags,compiler,mpilib,fort_wrapper,c_wrapper,cxx_wrapper,error)
+
         if (allocated(error)) return
         this%has_link_flags = len_trim(this%link_flags)>0
     endif
 
     ! Add heading space
-    if (this%has_link_flags) this%link_flags = string_t(' '//this%link_flags%s)
+    if (this%has_link_flags) then
+        this%link_flags = string_t(' -Wl,--start-group '//this%link_flags%s)
+
+!        ! If
+!        if (compiler%) then
+!            !
+!
+!            -Wl,--start-group
+!
+!
+!        end if
+
+
+    end if
+
 
     ! Add language-specific flags
     call set_language_flags(mpilib,fort_wrapper,this%has_fortran_flags,this%fflags,verbose,error)
@@ -1025,6 +1043,73 @@ subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cx
     end subroutine set_language_flags
 
 end subroutine init_mpi_from_wrappers
+
+! Due to OpenMPI's Fortran wrapper bug (https://github.com/open-mpi/ompi/issues/11636)
+! we need to check whether all library directories are real
+subroutine check_openmpi_lib_dirs(link_flags,compiler,mpilib,fort_wrapper,c_wrapper,cxx_wrapper,error)
+    type(string_t), intent(inout) :: link_flags
+    type(compiler_t), intent(in) :: compiler
+    integer, intent(in) :: mpilib
+    type(string_t), intent(in) :: fort_wrapper,c_wrapper,cxx_wrapper
+    type(error_t), allocatable, intent(out) :: error
+
+    character(:), allocatable :: tokens(:),dtokens(:),dir_name,cdir_name
+    type(string_t), allocatable :: include_dirs(:),dir_tokens(:)
+    type(string_t) :: new_dirs
+    integer :: i, j, k
+    integer, allocatable :: invalid_dirs(:)
+
+    if (mpilib/=MPI_TYPE_OPENMPI .or. .not.os_is_unix()) return
+    if (len_trim(link_flags)<=0) return
+
+    ! Extract library directory (-L/path/to/dir) from the linker flags
+    call split(link_flags%s,tokens,' ')
+
+    allocate(invalid_dirs(0),include_dirs(0))
+    check_lib_directories: do i=1,size(tokens)
+       if (str_begins_with_str(tokens(i),'-L')) then
+          dir_name = trim(tokens(i)(3:))
+          if (.not.exists(join_path(dir_name,'.'))) then
+             invalid_dirs = [invalid_dirs,i]
+             print *, 'invalid directory: ',dir_name
+          endif
+       endif
+    end do check_lib_directories
+
+    ! No invalid directories found
+    if (size(invalid_dirs)<=0) return
+
+    ! The only viable strategy is to replace all invalid directory with all include directories.
+    ! Because include directories have Fortran .mod files and mpif.h, we hope the library files are there too.
+    ! Include directories need to be retrieved
+    if (size(invalid_dirs)>0 ) then
+
+        ! Query include libraries for Fortran
+        new_dirs = mpi_wrapper_query(mpilib,fort_wrapper,'incl_dirs',verbose,error)
+        if (allocated(error) .or. len_trim(new_dirs)<=0) return
+
+        ! Split into strings
+        call split(new_dirs%s,dtokens,' ')
+        allocate(dir_tokens(size(dtokens)))
+        do i=1,size(dtokens)
+            dir_tokens(i) = string_t('-L'//trim(adjustl(dtokens(i))))
+        end do
+        new_dirs%s = string_cat(dir_tokens,' ')
+
+        ! Assemble a unique token with the new library dirs
+        link_flags = string_t("")
+        do i=1,size(tokens)
+            if (i==invalid_dirs(1)) then
+                ! Replace invalid directory with the new library dirs
+                link_flags%s = link_flags%s//' '//trim(new_dirs%s)
+            else
+                link_flags%s = link_flags%s//' '//trim(tokens(i))
+            end if
+        end do
+
+    endif
+
+end subroutine check_openmpi_lib_dirs
 
 !> Match one of the available compiler wrappers with the current compiler
 subroutine mpi_compiler_match(language,wrappers,compiler,which_one,mpilib,error)
@@ -1384,10 +1469,6 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     return
                  end if
 
-                 ! Take out the first command from the whole line
-                 call split(screen%s,tokens,delimiters=' ')
-                 screen%s = trim(tokens(1))
-
               case (MPI_TYPE_INTEL)
 
                  ! -show returns the build command of this wrapper
@@ -1399,10 +1480,6 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     return
                  end if
 
-                 ! Take out the first command from the whole line
-                 call split(screen%s,tokens,delimiters=' ')
-                 screen%s = trim(tokens(1))
-
                  print *, 'INTEL MPI compiler: ',screen%s
 
               case default
@@ -1412,6 +1489,9 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
            end select
 
+           ! Take out the first command from the whole line
+           call split(screen%s,tokens,delimiters=' ')
+           screen%s = trim(adjustl(tokens(1)))
 
        ! Get a list of additional compiler flags
        case ('flags')
@@ -1486,6 +1566,9 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
                  call remove_new_lines(screen)
 
+                 !> Address OpenMPI wrapper bug
+
+
               case (MPI_TYPE_MPICH)
 
                  call run_mpi_wrapper(wrapper,[string_t('-link-info')],verbose=verbose, &
@@ -1552,6 +1635,8 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  return
 
            end select
+
+           call remove_new_lines(screen)
 
        ! Retrieve library version
        case ('version')
