@@ -35,31 +35,8 @@ jobs:
             mpi: openmpi
           - os: ubuntu-latest
             mpi: mpich
-        #- os: windows-latest # temporary
-        #  mpi: msmpi
-          #    - os: ubuntu-latest DOES NOT WORK
-          #mpi: openmpi
-        #        os: [macos-11,windows-latest,ubuntu-latest]
-        #mpi: [mpich,openmpi,msmpi,intel]
-        #gcc_v: [10] # Version of GFortran we want to use
-        #exclude:
-        #- os: macos-11
-        #  mpi: intel
-        #- os: macos-11
-        #  mpi: msmpi
-        #- os: windows-latest
-        #  mpi: mpich
-        #- os: windows-latest
-        #  mpi: intel
-        #- os: windows-latest
-        #  mpi: openmpi
-        #- os: ubuntu-latest
-        #  mpi: openmpi
-        #- os: ubuntu-latest
-        #  mpi: mpich
-        #- os: ubuntu-latest
-        #  mpi: msmpi
-
+          - os: windows-latest 
+            mpi: msmpi
         #    env:
         #      FC: gfortran
         #      GCC_V: ${{ matrix.gcc_v }}
