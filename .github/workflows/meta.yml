@@ -85,6 +85,12 @@ jobs:
         compiler: intel-classic
         version: 2021.8  
 
+    - name: (Ubuntu) Setup Intel oneAPI environment
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
+
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')
       # there is not yet an environment variable for this path from msys2/setup-msys2
