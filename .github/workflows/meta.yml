@@ -90,11 +90,6 @@ jobs:
         compiler: intel-classic
         version: 2021.8  
 
-    - name: (Ubuntu) Install MPI SDK
-      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
-      run: DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends ca-certificates build-essential pkg-config gnupg libarchive13 openssh-server openssh-client wget net-tools git intel-basekit-getting-started intel-oneapi-advisor intel-oneapi-ccl-devel intel-oneapi-common-licensing intel-oneapi-common-vars intel-oneapi-compiler-dpcpp-cpp intel-oneapi-dal-devel intel-oneapi-dev-utilities intel-oneapi-dnnl-devel intel-oneapi-dpcpp-debugger intel-oneapi-ipp-devel intel-oneapi-ippcp-devel intel-oneapi-libdpstd-devel intel-oneapi-mkl-devel intel-oneapi-tbb-devel intel-oneapi-vtune intel-level-zero-gpu level-zero intel-hpckit-getting-started intel-oneapi-clck intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-compiler-fortran intel-oneapi-inspector intel-oneapi-itac intel-oneapi-mpi-devel 
-
-
     - name: (Windows) Put MSYS2_MinGW64 on PATH
       if: contains(matrix.os,'windows')
       # there is not yet an environment variable for this path from msys2/setup-msys2
