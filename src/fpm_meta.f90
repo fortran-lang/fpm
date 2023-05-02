@@ -474,9 +474,9 @@ subroutine init_mpi(this,compiler,error)
             cxxwrap = fort_wrappers(wcfit(LANG_FORTRAN))
         end if
 
-        if (verbose) print *, '+ fortran MPI wrapper: ',fwrap%s
-        if (verbose) print *, '+ c       MPI wrapper: ',cwrap%s
-        if (verbose) print *, '+ c++     MPI wrapper: ',cxxwrap%s
+        if (verbose) print *, '+ MPI fortran wrapper: ',fwrap%s
+        if (verbose) print *, '+ MPI c       wrapper: ',cwrap%s
+        if (verbose) print *, '+ MPI c++     wrapper: ',cxxwrap%s
 
         !> Initialize MPI package from wrapper command
         call init_mpi_from_wrappers(this,compiler,mpilib(LANG_FORTRAN),fwrap,cwrap,cxxwrap,error)
@@ -709,7 +709,7 @@ subroutine find_command_location(command,path,echo,verbose,error)
     logical, optional, intent(in) :: echo,verbose
     type(error_t), allocatable, intent(out) :: error
 
-    character(:), allocatable :: tmp_file,screen_output,line,fullpath
+    character(:), allocatable :: tmp_file,screen_output,line,fullpath,search_command
     integer :: stat,iunit,ire,length
 
     if (len_trim(command)<=0) then
@@ -717,15 +717,11 @@ subroutine find_command_location(command,path,echo,verbose,error)
         return
     end if
 
-    print *, 'searching '//command
-
     tmp_file = get_temp_filename()
 
-    if (get_os_type()==OS_WINDOWS) then
-       call run("where "//command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
-    else
-       call run("which "//command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
-    end if
+    search_command = merge("where ","which ",get_os_type()==OS_WINDOWS)//command
+
+    call run(search_command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
     if (stat/=0) then
         call fatal_error(error,'find_command_location failed for '//command)
         return
@@ -763,11 +759,8 @@ subroutine find_command_location(command,path,echo,verbose,error)
         return
     end if
 
-    print *, 'fullpath <'//fullpath//'>, command=<'//command//'>'
-
     ! Extract path only
     length = index(fullpath,command,BACK=.true.)
-    print *, 'length=',length
     if (length<=0) then
         call fatal_error(error,'full path to command ('//command//') does not include command name')
         return
@@ -802,11 +795,7 @@ subroutine get_mpi_runner(command,verbose,error)
     ! Try several commands
     do itri=1,size(try)
        call find_command_location(trim(try(itri)),command%s,verbose=.true.,error=error)
-
-       if (allocated(error)) then
-          print *, 'error returned: ',error%message
-          cycle
-       end if
+       if (allocated(error)) cycle
 
        ! Success!
        success = len_trim(command%s)>0
@@ -814,7 +803,6 @@ subroutine get_mpi_runner(command,verbose,error)
            command%s = join_path(command%s,trim(try(itri)))
            return
        endif
-
     end do
 
     ! No valid command found
@@ -1193,7 +1181,7 @@ subroutine assert_mpi_wrappers(wrappers,compiler,verbose)
     allocate(works(size(wrappers)))
 
     do i=1,size(wrappers)
-        print *, 'test wrapper <', wrappers(i)%s,'>'
+        if (verbose) print *, '+ MPI test wrapper <',wrappers(i)%s,'>'
         works(i) = which_mpi_library(wrappers(i),compiler,verbose)
     end do
 
