@@ -19,6 +19,7 @@ env:
   HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
   HOMEBREW_NO_GITHUB_API: "ON"
   HOMEBREW_NO_INSTALL_CLEANUP: "ON"
+  GCC_V: "10"
 
 jobs:
 
@@ -28,8 +29,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          #        - os: ubuntu-latest
+          #mpi: intel
         - os: ubuntu-latest
-          mpi: intel
+          mpi: openmpi
         #        os: [macos-11,windows-latest,ubuntu-latest]
         #mpi: [mpich,openmpi,msmpi,intel]
         #gcc_v: [10] # Version of GFortran we want to use
@@ -77,6 +80,19 @@ jobs:
           unzip
           curl
           gcc-fortran
+
+    - name: (Ubuntu) Install gfortran 
+      if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
+      run: |
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
+        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V} \
+        --slave /usr/bin/gcov gcov /usr/bin/gcov-${GCC_V}        
+        sudo apt-get update
+
+    - name: (Ubuntu) Install OpenMPI
+      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'openmpi')
+      run: |
+        sudo apt install -y -q openmpi-bin libopenmpi-dev
 
     - name: (Ubuntu) Retrieve Intel toolchain
       if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
