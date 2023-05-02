@@ -27,44 +27,42 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11,windows-latest,ubuntu-latest]
-        mpi: [mpich,openmpi,msmpi,intel]
-        gcc_v: [10] # Version of GFortran we want to use
-        exclude:
-        - os: macos-11
-          mpi: intel
-        - os: macos-11
-          mpi: msmpi
-        - os: macos-11 # temporary
-          mpi: openmpi
-        - os: macos-11 # temporary
-          mpi: mpich
-        - os: windows-latest # temporary
-          mpi: msmpi
-        - os: windows-latest
-          mpi: mpich
-        - os: windows-latest
-          mpi: intel
-        - os: windows-latest
-          mpi: openmpi
-        - os: ubuntu-latest 
-          mpi: openmpi
-        - os: ubuntu-latest 
-          mpi: mpich
-        - os: ubuntu-latest 
-          mpi: msmpi
         include:
-        - os: macos-11
-          os-arch: macos-x86_64
-          release-flags: --flag '-g -fbacktrace -O3'
-        - os: windows-latest
-          os-arch: windows-x86_64
-          release-flags: --flag '--static -g -fbacktrace -O3'
-          exe: .exe
+        - os: ubuntu-latest
+          mpi: intel
+          env: 
+            FC: ifort
+            FPM_FC: ifort
+        #        os: [macos-11,windows-latest,ubuntu-latest]
+        #mpi: [mpich,openmpi,msmpi,intel]
+        #gcc_v: [10] # Version of GFortran we want to use
+        #exclude:
+        #- os: macos-11
+        #  mpi: intel
+        #- os: macos-11
+        #  mpi: msmpi
+        #- os: macos-11 # temporary
+        #  mpi: openmpi
+        #- os: macos-11 # temporary
+        #  mpi: mpich
+        #- os: windows-latest # temporary
+        #  mpi: msmpi
+        #- os: windows-latest
+        #  mpi: mpich
+        #- os: windows-latest
+        #  mpi: intel
+        #- os: windows-latest
+        #  mpi: openmpi
+        #- os: ubuntu-latest 
+        #  mpi: openmpi
+        #- os: ubuntu-latest 
+        #  mpi: mpich
+        #- os: ubuntu-latest 
+        #  mpi: msmpi
 
-    env:
-      FC: gfortran
-      GCC_V: ${{ matrix.gcc_v }}
+        #    env:
+        #      FC: gfortran
+        #      GCC_V: ${{ matrix.gcc_v }}
 
     steps:
     - name: Checkout code
