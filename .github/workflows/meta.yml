@@ -227,5 +227,6 @@ jobs:
     - name: Run metapackage tests using the release version
       shell: bash
       run: |
+        FPM_FC=${{ env.FPM_FC }}
         ci/meta_tests.sh "$PWD/${{ env.FPM_RELEASE }}"
 
