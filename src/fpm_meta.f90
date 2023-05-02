@@ -796,8 +796,6 @@ subroutine get_mpi_runner(command,verbose,error)
           cycle
        end if
 
-       print *, 'command = ',command%s
-
        ! Success!
        success = len_trim(command%s)>0
        if (success) then

@@ -18,18 +18,23 @@ pushd example_packages/
 rm -rf ./*/build
 
 pushd metapackage_openmp
-"$fpm" build
-"$fpm" run 
+"$fpm" build --verbose
+"$fpm" run --verbose
 popd
 
 pushd metapackage_stdlib
-"$fpm" build
-"$fpm" run 
+"$fpm" build --verbose
+"$fpm" run --verbose
 popd
 
 pushd metapackage_mpi
-"$fpm" build
-"$fpm" run 
+"$fpm" build --verbose 
+"$fpm" run --verbose
+popd
+
+pushd metapackage_mpi_c
+"$fpm" build --verbose 
+"$fpm" run --verbose
 popd
 
 # Cleanup
