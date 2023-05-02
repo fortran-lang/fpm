@@ -1185,7 +1185,9 @@ subroutine assert_mpi_wrappers(wrappers,compiler,verbose)
     allocate(works(size(wrappers)))
 
     do i=1,size(wrappers)
-        if (verbose) print *, '+ MPI test wrapper <',wrappers(i)%s,'>'
+        if (present(verbose)) then
+            if (verbose) print *, '+ MPI test wrapper <',wrappers(i)%s,'>'
+        endif
         works(i) = which_mpi_library(wrappers(i),compiler,verbose)
     end do
 
