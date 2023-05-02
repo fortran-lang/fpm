@@ -573,6 +573,8 @@ logical function msmpi_init(this,compiler,error) result(found)
         ! Check that the runtime is installed
         bindir = get_env('MSMPI_BIN')
 
+        print *, 'bindir=',bindir
+
         ! In some environments, variable %MSMPI_BIN% is missing (i.e. in GitHub Action images).
         ! Do a second attempt: search for mpiexec.exe
         if (len_trim(bindir)<=0 .or. .not.exists(bindir)) then
@@ -715,6 +717,8 @@ subroutine find_command_location(command,path,echo,verbose,error)
         return
     end if
 
+    print *, 'searching '//command
+
     tmp_file = get_temp_filename()
 
     if (get_os_type()==OS_WINDOWS) then
@@ -723,7 +727,7 @@ subroutine find_command_location(command,path,echo,verbose,error)
        call run("which "//command, echo=echo, exitstat=stat, verbose=verbose, redirect=tmp_file)
     end if
     if (stat/=0) then
-        call fatal_error(error,'compiler_get_path failed for '//command)
+        call fatal_error(error,'find_command_location failed for '//command)
         return
     end if
 
