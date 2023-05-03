@@ -17,23 +17,130 @@ module fpm_manifest_metapackages
 
     public :: metapackage_config_t, new_meta_config, is_meta_package
 
+
+    !> Configuration data for a single metapackage request
+    type :: metapackage_request_t
+
+        !> Request flag
+        logical :: on = .false.
+
+        !> Metapackage name
+        character(len=:), allocatable :: name
+
+        !> Version Specification string
+        character(len=:), allocatable :: version
+
+    end type metapackage_request_t
+
+
     !> Configuration data for metapackages
     type :: metapackage_config_t
 
         !> Request MPI support
-        logical :: mpi = .false.
+        type(metapackage_request_t) :: mpi
 
         !> Request OpenMP support
-        logical :: openmp = .false.
+        type(metapackage_request_t) :: openmp
 
         !> Request stdlib support
-        logical :: stdlib = .false.
-
+        type(metapackage_request_t) :: stdlib
 
     end type metapackage_config_t
 
 
 contains
+
+    !> Destroy a metapackage request
+    elemental subroutine request_destroy(self)
+
+        !> Instance of the request
+        class(metapackage_request_t), intent(inout) :: self
+
+        self%on = .false.
+        if (allocated(self%version)) deallocate(self%version)
+        if (allocated(self%name)) deallocate(self%name)
+
+    end subroutine request_destroy
+
+    !> Parse version string of a metapackage reques
+    subroutine request_parse(self, version_request, error)
+
+        ! Instance of this metapackage
+        type(metapackage_request_t), intent(inout) :: self
+
+        ! Parse version request
+        character(len=*), intent(in) :: version_request
+
+        ! Error message
+        type(error_t), allocatable, intent(out) :: error
+
+        ! wildcard = use any versions
+        if (version_request=="*") then
+
+            ! Any version is OK
+            self%on = .true.
+            self%version = version_request
+
+        else
+
+            call fatal_error(error,'Value <'//version_request//'> for metapackage '//self%name//&
+                                   'is not currently supported. Try "*" instead. ')
+            return
+
+        end if
+
+    end subroutine request_parse
+
+    !> Construct a new metapackage request from the dependencies table
+    subroutine new_request(self, key, table, error)
+
+        type(metapackage_request_t), intent(out) :: self
+
+        !> The package name
+        character(len=*), intent(in) :: key
+
+        !> Instance of the TOML data structure
+        type(toml_table), intent(inout) :: table
+
+        !> Error handling
+        type(error_t), allocatable, intent(out) :: error
+
+
+        integer :: stat,i
+        character(len=:), allocatable :: value
+        type(toml_key), allocatable :: keys(:)
+
+        call request_destroy(self)
+
+        !> Set name
+        self%name = key
+        if (.not.is_meta_package(key)) then
+            call fatal_error(error,"Error reading fpm.toml: <"//key//"> is not a valid metapackage name")
+            return
+        end if
+
+        !> The toml table is not checked here because it already passed
+        !> the "new_dependencies" check
+
+        call table%get_keys(keys)
+
+        do i=1,size(keys)
+            if (keys(i)%key==key) then
+                call get_value(table, key, value)
+                if (.not. allocated(value)) then
+                    call syntax_error(error, "Could not retrieve version string for metapackage key <"//key//">. Check syntax")
+                    return
+                else
+                    call request_parse(self, value, error)
+                    return
+                endif
+            end if
+        end do
+
+        ! Key is not present, metapackage not requested
+        return
+
+    end subroutine new_request
 
     !> Construct a new build configuration from a TOML data structure
     subroutine new_meta_config(self, table, error)
@@ -51,24 +158,14 @@ contains
 
         !> The toml table is not checked here because it already passed
         !> the "new_dependencies" check
+        call new_request(self%openmp, "openmp", table, error);
+        if (allocated(error)) return
 
-        call get_value(table, "openmp", self%openmp, .false., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'openmp' in fpm.toml, expecting logical")
-            return
-        end if
+        call new_request(self%stdlib, "stdlib", table, error)
+        if (allocated(error)) return
 
-        call get_value(table, "stdlib", self%stdlib, .false., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'stdlib' in fpm.toml, expecting logical")
-            return
-        end if
-
-        call get_value(table, "mpi", self%mpi, .false., stat=stat)
-        if (stat /= toml_stat%success) then
-            call fatal_error(error,"Error while reading value for 'mpi' in fpm.toml, expecting logical")
-            return
-        end if
+        call new_request(self%mpi, "mpi", table, error)
+        if (allocated(error)) return
 
     end subroutine new_meta_config
 

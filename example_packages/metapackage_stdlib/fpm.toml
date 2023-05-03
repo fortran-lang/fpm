@@ -7,7 +7,7 @@ auto-tests = true
 auto-examples = true
 
 [dependencies]
-stdlib = true
+stdlib = "*" 
 
 [install]
 library = false

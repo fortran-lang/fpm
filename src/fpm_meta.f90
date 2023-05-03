@@ -397,24 +397,24 @@ subroutine resolve_metapackage_model(model,package,settings,error)
     end if
 
     ! OpenMP
-    if (package%meta%openmp) then
+    if (package%meta%openmp%on) then
         call add_metapackage_model(model,package,settings,"openmp",error)
         if (allocated(error)) return
     endif
 
     ! stdlib
-    if (package%meta%stdlib) then
+    if (package%meta%stdlib%on) then
         call add_metapackage_model(model,package,settings,"stdlib",error)
         if (allocated(error)) return
     endif
 
     ! Stdlib is not 100% thread safe. print a warning to the user
-    if (package%meta%stdlib .and. package%meta%openmp) then
+    if (package%meta%stdlib%on .and. package%meta%openmp%on) then
         write(stdout,'(a)')'<WARNING> both openmp and stdlib requested: some functions may not be thread-safe!'
     end if
 
     ! MPI
-    if (package%meta%mpi) then
+    if (package%meta%mpi%on) then
         call add_metapackage_model(model,package,settings,"mpi",error)
         if (allocated(error)) return
     endif

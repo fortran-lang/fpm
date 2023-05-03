@@ -11,7 +11,7 @@ auto-tests = true
 auto-examples = true
 
 [dependencies]
-openmp = true
+openmp = "*"
 
 [install]
 library = false

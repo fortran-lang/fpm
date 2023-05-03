@@ -14,7 +14,7 @@ implicit-typing=true
 implicit-external=true
 
 [dependencies]
-mpi = true
+mpi = "*"
 
 [install]
 library = false

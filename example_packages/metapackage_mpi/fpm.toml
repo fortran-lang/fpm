@@ -13,7 +13,7 @@ implicit-typing = true
 auto-executables = true
 
 [dependencies]
-mpi = true
+mpi = "*" 
 
 [install]
 library = false
