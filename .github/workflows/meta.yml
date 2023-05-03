@@ -31,10 +31,16 @@ jobs:
         include:
           - os: ubuntu-latest
             mpi: intel
+            env: 
+              GCC_V: "10"
           - os: ubuntu-latest
             mpi: openmpi
+            env: 
+              GCC_V: "10"
           - os: ubuntu-latest
             mpi: mpich
+            env: 
+              GCC_V: "10"
           - os: windows-latest 
             mpi: msmpi
           - os: macos-latest
