@@ -581,6 +581,15 @@ logical function msmpi_init(this,compiler,error) result(found)
             if (allocated(error)) return
         endif
 
+        ! Do a third attempt: search for mpiexec.exe in the default location
+        if (len_trim(bindir)<=0 .or. .not.exists(bindir) .or. allocated(error)) then
+            windir = get_dos_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',error)
+
+            if (.not.allocated(error)) &
+            call find_command_location(windir,bindir,verbose=verbose,error=error)
+
+        endif
+
         if (allocated(error) .or. .not.exists(bindir)) then
             call fatal_error(error,'MS-MPI error: MS-MPI Runtime directory is missing. '//&
                                    'check environment variable %MSMPI_BIN% or that the folder is in %PATH%.')
