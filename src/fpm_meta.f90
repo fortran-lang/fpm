@@ -13,7 +13,7 @@
 !>
 !>
 module fpm_meta
-use fpm_strings, only: string_t, len_trim
+use fpm_strings, only: string_t, len_trim, remove_newline_characters
 use fpm_error, only: error_t, fatal_error, syntax_error, fpm_stop
 use fpm_compiler
 use fpm_model
@@ -26,7 +26,6 @@ use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, i
 use fpm_versioning, only: version_t, new_version, regex_version_from_text
 use fpm_os, only: get_absolute_path
 use iso_fortran_env, only: stdout => output_unit
-use regex_module, only: regex
 
 implicit none
 
@@ -1399,10 +1398,10 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
            select case (mpilib)
               case (MPI_TYPE_OPENMPI)
                  ! This library reports the compiler name only
-                 call remove_new_lines(screen)
+                 call remove_newline_characters(screen)
               case (MPI_TYPE_MPICH,MPI_TYPE_INTEL)
                  ! These libraries report the full command including the compiler name. Remove it if so
-                 call remove_new_lines(screen)
+                 call remove_newline_characters(screen)
                  call split(screen%s,tokens)
                  ! Remove trailing compiler name
                  screen%s = screen%s(len_trim(tokens(1))+1:)
@@ -1433,10 +1432,10 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
            select case (mpilib)
               case (MPI_TYPE_OPENMPI)
-                 call remove_new_lines(screen)
+                 call remove_newline_characters(screen)
               case (MPI_TYPE_MPICH)
                  ! MPICH reports the full command including the compiler name. Remove it if so
-                 call remove_new_lines(screen)
+                 call remove_newline_characters(screen)
                  call split(screen%s,tokens)
                  ! Remove trailing compiler name
                  screen%s = screen%s(len_trim(tokens(1))+1:)
@@ -1484,7 +1483,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  return
            end select
 
-           call remove_new_lines(screen)
+           call remove_newline_characters(screen)
 
        ! Retrieve library version
        case ('version')
@@ -1500,7 +1499,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     call syntax_error(error,'local OpenMPI library does not support --showme:version')
                     return
                  else
-                    call remove_new_lines(screen)
+                    call remove_newline_characters(screen)
                  end if
 
               case (MPI_TYPE_MPICH)
@@ -1515,7 +1514,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  if (stat/=0 .or. .not.success) then
                     call run_mpi_wrapper(wrapper,[string_t('-v')],verbose=verbose, &
                                          exitcode=stat,cmd_success=success,screen_output=screen)
-                    call remove_new_lines(screen)
+                    call remove_newline_characters(screen)
                  endif
 
                  ! Third option: mpiexec --version
@@ -1540,7 +1539,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     call syntax_error(error,'local INTEL MPI library does not support -v')
                     return
                  else
-                    call remove_new_lines(screen)
+                    call remove_newline_characters(screen)
                  end if
 
               case default
@@ -1573,36 +1572,5 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
 
 end function mpi_wrapper_query
-
-! Remove all new line characters from the current string
-subroutine remove_new_lines(string)
-    type(string_t), intent(inout) :: string
-
-    integer :: feed,length
-
-    if (.not.allocated(string%s)) return
-
-
-    length = len(string%s)
-    feed   = scan(string%s,new_line('a'))
-
-    do while (length>0 .and. feed>0)
-
-        if (length==1) then
-            string = string_t("")
-        elseif (feed==1) then
-            string%s = string%s(2:length)
-        elseif (feed==length) then
-            string%s = string%s(1:length-1)
-        else
-            string%s = string%s(1:feed-1)//string%s(feed+1:length)
-        end if
-
-        length = len(string%s)
-        feed   = scan(string%s,new_line('a'))
-
-    end do
-
-end subroutine remove_new_lines
 
 end module fpm_meta

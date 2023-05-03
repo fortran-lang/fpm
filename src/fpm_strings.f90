@@ -43,7 +43,7 @@ public :: f_string, lower, split, str_ends_with, string_t, str_begins_with_str
 public :: to_fortran_name, is_fortran_name
 public :: string_array_contains, string_cat, len_trim, operator(.in.), fnv_1a
 public :: replace, resize, str, join, glob
-public :: notabs
+public :: notabs, remove_newline_characters
 
 !> Module naming
 public :: is_valid_module_name, is_valid_module_prefix, &
@@ -1218,6 +1218,46 @@ logical function has_valid_standard_prefix(module_name,package_name) result(vali
     end if
 
 end function has_valid_standard_prefix
+
+! Remove all new line characters from the current string, replace them with spaces
+subroutine remove_newline_characters(string)
+    type(string_t), intent(inout) :: string
+
+    integer :: feed,length
+
+    character(*), parameter :: CRLF  = new_line('a')//achar(13)
+    character(*), parameter :: SPACE = ' '
+
+    if (.not.allocated(string%s)) return
+
+
+    length = len(string%s)
+    feed   = scan(string%s,CRLF)
+
+    do while (length>0 .and. feed>0)
+
+        ! Remove heading
+        if (length==1) then
+            string = string_t("")
+
+        elseif (feed==1) then
+            string%s = string%s(2:length)
+
+        ! Remove trailing
+        elseif (feed==length) then
+            string%s = string%s(1:length-1)
+
+        ! In between: replace with space
+        else
+            string%s(feed:feed) = SPACE
+        end if
+
+        length = len(string%s)
+        feed   = scan(string%s,CRLF)
+
+    end do
+
+end subroutine remove_newline_characters
 
 !>
 !!### NAME

@@ -1,6 +1,8 @@
 !> Implementation of versioning data for comparing packages
 module fpm_versioning
     use fpm_error, only : error_t, syntax_error
+    use fpm_strings, only: string_t
+    use regex_module, only: regex
     implicit none
     private
 
