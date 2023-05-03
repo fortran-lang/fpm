@@ -39,8 +39,6 @@ jobs:
             #            mpi: msmpi
           - os: macos-latest
             mpi: openmpi
-            env:
-              FC: gfortran
 
     steps:
     - name: Checkout code
@@ -132,9 +130,9 @@ jobs:
     - name: (macOS) Install Homebrew gfortran
       if: contains(matrix.os, 'macos')
       run: |
-        brew install gcc@${GCC_V}
-        ln -s /usr/local/bin/gfortran-${GCC_V} /usr/local/bin/gfortran
-        which gfortran-${GCC_V}
+        brew install gcc@${{ env.GCC_V }}
+        ln -s /usr/local/bin/gfortran-${{ env.GCC_V }} /usr/local/bin/gfortran
+        which gfortran-${{ env.GCC_V }}
         which gfortran
 
     - name: (macOS) Install homebrew MPICH
@@ -145,7 +143,7 @@ jobs:
     - name: (macOS) Install homebrew OpenMPI
       if: contains(matrix.mpi,'openmpi') && contains(matrix.os,'macos')
       run: |
-        brew install --cc=gcc-${GCC_V} openmpi
+        brew install --cc=gcc-${{ env.GCC_V}} openmpi
 
     # Phase 1: Bootstrap fpm with existing version
     - name: Install fpm
