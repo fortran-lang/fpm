@@ -578,7 +578,6 @@ logical function msmpi_init(this,compiler,error) result(found)
         ! Do a second attempt: search for mpiexec.exe
         if (len_trim(bindir)<=0 .or. .not.exists(bindir)) then
             call find_command_location('mpiexec.exe',bindir,verbose=verbose,error=error)
-            if (allocated(error)) return
         endif
 
         ! Do a third attempt: search for mpiexec.exe in the default location
