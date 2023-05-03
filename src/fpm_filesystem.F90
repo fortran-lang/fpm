@@ -1082,7 +1082,7 @@ end subroutine os_delete_dir
         call fatal_error(error, "Couldn't determine system temporary directory.")
     end
 
-    !> Ensure a windows path is converted to a DOS path if it contains spaces
+    !> Ensure a windows path is converted to an 8.3 DOS path if it contains spaces
     function get_dos_path(path,error)
         character(len=*), intent(in) :: path
         type(error_t), allocatable, intent(out) :: error
