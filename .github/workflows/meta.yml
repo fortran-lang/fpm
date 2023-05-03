@@ -133,7 +133,7 @@ jobs:
       if: contains(matrix.os, 'macos')
       run: |
         brew install gcc@${{ env.GCC_V }}
-        ln -s /usr/local/bin/gfortran-${{ env.GCC_V }} /usr/local/bin/gfortran
+        #        ln -s /usr/local/bin/gfortran-${{ env.GCC_V }} /usr/local/bin/gfortran
         which gfortran-${{ env.GCC_V }}
         which gfortran
 
