@@ -29,17 +29,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            mpi: intel
-          - os: ubuntu-latest
+          #          - os: ubuntu-latest
+            #            mpi: intel
+              #          - os: ubuntu-latest
+            #            mpi: openmpi
+              #          - os: ubuntu-latest
+            #            mpi: mpich
+              #          - #os: windows-latest 
+            #            mpi: msmpi
+          - os: macos-latest
             mpi: openmpi
-          - os: ubuntu-latest
-            mpi: mpich
-          - os: windows-latest 
-            mpi: msmpi
-        #    env:
-        #      FC: gfortran
-        #      GCC_V: ${{ matrix.gcc_v }}
+            env:
+              FC: gfortran
 
     steps:
     - name: Checkout code
