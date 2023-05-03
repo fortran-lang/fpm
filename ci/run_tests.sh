@@ -225,6 +225,14 @@ if [[ -z "$(grep Update update.log)" ]]; then
   exit 1;
 fi
 
+# Test that no files are lost during multiple `install`s
+# including overwriting the same install
+"$fpm" install --prefix a
+"$fpm" install --prefix a
+"$fpm" install --prefix a
+"$fpm" install --prefix b
+"$fpm" install --prefix c
+
 popd
 
 # Cleanup

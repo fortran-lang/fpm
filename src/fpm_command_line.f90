@@ -49,6 +49,7 @@ public :: fpm_cmd_settings, &
           fpm_test_settings, &
           fpm_update_settings, &
           fpm_clean_settings, &
+          fpm_publish_settings, &
           get_command_line_settings
 
 type, abstract :: fpm_cmd_settings
@@ -113,10 +114,16 @@ type, extends(fpm_cmd_settings)  :: fpm_update_settings
 end type
 
 type, extends(fpm_cmd_settings)   :: fpm_clean_settings
-    logical                       :: unix
+    logical                       :: is_unix
     character(len=:), allocatable :: calling_dir  ! directory clean called from
     logical                       :: clean_skip=.false.
     logical                       :: clean_call=.false.
+end type
+
+type, extends(fpm_build_settings) :: fpm_publish_settings
+    logical :: show_package_version = .false.
+    logical :: show_form_data = .false.
+    character(len=:), allocatable :: token
 end type
 
 character(len=:),allocatable :: name
@@ -129,10 +136,10 @@ character(len=:), allocatable :: help_new(:), help_fpm(:), help_run(:), &
                  & help_test(:), help_build(:), help_usage(:), help_runner(:), &
                  & help_text(:), help_install(:), help_help(:), help_update(:), &
                  & help_list(:), help_list_dash(:), help_list_nodash(:), &
-                 & help_clean(:)
+                 & help_clean(:), help_publish(:)
 character(len=20),parameter :: manual(*)=[ character(len=20) ::&
 &  ' ',     'fpm',    'new',     'build',  'run',    'clean',  &
-&  'test',  'runner', 'install', 'update', 'list',   'help',   'version'  ]
+&  'test',  'runner', 'install', 'update', 'list',   'help',   'version', 'publish' ]
 
 character(len=:), allocatable :: val_runner, val_compiler, val_flag, val_cflag, val_cxxflag, val_ldflag, &
     val_profile, val_dump
@@ -211,8 +218,9 @@ contains
         character(len=4096)           :: cmdarg
         integer                       :: i
         integer                       :: os
-        logical                       :: unix
+        logical                       :: is_unix
         type(fpm_install_settings), allocatable :: install_settings
+        type(fpm_publish_settings), allocatable :: publish_settings
         type(version_t) :: version
         character(len=:), allocatable :: common_args, compiler_args, run_args, working_dir, &
             & c_compiler, cxx_compiler, archiver, version_s
@@ -237,7 +245,7 @@ contains
             case (OS_UNKNOWN); os_type =  "OS Type:     Unknown"
             case default     ; os_type =  "OS Type:     UNKNOWN"
         end select
-        unix = os_is_unix(os)
+        is_unix = os_is_unix(os)
 
         ! Get current release version
         version = fpm_version()
@@ -489,6 +497,8 @@ contains
                    help_text=[character(len=widest) :: help_text, version_text]
                 case('clean' )
                    help_text=[character(len=widest) :: help_text, help_clean]
+                case('publish')
+                   help_text=[character(len=widest) :: help_text, help_publish]
                 case default
                    help_text=[character(len=widest) :: help_text, &
                    & '<ERROR> unknown help topic "'//trim(unnamed(i))//'"']
@@ -614,10 +624,46 @@ contains
             allocate(fpm_clean_settings :: cmd_settings)
             call get_current_directory(working_dir, error)
             cmd_settings=fpm_clean_settings( &
-            &   unix=unix,                   &
+            &   is_unix=is_unix,             &
             &   calling_dir=working_dir,     &
             &   clean_skip=lget('skip'),     &
                 clean_call=lget('all'))
+
+        case('publish')
+            call set_args(common_args // compiler_args //'&
+            & --show-package-version F &
+            & --show-form-data F &
+            & --token " " &
+            & --list F &
+            & --show-model F &
+            & --tests F &
+            & --', help_publish, version_text)
+
+            call check_build_vals()
+
+            c_compiler = sget('c-compiler')
+            cxx_compiler = sget('cxx-compiler')
+            archiver = sget('archiver')
+
+            allocate(publish_settings, source=fpm_publish_settings( &
+            & show_package_version = lget('show-package-version'), &
+            & show_form_data = lget('show-form-data'), &
+            & profile=val_profile,&
+            & prune=.not.lget('no-prune'), &
+            & compiler=val_compiler, &
+            & c_compiler=c_compiler, &
+            & cxx_compiler=cxx_compiler, &
+            & archiver=archiver, &
+            & flag=val_flag, &
+            & cflag=val_cflag, &
+            & cxxflag=val_cxxflag, &
+            & ldflag=val_ldflag, &
+            & list=lget('list'),&
+            & show_model=lget('show-model'),&
+            & build_tests=lget('tests'),&
+            & verbose=lget('verbose')))
+            call get_char_arg(publish_settings%token, 'token')
+            call move_alloc(publish_settings, cmd_settings)
 
         case default
 
@@ -654,12 +700,8 @@ contains
     contains
 
     subroutine check_build_vals()
-        character(len=:), allocatable :: flags
-
         val_compiler=sget('compiler')
-        if(val_compiler=='') then
-            val_compiler='gfortran'
-        endif
+        if(val_compiler=='') val_compiler='gfortran'
 
         val_flag = " " // sget('flag')
         val_cflag = " " // sget('c-flag')
@@ -702,6 +744,7 @@ contains
    '  update    Update and manage project dependencies                      ', &
    '  install   Install project                                             ', &
    '  clean     Delete the build                                            ', &
+   '  publish   Publish package to the registry                             ', &
    '                                                                        ', &
    ' Enter "fpm --list" for a brief list of subcommand options. Enter       ', &
    ' "fpm --help" or "fpm SUBCOMMAND --help" for detailed descriptions.     ', &
@@ -722,6 +765,7 @@ contains
    ' install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]        ', &
    '         [options]                                                              ', &
    ' clean [--skip] [--all]                                                         ', &
+   ' publish [--show-package-version] [--show-form-data] [--token TOKEN]            ', &
    ' ']
     help_usage=[character(len=80) :: &
     '' ]
@@ -826,6 +870,7 @@ contains
     '  + install  Install project.                                          ', &
     '  + clean    Delete directories in the "build/" directory, except      ', &
     '             dependencies. Prompts for confirmation to delete.         ', &
+    '  + publish  Publish package to the registry.                          ', &
     '                                                                       ', &
     '  Their syntax is                                                      ', &
     '                                                                                ', &
@@ -843,7 +888,8 @@ contains
     '    list [--list]                                                               ', &
     '    install [--profile PROF] [--flag FFLAGS] [--no-rebuild] [--prefix PATH]     ', &
     '            [options]                                                           ', &
-    '    clean [--skip] [--all]                                                       ', &
+    '    clean [--skip] [--all]                                                      ', &
+    '    publish [--show-package-version] [--show-form-data] [--token TOKEN]         ', &
     '                                                                                ', &
     'SUBCOMMAND OPTIONS                                                              ', &
     ' -C, --directory PATH', &
@@ -1324,6 +1370,22 @@ contains
     'OPTIONS', &
     ' --skip           delete the build without prompting but skip dependencies.', &
     ' --all            delete the build without prompting including dependencies.', &
+    '' ]
+    help_publish=[character(len=80) :: &
+    'NAME', &
+    ' publish(1) - publish package to the registry', &
+    '', &
+    'SYNOPSIS', &
+    ' fpm publish [--token TOKEN]', &
+    '', &
+    'DESCRIPTION', &
+    ' Collect relevant source files and upload package to the registry.', &
+    ' It is mandatory to provide a token. The token can be generated on the', &
+    ' registry website and will be linked to your username and namespace.', &
+    '', &
+    'OPTIONS', &
+    ' --show-package-version   show package version without publishing', &
+    ' --show-form-data         show sent form data without publishing', &
     '' ]
      end subroutine set_help
 

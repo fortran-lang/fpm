@@ -63,6 +63,12 @@ module fpm_installer
   !> Copy command on Windows platforms
   character(len=*), parameter :: default_copy_win = "copy"
 
+  !> Copy command on Unix platforms
+  character(len=*), parameter :: default_force_copy_unix = "cp -f"
+
+  !> Copy command on Windows platforms
+  character(len=*), parameter :: default_force_copy_win = "copy /Y"
+
   !> Move command on Unix platforms
   character(len=*), parameter :: default_move_unix = "mv"
 
@@ -93,13 +99,14 @@ contains
 
     self%os = get_os_type()
 
+    ! By default, never prompt the user for overwrites
     if (present(copy)) then
       self%copy = copy
     else
       if (os_is_unix(self%os)) then
-        self%copy = default_copy_unix
+        self%copy = default_force_copy_unix
       else
-        self%copy = default_copy_win
+        self%copy = default_force_copy_win
       end if
     end if
 
@@ -223,12 +230,9 @@ contains
       end if
     end if
 
-    ! move instead of copy if already installed
-    if (exists(install_dest)) then
-      call self%run(self%move//' "'//source//'" "'//install_dest//'"', error)
-    else
-      call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
-    end if
+    ! Use force-copy to never prompt the user for overwrite if a package was already installed
+    call self%run(self%copy//' "'//source//'" "'//install_dest//'"', error)
+
     if (allocated(error)) return
 
   end subroutine install

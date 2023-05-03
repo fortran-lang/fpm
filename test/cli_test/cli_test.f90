@@ -29,10 +29,13 @@ logical                              :: w_e,act_w_e          ; namelist/act_cli/
 logical                              :: w_t,act_w_t          ; namelist/act_cli/act_w_t
 logical                              :: c_s,act_c_s          ; namelist/act_cli/act_c_s
 logical                              :: c_a,act_c_a          ; namelist/act_cli/act_c_a
+logical                              :: show_v,act_show_v    ; namelist/act_cli/act_show_v
+logical                              :: show_f_d,act_show_f_d; namelist/act_cli/act_show_f_d
+character(len=:), allocatable        :: token, act_token     ; namelist/act_cli/act_token
 
-character(len=63)                    :: profile,act_profile  ; namelist/act_cli/act_profile
-character(len=:),allocatable         :: args,act_args        ; namelist/act_cli/act_args
-namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,name,profile,args
+character(len=:), allocatable        :: profile,act_profile  ; namelist/act_cli/act_profile
+character(len=:), allocatable        :: args,act_args        ; namelist/act_cli/act_args
+namelist/expected/cmd,cstat,estat,w_e,w_t,c_s,c_a,name,profile,args,show_v,show_f_d,token
 integer                              :: lun
 logical,allocatable                  :: tally(:)
 logical,allocatable                  :: subtally(:)
@@ -70,7 +73,10 @@ character(len=*),parameter           :: tests(*)= [ character(len=256) :: &
 
 'CMD="clean",                                                      NAME= ARGS="",', &
 'CMD="clean --skip",                                        C_S=T, NAME= ARGS="",', &
-'CMD="clean --all",                                   C_A=T,       NAME= ARGS="",', &
+'CMD="clean --all",                                         C_A=T, NAME= ARGS="",', &
+'CMD="publish --token abc --show-package-version",       SHOW_V=T, NAME= token="abc",ARGS="",', &
+'CMD="publish --token abc --show-form-data",           SHOW_F_D=T, NAME= token="abc",ARGS="",', &
+'CMD="publish --token abc",                                        NAME= token="abc",ARGS="",', &
 ' ' ]
 character(len=256) :: readme(3)
 
@@ -98,11 +104,14 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
       endif
       ! blank out name group EXPECTED
       name=[(repeat(' ',len(name)),i=1,max_names)] ! the words on the command line sans the subcommand name
-      profile=""                     ! --profile PROF
+      profile=''                     ! --profile PROF
       w_e=.false.                    ! --app
       w_t=.false.                    ! --test
       c_s=.false.                    ! --skip
       c_a=.false.                    ! --all
+      show_v=.false.                 ! --show-package-version
+      show_f_d=.false.               ! --show-form-data
+      token=''                       ! --token TOKEN
       args=repeat(' ',132)           ! -- ARGS
       cmd=repeat(' ',132)            ! the command line arguments to test
       cstat=0                        ! status values from EXECUTE_COMMAND_LINE()
@@ -122,6 +131,9 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              act_w_t=.false.
              act_c_s=.false.
              act_c_a=.false.
+             act_show_v=.false.
+             act_show_f_d=.false.
+             act_token=''
              act_args=repeat(' ',132)
              read(lun,nml=act_cli,iostat=ios,iomsg=message)
              if(ios/=0)then
@@ -135,6 +147,9 @@ if(command_argument_count()==0)then  ! assume if called with no arguments to do 
              call test_test('WITH_EXPECTED',act_w_e.eqv.w_e)
              call test_test('WITH_TESTED',act_w_t.eqv.w_t)
              call test_test('WITH_TEST',act_w_t.eqv.w_t)
+             call test_test('SHOW-PACKAGE-VERSION',act_show_v.eqv.show_v)
+             call test_test('SHOW-FORM-DATA',act_show_f_d.eqv.show_f_d)
+             call test_test('TOKEN',act_token==token)
              call test_test('ARGS',act_args==args)
              if(all(subtally))then
                 write(*,'(*(g0))')'PASSED: TEST ',i,' STATUS: expected ',cstat,' ',estat,' actual ',act_cstat,' ',act_estat,&
@@ -205,10 +220,12 @@ use fpm_command_line, only: &
         fpm_test_settings, &
         fpm_clean_settings, &
         fpm_install_settings, &
-        get_command_line_settings
+        get_command_line_settings, &
+        fpm_publish_settings
 use fpm, only: cmd_run, cmd_clean
 use fpm_cmd_install, only: cmd_install
 use fpm_cmd_new, only: cmd_new
+use fpm_cmd_publish, only: cmd_publish
 class(fpm_cmd_settings), allocatable :: cmd_settings
 ! duplicates the calls as seen in the main program for fpm
 call get_command_line_settings(cmd_settings)
@@ -219,6 +236,9 @@ act_w_e=.false.
 act_w_t=.false.
 act_c_s=.false.
 act_c_a=.false.
+act_show_v=.false.
+act_show_f_d=.false.
+act_token=''
 act_profile=''
 
 select type(settings=>cmd_settings)
@@ -240,6 +260,10 @@ type is (fpm_clean_settings)
     act_c_s=settings%clean_skip
     act_c_a=settings%clean_call
 type is (fpm_install_settings)
+type is (fpm_publish_settings)
+    act_show_v=settings%show_package_version
+    act_show_f_d=settings%show_form_data
+    act_token=settings%token
 end select
 
 open(file='_test_cli',newunit=lun,delim='quote')
