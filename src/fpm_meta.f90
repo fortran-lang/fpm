@@ -23,7 +23,7 @@ use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
 use fpm_environment, only: get_env,os_is_unix
 use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, is_dir
-use fpm_versioning, only: version_t, new_version
+use fpm_versioning, only: version_t, new_version, regex_version_from_text
 use fpm_os, only: get_absolute_path
 use iso_fortran_env, only: stdout => output_unit
 use regex_module, only: regex
@@ -867,7 +867,7 @@ subroutine compiler_get_version(self,version,is_msys2,error)
             ! Check if this gcc is from the MSYS2 project
             is_msys2 = index(screen_output,'MSYS2')>0
 
-            ver = extract_version_text(screen_output,self%fc//' compiler',error)
+            ver = regex_version_from_text(screen_output,self%fc//' compiler',error)
             if (allocated(error)) return
 
             ! Extract version
@@ -1551,7 +1551,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
            end select
 
            ! Extract version
-           screen = extract_version_text(screen%s,MPI_TYPE_NAME(mpilib)//' library',error)
+           screen = regex_version_from_text(screen%s,MPI_TYPE_NAME(mpilib)//' library',error)
            if (allocated(error)) return
 
        ! Get path to the MPI runner command
@@ -1604,37 +1604,5 @@ subroutine remove_new_lines(string)
     end do
 
 end subroutine remove_new_lines
-
-type(string_t) function extract_version_text(text,what,error) result(ver)
-    character(*), intent(in) :: text
-    character(*), intent(in) :: what
-    type(error_t), allocatable, intent(out) :: error
-
-    integer :: ire, length
-
-    if (len_trim(text)<=0) then
-        call syntax_error(error,'cannot retrieve '//what//' version: empty input string')
-        return
-    end if
-
-    ! Extract 3-sized version "1.0.4"
-    ire = regex(text,'\d+\.\d+\.\d+',length=length)
-    if (ire>0 .and. length>0) then
-        ! Parse version into the object (this should always work)
-        ver = string_t(text(ire:ire+length-1))
-    else
-
-        ! Try 2-sized version "1.0"
-        ire = regex(text,'\d+\.\d+',length=length)
-
-        if (ire>0 .and. length>0) then
-            ver = string_t(text(ire:ire+length-1))
-        else
-            call syntax_error(error,'cannot retrieve '//what//' version.')
-        end if
-
-    end if
-
-end function extract_version_text
 
 end module fpm_meta
