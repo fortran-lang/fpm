@@ -22,7 +22,7 @@ use fpm_manifest_dependency, only: dependency_config_t
 use fpm_git, only : git_target_branch
 use fpm_manifest, only: package_config_t
 use fpm_environment, only: get_env,os_is_unix
-use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, is_dir
+use fpm_filesystem, only: run, get_temp_filename, getline, exists, canon_path, is_dir, get_dos_path
 use fpm_versioning, only: version_t, new_version, regex_version_from_text
 use fpm_os, only: get_absolute_path
 use iso_fortran_env, only: stdout => output_unit
@@ -879,69 +879,6 @@ subroutine compiler_get_version(self,version,is_msys2,error)
     end select
 
 end subroutine compiler_get_version
-
-!> Ensure a windows path is converted to a DOS path if it contains spaces
-function get_dos_path(path,error)
-    character(len=*), intent(in) :: path
-    type(error_t), allocatable, intent(out) :: error
-    character(len=:), allocatable :: get_dos_path
-
-    character(:), allocatable :: redirect,screen_output,line
-    integer :: stat,cmdstat,iunit,last
-
-    ! Non-Windows OS
-    if (get_os_type()/=OS_WINDOWS) then
-        get_dos_path = path
-        return
-    end if
-
-    ! Trim path first
-    get_dos_path = trim(path)
-
-    !> No need to convert if there are no spaces
-    has_spaces: if (scan(get_dos_path,' ')>0) then
-
-        redirect = get_temp_filename()
-        call execute_command_line('cmd /c for %A in ("'//path//'") do @echo %~sA >'//redirect//' 2>&1',&
-                                  exitstat=stat,cmdstat=cmdstat)
-
-        !> Read screen output
-        command_OK: if (cmdstat==0 .and. stat==0) then
-
-            allocate(character(len=0) :: screen_output)
-            open(newunit=iunit,file=redirect,status='old',iostat=stat)
-            if (stat == 0)then
-
-               do
-                   call getline(iunit, line, stat)
-                   if (stat /= 0) exit
-                   screen_output = screen_output//line//' '
-               end do
-
-               ! Close and delete file
-               close(iunit,status='delete')
-
-            else
-               call fatal_error(error,'cannot read temporary file from successful DOS path evaluation')
-               return
-            endif
-
-        else command_OK
-
-            call fatal_error(error,'unsuccessful Windows->DOS path command')
-            return
-
-        end if command_OK
-
-        get_dos_path = trim(adjustl(screen_output))
-
-    endif has_spaces
-
-    !> Ensure there are no trailing slashes
-    last = len_trim(get_dos_path)
-    if (last>1 .and. get_dos_path(last:last)=='/' .or. get_dos_path(last:last)=='\') get_dos_path = get_dos_path(1:last-1)
-
-end function get_dos_path
 
 !> Initialize an MPI metapackage from a valid wrapper command ('mpif90', etc...)
 subroutine init_mpi_from_wrappers(this,compiler,mpilib,fort_wrapper,c_wrapper,cxx_wrapper,error)
