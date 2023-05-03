@@ -136,6 +136,8 @@ jobs:
         #        ln -s /usr/local/bin/gfortran-${{ env.GCC_V }} /usr/local/bin/gfortran
         which gfortran-${{ env.GCC_V }}
         which gfortran
+        gfortran-${{ env.GCC_V }} --version
+        gfortran --version
 
     - name: (macOS) Install homebrew MPICH
       if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
