@@ -244,9 +244,9 @@ jobs:
       if: contains(matrix.os,'macOS') 
       shell: bash
       run: |
-        echo "FPM_FC=gfortran-{{ env.GCC_V }}" >> $GITHUB_ENV
-        echo "FPM_CC=gcc-{{ env.GCC_V }}" >> $GITHUB_ENV
-        echo "FPM_CXX=g++-{{ env.GCC_V }}" >> $GITHUB_ENV
+        echo "FPM_FC=gfortran-${{ env.GCC_V }}" >> $GITHUB_ENV
+        echo "FPM_CC=gcc-${{ env.GCC_V }}" >> $GITHUB_ENV
+        echo "FPM_CXX=g++-${{ env.GCC_V }}" >> $GITHUB_ENV
 
     - name: Run metapackage tests using the release version
       shell: bash
