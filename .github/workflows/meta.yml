@@ -113,7 +113,8 @@ jobs:
 
     - name: (Windows) download MS-MPI setup (SDK is from MSYS2)
       if: contains(matrix.os,'windows')
-      run: curl -L -O https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.2/msmpisetup.exe
+        #     run: curl -L -O https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.2/msmpisetup.exe 10.1.1
+      run: curl -L -O https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisetup.exe # 10.1.2
 
     - name: (Windows) Install mpiexec.exe (-force needed to bypass GUI on headless)
       if: contains(matrix.os,'windows')
