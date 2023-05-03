@@ -19,7 +19,6 @@ env:
   HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
   HOMEBREW_NO_GITHUB_API: "ON"
   HOMEBREW_NO_INSTALL_CLEANUP: "ON"
-  GCC_V: "13"
 
 jobs:
 
@@ -31,16 +30,10 @@ jobs:
         include:
           - os: ubuntu-latest
             mpi: intel
-            env: 
-              GCC_V: "10"
           - os: ubuntu-latest
             mpi: openmpi
-            env: 
-              GCC_V: "10"
           - os: ubuntu-latest
             mpi: mpich
-            env: 
-              GCC_V: "10"
           - os: windows-latest 
             mpi: msmpi
           - os: macos-latest
@@ -51,6 +44,16 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v1
+
+    - name: (Ubuntu) setup gcc version
+      if: contains(matrix.os,'ubuntu')
+      run: |
+        echo "GCC_V=10" >> $GITHUB_ENV
+        
+    - name: (macOS) setup gcc version
+      if: contains(matrix.os,'macos')
+      run: |
+        echo "GCC_V=13" >> $GITHUB_ENV
 
     - uses: msys2/setup-msys2@v2
       if: contains(matrix.os,'windows')
