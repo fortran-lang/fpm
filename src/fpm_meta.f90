@@ -1248,7 +1248,6 @@ subroutine run_mpi_wrapper(wrapper,args,verbose,exitcode,cmd_success,screen_outp
     endif add_arguments
 
     if (echo_local) print *, '+ ', command
-    print *, '+ ', command
 
     ! Test command
     call execute_command_line(command//redirect_str,exitstat=stat,cmdstat=cmdstat)
@@ -1341,10 +1340,12 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
     type(error_t), allocatable, intent(out) :: error
 
     logical :: success
-    character(:), allocatable :: redirect_str,tokens(:)
+    character(:), allocatable :: redirect_str,tokens(:),unsupported_msg
     type(string_t) :: cmdstr
     type(compiler_t) :: mpi_compiler
     integer :: stat,cmdstat,ire,length
+
+    unsupported_msg = 'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command)
 
     select case (command)
 
@@ -1352,45 +1353,22 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
        case ('compiler')
 
            select case (mpilib)
-              case (MPI_TYPE_OPENMPI)
-
-                 ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:command')],verbose=verbose, &
-                                      exitcode=stat,cmd_success=success,screen_output=screen)
-
-                 if (stat/=0 .or. .not.success) then
-                    call syntax_error(error,'local OpenMPI library does not support --showme:command')
-                    return
-                 end if
-
-              case (MPI_TYPE_MPICH)
-
-                 ! -compile_info returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('-compile-info')],verbose=verbose, &
-                                      exitcode=stat,cmd_success=success,screen_output=screen)
-
-                 if (stat/=0 .or. .not.success) then
-                    call syntax_error(error,'local MPICH library does not support -compile-info')
-                    return
-                 end if
-
-              case (MPI_TYPE_INTEL)
-
-                 ! -show returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('-show')],verbose=verbose, &
-                                      exitcode=stat,cmd_success=success,screen_output=screen)
-
-                 if (stat/=0 .or. .not.success) then
-                    call syntax_error(error,'local INTEL MPI library does not support -show')
-                    return
-                 end if
-
+              case (MPI_TYPE_OPENMPI); cmdstr = string_t('--showme:command')
+              case (MPI_TYPE_MPICH);   cmdstr = string_t('-compile-info')
+              case (MPI_TYPE_INTEL);   cmdstr = string_t('-show')
               case default
-
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
+                 call fatal_error(error,unsupported_msg)
                  return
-
            end select
+
+           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+                                exitcode=stat,cmd_success=success,screen_output=screen)
+
+           if (stat/=0 .or. .not.success) then
+              call syntax_error(error,'local '//MPI_TYPE_NAME(mpilib)//&
+                                      ' library wrapper does not support flag '//cmdstr%s)
+              return
+           end if
 
            ! Take out the first command from the whole line
            call split(screen%s,tokens,delimiters=' ')
@@ -1400,99 +1378,71 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
        case ('flags')
 
            select case (mpilib)
-              case (MPI_TYPE_OPENMPI)
-
-                 ! --showme:command returns the build command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:compile')],verbose=verbose, &
-                                      exitcode=stat,cmd_success=success,screen_output=screen)
-
-                 if (stat/=0 .or. .not.success) then
-                    call syntax_error(error,'local OpenMPI library does not support --showme:compile')
-                    return
-                 end if
-
-                 call remove_new_lines(screen)
-
-              case (MPI_TYPE_MPICH)
-
-                 call run_mpi_wrapper(wrapper,[string_t('-compile-info')],verbose=verbose, &
-                                      exitcode=stat,cmd_success=success,screen_output=screen)
-
-                 if (stat/=0 .or. .not.success) then
-                    call syntax_error(error,'local MPICH library does not support -compile-info')
-                    return
-                 end if
-
-                 ! MPICH reports the full command including the compiler name. Remove it if so
-                 call remove_new_lines(screen)
-                 call split(screen%s,tokens)
-                 ! Remove trailing compiler name
-                 screen%s = screen%s(len_trim(tokens(1))+1:)
-
-              case (MPI_TYPE_INTEL)
-
-                 call run_mpi_wrapper(wrapper,[string_t('-show')],verbose=verbose, &
-                                      exitcode=stat,cmd_success=success,screen_output=screen)
-
-                 if (stat/=0 .or. .not.success) then
-                    call syntax_error(error,'local INTEL MPI library does not support -show')
-                    return
-                 end if
-
-                 ! MPICH reports the full command including the compiler name. Remove it if so
-                 call remove_new_lines(screen)
-                 call split(screen%s,tokens)
-                 ! Remove trailing compiler name
-                 screen%s = screen%s(len_trim(tokens(1))+1:)
-
+              case (MPI_TYPE_OPENMPI); cmdstr = string_t('--showme:compile')
+              case (MPI_TYPE_MPICH);   cmdstr = string_t('-compile-info')
+              case (MPI_TYPE_INTEL);   cmdstr = string_t('-show')
               case default
-
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
+                 call fatal_error(error,unsupported_msg)
                  return
+           end select
 
+           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+                                exitcode=stat,cmd_success=success,screen_output=screen)
+
+           if (stat/=0 .or. .not.success) then
+              call syntax_error(error,'local '//MPI_TYPE_NAME(mpilib)//&
+                                      ' library wrapper does not support flag '//cmdstr%s)
+              return
+           end if
+
+           ! Post-process output
+           select case (mpilib)
+              case (MPI_TYPE_OPENMPI)
+                 ! This library reports the compiler name only
+                 call remove_new_lines(screen)
+              case (MPI_TYPE_MPICH,MPI_TYPE_INTEL)
+                 ! These libraries report the full command including the compiler name. Remove it if so
+                 call remove_new_lines(screen)
+                 call split(screen%s,tokens)
+                 ! Remove trailing compiler name
+                 screen%s = screen%s(len_trim(tokens(1))+1:)
+              case default
+                 call fatal_error(error,'invalid MPI library type')
+                 return
            end select
 
        ! Get a list of additional linker flags
        case ('link')
 
            select case (mpilib)
+              case (MPI_TYPE_OPENMPI); cmdstr = string_t('--showme:link')
+              case (MPI_TYPE_MPICH);   cmdstr = string_t('-link-info')
+              case default
+                 call fatal_error(error,unsupported_msg)
+                 return
+           end select
+
+           call run_mpi_wrapper(wrapper,[cmdstr],verbose=verbose, &
+                                exitcode=stat,cmd_success=success,screen_output=screen)
+
+           if (stat/=0 .or. .not.success) then
+              call syntax_error(error,'local '//MPI_TYPE_NAME(mpilib)//&
+                                      ' library wrapper does not support flag '//cmdstr%s)
+              return
+           end if
+
+           select case (mpilib)
               case (MPI_TYPE_OPENMPI)
-
-                 ! --showme:link returns the linker command of this wrapper
-                 call run_mpi_wrapper(wrapper,[string_t('--showme:link')],verbose=verbose, &
-                                      exitcode=stat,cmd_success=success,screen_output=screen)
-
-                 if (stat/=0 .or. .not.success) then
-                    call syntax_error(error,'local OpenMPI library does not support --showme:link')
-                    return
-                 end if
-
                  call remove_new_lines(screen)
-
-                 !> Address OpenMPI wrapper bug
-
-
               case (MPI_TYPE_MPICH)
-
-                 call run_mpi_wrapper(wrapper,[string_t('-link-info')],verbose=verbose, &
-                                      exitcode=stat,cmd_success=success,screen_output=screen)
-
-                 if (stat/=0 .or. .not.success) then
-                    call syntax_error(error,'local MPICH library does not support -link-info')
-                    return
-                 end if
-
                  ! MPICH reports the full command including the compiler name. Remove it if so
                  call remove_new_lines(screen)
                  call split(screen%s,tokens)
                  ! Remove trailing compiler name
                  screen%s = screen%s(len_trim(tokens(1))+1:)
-
               case default
-
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
+                 call fatal_error(error,unsupported_msg)
                  return
-
            end select
 
        ! Get a list of MPI library directories
@@ -1512,7 +1462,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
               case default
 
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
+                 call fatal_error(error,unsupported_msg)
                  return
 
            end select
@@ -1522,21 +1472,16 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
 
            select case (mpilib)
               case (MPI_TYPE_OPENMPI)
-
                  ! --showme:command returns the build command of this wrapper
                  call run_mpi_wrapper(wrapper,[string_t('--showme:incdirs')],verbose=verbose, &
                                       exitcode=stat,cmd_success=success,screen_output=screen)
-
                  if (stat/=0 .or. .not.success) then
                     call syntax_error(error,'local OpenMPI library does not support --showme:incdirs')
                     return
                  end if
-
               case default
-
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
+                 call fatal_error(error,unsupported_msg)
                  return
-
            end select
 
            call remove_new_lines(screen)
@@ -1557,10 +1502,6 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  else
                     call remove_new_lines(screen)
                  end if
-
-                 ! Extract version
-                 screen = extract_version_text(screen%s,'OpenMPI library',error)
-                 if (allocated(error)) return
 
               case (MPI_TYPE_MPICH)
 
@@ -1587,11 +1528,6 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                  if (stat/=0 .or. .not.success) then
                     call syntax_error(error,'cannot retrieve MPICH library version from <mpichversion, '//wrapper%s//', mpiexec>')
                     return
-                 else
-
-                    screen = extract_version_text(screen%s,'MPICH library',error)
-                    if (allocated(error)) return
-
                  end if
 
               case (MPI_TYPE_INTEL)
@@ -1607,16 +1543,16 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
                     call remove_new_lines(screen)
                  end if
 
-                 ! Extract version
-                 screen = extract_version_text(screen%s,'INTEL MPI library',error)
-                 if (allocated(error)) return
-
               case default
 
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
+                 call fatal_error(error,unsupported_msg)
                  return
 
            end select
+
+           ! Extract version
+           screen = extract_version_text(screen%s,MPI_TYPE_NAME(mpilib)//' library',error)
+           if (allocated(error)) return
 
        ! Get path to the MPI runner command
        case ('runner')
@@ -1625,7 +1561,7 @@ type(string_t) function mpi_wrapper_query(mpilib,wrapper,command,verbose,error) 
               case (MPI_TYPE_OPENMPI,MPI_TYPE_MPICH,MPI_TYPE_MSMPI,MPI_TYPE_INTEL)
                  call get_mpi_runner(screen,verbose,error)
               case default
-                 call fatal_error(error,'the MPI library of wrapper '//wrapper%s//' does not support task '//trim(command))
+                 call fatal_error(error,unsupported_msg)
                  return
            end select
 
