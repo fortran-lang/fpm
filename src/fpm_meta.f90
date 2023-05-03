@@ -585,6 +585,8 @@ logical function msmpi_init(this,compiler,error) result(found)
         if (len_trim(bindir)<=0 .or. .not.exists(bindir) .or. allocated(error)) then
             windir = get_dos_path('C:\Program Files\Microsoft MPI\Bin\mpiexec.exe',error)
 
+            print *, 'windir=',windir
+
             if (.not.allocated(error)) &
             call find_command_location(windir,bindir,verbose=verbose,error=error)
 
