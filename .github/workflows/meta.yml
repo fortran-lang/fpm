@@ -19,7 +19,7 @@ env:
   HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
   HOMEBREW_NO_GITHUB_API: "ON"
   HOMEBREW_NO_INSTALL_CLEANUP: "ON"
-  GCC_V: "10"
+  GCC_V: "13"
 
 jobs:
 
@@ -133,11 +133,8 @@ jobs:
       if: contains(matrix.os, 'macos')
       run: |
         brew install gcc@${{ env.GCC_V }}
-        #        ln -s /usr/local/bin/gfortran-${{ env.GCC_V }} /usr/local/bin/gfortran
         which gfortran-${{ env.GCC_V }}
         which gfortran
-        gfortran-${{ env.GCC_V }} --version
-        gfortran --version
 
     - name: (macOS) Install homebrew MPICH
       if: contains(matrix.mpi,'mpich') && contains(matrix.os,'macos')
@@ -247,7 +244,7 @@ jobs:
       if: contains(matrix.os,'macOS') 
       shell: bash
       run: |
-        echo "FPM_FC=gfortran" >> $GITHUB_ENV
+        echo "FPM_FC=gfortran-{{ env.GCC_V }}" >> $GITHUB_ENV
         echo "FPM_CC=gcc-{{ env.GCC_V }}" >> $GITHUB_ENV
         echo "FPM_CXX=g++-{{ env.GCC_V }}" >> $GITHUB_ENV
 
