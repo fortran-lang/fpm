@@ -39,6 +39,8 @@ jobs:
             #            mpi: msmpi
           - os: macos-latest
             mpi: openmpi
+          - os: macos-latest
+            mpi: mpich
 
     steps:
     - name: Checkout code
@@ -238,6 +240,14 @@ jobs:
         echo "FPM_FC=ifort" >> $GITHUB_ENV
         echo "FPM_CC=icc" >> $GITHUB_ENV
         echo "FPM_CXX=icpc" >> $GITHUB_ENV
+
+    - name: (macOS) Use gcc/g++ instead of Clang for C/C++
+      if: contains(matrix.os,'macOS') 
+      shell: bash
+      run: |
+        echo "FPM_FC=gfortran" >> $GITHUB_ENV
+        echo "FPM_CC=gcc-{{ env.GCC_V }}" >> $GITHUB_ENV
+        echo "FPM_CXX=g++-{{ env.GCC_V }}" >> $GITHUB_ENV
 
     - name: Run metapackage tests using the release version
       shell: bash
