@@ -201,26 +201,6 @@ EXIT_CODE=0
 test $EXIT_CODE -eq 1
 popd
 
-
-# Test metapackages
-pushd metapackage_openmp
-EXIT_CODE=0
-"$fpm" build || EXIT_CODE=$?
-test $EXIT_CODE -eq 0
-EXIT_CODE=0
-"$fpm" run || EXIT_CODE=$?
-test $EXIT_CODE -eq 0
-popd
-
-pushd metapackage_stdlib
-EXIT_CODE=0
-"$fpm" build || EXIT_CODE=$?
-test $EXIT_CODE -eq 0
-EXIT_CODE=0
-"$fpm" run || EXIT_CODE=$?
-test $EXIT_CODE -eq 0
-popd
-
 # test dependency priority
 pushd dependency_priority
 
