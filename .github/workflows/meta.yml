@@ -73,7 +73,7 @@ jobs:
 
     - name: (Windows) Install OneAPI
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      uses: awvwgk/setup-fortran@v1
+      uses: awvwgk/setup-fortran@main
       id: setup-fortran
       with:
         compiler: intel 
