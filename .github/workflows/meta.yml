@@ -73,6 +73,7 @@ jobs:
 
     - name: (Windows) Install OneAPI
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
+      run: echo "HELLO ONEAPI"
 
     - name: (Ubuntu) Install gfortran
       if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
