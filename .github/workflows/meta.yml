@@ -59,7 +59,7 @@ jobs:
 
     - name: (Windows) Install MSYS2
       uses: msys2/setup-msys2@v2
-      if: contains(matrix.os,'windows') 
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi') 
       with:
         msystem: MINGW64
         update: true
@@ -73,7 +73,11 @@ jobs:
 
     - name: (Windows) Install OneAPI
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
-      run: echo "HELLO ONEAPI"
+      uses: awvwgk/setup-fortran@v1
+      id: setup-fortran
+      with:
+        compiler: intel 
+        version: '2023.1'
 
     - name: (Ubuntu) Install gfortran
       if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
