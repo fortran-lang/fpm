@@ -71,16 +71,16 @@ jobs:
           curl
           gcc-fortran
 
-    - name: (Windows) Install OneAPI
+    - name: (Windows) Retrieve Intel toolchain
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
       shell: pwsh
       working-directory: C:\TEMP
       run: |
         curl.exe --output webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5 
-        Start-Process -FilePath "webimage.exe" -ArgumentList "-s -x -f webimage_extracted --log extract.log" -Wait
+        Start-Process -FilePath "webimage.exe" -ArgumentList "-s -x -f oneAPI --log extract.log" -Wait
         Remove-Item "webimage.exe" -Force
-        more extract.log
-        Start-Process -FilePath "webimage_extracted\bootstrapper.exe" -ArgumentList "-s --action install --eula=accept --components=""intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler:intel.oneapi.win.mpi.devel"" -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=." -Wait
+        Start-Process -FilePath "oneAPI\bootstrapper.exe" -ArgumentList "-s --action install --eula=accept --components=""intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler:intel.oneapi.win.mpi.devel"" -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=." -Wait
+        Remove-Item "oneAPI" -Force -Recurse
         
     - name: (Ubuntu) Install gfortran
       if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
@@ -139,8 +139,20 @@ jobs:
       # can't use MSMPI_BIN as Actions doesn't update PATH from msmpisetup.exe
       run: Test-Path "C:\Program Files\Microsoft MPI\Bin\mpiexec.exe" -PathType leaf
 
+    - name: (Windows) test that OneAPI is installed
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
+      run: | 
+        Test-Path -Path "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" -PathType leaf
+        Test-Path -Path "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat" -PathType leaf
+
     - name: (Windows) put MSMPI_BIN on PATH (where mpiexec is)
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
+      run: |
+        echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_ENV -Append 
+
+    - name: (Windows) load OneAPI environment variables 
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
       run: |
         echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_ENV -Append 
@@ -193,6 +205,22 @@ jobs:
       run: |
         mv $(which fpm) fpm-bootstrap${{ matrix.exe }}
         echo "BOOTSTRAP=$PWD/fpm-bootstrap" >> $GITHUB_ENV
+
+    - name: Use Intel compiler for the metapackage tests
+      if: contains(matrix.mpi,'intel')
+      shell: bash
+      run: |
+        echo "FPM_FC=ifort" >> $GITHUB_ENV
+        echo "FPM_CC=icc"   >> $GITHUB_ENV
+        echo "FPM_CXX=icpc" >> $GITHUB_ENV
+
+    - name: (macOS) Use gcc/g++ instead of Clang for C/C++
+      if: contains(matrix.os,'macOS') 
+      shell: bash
+      run: |
+        echo "FPM_FC=gfortran-${{ env.GCC_V }}" >> $GITHUB_ENV
+        echo "FPM_CC=gcc-${{ env.GCC_V }}"      >> $GITHUB_ENV
+        echo "FPM_CXX=g++-${{ env.GCC_V }}"     >> $GITHUB_ENV
 
     - name: Build Fortran fpm (bootstrap)
       shell: bash
@@ -267,22 +295,6 @@ jobs:
         echo "FPM_RELEASE=${{ env.EXE }}" >> $GITHUB_ENV
       env:
         EXE: fpm-${{ env.VERSION }}-${{ matrix.os-arch }}${{ matrix.exe }}
-
-    - name: (Ubuntu) Use Intel compiler for the metapackage tests
-      if: contains(matrix.os,'ubuntu') && contains(matrix.mpi,'intel')
-      shell: bash
-      run: |
-        echo "FPM_FC=ifort" >> $GITHUB_ENV
-        echo "FPM_CC=icc" >> $GITHUB_ENV
-        echo "FPM_CXX=icpc" >> $GITHUB_ENV
-
-    - name: (macOS) Use gcc/g++ instead of Clang for C/C++
-      if: contains(matrix.os,'macOS') 
-      shell: bash
-      run: |
-        echo "FPM_FC=gfortran-${{ env.GCC_V }}" >> $GITHUB_ENV
-        echo "FPM_CC=gcc-${{ env.GCC_V }}" >> $GITHUB_ENV
-        echo "FPM_CXX=g++-${{ env.GCC_V }}" >> $GITHUB_ENV
 
     - name: Run metapackage tests using the release version
       shell: bash
