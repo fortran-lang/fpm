@@ -76,7 +76,10 @@ jobs:
       shell: pwsh
       working-directory: C:\TEMP
       run: |
-        curl.exe --output .\webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5 
+        curl.exe --output webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5 
+        start /b /wait webimage.exe -s -x -f webimage_extracted --log extract.log
+        del webimage.exe
+        more extract.log
         
     - name: (Ubuntu) Install gfortran
       if: contains(matrix.os,'ubuntu') && (!contains(matrix.mpi,'intel'))
@@ -117,7 +120,7 @@ jobs:
         printenv >> $GITHUB_ENV
 
     - name: (Windows) Put MSYS2_MinGW64 on PATH
-      if: contains(matrix.os,'windows')
+      if: contains(matrix.os,'windows') && !contains(matrix.mpi,'intel')
       # there is not yet an environment variable for this path from msys2/setup-msys2
       run: echo "${{ runner.temp }}/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
