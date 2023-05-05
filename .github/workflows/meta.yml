@@ -77,8 +77,8 @@ jobs:
       working-directory: C:\TEMP
       run: |
         curl.exe --output webimage.exe --url https://registrationcenter-download.intel.com/akdlm/irc_nas/19085/w_HPCKit_p_2023.0.0.25931_offline.exe --retry 5 --retry-delay 5 
-        start /b /wait webimage.exe -s -x -f webimage_extracted --log extract.log
-        del webimage.exe
+        Start-Process -FilePath "webimage.exe" -ArgumentList "-s -x -f webimage_extracted --log extract.log" -Wait
+        Remove-Item "webimage.exe" -Force
         more extract.log
         
     - name: (Ubuntu) Install gfortran
