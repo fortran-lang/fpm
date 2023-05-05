@@ -159,7 +159,9 @@ contains
 
         allocate (cpath(buffersize))
 
+#ifndef FPM_BOOTSTRAP
         ptr = c_realpath(appended_path, cpath, buffersize)
+#endif
 
         if (c_associated(ptr)) then
             call c_f_character(cpath, real_path)
