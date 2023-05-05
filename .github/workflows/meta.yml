@@ -70,6 +70,10 @@ jobs:
           unzip
           curl
           gcc-fortran
+          
+    - name: (Windows) Setup VS Build environment 
+      if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
+      uses: seanmiddleditch/gha-setup-vsdevenv@master     
 
     - name: (Windows) Retrieve Intel toolchain
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
@@ -153,9 +157,10 @@ jobs:
 
     - name: (Windows) load OneAPI environment variables 
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'intel')
+      shell: cmd
       run: |
-        echo "C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin\" | Out-File -FilePath $env:GITHUB_ENV -Append 
+        "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+        "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat"        
 
     - name: (Windows) Install MSYS2 msmpi package
       if: contains(matrix.os,'windows') && contains(matrix.mpi,'msmpi')
